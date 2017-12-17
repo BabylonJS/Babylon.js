@@ -1572,24 +1572,28 @@ var BABYLON;
         });
         // Methods
         WaterMaterial.prototype.addToRenderList = function (node) {
-            if (this._refractionRTT.renderList) {
+            if (this._refractionRTT && this._refractionRTT.renderList) {
                 this._refractionRTT.renderList.push(node);
             }
-            if (this._reflectionRTT.renderList) {
+            if (this._reflectionRTT && this._reflectionRTT.renderList) {
                 this._reflectionRTT.renderList.push(node);
             }
         };
         WaterMaterial.prototype.enableRenderTargets = function (enable) {
             var refreshRate = enable ? 1 : 0;
-            this._refractionRTT.refreshRate = refreshRate;
-            this._reflectionRTT.refreshRate = refreshRate;
+            if (this._refractionRTT) {
+                this._refractionRTT.refreshRate = refreshRate;
+            }
+            if (this._reflectionRTT) {
+                this._reflectionRTT.refreshRate = refreshRate;
+            }
         };
         WaterMaterial.prototype.getRenderList = function () {
-            return this._refractionRTT.renderList;
+            return this._refractionRTT ? this._refractionRTT.renderList : [];
         };
         Object.defineProperty(WaterMaterial.prototype, "renderTargetsEnabled", {
             get: function () {
-                return !(this._refractionRTT.refreshRate === 0);
+                return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
             },
             enumerable: true,
             configurable: true
@@ -1655,7 +1659,14 @@ var BABYLON;
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
+            // Configure this
             this._mesh = mesh;
+            if (this._waitingRenderList) {
+                for (var i = 0; i < this._waitingRenderList.length; i++) {
+                    this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                }
+                this._waitingRenderList = null;
+            }
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -1922,8 +1933,12 @@ var BABYLON;
         WaterMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.reflectionTexture.isRenderTarget = true;
-            serializationObject.refractionTexture.isRenderTarget = true;
+            serializationObject.renderList = [];
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+                    serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
+                }
+            }
             return serializationObject;
         };
         WaterMaterial.prototype.getClassName = function () {
@@ -1931,7 +1946,9 @@ var BABYLON;
         };
         // Statics
         WaterMaterial.Parse = function (source, scene, rootUrl) {
-            return BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
+            var mat = BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
+            mat._waitingRenderList = source.renderList;
+            return mat;
         };
         WaterMaterial.CreateDefaultMesh = function (name, scene) {
             var mesh = BABYLON.Mesh.CreateGround(name, 512, 512, 32, scene, false);
@@ -5936,7 +5953,7 @@ vColor=color;\n\
             var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
-            var fn_afterBind = this._afterBind;
+            var fn_afterBind = this._afterBind.bind(this);
             this._afterBind = function (m, e) {
                 if (!e) {
                     return;

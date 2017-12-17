@@ -11,13 +11,10 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var GrassProceduralTexture = (function (_super) {
+    var GrassProceduralTexture = /** @class */ (function (_super) {
         __extends(GrassProceduralTexture, _super);
         function GrassProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "grassProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
-            _this._herb1 = new BABYLON.Color3(0.29, 0.38, 0.02);
-            _this._herb2 = new BABYLON.Color3(0.36, 0.49, 0.09);
-            _this._herb3 = new BABYLON.Color3(0.51, 0.6, 0.28);
             _this._groundColor = new BABYLON.Color3(1, 1, 1);
             _this._grassColors = [
                 new BABYLON.Color3(0.29, 0.38, 0.02),
@@ -49,7 +46,7 @@ var BABYLON;
                 return this._groundColor;
             },
             set: function (value) {
-                this.groundColor = value;
+                this._groundColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

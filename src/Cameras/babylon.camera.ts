@@ -907,6 +907,10 @@
             }
         }
 
+        public computeWorldMatrix(): Matrix {
+            return this.getWorldMatrix();
+        }
+
         public static Parse(parsedCamera: any, scene: Scene): Camera {
             var type = parsedCamera.type;
             var construct = Camera.GetConstructorFromName(type, parsedCamera.name, scene, parsedCamera.interaxial_distance, parsedCamera.isStereoscopicSideBySide);

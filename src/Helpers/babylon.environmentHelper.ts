@@ -338,9 +338,11 @@ namespace BABYLON {
                 this._groundMaterial = null;
             }
 
-            if (this._options.groundTexture && !newOptions.groundTexture && this._groundTexture) {
-                this._groundTexture.dispose();
-                this._groundTexture = null;
+            if (this._groundTexture) {
+                if (this._options.groundTexture != newOptions.groundTexture) {
+                    this._groundTexture.dispose();
+                    this._groundTexture = null;
+                }
             }
 
             if (this._skybox && !newOptions.createSkybox) {
@@ -353,9 +355,11 @@ namespace BABYLON {
                 this._skyboxMaterial = null;
             }
 
-            if (this._options.skyboxTexture && !newOptions.skyboxTexture && this._skyboxTexture) {
-                this._skyboxTexture.dispose();
-                this._skyboxTexture = null;
+            if (this._skyboxTexture) {
+                if (this._options.skyboxTexture != newOptions.skyboxTexture) {
+                    this._skyboxTexture.dispose();
+                    this._skyboxTexture = null;
+                }
             }
 
             if (this._groundMirror && !newOptions.enableGroundMirror) {
@@ -363,8 +367,10 @@ namespace BABYLON {
                 this._groundMirror = null;
             }
 
-            if (this._options.environmentTexture && !newOptions.environmentTexture && this._scene.environmentTexture) {
-                this._scene.environmentTexture.dispose();
+            if (this._scene.environmentTexture) {
+                if (this._options.environmentTexture != newOptions.environmentTexture) {
+                    this._scene.environmentTexture.dispose();
+                }
             }
 
             this._options = newOptions;
@@ -459,6 +465,10 @@ namespace BABYLON {
             let groundSize = this._options.groundSize;
             let skyboxSize = this._options.skyboxSize;
             let rootPosition = this._options.rootPosition;
+            if (!this._scene.meshes || this._scene.meshes.length === 1) { // 1 only means the root of the helper.
+                return { groundSize, skyboxSize, rootPosition };
+            }
+            
             const sceneExtends = this._scene.getWorldExtends();
             const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
             let bias = 0.0001;

@@ -304,6 +304,8 @@ var BABYLON;
                             continue;
                         }
                         control.notRenderable = false;
+                        // Account for RenderScale.
+                        projectedPosition.scaleInPlace(this.renderScale);
                         control._moveToProjectedPosition(projectedPosition);
                     }
                 }
@@ -1368,7 +1370,7 @@ var BABYLON;
                 this.notRenderable = false;
             };
             Control.prototype.linkWithMesh = function (mesh) {
-                if (!this._host || this._root !== this._host._rootContainer) {
+                if (!this._host || this._root && this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
                     return;
                 }
@@ -2775,10 +2777,10 @@ var BABYLON;
                         context.shadowOffsetY = this.shadowOffsetY;
                     }
                     if (this._thumbWidth.isPixel) {
-                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.height);
+                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
                     else {
-                        effectiveThumbWidth = this._currentMeasure.height * this._thumbWidth.getValue(this._host);
+                        effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
                     }
                     if (this._barOffset.isPixel) {
                         effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
@@ -2831,7 +2833,11 @@ var BABYLON;
                 }
                 context.restore();
             };
-            Slider.prototype._updateValueFromPointer = function (x) {
+            Slider.prototype._updateValueFromPointer = function (x, y) {
+                if (this.rotation != 0) {
+                    this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+                    x = this._transformedPosition.x;
+                }
                 this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
             };
             Slider.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
@@ -2839,13 +2845,13 @@ var BABYLON;
                     return false;
                 }
                 this._pointerIsDown = true;
-                this._updateValueFromPointer(coordinates.x);
+                this._updateValueFromPointer(coordinates.x, coordinates.y);
                 this._host._capturingControl = this;
                 return true;
             };
             Slider.prototype._onPointerMove = function (target, coordinates) {
                 if (this._pointerIsDown) {
-                    this._updateValueFromPointer(coordinates.x);
+                    this._updateValueFromPointer(coordinates.x, coordinates.y);
                 }
                 _super.prototype._onPointerMove.call(this, target, coordinates);
             };
@@ -2987,7 +2993,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=checkBox.js.map
+//# sourceMappingURL=checkbox.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
@@ -3505,7 +3511,7 @@ var BABYLON;
                         _this._onImageLoaded();
                     };
                     if (value) {
-                        this._domImage.crossOrigin = "anonymous";
+                        BABYLON.Tools.SetCorsBehavior(value, this._domImage);
                         this._domImage.src = value;
                     }
                 },
@@ -3517,7 +3523,11 @@ var BABYLON;
                     return this._cellWidth;
                 },
                 set: function (value) {
+                    if (this._cellWidth === value) {
+                        return;
+                    }
                     this._cellWidth = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3527,7 +3537,11 @@ var BABYLON;
                     return this._cellHeight;
                 },
                 set: function (value) {
+                    if (this._cellHeight === value) {
+                        return;
+                    }
                     this._cellHeight = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3537,7 +3551,11 @@ var BABYLON;
                     return this._cellId;
                 },
                 set: function (value) {
+                    if (this._cellId === value) {
+                        return;
+                    }
                     this._cellId = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -4311,6 +4329,22 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "width", {
+                get: function () {
+                    return this._width.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._width.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._width.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                    this.autoStretchWidth = false;
+                },
+                enumerable: true,
+                configurable: true
+            });
             InputText.prototype.onBlur = function () {
                 this._isFocused = false;
                 this._scrollLeft = null;
@@ -4341,6 +4375,9 @@ var BABYLON;
             InputText.prototype.processKey = function (keyCode, key) {
                 // Specific cases
                 switch (keyCode) {
+                    case 32://SPACE
+                        key = " "; //ie11 key for space is "Spacebar" 
+                        break;
                     case 8:// BACKSPACE
                         if (this._text && this._text.length > 0) {
                             if (this._cursorOffset === 0) {
@@ -4489,7 +4526,7 @@ var BABYLON;
                                 }
                                 this._cursorOffset++;
                                 currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
-                            } while (currentSize < absoluteCursorPosition);
+                            } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
                             // Find closest move
                             if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
                                 this._cursorOffset--;
@@ -4586,6 +4623,9 @@ var BABYLON;
                 _this.defaultButtonPaddingBottom = "2px";
                 _this.defaultButtonColor = "#DDD";
                 _this.defaultButtonBackground = "#070707";
+                _this.shiftButtonColor = "#7799FF";
+                _this.selectedShiftThickness = 1;
+                _this.shiftState = 0;
                 return _this;
             }
             VirtualKeyboard.prototype._getTypeName = function () {
@@ -4626,6 +4666,30 @@ var BABYLON;
                 }
                 this.addControl(panel);
             };
+            VirtualKeyboard.prototype.applyShiftState = function (shiftState) {
+                if (!this.children) {
+                    return;
+                }
+                for (var i = 0; i < this.children.length; i++) {
+                    var row = this.children[i];
+                    if (!row || !row.children) {
+                        continue;
+                    }
+                    var rowContainer = row;
+                    for (var j = 0; j < rowContainer.children.length; j++) {
+                        var button = rowContainer.children[j];
+                        if (!button || !button.children[0]) {
+                            continue;
+                        }
+                        var button_tblock = button.children[0];
+                        if (button_tblock.text === "\u21E7") {
+                            button.color = (shiftState ? this.shiftButtonColor : this.defaultButtonColor);
+                            button.thickness = (shiftState > 1 ? this.selectedShiftThickness : 0);
+                        }
+                        button_tblock.text = (shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase());
+                    }
+                }
+            };
             Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
                 get: function () {
                     return this._connectedInputText;
@@ -4649,6 +4713,13 @@ var BABYLON;
                         return;
                     }
                     switch (key) {
+                        case "\u21E7":
+                            _this.shiftState++;
+                            if (_this.shiftState > 2) {
+                                _this.shiftState = 0;
+                            }
+                            _this.applyShiftState(_this.shiftState);
+                            return;
                         case "\u2190":
                             _this._connectedInputText.processKey(8);
                             return;
@@ -4656,7 +4727,11 @@ var BABYLON;
                             _this._connectedInputText.processKey(13);
                             return;
                     }
-                    _this._connectedInputText.processKey(-1, key);
+                    _this._connectedInputText.processKey(-1, (_this.shiftState ? key.toUpperCase() : key));
+                    if (_this.shiftState === 1) {
+                        _this.shiftState = 0;
+                        _this.applyShiftState(_this.shiftState);
+                    }
                 });
             };
             VirtualKeyboard.prototype.disconnect = function () {
@@ -4674,7 +4749,7 @@ var BABYLON;
                 returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
                 returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
                 returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\u21B5"]);
-                returnValue.addKeysRow(["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+                returnValue.addKeysRow(["\u21E7", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
                 returnValue.addKeysRow([" "], [{ width: "200px" }]);
                 return returnValue;
             };

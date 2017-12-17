@@ -232,9 +232,8 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
-        parent?: IGLTFNode;
+        parent: IGLTFNode;
         babylonMesh: Mesh;
-        babylonBones?: { [skin: number]: Bone };
         babylonAnimationTargets?: Node[];
     }
 
@@ -243,6 +242,13 @@ module BABYLON.GLTF2 {
         minFilter?: ETextureMinFilter;
         wrapS?: ETextureWrapMode;
         wrapT?: ETextureWrapMode;
+
+        // Runtime values
+        index: number;
+        noMipMaps: boolean;
+        samplingMode: number;
+        wrapU: number;
+        wrapV: number;
     }
 
     export interface IGLTFScene extends IGLTFChildRootProperty {

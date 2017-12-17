@@ -220,13 +220,14 @@ declare module BABYLON {
         private _lastDeltaTime;
         private _renderId;
         private _useLogarithmicDepth;
+        private _waitingRenderList;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
         useLogarithmicDepth: boolean;
-        readonly refractionTexture: RenderTargetTexture;
-        readonly reflectionTexture: RenderTargetTexture;
+        readonly refractionTexture: Nullable<RenderTargetTexture>;
+        readonly reflectionTexture: Nullable<RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
         getRenderList(): Nullable<AbstractMesh[]>;

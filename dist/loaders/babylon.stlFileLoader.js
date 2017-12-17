@@ -1,12 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
-    var STLFileLoader = (function () {
+    var STLFileLoader = /** @class */ (function () {
         function STLFileLoader() {
             this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
             this.facetsPattern = /facet([\s\S]*?)endfacet/g;
             this.normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
             this.vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
+            this.name = "stl";
             // force data to come in as an ArrayBuffer
             // we'll convert to string if it looks like it's an ASCII .stl
             this.extensions = {
@@ -81,7 +82,7 @@ var BABYLON;
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
             for (var index = 0; index < fileLength; index++) {
-                if (reader.getUint8(index, false) > 127) {
+                if (reader.getUint8(index) > 127) {
                     return true;
                 }
             }

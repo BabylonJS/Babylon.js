@@ -2,15 +2,32 @@
 
 module BABYLON {
     export enum GLTFLoaderCoordinateSystemMode {
-        // Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene (scene.useRightHandedSystem).
-        // NOTE: When scene.useRightHandedSystem is false, an additional transform will be added to the root to transform the data from right-handed to left-handed.
+        /**
+         * Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         */
         AUTO,
 
-        // The glTF right-handed data is not transformed in any form and is loaded directly.
-        PASS_THROUGH,
-
-        // Sets the useRightHandedSystem flag on the scene.
+        /**
+         * Sets the useRightHandedSystem flag on the scene.
+         */
         FORCE_RIGHT_HANDED,
+    }
+
+    export enum GLTFLoaderAnimationStartMode {
+        /**
+         * No animation will start.
+         */
+        NONE,
+
+        /**
+         * The first animation will start.
+         */
+        FIRST,
+
+        /**
+         * All animations will start.
+         */
+        ALL,
     }
 
     export interface IGLTFLoaderData {
@@ -19,36 +36,83 @@ module BABYLON {
     }
 
     export interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
 
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
 
-        // Common options
+        // #region Common options
+
+        /**
+         * Raised when the asset has been parsed.
+         * The data.json property stores the glTF JSON.
+         * The data.bin property stores the BIN chunk from a glTF binary or null if the input is not a glTF binary.
+         */
         public onParsed: (data: IGLTFLoaderData) => void;
 
-        // V1 options
-        public static HomogeneousCoordinates = false;
+        // #endregion
+
+        // #region V1 options
+
         public static IncrementalLoading = true;
 
-        // V2 options
+        public static HomogeneousCoordinates = false;
+
+        // #endregion
+
+        // #region V2 options
+
+        /**
+         * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+         */
         public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+
+        /**
+         * The animation start mode (NONE, FIRST, ALL).
+         */
+        public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+
+        /**
+         * Set to true to compile materials before raising the success callback.
+         */
         public compileMaterials = false;
-        public compileShadowGenerators = false;
+
+        /**
+         * Set to true to also compile materials with clip planes.
+         */
         public useClipPlane = false;
+
+        /**
+         * Set to true to compile shadow generators before raising the success callback.
+         */
+        public compileShadowGenerators = false;
+
+        /**
+         * Raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+         */
         public onMeshLoaded: (mesh: AbstractMesh) => void;
+
+        /**
+         * Raised when the loader creates a texture after parsing the glTF properties of the texture.
+         */
         public onTextureLoaded: (texture: BaseTexture) => void;
+
+        /**
+         * Raised when the loader creates a material after parsing the glTF properties of the material.
+         */
         public onMaterialLoaded: (material: Material) => void;
 
         /**
-         * Raised when the asset is completely loaded, just before the loader is disposed.
+         * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete just after onSuccess.
+         * For assets without LODs, raised when the model is complete, immediately after onSuccess.
          */
         public onComplete: () => void;
+
+        // #endregion
 
         private _loader: IGLTFLoader;
 
@@ -59,13 +123,16 @@ module BABYLON {
             ".glb": { isBinary: true }
         };
 
+        /**
+         * Disposes the loader, releases resources during load, and cancels any outstanding requests.
+         */
         public dispose(): void {
             if (this._loader) {
                 this._loader.dispose();
             }
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             try {
                 const loaderData = GLTFFileLoader._parse(data);
 
@@ -77,11 +144,16 @@ module BABYLON {
                 this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    Tools.Error(e.message);
+                }
             }
         }
 
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             try {
                 const loaderData = GLTFFileLoader._parse(data);
 
@@ -93,7 +165,12 @@ module BABYLON {
                 this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
             catch (e) {
-                onError(e.message);
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    Tools.Error(e.message);
+                }
             }
         }
 
@@ -253,7 +330,14 @@ module BABYLON {
         }
 
         private static _parseVersion(version: string): Nullable<{ major: number, minor: number }> {
-            const match = (version + "").match(/^(\d+)\.(\d+)$/);
+            if (version === "1.0" || version === "1.0.1") {
+                return {
+                    major: 1,
+                    minor: 0
+                };
+            }
+
+            const match = (version + "").match(/^(\d+)\.(\d+)/);
             if (!match) {
                 return null;
             }

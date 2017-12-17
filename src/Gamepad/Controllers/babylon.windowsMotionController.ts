@@ -3,8 +3,8 @@ module BABYLON {
     class LoadedMeshInfo {
         public rootNode: AbstractMesh;
         public pointingPoseNode: AbstractMesh;
-        public buttonMeshes: { [id: string] : IButtonMeshInfo; } = {};
-        public axisMeshes: { [id: number] : IAxisMeshInfo; } = {};
+        public buttonMeshes: { [id: string]: IButtonMeshInfo; } = {};
+        public axisMeshes: { [id: number]: IAxisMeshInfo; } = {};
     }
 
     interface IMeshInfo {
@@ -23,18 +23,18 @@ module BABYLON {
     }
 
     export class WindowsMotionController extends WebVRController {
-        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/microsoft/';
-        private static readonly MODEL_LEFT_FILENAME:string = 'left.glb';
-        private static readonly MODEL_RIGHT_FILENAME:string = 'right.glb';
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/microsoft/';
+        public static MODEL_LEFT_FILENAME: string = 'left.glb';
+        public static MODEL_RIGHT_FILENAME: string = 'right.glb';
 
-        public static readonly GAMEPAD_ID_PREFIX:string = 'Spatial Controller (Spatial Interaction Source) ';
+        public static readonly GAMEPAD_ID_PREFIX: string = 'Spatial Controller (Spatial Interaction Source) ';
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
         private _loadedMeshInfo: Nullable<LoadedMeshInfo>;
         private readonly _mapping = {
             // Semantic button names
             buttons: ['thumbstick', 'trigger', 'grip', 'menu', 'trackpad'],
-            
+
             // A mapping of the button name to glTF model node name
             // that should be transformed by button value.
             buttonMeshNames: {
@@ -66,13 +66,15 @@ module BABYLON {
         };
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
+        public onTrackpadValuesChangedObservable = new Observable<StickValues>();
+        public trackpad: StickValues = { x: 0, y: 0 };
 
         constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.WINDOWS;
             this._loadedMeshInfo = null;
         }
-        
+
         public get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTriggerStateChangedObservable;
         }
@@ -87,28 +89,37 @@ module BABYLON {
 
         public get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onPadStateChangedObservable;
-        }    
+        }
 
         public get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTrackpadChangedObservable;
         }
-        
+
+        public get onTouchpadValuesChangedObservable(): Observable<StickValues> {
+            return this.onTrackpadValuesChangedObservable;
+        }
+
         /**
          * Called once per frame by the engine.
          */
         public update() {
             super.update();
-            
+
             // Only need to animate axes if there is a loaded mesh
             if (this._loadedMeshInfo) {
                 if (this.browserGamepad.axes) {
+                    if (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y) {
+                        this.trackpad.x = this.browserGamepad["axes"][2];
+                        this.trackpad.y = this.browserGamepad["axes"][3];
+                        this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
+                    }
                     for (let axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
                         this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
                     }
                 }
             }
         }
-        
+
         /**
          * Called once for each button that changed state since the last frame
          * @param buttonIdx Which button index changed
@@ -118,7 +129,7 @@ module BABYLON {
         protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let buttonName = this._mapping.buttons[buttonIdx];
             if (!buttonName) {
-                return; 
+                return;
             }
 
             // Only emit events for buttons that we know how to map from index to name
@@ -129,9 +140,9 @@ module BABYLON {
 
             this.lerpButtonTransform(buttonName, state.value);
         }
-        
+
         protected lerpButtonTransform(buttonName: string, buttonValue: number) {
-            
+
             // If there is no loaded mesh, there is nothing to transform.
             if (!this._loadedMeshInfo) {
                 return;
@@ -144,18 +155,18 @@ module BABYLON {
             }
 
             BABYLON.Quaternion.SlerpToRef(
-                meshInfo.unpressed.rotationQuaternion, 
-                meshInfo.pressed.rotationQuaternion, 
+                meshInfo.unpressed.rotationQuaternion,
+                meshInfo.pressed.rotationQuaternion,
                 buttonValue,
                 meshInfo.value.rotationQuaternion);
             BABYLON.Vector3.LerpToRef(
-                meshInfo.unpressed.position, 
+                meshInfo.unpressed.position,
                 meshInfo.pressed.position,
                 buttonValue,
                 meshInfo.value.position);
         }
-        
-        protected lerpAxisTransform(axis:number, axisValue: number) {
+
+        protected lerpAxisTransform(axis: number, axisValue: number) {
             if (!this._loadedMeshInfo) {
                 return;
             }
@@ -167,33 +178,33 @@ module BABYLON {
 
             if (!meshInfo.min.rotationQuaternion || !meshInfo.max.rotationQuaternion || !meshInfo.value.rotationQuaternion) {
                 return;
-            }            
+            }
 
             // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
             let lerpValue = axisValue * 0.5 + 0.5;
             BABYLON.Quaternion.SlerpToRef(
-                meshInfo.min.rotationQuaternion, 
-                meshInfo.max.rotationQuaternion, 
+                meshInfo.min.rotationQuaternion,
+                meshInfo.max.rotationQuaternion,
                 lerpValue,
                 meshInfo.value.rotationQuaternion);
             BABYLON.Vector3.LerpToRef(
-                meshInfo.min.position, 
+                meshInfo.min.position,
                 meshInfo.max.position,
                 lerpValue,
                 meshInfo.value.position);
         }
-        
+
         /**
          * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
          * @param scene scene in which to add meshes
          * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
          */
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void, forceDefault = false) {
-            let path: string;        
+            let path: string;
             let filename: string;
 
             // Checking if GLB loader is present
-            if (SceneLoader.GetPluginForExtension("glb")) {
+            if (SceneLoader.IsPluginForExtensionAvailable("glb")) {
                 // Determine the device specific folder based on the ID suffix
                 let device = 'default';
                 if (this.id && !forceDefault) {
@@ -248,21 +259,21 @@ module BABYLON {
          * @param meshes list of meshes that make up the controller model to process
          * @return structured view of the given meshes, with mapping of buttons and axes to meshes that can be transformed.
          */
-        private processModel(scene: Scene, meshes: AbstractMesh[]) : Nullable<LoadedMeshInfo> {
+        private processModel(scene: Scene, meshes: AbstractMesh[]): Nullable<LoadedMeshInfo> {
             let loadedMeshInfo = null;
 
             // Create a new mesh to contain the glTF hierarchy
             let parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
 
             // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
-            let childMesh : Nullable<AbstractMesh> = null;
+            let childMesh: Nullable<AbstractMesh> = null;
             for (let i = 0; i < meshes.length; i++) {
                 let mesh = meshes[i];
 
                 if (!mesh.parent) {
                     // Exclude controller meshes from picking results
                     mesh.isPickable = false;
-                    
+
                     // Handle root node, attach to the new parentMesh
                     childMesh = mesh;
                     break;
@@ -280,8 +291,8 @@ module BABYLON {
 
             return loadedMeshInfo;
         }
-        
-        private createMeshInfo(rootNode: AbstractMesh) : LoadedMeshInfo {
+
+        private createMeshInfo(rootNode: AbstractMesh): LoadedMeshInfo {
             let loadedMeshInfo = new LoadedMeshInfo();
             var i;
             loadedMeshInfo.rootNode = rootNode;
@@ -356,18 +367,18 @@ module BABYLON {
 
             // Pointing Ray
             loadedMeshInfo.pointingPoseNode = getChildByName(rootNode, this._mapping.pointingPoseMeshName);
-            if (!loadedMeshInfo.pointingPoseNode) {                
+            if (!loadedMeshInfo.pointingPoseNode) {
                 Tools.Warn('Missing pointing pose mesh with name: ' + this._mapping.pointingPoseMeshName);
             }
 
             return loadedMeshInfo;
-            
+
             // Look through all children recursively. This will return null if no mesh exists with the given name.
             function getChildByName(node: Node, name: string) {
                 return node.getChildMeshes(false, n => n.name === name)[0];
             }
             // Look through only immediate children. This will return null if no mesh exists with the given name.
-            function getImmediateChildByName (node: Node, name: string) : AbstractMesh {
+            function getImmediateChildByName(node: Node, name: string): AbstractMesh {
                 return node.getChildMeshes(true, n => n.name == name)[0];
             }
         }
@@ -383,7 +394,7 @@ module BABYLON {
             var forward = new BABYLON.Vector3(0, 0, -1);
             var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);            
+            var direction = BABYLON.Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
         }

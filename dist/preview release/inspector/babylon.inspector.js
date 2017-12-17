@@ -1562,8 +1562,9 @@ var INSPECTOR;
         PropertyLine.prototype._createElements = function () {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
-                //this._elements.push(new ColorElement(this.value));
+                if (!INSPECTOR.Helpers.IsBrowserIE()) {
+                    this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
+                }
             }
             // Texture
             if (this.type == 'Texture') {
@@ -1699,7 +1700,13 @@ var INSPECTOR;
                     var objToDetail = this.value;
                     // Display all properties that are not functions
                     var propToDisplay = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(objToDetail);
-                    propToDisplay.sort().reverse();
+                    // special case for color3
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
+                        propToDisplay.sort();
+                    }
+                    else {
+                        propToDisplay.sort().reverse();
+                    }
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
@@ -2250,6 +2257,14 @@ var INSPECTOR;
         Helpers.IsBrowserEdge = function () {
             //Detect if we are running on a faulty buggy OS.
             var regexp = /Edge/;
+            return regexp.test(navigator.userAgent);
+        };
+        /**
+         * Returns true if the user browser is IE.
+         */
+        Helpers.IsBrowserIE = function () {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./;
             return regexp.test(navigator.userAgent);
         };
         /**

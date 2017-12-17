@@ -9,10 +9,10 @@
             this._subMaterials = value;
             this._hookArray(value);
         }
-        
+
         constructor(name: string, scene: Scene) {
             super(name, scene, true);
-            
+
             scene.multiMaterials.push(this);
 
             this.subMaterials = new Array<Material>();
@@ -38,7 +38,7 @@
 
                 return deleted;
             }
-        }    
+        }
 
         // Properties
         public getSubMaterial(index: number): Nullable<Material> {
@@ -52,10 +52,11 @@
         public getActiveTextures(): BaseTexture[] {
             return super.getActiveTextures().concat(...this.subMaterials.map(subMaterial => {
                 if (subMaterial) {
-                return subMaterial.getActiveTextures();
-            } else {
-                return [];
-            }}));
+                    return subMaterial.getActiveTextures();
+                } else {
+                    return [];
+                }
+            }));
         }
 
         // Methods
@@ -105,8 +106,9 @@
 
             serializationObject.name = this.name;
             serializationObject.id = this.id;
-            serializationObject.tags = Tags.GetTags(this);
-
+            if (Tags) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
             serializationObject.materials = [];
 
             for (var matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {

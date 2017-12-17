@@ -1,4 +1,5 @@
 ﻿/// <reference path="../dist/preview release/babylon.d.ts" />
+/// <reference path="../dist/preview release/loaders/babylon.glTFFileLoader.d.ts" />
 
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
@@ -21,7 +22,7 @@ if (BABYLON.Engine.isSupported()) {
     var currentPluginName;
     var toExecuteAfterSceneCreation;
 
-    canvas.addEventListener("contextmenu", function(evt) {
+    canvas.addEventListener("contextmenu", function (evt) {
         evt.preventDefault();
     }, false);
 
@@ -32,14 +33,14 @@ if (BABYLON.Engine.isSupported()) {
     if (!currentHelpCounter) currentHelpCounter = 0;
 
     // Setting up some GLTF values
-    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(plugin) {
+    BABYLON.GLTFFileLoader.IncrementalLoading = false;
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
         currentPluginName = plugin.name;
 
-        if (plugin.name !== "gltf") {
-            return;
+        if (plugin.name === "gltf" && plugin instanceof BABYLON.GLTFFileLoader) {
+            plugin.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.ALL;
+            plugin.compileMaterials = true;
         }
-
-        plugin.compileMaterials = true;
     });
 
     // Resize
@@ -71,6 +72,11 @@ if (BABYLON.Engine.isSupported()) {
         // Fix for IE, otherwise it will change the default filter for files selection after first use
         htmlInput.value = "";
 
+        // removing glTF created camera
+        if (currentScene.activeCamera && currentPluginName === "gltf") {
+            currentScene.activeCamera.dispose();
+            currentScene.activeCamera = null;
+        }
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
@@ -94,7 +100,7 @@ if (BABYLON.Engine.isSupported()) {
             currentScene.activeCamera.pinchDeltaPercentage = 0.01;
         }
 
-        currentScene.activeCamera.attachControl(canvas); 
+        currentScene.activeCamera.attachControl(canvas);
 
         // Environment
         if (currentPluginName === "gltf") {
@@ -230,7 +236,7 @@ if (BABYLON.Engine.isSupported()) {
     }
 }
 
-function sizeScene () {
+function sizeScene() {
     let divInspWrapper = document.getElementsByClassName('insp-wrapper')[0];
     if (divInspWrapper) {
         let divFooter = document.getElementsByClassName('footer')[0];

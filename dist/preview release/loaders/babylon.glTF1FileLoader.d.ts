@@ -1,43 +1,95 @@
 
 declare module BABYLON {
     enum GLTFLoaderCoordinateSystemMode {
+        /**
+         * Automatically convert the glTF right-handed data to the appropriate system based on the current coordinate system mode of the scene.
+         */
         AUTO = 0,
-        PASS_THROUGH = 1,
-        FORCE_RIGHT_HANDED = 2,
+        /**
+         * Sets the useRightHandedSystem flag on the scene.
+         */
+        FORCE_RIGHT_HANDED = 1,
+    }
+    enum GLTFLoaderAnimationStartMode {
+        /**
+         * No animation will start.
+         */
+        NONE = 0,
+        /**
+         * The first animation will start.
+         */
+        FIRST = 1,
+        /**
+         * All animations will start.
+         */
+        ALL = 2,
     }
     interface IGLTFLoaderData {
         json: Object;
         bin: Nullable<ArrayBufferView>;
     }
     interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void) => void;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
         static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
+        /**
+         * Raised when the asset has been parsed.
+         * The data.json property stores the glTF JSON.
+         * The data.bin property stores the BIN chunk from a glTF binary or null if the input is not a glTF binary.
+         */
         onParsed: (data: IGLTFLoaderData) => void;
-        static HomogeneousCoordinates: boolean;
         static IncrementalLoading: boolean;
+        static HomogeneousCoordinates: boolean;
+        /**
+         * The coordinate system mode (AUTO, FORCE_RIGHT_HANDED).
+         */
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        /**
+         * The animation start mode (NONE, FIRST, ALL).
+         */
+        animationStartMode: GLTFLoaderAnimationStartMode;
+        /**
+         * Set to true to compile materials before raising the success callback.
+         */
         compileMaterials: boolean;
-        compileShadowGenerators: boolean;
+        /**
+         * Set to true to also compile materials with clip planes.
+         */
         useClipPlane: boolean;
+        /**
+         * Set to true to compile shadow generators before raising the success callback.
+         */
+        compileShadowGenerators: boolean;
+        /**
+         * Raised when the loader creates a mesh after parsing the glTF properties of the mesh.
+         */
         onMeshLoaded: (mesh: AbstractMesh) => void;
+        /**
+         * Raised when the loader creates a texture after parsing the glTF properties of the texture.
+         */
         onTextureLoaded: (texture: BaseTexture) => void;
+        /**
+         * Raised when the loader creates a material after parsing the glTF properties of the material.
+         */
         onMaterialLoaded: (material: Material) => void;
         /**
-         * Raised when the asset is completely loaded, just before the loader is disposed.
+         * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete just after onSuccess.
+         * For assets without LODs, raised when the model is complete, immediately after onSuccess.
          */
         onComplete: () => void;
         private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
+        /**
+         * Disposes the loader, releases resources during load, and cancels any outstanding requests.
+         */
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;

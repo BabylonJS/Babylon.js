@@ -149,6 +149,17 @@
             return this._source;
         }
 
+        public get isUnIndexed(): boolean {
+            return this._unIndexed;
+        }
+
+        public set isUnIndexed(value: boolean) {
+            if (this._unIndexed !== value) {
+                this._unIndexed = value;
+                this._markSubMeshesAsAttributesDirty();
+            }
+        }
+
         /**
          * @constructor
          * @param {string} name The value used by scene.getMeshByName() to do a lookup.
@@ -178,7 +189,7 @@
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
 
                 // Tags
-                if (Tags.HasTags(source)) {
+                if (Tags && Tags.HasTags(source)) {
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
 
@@ -665,15 +676,19 @@
 
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
-         * This means the mesh underlying bounding box and sphere are recomputed.   
-         * Returns the Mesh.  
+         * This means the mesh underlying bounding box and sphere are recomputed.
+         * Returns the Mesh.
          */
         public refreshBoundingInfo(): Mesh {
+            return this._refreshBoundingInfo(false);
+        }
+
+        public _refreshBoundingInfo(applySkeleton: boolean): Mesh {
             if (this._boundingInfo && this._boundingInfo.isLocked) {
                 return this;
             }
-            var data = this.getVerticesData(VertexBuffer.PositionKind);
 
+            var data = this._getPositionData(applySkeleton);
             if (data) {
                 var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
                 this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
@@ -687,6 +702,55 @@
 
             this._updateBoundingInfo();
             return this;
+        }
+
+        private _getPositionData(applySkeleton: boolean): Nullable<FloatArray> {
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (data && applySkeleton && this.skeleton) {
+                data = data.slice();
+
+                var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                if (matricesWeightsData && matricesIndicesData) {
+                    var needExtras = this.numBoneInfluencers > 4;
+                    var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                    var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+
+                    var skeletonMatrices = this.skeleton.getTransformMatrices(this);
+
+                    var tempVector = Tmp.Vector3[0];
+                    var finalMatrix = Tmp.Matrix[0];
+                    var tempMatrix = Tmp.Matrix[1];
+
+                    var matWeightIdx = 0;
+                    for (var index = 0; index < data.length; index += 3, matWeightIdx += 4) {
+                        finalMatrix.reset();
+
+                        var inf: number;
+                        var weight: number;
+                        for (inf = 0; inf < 4; inf++) {
+                            weight = matricesWeightsData[matWeightIdx + inf];
+                            if (weight <= 0) break;
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            finalMatrix.addToSelf(tempMatrix);
+                        }
+                        if (needExtras) {
+                            for (inf = 0; inf < 4; inf++) {
+                                weight = matricesWeightsExtraData![matWeightIdx + inf];
+                                if (weight <= 0) break;
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
+                        }
+
+                        Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                        tempVector.toArray(data, index);
+                    }
+                }
+            }
+
+            return data;
         }
 
         public _createGlobalSubMesh(force: boolean): Nullable<SubMesh> {
@@ -997,25 +1061,14 @@
             let scene = this.getScene();
             let engine = scene.getEngine();
 
-            // Draw order
-            switch (fillMode) {
-                case Material.PointFillMode:
-                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    break;
-                case Material.WireFrameFillMode:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
-                    }
-                    break;
-
-                default:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
-                    }
+            if (this._unIndexed || fillMode == Material.PointFillMode) {
+                // or triangles as points
+                engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            } else if (fillMode == Material.WireFrameFillMode) {
+                // Triangles as wireframe
+                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+            } else {
+                engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
 
             if (scene._isAlternateRenderingEnabled && !alternate) {
@@ -1386,13 +1439,13 @@
             else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
-                this._queueLoad(this, scene);
+                this._queueLoad(scene);
             }
             return this;
         }
 
-        private _queueLoad(mesh: Mesh, scene: Scene): Mesh {
-            scene._addPendingData(mesh);
+        private _queueLoad(scene: Scene): Mesh {
+            scene._addPendingData(this);
 
             var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
@@ -1529,7 +1582,7 @@
          * Modifies the mesh geometry according to its own current World Matrix.  
          * The mesh World Matrix is then reset.
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
-         * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform 
+         * tuto : tuto : http://doc.babylonjs.com/resources/baking_transformations
          * Note that, under the hood, this method sets a new VertexBuffer each call.   
          * Returns the Mesh.  
          */
@@ -2062,6 +2115,7 @@
             }
 
             // Geometry
+            serializationObject.isUnIndexed = this.isUnIndexed;
             var geometry = this._geometry;
             if (geometry) {
                 var geometryId = geometry.id;
@@ -2121,6 +2175,7 @@
                 var instance = this.instances[index];
                 var serializationInstance: any = {
                     name: instance.name,
+                    id: instance.id,
                     position: instance.position.asArray(),
                     scaling: instance.scaling.asArray()
                 };
@@ -2321,6 +2376,7 @@
             }
 
             // Geometry
+            mesh.isUnIndexed = !!parsedMesh.isUnIndexed;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
             if (parsedMesh.delayLoadingFile) {
@@ -2420,7 +2476,6 @@
                 mesh.layerMask = 0x0FFFFFFF;
             }
 
-
             // Physics
             if (parsedMesh.physicsImpostor) {
                 mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
@@ -2435,6 +2490,10 @@
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
+
+                    if (parsedInstance.id) {
+                        instance.id = parsedInstance.id;
+                    }
 
                     if (Tags) {
                         Tags.AddTagsTo(instance, parsedInstance.tags);
@@ -3115,10 +3174,6 @@
             var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
             var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
-            if (!matricesWeightsExtraData || !matricesIndicesExtraData) {
-                return this;
-            }
-
             var skeletonMatrices = skeleton.getTransformMatrices(this);
 
             var tempVector3 = Vector3.Zero();
@@ -3139,9 +3194,9 @@
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData![matWeightIdx + inf];
                         if (weight > 0) {
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
                         } else break;

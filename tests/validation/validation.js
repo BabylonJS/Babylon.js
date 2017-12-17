@@ -104,6 +104,7 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
     currentScene.executeWhenReady(function () {
         var renderCount = test.renderCount || 1;
 
+        currentScene.useConstantAnimationDeltaTime = true;
         engine.runRenderLoop(function () {
             currentScene.render();
             renderCount--;
