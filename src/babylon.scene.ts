@@ -181,6 +181,7 @@
         public forceShowBoundingBoxes = false;
         public clipPlane: Nullable<Plane>;
         public animationsEnabled = true;
+        public useConstantAnimationDeltaTime = false;
         public constantlyUpdateMeshUnderPointer = false;
 
         public hoverCursor = "pointer";
@@ -484,7 +485,7 @@
 
         public get gamepadManager(): GamepadManager {
             if (!this._gamepadManager) {
-                this._gamepadManager = new GamepadManager();
+                this._gamepadManager = new GamepadManager(this);
             }
 
             return this._gamepadManager;
@@ -1328,6 +1329,7 @@
             let evt = new PointerEvent("pointerup");
             let clickInfo = new ClickInfo();
             clickInfo.singleClick = true;
+            clickInfo.ignore = true;
 
             return this._processPointerUp(pickResult, evt, clickInfo);
         }
@@ -2069,7 +2071,7 @@
                 }
                 this._animationTimeLast = now;
             }
-            var deltaTime = (now - this._animationTimeLast) * this.animationTimeScale;
+            var deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
             this._animationTime += deltaTime;
             this._animationTimeLast = now;
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -3376,7 +3378,7 @@
                 let defaultFrameTime = 1000 / 60; // frame time in MS
 
                 if (this._physicsEngine) {
-                    defaultFrameTime = this._physicsEngine.getTimeStep() / 1000; //timestep in physics engine is in seconds
+                    defaultFrameTime = this._physicsEngine.getTimeStep() * 1000;
                 }
                 let stepsTaken = 0;
 
@@ -3396,28 +3398,24 @@
                     // Physics
                     if (this._physicsEngine) {
                         this.onBeforePhysicsObservable.notifyObservers(this);
-                        this._physicsEngine._step(defaultFPS);
+                        this._physicsEngine._step(defaultFrameTime / 1000);
                         this.onAfterPhysicsObservable.notifyObservers(this);
                     }
 
                     this.onAfterStepObservable.notifyObservers(this);
                     this._currentStepId++;
 
-                    if ((internalSteps > 1) && (stepsTaken != internalSteps - 1)) {
-                        this._evaluateActiveMeshes();
-                    }
-
                     stepsTaken++;
                     deltaTime -= defaultFrameTime;
 
-                } while (deltaTime > 0 && stepsTaken < maxSubSteps);
+                } while (deltaTime > 0 && stepsTaken < internalSteps);
 
-                this._timeAccumulator = deltaTime;
+                this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
 
             }
             else {
                 // Animations
-                var deltaTime = Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+                var deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
                 this._animationRatio = deltaTime * (60.0 / 1000.0);
                 this._animate();
                 this.onAfterAnimationsObservable.notifyObservers(this);
@@ -3428,6 +3426,11 @@
                     this._physicsEngine._step(deltaTime / 1000.0);
                     this.onAfterPhysicsObservable.notifyObservers(this);
                 }
+            }
+
+            // update gamepad manager
+            if (this._gamepadManager && this._gamepadManager._isMonitoring) {
+                this._gamepadManager._checkGamepadsStatus();
             }
 
             // Before render
@@ -3921,7 +3924,7 @@
                 this._engine.scenes.splice(index, 1);
             }
 
-            this._engine.wipeCaches();
+            this._engine.wipeCaches(true);
             this._isDisposed = true;
         }
 
@@ -4154,7 +4157,7 @@
             return pickingInfo || new PickingInfo();
         }
 
-        private _tempPickingRay: Ray;
+        private _tempPickingRay: Nullable<Ray> = BABYLON.Ray ? Ray.Zero() : null;
 
         /** Launch a ray to try to pick a mesh in the scene
          * @param x position on screen
@@ -4164,13 +4167,13 @@
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-            if (!this._tempPickingRay) {
-                this._tempPickingRay = Ray.Zero();
+            if (!BABYLON.PickingInfo) {
+                return null;
             }
 
             return this._internalPick(world => {
-                this.createPickingRayToRef(x, y, world, this._tempPickingRay, camera || null);
-                return this._tempPickingRay;
+                this.createPickingRayToRef(x, y, world, this._tempPickingRay!, camera || null);
+                return this._tempPickingRay!;
             }, predicate, fastCheck);
         }
 
@@ -4182,12 +4185,9 @@
          * @param camera camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pickSprite(x: number, y: number, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            if (!this._tempPickingRay) {
-                this._tempPickingRay = Ray.Zero();
-            }
-            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay, camera);
+            this.createPickingRayInCameraSpaceToRef(x, y, this._tempPickingRay!, camera);
 
-            return this._internalPickSprites(this._tempPickingRay, predicate, fastCheck, camera);
+            return this._internalPickSprites(this._tempPickingRay!, predicate, fastCheck, camera);
         }
 
         private _cachedRayForTransform: Ray;
@@ -4472,7 +4472,7 @@
             return null;
         }
 
-        public createDefaultVRExperience(webVROptions: WebVROptions = {}): VRExperienceHelper {
+        public createDefaultVRExperience(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
             return new BABYLON.VRExperienceHelper(this, webVROptions);
         }
 
@@ -4489,7 +4489,7 @@
 
             for (var i in list) {
                 var item = list[i];
-                if (Tags.MatchesQuery(item, tagsQuery)) {
+                if (Tags && Tags.MatchesQuery(item, tagsQuery)) {
                     listByTags.push(item);
                     forEach(item);
                 }

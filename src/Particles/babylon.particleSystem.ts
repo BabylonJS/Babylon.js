@@ -560,7 +560,7 @@
                 engine.setDepthWrite(true);
             }
 
-            engine.draw(true, 0, this.particles.length * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, this.particles.length * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
             return this.particles.length;
@@ -672,6 +672,15 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
+            serializationObject.startSpriteCellID = this.startSpriteCellID;
+            serializationObject.endSpriteCellID = this.endSpriteCellID;
+            serializationObject.spriteCellLoop = this.spriteCellLoop;
+            serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
+            serializationObject.spriteCellWidth = this.spriteCellWidth;
+            serializationObject.spriteCellHeight = this.spriteCellHeight;
+
+            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
+
             return serializationObject;
         }
 
@@ -684,7 +693,7 @@
                 var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
             }
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom, parsedParticleSystem.isAnimationSheetEnabled);
             particleSystem.customShader = program;
 
             if (parsedParticleSystem.id) {
@@ -743,6 +752,13 @@
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
+
+            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
+            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+            particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;
+            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
+            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
 
             if (!particleSystem.preventAutoStart) {
                 particleSystem.start();

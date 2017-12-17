@@ -33,6 +33,8 @@
         public static XBOX = 2;
         public static POSE_ENABLED = 3;
 
+        protected _invertLeftStickY:boolean = false;
+
         public get isConnected(): boolean {
             return this._isConnected;
         }
@@ -81,6 +83,9 @@
         public update() {
             if (this._leftStick) {
                 this.leftStick = { x: this.browserGamepad.axes[this._leftStickAxisX], y: this.browserGamepad.axes[this._leftStickAxisY] };
+                if(this._invertLeftStickY){
+                    this.leftStick.y *= -1;
+                }
             }
             if (this._rightStick) {
                 this.rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
@@ -137,6 +142,12 @@
             for (var index = 0; index < this._buttons.length; index++) {
                 this._buttons[index] = this._setButtonValue(this.browserGamepad.buttons[index].value, this._buttons[index], index);
             }
+        }
+
+        public dispose(){
+            super.dispose();
+            this.onButtonDownObservable.clear();
+            this.onButtonUpObservable.clear();
         }
     }
 }

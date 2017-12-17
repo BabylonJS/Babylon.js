@@ -37,6 +37,8 @@ module BABYLON {
         defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
         useCustomVRButton?: boolean; // if you don't want to use the default VR button of the helper
         customVRButton?: HTMLButtonElement; //if you'd like to provide your own button to the VRHelper
+        rayLength?: number; // to change the length of the ray for gaze/controllers.
+        defaultHeight?: number; // to change the default offset from the ground to account for user's height
     }
 
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
@@ -50,9 +52,20 @@ module BABYLON {
 
         protected _descendants: Array<Node> = [];
 
+        // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
+        private _deviceRoomPosition = Vector3.Zero();
+        private _deviceRoomRotationQuaternion = Quaternion.Identity(); 
+
+        private _standingMatrix:Nullable<Matrix> = null;
+
+        // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion: Quaternion;
+        public deviceRotationQuaternion = Quaternion.Identity();        
+
         public deviceScaleFactor: number = 1;
+
+        private _deviceToWorld = Matrix.Identity();
+        private _worldToDevice = Matrix.Identity();
 
         public controllers: Array<WebVRController> = [];
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
@@ -62,9 +75,15 @@ module BABYLON {
 
         private _lightOnControllers: BABYLON.HemisphericLight;
 
+        private _defaultHeight = 0;
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
-
+            this._cache.position = Vector3.Zero();
+            if(webVROptions.defaultHeight){
+                this._defaultHeight = webVROptions.defaultHeight;
+                this.position.y = this._defaultHeight;
+            }
+            
             this.minZ = 0.1;
 
             //legacy support - the compensation boolean was removed.
@@ -84,7 +103,6 @@ module BABYLON {
             }
 
             this.rotationQuaternion = new Quaternion();
-            this.deviceRotationQuaternion = new Quaternion();
 
             if (this.webVROptions && this.webVROptions.positionScale) {
                 this.deviceScaleFactor = this.webVROptions.positionScale;
@@ -146,6 +164,40 @@ module BABYLON {
             });
         }
 
+        public deviceDistanceToRoomGround = ()=>{
+            if(this._standingMatrix){
+                // Add standing matrix offset to get real offset from ground in room
+                this._standingMatrix.getTranslationToRef(this._workingVector);
+                return this._deviceRoomPosition.y+this._workingVector.y
+            }else{
+                return this._defaultHeight;
+            }
+        }
+
+        public useStandingMatrix = (callback = (bool:boolean)=>{})=>{
+            // Use standing matrix if availible
+            if(!navigator || !navigator.getVRDisplays){
+                callback(false);
+            }else{
+                navigator.getVRDisplays().then((displays:any)=>{
+                    if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
+                        callback(false);
+                    }else{
+                        this._standingMatrix = new BABYLON.Matrix();
+                        BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                        if (!this.getScene().useRightHandedSystem) {
+                            [2, 6, 8, 9, 14].forEach((num) => {
+                                if(this._standingMatrix){
+                                    this._standingMatrix.m[num] *= -1;
+                                }
+                            });
+                        }
+                        callback(true)
+                    }
+                })
+            }
+        }
+
         public dispose(): void {
             this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
             super.dispose();
@@ -179,9 +231,12 @@ module BABYLON {
             return this._rightController;
         };
 
+
+        
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
-                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.position.add(this.devicePosition)); // Need the actual rendered camera
+                // Use left eye to avoid computation to compute center on every call
+                return super.getForwardRay(length, this.leftCamera.getWorldMatrix(), this.leftCamera.globalPosition); // Need the actual rendered camera
             }
             else {
                 return super.getForwardRay(length);
@@ -201,16 +256,16 @@ module BABYLON {
         updateFromDevice(poseData: DevicePose) {
             if (poseData && poseData.orientation) {
                 this.rawPose = poseData;
-                this.deviceRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
+                this._deviceRoomRotationQuaternion.copyFromFloats(poseData.orientation[0], poseData.orientation[1], -poseData.orientation[2], -poseData.orientation[3]);
 
                 if (this.getScene().useRightHandedSystem) {
-                    this.deviceRotationQuaternion.z *= -1;
-                    this.deviceRotationQuaternion.w *= -1;
+                    this._deviceRoomRotationQuaternion.z *= -1;
+                    this._deviceRoomRotationQuaternion.w *= -1;
                 }
                 if (this.webVROptions.trackPosition && this.rawPose.position) {
-                    this.devicePosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
+                    this._deviceRoomPosition.copyFromFloats(this.rawPose.position[0], this.rawPose.position[1], -this.rawPose.position[2]);
                     if (this.getScene().useRightHandedSystem) {
-                        this.devicePosition.z *= -1;
+                        this._deviceRoomPosition.z *= -1;
                     }
                 }
             }
@@ -260,11 +315,63 @@ module BABYLON {
         public _updateRigCameras() {
             var camLeft = <TargetCamera>this._rigCameras[0];
             var camRight = <TargetCamera>this._rigCameras[1];
-            camLeft.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
-            camRight.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
+            camLeft.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
+            camRight.rotationQuaternion.copyFrom(this._deviceRoomRotationQuaternion);
 
-            camLeft.position.copyFrom(this.devicePosition);
-            camRight.position.copyFrom(this.devicePosition);
+            camLeft.position.copyFrom(this._deviceRoomPosition);
+            camRight.position.copyFrom(this._deviceRoomPosition);
+        }
+
+        private _workingVector = Vector3.Zero();
+        private _oneVector = Vector3.One();
+        private _workingMatrix = Matrix.Identity();
+        public _updateCache(ignoreParentClass?: boolean): void {
+            if(!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)){
+                // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
+                this.update();
+
+                // Set working vector to the device position in room space rotated by the new rotation
+                this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
+                Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._workingMatrix, this._workingVector);
+
+                // Subtract this vector from the current device position in world to get the translation for the device world matrix
+                this.devicePosition.subtractToRef(this._workingVector, this._workingVector)
+                Matrix.ComposeToRef(this._oneVector, this.rotationQuaternion, this._workingVector, this._deviceToWorld);             
+                
+                // Add translation from anchor position
+                this._deviceToWorld.getTranslationToRef(this._workingVector)
+                this._workingVector.addInPlace(this.position);
+                this._workingVector.subtractInPlace(this._cache.position)
+                this._deviceToWorld.setTranslation(this._workingVector)
+
+                // Set an inverted matrix to be used when updating the camera
+                this._deviceToWorld.invertToRef(this._worldToDevice)
+                
+                // Update the gamepad to ensure the mesh is updated on the same frame as camera
+                this.controllers.forEach((controller)=>{
+                    controller._deviceToWorld = this._deviceToWorld;
+                    controller.update();
+                })
+                this.update();
+            }
+
+            if (!ignoreParentClass) {
+                super._updateCache();
+            }
+        }
+        public update() {
+            // Get current device position in babylon world
+            Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
+            
+            // Get current device rotation in babylon world
+            Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
+            this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
+            Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
+
+            super.update();
+        }
+        public _getViewMatrix(): Matrix {
+            return Matrix.Identity();
         }
 
         /**
@@ -304,7 +411,8 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
-
+            
+            parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             return this._webvrViewMatrix;
         }
 
@@ -342,13 +450,24 @@ module BABYLON {
                     if (webVrController.defaultModel) {
                         webVrController.defaultModel.setEnabled(false);
                     }
+
+                    if(webVrController.hand === "right"){
+                        this._rightController = null;
+                    }
+                    if(webVrController.hand === "left"){
+                        this._rightController = null;
+                    }
+                    const controllerIndex = this.controllers.indexOf(webVrController);
+                    if (controllerIndex !== -1) {
+                        this.controllers.splice(controllerIndex, 1);
+                    }
                 }
             });
 
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-
+                    webVrController._deviceToWorld = this._deviceToWorld;
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);
@@ -382,25 +501,25 @@ module BABYLON {
                         //add to the controllers array
                         this.controllers.push(webVrController);
 
-                        //did we find enough controllers? Great! let the developer know.
-                        if (this.controllers.length >= 2) {
-                            // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
-                            // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
-                            // So we're overriding setting left & right manually to be sure
-                            let firstViveWandDetected = false;
+                        // Forced to add some control code for Vive as it doesn't always fill properly the "hand" property
+                        // Sometimes, both controllers are set correctly (left and right), sometimes none, sometimes only one of them...
+                        // So we're overriding setting left & right manually to be sure
+                        let firstViveWandDetected = false;
 
-                            for (let i = 0; i < this.controllers.length; i++) {
-                                if (this.controllers[i].controllerType === PoseEnabledControllerType.VIVE) {
-                                    if (!firstViveWandDetected) {
-                                        firstViveWandDetected = true;
-                                        this.controllers[i].hand = "left";
-                                    }
-                                    else {
-                                        this.controllers[i].hand = "right";
-                                    }
+                        for (let i = 0; i < this.controllers.length; i++) {
+                            if (this.controllers[i].controllerType === PoseEnabledControllerType.VIVE) {
+                                if (!firstViveWandDetected) {
+                                    firstViveWandDetected = true;
+                                    this.controllers[i].hand = "left";
+                                }
+                                else {
+                                    this.controllers[i].hand = "right";
                                 }
                             }
-
+                        }
+                        
+                            //did we find enough controllers? Great! let the developer know.
+                        if (this.controllers.length >= 2) {
                             this.onControllersAttachedObservable.notifyObservers(this.controllers);
                         }
                     }

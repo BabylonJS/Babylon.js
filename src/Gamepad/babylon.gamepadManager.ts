@@ -3,7 +3,7 @@
         private _babylonGamepads: Array<Gamepad> = [];
         private _oneGamepadConnected: boolean = false;
 
-        private _isMonitoring: boolean = false;
+        public _isMonitoring: boolean = false;
         private _gamepadEventSupported: boolean;
         private _gamepadSupport: () => Array<any>;
 
@@ -13,24 +13,23 @@
         private _onGamepadConnectedEvent: Nullable<(evt: any) => void>;
         private _onGamepadDisconnectedEvent: Nullable<(evt: any) => void>;
 
-        constructor() {
+        constructor(private _scene?: Scene) {
             if (!Tools.IsWindowObjectExist()) {
                 this._gamepadEventSupported = false;
-            } else  {
+            } else {
                 this._gamepadEventSupported = 'GamepadEvent' in window;
                 this._gamepadSupport = (navigator.getGamepads ||
                     navigator.webkitGetGamepads || navigator.msGetGamepads || navigator.webkitGamepads);
             }
 
-
             this.onGamepadConnectedObservable = new Observable<Gamepad>((observer) => {
                 // This will be used to raise the onGamepadConnected for all gamepads ALREADY connected
                 for (var i in this._babylonGamepads) {
                     let gamepad = this._babylonGamepads[i];
-                    if (gamepad && gamepad._isConnected) {                      
+                    if (gamepad && gamepad._isConnected) {
                         this.onGamepadConnectedObservable.notifyObserver(observer, gamepad);
                     }
-                }   
+                }
             });
 
             this._onGamepadConnectedEvent = (evt) => {
@@ -52,10 +51,10 @@
                     newGamepad = this._addNewGamepad(gamepad);
                 }
                 this.onGamepadConnectedObservable.notifyObservers(newGamepad);
-                this._startMonitoringGamepads();                
+                this._startMonitoringGamepads();
             };
 
-            this._onGamepadDisconnectedEvent  = (evt) => {
+            this._onGamepadDisconnectedEvent = (evt) => {
                 let gamepad = evt.gamepad;
 
                 // Remove the gamepad from the list of gamepads to monitor.
@@ -63,11 +62,11 @@
                     if (this._babylonGamepads[i].index === gamepad.index) {
                         let disconnectedGamepad = this._babylonGamepads[i];
                         disconnectedGamepad._isConnected = false;
-                        
+
                         this.onGamepadDisconnectedObservable.notifyObservers(disconnectedGamepad);
                         break;
                     }
-                }            
+                }
             };
 
             if (this._gamepadSupport) {
@@ -150,7 +149,10 @@
         private _startMonitoringGamepads() {
             if (!this._isMonitoring) {
                 this._isMonitoring = true;
-                this._checkGamepadsStatus();
+                //back-comp
+                if (!this._scene) {
+                    this._checkGamepadsStatus();
+                }
             }
         }
 
@@ -158,7 +160,7 @@
             this._isMonitoring = false;
         }
 
-        private _checkGamepadsStatus() {
+        public _checkGamepadsStatus() {
             // Hack to be compatible Chrome
             this._updateGamepadObjects();
 
@@ -170,7 +172,7 @@
                 gamepad.update();
             }
 
-            if (this._isMonitoring) {
+            if (this._isMonitoring && !this._scene) {
                 Tools.QueueNewFrame(() => { this._checkGamepadsStatus(); });
             }
         }
@@ -190,7 +192,7 @@
                         this._babylonGamepads[i].browserGamepad = gamepads[i];
 
                         if (!this._babylonGamepads[i].isConnected) {
-                            this._babylonGamepads[i]._isConnected = true;                            
+                            this._babylonGamepads[i]._isConnected = true;
                             this.onGamepadConnectedObservable.notifyObservers(this._babylonGamepads[i]);
                         }
                     }

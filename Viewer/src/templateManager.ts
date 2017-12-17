@@ -143,7 +143,7 @@ export class TemplateManager {
 }
 
 
-import * as Handlebars from 'handlebars/dist/handlebars.min.js';
+import * as Handlebars from '../assets/handlebars.min.js';
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper('eachInMap', function (map, block) {
     var out = '';

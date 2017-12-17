@@ -250,7 +250,7 @@
             var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // LineMesh first as it's also a Mesh...
-            if (this._mesh instanceof LinesMesh) {
+            if (BABYLON.LinesMesh && this._mesh instanceof LinesMesh) {
                 var lineMesh = <LinesMesh>this._mesh;
 
                 // Line test

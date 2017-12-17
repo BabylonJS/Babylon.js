@@ -38,7 +38,7 @@
 
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
-        
+
         public _rebuild(): void {
             let vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
@@ -48,7 +48,7 @@
             vb._rebuild();
             this._buildIndexBuffer();
         }
-        
+
         // Methods
         public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
             let camera = this._scene.activeCamera;
@@ -67,10 +67,6 @@
         }
 
         public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false): void {
-            if (!this._scene.activeCamera) {
-                return;
-            }
-
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcesses.length; index++) {
@@ -95,7 +91,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
@@ -145,7 +141,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
