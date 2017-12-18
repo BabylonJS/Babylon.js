@@ -514,12 +514,14 @@ declare module BABYLON.GUI {
         private _textVerticalAlignment;
         private _lines;
         private _resizeToFit;
+        private _lineSpacing;
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
         */
         onTextChangedObservable: Observable<TextBlock>;
         resizeToFit: boolean;
+        lineSpacing: number;
         textWrapping: boolean;
         text: string;
         textHorizontalAlignment: number;
