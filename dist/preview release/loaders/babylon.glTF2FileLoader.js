@@ -387,14 +387,6 @@ var BABYLON;
                 this._loaderPendingCount = 0;
                 this._loaderTrackers = new Array();
                 this._parent = parent;
-                if (!GLTFLoader._progressEventFactory) {
-                    if (typeof window["ProgressEvent"] === "function") {
-                        GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByConstructor;
-                    }
-                    else {
-                        GLTFLoader._progressEventFactory = GLTFLoader._createProgressEventByDocument;
-                    }
-                }
             }
             GLTFLoader.RegisterExtension = function (extension) {
                 if (GLTFLoader.Extensions[extension.name]) {
@@ -404,14 +396,6 @@ var BABYLON;
                 GLTFLoader.Extensions[extension.name] = extension;
                 // Keep the order of registration so that extensions registered first are called first.
                 GLTF2.GLTFLoaderExtension._Extensions.push(extension);
-            };
-            GLTFLoader._createProgressEventByConstructor = function (name, data) {
-                return new ProgressEvent(name, data);
-            };
-            GLTFLoader._createProgressEventByDocument = function (name, data) {
-                var event = document.createEvent("ProgressEvent");
-                event.initProgressEvent(name, false, false, data.lengthComputable, data.loaded, data.total);
-                return event;
             };
             GLTFLoader.prototype.dispose = function () {
                 if (this._disposed) {
@@ -465,21 +449,19 @@ var BABYLON;
                 if (!this._progressCallback) {
                     return;
                 }
+                var lengthComputable = true;
                 var loaded = 0;
                 var total = 0;
                 for (var _i = 0, _a = this._requests; _i < _a.length; _i++) {
                     var request = _a[_i];
-                    if (!request._loaded || !request._total) {
+                    if (request._lengthComputable === undefined || request._loaded === undefined || request._total === undefined) {
                         return;
                     }
+                    lengthComputable = lengthComputable && request._lengthComputable;
                     loaded += request._loaded;
                     total += request._total;
                 }
-                this._progressCallback(GLTFLoader._progressEventFactory("GLTFLoaderProgress", {
-                    lengthComputable: true,
-                    loaded: loaded,
-                    total: total
-                }));
+                this._progressCallback(GLTFLoader._createProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
             };
             GLTFLoader.prototype._executeWhenRenderReady = function (func) {
                 if (this._renderReady) {
@@ -1767,6 +1749,7 @@ var BABYLON;
                 }, function (event) {
                     _this._tryCatchOnError(function () {
                         if (request && !_this._renderReady) {
+                            request._lengthComputable = event.lengthComputable;
                             request._loaded = event.loaded;
                             request._total = event.total;
                             _this._onProgress();
@@ -1776,10 +1759,10 @@ var BABYLON;
                     _this._tryCatchOnError(function () {
                         throw new BABYLON.LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request);
                     });
+                }, function (oldRequest, newRequest) {
+                    _this._requests.splice(_this._requests.indexOf(oldRequest), 1, newRequest);
                 });
                 if (request) {
-                    request._loaded = null;
-                    request._total = null;
                     this._requests.push(request);
                 }
             };
@@ -1964,6 +1947,20 @@ var BABYLON;
                 }
             };
             GLTFLoader.Extensions = {};
+            // IE 11 Compatibility.
+            GLTFLoader._createProgressEvent = (typeof window["ProgressEvent"] === "function")
+                ? function (lengthComputable, loaded, total) {
+                    return new ProgressEvent("GLTFLoaderProgress", {
+                        lengthComputable: lengthComputable,
+                        loaded: loaded,
+                        total: total
+                    });
+                }
+                : function (lengthComputable, loaded, total) {
+                    var event = document.createEvent("ProgressEvent");
+                    event.initProgressEvent("GLTFLoaderProgress", false, false, lengthComputable, loaded, total);
+                    return event;
+                };
             return GLTFLoader;
         }());
         GLTF2.GLTFLoader = GLTFLoader;
