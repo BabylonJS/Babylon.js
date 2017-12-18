@@ -54,13 +54,13 @@ module BABYLON {
 
         // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
         private _deviceRoomPosition = Vector3.Zero();
-        private _deviceRoomRotationQuaternion = Quaternion.Identity(); 
+        private _deviceRoomRotationQuaternion = Quaternion.Identity();
 
-        private _standingMatrix:Nullable<Matrix> = null;
+        private _standingMatrix: Nullable<Matrix> = null;
 
         // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
-        public deviceRotationQuaternion = Quaternion.Identity();        
+        public deviceRotationQuaternion = Quaternion.Identity();
 
         public deviceScaleFactor: number = 1;
 
@@ -73,17 +73,17 @@ module BABYLON {
 
         public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
 
-        private _lightOnControllers: BABYLON.HemisphericLight;
+        private _lightOnControllers: HemisphericLight;
 
         private _defaultHeight = 0;
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
             this._cache.position = Vector3.Zero();
-            if(webVROptions.defaultHeight){
+            if (webVROptions.defaultHeight) {
                 this._defaultHeight = webVROptions.defaultHeight;
                 this.position.y = this._defaultHeight;
             }
-            
+
             this.minZ = 0.1;
 
             //legacy support - the compensation boolean was removed.
@@ -127,7 +127,7 @@ module BABYLON {
                 }
             });
 
-            if (typeof(VRFrameData) !== "undefined")
+            if (typeof (VRFrameData) !== "undefined")
                 this._frameData = new VRFrameData();
 
             /**
@@ -164,30 +164,30 @@ module BABYLON {
             });
         }
 
-        public deviceDistanceToRoomGround = ()=>{
-            if(this._standingMatrix){
+        public deviceDistanceToRoomGround = () => {
+            if (this._standingMatrix) {
                 // Add standing matrix offset to get real offset from ground in room
                 this._standingMatrix.getTranslationToRef(this._workingVector);
-                return this._deviceRoomPosition.y+this._workingVector.y
-            }else{
+                return this._deviceRoomPosition.y + this._workingVector.y
+            } else {
                 return this._defaultHeight;
             }
         }
 
-        public useStandingMatrix = (callback = (bool:boolean)=>{})=>{
+        public useStandingMatrix = (callback = (bool: boolean) => { }) => {
             // Use standing matrix if availible
-            if(!navigator || !navigator.getVRDisplays){
+            if (!navigator || !navigator.getVRDisplays) {
                 callback(false);
-            }else{
-                navigator.getVRDisplays().then((displays:any)=>{
-                    if(!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform){
+            } else {
+                navigator.getVRDisplays().then((displays: any) => {
+                    if (!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform) {
                         callback(false);
-                    }else{
-                        this._standingMatrix = new BABYLON.Matrix();
-                        BABYLON.Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                    } else {
+                        this._standingMatrix = new Matrix();
+                        Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
                         if (!this.getScene().useRightHandedSystem) {
                             [2, 6, 8, 9, 14].forEach((num) => {
-                                if(this._standingMatrix){
+                                if (this._standingMatrix) {
                                     this._standingMatrix.m[num] *= -1;
                                 }
                             });
@@ -232,7 +232,7 @@ module BABYLON {
         };
 
 
-        
+
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
                 // Use left eye to avoid computation to compute center on every call
@@ -326,7 +326,7 @@ module BABYLON {
         private _oneVector = Vector3.One();
         private _workingMatrix = Matrix.Identity();
         public _updateCache(ignoreParentClass?: boolean): void {
-            if(!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)){
+            if (!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)) {
                 // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
                 this.update();
 
@@ -336,8 +336,8 @@ module BABYLON {
 
                 // Subtract this vector from the current device position in world to get the translation for the device world matrix
                 this.devicePosition.subtractToRef(this._workingVector, this._workingVector)
-                Matrix.ComposeToRef(this._oneVector, this.rotationQuaternion, this._workingVector, this._deviceToWorld);             
-                
+                Matrix.ComposeToRef(this._oneVector, this.rotationQuaternion, this._workingVector, this._deviceToWorld);
+
                 // Add translation from anchor position
                 this._deviceToWorld.getTranslationToRef(this._workingVector)
                 this._workingVector.addInPlace(this.position);
@@ -346,9 +346,9 @@ module BABYLON {
 
                 // Set an inverted matrix to be used when updating the camera
                 this._deviceToWorld.invertToRef(this._worldToDevice)
-                
+
                 // Update the gamepad to ensure the mesh is updated on the same frame as camera
-                this.controllers.forEach((controller)=>{
+                this.controllers.forEach((controller) => {
                     controller._deviceToWorld = this._deviceToWorld;
                     controller.update();
                 })
@@ -362,7 +362,7 @@ module BABYLON {
         public update() {
             // Get current device position in babylon world
             Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
-            
+
             // Get current device rotation in babylon world
             Matrix.FromQuaternionToRef(this._deviceRoomRotationQuaternion, this._workingMatrix);
             this._workingMatrix.multiplyToRef(this._deviceToWorld, this._workingMatrix)
@@ -411,7 +411,7 @@ module BABYLON {
 
                 this._webvrViewMatrix.invert();
             }
-            
+
             parentCamera._worldToDevice.multiplyToRef(this._webvrViewMatrix, this._webvrViewMatrix);
             return this._webvrViewMatrix;
         }
@@ -444,17 +444,17 @@ module BABYLON {
 
             let manager = this.getScene().gamepadManager;
             this._onGamepadDisconnectedObserver = manager.onGamepadDisconnectedObservable.add((gamepad) => {
-                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
 
                     if (webVrController.defaultModel) {
                         webVrController.defaultModel.setEnabled(false);
                     }
 
-                    if(webVrController.hand === "right"){
+                    if (webVrController.hand === "right") {
                         this._rightController = null;
                     }
-                    if(webVrController.hand === "left"){
+                    if (webVrController.hand === "left") {
                         this._rightController = null;
                     }
                     const controllerIndex = this.controllers.indexOf(webVrController);
@@ -465,7 +465,7 @@ module BABYLON {
             });
 
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
-                if (gamepad.type === BABYLON.Gamepad.POSE_ENABLED) {
+                if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
                     webVrController._deviceToWorld = this._deviceToWorld;
                     if (this.webVROptions.controllerMeshes) {
@@ -477,7 +477,7 @@ module BABYLON {
                                 this.onControllerMeshLoadedObservable.notifyObservers(webVrController);
                                 if (this.webVROptions.defaultLightingOnControllers) {
                                     if (!this._lightOnControllers) {
-                                        this._lightOnControllers = new BABYLON.HemisphericLight("vrControllersLight", new BABYLON.Vector3(0, 1, 0), this.getScene());
+                                        this._lightOnControllers = new HemisphericLight("vrControllersLight", new Vector3(0, 1, 0), this.getScene());
                                     }
                                     let activateLightOnSubMeshes = function (mesh: AbstractMesh, light: HemisphericLight) {
                                         let children = mesh.getChildren();
@@ -517,8 +517,8 @@ module BABYLON {
                                 }
                             }
                         }
-                        
-                            //did we find enough controllers? Great! let the developer know.
+
+                        //did we find enough controllers? Great! let the developer know.
                         if (this.controllers.length >= 2) {
                             this.onControllersAttachedObservable.notifyObservers(this.controllers);
                         }

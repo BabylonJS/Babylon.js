@@ -121,7 +121,7 @@
     /**
      * Background material used to create an efficient environement around your scene.
      */
-    export class BackgroundMaterial extends BABYLON.PushMaterial {
+    export class BackgroundMaterial extends PushMaterial {
 
         /**
          * Standard reflectance value at parallel view angle.
@@ -139,7 +139,7 @@
         @serializeAsColor3()
         protected _primaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public primaryColor = BABYLON.Color3.White();
+        public primaryColor = Color3.White();
 
         /**
          * Key light Level (allowing HDR output of the background)
@@ -154,7 +154,7 @@
         @serializeAsColor3()
         protected _secondaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public secondaryColor = BABYLON.Color3.Gray();
+        public secondaryColor = Color3.Gray();
 
         /**
          * Secondary light Level (allowing HDR output of the background)
@@ -170,7 +170,7 @@
         @serializeAsColor3()
         protected _tertiaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public tertiaryColor = BABYLON.Color3.Black();
+        public tertiaryColor = Color3.Black();
 
         /**
          * Tertiary light Level (allowing HDR output of the background)
@@ -199,7 +199,7 @@
         protected _reflectionBlur: float;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionBlur: float = 0;
-        
+
         /**
          * Diffuse Texture used in the material.
          * Should be author in a specific way for the best result (refer to the documentation).
@@ -301,7 +301,7 @@
          */
         public set reflectionStandardFresnelWeight(value: number) {
             let reflectionWeight = value;
-    
+
             if (reflectionWeight < 0.5) {
                 reflectionWeight = reflectionWeight * 2.0;
                 this.reflectionReflectance0 = BackgroundMaterial.standardReflectance0 * reflectionWeight;
@@ -451,7 +451,7 @@
         public set cameraExposure(value: float) {
             this._imageProcessingConfiguration.exposure = value;
         };
-        
+
         /**
          * Gets The camera contrast used on this material.
          */
@@ -465,7 +465,7 @@
         public set cameraContrast(value: float) {
             this._imageProcessingConfiguration.contrast = value;
         }
-        
+
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
@@ -500,14 +500,14 @@
 
         // Temp values kept as cache in the material.
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _reflectionControls = BABYLON.Vector4.Zero();
+        private _reflectionControls = Vector4.Zero();
 
         /**
          * constructor
          * @param name The name of the material
          * @param scene The scene to add the material to
          */
-        constructor(name: string, scene: BABYLON.Scene) {
+        constructor(name: string, scene: Scene) {
             super(name, scene);
 
             // Setup the default processing configuration to the scene.
@@ -550,7 +550,7 @@
          * @param subMesh The submesh to check against
          * @param useInstances Specify wether or not the material is used with instances
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean { 
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -570,11 +570,11 @@
             }
 
             var engine = scene.getEngine();
-            
+
             // Lights
             MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
             defines._needNormals = true;
-            
+
             // Textures
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
@@ -604,7 +604,7 @@
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
-                        
+
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                         defines.REFLECTIONBLUR = this._reflectionBlur > 0;
@@ -701,7 +701,7 @@
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, false);
 
-             // Attribs
+            // Attribs
             if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
                 if (mesh) {
                     if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -750,18 +750,18 @@
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", 
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vClipPlane", "mBones", 
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vClipPlane", "mBones",
 
-                        "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
-                        "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
+                    "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
+                    "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
 
-                        "shadowLevel", "alpha",
+                    "shadowLevel", "alpha",
 
-                        "vBackgroundCenter", "vReflectionControl",
+                    "vBackgroundCenter", "vReflectionControl",
 
-                        "vDiffuseInfos", "diffuseMatrix",
+                    "vDiffuseInfos", "diffuseMatrix",
                 ];
 
                 var samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
@@ -771,10 +771,10 @@
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
@@ -798,7 +798,7 @@
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
                 }, engine), defines);
-                
+
                 this.buildUniformLayout();
             }
 
@@ -830,7 +830,7 @@
             this._uniformBuffer.addUniform("alpha", 1);
             this._uniformBuffer.addUniform("vBackgroundCenter", 3);
             this._uniformBuffer.addUniform("vReflectionControl", 4);
-        
+
             this._uniformBuffer.create();
         }
 
@@ -873,7 +873,7 @@
             var effect = subMesh.effect;
             if (!effect) {
                 return;
-            }            
+            }
             this._activeEffect = effect;
 
             // Matrices
@@ -902,8 +902,8 @@
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
 
-                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos", 
-                                reflectionTexture.getSize().width, 
+                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
+                                reflectionTexture.getSize().width,
                                 reflectionTexture.lodGenerationScale,
                                 reflectionTexture.lodGenerationOffset);
                         }
@@ -952,7 +952,7 @@
 
                 // Clip plane
                 MaterialHelper.BindClipPlane(this._activeEffect, scene);
-                
+
                 MaterialHelper.BindEyePosition(effect, scene);
             }
 

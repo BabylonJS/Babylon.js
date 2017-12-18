@@ -273,7 +273,7 @@
             }
 
             //update the up vector!
-            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         }
 
         public _getViewMatrix(): Matrix {

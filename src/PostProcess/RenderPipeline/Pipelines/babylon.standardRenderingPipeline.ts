@@ -53,7 +53,7 @@
         @serialize()
         public volumetricLightBlurScale: number = 64.0;
 
-        public sourceLight: Nullable<SpotLight | DirectionalLight> = null;
+        public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
 
         @serialize()
         public hdrMinimumLuminance: number = 1.0;
@@ -187,7 +187,7 @@
                     return;
                 }
             }
-        
+
             this._vlsEnabled = enabled;
             this._buildPipeline();
         }
@@ -211,7 +211,7 @@
             return this._volumetricLightStepsCount;
         }
 
-        public set volumetricLightStepsCount(count: number) {
+        public set volumetricLightStepsCount(count: number)  {
             if (this.volumetricLightPostProcess) {
                 this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
             }
@@ -228,7 +228,7 @@
             if (this.motionBlurPostProcess) {
                 this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
             }
-            
+
             this._motionBlurSamples = samples;
         }
 
@@ -242,7 +242,7 @@
          */
         constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
-            this._cameras = cameras || [];
+            this._cameras = cameras ||  [];
 
             // Initialize
             this._scene = scene;
@@ -282,7 +282,7 @@
             if (this._vlsEnabled) {
                 // Create volumetric light
                 this._createVolumetricLightPostProcess(scene, ratio);
-        
+
                 // Create volumetric light final post-process
                 this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
@@ -314,7 +314,7 @@
                 this.lensFlareFinalPostProcess = new PostProcess("HDRPostLensFlareDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostLensFlareDepthOfFieldSource", () => { return this.lensFlareFinalPostProcess; }, true));
             }
-        
+
             if (this._hdrEnabled) {
                 // Create luminance
                 this._createLuminancePostProcesses(scene, this._floatTextureType);
@@ -401,8 +401,8 @@
         private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
             var engine = scene.getEngine();
 
-            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
             blurX.onActivateObservable.add(() => {
                 let dw = blurX.width / engine.getRenderWidth();
@@ -446,7 +446,7 @@
             // Base post-process
             this.volumetricLightPostProcess = new PostProcess("HDRVLS", "standard",
                 ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"],
-                ["shadowMapSampler", "positionSampler" ],
+                ["shadowMapSampler", "positionSampler"],
                 ratio / 8,
                 null,
                 Texture.BILINEAR_SAMPLINGMODE,
@@ -464,7 +464,7 @@
 
                     effect.setColor3("sunColor", this.sourceLight.diffuse);
                     effect.setVector3("sunDirection", this.sourceLight.getShadowDirection());
-                    
+
                     effect.setVector3("cameraPosition", this._scene.activeCamera.globalPosition);
                     effect.setMatrix("shadowViewProjection", generator.getTransformMatrix());
 
@@ -758,13 +758,13 @@
                 if (this.brightPassPostProcess) { this.brightPassPostProcess.dispose(camera); }
                 if (this.textureAdderPostProcess) { this.textureAdderPostProcess.dispose(camera); }
                 if (this.textureAdderFinalPostProcess) { this.textureAdderFinalPostProcess.dispose(camera); }
-                
+
                 if (this.volumetricLightPostProcess) { this.volumetricLightPostProcess.dispose(camera); }
                 if (this.volumetricLightSmoothXPostProcess) { this.volumetricLightSmoothXPostProcess.dispose(camera); }
                 if (this.volumetricLightSmoothYPostProcess) { this.volumetricLightSmoothYPostProcess.dispose(camera); }
                 if (this.volumetricLightMergePostProces) { this.volumetricLightMergePostProces.dispose(camera); }
                 if (this.volumetricLightFinalPostProcess) { this.volumetricLightFinalPostProcess.dispose(camera); }
-            
+
                 if (this.lensFlarePostProcess) { this.lensFlarePostProcess.dispose(camera); }
                 if (this.lensFlareComposePostProcess) { this.lensFlareComposePostProcess.dispose(camera); }
 
@@ -775,7 +775,7 @@
                 if (this.luminancePostProcess) { this.luminancePostProcess.dispose(camera); }
                 if (this.hdrPostProcess) { this.hdrPostProcess.dispose(camera); }
                 if (this.hdrFinalPostProcess) { this.hdrFinalPostProcess.dispose(camera); }
-            
+
                 if (this.depthOfFieldPostProcess) { this.depthOfFieldPostProcess.dispose(camera); }
 
                 if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); }
