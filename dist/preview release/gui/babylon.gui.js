@@ -3183,13 +3183,6 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
-            Object.defineProperty(TextBlock.prototype, "lineSpacing", {
-                set: function (value) {
-                    this._lineSpacing = value;
-                },
-                enumerable: true,
-                configurable: true
-            });
             Object.defineProperty(TextBlock.prototype, "textWrapping", {
                 get: function () {
                     return this._textWrapping;
@@ -3243,6 +3236,16 @@ var BABYLON;
                     }
                     this._textVerticalAlignment = value;
                     this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "lineSpacing", {
+                get: function () {
+                    return this._lineSpacing;
+                },
+                set: function (value) {
+                    this._lineSpacing = value;
                 },
                 enumerable: true,
                 configurable: true

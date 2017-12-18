@@ -526,11 +526,11 @@ declare module BABYLON.GUI {
         */
         onTextChangedObservable: Observable<TextBlock>;
         resizeToFit: boolean;
-        lineSpacing: number;
         textWrapping: boolean;
         text: string;
         textHorizontalAlignment: number;
         textVerticalAlignment: number;
+        lineSpacing: number;
         constructor(name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
