@@ -2478,7 +2478,7 @@
 
             // Physics
             if (parsedMesh.physicsImpostor) {
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
+                mesh.physicsImpostor = new PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,
                     friction: parsedMesh.physicsFriction,
                     restitution: parsedMesh.physicsRestitution
@@ -3256,7 +3256,7 @@
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         public static Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3 {
-            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 
@@ -3341,7 +3341,7 @@
 
                 //-- aplique la subdivision en fonction du tableau d'indices
                 while (index < indiceArray.length) {
-                    BABYLON.SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                    SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
                     offset += indiceArray[index];
                     index++;
                 }

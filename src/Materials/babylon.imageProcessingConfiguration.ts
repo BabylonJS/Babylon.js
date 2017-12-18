@@ -207,7 +207,7 @@ module BABYLON {
          * if vignetteEnabled is set to true.
          */
         @serializeAsColor4()
-        public vignetteColor: BABYLON.Color4 = new BABYLON.Color4(0, 0, 0, 0);
+        public vignetteColor: Color4 = new Color4(0, 0, 0, 0);
 
         /**
          * Camera field of view used by the Vignette effect.
@@ -293,7 +293,7 @@ module BABYLON {
 
             this._isEnabled = value;
             this._updateParameters();
-        }        
+        }
 
         /**
         * An event triggered when the configuration changes and requires Shader to Update some parameters.
@@ -310,7 +310,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "ImageProcessingConfiguration";
-        }                 
+        }
 
         /**
          * Prepare the list of uniforms associated with the Image Processing effects.
@@ -397,7 +397,7 @@ module BABYLON {
          * Binds the image processing to the shader.
          * @param effect The effect to bind to
          */
-        public bind(effect: Effect, aspectRatio = 1) : void {
+        public bind(effect: Effect, aspectRatio = 1): void {
             // Color Curves
             if (this._colorCurvesEnabled && this.colorCurves) {
                 ColorCurves.Bind(this.colorCurves, effect);
@@ -424,10 +424,10 @@ module BABYLON {
 
             // Exposure
             effect.setFloat("exposureLinear", this.exposure);
-            
+
             // Contrast
             effect.setFloat("contrast", this.contrast);
-            
+
             // Color transform settings
             if (this.colorGradingTexture) {
                 effect.setTexture("txColorTransform", this.colorGradingTexture);
@@ -462,8 +462,8 @@ module BABYLON {
          * Parses the image processing from a json representation.
          * @param source the JSON source to parse
          * @return The parsed image processing
-         */      
-        public static Parse(source: any) : ImageProcessingConfiguration {
+         */
+        public static Parse(source: any): ImageProcessingConfiguration {
             return SerializationHelper.Parse(() => new ImageProcessingConfiguration(), source, null, null);
         }
 
