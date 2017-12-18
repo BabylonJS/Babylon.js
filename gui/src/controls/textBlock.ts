@@ -210,8 +210,7 @@ module BABYLON.GUI {
 
                     if (this._lineSpacing.isPixel) {
                         rootY += this._lineSpacing.getValue(this._host);
-                    } else {
-                        
+                    } else {                        
                         rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host,  this._cachedParentMeasure.height));
                     }
                 }
