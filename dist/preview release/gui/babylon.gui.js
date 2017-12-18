@@ -3160,6 +3160,7 @@ var BABYLON;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
+                _this._lineSpacing = new GUI.ValueAndUnit(0);
                 /**
                 * An event triggered after the text is changed
                 * @type {BABYLON.Observable}
@@ -3235,6 +3236,18 @@ var BABYLON;
                     }
                     this._textVerticalAlignment = value;
                     this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "lineSpacing", {
+                get: function () {
+                    return this._lineSpacing.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._lineSpacing.fromString(value)) {
+                        this._markAsDirty();
+                    }
                 },
                 enumerable: true,
                 configurable: true
@@ -3333,8 +3346,16 @@ var BABYLON;
                 }
                 rootY += this._currentMeasure.top;
                 var maxLineWidth = 0;
-                for (var _i = 0, _a = this._lines; _i < _a.length; _i++) {
-                    var line = _a[_i];
+                for (var i = 0; i < this._lines.length; i++) {
+                    var line = this._lines[i];
+                    if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+                        if (this._lineSpacing.isPixel) {
+                            rootY += this._lineSpacing.getValue(this._host);
+                        }
+                        else {
+                            rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        }
+                    }
                     this._drawText(line.text, line.width, rootY, context);
                     rootY += this._fontOffset.height;
                     if (line.width > maxLineWidth)
