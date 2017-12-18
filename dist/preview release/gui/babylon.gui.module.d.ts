@@ -530,7 +530,7 @@ declare module BABYLON.GUI {
         text: string;
         textHorizontalAlignment: number;
         textVerticalAlignment: number;
-        lineSpacing: number;
+        lineSpacing: string | number;
         constructor(name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
