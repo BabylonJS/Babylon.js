@@ -1840,5 +1840,5 @@ module BABYLON.GLTF2 {
         }
     }
 
-    BABYLON.GLTFFileLoader.CreateGLTFLoaderV2 = parent => new GLTFLoader(parent);
+    GLTFFileLoader.CreateGLTFLoaderV2 = parent => new GLTFLoader(parent);
 }

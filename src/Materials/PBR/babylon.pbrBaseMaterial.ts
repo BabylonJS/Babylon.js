@@ -707,7 +707,7 @@
                                 break;
                         }
 
-                        if (reflectionTexture.coordinatesMode !== BABYLON.Texture.SKYBOX_MODE) {
+                        if (reflectionTexture.coordinatesMode !== Texture.SKYBOX_MODE) {
                             if (reflectionTexture.sphericalPolynomial) {
                                 defines.USESPHERICALFROMREFLECTIONMAP = true;
                                 if (this._forceIrradianceInFragment || scene.getEngine().getCaps().maxVaryingVectors <= 8) {

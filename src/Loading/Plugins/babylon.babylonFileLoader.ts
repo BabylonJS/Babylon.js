@@ -24,7 +24,7 @@
         return false;
     };
 
-    var logOperation = (operation: string, producer: {file: string, name: string, version: string, exporter_version: string}) => {
+    var logOperation = (operation: string, producer: { file: string, name: string, version: string, exporter_version: string }) => {
         return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
     }
 
@@ -237,25 +237,25 @@
 
                 // Scene
                 if (parsedData.useDelayedTextureLoading !== undefined && parsedData.useDelayedTextureLoading !== null) {
-                    scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
+                    scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !SceneLoader.ForceFullSceneLoadingForIncremental;
                 }
                 if (parsedData.autoClear !== undefined && parsedData.autoClear !== null) {
                     scene.autoClear = parsedData.autoClear;
                 }
                 if (parsedData.clearColor !== undefined && parsedData.clearColor !== null) {
-                    scene.clearColor = BABYLON.Color4.FromArray(parsedData.clearColor);
+                    scene.clearColor = Color4.FromArray(parsedData.clearColor);
                 }
                 if (parsedData.ambientColor !== undefined && parsedData.ambientColor !== null) {
-                    scene.ambientColor = BABYLON.Color3.FromArray(parsedData.ambientColor);
+                    scene.ambientColor = Color3.FromArray(parsedData.ambientColor);
                 }
                 if (parsedData.gravity !== undefined && parsedData.gravity !== null) {
-                    scene.gravity = BABYLON.Vector3.FromArray(parsedData.gravity);
+                    scene.gravity = Vector3.FromArray(parsedData.gravity);
                 }
 
                 // Fog
                 if (parsedData.fogMode && parsedData.fogMode !== 0) {
                     scene.fogMode = parsedData.fogMode;
-                    scene.fogColor = BABYLON.Color3.FromArray(parsedData.fogColor);
+                    scene.fogColor = Color3.FromArray(parsedData.fogColor);
                     scene.fogStart = parsedData.fogStart;
                     scene.fogEnd = parsedData.fogEnd;
                     scene.fogDensity = parsedData.fogDensity;
@@ -272,13 +272,13 @@
                 if (parsedData.physicsEnabled) {
                     var physicsPlugin;
                     if (parsedData.physicsEngine === "cannon") {
-                        physicsPlugin = new BABYLON.CannonJSPlugin();
+                        physicsPlugin = new CannonJSPlugin();
                     } else if (parsedData.physicsEngine === "oimo") {
-                        physicsPlugin = new BABYLON.OimoJSPlugin();
+                        physicsPlugin = new OimoJSPlugin();
                     }
                     log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                     //else - default engine, which is currently oimo
-                    var physicsGravity = parsedData.physicsGravity ? BABYLON.Vector3.FromArray(parsedData.physicsGravity) : null;
+                    var physicsGravity = parsedData.physicsGravity ? Vector3.FromArray(parsedData.physicsGravity) : null;
                     scene.enablePhysics(physicsGravity, physicsPlugin);
                 }
 
@@ -440,7 +440,7 @@
                         var parsedTransformNode = parsedData.transformNodes[index];
                         TransformNode.Parse(parsedTransformNode, scene, rootUrl);
                     }
-                }                
+                }
 
                 // Meshes
                 if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
@@ -512,7 +512,7 @@
                         transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
                         transformNode._waitingParentId = null;
                     }
-                }                
+                }
                 for (index = 0, cache = scene.meshes.length; index < cache; index++) {
                     var mesh = scene.meshes[index];
                     if (mesh._waitingParentId) {

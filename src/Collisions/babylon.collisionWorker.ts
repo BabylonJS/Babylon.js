@@ -262,7 +262,7 @@ module BABYLON {
             window = <any>{};
 
             //scripts were not included, standalone worker
-            if (!BABYLON.Collider) {
+            if (!Collider) {
                 importScripts("./babylon.collisionCoordinator.js");
                 importScripts("./babylon.collider.js");
                 importScripts("../Math/babylon.math.js");

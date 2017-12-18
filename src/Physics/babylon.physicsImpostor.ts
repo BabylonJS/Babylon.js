@@ -31,7 +31,7 @@ module BABYLON {
 
     export class PhysicsImpostor {
 
-        public static DEFAULT_OBJECT_SIZE: Vector3 = new BABYLON.Vector3(1, 1, 1);
+        public static DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
 
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
@@ -440,7 +440,7 @@ module BABYLON {
         /**
          * Legacy collision detection event support
          */
-        public onCollideEvent: Nullable<(collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void> = null;
+        public onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void> = null;
 
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {

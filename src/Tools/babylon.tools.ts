@@ -425,7 +425,7 @@
             }
 
             if (Tools.CorsBehavior) {
-                if (typeof(Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
+                if (typeof (Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
                     element.crossOrigin = <string>Tools.CorsBehavior;
                 }
                 else {
@@ -977,7 +977,7 @@
             texture.renderList = null;
             texture.samples = samples;
             if (antialiasing) {
-                texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
+                texture.addPostProcess(new FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
             }
             texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);

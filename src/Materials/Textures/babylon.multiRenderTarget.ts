@@ -114,7 +114,7 @@ module BABYLON {
         private _createTextures(): void {
             this._textures = [];
             for (var i = 0; i < this._internalTextures.length; i++) {
-                var texture = new BABYLON.Texture(null, this.getScene());
+                var texture = new Texture(null, this.getScene());
                 texture._texture = this._internalTextures[i];
                 this._textures.push(texture);
             }
