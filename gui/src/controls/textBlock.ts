@@ -9,7 +9,7 @@ module BABYLON.GUI {
 
         private _lines: any[];
         private _resizeToFit: boolean = false;
-        private _lineSpacing: number = 0;
+        private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
@@ -81,12 +81,14 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        public set lineSpacing(value: number) {
-            this._lineSpacing = value;
+        public set lineSpacing(value: string | number) {
+            if (this._lineSpacing.fromString(value)) {
+                this._markAsDirty();
+            }
         }
 
-        public get lineSpacing(): number {
-            return this._lineSpacing;
+        public get lineSpacing(): string | number {
+            return this._lineSpacing.toString(this._host);
         }
 
         constructor(public name?: string, text: string = "") {
@@ -204,8 +206,14 @@ module BABYLON.GUI {
             for (let i = 0; i < this._lines.length; i++) {
                 const line = this._lines[i];
 
-                if (i !== 0 && this._lineSpacing > 0) {
-                    rootY += this._lineSpacing;
+                if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+
+                    if (this._lineSpacing.isPixel) {
+                        rootY += this._lineSpacing.getValue(this._host);
+                    } else {
+                        
+                        rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host,  this._cachedParentMeasure.height));
+                    }
                 }
 
                 this._drawText(line.text, line.width, rootY, context);
