@@ -39,9 +39,43 @@ module BABYLON {
         private _onVRRequestPresentStart: () => void;
         private _onVRRequestPresentComplete: (success: boolean) => void;
 
-        public onEnteringVR = new Observable<VRExperienceHelper>();
-        public onExitingVR = new Observable<VRExperienceHelper>();
-        public onControllerMeshLoaded = new Observable<WebVRController>();
+        /**
+         * Observable raised when entering VR.
+         */
+        public onEnteringVRObservable = new Observable<VRExperienceHelper>();
+
+
+        /**
+         * Observable raised when exiting VR.
+         */
+        public onExitingVRObservable = new Observable<VRExperienceHelper>();
+
+
+        /**
+         * Observable raised when controller mesh is loaded.
+         */
+        public onControllerMeshLoadedObservable = new Observable<WebVRController>();
+
+        /** Return this.onEnteringVRObservable
+         * Note: This one is for backward compatibility. Please use onEnteringVRObservable directly
+         */
+        public get onEnteringVR(): Observable<VRExperienceHelper> {
+            return this.onEnteringVRObservable;
+        }
+
+        /** Return this.onExitingVRObservable
+         * Note: This one is for backward compatibility. Please use onExitingVRObservable directly
+         */
+        public get onExitingVR(): Observable<VRExperienceHelper> {
+            return this.onExitingVRObservable;
+        }
+
+        /** Return this.onControllerMeshLoadedObservable
+         * Note: This one is for backward compatibility. Please use onControllerMeshLoadedObservable directly
+         */
+        public get onControllerMeshLoaded(): Observable<WebVRController> {
+            return this.onControllerMeshLoadedObservable;
+        }
 
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
@@ -340,7 +374,7 @@ module BABYLON {
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
             this._tryEnableInteractionOnController(webVRController);
             try {
-                this.onControllerMeshLoaded.notifyObservers(webVRController);
+                this.onControllerMeshLoadedObservable.notifyObservers(webVRController);
             }
             catch (err) {
                 Tools.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
@@ -438,9 +472,9 @@ module BABYLON {
          * Otherwise, will use the fullscreen API.
          */
         public enterVR() {
-            if (this.onEnteringVR) {
+            if (this.onEnteringVRObservable) {
                 try {
-                    this.onEnteringVR.notifyObservers(this);
+                    this.onEnteringVRObservable.notifyObservers(this);
                 }
                 catch (err) {
                     Tools.Warn("Error in your custom logic onEnteringVR: " + err);
@@ -477,9 +511,9 @@ module BABYLON {
          * Attempt to exit VR, or fullscreen.
          */
         public exitVR() {
-            if (this.onExitingVR) {
+            if (this.onExitingVRObservable) {
                 try {
-                    this.onExitingVR.notifyObservers(this);
+                    this.onExitingVRObservable.notifyObservers(this);
                 }
                 catch (err) {
                     Tools.Warn("Error in your custom logic onExitingVR: " + err);
