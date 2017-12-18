@@ -41831,6 +41831,18 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var AnimationGroup = /** @class */ (function () {
+        function AnimationGroup() {
+        }
+        return AnimationGroup;
+    }());
+    BABYLON.AnimationGroup = AnimationGroup;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.animationGroup.js.map
+
+var BABYLON;
+(function (BABYLON) {
     var RuntimeAnimation = /** @class */ (function () {
         function RuntimeAnimation(target, animation) {
             this._offsetsCache = {};
@@ -72527,9 +72539,18 @@ var BABYLON;
             this._webVRpresenting = false;
             // Are we presenting in the fullscreen fallback?
             this._fullscreenVRpresenting = false;
-            this.onEnteringVR = new BABYLON.Observable();
-            this.onExitingVR = new BABYLON.Observable();
-            this.onControllerMeshLoaded = new BABYLON.Observable();
+            /**
+             * Observable raised when entering VR.
+             */
+            this.onEnteringVRObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when exiting VR.
+             */
+            this.onExitingVRObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when controller mesh is loaded.
+             */
+            this.onControllerMeshLoadedObservable = new BABYLON.Observable();
             this._useCustomVRButton = false;
             this._teleportationRequested = false;
             this._teleportationEnabledOnLeftController = false;
@@ -72826,6 +72847,36 @@ var BABYLON;
             this._circleEase = new BABYLON.CircleEase();
             this._circleEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
         }
+        Object.defineProperty(VRExperienceHelper.prototype, "onEnteringVR", {
+            /** Return this.onEnteringVRObservable
+             * Note: This one is for backward compatibility. Please use onEnteringVRObservable directly
+             */
+            get: function () {
+                return this.onEnteringVRObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "onExitingVR", {
+            /** Return this.onExitingVRObservable
+             * Note: This one is for backward compatibility. Please use onExitingVRObservable directly
+             */
+            get: function () {
+                return this.onExitingVRObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "onControllerMeshLoaded", {
+            /** Return this.onControllerMeshLoadedObservable
+             * Note: This one is for backward compatibility. Please use onControllerMeshLoadedObservable directly
+             */
+            get: function () {
+                return this.onControllerMeshLoadedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(VRExperienceHelper.prototype, "teleportationTarget", {
             get: function () {
                 return this._teleportationTarget;
@@ -72917,7 +72968,7 @@ var BABYLON;
         VRExperienceHelper.prototype._onDefaultMeshLoaded = function (webVRController) {
             this._tryEnableInteractionOnController(webVRController);
             try {
-                this.onControllerMeshLoaded.notifyObservers(webVRController);
+                this.onControllerMeshLoadedObservable.notifyObservers(webVRController);
             }
             catch (err) {
                 BABYLON.Tools.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
@@ -72987,9 +73038,9 @@ var BABYLON;
          * Otherwise, will use the fullscreen API.
          */
         VRExperienceHelper.prototype.enterVR = function () {
-            if (this.onEnteringVR) {
+            if (this.onEnteringVRObservable) {
                 try {
-                    this.onEnteringVR.notifyObservers(this);
+                    this.onEnteringVRObservable.notifyObservers(this);
                 }
                 catch (err) {
                     BABYLON.Tools.Warn("Error in your custom logic onEnteringVR: " + err);
@@ -73021,9 +73072,9 @@ var BABYLON;
          * Attempt to exit VR, or fullscreen.
          */
         VRExperienceHelper.prototype.exitVR = function () {
-            if (this.onExitingVR) {
+            if (this.onExitingVRObservable) {
                 try {
-                    this.onExitingVR.notifyObservers(this);
+                    this.onExitingVRObservable.notifyObservers(this);
                 }
                 catch (err) {
                     BABYLON.Tools.Warn("Error in your custom logic onExitingVR: " + err);
