@@ -21,7 +21,7 @@ var __extends = (this && this.__extends) || (function () {
 
 var BABYLON;
 (function (BABYLON) {
-    var KeyboardEventTypes = /** @class */ (function () {
+    var KeyboardEventTypes = (function () {
         function KeyboardEventTypes() {
         }
         Object.defineProperty(KeyboardEventTypes, "KEYDOWN", {
@@ -43,7 +43,7 @@ var BABYLON;
         return KeyboardEventTypes;
     }());
     BABYLON.KeyboardEventTypes = KeyboardEventTypes;
-    var KeyboardInfo = /** @class */ (function () {
+    var KeyboardInfo = (function () {
         function KeyboardInfo(type, event) {
             this.type = type;
             this.event = event;
@@ -55,7 +55,7 @@ var BABYLON;
      * This class is used to store keyboard related info for the onPreKeyboardObservable event.
      * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
      */
-    var KeyboardInfoPre = /** @class */ (function (_super) {
+    var KeyboardInfoPre = (function (_super) {
         __extends(KeyboardInfoPre, _super);
         function KeyboardInfoPre(type, event) {
             var _this = _super.call(this, type, event) || this;
@@ -72,7 +72,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PointerEventTypes = /** @class */ (function () {
+    var PointerEventTypes = (function () {
         function PointerEventTypes() {
         }
         Object.defineProperty(PointerEventTypes, "POINTERDOWN", {
@@ -134,7 +134,7 @@ var BABYLON;
         return PointerEventTypes;
     }());
     BABYLON.PointerEventTypes = PointerEventTypes;
-    var PointerInfoBase = /** @class */ (function () {
+    var PointerInfoBase = (function () {
         function PointerInfoBase(type, event) {
             this.type = type;
             this.event = event;
@@ -146,7 +146,7 @@ var BABYLON;
      * This class is used to store pointer related info for the onPrePointerObservable event.
      * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
      */
-    var PointerInfoPre = /** @class */ (function (_super) {
+    var PointerInfoPre = (function (_super) {
         __extends(PointerInfoPre, _super);
         function PointerInfoPre(type, event, localX, localY) {
             var _this = _super.call(this, type, event) || this;
@@ -161,7 +161,7 @@ var BABYLON;
      * This type contains all the data related to a pointer event in Babylon.js.
      * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
      */
-    var PointerInfo = /** @class */ (function (_super) {
+    var PointerInfo = (function (_super) {
         __extends(PointerInfo, _super);
         function PointerInfo(type, event, pickInfo) {
             var _this = _super.call(this, type, event) || this;
@@ -180,7 +180,7 @@ var BABYLON;
     BABYLON.ToGammaSpace = 1 / 2.2;
     BABYLON.ToLinearSpace = 2.2;
     BABYLON.Epsilon = 0.001;
-    var Color3 = /** @class */ (function () {
+    var Color3 = (function () {
         /**
          * Creates a new Color3 object from red, green, blue values, all between 0 and 1.
          */
@@ -454,7 +454,7 @@ var BABYLON;
         return Color3;
     }());
     BABYLON.Color3 = Color3;
-    var Color4 = /** @class */ (function () {
+    var Color4 = (function () {
         /**
          * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.
          */
@@ -731,7 +731,7 @@ var BABYLON;
         return Color4;
     }());
     BABYLON.Color4 = Color4;
-    var Vector2 = /** @class */ (function () {
+    var Vector2 = (function () {
         /**
          * Creates a new Vector2 from the passed x and y coordinates.
          */
@@ -1141,7 +1141,7 @@ var BABYLON;
         return Vector2;
     }());
     BABYLON.Vector2 = Vector2;
-    var Vector3 = /** @class */ (function () {
+    var Vector3 = (function () {
         /**
          * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.
          * A Vector3 is the main object used in 3D geometry.
@@ -1870,7 +1870,7 @@ var BABYLON;
     }());
     BABYLON.Vector3 = Vector3;
     //Vector4 class created for EulerAngle class conversion to Quaternion
-    var Vector4 = /** @class */ (function () {
+    var Vector4 = (function () {
         /**
          * Creates a Vector4 object from the passed floats.
          */
@@ -2334,7 +2334,7 @@ var BABYLON;
         return Vector4;
     }());
     BABYLON.Vector4 = Vector4;
-    var Size = /** @class */ (function () {
+    var Size = (function () {
         /**
          * Creates a Size object from the passed width and height (floats).
          */
@@ -2446,7 +2446,7 @@ var BABYLON;
         return Size;
     }());
     BABYLON.Size = Size;
-    var Quaternion = /** @class */ (function () {
+    var Quaternion = (function () {
         /**
          * Creates a new Quaternion from the passed floats.
          */
@@ -2914,7 +2914,7 @@ var BABYLON;
         return Quaternion;
     }());
     BABYLON.Quaternion = Quaternion;
-    var Matrix = /** @class */ (function () {
+    var Matrix = (function () {
         function Matrix() {
             this._isIdentity = false;
             this._isIdentityDirty = true;
@@ -4087,7 +4087,7 @@ var BABYLON;
         return Matrix;
     }());
     BABYLON.Matrix = Matrix;
-    var Plane = /** @class */ (function () {
+    var Plane = (function () {
         /**
          * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
          */
@@ -4236,7 +4236,7 @@ var BABYLON;
         return Plane;
     }());
     BABYLON.Plane = Plane;
-    var Viewport = /** @class */ (function () {
+    var Viewport = (function () {
         /**
          * Creates a Viewport object located at (x, y) and sized (width, height).
          */
@@ -4263,7 +4263,7 @@ var BABYLON;
         return Viewport;
     }());
     BABYLON.Viewport = Viewport;
-    var Frustum = /** @class */ (function () {
+    var Frustum = (function () {
         function Frustum() {
         }
         /**
@@ -4345,7 +4345,7 @@ var BABYLON;
         Space[Space["WORLD"] = 1] = "WORLD";
         Space[Space["BONE"] = 2] = "BONE";
     })(Space = BABYLON.Space || (BABYLON.Space = {}));
-    var Axis = /** @class */ (function () {
+    var Axis = (function () {
         function Axis() {
         }
         Axis.X = new Vector3(1.0, 0.0, 0.0);
@@ -4355,7 +4355,7 @@ var BABYLON;
     }());
     BABYLON.Axis = Axis;
     ;
-    var BezierCurve = /** @class */ (function () {
+    var BezierCurve = (function () {
         function BezierCurve() {
         }
         /**
@@ -4388,7 +4388,7 @@ var BABYLON;
         Orientation[Orientation["CW"] = 0] = "CW";
         Orientation[Orientation["CCW"] = 1] = "CCW";
     })(Orientation = BABYLON.Orientation || (BABYLON.Orientation = {}));
-    var Angle = /** @class */ (function () {
+    var Angle = (function () {
         /**
          * Creates an Angle object of "radians" radians (float).
          */
@@ -4429,7 +4429,7 @@ var BABYLON;
         return Angle;
     }());
     BABYLON.Angle = Angle;
-    var Arc2 = /** @class */ (function () {
+    var Arc2 = (function () {
         /**
          * Creates an Arc object from the three passed points : start, middle and end.
          */
@@ -4462,7 +4462,7 @@ var BABYLON;
         return Arc2;
     }());
     BABYLON.Arc2 = Arc2;
-    var Path2 = /** @class */ (function () {
+    var Path2 = (function () {
         /**
          * Creates a Path2 object from the starting 2D coordinates x and y.
          */
@@ -4574,7 +4574,7 @@ var BABYLON;
         return Path2;
     }());
     BABYLON.Path2 = Path2;
-    var Path3D = /** @class */ (function () {
+    var Path3D = (function () {
         /**
         * new Path3D(path, normal, raw)
         * Creates a Path3D. A Path3D is a logical math object, so not a mesh.
@@ -4751,7 +4751,7 @@ var BABYLON;
         return Path3D;
     }());
     BABYLON.Path3D = Path3D;
-    var Curve3 = /** @class */ (function () {
+    var Curve3 = (function () {
         /**
          * A Curve3 object is a logical object, so not a mesh, to handle curves in the 3D geometric space.
          * A Curve3 is designed from a series of successive Vector3.
@@ -4879,7 +4879,7 @@ var BABYLON;
     }());
     BABYLON.Curve3 = Curve3;
     // Vertex formats
-    var PositionNormalVertex = /** @class */ (function () {
+    var PositionNormalVertex = (function () {
         function PositionNormalVertex(position, normal) {
             if (position === void 0) { position = Vector3.Zero(); }
             if (normal === void 0) { normal = Vector3.Up(); }
@@ -4892,7 +4892,7 @@ var BABYLON;
         return PositionNormalVertex;
     }());
     BABYLON.PositionNormalVertex = PositionNormalVertex;
-    var PositionNormalTextureVertex = /** @class */ (function () {
+    var PositionNormalTextureVertex = (function () {
         function PositionNormalTextureVertex(position, normal, uv) {
             if (position === void 0) { position = Vector3.Zero(); }
             if (normal === void 0) { normal = Vector3.Up(); }
@@ -4911,7 +4911,7 @@ var BABYLON;
     // usage in any internal function :
     // var tmp = Tmp.Vector3[0];   <= gets access to the first pre-created Vector3
     // There's a Tmp array per object type : int, float, Vector2, Vector3, Vector4, Quaternion, Matrix
-    var Tmp = /** @class */ (function () {
+    var Tmp = (function () {
         function Tmp() {
         }
         Tmp.Color3 = [Color3.Black(), Color3.Black(), Color3.Black()];
@@ -4928,7 +4928,7 @@ var BABYLON;
     }());
     BABYLON.Tmp = Tmp;
     // Same as Tmp but not exported to keep it onyl for math functions to avoid conflicts
-    var MathTmp = /** @class */ (function () {
+    var MathTmp = (function () {
         function MathTmp() {
         }
         MathTmp.Vector3 = [Vector3.Zero()];
@@ -4942,7 +4942,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Scalar = /** @class */ (function () {
+    var Scalar = (function () {
         function Scalar() {
         }
         /**
@@ -5334,7 +5334,7 @@ var BABYLON;
         return generateSerializableMember(10, sourceName); // quaternion member
     }
     BABYLON.serializeAsQuaternion = serializeAsQuaternion;
-    var SerializationHelper = /** @class */ (function () {
+    var SerializationHelper = (function () {
         function SerializationHelper() {
         }
         SerializationHelper.Serialize = function (entity, serializationObject) {
@@ -5465,7 +5465,7 @@ var BABYLON;
     /**
      * A class serves as a medium between the observable and its observers
      */
-    var EventState = /** @class */ (function () {
+    var EventState = (function () {
         /**
         * If the callback of a given Observer set skipNextObservers to true the following observers will be ignored
         */
@@ -5487,7 +5487,7 @@ var BABYLON;
     /**
      * Represent an Observer registered to a given Observable object.
      */
-    var Observer = /** @class */ (function () {
+    var Observer = (function () {
         function Observer(callback, mask, scope) {
             if (scope === void 0) { scope = null; }
             this.callback = callback;
@@ -5500,7 +5500,7 @@ var BABYLON;
     /**
      * Represent a list of observers registered to multiple Observables object.
      */
-    var MultiObserver = /** @class */ (function () {
+    var MultiObserver = (function () {
         function MultiObserver() {
         }
         MultiObserver.prototype.dispose = function () {
@@ -5537,7 +5537,7 @@ var BABYLON;
      * For instance you may have a given Observable that have four different types of notifications: Move (mask = 0x01), Stop (mask = 0x02), Turn Right (mask = 0X04), Turn Left (mask = 0X08).
      * A given observer can register itself with only Move and Stop (mask = 0x03), then it will only be notified when one of these two occurs and will never be for Turn Left/Right.
      */
-    var Observable = /** @class */ (function () {
+    var Observable = (function () {
         function Observable(onObserverAdded) {
             this._observers = new Array();
             this._eventState = new EventState(0);
@@ -5689,7 +5689,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SmartArray = /** @class */ (function () {
+    var SmartArray = (function () {
         function SmartArray(capacity) {
             this.length = 0;
             this.data = new Array(capacity);
@@ -5745,7 +5745,7 @@ var BABYLON;
         return SmartArray;
     }());
     BABYLON.SmartArray = SmartArray;
-    var SmartArrayNoDuplicate = /** @class */ (function (_super) {
+    var SmartArrayNoDuplicate = (function (_super) {
         __extends(SmartArrayNoDuplicate, _super);
         function SmartArrayNoDuplicate() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -5794,7 +5794,7 @@ var BABYLON;
 (function (BABYLON) {
     // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
     // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
-    var LoadFileError = /** @class */ (function (_super) {
+    var LoadFileError = (function (_super) {
         __extends(LoadFileError, _super);
         function LoadFileError(message, request) {
             var _this = _super.call(this, message) || this;
@@ -5808,7 +5808,7 @@ var BABYLON;
         return LoadFileError;
     }(Error));
     BABYLON.LoadFileError = LoadFileError;
-    var RetryStrategy = /** @class */ (function () {
+    var RetryStrategy = (function () {
         function RetryStrategy() {
         }
         RetryStrategy.ExponentialBackoff = function (maxRetries, baseInterval) {
@@ -5840,7 +5840,7 @@ var BABYLON;
         }
         return null;
     };
-    var Tools = /** @class */ (function () {
+    var Tools = (function () {
         function Tools() {
         }
         /**
@@ -7035,7 +7035,7 @@ var BABYLON;
      * For time you can optionally call fetchNewFrame() to notify the start of a new frame to monitor, then call beginMonitoring() to start and endMonitoring() to record the lapsed time. endMonitoring takes a newFrame parameter for you to specify if the monitored time should be set for a new frame or accumulated to the current frame being monitored.
      * For count you first have to call fetchNewFrame() to notify the start of a new frame to monitor, then call addCount() how many time required to increment the count value you monitor.
      */
-    var PerfCounter = /** @class */ (function () {
+    var PerfCounter = (function () {
         function PerfCounter() {
             this._startMonitoringTime = 0;
             this._min = 0;
@@ -7200,7 +7200,7 @@ var BABYLON;
     /**
     * An implementation of a loop for asynchronous functions.
     */
-    var AsyncLoop = /** @class */ (function () {
+    var AsyncLoop = (function () {
         /**
          * Constroctor.
          * @param iterations the number of iterations.
@@ -7289,7 +7289,7 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var _AlphaState = /** @class */ (function () {
+        var _AlphaState = (function () {
             /**
              * Initializes the state.
              */
@@ -7419,7 +7419,7 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var _DepthCullingState = /** @class */ (function () {
+        var _DepthCullingState = (function () {
             /**
              * Initializes the state.
              */
@@ -7600,7 +7600,7 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var _StencilState = /** @class */ (function () {
+        var _StencilState = (function () {
             function _StencilState() {
                 this._isStencilTestDirty = false;
                 this._isStencilMaskDirty = false;
@@ -7955,12 +7955,12 @@ var BABYLON;
             partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
         }
     };
-    var BufferPointer = /** @class */ (function () {
+    var BufferPointer = (function () {
         function BufferPointer() {
         }
         return BufferPointer;
     }());
-    var InstancingAttributeInfo = /** @class */ (function () {
+    var InstancingAttributeInfo = (function () {
         function InstancingAttributeInfo() {
         }
         return InstancingAttributeInfo;
@@ -7969,7 +7969,7 @@ var BABYLON;
     /**
      * Define options used to create a render target texture
      */
-    var RenderTargetCreationOptions = /** @class */ (function () {
+    var RenderTargetCreationOptions = (function () {
         function RenderTargetCreationOptions() {
         }
         return RenderTargetCreationOptions;
@@ -7978,7 +7978,7 @@ var BABYLON;
     /**
      * Regroup several parameters relative to the browser in use
      */
-    var EngineCapabilities = /** @class */ (function () {
+    var EngineCapabilities = (function () {
         function EngineCapabilities() {
         }
         return EngineCapabilities;
@@ -7987,7 +7987,7 @@ var BABYLON;
     /**
      * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
      */
-    var Engine = /** @class */ (function () {
+    var Engine = (function () {
         /**
          * @constructor
          * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
@@ -12527,7 +12527,7 @@ var BABYLON;
     /**
      * Node is the basic class for all scene objects (Mesh, Light Camera).
      */
-    var Node = /** @class */ (function () {
+    var Node = (function () {
         /**
          * @constructor
          * @param {string} name - the name and id to be given to this node
@@ -12920,7 +12920,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BoundingSphere = /** @class */ (function () {
+    var BoundingSphere = (function () {
         function BoundingSphere(minimum, maximum) {
             this.minimum = minimum;
             this.maximum = maximum;
@@ -12972,7 +12972,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BoundingBox = /** @class */ (function () {
+    var BoundingBox = (function () {
         function BoundingBox(minimum, maximum) {
             this.minimum = minimum;
             this.maximum = maximum;
@@ -13140,7 +13140,7 @@ var BABYLON;
         var result1 = computeBoxExtents(axis, box1);
         return extentsOverlap(result0.min, result0.max, result1.min, result1.max);
     };
-    var BoundingInfo = /** @class */ (function () {
+    var BoundingInfo = (function () {
         function BoundingInfo(minimum, maximum) {
             this.minimum = minimum;
             this.maximum = maximum;
@@ -13271,7 +13271,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var TransformNode = /** @class */ (function (_super) {
+    var TransformNode = (function (_super) {
         __extends(TransformNode, _super);
         function TransformNode(name, scene, isPure) {
             if (scene === void 0) { scene = null; }
@@ -14167,7 +14167,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var AbstractMesh = /** @class */ (function (_super) {
+    var AbstractMesh = (function (_super) {
         __extends(AbstractMesh, _super);
         // Constructor
         function AbstractMesh(name, scene) {
@@ -15917,7 +15917,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Light = /** @class */ (function (_super) {
+    var Light = (function (_super) {
         __extends(Light, _super);
         /**
          * Creates a Light object in the scene.
@@ -16603,7 +16603,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Camera = /** @class */ (function (_super) {
+    var Camera = (function (_super) {
         __extends(Camera, _super);
         function Camera(name, position, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -17467,7 +17467,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RenderingManager = /** @class */ (function () {
+    var RenderingManager = (function () {
         function RenderingManager(scene) {
             this._renderingGroups = new Array();
             this._autoClearDepthStencil = {};
@@ -17645,7 +17645,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RenderingGroup = /** @class */ (function () {
+    var RenderingGroup = (function () {
         /**
          * Creates a new rendering group.
          * @param index The rendering group index
@@ -17999,7 +17999,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ClickInfo = /** @class */ (function () {
+    var ClickInfo = (function () {
         function ClickInfo() {
             this._singleClick = false;
             this._doubleClick = false;
@@ -18051,7 +18051,7 @@ var BABYLON;
     /**
      * This class is used by the onRenderingGroupObservable
      */
-    var RenderingGroupInfo = /** @class */ (function () {
+    var RenderingGroupInfo = (function () {
         function RenderingGroupInfo() {
         }
         /**
@@ -18081,7 +18081,7 @@ var BABYLON;
      * Represents a scene to be rendered by the engine.
      * @see http://doc.babylonjs.com/page.php?p=21911
      */
-    var Scene = /** @class */ (function () {
+    var Scene = (function () {
         /**
          * @constructor
          * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
@@ -21889,7 +21889,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Buffer = /** @class */ (function () {
+    var Buffer = (function () {
         function Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced) {
             if (instanced === void 0) { instanced = false; }
             if (engine instanceof BABYLON.Mesh) {
@@ -22000,7 +22000,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VertexBuffer = /** @class */ (function () {
+    var VertexBuffer = (function () {
         function VertexBuffer(engine, data, kind, updatable, postponeInternalCreation, stride, instanced, offset, size) {
             if (!stride) {
                 // Deduce stride from kind
@@ -22263,7 +22263,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var InternalTexture = /** @class */ (function () {
+    var InternalTexture = (function () {
         function InternalTexture(engine, dataSource) {
             this.onLoadedObservable = new BABYLON.Observable();
             // Private
@@ -22431,7 +22431,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BaseTexture = /** @class */ (function () {
+    var BaseTexture = (function () {
         function BaseTexture(scene) {
             this._hasAlpha = false;
             this.getAlphaFromRGB = false;
@@ -22822,7 +22822,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Texture = /** @class */ (function (_super) {
+    var Texture = (function (_super) {
         __extends(Texture, _super);
         function Texture(url, scene, noMipmap, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format) {
             if (noMipmap === void 0) { noMipmap = false; }
@@ -23275,7 +23275,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var _InstancesBatch = /** @class */ (function () {
+    var _InstancesBatch = (function () {
         function _InstancesBatch() {
             this.mustReturn = false;
             this.visibleInstances = new Array();
@@ -23284,7 +23284,7 @@ var BABYLON;
         return _InstancesBatch;
     }());
     BABYLON._InstancesBatch = _InstancesBatch;
-    var Mesh = /** @class */ (function (_super) {
+    var Mesh = (function (_super) {
         __extends(Mesh, _super);
         /**
          * @constructor
@@ -26266,7 +26266,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BaseSubMesh = /** @class */ (function () {
+    var BaseSubMesh = (function () {
         function BaseSubMesh() {
         }
         Object.defineProperty(BaseSubMesh.prototype, "effect", {
@@ -26290,7 +26290,7 @@ var BABYLON;
         return BaseSubMesh;
     }());
     BABYLON.BaseSubMesh = BaseSubMesh;
-    var SubMesh = /** @class */ (function (_super) {
+    var SubMesh = (function (_super) {
         __extends(SubMesh, _super);
         function SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh, renderingMesh, createBoundingBox) {
             if (createBoundingBox === void 0) { createBoundingBox = true; }
@@ -26586,7 +26586,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var EffectFallbacks = /** @class */ (function () {
+    var EffectFallbacks = (function () {
         function EffectFallbacks() {
             this._defines = {};
             this._currentRank = 32;
@@ -26651,13 +26651,13 @@ var BABYLON;
         return EffectFallbacks;
     }());
     BABYLON.EffectFallbacks = EffectFallbacks;
-    var EffectCreationOptions = /** @class */ (function () {
+    var EffectCreationOptions = (function () {
         function EffectCreationOptions() {
         }
         return EffectCreationOptions;
     }());
     BABYLON.EffectCreationOptions = EffectCreationOptions;
-    var Effect = /** @class */ (function () {
+    var Effect = (function () {
         function Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, engine, defines, fallbacks, onCompiled, onError, indexParameters) {
             if (samplers === void 0) { samplers = null; }
             if (defines === void 0) { defines = null; }
@@ -27405,7 +27405,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 
 var BABYLON;
 (function (BABYLON) {
-    var MaterialDefines = /** @class */ (function () {
+    var MaterialDefines = (function () {
         function MaterialDefines() {
             this._isDirty = true;
             this._areLightsDirty = true;
@@ -27533,7 +27533,7 @@ var BABYLON;
         return MaterialDefines;
     }());
     BABYLON.MaterialDefines = MaterialDefines;
-    var Material = /** @class */ (function () {
+    var Material = (function () {
         function Material(name, scene, doNotAdd) {
             this.checkReadyOnEveryCall = false;
             this.checkReadyOnlyOnce = false;
@@ -28205,7 +28205,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var UniformBuffer = /** @class */ (function () {
+    var UniformBuffer = (function () {
         /**
          * Uniform buffer objects.
          *
@@ -28681,7 +28681,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VertexData = /** @class */ (function () {
+    var VertexData = (function () {
         function VertexData() {
         }
         VertexData.prototype.set = function (data, kind) {
@@ -30901,7 +30901,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Geometry = /** @class */ (function () {
+    var Geometry = (function () {
         function Geometry(id, scene, vertexData, updatable, mesh) {
             if (updatable === void 0) { updatable = false; }
             if (mesh === void 0) { mesh = null; }
@@ -31894,7 +31894,7 @@ var BABYLON;
         var Primitives;
         (function (Primitives) {
             /// Abstract class
-            var _Primitive = /** @class */ (function (_super) {
+            var _Primitive = (function (_super) {
                 __extends(_Primitive, _super);
                 function _Primitive(id, scene, _canBeRegenerated, mesh) {
                     if (_canBeRegenerated === void 0) { _canBeRegenerated = false; }
@@ -31949,7 +31949,7 @@ var BABYLON;
                 return _Primitive;
             }(Geometry));
             Primitives._Primitive = _Primitive;
-            var Ribbon = /** @class */ (function (_super) {
+            var Ribbon = (function (_super) {
                 __extends(Ribbon, _super);
                 // Members
                 function Ribbon(id, scene, pathArray, closeArray, closePath, offset, canBeRegenerated, mesh, side) {
@@ -31971,7 +31971,7 @@ var BABYLON;
                 return Ribbon;
             }(_Primitive));
             Primitives.Ribbon = Ribbon;
-            var Box = /** @class */ (function (_super) {
+            var Box = (function (_super) {
                 __extends(Box, _super);
                 // Members
                 function Box(id, scene, size, canBeRegenerated, mesh, side) {
@@ -32007,7 +32007,7 @@ var BABYLON;
                 return Box;
             }(_Primitive));
             Primitives.Box = Box;
-            var Sphere = /** @class */ (function (_super) {
+            var Sphere = (function (_super) {
                 __extends(Sphere, _super);
                 function Sphere(id, scene, segments, diameter, canBeRegenerated, mesh, side) {
                     if (mesh === void 0) { mesh = null; }
@@ -32044,7 +32044,7 @@ var BABYLON;
                 return Sphere;
             }(_Primitive));
             Primitives.Sphere = Sphere;
-            var Disc = /** @class */ (function (_super) {
+            var Disc = (function (_super) {
                 __extends(Disc, _super);
                 // Members
                 function Disc(id, scene, radius, tessellation, canBeRegenerated, mesh, side) {
@@ -32065,7 +32065,7 @@ var BABYLON;
                 return Disc;
             }(_Primitive));
             Primitives.Disc = Disc;
-            var Cylinder = /** @class */ (function (_super) {
+            var Cylinder = (function (_super) {
                 __extends(Cylinder, _super);
                 function Cylinder(id, scene, height, diameterTop, diameterBottom, tessellation, subdivisions, canBeRegenerated, mesh, side) {
                     if (subdivisions === void 0) { subdivisions = 1; }
@@ -32108,7 +32108,7 @@ var BABYLON;
                 return Cylinder;
             }(_Primitive));
             Primitives.Cylinder = Cylinder;
-            var Torus = /** @class */ (function (_super) {
+            var Torus = (function (_super) {
                 __extends(Torus, _super);
                 function Torus(id, scene, diameter, thickness, tessellation, canBeRegenerated, mesh, side) {
                     if (mesh === void 0) { mesh = null; }
@@ -32147,7 +32147,7 @@ var BABYLON;
                 return Torus;
             }(_Primitive));
             Primitives.Torus = Torus;
-            var Ground = /** @class */ (function (_super) {
+            var Ground = (function (_super) {
                 __extends(Ground, _super);
                 function Ground(id, scene, width, height, subdivisions, canBeRegenerated, mesh) {
                     if (mesh === void 0) { mesh = null; }
@@ -32184,7 +32184,7 @@ var BABYLON;
                 return Ground;
             }(_Primitive));
             Primitives.Ground = Ground;
-            var TiledGround = /** @class */ (function (_super) {
+            var TiledGround = (function (_super) {
                 __extends(TiledGround, _super);
                 function TiledGround(id, scene, xmin, zmin, xmax, zmax, subdivisions, precision, canBeRegenerated, mesh) {
                     if (mesh === void 0) { mesh = null; }
@@ -32206,7 +32206,7 @@ var BABYLON;
                 return TiledGround;
             }(_Primitive));
             Primitives.TiledGround = TiledGround;
-            var Plane = /** @class */ (function (_super) {
+            var Plane = (function (_super) {
                 __extends(Plane, _super);
                 function Plane(id, scene, size, canBeRegenerated, mesh, side) {
                     if (mesh === void 0) { mesh = null; }
@@ -32241,7 +32241,7 @@ var BABYLON;
                 return Plane;
             }(_Primitive));
             Primitives.Plane = Plane;
-            var TorusKnot = /** @class */ (function (_super) {
+            var TorusKnot = (function (_super) {
                 __extends(TorusKnot, _super);
                 function TorusKnot(id, scene, radius, tube, radialSegments, tubularSegments, p, q, canBeRegenerated, mesh, side) {
                     if (mesh === void 0) { mesh = null; }
@@ -32295,7 +32295,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PostProcessManager = /** @class */ (function () {
+    var PostProcessManager = (function () {
         function PostProcessManager(scene) {
             this._vertexBuffers = {};
             this._scene = scene;
@@ -32445,7 +32445,7 @@ var BABYLON;
     /**
      * Performance monitor tracks rolling average frame-time and frame-time variance over a user defined sliding-window
      */
-    var PerformanceMonitor = /** @class */ (function () {
+    var PerformanceMonitor = (function () {
         /**
          * constructor
          * @param frameSampleSize The number of samples required to saturate the sliding window
@@ -32582,7 +32582,7 @@ var BABYLON;
      *
      * Utility to efficiently compute the rolling average and variance over a sliding window of samples
      */
-    var RollingAverage = /** @class */ (function () {
+    var RollingAverage = (function () {
         /**
          * constructor
          * @param length The number of samples required to saturate the sliding window
@@ -32672,7 +32672,7 @@ var BABYLON;
      * or through post processing effect depending on the use of the image processing pipeline in your scene
      * or not.
      */
-    var ImageProcessingConfiguration = /** @class */ (function () {
+    var ImageProcessingConfiguration = (function () {
         function ImageProcessingConfiguration() {
             /**
              * Color curves setup used in the effect if colorCurvesEnabled is set to true
@@ -33186,7 +33186,7 @@ var BABYLON;
      * The only supported format is currently 3dl.
      * More information on LUT: https://en.wikipedia.org/wiki/3D_lookup_table/
      */
-    var ColorGradingTexture = /** @class */ (function (_super) {
+    var ColorGradingTexture = (function (_super) {
         __extends(ColorGradingTexture, _super);
         /**
          * Instantiates a ColorGradingTexture from the following parameters.
@@ -33391,7 +33391,7 @@ var BABYLON;
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
      * corresponding to low luminance, medium luminance, and high luminance areas respectively.
      */
-    var ColorCurves = /** @class */ (function () {
+    var ColorCurves = (function () {
         function ColorCurves() {
             this._dirty = true;
             this._tempColor = new BABYLON.Color4(0, 0, 0, 0);
@@ -33935,7 +33935,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var MaterialHelper = /** @class */ (function () {
+    var MaterialHelper = (function () {
         function MaterialHelper() {
         }
         MaterialHelper.BindEyePosition = function (effect, scene) {
@@ -34321,7 +34321,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PushMaterial = /** @class */ (function (_super) {
+    var PushMaterial = (function (_super) {
         __extends(PushMaterial, _super);
         function PushMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -34373,7 +34373,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var StandardMaterialDefines = /** @class */ (function (_super) {
+    var StandardMaterialDefines = (function (_super) {
         __extends(StandardMaterialDefines, _super);
         function StandardMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -34479,7 +34479,7 @@ var BABYLON;
         return StandardMaterialDefines;
     }(BABYLON.MaterialDefines));
     BABYLON.StandardMaterialDefines = StandardMaterialDefines;
-    var StandardMaterial = /** @class */ (function (_super) {
+    var StandardMaterial = (function (_super) {
         __extends(StandardMaterial, _super);
         function StandardMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -35837,7 +35837,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PBRMaterialDefines = /** @class */ (function (_super) {
+    var PBRMaterialDefines = (function (_super) {
         __extends(PBRMaterialDefines, _super);
         function PBRMaterialDefines() {
             var _this = _super.call(this) || this;
@@ -35963,7 +35963,7 @@ var BABYLON;
      * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    var PBRBaseMaterial = /** @class */ (function (_super) {
+    var PBRBaseMaterial = (function (_super) {
         __extends(PBRBaseMaterial, _super);
         /**
          * Instantiates a new PBRMaterial instance.
@@ -37113,7 +37113,7 @@ var BABYLON;
          * This enables better naming and convention enforcements on top of the pbrMaterial.
          * It is used as the base class for both the specGloss and metalRough conventions.
          */
-        var PBRBaseSimpleMaterial = /** @class */ (function (_super) {
+        var PBRBaseSimpleMaterial = (function (_super) {
             __extends(PBRBaseSimpleMaterial, _super);
             /**
              * Instantiates a new PBRMaterial instance.
@@ -37285,7 +37285,7 @@ var BABYLON;
      * For more information, please refer to the documentation :
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
-    var PBRMaterial = /** @class */ (function (_super) {
+    var PBRMaterial = (function (_super) {
         __extends(PBRMaterial, _super);
         /**
          * Instantiates a new PBRMaterial instance.
@@ -38009,7 +38009,7 @@ var BABYLON;
      * This fits to the PBR convention in the GLTF definition:
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
-    var PBRMetallicRoughnessMaterial = /** @class */ (function (_super) {
+    var PBRMetallicRoughnessMaterial = (function (_super) {
         __extends(PBRMetallicRoughnessMaterial, _super);
         /**
          * Instantiates a new PBRMetalRoughnessMaterial instance.
@@ -38117,7 +38117,7 @@ var BABYLON;
      * This fits to the PBR convention in the GLTF definition:
      * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
      */
-    var PBRSpecularGlossinessMaterial = /** @class */ (function (_super) {
+    var PBRSpecularGlossinessMaterial = (function (_super) {
         __extends(PBRSpecularGlossinessMaterial, _super);
         /**
          * Instantiates a new PBRSpecularGlossinessMaterial instance.
@@ -38212,7 +38212,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     BABYLON.CameraInputTypes = {};
-    var CameraInputsManager = /** @class */ (function () {
+    var CameraInputsManager = (function () {
         function CameraInputsManager(camera) {
             this.attached = {};
             this.camera = camera;
@@ -38355,7 +38355,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraMouseInput = /** @class */ (function () {
+    var FreeCameraMouseInput = (function () {
         function FreeCameraMouseInput(touchEnabled) {
             if (touchEnabled === void 0) { touchEnabled = true; }
             this.touchEnabled = touchEnabled;
@@ -38488,7 +38488,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraKeyboardMoveInput = /** @class */ (function () {
+    var FreeCameraKeyboardMoveInput = (function () {
         function FreeCameraKeyboardMoveInput() {
             this._keys = new Array();
             this.keysUp = [38];
@@ -38611,7 +38611,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraInputsManager = /** @class */ (function (_super) {
+    var FreeCameraInputsManager = (function (_super) {
         __extends(FreeCameraInputsManager, _super);
         function FreeCameraInputsManager(camera) {
             return _super.call(this, camera) || this;
@@ -38656,7 +38656,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var TargetCamera = /** @class */ (function (_super) {
+    var TargetCamera = (function (_super) {
         __extends(TargetCamera, _super);
         function TargetCamera(name, position, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -38969,7 +38969,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCamera = /** @class */ (function (_super) {
+    var FreeCamera = (function (_super) {
         __extends(FreeCamera, _super);
         function FreeCamera(name, position, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -39171,7 +39171,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCameraKeyboardMoveInput = /** @class */ (function () {
+    var ArcRotateCameraKeyboardMoveInput = (function () {
         function ArcRotateCameraKeyboardMoveInput() {
             this._keys = new Array();
             this.keysUp = [38];
@@ -39336,7 +39336,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCameraMouseWheelInput = /** @class */ (function () {
+    var ArcRotateCameraMouseWheelInput = (function () {
         function ArcRotateCameraMouseWheelInput() {
             this.wheelPrecision = 3.0;
             /**
@@ -39399,7 +39399,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCameraPointersInput = /** @class */ (function () {
+    var ArcRotateCameraPointersInput = (function () {
         function ArcRotateCameraPointersInput() {
             this.buttons = [0, 1, 2];
             this.angularSensibilityX = 1000.0;
@@ -39731,7 +39731,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCamera = /** @class */ (function (_super) {
+    var ArcRotateCamera = (function (_super) {
         __extends(ArcRotateCamera, _super);
         function ArcRotateCamera(name, alpha, beta, radius, target, scene) {
             var _this = _super.call(this, name, BABYLON.Vector3.Zero(), scene) || this;
@@ -40501,7 +40501,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCameraInputsManager = /** @class */ (function (_super) {
+    var ArcRotateCameraInputsManager = (function (_super) {
         __extends(ArcRotateCameraInputsManager, _super);
         function ArcRotateCameraInputsManager(camera) {
             return _super.call(this, camera) || this;
@@ -40541,7 +40541,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var HemisphericLight = /** @class */ (function (_super) {
+    var HemisphericLight = (function (_super) {
         __extends(HemisphericLight, _super);
         /**
          * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
@@ -40624,7 +40624,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ShadowLight = /** @class */ (function (_super) {
+    var ShadowLight = (function (_super) {
         __extends(ShadowLight, _super);
         function ShadowLight() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -40800,7 +40800,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PointLight = /** @class */ (function (_super) {
+    var PointLight = (function (_super) {
         __extends(PointLight, _super);
         /**
          * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.
@@ -40953,7 +40953,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var DirectionalLight = /** @class */ (function (_super) {
+    var DirectionalLight = (function (_super) {
         __extends(DirectionalLight, _super);
         /**
          * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
@@ -41142,7 +41142,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SpotLight = /** @class */ (function (_super) {
+    var SpotLight = (function (_super) {
         __extends(SpotLight, _super);
         /**
          * Creates a SpotLight object in the scene with the passed parameters :
@@ -41259,7 +41259,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var AnimationRange = /** @class */ (function () {
+    var AnimationRange = (function () {
         function AnimationRange(name, from, to) {
             this.name = name;
             this.from = from;
@@ -41274,7 +41274,7 @@ var BABYLON;
     /**
      * Composed of a frame, and an action function
      */
-    var AnimationEvent = /** @class */ (function () {
+    var AnimationEvent = (function () {
         function AnimationEvent(frame, action, onlyOnce) {
             this.frame = frame;
             this.action = action;
@@ -41284,7 +41284,7 @@ var BABYLON;
         return AnimationEvent;
     }());
     BABYLON.AnimationEvent = AnimationEvent;
-    var PathCursor = /** @class */ (function () {
+    var PathCursor = (function () {
         function PathCursor(path) {
             this.path = path;
             this._onchange = new Array();
@@ -41336,7 +41336,7 @@ var BABYLON;
         return PathCursor;
     }());
     BABYLON.PathCursor = PathCursor;
-    var Animation = /** @class */ (function () {
+    var Animation = (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
             this.name = name;
             this.targetProperty = targetProperty;
@@ -41830,7 +41830,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RuntimeAnimation = /** @class */ (function () {
+    var RuntimeAnimation = (function () {
         function RuntimeAnimation(target, animation) {
             this._offsetsCache = {};
             this._highLimitsCache = {};
@@ -42193,7 +42193,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Animatable = /** @class */ (function () {
+    var Animatable = (function () {
         function Animatable(scene, target, fromFrame, toFrame, loopAnimation, speedRatio, onAnimationEnd, animations) {
             if (fromFrame === void 0) { fromFrame = 0; }
             if (toFrame === void 0) { toFrame = 100; }
@@ -42389,7 +42389,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var EasingFunction = /** @class */ (function () {
+    var EasingFunction = (function () {
         function EasingFunction() {
             // Properties
             this._easingMode = EasingFunction.EASINGMODE_EASEIN;
@@ -42444,7 +42444,7 @@ var BABYLON;
         return EasingFunction;
     }());
     BABYLON.EasingFunction = EasingFunction;
-    var CircleEase = /** @class */ (function (_super) {
+    var CircleEase = (function (_super) {
         __extends(CircleEase, _super);
         function CircleEase() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -42456,7 +42456,7 @@ var BABYLON;
         return CircleEase;
     }(EasingFunction));
     BABYLON.CircleEase = CircleEase;
-    var BackEase = /** @class */ (function (_super) {
+    var BackEase = (function (_super) {
         __extends(BackEase, _super);
         function BackEase(amplitude) {
             if (amplitude === void 0) { amplitude = 1; }
@@ -42471,7 +42471,7 @@ var BABYLON;
         return BackEase;
     }(EasingFunction));
     BABYLON.BackEase = BackEase;
-    var BounceEase = /** @class */ (function (_super) {
+    var BounceEase = (function (_super) {
         __extends(BounceEase, _super);
         function BounceEase(bounces, bounciness) {
             if (bounces === void 0) { bounces = 3; }
@@ -42504,7 +42504,7 @@ var BABYLON;
         return BounceEase;
     }(EasingFunction));
     BABYLON.BounceEase = BounceEase;
-    var CubicEase = /** @class */ (function (_super) {
+    var CubicEase = (function (_super) {
         __extends(CubicEase, _super);
         function CubicEase() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -42515,7 +42515,7 @@ var BABYLON;
         return CubicEase;
     }(EasingFunction));
     BABYLON.CubicEase = CubicEase;
-    var ElasticEase = /** @class */ (function (_super) {
+    var ElasticEase = (function (_super) {
         __extends(ElasticEase, _super);
         function ElasticEase(oscillations, springiness) {
             if (oscillations === void 0) { oscillations = 3; }
@@ -42540,7 +42540,7 @@ var BABYLON;
         return ElasticEase;
     }(EasingFunction));
     BABYLON.ElasticEase = ElasticEase;
-    var ExponentialEase = /** @class */ (function (_super) {
+    var ExponentialEase = (function (_super) {
         __extends(ExponentialEase, _super);
         function ExponentialEase(exponent) {
             if (exponent === void 0) { exponent = 2; }
@@ -42557,7 +42557,7 @@ var BABYLON;
         return ExponentialEase;
     }(EasingFunction));
     BABYLON.ExponentialEase = ExponentialEase;
-    var PowerEase = /** @class */ (function (_super) {
+    var PowerEase = (function (_super) {
         __extends(PowerEase, _super);
         function PowerEase(power) {
             if (power === void 0) { power = 2; }
@@ -42572,7 +42572,7 @@ var BABYLON;
         return PowerEase;
     }(EasingFunction));
     BABYLON.PowerEase = PowerEase;
-    var QuadraticEase = /** @class */ (function (_super) {
+    var QuadraticEase = (function (_super) {
         __extends(QuadraticEase, _super);
         function QuadraticEase() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -42583,7 +42583,7 @@ var BABYLON;
         return QuadraticEase;
     }(EasingFunction));
     BABYLON.QuadraticEase = QuadraticEase;
-    var QuarticEase = /** @class */ (function (_super) {
+    var QuarticEase = (function (_super) {
         __extends(QuarticEase, _super);
         function QuarticEase() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -42594,7 +42594,7 @@ var BABYLON;
         return QuarticEase;
     }(EasingFunction));
     BABYLON.QuarticEase = QuarticEase;
-    var QuinticEase = /** @class */ (function (_super) {
+    var QuinticEase = (function (_super) {
         __extends(QuinticEase, _super);
         function QuinticEase() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -42605,7 +42605,7 @@ var BABYLON;
         return QuinticEase;
     }(EasingFunction));
     BABYLON.QuinticEase = QuinticEase;
-    var SineEase = /** @class */ (function (_super) {
+    var SineEase = (function (_super) {
         __extends(SineEase, _super);
         function SineEase() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -42616,7 +42616,7 @@ var BABYLON;
         return SineEase;
     }(EasingFunction));
     BABYLON.SineEase = SineEase;
-    var BezierCurveEase = /** @class */ (function (_super) {
+    var BezierCurveEase = (function (_super) {
         __extends(BezierCurveEase, _super);
         function BezierCurveEase(x1, y1, x2, y2) {
             if (x1 === void 0) { x1 = 0; }
@@ -42643,7 +42643,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Condition = /** @class */ (function () {
+    var Condition = (function () {
         function Condition(actionManager) {
             this._actionManager = actionManager;
         }
@@ -42669,7 +42669,7 @@ var BABYLON;
         return Condition;
     }());
     BABYLON.Condition = Condition;
-    var ValueCondition = /** @class */ (function (_super) {
+    var ValueCondition = (function (_super) {
         __extends(ValueCondition, _super);
         function ValueCondition(actionManager, target, propertyPath, value, operator) {
             if (operator === void 0) { operator = ValueCondition.IsEqual; }
@@ -42758,7 +42758,7 @@ var BABYLON;
         return ValueCondition;
     }(Condition));
     BABYLON.ValueCondition = ValueCondition;
-    var PredicateCondition = /** @class */ (function (_super) {
+    var PredicateCondition = (function (_super) {
         __extends(PredicateCondition, _super);
         function PredicateCondition(actionManager, predicate) {
             var _this = _super.call(this, actionManager) || this;
@@ -42771,7 +42771,7 @@ var BABYLON;
         return PredicateCondition;
     }(Condition));
     BABYLON.PredicateCondition = PredicateCondition;
-    var StateCondition = /** @class */ (function (_super) {
+    var StateCondition = (function (_super) {
         __extends(StateCondition, _super);
         function StateCondition(actionManager, target, value) {
             var _this = _super.call(this, actionManager) || this;
@@ -42801,7 +42801,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Action = /** @class */ (function () {
+    var Action = (function () {
         function Action(triggerOptions, condition) {
             this.triggerOptions = triggerOptions;
             this.onBeforeExecuteObservable = new BABYLON.Observable();
@@ -42940,7 +42940,7 @@ var BABYLON;
     /**
      * ActionEvent is the event beint sent when an action is triggered.
      */
-    var ActionEvent = /** @class */ (function () {
+    var ActionEvent = (function () {
         /**
          * @param source The mesh or sprite that triggered the action.
          * @param pointerX The X mouse cursor position at the time of the event
@@ -42992,7 +42992,7 @@ var BABYLON;
      * Action Manager manages all events to be triggered on a given mesh or the global scene.
      * A single scene can have many Action Managers to handle predefined actions on specific meshes.
      */
-    var ActionManager = /** @class */ (function () {
+    var ActionManager = (function () {
         function ActionManager(scene) {
             // Members
             this.actions = new Array();
@@ -43555,7 +43555,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var InterpolateValueAction = /** @class */ (function (_super) {
+    var InterpolateValueAction = (function (_super) {
         __extends(InterpolateValueAction, _super);
         function InterpolateValueAction(triggerOptions, target, propertyPath, value, duration, condition, stopOtherAnimations, onInterpolationDone) {
             if (duration === void 0) { duration = 1000; }
@@ -43640,7 +43640,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SwitchBooleanAction = /** @class */ (function (_super) {
+    var SwitchBooleanAction = (function (_super) {
         __extends(SwitchBooleanAction, _super);
         function SwitchBooleanAction(triggerOptions, target, propertyPath, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43667,7 +43667,7 @@ var BABYLON;
         return SwitchBooleanAction;
     }(BABYLON.Action));
     BABYLON.SwitchBooleanAction = SwitchBooleanAction;
-    var SetStateAction = /** @class */ (function (_super) {
+    var SetStateAction = (function (_super) {
         __extends(SetStateAction, _super);
         function SetStateAction(triggerOptions, target, value, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43690,7 +43690,7 @@ var BABYLON;
         return SetStateAction;
     }(BABYLON.Action));
     BABYLON.SetStateAction = SetStateAction;
-    var SetValueAction = /** @class */ (function (_super) {
+    var SetValueAction = (function (_super) {
         __extends(SetValueAction, _super);
         function SetValueAction(triggerOptions, target, propertyPath, value, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43722,7 +43722,7 @@ var BABYLON;
         return SetValueAction;
     }(BABYLON.Action));
     BABYLON.SetValueAction = SetValueAction;
-    var IncrementValueAction = /** @class */ (function (_super) {
+    var IncrementValueAction = (function (_super) {
         __extends(IncrementValueAction, _super);
         function IncrementValueAction(triggerOptions, target, propertyPath, value, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43757,7 +43757,7 @@ var BABYLON;
         return IncrementValueAction;
     }(BABYLON.Action));
     BABYLON.IncrementValueAction = IncrementValueAction;
-    var PlayAnimationAction = /** @class */ (function (_super) {
+    var PlayAnimationAction = (function (_super) {
         __extends(PlayAnimationAction, _super);
         function PlayAnimationAction(triggerOptions, target, from, to, loop, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43787,7 +43787,7 @@ var BABYLON;
         return PlayAnimationAction;
     }(BABYLON.Action));
     BABYLON.PlayAnimationAction = PlayAnimationAction;
-    var StopAnimationAction = /** @class */ (function (_super) {
+    var StopAnimationAction = (function (_super) {
         __extends(StopAnimationAction, _super);
         function StopAnimationAction(triggerOptions, target, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43809,7 +43809,7 @@ var BABYLON;
         return StopAnimationAction;
     }(BABYLON.Action));
     BABYLON.StopAnimationAction = StopAnimationAction;
-    var DoNothingAction = /** @class */ (function (_super) {
+    var DoNothingAction = (function (_super) {
         __extends(DoNothingAction, _super);
         function DoNothingAction(triggerOptions, condition) {
             if (triggerOptions === void 0) { triggerOptions = BABYLON.ActionManager.NothingTrigger; }
@@ -43826,7 +43826,7 @@ var BABYLON;
         return DoNothingAction;
     }(BABYLON.Action));
     BABYLON.DoNothingAction = DoNothingAction;
-    var CombineAction = /** @class */ (function (_super) {
+    var CombineAction = (function (_super) {
         __extends(CombineAction, _super);
         function CombineAction(triggerOptions, children, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43858,7 +43858,7 @@ var BABYLON;
         return CombineAction;
     }(BABYLON.Action));
     BABYLON.CombineAction = CombineAction;
-    var ExecuteCodeAction = /** @class */ (function (_super) {
+    var ExecuteCodeAction = (function (_super) {
         __extends(ExecuteCodeAction, _super);
         function ExecuteCodeAction(triggerOptions, func, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43871,7 +43871,7 @@ var BABYLON;
         return ExecuteCodeAction;
     }(BABYLON.Action));
     BABYLON.ExecuteCodeAction = ExecuteCodeAction;
-    var SetParentAction = /** @class */ (function (_super) {
+    var SetParentAction = (function (_super) {
         __extends(SetParentAction, _super);
         function SetParentAction(triggerOptions, target, parent, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43902,7 +43902,7 @@ var BABYLON;
         return SetParentAction;
     }(BABYLON.Action));
     BABYLON.SetParentAction = SetParentAction;
-    var PlaySoundAction = /** @class */ (function (_super) {
+    var PlaySoundAction = (function (_super) {
         __extends(PlaySoundAction, _super);
         function PlaySoundAction(triggerOptions, sound, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43924,7 +43924,7 @@ var BABYLON;
         return PlaySoundAction;
     }(BABYLON.Action));
     BABYLON.PlaySoundAction = PlaySoundAction;
-    var StopSoundAction = /** @class */ (function (_super) {
+    var StopSoundAction = (function (_super) {
         __extends(StopSoundAction, _super);
         function StopSoundAction(triggerOptions, sound, condition) {
             var _this = _super.call(this, triggerOptions, condition) || this;
@@ -43952,7 +43952,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SpriteManager = /** @class */ (function () {
+    var SpriteManager = (function () {
         function SpriteManager(name, imgUrl, capacity, cellSize, scene, epsilon, samplingMode) {
             if (epsilon === void 0) { epsilon = 0.01; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
@@ -44188,7 +44188,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Sprite = /** @class */ (function () {
+    var Sprite = (function () {
         function Sprite(name, manager) {
             this.name = name;
             this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
@@ -44276,7 +44276,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var IntersectionInfo = /** @class */ (function () {
+    var IntersectionInfo = (function () {
         function IntersectionInfo(bu, bv, distance) {
             this.bu = bu;
             this.bv = bv;
@@ -44287,7 +44287,7 @@ var BABYLON;
         return IntersectionInfo;
     }());
     BABYLON.IntersectionInfo = IntersectionInfo;
-    var PickingInfo = /** @class */ (function () {
+    var PickingInfo = (function () {
         function PickingInfo() {
             this.hit = false;
             this.distance = 0;
@@ -44364,7 +44364,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Ray = /** @class */ (function () {
+    var Ray = (function () {
         function Ray(origin, direction, length) {
             if (length === void 0) { length = Number.MAX_VALUE; }
             this.origin = origin;
@@ -44743,7 +44743,7 @@ var BABYLON;
             return result;
         };
     })();
-    var Collider = /** @class */ (function () {
+    var Collider = (function () {
         function Collider() {
             this._collisionPoint = BABYLON.Vector3.Zero();
             this._planeIntersectionPoint = BABYLON.Vector3.Zero();
@@ -45012,7 +45012,7 @@ var BABYLON;
         WorkerReplyType[WorkerReplyType["SUCCESS"] = 0] = "SUCCESS";
         WorkerReplyType[WorkerReplyType["UNKNOWN_ERROR"] = 1] = "UNKNOWN_ERROR";
     })(WorkerReplyType = BABYLON.WorkerReplyType || (BABYLON.WorkerReplyType = {}));
-    var CollisionCoordinatorWorker = /** @class */ (function () {
+    var CollisionCoordinatorWorker = (function () {
         function CollisionCoordinatorWorker() {
             var _this = this;
             this._scaledPosition = BABYLON.Vector3.Zero();
@@ -45214,7 +45214,7 @@ var BABYLON;
         return CollisionCoordinatorWorker;
     }());
     BABYLON.CollisionCoordinatorWorker = CollisionCoordinatorWorker;
-    var CollisionCoordinatorLegacy = /** @class */ (function () {
+    var CollisionCoordinatorLegacy = (function () {
         function CollisionCoordinatorLegacy() {
             this._scaledPosition = BABYLON.Vector3.Zero();
             this._scaledVelocity = BABYLON.Vector3.Zero();
@@ -45285,7 +45285,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Particle = /** @class */ (function () {
+    var Particle = (function () {
         function Particle(particleSystem) {
             this.particleSystem = particleSystem;
             this.position = BABYLON.Vector3.Zero();
@@ -45368,7 +45368,7 @@ var BABYLON;
         var random = Math.random();
         return ((random * (max - min)) + min);
     };
-    var ParticleSystem = /** @class */ (function () {
+    var ParticleSystem = (function () {
         // end of sheet animation
         function ParticleSystem(name, capacity, scene, customEffect, _isAnimationSheetEnabled, epsilon) {
             if (customEffect === void 0) { customEffect = null; }
@@ -45875,6 +45875,13 @@ var BABYLON;
             serializationObject.blendMode = this.blendMode;
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
+            serializationObject.startSpriteCellID = this.startSpriteCellID;
+            serializationObject.endSpriteCellID = this.endSpriteCellID;
+            serializationObject.spriteCellLoop = this.spriteCellLoop;
+            serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
+            serializationObject.spriteCellWidth = this.spriteCellWidth;
+            serializationObject.spriteCellHeight = this.spriteCellHeight;
+            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
             return serializationObject;
         };
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
@@ -45886,7 +45893,7 @@ var BABYLON;
                 var defines = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
             }
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom, parsedParticleSystem.isAnimationSheetEnabled);
             particleSystem.customShader = program;
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
@@ -45939,6 +45946,12 @@ var BABYLON;
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
+            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
+            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+            particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;
+            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
+            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
             if (!particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
@@ -45956,7 +45969,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var GPUParticleSystem = /** @class */ (function () {
+    var GPUParticleSystem = (function () {
         function GPUParticleSystem(name, capacity, scene) {
             this.name = name;
             this.emitter = null;
@@ -46110,7 +46123,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SolidParticle = /** @class */ (function () {
+    var SolidParticle = (function () {
         /**
          * Creates a Solid Particle object.
          * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
@@ -46194,7 +46207,7 @@ var BABYLON;
         return SolidParticle;
     }());
     BABYLON.SolidParticle = SolidParticle;
-    var ModelShape = /** @class */ (function () {
+    var ModelShape = (function () {
         /**
          * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
          * SPS internal tool, don't use it manually.
@@ -46211,7 +46224,7 @@ var BABYLON;
         return ModelShape;
     }());
     BABYLON.ModelShape = ModelShape;
-    var DepthSortedParticle = /** @class */ (function () {
+    var DepthSortedParticle = (function () {
         function DepthSortedParticle() {
             this.ind = 0; // index of the particle in the "indices" array
             this.indicesLength = 0; // length of the particle shape in the "indices" array
@@ -46229,7 +46242,7 @@ var BABYLON;
     /**
     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
     */
-    var SolidParticleSystem = /** @class */ (function () {
+    var SolidParticleSystem = (function () {
         /**
         * Creates a SPS (Solid Particle System) object.
         * `name` (String) is the SPS name, this will be the underlying mesh name.
@@ -47313,7 +47326,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var GroundMesh = /** @class */ (function (_super) {
+    var GroundMesh = (function (_super) {
         __extends(GroundMesh, _super);
         function GroundMesh(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -47564,7 +47577,7 @@ var BABYLON;
     /**
      * Creates an instance based on a source mesh.
      */
-    var InstancedMesh = /** @class */ (function (_super) {
+    var InstancedMesh = (function (_super) {
         __extends(InstancedMesh, _super);
         function InstancedMesh(name, source) {
             var _this = _super.call(this, name, source.getScene()) || this;
@@ -47835,7 +47848,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var LinesMesh = /** @class */ (function (_super) {
+    var LinesMesh = (function (_super) {
         __extends(LinesMesh, _super);
         function LinesMesh(name, scene, parent, source, doNotCloneChildren, useVertexColor, useVertexAlpha) {
             if (scene === void 0) { scene = null; }
@@ -47966,7 +47979,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ShaderMaterial = /** @class */ (function (_super) {
+    var ShaderMaterial = (function (_super) {
         __extends(ShaderMaterial, _super);
         function ShaderMaterial(name, scene, shaderPath, options) {
             var _this = _super.call(this, name, scene) || this;
@@ -48501,7 +48514,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var MeshBuilder = /** @class */ (function () {
+    var MeshBuilder = (function () {
         function MeshBuilder() {
         }
         MeshBuilder.updateSideOrientation = function (orientation) {
@@ -49713,7 +49726,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var AudioEngine = /** @class */ (function () {
+    var AudioEngine = (function () {
         function AudioEngine() {
             this._audioContext = null;
             this._audioContextInitialized = false;
@@ -49844,7 +49857,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Sound = /** @class */ (function () {
+    var Sound = (function () {
         /**
         * Create a sound and attach it to a scene
         * @param name Name of your sound
@@ -50506,7 +50519,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SoundTrack = /** @class */ (function () {
+    var SoundTrack = (function () {
         function SoundTrack(scene, options) {
             this.id = -1;
             this._isMainTrack = false;
@@ -50610,7 +50623,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Analyser = /** @class */ (function () {
+    var Analyser = (function () {
         function Analyser(scene) {
             this.SMOOTHING = 0.75;
             this.FFT_SIZE = 512;
@@ -50727,7 +50740,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var CubeTexture = /** @class */ (function (_super) {
+    var CubeTexture = (function (_super) {
         __extends(CubeTexture, _super);
         function CubeTexture(rootUrl, scene, extensions, noMipmap, files, onLoad, onError, format, prefiltered, forcedExtension) {
             if (extensions === void 0) { extensions = null; }
@@ -50859,7 +50872,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RenderTargetTexture = /** @class */ (function (_super) {
+    var RenderTargetTexture = (function (_super) {
         __extends(RenderTargetTexture, _super);
         function RenderTargetTexture(name, size, scene, generateMipMaps, doNotChangeAspectRatio, type, isCube, samplingMode, generateDepthBuffer, generateStencilBuffer, isMulti) {
             if (doNotChangeAspectRatio === void 0) { doNotChangeAspectRatio = true; }
@@ -51458,7 +51471,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     ;
-    var MultiRenderTarget = /** @class */ (function (_super) {
+    var MultiRenderTarget = (function (_super) {
         __extends(MultiRenderTarget, _super);
         function MultiRenderTarget(name, size, count, scene, options) {
             var _this = this;
@@ -51615,7 +51628,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var MirrorTexture = /** @class */ (function (_super) {
+    var MirrorTexture = (function (_super) {
         __extends(MirrorTexture, _super);
         function MirrorTexture(name, size, scene, generateMipMaps, type, samplingMode, generateDepthBuffer) {
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
@@ -51796,7 +51809,7 @@ var BABYLON;
     * @param size size of the underlying texture
     * @param scene root scene
     */
-    var RefractionTexture = /** @class */ (function (_super) {
+    var RefractionTexture = (function (_super) {
         __extends(RefractionTexture, _super);
         function RefractionTexture(name, size, scene, generateMipMaps) {
             var _this = _super.call(this, name, size, scene, generateMipMaps, true) || this;
@@ -51847,7 +51860,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var DynamicTexture = /** @class */ (function (_super) {
+    var DynamicTexture = (function (_super) {
         __extends(DynamicTexture, _super);
         function DynamicTexture(name, options, scene, generateMipMaps, samplingMode, format) {
             if (scene === void 0) { scene = null; }
@@ -51964,7 +51977,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VideoTexture = /** @class */ (function (_super) {
+    var VideoTexture = (function (_super) {
         __extends(VideoTexture, _super);
         /**
          * Creates a video texture.
@@ -52100,7 +52113,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RawTexture = /** @class */ (function (_super) {
+    var RawTexture = (function (_super) {
         __extends(RawTexture, _super);
         function RawTexture(data, width, height, format, scene, generateMipMaps, invertY, samplingMode, type) {
             if (generateMipMaps === void 0) { generateMipMaps = true; }
@@ -52160,7 +52173,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PostProcess = /** @class */ (function () {
+    var PostProcess = (function () {
         function PostProcess(name, fragmentUrl, parameters, samplers, options, camera, samplingMode, engine, reusable, defines, textureType, vertexUrl, indexParameters, blockCompilation) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.NEAREST_SAMPLINGMODE; }
             if (defines === void 0) { defines = null; }
@@ -52528,7 +52541,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PassPostProcess = /** @class */ (function (_super) {
+    var PassPostProcess = (function (_super) {
         __extends(PassPostProcess, _super);
         function PassPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
             if (camera === void 0) { camera = null; }
@@ -52552,7 +52565,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 var BABYLON;
 (function (BABYLON) {
-    var ShadowGenerator = /** @class */ (function () {
+    var ShadowGenerator = (function () {
         /**
          * Creates a ShadowGenerator object.
          * A ShadowGenerator is the required tool to use the shadows.
@@ -53474,7 +53487,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var DefaultLoadingScreen = /** @class */ (function () {
+    var DefaultLoadingScreen = (function () {
         function DefaultLoadingScreen(_renderingCanvas, _loadingText, _loadingDivBackgroundColor) {
             if (_loadingText === void 0) { _loadingText = ""; }
             if (_loadingDivBackgroundColor === void 0) { _loadingDivBackgroundColor = "black"; }
@@ -53596,7 +53609,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SceneLoader = /** @class */ (function () {
+    var SceneLoader = (function () {
         function SceneLoader() {
         }
         Object.defineProperty(SceneLoader, "NO_LOGGING", {
@@ -54567,7 +54580,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FilesInput = /** @class */ (function () {
+    var FilesInput = (function () {
         function FilesInput(engine, scene, sceneLoadedCallback, progressCallback, additionalRenderLoopLogicCallback, textureLoadingCallback, startingProcessingFilesCallback, onReloadCallback, errorCallback) {
             this.onProcessFileCallback = function () { return true; };
             this._engine = engine;
@@ -54782,7 +54795,7 @@ var BABYLON;
      * The underlying implementation relies on an associative array to ensure the best performances.
      * The value can be anything including 'null' but except 'undefined'
      */
-    var StringDictionary = /** @class */ (function () {
+    var StringDictionary = (function () {
         function StringDictionary() {
             this._count = 0;
             this._data = {};
@@ -54947,7 +54960,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Tags = /** @class */ (function () {
+    var Tags = (function () {
         function Tags() {
         }
         Tags.EnableFor = function (obj) {
@@ -55054,7 +55067,7 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var AndOrNotEvaluator = /** @class */ (function () {
+        var AndOrNotEvaluator = (function () {
             function AndOrNotEvaluator() {
             }
             AndOrNotEvaluator.Eval = function (query, evaluateCallback) {
@@ -55152,7 +55165,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Database = /** @class */ (function () {
+    var Database = (function () {
         function Database(urlToScene, callbackManifestChecked) {
             // Handling various flavors of prefixed version of IndexedDB
             this.idbFactory = (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
@@ -55693,7 +55706,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FresnelParameters = /** @class */ (function () {
+    var FresnelParameters = (function () {
         function FresnelParameters() {
             this._isEnabled = true;
             this.leftColor = BABYLON.Color3.White();
@@ -55748,7 +55761,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var MultiMaterial = /** @class */ (function (_super) {
+    var MultiMaterial = (function (_super) {
         __extends(MultiMaterial, _super);
         function MultiMaterial(name, scene) {
             var _this = _super.call(this, name, scene, true) || this;
@@ -55881,7 +55894,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraTouchInput = /** @class */ (function () {
+    var FreeCameraTouchInput = (function () {
         function FreeCameraTouchInput() {
             this._offsetX = null;
             this._offsetY = null;
@@ -56006,7 +56019,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
-    var TouchCamera = /** @class */ (function (_super) {
+    var TouchCamera = (function (_super) {
         __extends(TouchCamera, _super);
         //-- end properties for backward compatibility for inputs
         function TouchCamera(name, position, scene) {
@@ -56065,7 +56078,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ProceduralTexture = /** @class */ (function (_super) {
+    var ProceduralTexture = (function (_super) {
         __extends(ProceduralTexture, _super);
         function ProceduralTexture(name, size, fragment, scene, fallbackTexture, generateMipMaps, isCube) {
             if (fallbackTexture === void 0) { fallbackTexture = null; }
@@ -56378,7 +56391,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var CustomProceduralTexture = /** @class */ (function (_super) {
+    var CustomProceduralTexture = (function (_super) {
         __extends(CustomProceduralTexture, _super);
         function CustomProceduralTexture(name, texturePath, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, null, scene, fallbackTexture, generateMipMaps) || this;
@@ -56502,7 +56515,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraGamepadInput = /** @class */ (function () {
+    var FreeCameraGamepadInput = (function () {
         function FreeCameraGamepadInput() {
             this.gamepadAngularSensibility = 200;
             this.gamepadMoveSensibility = 40;
@@ -56590,7 +56603,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCameraGamepadInput = /** @class */ (function () {
+    var ArcRotateCameraGamepadInput = (function () {
         function ArcRotateCameraGamepadInput() {
             this.gamepadRotationSensibility = 80;
             this.gamepadMoveSensibility = 40;
@@ -56667,7 +56680,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var GamepadManager = /** @class */ (function () {
+    var GamepadManager = (function () {
         function GamepadManager(_scene) {
             var _this = this;
             this._scene = _scene;
@@ -56852,7 +56865,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var StickValues = /** @class */ (function () {
+    var StickValues = (function () {
         function StickValues(x, y) {
             this.x = x;
             this.y = y;
@@ -56860,7 +56873,7 @@ var BABYLON;
         return StickValues;
     }());
     BABYLON.StickValues = StickValues;
-    var Gamepad = /** @class */ (function () {
+    var Gamepad = (function () {
         function Gamepad(id, index, browserGamepad, leftStickX, leftStickY, rightStickX, rightStickY) {
             if (leftStickX === void 0) { leftStickX = 0; }
             if (leftStickY === void 0) { leftStickY = 1; }
@@ -56942,7 +56955,7 @@ var BABYLON;
         return Gamepad;
     }());
     BABYLON.Gamepad = Gamepad;
-    var GenericPad = /** @class */ (function (_super) {
+    var GenericPad = (function (_super) {
         __extends(GenericPad, _super);
         function GenericPad(id, index, browserGamepad) {
             var _this = _super.call(this, id, index, browserGamepad) || this;
@@ -57016,7 +57029,7 @@ var BABYLON;
         Xbox360Dpad[Xbox360Dpad["Left"] = 2] = "Left";
         Xbox360Dpad[Xbox360Dpad["Right"] = 3] = "Right";
     })(Xbox360Dpad = BABYLON.Xbox360Dpad || (BABYLON.Xbox360Dpad = {}));
-    var Xbox360Pad = /** @class */ (function (_super) {
+    var Xbox360Pad = (function (_super) {
         __extends(Xbox360Pad, _super);
         function Xbox360Pad(id, index, gamepad, xboxOne) {
             if (xboxOne === void 0) { xboxOne = false; }
@@ -57327,7 +57340,7 @@ var BABYLON;
         PoseEnabledControllerType[PoseEnabledControllerType["WINDOWS"] = 2] = "WINDOWS";
         PoseEnabledControllerType[PoseEnabledControllerType["GENERIC"] = 3] = "GENERIC";
     })(PoseEnabledControllerType = BABYLON.PoseEnabledControllerType || (BABYLON.PoseEnabledControllerType = {}));
-    var PoseEnabledControllerHelper = /** @class */ (function () {
+    var PoseEnabledControllerHelper = (function () {
         function PoseEnabledControllerHelper() {
         }
         PoseEnabledControllerHelper.InitiateController = function (vrGamepad) {
@@ -57348,7 +57361,7 @@ var BABYLON;
         return PoseEnabledControllerHelper;
     }());
     BABYLON.PoseEnabledControllerHelper = PoseEnabledControllerHelper;
-    var PoseEnabledController = /** @class */ (function (_super) {
+    var PoseEnabledController = (function (_super) {
         __extends(PoseEnabledController, _super);
         function PoseEnabledController(browserGamepad) {
             var _this = _super.call(this, browserGamepad.id, browserGamepad.index, browserGamepad) || this;
@@ -57468,7 +57481,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var WebVRController = /** @class */ (function (_super) {
+    var WebVRController = (function (_super) {
         __extends(WebVRController, _super);
         function WebVRController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
@@ -57563,7 +57576,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var OculusTouchController = /** @class */ (function (_super) {
+    var OculusTouchController = (function (_super) {
         __extends(OculusTouchController, _super);
         function OculusTouchController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
@@ -57718,7 +57731,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ViveController = /** @class */ (function (_super) {
+    var ViveController = (function (_super) {
         __extends(ViveController, _super);
         function ViveController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
@@ -57815,7 +57828,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var GenericController = /** @class */ (function (_super) {
+    var GenericController = (function (_super) {
         __extends(GenericController, _super);
         function GenericController(vrGamepad) {
             return _super.call(this, vrGamepad) || this;
@@ -57846,14 +57859,14 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var LoadedMeshInfo = /** @class */ (function () {
+    var LoadedMeshInfo = (function () {
         function LoadedMeshInfo() {
             this.buttonMeshes = {};
             this.axisMeshes = {};
         }
         return LoadedMeshInfo;
     }());
-    var WindowsMotionController = /** @class */ (function (_super) {
+    var WindowsMotionController = (function (_super) {
         __extends(WindowsMotionController, _super);
         function WindowsMotionController(vrGamepad) {
             var _this = _super.call(this, vrGamepad) || this;
@@ -58206,7 +58219,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FollowCamera = /** @class */ (function (_super) {
+    var FollowCamera = (function (_super) {
         __extends(FollowCamera, _super);
         function FollowCamera(name, position, scene, lockedTarget) {
             if (lockedTarget === void 0) { lockedTarget = null; }
@@ -58286,7 +58299,7 @@ var BABYLON;
         return FollowCamera;
     }(BABYLON.TargetCamera));
     BABYLON.FollowCamera = FollowCamera;
-    var ArcFollowCamera = /** @class */ (function (_super) {
+    var ArcFollowCamera = (function (_super) {
         __extends(ArcFollowCamera, _super);
         function ArcFollowCamera(name, alpha, beta, radius, target, scene) {
             var _this = _super.call(this, name, BABYLON.Vector3.Zero(), scene) || this;
@@ -58327,7 +58340,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
-    var UniversalCamera = /** @class */ (function (_super) {
+    var UniversalCamera = (function (_super) {
         __extends(UniversalCamera, _super);
         //-- end properties for backward compatibility for inputs
         function UniversalCamera(name, position, scene) {
@@ -58380,7 +58393,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
-    var GamepadCamera = /** @class */ (function (_super) {
+    var GamepadCamera = (function (_super) {
         __extends(GamepadCamera, _super);
         //-- end properties for backward compatibility for inputs
         function GamepadCamera(name, position, scene) {
@@ -58429,7 +58442,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PostProcessRenderPipelineManager = /** @class */ (function () {
+    var PostProcessRenderPipelineManager = (function () {
         function PostProcessRenderPipelineManager() {
             this._renderPipelines = {};
         }
@@ -58518,7 +58531,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PostProcessRenderPass = /** @class */ (function () {
+    var PostProcessRenderPass = (function () {
         function PostProcessRenderPass(scene, name, size, renderList, beforeRender, afterRender) {
             this._refCount = 0;
             this._name = name;
@@ -58562,7 +58575,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PostProcessRenderEffect = /** @class */ (function () {
+    var PostProcessRenderEffect = (function () {
         function PostProcessRenderEffect(engine, name, getPostProcess, singleInstance) {
             this._name = name;
             this._singleInstance = singleInstance || true;
@@ -58734,7 +58747,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PostProcessRenderPipeline = /** @class */ (function () {
+    var PostProcessRenderPipeline = (function () {
         function PostProcessRenderPipeline(engine, name) {
             this._engine = engine;
             this._name = name;
@@ -58905,7 +58918,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var DepthRenderer = /** @class */ (function () {
+    var DepthRenderer = (function () {
         function DepthRenderer(scene, type) {
             if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_FLOAT; }
             var _this = this;
@@ -59049,7 +59062,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SSAORenderingPipeline = /** @class */ (function (_super) {
+    var SSAORenderingPipeline = (function (_super) {
         __extends(SSAORenderingPipeline, _super);
         /**
          * @constructor
@@ -59277,7 +59290,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SSAO2RenderingPipeline = /** @class */ (function (_super) {
+    var SSAO2RenderingPipeline = (function (_super) {
         __extends(SSAO2RenderingPipeline, _super);
         /**
          * @constructor
@@ -59602,7 +59615,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var LensRenderingPipeline = /** @class */ (function (_super) {
+    var LensRenderingPipeline = (function (_super) {
         __extends(LensRenderingPipeline, _super);
         /**
          * @constructor
@@ -59833,7 +59846,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var StandardRenderingPipeline = /** @class */ (function (_super) {
+    var StandardRenderingPipeline = (function (_super) {
         __extends(StandardRenderingPipeline, _super);
         /**
          * @constructor
@@ -60567,6 +60580,9 @@ var BABYLON;
         ], StandardRenderingPipeline.prototype, "motionStrength", void 0);
         __decorate([
             BABYLON.serialize()
+        ], StandardRenderingPipeline.prototype, "_ratio", void 0);
+        __decorate([
+            BABYLON.serialize()
         ], StandardRenderingPipeline.prototype, "BloomEnabled", null);
         __decorate([
             BABYLON.serialize()
@@ -60599,7 +60615,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FxaaPostProcess = /** @class */ (function (_super) {
+    var FxaaPostProcess = (function (_super) {
         __extends(FxaaPostProcess, _super);
         function FxaaPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
             if (camera === void 0) { camera = null; }
@@ -60626,7 +60642,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var DefaultRenderingPipeline = /** @class */ (function (_super) {
+    var DefaultRenderingPipeline = (function (_super) {
         __extends(DefaultRenderingPipeline, _super);
         /**
          * @constructor
@@ -60948,7 +60964,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var GeometryBufferRenderer = /** @class */ (function () {
+    var GeometryBufferRenderer = (function () {
         function GeometryBufferRenderer(scene, ratio) {
             if (ratio === void 0) { ratio = 1; }
             this._enablePosition = false;
@@ -61071,7 +61087,7 @@ var BABYLON;
                     return;
                 }
                 // Culling
-                engine.setState(material.backFaceCulling);
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
@@ -61126,7 +61142,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RefractionPostProcess = /** @class */ (function (_super) {
+    var RefractionPostProcess = (function (_super) {
         __extends(RefractionPostProcess, _super);
         function RefractionPostProcess(name, refractionTextureUrl, color, depth, colorLevel, options, camera, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, "refraction", ["baseColor", "depth", "colorLevel"], ["refractionSampler"], options, camera, samplingMode, engine, reusable) || this;
@@ -61161,7 +61177,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BlackAndWhitePostProcess = /** @class */ (function (_super) {
+    var BlackAndWhitePostProcess = (function (_super) {
         __extends(BlackAndWhitePostProcess, _super);
         function BlackAndWhitePostProcess(name, options, camera, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, "blackAndWhite", ["degree"], null, options, camera, samplingMode, engine, reusable) || this;
@@ -61181,7 +61197,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ConvolutionPostProcess = /** @class */ (function (_super) {
+    var ConvolutionPostProcess = (function (_super) {
         __extends(ConvolutionPostProcess, _super);
         function ConvolutionPostProcess(name, kernel, options, camera, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, "convolution", ["kernel", "screenSize"], null, options, camera, samplingMode, engine, reusable) || this;
@@ -61210,7 +61226,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FilterPostProcess = /** @class */ (function (_super) {
+    var FilterPostProcess = (function (_super) {
         __extends(FilterPostProcess, _super);
         function FilterPostProcess(name, kernelMatrix, options, camera, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, "filter", ["kernelMatrix"], null, options, camera, samplingMode, engine, reusable) || this;
@@ -61236,7 +61252,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // Inspired by http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
-    var VolumetricLightScatteringPostProcess = /** @class */ (function (_super) {
+    var VolumetricLightScatteringPostProcess = (function (_super) {
         __extends(VolumetricLightScatteringPostProcess, _super);
         /**
          * @constructor
@@ -61637,7 +61653,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ColorCorrectionPostProcess = /** @class */ (function (_super) {
+    var ColorCorrectionPostProcess = (function (_super) {
         __extends(ColorCorrectionPostProcess, _super);
         function ColorCorrectionPostProcess(name, colorTableUrl, options, camera, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, 'colorCorrection', null, ['colorTable'], options, camera, samplingMode, engine, reusable) || this;
@@ -61668,7 +61684,7 @@ var BABYLON;
         TonemappingOperator[TonemappingOperator["Photographic"] = 3] = "Photographic";
     })(TonemappingOperator = BABYLON.TonemappingOperator || (BABYLON.TonemappingOperator = {}));
     ;
-    var TonemapPostProcess = /** @class */ (function (_super) {
+    var TonemapPostProcess = (function (_super) {
         __extends(TonemapPostProcess, _super);
         function TonemapPostProcess(name, _operator, exposureAdjustment, camera, samplingMode, engine, textureFormat) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
@@ -61702,7 +61718,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var DisplayPassPostProcess = /** @class */ (function (_super) {
+    var DisplayPassPostProcess = (function (_super) {
         __extends(DisplayPassPostProcess, _super);
         function DisplayPassPostProcess(name, options, camera, samplingMode, engine, reusable) {
             return _super.call(this, name, "displayPass", ["passSampler"], ["passSampler"], options, camera, samplingMode, engine, reusable) || this;
@@ -61717,7 +61733,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var HighlightsPostProcess = /** @class */ (function (_super) {
+    var HighlightsPostProcess = (function (_super) {
         __extends(HighlightsPostProcess, _super);
         function HighlightsPostProcess(name, options, camera, samplingMode, engine, reusable, textureType) {
             if (textureType === void 0) { textureType = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
@@ -61738,7 +61754,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ImageProcessingPostProcess = /** @class */ (function (_super) {
+    var ImageProcessingPostProcess = (function (_super) {
         __extends(ImageProcessingPostProcess, _super);
         function ImageProcessingPostProcess(name, options, camera, samplingMode, engine, reusable, textureType, imageProcessingConfiguration) {
             if (camera === void 0) { camera = null; }
@@ -62144,7 +62160,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BlurPostProcess = /** @class */ (function (_super) {
+    var BlurPostProcess = (function (_super) {
         __extends(BlurPostProcess, _super);
         function BlurPostProcess(name, direction, kernel, options, camera, samplingMode, engine, reusable, textureType) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
@@ -62331,7 +62347,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Bone = /** @class */ (function (_super) {
+    var Bone = (function (_super) {
         __extends(Bone, _super);
         function Bone(name, skeleton, parentBone, localMatrix, restPose, baseMatrix, index) {
             if (parentBone === void 0) { parentBone = null; }
@@ -63220,7 +63236,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BoneIKController = /** @class */ (function () {
+    var BoneIKController = (function () {
         function BoneIKController(mesh, bone, options) {
             this.targetPosition = BABYLON.Vector3.Zero();
             this.poleTargetPosition = BABYLON.Vector3.Zero();
@@ -63433,7 +63449,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BoneLookController = /** @class */ (function () {
+    var BoneLookController = (function () {
         /**
          * Create a BoneLookController
          * @param mesh the mesh that the bone belongs to
@@ -63882,7 +63898,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Skeleton = /** @class */ (function () {
+    var Skeleton = (function () {
         function Skeleton(name, id, scene) {
             this.name = name;
             this.id = id;
@@ -64290,7 +64306,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SphericalPolynomial = /** @class */ (function () {
+    var SphericalPolynomial = (function () {
         function SphericalPolynomial() {
             this.x = BABYLON.Vector3.Zero();
             this.y = BABYLON.Vector3.Zero();
@@ -64336,7 +64352,7 @@ var BABYLON;
         return SphericalPolynomial;
     }());
     BABYLON.SphericalPolynomial = SphericalPolynomial;
-    var SphericalHarmonics = /** @class */ (function () {
+    var SphericalHarmonics = (function () {
         function SphericalHarmonics() {
             this.L00 = BABYLON.Vector3.Zero();
             this.L1_1 = BABYLON.Vector3.Zero();
@@ -64427,7 +64443,7 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var FileFaceOrientation = /** @class */ (function () {
+        var FileFaceOrientation = (function () {
             function FileFaceOrientation(name, worldAxisForNormal, worldAxisForFileX, worldAxisForFileY) {
                 this.name = name;
                 this.worldAxisForNormal = worldAxisForNormal;
@@ -64441,7 +64457,7 @@ var BABYLON;
          * Helper class dealing with the extraction of spherical polynomial dataArray
          * from a cube map.
          */
-        var CubeMapToSphericalPolynomialTools = /** @class */ (function () {
+        var CubeMapToSphericalPolynomialTools = (function () {
             function CubeMapToSphericalPolynomialTools() {
             }
             /**
@@ -64583,7 +64599,7 @@ var BABYLON;
         /**
          * Helper class usefull to convert panorama picture to their cubemap representation in 6 faces.
          */
-        var PanoramaToCubeMapTools = /** @class */ (function () {
+        var PanoramaToCubeMapTools = (function () {
             function PanoramaToCubeMapTools() {
             }
             /**
@@ -64729,7 +64745,7 @@ var BABYLON;
         /**
          * This groups tools to convert HDR texture to native colors array.
          */
-        var HDRTools = /** @class */ (function () {
+        var HDRTools = (function () {
             function HDRTools() {
             }
             HDRTools.Ldexp = function (mantissa, exponent) {
@@ -64935,7 +64951,7 @@ var BABYLON;
      * The only supported format is currently panorama picture stored in RGBE format.
      * Example of such files can be found on HDRLib: http://hdrlib.com/
      */
-    var HDRCubeTexture = /** @class */ (function (_super) {
+    var HDRCubeTexture = (function (_super) {
         __extends(HDRCubeTexture, _super);
         /**
          * Instantiates an HDRTexture from the following parameters.
@@ -65430,7 +65446,7 @@ var Earcut;
         return triangles;
     }
     Earcut.earcut = earcut;
-    var Node = /** @class */ (function () {
+    var Node = (function () {
         function Node(i, x, y) {
             this.i = i;
             this.x = x;
@@ -65939,7 +65955,7 @@ var Earcut;
 
 var BABYLON;
 (function (BABYLON) {
-    var IndexedVector2 = /** @class */ (function (_super) {
+    var IndexedVector2 = (function (_super) {
         __extends(IndexedVector2, _super);
         function IndexedVector2(original, index) {
             var _this = _super.call(this, original.x, original.y) || this;
@@ -65948,7 +65964,7 @@ var BABYLON;
         }
         return IndexedVector2;
     }(BABYLON.Vector2));
-    var PolygonPoints = /** @class */ (function () {
+    var PolygonPoints = (function () {
         function PolygonPoints() {
             this.elements = new Array();
         }
@@ -65992,7 +66008,7 @@ var BABYLON;
         };
         return PolygonPoints;
     }());
-    var Polygon = /** @class */ (function () {
+    var Polygon = (function () {
         function Polygon() {
         }
         Polygon.Rectangle = function (xmin, ymin, xmax, ymax) {
@@ -66030,7 +66046,7 @@ var BABYLON;
         return Polygon;
     }());
     BABYLON.Polygon = Polygon;
-    var PolygonMeshBuilder = /** @class */ (function () {
+    var PolygonMeshBuilder = (function () {
         function PolygonMeshBuilder(name, contours, scene) {
             this._points = new PolygonPoints();
             this._outlinepoints = new PolygonPoints();
@@ -66187,7 +66203,7 @@ var BABYLON;
     // functions like `BABYLON.CSG.sphere()` can return a smooth vertex normal, but `normal`
     // is not used anywhere else. 
     // Same goes for uv, it allows to keep the original vertex uv coordinates of the 2 meshes
-    var Vertex = /** @class */ (function () {
+    var Vertex = (function () {
         function Vertex(pos, normal, uv) {
             this.pos = pos;
             this.normal = normal;
@@ -66211,7 +66227,7 @@ var BABYLON;
     }());
     // # class Plane
     // Represents a plane in 3D space.
-    var Plane = /** @class */ (function () {
+    var Plane = (function () {
         function Plane(normal, w) {
             this.normal = normal;
             this.w = w;
@@ -66308,7 +66324,7 @@ var BABYLON;
     // Each convex polygon has a `shared` property, which is shared between all
     // polygons that are clones of each other or were split from the same polygon.
     // This can be used to define per-polygon properties (such as surface color).
-    var Polygon = /** @class */ (function () {
+    var Polygon = (function () {
         function Polygon(vertices, shared) {
             this.vertices = vertices;
             this.shared = shared;
@@ -66330,7 +66346,7 @@ var BABYLON;
     // polygons) are added directly to that node and the other polygons are added to
     // the front and/or back subtrees. This is not a leafy BSP tree since there is
     // no distinction between internal and leaf nodes.
-    var Node = /** @class */ (function () {
+    var Node = (function () {
         function Node(polygons) {
             this.plane = null;
             this.front = null;
@@ -66430,7 +66446,7 @@ var BABYLON;
         };
         return Node;
     }());
-    var CSG = /** @class */ (function () {
+    var CSG = (function () {
         function CSG() {
             this.polygons = new Array();
         }
@@ -66689,7 +66705,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var LensFlare = /** @class */ (function () {
+    var LensFlare = (function () {
         function LensFlare(size, position, color, imgUrl, system) {
             this.size = size;
             this.position = position;
@@ -66720,7 +66736,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var LensFlareSystem = /** @class */ (function () {
+    var LensFlareSystem = (function () {
         function LensFlareSystem(name, emitter, scene) {
             this.name = name;
             this.lensFlares = new Array();
@@ -66963,7 +66979,7 @@ var BABYLON;
      * This is a holder class for the physics joint created by the physics plugin.
      * It holds a set of functions to control the underlying joint.
      */
-    var PhysicsJoint = /** @class */ (function () {
+    var PhysicsJoint = (function () {
         function PhysicsJoint(type, jointData) {
             this.type = type;
             this.jointData = jointData;
@@ -67021,7 +67037,7 @@ var BABYLON;
     /**
      * A class representing a physics distance joint.
      */
-    var DistanceJoint = /** @class */ (function (_super) {
+    var DistanceJoint = (function (_super) {
         __extends(DistanceJoint, _super);
         function DistanceJoint(jointData) {
             return _super.call(this, PhysicsJoint.DistanceJoint, jointData) || this;
@@ -67035,7 +67051,7 @@ var BABYLON;
         return DistanceJoint;
     }(PhysicsJoint));
     BABYLON.DistanceJoint = DistanceJoint;
-    var MotorEnabledJoint = /** @class */ (function (_super) {
+    var MotorEnabledJoint = (function (_super) {
         __extends(MotorEnabledJoint, _super);
         function MotorEnabledJoint(type, jointData) {
             return _super.call(this, type, jointData) || this;
@@ -67062,7 +67078,7 @@ var BABYLON;
     /**
      * This class represents a single hinge physics joint
      */
-    var HingeJoint = /** @class */ (function (_super) {
+    var HingeJoint = (function (_super) {
         __extends(HingeJoint, _super);
         function HingeJoint(jointData) {
             return _super.call(this, PhysicsJoint.HingeJoint, jointData) || this;
@@ -67089,7 +67105,7 @@ var BABYLON;
     /**
      * This class represents a dual hinge physics joint (same as wheel joint)
      */
-    var Hinge2Joint = /** @class */ (function (_super) {
+    var Hinge2Joint = (function (_super) {
         __extends(Hinge2Joint, _super);
         function Hinge2Joint(jointData) {
             return _super.call(this, PhysicsJoint.Hinge2Joint, jointData) || this;
@@ -67125,7 +67141,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PhysicsImpostor = /** @class */ (function () {
+    var PhysicsImpostor = (function () {
         function PhysicsImpostor(object, type, _options, _scene) {
             if (_options === void 0) { _options = { mass: 0 }; }
             var _this = this;
@@ -67734,7 +67750,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var PhysicsEngine = /** @class */ (function () {
+    var PhysicsEngine = (function () {
         function PhysicsEngine(gravity, _physicsPlugin) {
             if (_physicsPlugin === void 0) { _physicsPlugin = new BABYLON.CannonJSPlugin(); }
             this._physicsPlugin = _physicsPlugin;
@@ -67902,7 +67918,7 @@ var BABYLON;
         PhysicsUpdraftMode[PhysicsUpdraftMode["Center"] = 0] = "Center";
         PhysicsUpdraftMode[PhysicsUpdraftMode["Perpendicular"] = 1] = "Perpendicular"; // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
     })(PhysicsUpdraftMode = BABYLON.PhysicsUpdraftMode || (BABYLON.PhysicsUpdraftMode = {}));
-    var PhysicsHelper = /** @class */ (function () {
+    var PhysicsHelper = (function () {
         function PhysicsHelper(scene) {
             this._scene = scene;
             this._physicsEngine = this._scene.getPhysicsEngine();
@@ -68006,7 +68022,7 @@ var BABYLON;
     }());
     BABYLON.PhysicsHelper = PhysicsHelper;
     /***** Radial explosion *****/
-    var PhysicsRadialExplosionEvent = /** @class */ (function () {
+    var PhysicsRadialExplosionEvent = (function () {
         function PhysicsRadialExplosionEvent(scene) {
             this._sphereOptions = { segments: 32, diameter: 1 }; // TODO: make configurable
             this._rays = [];
@@ -68098,7 +68114,7 @@ var BABYLON;
     }());
     BABYLON.PhysicsRadialExplosionEvent = PhysicsRadialExplosionEvent;
     /***** Gravitational Field *****/
-    var PhysicsGravitationalFieldEvent = /** @class */ (function () {
+    var PhysicsGravitationalFieldEvent = (function () {
         function PhysicsGravitationalFieldEvent(physicsHelper, scene, origin, radius, strength, falloff) {
             if (falloff === void 0) { falloff = PhysicsRadialImpulseFalloff.Constant; }
             this._dataFetched = false; // check if the has been fetched the data. If not, do cleanup
@@ -68167,7 +68183,7 @@ var BABYLON;
     }());
     BABYLON.PhysicsGravitationalFieldEvent = PhysicsGravitationalFieldEvent;
     /***** Updraft *****/
-    var PhysicsUpdraftEvent = /** @class */ (function () {
+    var PhysicsUpdraftEvent = (function () {
         function PhysicsUpdraftEvent(physicsEngine, scene, origin, radius, strength, height, updraftMode) {
             this._originTop = BABYLON.Vector3.Zero(); // the most upper part of the cylinder
             this._originDirection = BABYLON.Vector3.Zero(); // used if the updraftMode is perpendicular
@@ -68282,7 +68298,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var CannonJSPlugin = /** @class */ (function () {
+    var CannonJSPlugin = (function () {
         function CannonJSPlugin(_useDeltaForWorldStep, iterations) {
             if (_useDeltaForWorldStep === void 0) { _useDeltaForWorldStep = true; }
             if (iterations === void 0) { iterations = 10; }
@@ -68839,7 +68855,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var OimoJSPlugin = /** @class */ (function () {
+    var OimoJSPlugin = (function () {
         function OimoJSPlugin(iterations) {
             this.name = "OimoJSPlugin";
             this._tmpImpostorsArray = [];
@@ -69233,7 +69249,7 @@ var BABYLON;
         * By Vincent Thibault
         * @blog http://blog.robrowser.com/javascript-tga-loader.html
         */
-        var TGATools = /** @class */ (function () {
+        var TGATools = (function () {
             function TGATools() {
             }
             TGATools.GetTGAHeader = function (data) {
@@ -69563,7 +69579,7 @@ var BABYLON;
         // var off_caps4 = 30;
         var off_dxgiFormat = 32;
         ;
-        var DDSTools = /** @class */ (function () {
+        var DDSTools = (function () {
             function DDSTools() {
             }
             DDSTools.GetDDSInfo = function (arrayBuffer) {
@@ -69966,7 +69982,7 @@ var BABYLON;
          * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
          * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
          */
-        var KhronosTextureContainer = /** @class */ (function () {
+        var KhronosTextureContainer = (function () {
             /**
              * @param {ArrayBuffer} arrayBuffer- contents of the KTX container file
              * @param {number} facesExpected- should be either 1 or 6, based whether a cube texture or or
@@ -70086,7 +70102,7 @@ var BABYLON;
         /**
         * Demo available here: http://www.babylonjs-playground.com/#1BZJVJ#8
         */
-        var SkeletonViewer = /** @class */ (function () {
+        var SkeletonViewer = (function () {
             function SkeletonViewer(skeleton, mesh, scene, autoUpdateBonesMatrices, renderingGroupId) {
                 if (autoUpdateBonesMatrices === void 0) { autoUpdateBonesMatrices = true; }
                 if (renderingGroupId === void 0) { renderingGroupId = 1; }
@@ -70220,7 +70236,7 @@ var BABYLON;
 (function (BABYLON) {
     var Debug;
     (function (Debug) {
-        var AxesViewer = /** @class */ (function () {
+        var AxesViewer = (function () {
             function AxesViewer(scene, scaleLines) {
                 if (scaleLines === void 0) { scaleLines = 1; }
                 this._xline = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
@@ -70297,7 +70313,7 @@ var BABYLON;
 (function (BABYLON) {
     var Debug;
     (function (Debug) {
-        var BoneAxesViewer = /** @class */ (function (_super) {
+        var BoneAxesViewer = (function (_super) {
             __extends(BoneAxesViewer, _super);
             function BoneAxesViewer(scene, bone, mesh, scaleLines) {
                 if (scaleLines === void 0) { scaleLines = 1; }
@@ -70338,7 +70354,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var RayHelper = /** @class */ (function () {
+    var RayHelper = (function () {
         function RayHelper(ray) {
             this.ray = ray;
         }
@@ -70458,7 +70474,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // load the inspector using require, if not present in the global namespace.
-    var DebugLayer = /** @class */ (function () {
+    var DebugLayer = (function () {
         function DebugLayer(scene) {
             this.BJSINSPECTOR = typeof INSPECTOR !== 'undefined' ? INSPECTOR : undefined;
             this._scene = scene;
@@ -70515,7 +70531,7 @@ var BABYLON;
 (function (BABYLON) {
     var Debug;
     (function (Debug) {
-        var PhysicsViewer = /** @class */ (function () {
+        var PhysicsViewer = (function () {
             function PhysicsViewer(scene) {
                 this._impostors = [];
                 this._meshes = [];
@@ -70665,7 +70681,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var BoundingBoxRenderer = /** @class */ (function () {
+    var BoundingBoxRenderer = (function () {
         function BoundingBoxRenderer(scene) {
             this.frontColor = new BABYLON.Color3(1, 1, 1);
             this.backColor = new BABYLON.Color3(0.1, 0.1, 0.1);
@@ -70793,7 +70809,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var MorphTarget = /** @class */ (function () {
+    var MorphTarget = (function () {
         function MorphTarget(name, influence) {
             if (influence === void 0) { influence = 0; }
             this.name = name;
@@ -70921,7 +70937,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var MorphTargetManager = /** @class */ (function () {
+    var MorphTargetManager = (function () {
         function MorphTargetManager(scene) {
             if (scene === void 0) { scene = null; }
             this._targets = new Array();
@@ -71089,7 +71105,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Octree = /** @class */ (function () {
+    var Octree = (function () {
         function Octree(creationFunc, maxBlockCapacity, maxDepth) {
             if (maxDepth === void 0) { maxDepth = 2; }
             this.maxDepth = maxDepth;
@@ -71182,7 +71198,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var OctreeBlock = /** @class */ (function () {
+    var OctreeBlock = (function () {
         function OctreeBlock(minPoint, maxPoint, capacity, depth, maxDepth, creationFunc) {
             this.entries = new Array();
             this._boundingVectors = new Array();
@@ -71307,7 +71323,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SIMDVector3 = /** @class */ (function () {
+    var SIMDVector3 = (function () {
         function SIMDVector3() {
         }
         SIMDVector3.TransformCoordinatesToRefSIMD = function (vector, transformation, result) {
@@ -71327,7 +71343,7 @@ var BABYLON;
         };
         return SIMDVector3;
     }());
-    var SIMDMatrix = /** @class */ (function () {
+    var SIMDMatrix = (function () {
         function SIMDMatrix() {
         }
         SIMDMatrix.prototype.multiplyToArraySIMD = function (other, result, offset) {
@@ -71492,7 +71508,7 @@ var BABYLON;
     var previousLookAtLHToRef = BABYLON.Matrix.LookAtLHToRef;
     var previousTransformCoordinatesToRef = BABYLON.Vector3.TransformCoordinatesToRef;
     var previousTransformCoordinatesFromFloatsToRef = BABYLON.Vector3.TransformCoordinatesFromFloatsToRef;
-    var SIMDHelper = /** @class */ (function () {
+    var SIMDHelper = (function () {
         function SIMDHelper() {
         }
         Object.defineProperty(SIMDHelper, "IsEnabled", {
@@ -71551,7 +71567,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VRDistortionCorrectionPostProcess = /** @class */ (function (_super) {
+    var VRDistortionCorrectionPostProcess = (function (_super) {
         __extends(VRDistortionCorrectionPostProcess, _super);
         function VRDistortionCorrectionPostProcess(name, camera, isRightEye, vrMetrics) {
             var _this = _super.call(this, name, "vrDistortionCorrection", [
@@ -71589,7 +71605,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var AnaglyphPostProcess = /** @class */ (function (_super) {
+    var AnaglyphPostProcess = (function (_super) {
         __extends(AnaglyphPostProcess, _super);
         function AnaglyphPostProcess(name, options, rigCameras, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, "anaglyph", null, ["leftSampler"], options, rigCameras[1], samplingMode, engine, reusable) || this;
@@ -71609,7 +71625,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var StereoscopicInterlacePostProcess = /** @class */ (function (_super) {
+    var StereoscopicInterlacePostProcess = (function (_super) {
         __extends(StereoscopicInterlacePostProcess, _super);
         function StereoscopicInterlacePostProcess(name, rigCameras, isStereoscopicHoriz, samplingMode, engine, reusable) {
             var _this = _super.call(this, name, "stereoscopicInterlace", ['stepSize'], ['camASampler'], 1, rigCameras[1], samplingMode, engine, reusable, isStereoscopicHoriz ? "#define IS_STEREOSCOPIC_HORIZ 1" : undefined) || this;
@@ -71633,7 +71649,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraDeviceOrientationInput = /** @class */ (function () {
+    var FreeCameraDeviceOrientationInput = (function () {
         function FreeCameraDeviceOrientationInput() {
             var _this = this;
             this._screenOrientationAngle = 0;
@@ -71706,7 +71722,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ArcRotateCameraVRDeviceOrientationInput = /** @class */ (function () {
+    var ArcRotateCameraVRDeviceOrientationInput = (function () {
         function ArcRotateCameraVRDeviceOrientationInput() {
             this.alphaCorrection = 1;
             this.betaCorrection = 1;
@@ -71758,7 +71774,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VRCameraMetrics = /** @class */ (function () {
+    var VRCameraMetrics = (function () {
         function VRCameraMetrics() {
             this.compensateDistortion = true;
         }
@@ -71834,7 +71850,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var WebVRFreeCamera = /** @class */ (function (_super) {
+    var WebVRFreeCamera = (function (_super) {
         __extends(WebVRFreeCamera, _super);
         function WebVRFreeCamera(name, position, scene, webVROptions) {
             if (webVROptions === void 0) { webVROptions = {}; }
@@ -72267,7 +72283,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
-    var DeviceOrientationCamera = /** @class */ (function (_super) {
+    var DeviceOrientationCamera = (function (_super) {
         __extends(DeviceOrientationCamera, _super);
         function DeviceOrientationCamera(name, position, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72317,7 +72333,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VRDeviceOrientationFreeCamera = /** @class */ (function (_super) {
+    var VRDeviceOrientationFreeCamera = (function (_super) {
         __extends(VRDeviceOrientationFreeCamera, _super);
         function VRDeviceOrientationFreeCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
@@ -72333,7 +72349,7 @@ var BABYLON;
         return VRDeviceOrientationFreeCamera;
     }(BABYLON.DeviceOrientationCamera));
     BABYLON.VRDeviceOrientationFreeCamera = VRDeviceOrientationFreeCamera;
-    var VRDeviceOrientationGamepadCamera = /** @class */ (function (_super) {
+    var VRDeviceOrientationGamepadCamera = (function (_super) {
         __extends(VRDeviceOrientationGamepadCamera, _super);
         function VRDeviceOrientationGamepadCamera(name, position, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
@@ -72348,7 +72364,7 @@ var BABYLON;
         return VRDeviceOrientationGamepadCamera;
     }(VRDeviceOrientationFreeCamera));
     BABYLON.VRDeviceOrientationGamepadCamera = VRDeviceOrientationGamepadCamera;
-    var VRDeviceOrientationArcRotateCamera = /** @class */ (function (_super) {
+    var VRDeviceOrientationArcRotateCamera = (function (_super) {
         __extends(VRDeviceOrientationArcRotateCamera, _super);
         function VRDeviceOrientationArcRotateCamera(name, alpha, beta, radius, target, scene, compensateDistortion, vrCameraMetrics) {
             if (compensateDistortion === void 0) { compensateDistortion = true; }
@@ -72372,7 +72388,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var AnaglyphFreeCamera = /** @class */ (function (_super) {
+    var AnaglyphFreeCamera = (function (_super) {
         __extends(AnaglyphFreeCamera, _super);
         function AnaglyphFreeCamera(name, position, interaxialDistance, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72386,7 +72402,7 @@ var BABYLON;
         return AnaglyphFreeCamera;
     }(BABYLON.FreeCamera));
     BABYLON.AnaglyphFreeCamera = AnaglyphFreeCamera;
-    var AnaglyphArcRotateCamera = /** @class */ (function (_super) {
+    var AnaglyphArcRotateCamera = (function (_super) {
         __extends(AnaglyphArcRotateCamera, _super);
         function AnaglyphArcRotateCamera(name, alpha, beta, radius, target, interaxialDistance, scene) {
             var _this = _super.call(this, name, alpha, beta, radius, target, scene) || this;
@@ -72400,7 +72416,7 @@ var BABYLON;
         return AnaglyphArcRotateCamera;
     }(BABYLON.ArcRotateCamera));
     BABYLON.AnaglyphArcRotateCamera = AnaglyphArcRotateCamera;
-    var AnaglyphGamepadCamera = /** @class */ (function (_super) {
+    var AnaglyphGamepadCamera = (function (_super) {
         __extends(AnaglyphGamepadCamera, _super);
         function AnaglyphGamepadCamera(name, position, interaxialDistance, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72414,7 +72430,7 @@ var BABYLON;
         return AnaglyphGamepadCamera;
     }(BABYLON.GamepadCamera));
     BABYLON.AnaglyphGamepadCamera = AnaglyphGamepadCamera;
-    var AnaglyphUniversalCamera = /** @class */ (function (_super) {
+    var AnaglyphUniversalCamera = (function (_super) {
         __extends(AnaglyphUniversalCamera, _super);
         function AnaglyphUniversalCamera(name, position, interaxialDistance, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72428,7 +72444,7 @@ var BABYLON;
         return AnaglyphUniversalCamera;
     }(BABYLON.UniversalCamera));
     BABYLON.AnaglyphUniversalCamera = AnaglyphUniversalCamera;
-    var StereoscopicFreeCamera = /** @class */ (function (_super) {
+    var StereoscopicFreeCamera = (function (_super) {
         __extends(StereoscopicFreeCamera, _super);
         function StereoscopicFreeCamera(name, position, interaxialDistance, isStereoscopicSideBySide, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72443,7 +72459,7 @@ var BABYLON;
         return StereoscopicFreeCamera;
     }(BABYLON.FreeCamera));
     BABYLON.StereoscopicFreeCamera = StereoscopicFreeCamera;
-    var StereoscopicArcRotateCamera = /** @class */ (function (_super) {
+    var StereoscopicArcRotateCamera = (function (_super) {
         __extends(StereoscopicArcRotateCamera, _super);
         function StereoscopicArcRotateCamera(name, alpha, beta, radius, target, interaxialDistance, isStereoscopicSideBySide, scene) {
             var _this = _super.call(this, name, alpha, beta, radius, target, scene) || this;
@@ -72458,7 +72474,7 @@ var BABYLON;
         return StereoscopicArcRotateCamera;
     }(BABYLON.ArcRotateCamera));
     BABYLON.StereoscopicArcRotateCamera = StereoscopicArcRotateCamera;
-    var StereoscopicGamepadCamera = /** @class */ (function (_super) {
+    var StereoscopicGamepadCamera = (function (_super) {
         __extends(StereoscopicGamepadCamera, _super);
         function StereoscopicGamepadCamera(name, position, interaxialDistance, isStereoscopicSideBySide, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72473,7 +72489,7 @@ var BABYLON;
         return StereoscopicGamepadCamera;
     }(BABYLON.GamepadCamera));
     BABYLON.StereoscopicGamepadCamera = StereoscopicGamepadCamera;
-    var StereoscopicUniversalCamera = /** @class */ (function (_super) {
+    var StereoscopicUniversalCamera = (function (_super) {
         __extends(StereoscopicUniversalCamera, _super);
         function StereoscopicUniversalCamera(name, position, interaxialDistance, isStereoscopicSideBySide, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -72494,7 +72510,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var VRExperienceHelper = /** @class */ (function () {
+    var VRExperienceHelper = (function () {
         function VRExperienceHelper(scene, webVROptions) {
             if (webVROptions === void 0) { webVROptions = {}; }
             var _this = this;
@@ -73799,7 +73815,7 @@ var BABYLON;
         JoystickAxis[JoystickAxis["Y"] = 1] = "Y";
         JoystickAxis[JoystickAxis["Z"] = 2] = "Z";
     })(JoystickAxis = BABYLON.JoystickAxis || (BABYLON.JoystickAxis = {}));
-    var VirtualJoystick = /** @class */ (function () {
+    var VirtualJoystick = (function () {
         function VirtualJoystick(leftJoystick) {
             var _this = this;
             if (leftJoystick) {
@@ -74081,7 +74097,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
-    var VirtualJoysticksCamera = /** @class */ (function (_super) {
+    var VirtualJoysticksCamera = (function (_super) {
         __extends(VirtualJoysticksCamera, _super);
         function VirtualJoysticksCamera(name, position, scene) {
             var _this = _super.call(this, name, position, scene) || this;
@@ -74100,7 +74116,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FreeCameraVirtualJoystickInput = /** @class */ (function () {
+    var FreeCameraVirtualJoystickInput = (function () {
         function FreeCameraVirtualJoystickInput() {
         }
         FreeCameraVirtualJoystickInput.prototype.getLeftJoystick = function () {
@@ -74157,7 +74173,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var SimplificationSettings = /** @class */ (function () {
+    var SimplificationSettings = (function () {
         function SimplificationSettings(quality, distance, optimizeMesh) {
             this.quality = quality;
             this.distance = distance;
@@ -74166,7 +74182,7 @@ var BABYLON;
         return SimplificationSettings;
     }());
     BABYLON.SimplificationSettings = SimplificationSettings;
-    var SimplificationQueue = /** @class */ (function () {
+    var SimplificationQueue = (function () {
         function SimplificationQueue() {
             this.running = false;
             this._simplificationArray = [];
@@ -74244,7 +74260,7 @@ var BABYLON;
     (function (SimplificationType) {
         SimplificationType[SimplificationType["QUADRATIC"] = 0] = "QUADRATIC";
     })(SimplificationType = BABYLON.SimplificationType || (BABYLON.SimplificationType = {}));
-    var DecimationTriangle = /** @class */ (function () {
+    var DecimationTriangle = (function () {
         function DecimationTriangle(vertices) {
             this.vertices = vertices;
             this.error = new Array(4);
@@ -74256,7 +74272,7 @@ var BABYLON;
         return DecimationTriangle;
     }());
     BABYLON.DecimationTriangle = DecimationTriangle;
-    var DecimationVertex = /** @class */ (function () {
+    var DecimationVertex = (function () {
         function DecimationVertex(position, id) {
             this.position = position;
             this.id = id;
@@ -74272,7 +74288,7 @@ var BABYLON;
         return DecimationVertex;
     }());
     BABYLON.DecimationVertex = DecimationVertex;
-    var QuadraticMatrix = /** @class */ (function () {
+    var QuadraticMatrix = (function () {
         function QuadraticMatrix(data) {
             this.data = new Array(10);
             for (var i = 0; i < 10; ++i) {
@@ -74317,7 +74333,7 @@ var BABYLON;
         return QuadraticMatrix;
     }());
     BABYLON.QuadraticMatrix = QuadraticMatrix;
-    var Reference = /** @class */ (function () {
+    var Reference = (function () {
         function Reference(vertexId, triangleId) {
             this.vertexId = vertexId;
             this.triangleId = triangleId;
@@ -74331,7 +74347,7 @@ var BABYLON;
      * Ported mostly from QSlim and http://voxels.blogspot.de/2014/05/quadric-mesh-simplification-with-source.html to babylon JS
      * @author RaananW
      */
-    var QuadraticErrorSimplification = /** @class */ (function () {
+    var QuadraticErrorSimplification = (function () {
         function QuadraticErrorSimplification(_mesh) {
             this._mesh = _mesh;
             this.syncIterations = 5000;
@@ -74804,7 +74820,7 @@ var BABYLON;
 (function (BABYLON) {
     var Internals;
     (function (Internals) {
-        var MeshLODLevel = /** @class */ (function () {
+        var MeshLODLevel = (function () {
             function MeshLODLevel(distance, mesh) {
                 this.distance = distance;
                 this.mesh = mesh;
@@ -74821,7 +74837,7 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // Standard optimizations
-    var SceneOptimization = /** @class */ (function () {
+    var SceneOptimization = (function () {
         function SceneOptimization(priority) {
             if (priority === void 0) { priority = 0; }
             this.priority = priority;
@@ -74832,7 +74848,7 @@ var BABYLON;
         return SceneOptimization;
     }());
     BABYLON.SceneOptimization = SceneOptimization;
-    var TextureOptimization = /** @class */ (function (_super) {
+    var TextureOptimization = (function (_super) {
         __extends(TextureOptimization, _super);
         function TextureOptimization(priority, maximumSize) {
             if (priority === void 0) { priority = 0; }
@@ -74861,7 +74877,7 @@ var BABYLON;
         return TextureOptimization;
     }(SceneOptimization));
     BABYLON.TextureOptimization = TextureOptimization;
-    var HardwareScalingOptimization = /** @class */ (function (_super) {
+    var HardwareScalingOptimization = (function (_super) {
         __extends(HardwareScalingOptimization, _super);
         function HardwareScalingOptimization(priority, maximumScale) {
             if (priority === void 0) { priority = 0; }
@@ -74880,7 +74896,7 @@ var BABYLON;
         return HardwareScalingOptimization;
     }(SceneOptimization));
     BABYLON.HardwareScalingOptimization = HardwareScalingOptimization;
-    var ShadowsOptimization = /** @class */ (function (_super) {
+    var ShadowsOptimization = (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -74893,7 +74909,7 @@ var BABYLON;
         return ShadowsOptimization;
     }(SceneOptimization));
     BABYLON.ShadowsOptimization = ShadowsOptimization;
-    var PostProcessesOptimization = /** @class */ (function (_super) {
+    var PostProcessesOptimization = (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -74906,7 +74922,7 @@ var BABYLON;
         return PostProcessesOptimization;
     }(SceneOptimization));
     BABYLON.PostProcessesOptimization = PostProcessesOptimization;
-    var LensFlaresOptimization = /** @class */ (function (_super) {
+    var LensFlaresOptimization = (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -74919,7 +74935,7 @@ var BABYLON;
         return LensFlaresOptimization;
     }(SceneOptimization));
     BABYLON.LensFlaresOptimization = LensFlaresOptimization;
-    var ParticlesOptimization = /** @class */ (function (_super) {
+    var ParticlesOptimization = (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -74932,7 +74948,7 @@ var BABYLON;
         return ParticlesOptimization;
     }(SceneOptimization));
     BABYLON.ParticlesOptimization = ParticlesOptimization;
-    var RenderTargetsOptimization = /** @class */ (function (_super) {
+    var RenderTargetsOptimization = (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -74945,7 +74961,7 @@ var BABYLON;
         return RenderTargetsOptimization;
     }(SceneOptimization));
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
-    var MergeMeshesOptimization = /** @class */ (function (_super) {
+    var MergeMeshesOptimization = (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -75029,7 +75045,7 @@ var BABYLON;
     }(SceneOptimization));
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
     // Options
-    var SceneOptimizerOptions = /** @class */ (function () {
+    var SceneOptimizerOptions = (function () {
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
             if (targetFrameRate === void 0) { targetFrameRate = 60; }
             if (trackerDuration === void 0) { trackerDuration = 2000; }
@@ -75098,7 +75114,7 @@ var BABYLON;
     }());
     BABYLON.SceneOptimizerOptions = SceneOptimizerOptions;
     // Scene optimizer tool
-    var SceneOptimizer = /** @class */ (function () {
+    var SceneOptimizer = (function () {
         function SceneOptimizer() {
         }
         SceneOptimizer._CheckCurrentState = function (scene, options, currentPriorityLevel, onSuccess, onFailure) {
@@ -75157,7 +75173,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var OutlineRenderer = /** @class */ (function () {
+    var OutlineRenderer = (function () {
         function OutlineRenderer(scene) {
             this.zOffset = 1;
             this._scene = scene;
@@ -75263,14 +75279,14 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FaceAdjacencies = /** @class */ (function () {
+    var FaceAdjacencies = (function () {
         function FaceAdjacencies() {
             this.edges = new Array();
             this.edgesConnectedCount = 0;
         }
         return FaceAdjacencies;
     }());
-    var EdgesRenderer = /** @class */ (function () {
+    var EdgesRenderer = (function () {
         // Beware when you use this class with complex objects as the adjacencies computation can be really long
         function EdgesRenderer(source, epsilon, checkVerticesInsteadOfIndices) {
             if (epsilon === void 0) { epsilon = 0.95; }
@@ -75538,7 +75554,7 @@ var BABYLON;
      * Special Glow Blur post process only blurring the alpha channel
      * It enforces keeping the most luminous color in the color channel.
      */
-    var GlowBlurPostProcess = /** @class */ (function (_super) {
+    var GlowBlurPostProcess = (function (_super) {
         __extends(GlowBlurPostProcess, _super);
         function GlowBlurPostProcess(name, direction, kernel, options, camera, samplingMode, engine, reusable) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
@@ -75562,7 +75578,7 @@ var BABYLON;
      *
      * !!! THIS REQUIRES AN ACTIVE STENCIL BUFFER ON THE CANVAS !!!
      */
-    var HighlightLayer = /** @class */ (function () {
+    var HighlightLayer = (function () {
         /**
          * Instantiates a new highlight Layer and references it to the scene..
          * @param name The name of the layer
@@ -76263,7 +76279,7 @@ var BABYLON;
         AssetTaskState[AssetTaskState["DONE"] = 2] = "DONE";
         AssetTaskState[AssetTaskState["ERROR"] = 3] = "ERROR";
     })(AssetTaskState = BABYLON.AssetTaskState || (BABYLON.AssetTaskState = {}));
-    var AbstractAssetTask = /** @class */ (function () {
+    var AbstractAssetTask = (function () {
         function AbstractAssetTask(name) {
             this.name = name;
             this.isCompleted = false;
@@ -76308,7 +76324,7 @@ var BABYLON;
         return AbstractAssetTask;
     }());
     BABYLON.AbstractAssetTask = AbstractAssetTask;
-    var AssetsProgressEvent = /** @class */ (function () {
+    var AssetsProgressEvent = (function () {
         function AssetsProgressEvent(remainingCount, totalCount, task) {
             this.remainingCount = remainingCount;
             this.totalCount = totalCount;
@@ -76317,7 +76333,7 @@ var BABYLON;
         return AssetsProgressEvent;
     }());
     BABYLON.AssetsProgressEvent = AssetsProgressEvent;
-    var MeshAssetTask = /** @class */ (function (_super) {
+    var MeshAssetTask = (function (_super) {
         __extends(MeshAssetTask, _super);
         function MeshAssetTask(name, meshesNames, rootUrl, sceneFilename) {
             var _this = _super.call(this, name) || this;
@@ -76341,7 +76357,7 @@ var BABYLON;
         return MeshAssetTask;
     }(AbstractAssetTask));
     BABYLON.MeshAssetTask = MeshAssetTask;
-    var TextFileAssetTask = /** @class */ (function (_super) {
+    var TextFileAssetTask = (function (_super) {
         __extends(TextFileAssetTask, _super);
         function TextFileAssetTask(name, url) {
             var _this = _super.call(this, name) || this;
@@ -76363,7 +76379,7 @@ var BABYLON;
         return TextFileAssetTask;
     }(AbstractAssetTask));
     BABYLON.TextFileAssetTask = TextFileAssetTask;
-    var BinaryFileAssetTask = /** @class */ (function (_super) {
+    var BinaryFileAssetTask = (function (_super) {
         __extends(BinaryFileAssetTask, _super);
         function BinaryFileAssetTask(name, url) {
             var _this = _super.call(this, name) || this;
@@ -76385,7 +76401,7 @@ var BABYLON;
         return BinaryFileAssetTask;
     }(AbstractAssetTask));
     BABYLON.BinaryFileAssetTask = BinaryFileAssetTask;
-    var ImageAssetTask = /** @class */ (function (_super) {
+    var ImageAssetTask = (function (_super) {
         __extends(ImageAssetTask, _super);
         function ImageAssetTask(name, url) {
             var _this = _super.call(this, name) || this;
@@ -76409,7 +76425,7 @@ var BABYLON;
         return ImageAssetTask;
     }(AbstractAssetTask));
     BABYLON.ImageAssetTask = ImageAssetTask;
-    var TextureAssetTask = /** @class */ (function (_super) {
+    var TextureAssetTask = (function (_super) {
         __extends(TextureAssetTask, _super);
         function TextureAssetTask(name, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
@@ -76433,7 +76449,7 @@ var BABYLON;
         return TextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.TextureAssetTask = TextureAssetTask;
-    var CubeTextureAssetTask = /** @class */ (function (_super) {
+    var CubeTextureAssetTask = (function (_super) {
         __extends(CubeTextureAssetTask, _super);
         function CubeTextureAssetTask(name, url, extensions, noMipmap, files) {
             var _this = _super.call(this, name) || this;
@@ -76456,7 +76472,7 @@ var BABYLON;
         return CubeTextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
-    var HDRCubeTextureAssetTask = /** @class */ (function (_super) {
+    var HDRCubeTextureAssetTask = (function (_super) {
         __extends(HDRCubeTextureAssetTask, _super);
         function HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
@@ -76485,7 +76501,7 @@ var BABYLON;
         return HDRCubeTextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
-    var AssetsManager = /** @class */ (function () {
+    var AssetsManager = (function () {
         function AssetsManager(scene) {
             this.tasks = new Array();
             this.waitingTasksCount = 0;
@@ -76718,7 +76734,7 @@ var BABYLON;
             serializationObject.meshes.push(serializeMesh(mesh, serializationObject));
         }
     };
-    var SceneSerializer = /** @class */ (function () {
+    var SceneSerializer = (function () {
         function SceneSerializer() {
         }
         SceneSerializer.ClearCache = function () {
@@ -76914,7 +76930,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var ReflectionProbe = /** @class */ (function () {
+    var ReflectionProbe = (function () {
         function ReflectionProbe(name, size, scene, generateMipMaps) {
             if (generateMipMaps === void 0) { generateMipMaps = true; }
             var _this = this;
@@ -77033,7 +77049,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var Layer = /** @class */ (function () {
+    var Layer = (function () {
         function Layer(name, imgUrl, scene, isBackground, color) {
             this.name = name;
             this.scale = new BABYLON.Vector2(1, 1);
@@ -77188,7 +77204,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var TextureTools = /** @class */ (function () {
+    var TextureTools = (function () {
         function TextureTools() {
         }
         /**
@@ -77253,7 +77269,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var FramingBehavior = /** @class */ (function () {
+    var FramingBehavior = (function () {
         function FramingBehavior() {
             this._mode = FramingBehavior.FitFrustumSidesMode;
             this._radiusScale = 1.0;
@@ -77736,7 +77752,7 @@ var BABYLON;
     /**
      * Add a bouncing effect to an ArcRotateCamera when reaching a specified minimum and maximum radius
      */
-    var BouncingBehavior = /** @class */ (function () {
+    var BouncingBehavior = (function () {
         function BouncingBehavior() {
             /**
              * The duration of the animation, in milliseconds
@@ -77912,7 +77928,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var AutoRotationBehavior = /** @class */ (function () {
+    var AutoRotationBehavior = (function () {
         function AutoRotationBehavior() {
             this._zoomStopsAnimation = false;
             this._idleRotationSpeed = 0.05;
@@ -78102,7 +78118,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var NullEngineOptions = /** @class */ (function () {
+    var NullEngineOptions = (function () {
         function NullEngineOptions() {
             this.renderWidth = 512;
             this.renderHeight = 256;
@@ -78117,7 +78133,7 @@ var BABYLON;
      * The null engine class provides support for headless version of babylon.js.
      * This can be used in server side scenario or for testing purposes
      */
-    var NullEngine = /** @class */ (function (_super) {
+    var NullEngine = (function (_super) {
         __extends(NullEngine, _super);
         function NullEngine(options) {
             if (options === void 0) { options = new NullEngineOptions(); }
@@ -78454,7 +78470,7 @@ var BABYLON;
     /**
      * This class can be used to get instrumentation data from a Babylon engine
      */
-    var EngineInstrumentation = /** @class */ (function () {
+    var EngineInstrumentation = (function () {
         function EngineInstrumentation(engine) {
             this.engine = engine;
             this._captureGPUFrameTime = false;
@@ -78590,7 +78606,7 @@ var BABYLON;
     /**
      * This class can be used to get instrumentation data from a Babylon engine
      */
-    var SceneInstrumentation = /** @class */ (function () {
+    var SceneInstrumentation = (function () {
         function SceneInstrumentation(scene) {
             var _this = this;
             this.scene = scene;
@@ -79088,7 +79104,7 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var _TimeToken = /** @class */ (function () {
+    var _TimeToken = (function () {
         function _TimeToken() {
             this._timeElapsedQueryEnded = false;
         }
@@ -79110,7 +79126,7 @@ var BABYLON;
     /**
      * Background material defines definition.
      */
-    var BackgroundMaterialDefines = /** @class */ (function (_super) {
+    var BackgroundMaterialDefines = (function (_super) {
         __extends(BackgroundMaterialDefines, _super);
         /**
          * Constructor of the defines.
@@ -79216,7 +79232,7 @@ var BABYLON;
     /**
      * Background material used to create an efficient environement around your scene.
      */
-    var BackgroundMaterial = /** @class */ (function (_super) {
+    var BackgroundMaterial = (function (_super) {
         __extends(BackgroundMaterial, _super);
         /**
          * constructor
@@ -80058,7 +80074,7 @@ var BABYLON;
      * It includes by default a skybox and a ground relying on the BackgroundMaterial.
      * It also helps with the default setup of your imageProcessing configuration.
      */
-    var EnvironmentHelper = /** @class */ (function () {
+    var EnvironmentHelper = (function () {
         /**
          * constructor
          * @param options

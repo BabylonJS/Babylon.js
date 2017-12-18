@@ -12,7 +12,7 @@
     export interface IParticleSystem {
         id: string;
         name: string;
-        emitter: Nullable<AbstractMesh | Vector3>; 
+        emitter: Nullable<AbstractMesh | Vector3>;
         renderingGroupId: number;
         layerMask: number;
         isStarted(): boolean;
@@ -29,6 +29,9 @@
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;
+        public static readonly EMITTERTYPE_BOX = 0;
+        public static readonly EMITTERTYPE_SPHERE = 1;
+        public static readonly EMITTERTYPE_CONE = 2;
 
         // Members
         public animations: Animation[] = [];
@@ -137,6 +140,68 @@
         }
         // end of sheet animation
 
+        // Emitter Type
+        public redius = 1;
+        public coneAngle = 45;
+        private _emitterType = ParticleSystem.EMITTERTYPE_BOX;
+        public get emitterType(): number {
+            return this._emitterType;
+        }
+        public set emitterType(value: number) {
+            this._emitterType = value;
+            if (this._emitterType === ParticleSystem.EMITTERTYPE_BOX) {
+                this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
+                    var randX = randomNumber(this.direction1.x, this.direction2.x);
+                    var randY = randomNumber(this.direction1.y, this.direction2.y);
+                    var randZ = randomNumber(this.direction1.z, this.direction2.z);
+
+                    Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                }
+
+                this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
+                    var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
+                    var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
+                    var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
+
+                    Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                }
+            }
+            else if (this._emitterType === ParticleSystem.EMITTERTYPE_SPHERE) {
+                // Sphere behavior
+                this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
+                    Vector3.TransformNormalFromFloatsToRef(particle.position.x * emitPower, particle.position.y * emitPower, particle.position.z * emitPower, worldMatrix, directionToUpdate);
+                }
+
+                this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
+                    var s = randomNumber(0, 360) * Math.PI / 180;
+                    var t = randomNumber(0, 360) * Math.PI / 180;
+                    var randX = this.redius * Math.cos(s) * Math.sin(t);
+                    var randY = this.redius * Math.sin(s) * Math.sin(t);
+                    var randZ = this.redius * Math.cos(t);
+
+                    Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                }
+            }
+            else if (this._emitterType === ParticleSystem.EMITTERTYPE_CONE) {
+                // cone
+                this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
+                    Vector3.TransformNormalFromFloatsToRef(particle.position.x * emitPower, particle.position.y * emitPower, particle.position.z * emitPower, worldMatrix, directionToUpdate);
+                }
+
+                this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
+                    var s = this.coneAngle * Math.PI / 180;
+                    var t = randomNumber(0, 360) * Math.PI / 180;
+                    var redius = randomNumber(0, this.redius);
+                    var randX = redius * Math.cos(s) * Math.sin(t);
+                    var randY = redius * Math.sin(s) * Math.sin(t);
+                    var randZ = redius * Math.cos(t);
+
+                    Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                }
+            }
+        }
+        // End of Emitter Type
+
         constructor(public name: string, capacity: number, scene: Scene, customEffect: Nullable<Effect> = null, private _isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
             this.id = name;
             this._capacity = capacity;
@@ -171,22 +236,7 @@
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
 
-            // Default behaviors
-            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-                var randX = randomNumber(this.direction1.x, this.direction2.x);
-                var randY = randomNumber(this.direction1.y, this.direction2.y);
-                var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-            }
-
-            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-                var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-                var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-
-                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-            }
+            this.emitterType = ParticleSystem.EMITTERTYPE_BOX;
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
