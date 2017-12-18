@@ -34,7 +34,7 @@ interface WebGLRenderingContext {
     vertexAttribDivisor(index: number, divisor: number): void;
 
     createVertexArray(): any;
-    bindVertexArray(vao?: WebGLVertexArrayObject): void;
+    bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
 
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
@@ -120,8 +120,8 @@ interface WebGLBuffer {
 }
 
 interface WebGLProgram {
-    transformFeedback?: WebGLTransformFeedback;
-    __SPECTOR_rebuildProgram: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void;
+    transformFeedback?: WebGLTransformFeedback | null;
+    __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
 
 interface MouseEvent {
