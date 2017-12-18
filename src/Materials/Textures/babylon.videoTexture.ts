@@ -49,6 +49,7 @@
 
             if (urls) {
                 this.video.addEventListener("canplay", () => {
+                    if(this._texture !== undefined){ return; }
                     this._createTexture();
                 });
                 urls.forEach(url => {
