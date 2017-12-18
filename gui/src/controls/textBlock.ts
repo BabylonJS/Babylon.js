@@ -20,10 +20,6 @@ module BABYLON.GUI {
             return this._resizeToFit;
         }
 
-        public set lineSpacing(value: number) {
-            this._lineSpacing = value;
-        }
-
         set resizeToFit(value: boolean) {
             this._resizeToFit = value;
 
@@ -83,6 +79,14 @@ module BABYLON.GUI {
 
             this._textVerticalAlignment = value;
             this._markAsDirty();
+        }
+
+        public set lineSpacing(value: number) {
+            this._lineSpacing = value;
+        }
+
+        public get lineSpacing(): number {
+            return this._lineSpacing;
         }
 
         constructor(public name?: string, text: string = "") {
@@ -195,12 +199,12 @@ module BABYLON.GUI {
 
             rootY += this._currentMeasure.top;
 
-            var maxLineWidth: number = 0;            
+            var maxLineWidth: number = 0;
 
             for (let i = 0; i < this._lines.length; i++) {
                 const line = this._lines[i];
 
-                if (i !== 0 && this._lineSpacing > 0 ){
+                if (i !== 0 && this._lineSpacing > 0) {
                     rootY += this._lineSpacing;
                 }
 
