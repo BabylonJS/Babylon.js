@@ -969,7 +969,7 @@
         }
 
         public set workerCollisions(enabled: boolean) {
-            if (!BABYLON.CollisionCoordinatorLegacy) {
+            if (!CollisionCoordinatorLegacy) {
                 return;
             }
 
@@ -1433,7 +1433,7 @@
                 let checkPicking = obs1.hasSpecificMask(PointerEventTypes.POINTERPICK) || obs2.hasSpecificMask(PointerEventTypes.POINTERPICK)
                     || obs1.hasSpecificMask(PointerEventTypes.POINTERTAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERTAP)
                     || obs1.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP) || obs2.hasSpecificMask(PointerEventTypes.POINTERDOUBLETAP);
-                if (!checkPicking && BABYLON.ActionManager && ActionManager.HasPickTriggers) {
+                if (!checkPicking && ActionManager && ActionManager.HasPickTriggers) {
                     act = this._initActionManager(act, clickInfo);
                     if (act)
                         checkPicking = act.hasPickTriggers;
@@ -1690,7 +1690,7 @@
                     }
 
                     // Meshes
-                    if (!this._meshPickProceed && (BABYLON.ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
+                    if (!this._meshPickProceed && (ActionManager && ActionManager.HasTriggers || this.onPointerObservable.hasObservers())) {
                         this._initActionManager(null, clickInfo);
                     }
                     if (!pickResult) {
@@ -4024,7 +4024,7 @@
         }
 
         public createPickingRayInCameraSpaceToRef(x: number, y: number, result: Ray, camera?: Camera): Scene {
-            if (!BABYLON.PickingInfo) {
+            if (!PickingInfo) {
                 return this;
             }
 
@@ -4049,7 +4049,7 @@
         }
 
         private _internalPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
-            if (!BABYLON.PickingInfo) {
+            if (!PickingInfo) {
                 return null;
             }
 
@@ -4087,7 +4087,7 @@
         }
 
         private _internalMultiPick(rayFunction: (world: Matrix) => Ray, predicate?: (mesh: AbstractMesh) => boolean): Nullable<PickingInfo[]> {
-            if (!BABYLON.PickingInfo) {
+            if (!PickingInfo) {
                 return null;
             }
             var pickingInfos = new Array<PickingInfo>();
@@ -4118,7 +4118,7 @@
 
 
         private _internalPickSprites(ray: Ray, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean, camera?: Camera): Nullable<PickingInfo> {
-            if (!BABYLON.PickingInfo) {
+            if (!PickingInfo) {
                 return null;
             }
 
@@ -4157,7 +4157,7 @@
             return pickingInfo || new PickingInfo();
         }
 
-        private _tempPickingRay: Nullable<Ray> = BABYLON.Ray ? Ray.Zero() : null;
+        private _tempPickingRay: Nullable<Ray> = Ray ? Ray.Zero() : null;
 
         /** Launch a ray to try to pick a mesh in the scene
          * @param x position on screen
@@ -4167,7 +4167,7 @@
          * @param camera to use for computing the picking ray. Can be set to null. In this case, the scene.activeCamera will be used
          */
         public pick(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
-            if (!BABYLON.PickingInfo) {
+            if (!PickingInfo) {
                 return null;
             }
 
@@ -4436,13 +4436,13 @@
             }
 
             // Skybox
-            var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", scale, this);
+            var hdrSkybox = Mesh.CreateBox("hdrSkyBox", scale, this);
             if (pbr) {
-                let hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", this);
+                let hdrSkyboxMaterial = new PBRMaterial("skyBox", this);
                 hdrSkyboxMaterial.backFaceCulling = false;
                 hdrSkyboxMaterial.reflectionTexture = this.environmentTexture.clone();
                 if (hdrSkyboxMaterial.reflectionTexture) {
-                    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                    hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
                 hdrSkyboxMaterial.microSurface = 1.0 - blur;
                 hdrSkyboxMaterial.disableLighting = true;
@@ -4451,11 +4451,11 @@
                 hdrSkybox.material = hdrSkyboxMaterial;
             }
             else {
-                let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this);
+                let skyboxMaterial = new StandardMaterial("skyBox", this);
                 skyboxMaterial.backFaceCulling = false;
                 skyboxMaterial.reflectionTexture = this.environmentTexture.clone();
                 if (skyboxMaterial.reflectionTexture) {
-                    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+                    skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
                 }
                 skyboxMaterial.disableLighting = true;
                 hdrSkybox.infiniteDistance = true;
@@ -4466,14 +4466,14 @@
         }
 
         public createDefaultEnvironment(options: Partial<IEnvironmentHelperOptions>): Nullable<EnvironmentHelper> {
-            if (BABYLON.EnvironmentHelper) {
+            if (EnvironmentHelper) {
                 return new EnvironmentHelper(options, this);
             }
             return null;
         }
 
         public createDefaultVRExperience(webVROptions: VRExperienceHelperOptions = {}): VRExperienceHelper {
-            return new BABYLON.VRExperienceHelper(this, webVROptions);
+            return new VRExperienceHelper(this, webVROptions);
         }
 
         // Tags

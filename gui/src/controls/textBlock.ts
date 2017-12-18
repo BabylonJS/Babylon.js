@@ -9,7 +9,7 @@ module BABYLON.GUI {
 
         private _lines: any[];
         private _resizeToFit: boolean = false;
-
+        private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
@@ -81,6 +81,16 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        public set lineSpacing(value: string | number) {
+            if (this._lineSpacing.fromString(value)) {
+                this._markAsDirty();
+            }
+        }
+
+        public get lineSpacing(): string | number {
+            return this._lineSpacing.toString(this._host);
+        }
+
         constructor(public name?: string, text: string = "") {
             super(name);
 
@@ -106,7 +116,7 @@ module BABYLON.GUI {
                     break;
             }
 
-            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
                 context.shadowOffsetX = this.shadowOffsetX;
@@ -133,41 +143,41 @@ module BABYLON.GUI {
             var _lines = this.text.split("\n");
 
             if (this._textWrapping && !this._resizeToFit) {
-                for(var _line of _lines) {
+                for (var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
             } else {
-                for(var _line of _lines) {
+                for (var _line of _lines) {
                     this._lines.push(this._parseLine(_line, context));
                 }
             }
         }
 
-        protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
-          return {text: line, width: context.measureText(line).width};
+        protected _parseLine(line: string = '', context: CanvasRenderingContext2D): object {
+            return { text: line, width: context.measureText(line).width };
         }
 
-        protected _parseLineWithTextWrapping(line: string='', context: CanvasRenderingContext2D): object {
-          var words = line.split(' ');
-          var width = this._currentMeasure.width;
-          var lineWidth = 0;
+        protected _parseLineWithTextWrapping(line: string = '', context: CanvasRenderingContext2D): object {
+            var words = line.split(' ');
+            var width = this._currentMeasure.width;
+            var lineWidth = 0;
 
-          for(var n = 0; n < words.length; n++) {
-              var testLine = n > 0 ? line + " " + words[n] : words[0];
-              var metrics = context.measureText(testLine);
-              var testWidth = metrics.width;
-              if (testWidth > width && n > 0) {
-                  this._lines.push({text: line, width: lineWidth});
-                  line = words[n];
-                  lineWidth = context.measureText(line).width;
-              }
-              else {
-                  lineWidth = testWidth;
-                  line = testLine;
-              }
-          }
+            for (var n = 0; n < words.length; n++) {
+                var testLine = n > 0 ? line + " " + words[n] : words[0];
+                var metrics = context.measureText(testLine);
+                var testWidth = metrics.width;
+                if (testWidth > width && n > 0) {
+                    this._lines.push({ text: line, width: lineWidth });
+                    line = words[n];
+                    lineWidth = context.measureText(line).width;
+                }
+                else {
+                    lineWidth = testWidth;
+                    line = testLine;
+                }
+            }
 
-          return {text: line, width: lineWidth};
+            return { text: line, width: lineWidth };
         }
 
         protected _renderLines(context: CanvasRenderingContext2D): void {
@@ -193,7 +203,18 @@ module BABYLON.GUI {
 
             var maxLineWidth: number = 0;
 
-            for (var line of this._lines) {
+            for (let i = 0; i < this._lines.length; i++) {
+                const line = this._lines[i];
+
+                if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+
+                    if (this._lineSpacing.isPixel) {
+                        rootY += this._lineSpacing.getValue(this._host);
+                    } else {                        
+                        rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host,  this._cachedParentMeasure.height));
+                    }
+                }
+
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
 
