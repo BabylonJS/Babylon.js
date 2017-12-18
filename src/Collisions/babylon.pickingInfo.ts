@@ -54,14 +54,14 @@
                 var p1p2 = vertex1.subtract(vertex2);
                 var p3p2 = vertex3.subtract(vertex2);
 
-                result = BABYLON.Vector3.Cross(p1p2, p3p2);
+                result = Vector3.Cross(p1p2, p3p2);
             }
 
             if (useWorldCoordinates) {
                 result = Vector3.TransformNormal(result, this.pickedMesh.getWorldMatrix());
             }
 
-            return BABYLON.Vector3.Normalize(result);
+            return Vector3.Normalize(result);
         }
 
         public getTextureCoordinates(): Nullable<Vector2> {
@@ -77,7 +77,7 @@
             var uvs = this.pickedMesh.getVerticesData(VertexBuffer.UVKind);
             if (!uvs) {
                 return null;
-            }            
+            }
 
             var uv0 = Vector2.FromArray(uvs, indices[this.faceId * 3] * 2);
             var uv1 = Vector2.FromArray(uvs, indices[this.faceId * 3 + 1] * 2);
@@ -90,5 +90,5 @@
             return new Vector2(uv0.x + uv1.x + uv2.x, uv0.y + uv1.y + uv2.y);
         }
     }
-} 
+}
 

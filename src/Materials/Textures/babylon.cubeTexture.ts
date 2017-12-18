@@ -115,7 +115,7 @@
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
-                return new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
             }, parsedTexture, scene);
 
             // Animations

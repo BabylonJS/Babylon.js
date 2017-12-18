@@ -1790,9 +1790,9 @@
          * Align the mesh with a normal.
          * Returns the mesh.  
          */
-        public alignWithNormal(normal: BABYLON.Vector3, upDirection?: BABYLON.Vector3): AbstractMesh {
+        public alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {
             if (!upDirection) {
-                upDirection = BABYLON.Axis.Y;
+                upDirection = Axis.Y;
             }
 
             var axisX = Tmp.Vector3[0];

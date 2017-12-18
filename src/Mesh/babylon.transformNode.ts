@@ -650,7 +650,7 @@ module BABYLON {
                 rotationQuaternion = Tmp.Quaternion[1];
                 Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
             }
-            var accumulation = BABYLON.Tmp.Quaternion[0];
+            var accumulation = Tmp.Quaternion[0];
             Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
             rotationQuaternion.multiplyInPlace(accumulation);
             if (!this.rotationQuaternion) {
@@ -691,7 +691,7 @@ module BABYLON {
             if (this.rotationQuaternion) {
                 var len = this.rotation.length();
                 if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
+                    this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             }
