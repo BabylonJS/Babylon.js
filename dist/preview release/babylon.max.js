@@ -2862,8 +2862,8 @@ var BABYLON;
          */
         Quaternion.RotationQuaternionFromAxisToRef = function (axis1, axis2, axis3, ref) {
             var rotMat = MathTmp.Matrix[0];
-            BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
-            BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
+            Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+            Quaternion.FromRotationMatrixToRef(rotMat, ref);
         };
         Quaternion.Slerp = function (left, right, amount) {
             var result = Quaternion.Identity();
@@ -3801,7 +3801,7 @@ var BABYLON;
             var b = 2.0 / height;
             var c = 2.0 / (f - n);
             var d = -(f + n) / (f - n);
-            BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, 0.0, 0.0, d, 1.0, result);
+            Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, 0.0, 0.0, d, 1.0, result);
         };
         /**
          * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
@@ -3823,7 +3823,7 @@ var BABYLON;
             var d = -(f + n) / (f - n);
             var i0 = (left + right) / (left - right);
             var i1 = (top + bottom) / (bottom - top);
-            BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, i0, i1, d, 1.0, result);
+            Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 0.0, i0, i1, d, 1.0, result);
         };
         /**
          * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.
@@ -3851,7 +3851,7 @@ var BABYLON;
             var b = 2.0 * n / height;
             var c = (f + n) / (f - n);
             var d = -2.0 * f * n / (f - n);
-            BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, matrix);
+            Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, matrix);
             return matrix;
         };
         /**
@@ -3874,7 +3874,7 @@ var BABYLON;
             var b = isVerticalFovFixed ? t : (t * aspect);
             var c = (f + n) / (f - n);
             var d = -2.0 * f * n / (f - n);
-            BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, result);
+            Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, 1.0, 0.0, 0.0, d, 0.0, result);
         };
         /**
          * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
@@ -3900,7 +3900,7 @@ var BABYLON;
             var b = isVerticalFovFixed ? t : (t * aspect);
             var c = -(f + n) / (f - n);
             var d = -2 * f * n / (f - n);
-            BABYLON.Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, -1.0, 0.0, 0.0, d, 0.0, result);
+            Matrix.FromValuesToRef(a, 0.0, 0.0, 0.0, 0.0, b, 0.0, 0.0, 0.0, 0.0, c, -1.0, 0.0, 0.0, d, 0.0, result);
         };
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.
@@ -5808,6 +5808,22 @@ var BABYLON;
         return LoadFileError;
     }(Error));
     BABYLON.LoadFileError = LoadFileError;
+    var RetryStrategy = /** @class */ (function () {
+        function RetryStrategy() {
+        }
+        RetryStrategy.ExponentialBackoff = function (maxRetries, baseInterval) {
+            if (maxRetries === void 0) { maxRetries = 3; }
+            if (baseInterval === void 0) { baseInterval = 500; }
+            return function (url, request, retryIndex) {
+                if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
+                    return -1;
+                }
+                return Math.pow(2, retryIndex) * baseInterval;
+            };
+        };
+        return RetryStrategy;
+    }());
+    BABYLON.RetryStrategy = RetryStrategy;
     // Screenshots
     var screenshotCanvas;
     var cloneValue = function (source, destinationObject) {
@@ -6198,11 +6214,13 @@ var BABYLON;
             }
             return img;
         };
-        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError) {
+        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError, onRetry, retryStrategy) {
+            if (retryStrategy === void 0) { retryStrategy = null; }
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
             var request = null;
-            var noIndexedDB = function () {
+            var noIndexedDB = function (retryIndex) {
+                var oldRequest = request;
                 request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
                 request.open('GET', loadUrl, true);
@@ -6219,19 +6237,29 @@ var BABYLON;
                         req.onreadystatechange = function () { }; //some browsers have issues where onreadystatechange can be called multiple times with the same value
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
                             callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
+                            return;
+                        }
+                        retryStrategy = retryStrategy || Tools.DefaultRetryStrategy;
+                        if (retryStrategy) {
+                            var waitTime = retryStrategy(loadUrl, req, retryIndex || 0);
+                            if (waitTime !== -1) {
+                                setTimeout(function () { return noIndexedDB((retryIndex || 0) + 1); }, waitTime);
+                                return;
+                            }
+                        }
+                        var e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                        if (onError) {
+                            onError(req, e);
                         }
                         else {
-                            var e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl, req);
-                            if (onError) {
-                                onError(req, e);
-                            }
-                            else {
-                                throw e;
-                            }
+                            throw e;
                         }
                     }
                 };
-                request.send(null);
+                request.send();
+                if (oldRequest && onRetry) {
+                    onRetry(oldRequest, request);
+                }
             };
             var loadFromIndexedDB = function () {
                 if (database) {
@@ -6962,6 +6990,7 @@ var BABYLON;
             return hash;
         };
         Tools.BaseUrl = "";
+        Tools.DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
         /**
          * Default behaviour for cors in the application.
          * It can be a string if the expected behavior is identical in the entire app.
@@ -8693,7 +8722,7 @@ var BABYLON;
             // Empty texture
             get: function () {
                 if (!this._emptyTexture) {
-                    this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                    this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
                 }
                 return this._emptyTexture;
             },
@@ -8703,7 +8732,7 @@ var BABYLON;
         Object.defineProperty(Engine.prototype, "emptyTexture3D", {
             get: function () {
                 if (!this._emptyTexture3D) {
-                    this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                    this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
                 }
                 return this._emptyTexture3D;
             },
@@ -8715,7 +8744,7 @@ var BABYLON;
                 if (!this._emptyCubeTexture) {
                     var faceData = new Uint8Array(4);
                     var cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-                    this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                    this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
                 }
                 return this._emptyCubeTexture;
             },
@@ -10609,7 +10638,7 @@ var BABYLON;
         };
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode, compression, type) {
             if (compression === void 0) { compression = null; }
-            if (type === void 0) { type = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT; }
+            if (type === void 0) { type = Engine.TEXTURETYPE_UNSIGNED_INT; }
             var texture = new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_RAW);
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -12183,13 +12212,13 @@ var BABYLON;
             if (this._webGLVersion > 1) {
                 return this._caps.colorBufferFloat;
             }
-            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_FLOAT);
+            return this._canRenderToFramebuffer(Engine.TEXTURETYPE_FLOAT);
         };
         Engine.prototype._canRenderToHalfFloatFramebuffer = function () {
             if (this._webGLVersion > 1) {
                 return this._caps.colorBufferFloat;
             }
-            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
+            return this._canRenderToFramebuffer(Engine.TEXTURETYPE_HALF_FLOAT);
         };
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
         Engine.prototype._canRenderToFramebuffer = function (type) {
@@ -15020,11 +15049,12 @@ var BABYLON;
                 for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                     var descendant = descendants_1[_i];
                     var childMesh = descendant;
-                    childMesh.computeWorldMatrix(true);
-                    var childBoundingInfo = childMesh.getBoundingInfo();
-                    if (childMesh.getTotalVertices() === 0) {
+                    //make sure we have the needed params to get mix and max
+                    if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
+                    childMesh.computeWorldMatrix(true);
+                    var childBoundingInfo = childMesh.getBoundingInfo();
                     var boundingBox = childBoundingInfo.boundingBox;
                     var minBox = boundingBox.minimumWorld;
                     var maxBox = boundingBox.maximumWorld;
@@ -26138,7 +26168,7 @@ var BABYLON;
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         Mesh.Center = function (meshesOrMinMaxVector) {
-            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return BABYLON.Vector3.Center(minMaxVector.min, minMaxVector.max);
         };
         /**
@@ -33323,7 +33353,7 @@ var BABYLON;
         ColorGradingTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.ColorGradingTexture(parsedTexture.name, scene);
+                texture = new ColorGradingTexture(parsedTexture.name, scene);
                 texture.name = parsedTexture.name;
                 texture.level = parsedTexture.level;
             }
@@ -41363,7 +41393,7 @@ var BABYLON;
          * @returns The created animation
          */
         Animation.CreateAnimation = function (property, animationType, framePerSecond, easingFunction) {
-            var animation = new BABYLON.Animation(property + "Animation", property, framePerSecond, animationType, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            var animation = new Animation(property + "Animation", property, framePerSecond, animationType, Animation.ANIMATIONLOOPMODE_CONSTANT);
             animation.setEasingFunction(easingFunction);
             return animation;
         };
@@ -41798,6 +41828,18 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.animation.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var AnimationGroup = /** @class */ (function () {
+        function AnimationGroup() {
+        }
+        return AnimationGroup;
+    }());
+    BABYLON.AnimationGroup = AnimationGroup;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.animationGroup.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -43323,13 +43365,14 @@ var BABYLON;
             return root;
         };
         ActionManager.Parse = function (parsedActions, object, scene) {
-            var actionManager = new BABYLON.ActionManager(scene);
+            var actionManager = new ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;
             else
                 object.actionManager = actionManager;
             // instanciate a new object
             var instanciate = function (name, params) {
+                // TODO: We will need to find a solution for the next line when using commonjs / es6 .
                 var newInstance = Object.create(BABYLON.Tools.Instantiate("BABYLON." + name).prototype);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;
@@ -45846,6 +45889,13 @@ var BABYLON;
             serializationObject.blendMode = this.blendMode;
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
+            serializationObject.startSpriteCellID = this.startSpriteCellID;
+            serializationObject.endSpriteCellID = this.endSpriteCellID;
+            serializationObject.spriteCellLoop = this.spriteCellLoop;
+            serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
+            serializationObject.spriteCellWidth = this.spriteCellWidth;
+            serializationObject.spriteCellHeight = this.spriteCellHeight;
+            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
             return serializationObject;
         };
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
@@ -45857,7 +45907,7 @@ var BABYLON;
                 var defines = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
             }
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom, parsedParticleSystem.isAnimationSheetEnabled);
             particleSystem.customShader = program;
             if (parsedParticleSystem.id) {
                 particleSystem.id = parsedParticleSystem.id;
@@ -45910,6 +45960,12 @@ var BABYLON;
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = BABYLON.Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
+            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
+            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+            particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;
+            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
+            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
             if (!particleSystem.preventAutoStart) {
                 particleSystem.start();
             }
@@ -50799,7 +50855,7 @@ var BABYLON;
         };
         CubeTexture.Parse = function (parsedTexture, scene, rootUrl) {
             var texture = BABYLON.SerializationHelper.Parse(function () {
-                return new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
             }, parsedTexture, scene);
             // Animations
             if (parsedTexture.animations) {
@@ -52054,7 +52110,7 @@ var BABYLON;
                     }
                     video.play();
                     if (onReady) {
-                        onReady(new BABYLON.VideoTexture("video", video, scene, true, true));
+                        onReady(new VideoTexture("video", video, scene, true, true));
                     }
                 }, function (e) {
                     BABYLON.Tools.Error(e.name);
@@ -53735,6 +53791,9 @@ var BABYLON;
         // Public functions
         SceneLoader.GetPluginForExtension = function (extension) {
             return SceneLoader._getPluginForExtension(extension).plugin;
+        };
+        SceneLoader.IsPluginForExtensionAvailable = function (extension) {
+            return !!SceneLoader._registeredPlugins[extension];
         };
         SceneLoader.RegisterPlugin = function (plugin) {
             if (typeof plugin.extensions === "string") {
@@ -57982,7 +58041,7 @@ var BABYLON;
             var path;
             var filename;
             // Checking if GLB loader is present
-            if (BABYLON.SceneLoader.GetPluginForExtension("glb")) {
+            if (BABYLON.SceneLoader.IsPluginForExtensionAvailable("glb")) {
                 // Determine the device specific folder based on the ID suffix
                 var device = 'default';
                 if (this.id && !forceDefault) {
@@ -60535,6 +60594,9 @@ var BABYLON;
         ], StandardRenderingPipeline.prototype, "motionStrength", void 0);
         __decorate([
             BABYLON.serialize()
+        ], StandardRenderingPipeline.prototype, "_ratio", void 0);
+        __decorate([
+            BABYLON.serialize()
         ], StandardRenderingPipeline.prototype, "BloomEnabled", null);
         __decorate([
             BABYLON.serialize()
@@ -61039,7 +61101,7 @@ var BABYLON;
                     return;
                 }
                 // Culling
-                engine.setState(material.backFaceCulling);
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
                 if (batch.mustReturn) {
@@ -63714,7 +63776,7 @@ var BABYLON;
                         if (this._transformYawPitch) {
                             BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, this._transformYawPitchInv, boneFwd);
                         }
-                        var boneRotMat = BABYLON.BoneLookController._tmpMats[4];
+                        var boneRotMat = BoneLookController._tmpMats[4];
                         this._boneQuat.toRotationMatrix(boneRotMat);
                         this.mesh.getWorldMatrix().multiplyToRef(boneRotMat, boneRotMat);
                         BABYLON.Vector3.TransformCoordinatesToRef(boneFwd, boneRotMat, boneFwd);
@@ -65252,7 +65314,7 @@ var BABYLON;
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 var size = parsedTexture.isBABYLONPreprocessed ? null : parsedTexture.size;
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap, parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
+                texture = new HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap, parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
                 texture.level = parsedTexture.level;
@@ -70706,7 +70768,7 @@ var BABYLON;
                 this._colorShader.setColor4("color", this.frontColor.toColor4());
                 this._colorShader.bind(worldMatrix);
                 // Draw order
-                engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 24);
+                engine.drawElementsType(BABYLON.Material.LineListDrawMode, 0, 24);
             }
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
@@ -72477,9 +72539,18 @@ var BABYLON;
             this._webVRpresenting = false;
             // Are we presenting in the fullscreen fallback?
             this._fullscreenVRpresenting = false;
-            this.onEnteringVR = new BABYLON.Observable();
-            this.onExitingVR = new BABYLON.Observable();
-            this.onControllerMeshLoaded = new BABYLON.Observable();
+            /**
+             * Observable raised when entering VR.
+             */
+            this.onEnteringVRObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when exiting VR.
+             */
+            this.onExitingVRObservable = new BABYLON.Observable();
+            /**
+             * Observable raised when controller mesh is loaded.
+             */
+            this.onControllerMeshLoadedObservable = new BABYLON.Observable();
             this._useCustomVRButton = false;
             this._teleportationRequested = false;
             this._teleportationEnabledOnLeftController = false;
@@ -72776,6 +72847,36 @@ var BABYLON;
             this._circleEase = new BABYLON.CircleEase();
             this._circleEase.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
         }
+        Object.defineProperty(VRExperienceHelper.prototype, "onEnteringVR", {
+            /** Return this.onEnteringVRObservable
+             * Note: This one is for backward compatibility. Please use onEnteringVRObservable directly
+             */
+            get: function () {
+                return this.onEnteringVRObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "onExitingVR", {
+            /** Return this.onExitingVRObservable
+             * Note: This one is for backward compatibility. Please use onExitingVRObservable directly
+             */
+            get: function () {
+                return this.onExitingVRObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(VRExperienceHelper.prototype, "onControllerMeshLoaded", {
+            /** Return this.onControllerMeshLoadedObservable
+             * Note: This one is for backward compatibility. Please use onControllerMeshLoadedObservable directly
+             */
+            get: function () {
+                return this.onControllerMeshLoadedObservable;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(VRExperienceHelper.prototype, "teleportationTarget", {
             get: function () {
                 return this._teleportationTarget;
@@ -72867,7 +72968,7 @@ var BABYLON;
         VRExperienceHelper.prototype._onDefaultMeshLoaded = function (webVRController) {
             this._tryEnableInteractionOnController(webVRController);
             try {
-                this.onControllerMeshLoaded.notifyObservers(webVRController);
+                this.onControllerMeshLoadedObservable.notifyObservers(webVRController);
             }
             catch (err) {
                 BABYLON.Tools.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
@@ -72937,9 +73038,9 @@ var BABYLON;
          * Otherwise, will use the fullscreen API.
          */
         VRExperienceHelper.prototype.enterVR = function () {
-            if (this.onEnteringVR) {
+            if (this.onEnteringVRObservable) {
                 try {
-                    this.onEnteringVR.notifyObservers(this);
+                    this.onEnteringVRObservable.notifyObservers(this);
                 }
                 catch (err) {
                     BABYLON.Tools.Warn("Error in your custom logic onEnteringVR: " + err);
@@ -72971,9 +73072,9 @@ var BABYLON;
          * Attempt to exit VR, or fullscreen.
          */
         VRExperienceHelper.prototype.exitVR = function () {
-            if (this.onExitingVR) {
+            if (this.onExitingVRObservable) {
                 try {
-                    this.onExitingVR.notifyObservers(this);
+                    this.onExitingVRObservable.notifyObservers(this);
                 }
                 catch (err) {
                     BABYLON.Tools.Warn("Error in your custom logic onExitingVR: " + err);
@@ -80179,9 +80280,11 @@ var BABYLON;
                 this._groundMaterial.dispose();
                 this._groundMaterial = null;
             }
-            if (this._options.groundTexture && !newOptions.groundTexture && this._groundTexture) {
-                this._groundTexture.dispose();
-                this._groundTexture = null;
+            if (this._groundTexture) {
+                if (this._options.groundTexture != newOptions.groundTexture) {
+                    this._groundTexture.dispose();
+                    this._groundTexture = null;
+                }
             }
             if (this._skybox && !newOptions.createSkybox) {
                 this._skybox.dispose();
@@ -80191,16 +80294,20 @@ var BABYLON;
                 this._skyboxMaterial.dispose();
                 this._skyboxMaterial = null;
             }
-            if (this._options.skyboxTexture && !newOptions.skyboxTexture && this._skyboxTexture) {
-                this._skyboxTexture.dispose();
-                this._skyboxTexture = null;
+            if (this._skyboxTexture) {
+                if (this._options.skyboxTexture != newOptions.skyboxTexture) {
+                    this._skyboxTexture.dispose();
+                    this._skyboxTexture = null;
+                }
             }
             if (this._groundMirror && !newOptions.enableGroundMirror) {
                 this._groundMirror.dispose();
                 this._groundMirror = null;
             }
-            if (this._options.environmentTexture && !newOptions.environmentTexture && this._scene.environmentTexture) {
-                this._scene.environmentTexture.dispose();
+            if (this._scene.environmentTexture) {
+                if (this._options.environmentTexture != newOptions.environmentTexture) {
+                    this._scene.environmentTexture.dispose();
+                }
             }
             this._options = newOptions;
             this._setupBackground();

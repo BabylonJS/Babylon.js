@@ -893,12 +893,14 @@
                 for (var descendant of descendants) {
                     let childMesh = <AbstractMesh>descendant;
 
+                    //make sure we have the needed params to get mix and max
+                    if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
+                        continue;
+                    }
+
                     childMesh.computeWorldMatrix(true);
                     let childBoundingInfo = childMesh.getBoundingInfo();
 
-                    if (childMesh.getTotalVertices() === 0) {
-                        continue;
-                    }
                     let boundingBox = childBoundingInfo.boundingBox;
 
                     var minBox = boundingBox.minimumWorld;
@@ -1788,9 +1790,9 @@
          * Align the mesh with a normal.
          * Returns the mesh.  
          */
-        public alignWithNormal(normal: BABYLON.Vector3, upDirection?: BABYLON.Vector3): AbstractMesh {
+        public alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {
             if (!upDirection) {
-                upDirection = BABYLON.Axis.Y;
+                upDirection = Axis.Y;
             }
 
             var axisX = Tmp.Vector3[0];
