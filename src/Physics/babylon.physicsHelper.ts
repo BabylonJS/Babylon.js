@@ -121,7 +121,7 @@ module BABYLON {
                 return null;
             }
 
-            var event = new PhysicsUpdraftEvent(this._physicsEngine, this._scene, origin, radius, strength, height, updraftMode);
+            var event = new PhysicsUpdraftEvent(this._scene, origin, radius, strength, height, updraftMode);
 
             event.dispose(false);
 
@@ -144,7 +144,7 @@ module BABYLON {
                 return null;
             }
 
-            var event = new PhysicsVortexEvent(this._physicsEngine, this._scene, origin, radius, strength, height);
+            var event = new PhysicsVortexEvent(this._scene, origin, radius, strength, height);
 
             event.dispose(false);
 
@@ -353,27 +353,15 @@ module BABYLON {
     export class PhysicsUpdraftEvent {
 
         private _physicsEngine: PhysicsEngine;
-        private _scene: Scene;
-        private _origin: Vector3;
         private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
         private _originDirection: Vector3 = Vector3.Zero(); // used if the updraftMode is perpendicular
-        private _radius: number;
-        private _strength: number;
-        private _height: number;
-        private _updraftMode: PhysicsUpdraftMode;
         private _tickCallback: any;
         private _cylinder: Mesh;
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
  
-        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number, updraftMode: PhysicsUpdraftMode) {
-            this._physicsEngine = physicsEngine;
-            this._scene = scene;
-            this._origin = origin;
-            this._radius = radius;
-            this._strength = strength;
-            this._height = height;
-            this._updraftMode = updraftMode;
+        constructor(private _scene: Scene, private _origin: Vector3, private _radius: number, private _strength: number, private _height: number, private _updraftMode: PhysicsUpdraftMode) {
+            this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
 
             this._origin.addToRef(new Vector3(0, this._height / 2, 0), this._cylinderPosition);
             this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
@@ -493,12 +481,7 @@ module BABYLON {
     export class PhysicsVortexEvent {
 
         private _physicsEngine: PhysicsEngine;
-        private _scene: Scene;
-        private _origin: Vector3;
         private _originTop: Vector3 = Vector3.Zero(); // the most upper part of the cylinder
-        private _radius: number;
-        private _strength: number;
-        private _height: number;
         private _centripetalForceThreshold: number = 0.7; // at which distance, relative to the radius the centripetal forces should kick in
         private _updraftMultiplier: number = 0.02;
         private _tickCallback: any;
@@ -506,13 +489,8 @@ module BABYLON {
         private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
         private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
 
-        constructor(physicsEngine: PhysicsEngine, scene: Scene, origin: Vector3, radius: number, strength: number, height: number) {
-            this._physicsEngine = physicsEngine;
-            this._scene = scene;
-            this._origin = origin;
-            this._radius = radius;
-            this._strength = strength;
-            this._height = height;
+        constructor(private _scene: Scene, private _origin: Vector3, private _radius: number, private _strength: number, private _height: number) {
+            this._physicsEngine = <PhysicsEngine>this._scene.getPhysicsEngine();
 
             this._origin.addToRef(new Vector3(0, this._height / 2, 0), this._cylinderPosition);
             this._origin.addToRef(new Vector3(0, this._height, 0), this._originTop);
