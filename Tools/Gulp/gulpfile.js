@@ -7,6 +7,7 @@ var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
 var babylonModuleExports = require("./gulp-babylonModule");
+var dtsModuleSupport = require("./gulp-dtsModuleSupport");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
@@ -612,9 +613,25 @@ gulp.task("modules-compile", function () {
                 }))
             .pipe(gulp.dest(config.build.srcOutputDirectory))
     ]);
+});
+
+// this holds the declared objects in each module
+let declared = {}
+
+gulp.task('prepare-for-modules', ["modules-compile"], function () {
+    let tasks = [];
+    Object.keys(config.workloads).forEach((moduleName) => {
+        let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
+        let dtsTask = gulp.src(dtsFiles)
+            .pipe(dtsModuleSupport(moduleName, false, declared));
+
+        tasks.push(dtsTask);
+    });
+
+    return merge2(tasks);
 })
 
-gulp.task("modules", ["modules-compile"], function () {
+gulp.task("modules", ["prepare-for-modules"], function () {
     let tasks = [];
 
     Object.keys(config.workloads)
@@ -658,7 +675,8 @@ gulp.task("modules", ["modules-compile"], function () {
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat(moduleName + ".d.ts"))
                 //.pipe(addDtsExport("BABYLON", "babylonjs/es6/" + moduleName))
-                .pipe(addDtsExport("BABYLON", "babylonjs/" + moduleName, false, moduleName !== "core", config.workloads[moduleName].dependUpon))
+                .pipe(replace(/declare module BABYLON {/g, `declare module 'babylonjs/${moduleName}' {`))
+                .pipe(dtsModuleSupport(moduleName, true, declared))
                 .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
 
             tasks.push(jsTask, dtsTask);
