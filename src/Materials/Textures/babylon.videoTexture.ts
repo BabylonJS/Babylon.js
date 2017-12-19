@@ -49,8 +49,9 @@
 
             if (urls) {
                 this.video.addEventListener("canplay", () => {
-                    if(this._texture !== undefined){ return; }
-                    this._createTexture();
+                    if (this._texture === undefined){ 
+                      this._createTexture();
+                    }
                 });
                 urls.forEach(url => {
                     var source = document.createElement("source");
