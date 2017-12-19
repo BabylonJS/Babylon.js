@@ -71,7 +71,11 @@ if(typeof require !== 'undefined'){
 
         let exportsText = '';
         if (moduleName === "core") {
-            exportsText = `(function() { module.exports = BABYLON; })();
+            exportsText = `(function() {
+    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+    globalObject["BABYLON"] = BABYLON;
+    module.exports = BABYLON; 
+})();
 }`
         }
         else {
