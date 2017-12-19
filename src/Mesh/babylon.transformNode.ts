@@ -35,6 +35,7 @@ module BABYLON {
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
+        public _worldMatrixDeterminant = 0;
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
@@ -111,6 +112,16 @@ module BABYLON {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
+        }
+
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this._worldMatrixDeterminant = this.computeWorldMatrix().determinant();
+            }
+            return this._worldMatrixDeterminant;
         }
 
         /**

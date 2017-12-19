@@ -1370,7 +1370,8 @@ module BABYLON.GLTF2 {
                 let material = <PBRMaterial>this._babylonScene.getMaterialByName(id);
                 if (!material) {
                     material = new PBRMaterial(id, this._babylonScene);
-                    material.sideOrientation = Material.CounterClockWiseSideOrientation;
+                    material.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
+                    material.sideOrientation = Material.ClockWiseSideOrientation;
                     material.metallic = 1;
                     material.roughness = 1;
                 }
@@ -1439,7 +1440,7 @@ module BABYLON.GLTF2 {
 
         public _createPbrMaterial(material: IGLTFMaterial): void {
             const babylonMaterial = new PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
-            babylonMaterial.sideOrientation = Material.CounterClockWiseSideOrientation;
+            babylonMaterial.sideOrientation = Material.ClockWiseSideOrientation;
             material.babylonMaterial = babylonMaterial;
         }
 
