@@ -1304,7 +1304,7 @@
                 return this;
             }
 
-            this._effectiveMaterial = material
+            this._effectiveMaterial = material;
 
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
@@ -1338,7 +1338,15 @@
                 return this;
             }
 
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
+            var sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (this._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
+            }
+
+            var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
 
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
