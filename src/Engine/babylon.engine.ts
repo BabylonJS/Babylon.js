@@ -617,7 +617,7 @@
 
         private _vrDisplay: any = undefined;
         private _vrSupported: boolean = false;
-        private _oldSize: BABYLON.Size;
+        private _oldSize: Size;
         private _oldHardwareScaleFactor: number;
         private _vrExclusivePointerMode = false;
 
@@ -811,14 +811,14 @@
         // Empty texture
         public get emptyTexture(): InternalTexture {
             if (!this._emptyTexture) {
-                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture;
         }
         public get emptyTexture3D(): InternalTexture {
             if (!this._emptyTexture3D) {
-                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyTexture3D;
@@ -827,7 +827,7 @@
             if (!this._emptyCubeTexture) {
                 var faceData = new Uint8Array(4);
                 var cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
-                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+                this._emptyCubeTexture = this.createRawCubeTexture(cubeData, 1, Engine.TEXTUREFORMAT_RGBA, Engine.TEXTURETYPE_UNSIGNED_INT, false, false, Texture.NEAREST_SAMPLINGMODE);
             }
 
             return this._emptyCubeTexture;
@@ -1095,7 +1095,7 @@
 
             Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
 
-            this.enableOfflineSupport = (BABYLON.Database !== undefined);
+            this.enableOfflineSupport = (Database !== undefined);
         }
 
         private _rebuildInternalTextures(): void {
@@ -1810,7 +1810,7 @@
         private _onVRFullScreenTriggered = () => {
             if (this._vrDisplay && this._vrDisplay.isPresenting) {
                 //get the old size before we change
-                this._oldSize = new BABYLON.Size(this.getRenderWidth(), this.getRenderHeight());
+                this._oldSize = new Size(this.getRenderWidth(), this.getRenderHeight());
                 this._oldHardwareScaleFactor = this.getHardwareScalingLevel();
 
                 //get the width and height, change the render size
@@ -2830,21 +2830,24 @@
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling
-            var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
-            var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
-            var cullFace = this.cullBackFaces ? showSide : hideSide;
+            if (this._depthCullingState.cull !== culling || force) {
+                this._depthCullingState.cull = culling;
+            }
 
-            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace !== cullFace) {
-                if (culling) {
-                    this._depthCullingState.cullFace = cullFace;
-                    this._depthCullingState.cull = true;
-                } else {
-                    this._depthCullingState.cull = false;
-                }
+            // Cull face
+            var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+            if (this._depthCullingState.cullFace !== cullFace || force) {
+                this._depthCullingState.cullFace = cullFace;
             }
 
             // Z offset
             this.setZOffset(zOffset);
+
+            // Front face
+            var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
+            if (this._depthCullingState.frontFace !== frontFace || force) {
+                this._depthCullingState.frontFace = frontFace;
+            }
         }
 
         public setZOffset(value: number): void {
@@ -3093,8 +3096,8 @@
                 // fallback for when compressed file not found to try again.  For instance, etc1 does not have an alpha capable type
                 if (isKTX) {
                     this.createTexture(urlArg, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
-                } else if (BABYLON.Tools.UseFallbackTexture) {
-                    this.createTexture(BABYLON.Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
+                } else if (Tools.UseFallbackTexture) {
+                    this.createTexture(Tools.fallbackTexture, noMipmap, invertY, scene, samplingMode, null, onError, buffer, texture);
                 }
 
                 if (onError) {
@@ -3221,7 +3224,7 @@
             );
 
             if (!this._rescalePostProcess) {
-                this._rescalePostProcess = new BABYLON.PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
+                this._rescalePostProcess = new PassPostProcess("rescale", 1, null, Texture.BILINEAR_SAMPLINGMODE, this, false, Engine.TEXTURETYPE_UNSIGNED_INT);
             }
 
             this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
@@ -3308,7 +3311,7 @@
             texture.isReady = true;
         }
 
-        public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
+        public createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression: Nullable<string> = null, type: number = Engine.TEXTURETYPE_UNSIGNED_INT): InternalTexture {
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RAW);
             texture.baseWidth = width;
             texture.baseHeight = height;
@@ -5108,7 +5111,7 @@
             this.onBeginFrameObservable.clear();
             this.onEndFrameObservable.clear();
 
-            BABYLON.Effect.ResetCache();
+            Effect.ResetCache();
         }
 
         // Loading screen
@@ -5244,14 +5247,14 @@
             if (this._webGLVersion > 1) {
                 return this._caps.colorBufferFloat;
             }
-            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_FLOAT);
+            return this._canRenderToFramebuffer(Engine.TEXTURETYPE_FLOAT);
         }
 
         private _canRenderToHalfFloatFramebuffer(): boolean {
             if (this._webGLVersion > 1) {
                 return this._caps.colorBufferFloat;
             }
-            return this._canRenderToFramebuffer(BABYLON.Engine.TEXTURETYPE_HALF_FLOAT);
+            return this._canRenderToFramebuffer(Engine.TEXTURETYPE_HALF_FLOAT);
         }
 
         // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture

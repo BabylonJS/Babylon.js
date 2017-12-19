@@ -35,6 +35,7 @@ module BABYLON {
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
+        public _worldMatrixDeterminant = 0;
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
@@ -111,6 +112,16 @@ module BABYLON {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
+        }
+
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this._worldMatrixDeterminant = this.computeWorldMatrix().determinant();
+            }
+            return this._worldMatrixDeterminant;
         }
 
         /**
@@ -650,7 +661,7 @@ module BABYLON {
                 rotationQuaternion = Tmp.Quaternion[1];
                 Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
             }
-            var accumulation = BABYLON.Tmp.Quaternion[0];
+            var accumulation = Tmp.Quaternion[0];
             Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
             rotationQuaternion.multiplyInPlace(accumulation);
             if (!this.rotationQuaternion) {
@@ -691,7 +702,7 @@ module BABYLON {
             if (this.rotationQuaternion) {
                 var len = this.rotation.length();
                 if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
+                    this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             }

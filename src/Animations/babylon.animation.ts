@@ -84,7 +84,7 @@
     export class Animation {
         public static AllowMatricesInterpolation = false;
 
-        private _keys: Array<{frame:number, value: any, inTangent?: any, outTangent?: any}>;
+        private _keys: Array<{ frame: number, value: any, inTangent?: any, outTangent?: any }>;
         private _easingFunction: IEasingFunction;
 
         public _runtimeAnimations = new Array<RuntimeAnimation>();
@@ -122,7 +122,7 @@
 
             var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
 
-            var keys: Array<{frame: number, value:any}> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
+            var keys: Array<{ frame: number, value: any }> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
             animation.setKeys(keys);
 
             if (easingFunction !== undefined) {
@@ -139,17 +139,17 @@
 		 * @param easingFunction the easing function used in the animation
 		 * @returns The created animation
 		 */
-		public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: BABYLON.EasingFunction): BABYLON.Animation {
-			var animation: BABYLON.Animation = new BABYLON.Animation(property + "Animation",
-				property,
-				framePerSecond,
-				animationType,
-				BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation {
+            var animation: Animation = new Animation(property + "Animation",
+                property,
+                framePerSecond,
+                animationType,
+                Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-			animation.setEasingFunction(easingFunction);
+            animation.setEasingFunction(easingFunction);
 
-			return animation;
-		}
+            return animation;
+        }
 
         public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
@@ -190,38 +190,38 @@
 		 * @param duration The duration of the animation, in milliseconds
 		 * @param onAnimationEnd Call back trigger at the end of the animation.
 		 */
-		public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number,	onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
+        public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
 
-			if (duration <= 0) {
-				host[property] = targetValue;
-				if (onAnimationEnd) {
+            if (duration <= 0) {
+                host[property] = targetValue;
+                if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-				return null;
-			}
+                return null;
+            }
 
-			var endFrame: number = frameRate * (duration / 1000);
+            var endFrame: number = frameRate * (duration / 1000);
 
-			transition.setKeys([{
-				frame: 0,
-				value: host[property].clone ? host[property].clone() : host[property]
-			},
-			{
-				frame: endFrame,
-				value: targetValue
-			}]);
+            transition.setKeys([{
+                frame: 0,
+                value: host[property].clone ? host[property].clone() : host[property]
+            },
+            {
+                frame: endFrame,
+                value: targetValue
+            }]);
 
-			if (!host.animations) {
-				host.animations = [];
-			}
+            if (!host.animations) {
+                host.animations = [];
+            }
 
-			host.animations.push(transition);
+            host.animations.push(transition);
 
-			var animation: BABYLON.Animatable = scene.beginAnimation(host, 0, endFrame, false);
-			animation.onAnimationEnd = onAnimationEnd;
-			return animation;
+            var animation: Animatable = scene.beginAnimation(host, 0, endFrame, false);
+            animation.onAnimationEnd = onAnimationEnd;
+            return animation;
         }
-        
+
         /**
          * Return the array of runtime animations currently using this animation
          */
@@ -249,7 +249,7 @@
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
-        public toString(fullDetails? : boolean) : string {
+        public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name + ", property: " + this.targetProperty;
             ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
             ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
@@ -260,15 +260,15 @@
                 for (var name in this._ranges) {
                     if (first) {
                         ret += ", ";
-                        first = false; 
+                        first = false;
                     }
-                    ret += name; 
+                    ret += name;
                 }
                 ret += "}";
             }
             return ret;
-        } 
-        
+        }
+
         /**
          * Add an event to this animation.
          */
@@ -318,7 +318,7 @@
                 }
             }
             this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
-        
+
         }
 
         public getRange(name: string): Nullable<AnimationRange> {
@@ -326,7 +326,7 @@
         }
 
 
-        public getKeys(): Array<{frame:number, value: any, inTangent?: any, outTangent?: any}> {
+        public getKeys(): Array<{ frame: number, value: any, inTangent?: any, outTangent?: any }> {
             return this._keys;
         }
 
@@ -458,7 +458,7 @@
 
             serializationObject.ranges = [];
             for (var name in this._ranges) {
-                let source  =this._ranges[name];
+                let source = this._ranges[name];
 
                 if (!source) {
                     continue;
@@ -529,7 +529,7 @@
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;
-            var keys: Array<{ frame: number, value: any, inTangent:any, outTangent:any }> = [];
+            var keys: Array<{ frame: number, value: any, inTangent: any, outTangent: any }> = [];
             var data;
             var index: number;
 
@@ -543,8 +543,8 @@
 
             for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
-                var inTangent:any;
-                var outTangent:any;
+                var inTangent: any;
+                var outTangent: any;
 
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
@@ -583,7 +583,7 @@
                         break;
                 }
 
-                var keyData:any = {};
+                var keyData: any = {};
                 keyData.frame = key.frame;
                 keyData.value = data;
 
@@ -619,6 +619,6 @@
             }
         }
     }
-} 
+}
 
 
