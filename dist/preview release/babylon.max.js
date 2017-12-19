@@ -21253,7 +21253,6 @@ var BABYLON;
             this.afterRender = null;
             this.skeletons = [];
             this.morphTargetManagers = [];
-            this.animationGroups = [];
             this.importedMeshesFiles = new Array();
             this.stopAllAnimations();
             this.resetCachedMaterial();
@@ -21323,6 +21322,10 @@ var BABYLON;
                 for (index = 0; index < this.cameras.length; index++) {
                     this.cameras[index].detachControl(canvas);
                 }
+            }
+            // Release animation groups
+            while (this.animationGroups.length) {
+                this.animationGroups[0].dispose();
             }
             // Release lights
             while (this.lights.length) {
@@ -41900,41 +41903,189 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This class defines the direct association between an animation and a target
+     */
+    var TargetedAnimation = /** @class */ (function () {
+        function TargetedAnimation() {
+        }
+        return TargetedAnimation;
+    }());
+    BABYLON.TargetedAnimation = TargetedAnimation;
+    /**
+     * Use this class to create coordinated animations on multiple targets
+     */
     var AnimationGroup = /** @class */ (function () {
         function AnimationGroup(name, scene) {
             if (scene === void 0) { scene = null; }
             this.name = name;
-            // private _animations = new Array<Animation>();
-            // private _targets = new Array<Object>()
-            // private _animatables: Animatable[];
-            // private _from: number;
-            // private _to: number;
+            this._targetedAnimations = new Array();
+            this._animatables = new Array();
+            this._from = Number.MAX_VALUE;
+            this._to = Number.MIN_VALUE;
             this.onAnimationEndObservable = new BABYLON.Observable();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._scene.animationGroups.push(this);
         }
+        Object.defineProperty(AnimationGroup.prototype, "isStarted", {
+            get: function () {
+                return this._isStarted;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Add an animation with its target in the group
+         * @param target defines the target of the animation
+         * @param animation defines the animation we want to add
+         * @returns the {BABYLON.TargetedAnimation} object
+         */
+        AnimationGroup.prototype.addTargetedAnimation = function (target, animation) {
+            var targetedAnimation = {
+                animation: animation,
+                target: target
+            };
+            var keys = animation.getKeys();
+            if (this._from > keys[0].frame) {
+                this._from = keys[0].frame;
+            }
+            if (this._to < keys[keys.length - 1].frame) {
+                this._to = keys[keys.length - 1].frame;
+            }
+            this._targetedAnimations.push(targetedAnimation);
+            return targetedAnimation;
+        };
+        /**
+         * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
+         * It can add constant keys at begin or end
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than this._from
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than this._to
+         */
         AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
+            beginFrame = Math.min(beginFrame, this._from);
+            endFrame = Math.min(endFrame, this._to);
+            for (var index = 0; index < this._targetedAnimations.length; index++) {
+                var targetedAnimation = this._targetedAnimations[index];
+                var keys = targetedAnimation.animation.getKeys();
+                var startKey = keys[0];
+                var endKey = keys[keys.length - 1];
+                if (startKey.frame > beginFrame) {
+                    var newKey = {
+                        frame: beginFrame,
+                        value: startKey.value,
+                        inTangent: startKey.inTangent,
+                        outTangent: startKey.outTangent
+                    };
+                    keys.splice(0, 0, newKey);
+                }
+                if (endKey.frame < endFrame) {
+                    var newKey = {
+                        frame: endFrame,
+                        value: endKey.value,
+                        inTangent: startKey.outTangent,
+                        outTangent: startKey.outTangent
+                    };
+                    keys.push(newKey);
+                }
+            }
             return this;
         };
+        /**
+         * Start all animations on given targets
+         * @param loop defines if animations must loop
+         * @param speedRatio defines the ratio to apply to animation speed (1 by default)
+         */
         AnimationGroup.prototype.start = function (loop, speedRatio) {
-            // for (var index = 0; index < this._animations) {
-            //     this._scene.beginDirectAnimation(this._targets[index], [this._animations[index]], this._from, this._to, loop, speedRatio, () => {
             if (loop === void 0) { loop = false; }
             if (speedRatio === void 0) { speedRatio = 1; }
-            //     });
-            // }
+            if (this._isStarted || this._targetedAnimations.length === 0) {
+                return this;
+            }
+            for (var index = 0; index < this._targetedAnimations.length; index++) {
+                var targetedAnimation = this._targetedAnimations[index];
+                this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], this._from, this._to, loop, speedRatio, function () {
+                }));
+            }
+            this._isStarted = true;
             return this;
         };
+        /**
+         * Pause all animations
+         */
         AnimationGroup.prototype.pause = function () {
+            if (!this._isStarted) {
+                return this;
+            }
+            for (var index = 0; index < this._animatables.length; index++) {
+                var animatable = this._animatables[index];
+                animatable.pause();
+            }
             return this;
         };
+        /**
+         * Play all animations to initial state
+         * This function will start() the animations if they were not started or will restart() them if they were paused
+         */
+        AnimationGroup.prototype.play = function (loop) {
+            if (loop === void 0) { loop = false; }
+            if (this.isStarted) {
+                this.restart();
+            }
+            else {
+                this.start(loop);
+            }
+            return this;
+        };
+        /**
+         * Reset all animations to initial state
+         */
+        AnimationGroup.prototype.reset = function () {
+            if (!this._isStarted) {
+                return this;
+            }
+            for (var index = 0; index < this._animatables.length; index++) {
+                var animatable = this._animatables[index];
+                animatable.reset();
+            }
+            return this;
+        };
+        /**
+         * Restart animations from key 0
+         */
         AnimationGroup.prototype.restart = function () {
+            if (!this._isStarted) {
+                return this;
+            }
+            for (var index = 0; index < this._animatables.length; index++) {
+                var animatable = this._animatables[index];
+                animatable.restart();
+            }
             return this;
         };
+        /**
+         * Stop all animations
+         */
         AnimationGroup.prototype.stop = function () {
+            if (!this._isStarted) {
+                return this;
+            }
+            for (var index = 0; index < this._animatables.length; index++) {
+                var animatable = this._animatables[index];
+                animatable.stop();
+            }
+            this._isStarted = false;
             return this;
         };
+        /**
+         * Dispose all associated resources
+         */
         AnimationGroup.prototype.dispose = function () {
+            this._targetedAnimations = [];
+            this._animatables = [];
+            var index = this._scene.animationGroups.indexOf(this);
+            if (index > -1) {
+                this._scene.animationGroups.splice(index, 1);
+            }
         };
         return AnimationGroup;
     }());
@@ -42381,6 +42532,10 @@ var BABYLON;
             }
             this._localDelayOffset = null;
             this._pausedDelay = null;
+            var oldPauseState = this._paused;
+            this._paused = false;
+            this._animate(0);
+            this._paused = oldPauseState;
         };
         Animatable.prototype.enableBlending = function (blendingSpeed) {
             var runtimeAnimations = this._runtimeAnimations;
@@ -68023,22 +68178,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    var PhysicsRadialImpulseFalloff;
-    (function (PhysicsRadialImpulseFalloff) {
-        PhysicsRadialImpulseFalloff[PhysicsRadialImpulseFalloff["Constant"] = 0] = "Constant";
-        PhysicsRadialImpulseFalloff[PhysicsRadialImpulseFalloff["Linear"] = 1] = "Linear"; // impulse gets weaker if it's further from the origin
-    })(PhysicsRadialImpulseFalloff = BABYLON.PhysicsRadialImpulseFalloff || (BABYLON.PhysicsRadialImpulseFalloff = {}));
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    var PhysicsUpdraftMode;
-    (function (PhysicsUpdraftMode) {
-        PhysicsUpdraftMode[PhysicsUpdraftMode["Center"] = 0] = "Center";
-        PhysicsUpdraftMode[PhysicsUpdraftMode["Perpendicular"] = 1] = "Perpendicular"; // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
-    })(PhysicsUpdraftMode = BABYLON.PhysicsUpdraftMode || (BABYLON.PhysicsUpdraftMode = {}));
     var PhysicsHelper = /** @class */ (function () {
         function PhysicsHelper(scene) {
             this._scene = scene;
@@ -68126,8 +68265,10 @@ var BABYLON;
          * @param {number} radius the radius of the updraft
          * @param {number} strength the strength of the updraft
          * @param {number} height the height of the updraft
+         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
          */
         PhysicsHelper.prototype.updraft = function (origin, radius, strength, height, updraftMode) {
+            if (updraftMode === void 0) { updraftMode = PhysicsUpdraftMode.Center; }
             if (!this._physicsEngine) {
                 BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
                 return null;
@@ -68135,7 +68276,25 @@ var BABYLON;
             if (this._physicsEngine.getImpostors().length === 0) {
                 return null;
             }
-            var event = new PhysicsUpdraftEvent(this._physicsEngine, this._scene, origin, radius, strength, height, updraftMode);
+            var event = new PhysicsUpdraftEvent(this._scene, origin, radius, strength, height, updraftMode);
+            event.dispose(false);
+            return event;
+        };
+        /**
+         * @param {Vector3} origin the of the vortex
+         * @param {number} radius the radius of the vortex
+         * @param {number} strength the strength of the vortex
+         * @param {number} height   the height of the vortex
+         */
+        PhysicsHelper.prototype.vortex = function (origin, radius, strength, height) {
+            if (!this._physicsEngine) {
+                BABYLON.Tools.Warn('Physics engine not enabled. Please enable the physics before you call the PhysicsHelper.');
+                return null;
+            }
+            if (this._physicsEngine.getImpostors().length === 0) {
+                return null;
+            }
+            var event = new PhysicsVortexEvent(this._scene, origin, radius, strength, height);
             event.dispose(false);
             return event;
         };
@@ -68175,6 +68334,9 @@ var BABYLON;
                 return null;
             }
             if (!this._intersectsWithSphere(impostor, origin, radius)) {
+                return null;
+            }
+            if (impostor.object.getClassName() !== 'Mesh') {
                 return null;
             }
             var impostorObject = impostor.object;
@@ -68305,19 +68467,18 @@ var BABYLON;
     BABYLON.PhysicsGravitationalFieldEvent = PhysicsGravitationalFieldEvent;
     /***** Updraft *****/
     var PhysicsUpdraftEvent = /** @class */ (function () {
-        function PhysicsUpdraftEvent(physicsEngine, scene, origin, radius, strength, height, updraftMode) {
+        function PhysicsUpdraftEvent(_scene, _origin, _radius, _strength, _height, _updraftMode) {
+            this._scene = _scene;
+            this._origin = _origin;
+            this._radius = _radius;
+            this._strength = _strength;
+            this._height = _height;
+            this._updraftMode = _updraftMode;
             this._originTop = BABYLON.Vector3.Zero(); // the most upper part of the cylinder
             this._originDirection = BABYLON.Vector3.Zero(); // used if the updraftMode is perpendicular
             this._cylinderPosition = BABYLON.Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
             this._dataFetched = false; // check if the has been fetched the data. If not, do cleanup
-            this._physicsEngine = physicsEngine;
-            this._scene = scene;
-            this._origin = origin;
-            this._radius = radius;
-            this._strength = strength;
-            this._height = height;
-            this._updraftMode = updraftMode;
-            // TODO: for this._cylinderPosition & this._originTop, take rotation into account
+            this._physicsEngine = this._scene.getPhysicsEngine();
             this._origin.addToRef(new BABYLON.Vector3(0, this._height / 2, 0), this._cylinderPosition);
             this._origin.addToRef(new BABYLON.Vector3(0, this._height, 0), this._originTop);
             if (this._updraftMode === PhysicsUpdraftMode.Perpendicular) {
@@ -68327,7 +68488,7 @@ var BABYLON;
         }
         /**
          * Returns the data related to the updraft event (cylinder).
-         * @returns {PhysicsGravitationalFieldEventData}
+         * @returns {PhysicsUpdraftEventData}
          */
         PhysicsUpdraftEvent.prototype.getData = function () {
             this._dataFetched = true;
@@ -68413,6 +68574,152 @@ var BABYLON;
         return PhysicsUpdraftEvent;
     }());
     BABYLON.PhysicsUpdraftEvent = PhysicsUpdraftEvent;
+    /***** Vortex *****/
+    var PhysicsVortexEvent = /** @class */ (function () {
+        function PhysicsVortexEvent(_scene, _origin, _radius, _strength, _height) {
+            this._scene = _scene;
+            this._origin = _origin;
+            this._radius = _radius;
+            this._strength = _strength;
+            this._height = _height;
+            this._originTop = BABYLON.Vector3.Zero(); // the most upper part of the cylinder
+            this._centripetalForceThreshold = 0.7; // at which distance, relative to the radius the centripetal forces should kick in
+            this._updraftMultiplier = 0.02;
+            this._cylinderPosition = BABYLON.Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
+            this._dataFetched = false; // check if the has been fetched the data. If not, do cleanup
+            this._physicsEngine = this._scene.getPhysicsEngine();
+            this._origin.addToRef(new BABYLON.Vector3(0, this._height / 2, 0), this._cylinderPosition);
+            this._origin.addToRef(new BABYLON.Vector3(0, this._height, 0), this._originTop);
+            this._tickCallback = this._tick.bind(this);
+        }
+        /**
+         * Returns the data related to the vortex event (cylinder).
+         * @returns {PhysicsVortexEventData}
+         */
+        PhysicsVortexEvent.prototype.getData = function () {
+            this._dataFetched = true;
+            return {
+                cylinder: this._cylinder,
+            };
+        };
+        /**
+         * Enables the vortex.
+         */
+        PhysicsVortexEvent.prototype.enable = function () {
+            this._tickCallback.call(this);
+            this._scene.registerBeforeRender(this._tickCallback);
+        };
+        /**
+         * Disables the cortex.
+         */
+        PhysicsVortexEvent.prototype.disable = function () {
+            this._scene.unregisterBeforeRender(this._tickCallback);
+        };
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        PhysicsVortexEvent.prototype.dispose = function (force) {
+            var _this = this;
+            if (force === void 0) { force = true; }
+            if (force) {
+                this._cylinder.dispose();
+            }
+            else {
+                setTimeout(function () {
+                    if (!_this._dataFetched) {
+                        _this._cylinder.dispose();
+                    }
+                }, 0);
+            }
+        };
+        PhysicsVortexEvent.prototype.getImpostorForceAndContactPoint = function (impostor) {
+            if (impostor.mass === 0) {
+                return null;
+            }
+            if (!this._intersectsWithCylinder(impostor)) {
+                return null;
+            }
+            if (impostor.object.getClassName() !== 'Mesh') {
+                return null;
+            }
+            var impostorObject = impostor.object;
+            var impostorObjectCenter = impostor.getObjectCenter();
+            var originOnPlane = new BABYLON.Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
+            var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
+            var ray = new BABYLON.Ray(originOnPlane, originToImpostorDirection, this._radius);
+            var hit = ray.intersectsMesh(impostorObject);
+            var contactPoint = hit.pickedPoint;
+            if (!contactPoint) {
+                return null;
+            }
+            var absoluteDistanceFromOrigin = hit.distance / this._radius;
+            var perpendicularDirection = BABYLON.Vector3.Cross(originOnPlane, impostorObjectCenter).normalize();
+            var directionToOrigin = contactPoint.normalize();
+            if (absoluteDistanceFromOrigin > this._centripetalForceThreshold) {
+                directionToOrigin = directionToOrigin.negate();
+            }
+            // TODO: find a more physically based solution
+            if (absoluteDistanceFromOrigin > this._centripetalForceThreshold) {
+                var forceX = directionToOrigin.x * this._strength / 8;
+                var forceY = directionToOrigin.y * this._updraftMultiplier;
+                var forceZ = directionToOrigin.z * this._strength / 8;
+            }
+            else {
+                var forceX = (perpendicularDirection.x + directionToOrigin.x) / 2;
+                var forceY = this._originTop.y * this._updraftMultiplier;
+                var forceZ = (perpendicularDirection.z + directionToOrigin.z) / 2;
+            }
+            var force = new BABYLON.Vector3(forceX, forceY, forceZ);
+            force = force.multiplyByFloats(this._strength, this._strength, this._strength);
+            return { force: force, contactPoint: impostorObjectCenter };
+        };
+        PhysicsVortexEvent.prototype._tick = function () {
+            var _this = this;
+            this._physicsEngine.getImpostors().forEach(function (impostor) {
+                var impostorForceAndContactPoint = _this.getImpostorForceAndContactPoint(impostor);
+                if (!impostorForceAndContactPoint) {
+                    return;
+                }
+                impostor.applyForce(impostorForceAndContactPoint.force, impostorForceAndContactPoint.contactPoint);
+            });
+        };
+        /*** Helpers ***/
+        PhysicsVortexEvent.prototype._prepareCylinder = function () {
+            if (!this._cylinder) {
+                this._cylinder = BABYLON.MeshBuilder.CreateCylinder("vortexEventCylinder", {
+                    height: this._height,
+                    diameter: this._radius * 2,
+                }, this._scene);
+                this._cylinder.isVisible = false;
+            }
+        };
+        PhysicsVortexEvent.prototype._intersectsWithCylinder = function (impostor) {
+            var impostorObject = impostor.object;
+            this._prepareCylinder();
+            this._cylinder.position = this._cylinderPosition;
+            return this._cylinder.intersectsMesh(impostorObject, true);
+        };
+        return PhysicsVortexEvent;
+    }());
+    BABYLON.PhysicsVortexEvent = PhysicsVortexEvent;
+    /***** Enums *****/
+    /**
+    * The strenght of the force in correspondence to the distance of the affected object
+    */
+    var PhysicsRadialImpulseFalloff;
+    (function (PhysicsRadialImpulseFalloff) {
+        PhysicsRadialImpulseFalloff[PhysicsRadialImpulseFalloff["Constant"] = 0] = "Constant";
+        PhysicsRadialImpulseFalloff[PhysicsRadialImpulseFalloff["Linear"] = 1] = "Linear"; // impulse gets weaker if it's further from the origin
+    })(PhysicsRadialImpulseFalloff = BABYLON.PhysicsRadialImpulseFalloff || (BABYLON.PhysicsRadialImpulseFalloff = {}));
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    var PhysicsUpdraftMode;
+    (function (PhysicsUpdraftMode) {
+        PhysicsUpdraftMode[PhysicsUpdraftMode["Center"] = 0] = "Center";
+        PhysicsUpdraftMode[PhysicsUpdraftMode["Perpendicular"] = 1] = "Perpendicular"; // once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder
+    })(PhysicsUpdraftMode = BABYLON.PhysicsUpdraftMode || (BABYLON.PhysicsUpdraftMode = {}));
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.physicsHelper.js.map
