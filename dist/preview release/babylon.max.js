@@ -54840,6 +54840,7 @@ var BABYLON;
                 }
                 if (folders.length === 0) {
                     this._processFiles(files_1);
+                    this._processReload();
                 }
                 else {
                     var remaining = { count: folders.length };
@@ -54847,15 +54848,20 @@ var BABYLON;
                         var folder = folders_1[_i];
                         this._traverseFolder(folder, files_1, remaining, function () {
                             _this._processFiles(files_1);
+                            if (remaining.count === 0) {
+                                _this._processReload();
+                            }
                         });
                     }
                 }
-                if (this._onReloadCallback) {
-                    this._onReloadCallback(this._sceneFileToLoad);
-                }
-                else {
-                    this.reload();
-                }
+            }
+        };
+        FilesInput.prototype._processReload = function () {
+            if (this._onReloadCallback) {
+                this._onReloadCallback(this._sceneFileToLoad);
+            }
+            else {
+                this.reload();
             }
         };
         FilesInput.prototype.reload = function () {
