@@ -18369,6 +18369,12 @@ var BABYLON;
             * @type {BABYLON.AbstractMesh[]}
             */
             this.meshes = new Array();
+            /**
+            * All of the animation groups added to this scene.
+            * @see BABYLON.AnimationGroup
+            * @type {BABYLON.AnimationGroup[]}
+            */
+            this.animationGroups = new Array();
             // Geometries
             this._geometries = new Array();
             this.materials = new Array();
@@ -20018,6 +20024,19 @@ var BABYLON;
             return null;
         };
         /**
+         * get an animation group using its name
+         * @param {string} the material's name
+         * @return {BABYLON.AnimationGroup|null} the animation group or null if none found.
+         */
+        Scene.prototype.getAnimationGroupByName = function (name) {
+            for (var index = 0; index < this.animationGroups.length; index++) {
+                if (this.animationGroups[index].name === name) {
+                    return this.animationGroups[index];
+                }
+            }
+            return null;
+        };
+        /**
          * get a material using its id
          * @param {string} the material's ID
          * @return {BABYLON.Material|null} the material or null if none found.
@@ -21192,6 +21211,7 @@ var BABYLON;
             this.afterRender = null;
             this.skeletons = [];
             this.morphTargetManagers = [];
+            this.animationGroups = [];
             this.importedMeshesFiles = new Array();
             this.stopAllAnimations();
             this.resetCachedMaterial();
@@ -41832,8 +41852,41 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var AnimationGroup = /** @class */ (function () {
-        function AnimationGroup() {
+        function AnimationGroup(name, scene) {
+            if (scene === void 0) { scene = null; }
+            this.name = name;
+            // private _animations = new Array<Animation>();
+            // private _targets = new Array<Object>()
+            // private _animatables: Animatable[];
+            // private _from: number;
+            // private _to: number;
+            this.onAnimationEndObservable = new BABYLON.Observable();
+            this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this._scene.animationGroups.push(this);
         }
+        AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
+            return this;
+        };
+        AnimationGroup.prototype.start = function (loop, speedRatio) {
+            // for (var index = 0; index < this._animations) {
+            //     this._scene.beginDirectAnimation(this._targets[index], [this._animations[index]], this._from, this._to, loop, speedRatio, () => {
+            if (loop === void 0) { loop = false; }
+            if (speedRatio === void 0) { speedRatio = 1; }
+            //     });
+            // }
+            return this;
+        };
+        AnimationGroup.prototype.pause = function () {
+            return this;
+        };
+        AnimationGroup.prototype.restart = function () {
+            return this;
+        };
+        AnimationGroup.prototype.stop = function () {
+            return this;
+        };
+        AnimationGroup.prototype.dispose = function () {
+        };
         return AnimationGroup;
     }());
     BABYLON.AnimationGroup = AnimationGroup;
@@ -54677,12 +54730,10 @@ var BABYLON;
             });
         };
         FilesInput.prototype._processFiles = function (files) {
-            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
                 if (!this.onProcessFileCallback(files[i], name, extension)) {
-                    skippedFiles++;
                     continue;
                 }
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
@@ -54692,12 +54743,6 @@ var BABYLON;
                 else {
                     FilesInput.FilesToLoad[name] = files[i];
                 }
-            }
-            if (this._onReloadCallback) {
-                this._onReloadCallback(this._sceneFileToLoad);
-            }
-            else if (skippedFiles < files.length) {
-                this.reload();
             }
         };
         FilesInput.prototype.loadFiles = function (event) {
@@ -54754,16 +54799,21 @@ var BABYLON;
                         });
                     }
                 }
+                if (this._onReloadCallback) {
+                    this._onReloadCallback(this._sceneFileToLoad);
+                }
+                else {
+                    this.reload();
+                }
             }
         };
         FilesInput.prototype.reload = function () {
             var _this = this;
-            // If a ".babylon" file has been provided
+            // If a scene file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
                     if (BABYLON.Tools.errorsCount > 0) {
                         BABYLON.Tools.ClearLogCache();
-                        BABYLON.Tools.Log("Babylon.js engine (v" + BABYLON.Engine.Version + ") launched");
                     }
                     this._engine.stopRenderLoop();
                     this._currentScene.dispose();
