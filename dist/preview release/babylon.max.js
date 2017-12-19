@@ -7430,11 +7430,12 @@ var BABYLON;
                 this._isCullFaceDirty = false;
                 this._isCullDirty = false;
                 this._isZOffsetDirty = false;
+                this._isFrontFaceDirty = false;
                 this.reset();
             }
             Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
                 get: function () {
-                    return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
+                    return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty || this._isFrontFaceDirty;
                 },
                 enumerable: true,
                 configurable: true
@@ -7523,6 +7524,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(_DepthCullingState.prototype, "frontFace", {
+                get: function () {
+                    return this._frontFace;
+                },
+                set: function (value) {
+                    if (this._frontFace === value) {
+                        return;
+                    }
+                    this._frontFace = value;
+                    this._isFrontFaceDirty = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
             _DepthCullingState.prototype.reset = function () {
                 this._depthMask = true;
                 this._depthTest = true;
@@ -7530,12 +7545,14 @@ var BABYLON;
                 this._cullFace = null;
                 this._cull = null;
                 this._zOffset = 0;
+                this._frontFace = null;
                 this._isDepthTestDirty = true;
                 this._isDepthMaskDirty = true;
                 this._isDepthFuncDirty = false;
                 this._isCullFaceDirty = false;
                 this._isCullDirty = false;
                 this._isZOffsetDirty = false;
+                this._isFrontFaceDirty = false;
             };
             _DepthCullingState.prototype.apply = function (gl) {
                 if (!this.isDirty) {
@@ -7586,6 +7603,11 @@ var BABYLON;
                         gl.disable(gl.POLYGON_OFFSET_FILL);
                     }
                     this._isZOffsetDirty = false;
+                }
+                // Front face
+                if (this._isFrontFaceDirty) {
+                    gl.frontFace(this.frontFace);
+                    this._isFrontFaceDirty = false;
                 }
             };
             return _DepthCullingState;
@@ -10210,20 +10232,21 @@ var BABYLON;
             if (zOffset === void 0) { zOffset = 0; }
             if (reverseSide === void 0) { reverseSide = false; }
             // Culling
-            var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
-            var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
-            var cullFace = this.cullBackFaces ? showSide : hideSide;
-            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace !== cullFace) {
-                if (culling) {
-                    this._depthCullingState.cullFace = cullFace;
-                    this._depthCullingState.cull = true;
-                }
-                else {
-                    this._depthCullingState.cull = false;
-                }
+            if (this._depthCullingState.cull !== culling || force) {
+                this._depthCullingState.cull = culling;
+            }
+            // Cull face
+            var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+            if (this._depthCullingState.cullFace !== cullFace || force) {
+                this._depthCullingState.cullFace = cullFace;
             }
             // Z offset
             this.setZOffset(zOffset);
+            // Front face
+            var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
+            if (this._depthCullingState.frontFace !== frontFace || force) {
+                this._depthCullingState.frontFace = frontFace;
+            }
         };
         Engine.prototype.setZOffset = function (value) {
             this._depthCullingState.zOffset = value;
@@ -13287,6 +13310,7 @@ var BABYLON;
             _this.position = BABYLON.Vector3.Zero();
             _this._localWorld = BABYLON.Matrix.Zero();
             _this._worldMatrix = BABYLON.Matrix.Zero();
+            _this._worldMatrixDeterminant = 0;
             _this._absolutePosition = BABYLON.Vector3.Zero();
             _this._pivotMatrix = BABYLON.Matrix.Identity();
             _this._postMultiplyPivotMatrix = false;
@@ -13363,6 +13387,15 @@ var BABYLON;
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
+        };
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        TransformNode.prototype._getWorldMatrixDeterminant = function () {
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this._worldMatrixDeterminant = this.computeWorldMatrix().determinant();
+            }
+            return this._worldMatrixDeterminant;
         };
         Object.defineProperty(TransformNode.prototype, "worldMatrixFromCache", {
             /**
@@ -14964,6 +14997,15 @@ var BABYLON;
                 return this._masterMesh.getWorldMatrix();
             }
             return _super.prototype.getWorldMatrix.call(this);
+        };
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        AbstractMesh.prototype._getWorldMatrixDeterminant = function () {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
+            return _super.prototype._getWorldMatrixDeterminant.call(this);
         };
         // ================================== Point of View Movement =================================
         /**
@@ -18369,6 +18411,12 @@ var BABYLON;
             * @type {BABYLON.AbstractMesh[]}
             */
             this.meshes = new Array();
+            /**
+            * All of the animation groups added to this scene.
+            * @see BABYLON.AnimationGroup
+            * @type {BABYLON.AnimationGroup[]}
+            */
+            this.animationGroups = new Array();
             // Geometries
             this._geometries = new Array();
             this.materials = new Array();
@@ -20018,6 +20066,19 @@ var BABYLON;
             return null;
         };
         /**
+         * get an animation group using its name
+         * @param {string} the material's name
+         * @return {BABYLON.AnimationGroup|null} the animation group or null if none found.
+         */
+        Scene.prototype.getAnimationGroupByName = function (name) {
+            for (var index = 0; index < this.animationGroups.length; index++) {
+                if (this.animationGroups[index].name === name) {
+                    return this.animationGroups[index];
+                }
+            }
+            return null;
+        };
+        /**
          * get a material using its id
          * @param {string} the material's ID
          * @return {BABYLON.Material|null} the material or null if none found.
@@ -21192,6 +21253,7 @@ var BABYLON;
             this.afterRender = null;
             this.skeletons = [];
             this.morphTargetManagers = [];
+            this.animationGroups = [];
             this.importedMeshesFiles = new Array();
             this.stopAllAnimations();
             this.resetCachedMaterial();
@@ -24485,7 +24547,14 @@ var BABYLON;
             if (!effect) {
                 return this;
             }
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
+            var sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (this._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === BABYLON.Material.ClockWiseSideOrientation ? BABYLON.Material.CounterClockWiseSideOrientation : BABYLON.Material.ClockWiseSideOrientation);
+                }
+            }
+            var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
@@ -41832,8 +41901,41 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var AnimationGroup = /** @class */ (function () {
-        function AnimationGroup() {
+        function AnimationGroup(name, scene) {
+            if (scene === void 0) { scene = null; }
+            this.name = name;
+            // private _animations = new Array<Animation>();
+            // private _targets = new Array<Object>()
+            // private _animatables: Animatable[];
+            // private _from: number;
+            // private _to: number;
+            this.onAnimationEndObservable = new BABYLON.Observable();
+            this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this._scene.animationGroups.push(this);
         }
+        AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
+            return this;
+        };
+        AnimationGroup.prototype.start = function (loop, speedRatio) {
+            // for (var index = 0; index < this._animations) {
+            //     this._scene.beginDirectAnimation(this._targets[index], [this._animations[index]], this._from, this._to, loop, speedRatio, () => {
+            if (loop === void 0) { loop = false; }
+            if (speedRatio === void 0) { speedRatio = 1; }
+            //     });
+            // }
+            return this;
+        };
+        AnimationGroup.prototype.pause = function () {
+            return this;
+        };
+        AnimationGroup.prototype.restart = function () {
+            return this;
+        };
+        AnimationGroup.prototype.stop = function () {
+            return this;
+        };
+        AnimationGroup.prototype.dispose = function () {
+        };
         return AnimationGroup;
     }());
     BABYLON.AnimationGroup = AnimationGroup;
@@ -52034,7 +52136,9 @@ var BABYLON;
             }
             if (urls) {
                 _this.video.addEventListener("canplay", function () {
-                    _this._createTexture();
+                    if (_this._texture === undefined) {
+                        _this._createTexture();
+                    }
                 });
                 urls.forEach(function (url) {
                     var source = document.createElement("source");
@@ -54677,12 +54781,10 @@ var BABYLON;
             });
         };
         FilesInput.prototype._processFiles = function (files) {
-            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
                 if (!this.onProcessFileCallback(files[i], name, extension)) {
-                    skippedFiles++;
                     continue;
                 }
                 if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
@@ -54692,12 +54794,6 @@ var BABYLON;
                 else {
                     FilesInput.FilesToLoad[name] = files[i];
                 }
-            }
-            if (this._onReloadCallback) {
-                this._onReloadCallback(this._sceneFileToLoad);
-            }
-            else if (skippedFiles < files.length) {
-                this.reload();
             }
         };
         FilesInput.prototype.loadFiles = function (event) {
@@ -54754,16 +54850,21 @@ var BABYLON;
                         });
                     }
                 }
+                if (this._onReloadCallback) {
+                    this._onReloadCallback(this._sceneFileToLoad);
+                }
+                else {
+                    this.reload();
+                }
             }
         };
         FilesInput.prototype.reload = function () {
             var _this = this;
-            // If a ".babylon" file has been provided
+            // If a scene file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
                     if (BABYLON.Tools.errorsCount > 0) {
                         BABYLON.Tools.ClearLogCache();
-                        BABYLON.Tools.Log("Babylon.js engine (v" + BABYLON.Engine.Version + ") launched");
                     }
                     this._engine.stopRenderLoop();
                     this._currentScene.dispose();
@@ -58041,7 +58142,7 @@ var BABYLON;
             var path;
             var filename;
             // Checking if GLB loader is present
-            if (BABYLON.SceneLoader.IsPluginForExtensionAvailable("glb")) {
+            if (BABYLON.SceneLoader.IsPluginForExtensionAvailable(".glb")) {
                 // Determine the device specific folder based on the ID suffix
                 var device = 'default';
                 if (this.id && !forceDefault) {

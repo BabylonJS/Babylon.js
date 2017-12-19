@@ -1528,7 +1528,8 @@ var BABYLON;
                     var material = this._babylonScene.getMaterialByName(id);
                     if (!material) {
                         material = new BABYLON.PBRMaterial(id, this._babylonScene);
-                        material.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
+                        material.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
+                        material.sideOrientation = BABYLON.Material.ClockWiseSideOrientation;
                         material.metallic = 1;
                         material.roughness = 1;
                     }
@@ -1582,7 +1583,7 @@ var BABYLON;
             };
             GLTFLoader.prototype._createPbrMaterial = function (material) {
                 var babylonMaterial = new BABYLON.PBRMaterial(material.name || "mat" + material.index, this._babylonScene);
-                babylonMaterial.sideOrientation = BABYLON.Material.CounterClockWiseSideOrientation;
+                babylonMaterial.sideOrientation = BABYLON.Material.ClockWiseSideOrientation;
                 material.babylonMaterial = babylonMaterial;
             };
             GLTFLoader.prototype._loadMaterialBaseProperties = function (context, material) {
