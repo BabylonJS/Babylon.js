@@ -67,7 +67,7 @@
             }
 
             return null;
-        }        
+        }
 
         public reset(): void {
             var runtimeAnimations = this._runtimeAnimations;
@@ -78,6 +78,11 @@
 
             this._localDelayOffset = null;
             this._pausedDelay = null;
+
+            let oldPauseState = this._paused;
+            this._paused = false;
+            this._animate(0);
+            this._paused = oldPauseState;
         }
 
         public enableBlending(blendingSpeed: number): void {
@@ -128,7 +133,7 @@
         }
 
         public stop(animationName?: string): void {
-            
+
             if (animationName) {
 
                 var idx = this._scene._activeAnimatables.indexOf(this);
@@ -136,7 +141,7 @@
                 if (idx > -1) {
 
                     var runtimeAnimations = this._runtimeAnimations;
-                    
+
                     for (var index = runtimeAnimations.length - 1; index >= 0; index--) {
                         if (typeof animationName === "string" && runtimeAnimations[index].animation.name != animationName) {
                             continue;
@@ -162,11 +167,11 @@
                 if (index > -1) {
                     this._scene._activeAnimatables.splice(index, 1);
                     var runtimeAnimations = this._runtimeAnimations;
-                    
+
                     for (var index = 0; index < runtimeAnimations.length; index++) {
                         runtimeAnimations[index].dispose();
                     }
-                    
+
                     if (this.onAnimationEnd) {
                         this.onAnimationEnd();
                     }
