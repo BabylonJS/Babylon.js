@@ -182,22 +182,30 @@
 
                 if (folders.length === 0) {
                     this._processFiles(files);
+                    this._processReload();
                 } else {
                     var remaining = { count: folders.length };
                     for (var folder of folders) {
                         this._traverseFolder(folder, files, remaining, () => {
                             this._processFiles(files);
+
+                            if (remaining.count === 0) {
+                                this._processReload();
+                            }
                         });
                     }
                 }
 
-                if (this._onReloadCallback) {
-                    this._onReloadCallback(this._sceneFileToLoad);
-                }
-                else {
-                    this.reload();
-                }
 
+            }
+        }
+
+        private _processReload() {
+            if (this._onReloadCallback) {
+                this._onReloadCallback(this._sceneFileToLoad);
+            }
+            else {
+                this.reload();
             }
         }
 
