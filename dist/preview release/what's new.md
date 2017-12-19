@@ -6,6 +6,7 @@
 ## Updates
 - New watcher configuration for VSCode. Now the task only compiles changed files ([sebavan](https://github.com/sebavan))
 - Added new draw modes to engine (points, lines, linesloop, linestrip, trianglestrip, trianglefan) ([benaadams](https://github.com/benaadams))
+- Added GUI Textblock.lineSpacing setter and getter to configure vertical space between lines in pixels or percentage values when working with text wrapping ([carloslanderas](github.com/carloslanderas))
 
 ## Bug fixes
 
