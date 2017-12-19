@@ -558,10 +558,10 @@
             if (!origin) {
                 origin = this.position;
             }
-            var forward = new BABYLON.Vector3(0, 0, 1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, transform);
+            var forward = new Vector3(0, 0, 1);
+            var forwardWorld = Vector3.TransformNormal(forward, transform);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            var direction = Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
         }
@@ -587,7 +587,7 @@
                 let camera = this._rigCameras.pop();
                 if (camera) {
                     camera.dispose();
-                }                
+                }
             }
 
             // Postprocesses
@@ -665,7 +665,7 @@
             //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
             //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
             this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
-            this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+            this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {

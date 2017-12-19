@@ -8,8 +8,8 @@
         public _areAttributesDirty = true;
         public _areTexturesDirty = true;
         public _areFresnelDirty = true;
-        public _areMiscDirty = true;    
-        public _areImageProcessingDirty = true;  
+        public _areMiscDirty = true;
+        public _areImageProcessingDirty = true;
 
         public _normals = false;
         public _uvs = false;
@@ -48,7 +48,7 @@
         public markAsImageProcessingDirty() {
             this._areImageProcessingDirty = true;
             this._isDirty = true;
-        }        
+        }
 
         public markAsLightDirty() {
             this._areLightsDirty = true;
@@ -59,7 +59,7 @@
             this._areAttributesDirty = true;
             this._isDirty = true;
         }
-        
+
         public markAsTexturesDirty() {
             this._areTexturesDirty = true;
             this._isDirty = true;
@@ -89,7 +89,7 @@
 
                 this._keys.push(key);
             }
-        } 
+        }
 
         public isEqual(other: MaterialDefines): boolean {
             if (this._keys.length !== other._keys.length) {
@@ -256,7 +256,7 @@
 
         @serialize("backFaceCulling")
         protected _backFaceCulling = true;
-        public set backFaceCulling(value : boolean) {
+        public set backFaceCulling(value: boolean) {
             if (this._backFaceCulling === value) {
                 return;
             }
@@ -265,7 +265,7 @@
         }
         public get backFaceCulling(): boolean {
             return this._backFaceCulling;
-        }          
+        }
 
         @serialize()
         public sideOrientation: number;
@@ -316,7 +316,7 @@
 
         @serialize("alphaMode")
         private _alphaMode: number = Engine.ALPHA_COMBINE;
-        public set alphaMode(value : number) {
+        public set alphaMode(value: number) {
             if (this._alphaMode === value) {
                 return;
             }
@@ -329,7 +329,7 @@
 
         @serialize()
         private _needDepthPrePass = false;
-        public set needDepthPrePass(value : boolean) {
+        public set needDepthPrePass(value: boolean) {
             if (this._needDepthPrePass === value) {
                 return;
             }
@@ -340,7 +340,7 @@
         }
         public get needDepthPrePass(): boolean {
             return this._needDepthPrePass;
-        }   
+        }
 
         @serialize()
         public disableDepthWrite = false;
@@ -353,7 +353,7 @@
 
         @serialize("fogEnabled")
         private _fogEnabled = true;
-        public set fogEnabled(value : boolean) {
+        public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
                 return;
             }
@@ -362,7 +362,7 @@
         }
         public get fogEnabled(): boolean {
             return this._fogEnabled;
-        }         
+        }
 
         @serialize()
         public pointSize = 1.0;
@@ -435,21 +435,21 @@
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          * subclasses should override adding information pertainent to themselves
          */
-        public toString(fullDetails? : boolean) : string {
+        public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
-            if (fullDetails){
+            if (fullDetails) {
             }
             return ret;
-        } 
+        }
 
         /**
          * Child classes can use it to update shaders         
          */
-        
+
         public getClassName(): string {
             return "Material";
         }
-        
+
         public get isFrozen(): boolean {
             return this.checkReadyOnlyOnce;
         }
@@ -467,7 +467,7 @@
         }
 
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
-            return false;            
+            return false;
         }
 
         public getEffect(): Nullable<Effect> {
@@ -493,12 +493,12 @@
         public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
-        
+
         public markDirty(): void {
             this._wasPreviouslyReady = false;
         }
 
-        public _preBind(effect?: Effect, overrideOrientation : Nullable<number> = null): boolean {
+        public _preBind(effect?: Effect, overrideOrientation: Nullable<number> = null): boolean {
             var engine = this._scene.getEngine();
 
             var orientation = (overrideOrientation == null) ? this.sideOrientation : overrideOrientation;
@@ -513,7 +513,7 @@
         public bind(world: Matrix, mesh?: Mesh): void {
         }
 
-        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {            
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         }
 
         public bindOnlyWorldMatrix(world: Matrix): void {
@@ -655,7 +655,7 @@
 
             checkReady();
         }
-       
+
         public markAsDirty(flag: number): void {
             if (flag & Material.TextureDirtyFlag) {
                 this._markAllSubMeshesAsTexturesDirty();
@@ -701,7 +701,7 @@
 
         protected _markAllSubMeshesAsImageProcessingDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsImageProcessingDirty());
-        }        
+        }
 
         protected _markAllSubMeshesAsTexturesDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsTexturesDirty());
@@ -721,7 +721,7 @@
 
         protected _markAllSubMeshesAsMiscDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsMiscDirty());
-        }        
+        }
 
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             // Animations
@@ -739,7 +739,7 @@
 
                 if (mesh.material === this) {
                     mesh.material = null;
-                
+
                     if ((<Mesh>mesh).geometry) {
                         var geometry = <Geometry>((<Mesh>mesh).geometry);
 
@@ -747,7 +747,7 @@
                             for (var subMesh of mesh.subMeshes) {
                                 geometry._releaseVertexArrayObject(subMesh._materialEffect);
                                 if (forceDisposeEffect && subMesh._materialEffect) {
-                                    this._scene.getEngine()._releaseEffect(subMesh._materialEffect); 
+                                    this._scene.getEngine()._releaseEffect(subMesh._materialEffect);
                                 }
                             }
                         } else {
@@ -762,12 +762,12 @@
             // Shader are kept in cache for further use but we can get rid of this by using forceDisposeEffect
             if (forceDisposeEffect && this._effect) {
                 if (!this.storeEffectOnSubMeshes) {
-                    this._scene.getEngine()._releaseEffect(this._effect);                    
+                    this._scene.getEngine()._releaseEffect(this._effect);
                 }
 
                 this._effect = null;
             }
-            
+
             // Callback
             this.onDisposeObservable.notifyObservers(this);
 
@@ -781,7 +781,7 @@
         }
 
         public static ParseMultiMaterial(parsedMultiMaterial: any, scene: Scene): MultiMaterial {
-            var multiMaterial = new BABYLON.MultiMaterial(parsedMultiMaterial.name, scene);
+            var multiMaterial = new MultiMaterial(parsedMultiMaterial.name, scene);
 
             multiMaterial.id = parsedMultiMaterial.id;
 
@@ -810,7 +810,7 @@
             if (parsedMaterial.customType === "BABYLON.PBRMaterial" && parsedMaterial.overloadedAlbedo) {
                 parsedMaterial.customType = "BABYLON.LegacyPBRMaterial";
                 if (!(<any>BABYLON).LegacyPBRMaterial) {
-                    BABYLON.Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
+                    Tools.Error("Your scene is trying to load a legacy version of the PBRMaterial, please, include it from the materials library.");
                     return;
                 }
             }

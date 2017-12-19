@@ -145,7 +145,7 @@
             this._heightQuads = new Array();
             for (var row = 0; row < subdivisionsY; row++) {
                 for (var col = 0; col < subdivisionsX; col++) {
-                    var quad = { slope: BABYLON.Vector2.Zero(), facet1: new BABYLON.Vector4(0.0, 0.0, 0.0, 0.0), facet2: new BABYLON.Vector4(0.0, 0.0, 0.0, 0.0) };
+                    var quad = { slope: Vector2.Zero(), facet1: new Vector4(0.0, 0.0, 0.0, 0.0), facet2: new Vector4(0.0, 0.0, 0.0, 0.0) };
                     this._heightQuads[row * subdivisionsX + col] = quad;
                 }
             }

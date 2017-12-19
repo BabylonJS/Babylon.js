@@ -374,26 +374,26 @@
             });
 
             if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
-                this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
+                this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
-                this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
             }
             else {
-                this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
+                this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
-                this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
