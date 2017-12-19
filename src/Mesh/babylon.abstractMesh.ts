@@ -803,6 +803,17 @@
             return super.getWorldMatrix();
         }
 
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
+
+            return super._getWorldMatrixDeterminant();
+        }
+
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
