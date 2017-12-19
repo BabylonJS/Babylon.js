@@ -197,8 +197,12 @@ module BABYLON {
             if (!this._intersectsWithSphere(impostor, origin, radius)) {
                 return null;
             }
+            
+            if (impostor.object.getClassName() !== 'Mesh') {
+                return null;
+            }
 
-            var impostorObject = (<Mesh>impostor.object);
+            var impostorObject = <Mesh>impostor.object;
             var impostorObjectCenter = impostor.getObjectCenter();
             var direction = impostorObjectCenter.subtract(origin);
 
@@ -547,6 +551,10 @@ module BABYLON {
             }
 
             if (!this._intersectsWithCylinder(impostor)) {
+                return null;
+            }
+            
+            if (impostor.object.getClassName() !== 'Mesh') {
                 return null;
             }
 

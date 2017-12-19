@@ -27,6 +27,7 @@ module BABYLON {
         rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
         translate(axis: Vector3, distance: number, space?: Space): TransformNode;
         setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        getClassName(): string;
     }
 
     export class PhysicsImpostor {
