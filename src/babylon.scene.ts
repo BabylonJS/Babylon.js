@@ -3777,7 +3777,6 @@
 
             this.skeletons = [];
             this.morphTargetManagers = [];
-            this.animationGroups = [];
 
             this.importedMeshesFiles = new Array<string>();
 
@@ -3862,6 +3861,11 @@
                 for (index = 0; index < this.cameras.length; index++) {
                     this.cameras[index].detachControl(canvas);
                 }
+            }
+
+            // Release animation groups
+            while (this.animationGroups.length) {
+                this.animationGroups[0].dispose();
             }
 
             // Release lights
