@@ -41935,12 +41935,12 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Add an animation with its target in the group
-         * @param target defines the target of the animation
+         * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
+         * @param target defines the target of the animation
          * @returns the {BABYLON.TargetedAnimation} object
          */
-        AnimationGroup.prototype.addTargetedAnimation = function (target, animation) {
+        AnimationGroup.prototype.addTargetedAnimation = function (animation, target) {
             var targetedAnimation = {
                 animation: animation,
                 target: target
@@ -41958,8 +41958,8 @@ var BABYLON;
         /**
          * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
          * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than this._from
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than this._to
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
          */
         AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
             beginFrame = Math.min(beginFrame, this._from);
