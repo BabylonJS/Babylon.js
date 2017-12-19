@@ -7430,11 +7430,12 @@ var BABYLON;
                 this._isCullFaceDirty = false;
                 this._isCullDirty = false;
                 this._isZOffsetDirty = false;
+                this._isFrontFaceDirty = false;
                 this.reset();
             }
             Object.defineProperty(_DepthCullingState.prototype, "isDirty", {
                 get: function () {
-                    return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
+                    return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty || this._isFrontFaceDirty;
                 },
                 enumerable: true,
                 configurable: true
@@ -7523,6 +7524,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(_DepthCullingState.prototype, "frontFace", {
+                get: function () {
+                    return this._frontFace;
+                },
+                set: function (value) {
+                    if (this._frontFace === value) {
+                        return;
+                    }
+                    this._frontFace = value;
+                    this._isFrontFaceDirty = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
             _DepthCullingState.prototype.reset = function () {
                 this._depthMask = true;
                 this._depthTest = true;
@@ -7530,12 +7545,14 @@ var BABYLON;
                 this._cullFace = null;
                 this._cull = null;
                 this._zOffset = 0;
+                this._frontFace = null;
                 this._isDepthTestDirty = true;
                 this._isDepthMaskDirty = true;
                 this._isDepthFuncDirty = false;
                 this._isCullFaceDirty = false;
                 this._isCullDirty = false;
                 this._isZOffsetDirty = false;
+                this._isFrontFaceDirty = false;
             };
             _DepthCullingState.prototype.apply = function (gl) {
                 if (!this.isDirty) {
@@ -7586,6 +7603,11 @@ var BABYLON;
                         gl.disable(gl.POLYGON_OFFSET_FILL);
                     }
                     this._isZOffsetDirty = false;
+                }
+                // Front face
+                if (this._isFrontFaceDirty) {
+                    gl.frontFace(this.frontFace);
+                    this._isFrontFaceDirty = false;
                 }
             };
             return _DepthCullingState;
@@ -10210,20 +10232,21 @@ var BABYLON;
             if (zOffset === void 0) { zOffset = 0; }
             if (reverseSide === void 0) { reverseSide = false; }
             // Culling
-            var showSide = reverseSide ? this._gl.FRONT : this._gl.BACK;
-            var hideSide = reverseSide ? this._gl.BACK : this._gl.FRONT;
-            var cullFace = this.cullBackFaces ? showSide : hideSide;
-            if (this._depthCullingState.cull !== culling || force || this._depthCullingState.cullFace !== cullFace) {
-                if (culling) {
-                    this._depthCullingState.cullFace = cullFace;
-                    this._depthCullingState.cull = true;
-                }
-                else {
-                    this._depthCullingState.cull = false;
-                }
+            if (this._depthCullingState.cull !== culling || force) {
+                this._depthCullingState.cull = culling;
+            }
+            // Cull face
+            var cullFace = this.cullBackFaces ? this._gl.BACK : this._gl.FRONT;
+            if (this._depthCullingState.cullFace !== cullFace || force) {
+                this._depthCullingState.cullFace = cullFace;
             }
             // Z offset
             this.setZOffset(zOffset);
+            // Front face
+            var frontFace = reverseSide ? this._gl.CW : this._gl.CCW;
+            if (this._depthCullingState.frontFace !== frontFace || force) {
+                this._depthCullingState.frontFace = frontFace;
+            }
         };
         Engine.prototype.setZOffset = function (value) {
             this._depthCullingState.zOffset = value;
@@ -13287,6 +13310,7 @@ var BABYLON;
             _this.position = BABYLON.Vector3.Zero();
             _this._localWorld = BABYLON.Matrix.Zero();
             _this._worldMatrix = BABYLON.Matrix.Zero();
+            _this._worldMatrixDeterminant = 0;
             _this._absolutePosition = BABYLON.Vector3.Zero();
             _this._pivotMatrix = BABYLON.Matrix.Identity();
             _this._postMultiplyPivotMatrix = false;
@@ -13363,6 +13387,15 @@ var BABYLON;
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
+        };
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        TransformNode.prototype._getWorldMatrixDeterminant = function () {
+            if (this._currentRenderId !== this.getScene().getRenderId()) {
+                this._worldMatrixDeterminant = this.computeWorldMatrix().determinant();
+            }
+            return this._worldMatrixDeterminant;
         };
         Object.defineProperty(TransformNode.prototype, "worldMatrixFromCache", {
             /**
@@ -14964,6 +14997,15 @@ var BABYLON;
                 return this._masterMesh.getWorldMatrix();
             }
             return _super.prototype.getWorldMatrix.call(this);
+        };
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        AbstractMesh.prototype._getWorldMatrixDeterminant = function () {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
+            return _super.prototype._getWorldMatrixDeterminant.call(this);
         };
         // ================================== Point of View Movement =================================
         /**
@@ -24505,7 +24547,14 @@ var BABYLON;
             if (!effect) {
                 return this;
             }
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
+            var sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (this._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === BABYLON.Material.ClockWiseSideOrientation ? BABYLON.Material.CounterClockWiseSideOrientation : BABYLON.Material.ClockWiseSideOrientation);
+                }
+            }
+            var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
@@ -52087,7 +52136,9 @@ var BABYLON;
             }
             if (urls) {
                 _this.video.addEventListener("canplay", function () {
-                    _this._createTexture();
+                    if (_this._texture === undefined) {
+                        _this._createTexture();
+                    }
                 });
                 urls.forEach(function (url) {
                     var source = document.createElement("source");
@@ -58091,7 +58142,7 @@ var BABYLON;
             var path;
             var filename;
             // Checking if GLB loader is present
-            if (BABYLON.SceneLoader.IsPluginForExtensionAvailable("glb")) {
+            if (BABYLON.SceneLoader.IsPluginForExtensionAvailable(".glb")) {
                 // Determine the device specific folder based on the ID suffix
                 var device = 'default';
                 if (this.id && !forceDefault) {
