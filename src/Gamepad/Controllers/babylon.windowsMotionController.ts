@@ -204,7 +204,7 @@ module BABYLON {
             let filename: string;
 
             // Checking if GLB loader is present
-            if (SceneLoader.IsPluginForExtensionAvailable("glb")) {
+            if (SceneLoader.IsPluginForExtensionAvailable(".glb")) {
                 // Determine the device specific folder based on the ID suffix
                 let device = 'default';
                 if (this.id && !forceDefault) {
