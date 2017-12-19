@@ -211,7 +211,8 @@
                 "../../src/Tools/babylon.performanceMonitor.js",
                 "../../src/Materials/babylon.imageProcessingConfiguration.js",
                 "../../src/Materials/Textures/babylon.colorGradingTexture.js",
-                "../../src/Materials/babylon.colorCurves.js"
+                "../../src/Materials/babylon.colorCurves.js",
+                "../../src/Behaviors/babylon.behavior.js"
             ],
             "shaderIncludes": [
                 "depthPrePass"
