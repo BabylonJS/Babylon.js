@@ -520,8 +520,13 @@
             url = Tools.PreprocessUrl(url);
 
             let request: Nullable<XMLHttpRequest> = null;
+            let aborted = false;
 
             let noIndexedDB = (retryIndex?: number) => {
+                if (aborted) {
+                    return;
+                }
+
                 let oldRequest = request;
                 request = new XMLHttpRequest();
 
@@ -536,11 +541,16 @@
                     request.onprogress = progressCallBack;
                 }
 
-                request.onreadystatechange = () => {
+                request.addEventListener("abort", () => {
+                    aborted = true;
+                });
+
+                let onreadystatechange = () => {
                     let req = <XMLHttpRequest>request;
                     // In case of undefined state in some browsers.
                     if (req.readyState === (XMLHttpRequest.DONE || 4)) {
-                        req.onreadystatechange = () => { };//some browsers have issues where onreadystatechange can be called multiple times with the same value
+                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                        req.removeEventListener("readystatechange", onreadystatechange);
 
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
                             callback(!useArrayBuffer ? req.responseText : <ArrayBuffer>req.response, req.responseURL);
@@ -556,7 +566,7 @@
                             }
                         }
 
-                        let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                        let e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl);
                         if (onError) {
                             onError(req, e);
                         } else {
@@ -564,6 +574,8 @@
                         }
                     }
                 };
+
+                request.addEventListener("readystatechange", onreadystatechange);
 
                 request.send();
 
