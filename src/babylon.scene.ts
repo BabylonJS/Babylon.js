@@ -691,6 +691,13 @@
         */
         public meshes = new Array<AbstractMesh>();
 
+        /**
+        * All of the animation groups added to this scene.
+        * @see BABYLON.AnimationGroup
+        * @type {BABYLON.AnimationGroup[]}
+        */
+        public animationGroups = new Array<AnimationGroup>();
+
         // Geometries
         private _geometries = new Array<Geometry>();
 
@@ -2337,6 +2344,21 @@
         }
 
         /**
+         * get an animation group using its name
+         * @param {string} the material's name
+         * @return {BABYLON.AnimationGroup|null} the animation group or null if none found.
+         */
+        public getAnimationGroupByName(name: string): Nullable<AnimationGroup> {
+            for (var index = 0; index < this.animationGroups.length; index++) {
+                if (this.animationGroups[index].name === name) {
+                    return this.animationGroups[index];
+                }
+            }
+
+            return null;
+        }
+
+        /**
          * get a material using its id
          * @param {string} the material's ID
          * @return {BABYLON.Material|null} the material or null if none found.
@@ -3839,6 +3861,11 @@
                 for (index = 0; index < this.cameras.length; index++) {
                     this.cameras[index].detachControl(canvas);
                 }
+            }
+
+            // Release animation groups
+            while (this.animationGroups.length) {
+                this.animationGroups[0].dispose();
             }
 
             // Release lights

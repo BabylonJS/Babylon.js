@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class FilesInput {
-        public static FilesToLoad: {[key: string]: File} = {};
+        public static FilesToLoad: { [key: string]: File } = {};
 
         public onProcessFileCallback: (file: File, name: string, extension: string) => true = () => { return true; };
 
@@ -18,8 +18,8 @@
         private _sceneFileToLoad: File;
         private _filesToLoad: File[];
 
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, 
-                    textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
+        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ProgressEvent) => void, additionalRenderLoopLogicCallback: () => void,
+            textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
             this._engine = engine;
             this._currentScene = scene;
 
@@ -57,7 +57,7 @@
 
             this._elementToMonitor.removeEventListener("dragenter", this._dragEnterHandler);
             this._elementToMonitor.removeEventListener("dragover", this._dragOverHandler);
-            this._elementToMonitor.removeEventListener("drop", this._dropHandler);            
+            this._elementToMonitor.removeEventListener("drop", this._dropHandler);
         }
 
         private renderFunction(): void {
@@ -96,7 +96,7 @@
                 remaining.count += entries.length;
                 for (let entry of entries) {
                     if (entry.isFile) {
-                        entry.file((file:any) => {
+                        entry.file((file: any) => {
                             file.correctName = relativePath + file.name;
                             files.push(file);
 
@@ -117,30 +117,21 @@
         }
 
         private _processFiles(files: Array<any>): void {
-            var skippedFiles = 0;
             for (var i = 0; i < files.length; i++) {
                 var name = files[i].correctName.toLowerCase();
                 var extension = name.split('.').pop();
 
                 if (!this.onProcessFileCallback(files[i], name, extension)) {
-                    skippedFiles++;
                     continue;
                 }
 
-                if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb") 
+                if ((extension === "babylon" || extension === "stl" || extension === "obj" || extension === "gltf" || extension === "glb")
                     && name.indexOf(".binary.babylon") === -1 && name.indexOf(".incremental.babylon") === -1) {
                     this._sceneFileToLoad = files[i];
                 }
                 else {
                     FilesInput.FilesToLoad[name] = files[i];
                 }
-            }
-
-            if (this._onReloadCallback) {
-                this._onReloadCallback(this._sceneFileToLoad);
-            }
-            else if (skippedFiles < files.length) {
-                this.reload();
             }
         }
 
@@ -163,7 +154,7 @@
                 var items = event.dataTransfer ? event.dataTransfer.items : null;
 
                 for (var i = 0; i < this._filesToLoad.length; i++) {
-                    let fileToLoad:any =  this._filesToLoad[i];
+                    let fileToLoad: any = this._filesToLoad[i];
                     let name = fileToLoad.name.toLowerCase();
                     let entry;
 
@@ -191,24 +182,39 @@
 
                 if (folders.length === 0) {
                     this._processFiles(files);
+                    this._processReload();
                 } else {
                     var remaining = { count: folders.length };
                     for (var folder of folders) {
                         this._traverseFolder(folder, files, remaining, () => {
                             this._processFiles(files);
+
+                            if (remaining.count === 0) {
+                                this._processReload();
+                            }
                         });
                     }
                 }
+
+
+            }
+        }
+
+        private _processReload() {
+            if (this._onReloadCallback) {
+                this._onReloadCallback(this._sceneFileToLoad);
+            }
+            else {
+                this.reload();
             }
         }
 
         public reload() {
-            // If a ".babylon" file has been provided
+            // If a scene file has been provided
             if (this._sceneFileToLoad) {
                 if (this._currentScene) {
                     if (Tools.errorsCount > 0) {
                         Tools.ClearLogCache();
-                        Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
                     }
                     this._engine.stopRenderLoop();
                     this._currentScene.dispose();
