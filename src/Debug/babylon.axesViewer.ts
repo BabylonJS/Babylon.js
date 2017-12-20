@@ -1,7 +1,7 @@
 ﻿module BABYLON.Debug {
 
     export class AxesViewer {
-        
+
         private _xline = [Vector3.Zero(), Vector3.Zero()];
         private _yline = [Vector3.Zero(), Vector3.Zero()];
         private _zline = [Vector3.Zero(), Vector3.Zero()];
@@ -26,17 +26,17 @@
             this._zmesh.renderingGroupId = 2;
 
             this._xmesh.material.checkReadyOnlyOnce = true;
-            this._xmesh.color = new BABYLON.Color3(1, 0, 0);
+            this._xmesh.color = new Color3(1, 0, 0);
             this._ymesh.material.checkReadyOnlyOnce = true;
-            this._ymesh.color = new BABYLON.Color3(0, 1, 0);
+            this._ymesh.color = new Color3(0, 1, 0);
             this._zmesh.material.checkReadyOnlyOnce = true;
-            this._zmesh.color = new BABYLON.Color3(0, 0, 1);
+            this._zmesh.color = new Color3(0, 0, 1);
 
             this.scene = scene;
 
         }
 
-        public update (position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
+        public update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void {
 
             var scaleLines = this.scaleLines;
 
@@ -72,7 +72,7 @@
 
         public dispose() {
 
-            if (this._xmesh ) {
+            if (this._xmesh) {
                 this._xmesh.dispose();
             }
 
