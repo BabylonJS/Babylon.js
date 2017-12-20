@@ -11713,7 +11713,7 @@ var BABYLON;
                     }
                 }
             }
-            if (isTextureForRendering) {
+            if (isTextureForRendering && this._activeChannel > -1) {
                 texture._designatedSlot = this._activeChannel;
                 if (!isPartOfTextureArray) {
                     this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
