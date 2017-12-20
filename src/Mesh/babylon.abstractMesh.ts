@@ -904,14 +904,14 @@
                 for (var descendant of descendants) {
                     let childMesh = <AbstractMesh>descendant;
 
+                    childMesh.computeWorldMatrix(true);
+
                     //make sure we have the needed params to get mix and max
                     if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
 
-                    childMesh.computeWorldMatrix(true);
                     let childBoundingInfo = childMesh.getBoundingInfo();
-
                     let boundingBox = childBoundingInfo.boundingBox;
 
                     var minBox = boundingBox.minimumWorld;
