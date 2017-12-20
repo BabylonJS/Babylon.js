@@ -7,7 +7,7 @@
         private _engine: Engine;
         private _currentScene: Scene;
         private _sceneLoadedCallback: (sceneFile: File, scene: Scene) => void;
-        private _progressCallback: (progress: ProgressEvent) => void;
+        private _progressCallback: (progress: SceneLoaderProgressEvent) => void;
         private _additionalRenderLoopLogicCallback: () => void;
         private _textureLoadingCallback: (remaining: number) => void;
         private _startingProcessingFilesCallback: () => void;
@@ -18,7 +18,7 @@
         private _sceneFileToLoad: File;
         private _filesToLoad: File[];
 
-        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: ProgressEvent) => void, additionalRenderLoopLogicCallback: () => void,
+        constructor(engine: Engine, scene: Scene, sceneLoadedCallback: (sceneFile: File, scene: Scene) => void, progressCallback: (progress: SceneLoaderProgressEvent) => void, additionalRenderLoopLogicCallback: () => void, 
             textureLoadingCallback: (remaining: number) => void, startingProcessingFilesCallback: () => void, onReloadCallback: (sceneFile: File) => void, errorCallback: (sceneFile: File, scene: Scene, message: string) => void) {
             this._engine = engine;
             this._currentScene = scene;
