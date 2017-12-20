@@ -6219,7 +6219,11 @@ var BABYLON;
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
             var request = null;
+            var aborted = false;
             var noIndexedDB = function (retryIndex) {
+                if (aborted) {
+                    return;
+                }
                 var oldRequest = request;
                 request = new XMLHttpRequest();
                 var loadUrl = Tools.BaseUrl + url;
@@ -6230,11 +6234,15 @@ var BABYLON;
                 if (progressCallBack) {
                     request.onprogress = progressCallBack;
                 }
-                request.onreadystatechange = function () {
+                request.addEventListener("abort", function () {
+                    aborted = true;
+                });
+                var onreadystatechange = function () {
                     var req = request;
                     // In case of undefined state in some browsers.
                     if (req.readyState === (XMLHttpRequest.DONE || 4)) {
-                        req.onreadystatechange = function () { }; //some browsers have issues where onreadystatechange can be called multiple times with the same value
+                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                        req.removeEventListener("readystatechange", onreadystatechange);
                         if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
                             callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
                             return;
@@ -6247,7 +6255,7 @@ var BABYLON;
                                 return;
                             }
                         }
-                        var e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+                        var e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl);
                         if (onError) {
                             onError(req, e);
                         }
@@ -6256,6 +6264,7 @@ var BABYLON;
                         }
                     }
                 };
+                request.addEventListener("readystatechange", onreadystatechange);
                 request.send();
                 if (oldRequest && onRetry) {
                     onRetry(oldRequest, request);
@@ -11704,7 +11713,7 @@ var BABYLON;
                     }
                 }
             }
-            if (isTextureForRendering) {
+            if (isTextureForRendering && this._activeChannel > -1) {
                 texture._designatedSlot = this._activeChannel;
                 if (!isPartOfTextureArray) {
                     this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
@@ -15091,11 +15100,11 @@ var BABYLON;
                 for (var _i = 0, descendants_1 = descendants; _i < descendants_1.length; _i++) {
                     var descendant = descendants_1[_i];
                     var childMesh = descendant;
+                    childMesh.computeWorldMatrix(true);
                     //make sure we have the needed params to get mix and max
                     if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
-                    childMesh.computeWorldMatrix(true);
                     var childBoundingInfo = childMesh.getBoundingInfo();
                     var boundingBox = childBoundingInfo.boundingBox;
                     var minBox = boundingBox.minimumWorld;
@@ -53882,6 +53891,18 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var SceneLoaderProgressEvent = /** @class */ (function () {
+        function SceneLoaderProgressEvent(lengthComputable, loaded, total) {
+            this.lengthComputable = lengthComputable;
+            this.loaded = loaded;
+            this.total = total;
+        }
+        SceneLoaderProgressEvent.FromProgressEvent = function (event) {
+            return new SceneLoaderProgressEvent(event.lengthComputable, event.loaded, event.total);
+        };
+        return SceneLoaderProgressEvent;
+    }());
+    BABYLON.SceneLoaderProgressEvent = SceneLoaderProgressEvent;
     var SceneLoader = /** @class */ (function () {
         function SceneLoader() {
         }
@@ -54014,7 +54035,9 @@ var BABYLON;
                 onSuccess(plugin, data, responseURL);
             };
             var manifestChecked = function (success) {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress, database, useArrayBuffer, function (request, exception) {
+                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress ? function (event) {
+                    onProgress(SceneLoaderProgressEvent.FromProgressEvent(event));
+                } : undefined, database, useArrayBuffer, function (request, exception) {
                     if (request) {
                         onError(request.status + " " + request.statusText, exception);
                     }
