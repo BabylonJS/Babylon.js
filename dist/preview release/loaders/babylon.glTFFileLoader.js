@@ -2617,7 +2617,7 @@ var BABYLON;
                     loaded += request._loaded;
                     total += request._total;
                 }
-                this._progressCallback(GLTFLoader._createProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
+                this._progressCallback(new BABYLON.SceneLoaderProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
             };
             GLTFLoader.prototype._executeWhenRenderReady = function (func) {
                 if (this._renderReady) {
@@ -4104,20 +4104,6 @@ var BABYLON;
                 }
             };
             GLTFLoader.Extensions = {};
-            // IE 11 Compatibility.
-            GLTFLoader._createProgressEvent = (typeof window["ProgressEvent"] === "function")
-                ? function (lengthComputable, loaded, total) {
-                    return new ProgressEvent("GLTFLoaderProgress", {
-                        lengthComputable: lengthComputable,
-                        loaded: loaded,
-                        total: total
-                    });
-                }
-                : function (lengthComputable, loaded, total) {
-                    var event = document.createEvent("ProgressEvent");
-                    event.initProgressEvent("GLTFLoaderProgress", false, false, lengthComputable, loaded, total);
-                    return event;
-                };
             return GLTFLoader;
         }());
         GLTF2.GLTFLoader = GLTFLoader;
