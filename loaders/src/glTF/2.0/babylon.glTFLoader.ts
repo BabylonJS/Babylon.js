@@ -50,7 +50,7 @@ module BABYLON.GLTF2 {
         private _defaultSampler = {} as IGLTFSampler;
         private _rootNode: IGLTFNode;
         private _successCallback?: () => void;
-        private _progressCallback?: (event: ProgressEvent) => void;
+        private _progressCallback?: (event: SceneLoaderProgressEvent) => void;
         private _errorCallback?: (message: string, exception?: any) => void;
         private _renderReady = false;
         private _requests = new Array<GLTFLoaderRequest>();
@@ -78,22 +78,6 @@ module BABYLON.GLTF2 {
             // Keep the order of registration so that extensions registered first are called first.
             GLTFLoaderExtension._Extensions.push(extension);
         }
-
-        // IE 11 Compatibility.
-        private static _createProgressEvent: (lengthComputable: boolean, loaded: number, total: number) => ProgressEvent =
-            (typeof (<any>window)["ProgressEvent"] === "function")
-                ? (lengthComputable, loaded, total) => {
-                    return new ProgressEvent("GLTFLoaderProgress", {
-                        lengthComputable: lengthComputable,
-                        loaded: loaded,
-                        total: total
-                    });
-                }
-                : (lengthComputable, loaded, total) => {
-                    const event = document.createEvent("ProgressEvent");
-                    event.initProgressEvent("GLTFLoaderProgress", false, false, lengthComputable, loaded, total);
-                    return event;
-                };
 
         public constructor(parent: GLTFFileLoader) {
             this._parent = parent;
@@ -123,7 +107,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             this._loadAsync(meshesNames, scene, data, rootUrl, () => {
                 if (onSuccess) {
                     onSuccess(this._getMeshes(), [], this._getSkeletons());
@@ -131,11 +115,11 @@ module BABYLON.GLTF2 {
             }, onProgress, onError);
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             this._loadAsync(null, scene, data, rootUrl, onSuccess, onProgress, onError);
         }
 
-        private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+        private _loadAsync(nodeNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             this._babylonScene = scene;
             this._rootUrl = rootUrl;
             this._successCallback = onSuccess;
@@ -170,7 +154,7 @@ module BABYLON.GLTF2 {
                 total += request._total;
             }
 
-            this._progressCallback(GLTFLoader._createProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
+            this._progressCallback(new SceneLoaderProgressEvent(lengthComputable, loaded, lengthComputable ? total : 0));
         }
 
         public _executeWhenRenderReady(func: () => void): void {
