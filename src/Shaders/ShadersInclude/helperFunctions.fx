@@ -72,6 +72,7 @@ float getRand(vec2 seed) {
 
 vec3 dither(vec2 seed, vec3 color) {
 	float rand = getRand(seed);
-	color.rgb += mix(-0.5/255.0, 0.5/255.0, rand);
+	color += mix(-0.5/255.0, 0.5/255.0, rand);
+	color = max(color, 0.0);
 	return color;
 }
