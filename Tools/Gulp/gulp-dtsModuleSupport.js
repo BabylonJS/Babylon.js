@@ -10,7 +10,7 @@ module.exports = function (moduleName, inject, declarations) {
 
         if (!inject) {
             declarations[moduleName] = declarations[moduleName] || [];
-            let regexp = /    (class|interface|type|const|enum) ([\w]*)/g;
+            let regexp = /    (class|interface|type|const|enum|var) ([\w]*)/g;
 
             var match = regexp.exec(fileContent);
             while (match != null) {
@@ -23,8 +23,13 @@ module.exports = function (moduleName, inject, declarations) {
             let declared = [];
             Object.keys(declarations).forEach(name => {
                 if (name === moduleName) return;
-                let imports = declarations[name].filter(obj => declared.indexOf(obj) === -1);
-                imports.forEach(imp => declared.push(imp));
+                let imports = declarations[name].filter(obj => {
+                    let exists = declared.indexOf(obj) === -1;
+                    if (!exists) {
+                        declared.push(obj);
+                    }
+                    return exists;
+                });
                 importsString += `import {${imports.join(',')}} from 'babylonjs/${name}';
 `;
             });
