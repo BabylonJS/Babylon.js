@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     export class AndOrNotEvaluator {
         public static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean {
             if (!query.match(/\([^\(\)]*\)/g)) {

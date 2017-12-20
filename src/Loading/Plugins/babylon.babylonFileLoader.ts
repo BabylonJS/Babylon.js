@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
 
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {

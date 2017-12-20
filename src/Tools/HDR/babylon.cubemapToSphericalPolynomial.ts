@@ -1,4 +1,4 @@
-module BABYLON.Internals {
+module BABYLON {
 
     class FileFaceOrientation {
         public name: string;
@@ -13,7 +13,7 @@ module BABYLON.Internals {
             this.worldAxisForFileY = worldAxisForFileY;
         }
     };
-    
+
     /**
      * Helper class dealing with the extraction of spherical polynomial dataArray
      * from a cube map.
@@ -156,7 +156,7 @@ module BABYLON.Internals {
             }
 
             // Solid angle for entire sphere is 4*pi
-            var sphereSolidAngle = 4.0 * Math.PI; 
+            var sphereSolidAngle = 4.0 * Math.PI;
 
             // Adjust the solid angle to allow for how many faces we processed.
             var facesProcessed = 6.0;
