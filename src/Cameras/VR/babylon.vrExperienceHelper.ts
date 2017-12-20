@@ -483,6 +483,8 @@ module BABYLON {
 
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
+                // make sure that we return to the last active camera
+                this._existingCamera = this._scene.activeCamera;
             }
 
             if (this._webVRrequesting)
