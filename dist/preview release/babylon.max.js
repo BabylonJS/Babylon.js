@@ -42545,6 +42545,8 @@ var BABYLON;
             this._paused = false;
             this._animate(0);
             this._paused = oldPauseState;
+            this._localDelayOffset = null;
+            this._pausedDelay = null;
         };
         Animatable.prototype.enableBlending = function (blendingSpeed) {
             var runtimeAnimations = this._runtimeAnimations;
