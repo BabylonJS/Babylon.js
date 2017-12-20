@@ -63,13 +63,13 @@ module BABYLON {
             var samplingModes = [];
 
             for (var i = 0; i < count; i++) {
-                if (options.types && options.types[i]) {
+                if (options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 } else {
                     types.push(Engine.TEXTURETYPE_FLOAT);
                 }
 
-                if (options.samplingModes && options.samplingModes[i]) {
+                if (options.samplingModes && options.samplingModes[i] !== undefined) {
                     samplingModes.push(options.samplingModes[i]);
                 } else {
                     samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
