@@ -44,6 +44,10 @@ module BABYLON {
          */
         public onEnteringVRObservable = new Observable<VRExperienceHelper>();
 
+         /**
+         * Observable raised when VR Display is ready.
+         */
+        public onVRDeviceReadyObservable = new Observable<VRExperienceHelper>();
 
         /**
          * Observable raised when exiting VR.
@@ -435,6 +439,8 @@ module BABYLON {
             this._webVRsupported = eventArgs.vrSupported;
             this._webVRready = !!eventArgs.vrDisplay;
             this._webVRpresenting = eventArgs.vrDisplay && eventArgs.vrDisplay.isPresenting;
+
+            this._webVRready && this.onVRDeviceReadyObservable.notifyObservers(this);
 
             this.updateButtonVisibility();
         }
