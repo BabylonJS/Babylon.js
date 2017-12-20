@@ -27,7 +27,7 @@
             this._defines[rank].push(define);
         }
 
-        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
+        public addCPUSkinningFallback(rank: number, mesh: AbstractMesh) {
             this._mesh = mesh;
 
             if (rank < this._currentRank) {
@@ -362,16 +362,16 @@
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
             else if (this.name.vertex) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
             }
             else {
-                BABYLON.Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
             }
         };
 
@@ -605,10 +605,10 @@
 
                 // Let's go through fallbacks then
                 Tools.Error("Unable to compile effect:");
-                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
+                Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
                     return " " + uniform;
                 }));
-                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
+                Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
                     return " " + attribute;
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
