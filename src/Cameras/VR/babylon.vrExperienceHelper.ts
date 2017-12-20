@@ -2,6 +2,7 @@ module BABYLON {
     export interface VRTeleportationOptions {
         floorMeshName?: string; // If you'd like to provide a mesh acting as the floor
         floorMeshes?: Mesh[];
+        disableInteractions?: boolean
     }
 
     export interface VRExperienceHelperOptions extends WebVROptions {
@@ -635,15 +636,15 @@ module BABYLON {
             if (!this._teleportationEnabled) {
                 this._teleportationRequested = true;
 
-                this.enableInteractions();
+                if (!vrTeleportationOptions.disableInteractions) {
+                    this.enableInteractions();
+                }    
 
-                if (vrTeleportationOptions) {
-                    if (vrTeleportationOptions.floorMeshName) {
-                        this._floorMeshName = vrTeleportationOptions.floorMeshName;
-                    }
-                    if (vrTeleportationOptions.floorMeshes) {
-                        this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
-                    }
+                if (vrTeleportationOptions.floorMeshName) {
+                    this._floorMeshName = vrTeleportationOptions.floorMeshName;
+                }
+                if (vrTeleportationOptions.floorMeshes) {
+                    this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
                 }
 
                 if (this._leftControllerReady && this._webVRCamera.leftController) {
