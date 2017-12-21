@@ -410,7 +410,7 @@
 
             if (this._options.threshold) {
                 const threshold = this._options.threshold;
-                this._thresholdPostProcess = new BABYLON.PostProcess("thresold", "highlightLayerThreshold", ["screenSize", "threshold"], null, 0.25, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                this._thresholdPostProcess = new BABYLON.PostProcess("threshold", "highlightLayerThreshold", ["screenSize", "threshold"], null, 0.25, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._thresholdPostProcess.onApplyObservable.add(function (effect) {
                     effect.setFloat("threshold", threshold);
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
