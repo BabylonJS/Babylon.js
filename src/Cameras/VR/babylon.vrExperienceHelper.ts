@@ -113,6 +113,11 @@ module BABYLON {
         public onNewMeshSelected = new Observable<AbstractMesh>();
         private _circleEase: CircleEase;
 
+        /**
+        * Observable raised when current selected mesh gets unselected
+        */
+        public onSelectedMeshUnselected = new Observable<AbstractMesh>();
+
         private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
         /**
@@ -638,7 +643,7 @@ module BABYLON {
 
                 if (!vrTeleportationOptions.disableInteractions) {
                     this.enableInteractions();
-                }    
+                }
 
                 if (vrTeleportationOptions.floorMeshName) {
                     this._floorMeshName = vrTeleportationOptions.floorMeshName;
@@ -1395,6 +1400,9 @@ module BABYLON {
                         }
                     }
                     else {
+                        if (this._currentMeshSelected) {
+                            this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
+                        }
                         this._currentMeshSelected = null;
                         this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
                         this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
