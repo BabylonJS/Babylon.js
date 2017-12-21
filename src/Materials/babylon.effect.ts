@@ -544,6 +544,11 @@
             this._prepareEffect();
         }
 
+        public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
+            let engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
@@ -553,7 +558,7 @@
             var previousProgram = this._program;
 
             try {
-                var engine = this._engine;
+                let engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                     this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
