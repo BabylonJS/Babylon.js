@@ -1906,6 +1906,62 @@
             this.bindUnboundFramebuffer(null);
         }
 
+        public unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+            this._currentRenderTarget = null;
+
+            // If MSAA, we need to bitblt back to main texture
+            var gl = this._gl;
+
+
+            if (textures[0]._MSAAFramebuffer) {
+                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
+                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
+
+                var attachments = new Array(textures.length);
+
+                for(var i = 0; i < textures.length; i++) {
+                    var texture = textures[i];
+
+                    for(var j = 0; j < attachments.length; j++) {
+                        attachments[j] = gl.NONE;
+                    }
+
+                    attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+                    gl.readBuffer(attachments[i]);
+                    gl.drawBuffers(attachments);
+                    gl.blitFramebuffer(0, 0, texture.width, texture.height,
+                        0, 0, texture.width, texture.height,
+                        gl.COLOR_BUFFER_BIT, gl.NEAREST);
+
+                }
+                for(var i = 0; i < attachments.length; i++) {
+                    attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+                }
+                gl.drawBuffers(attachments);
+            }
+
+            for(var i = 0; i < textures.length; i++) {
+                var texture = textures[i];
+                if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+                    this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    this._bindTextureDirectly(gl.TEXTURE_2D, null);
+                }
+            }
+
+            if (onBeforeUnbind) {
+                if (textures[0]._MSAAFramebuffer) {
+                    // Bind the correct framebuffer
+                    this.bindUnboundFramebuffer(textures[0]._framebuffer);
+                }
+                onBeforeUnbind();
+            }
+
+            this.bindUnboundFramebuffer(null);
+
+
+        }
+
         public generateMipMapsForCubemap(texture: InternalTexture) {
             if (texture.generateMipMaps) {
                 var gl = this._gl;
@@ -3808,6 +3864,75 @@
             texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
 
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
+
+            return samples;
+        }
+
+        public updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number {
+            if (this.webGLVersion < 2 || !textures || textures.length == 0) {
+                return 1;
+            }
+
+            if (textures[0].samples === samples) {
+                return samples;
+            }
+
+            var gl = this._gl;
+
+            samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+
+            // Dispose previous render buffers
+            if (textures[0]._depthStencilBuffer) {
+                gl.deleteRenderbuffer(textures[0]._depthStencilBuffer);
+            }
+
+            if (textures[0]._MSAAFramebuffer) {
+                gl.deleteFramebuffer(textures[0]._MSAAFramebuffer);
+            }
+
+            if (textures[0]._MSAARenderBuffer) {
+                gl.deleteRenderbuffer(textures[0]._MSAARenderBuffer);
+            }
+            if (samples > 1) {
+                let framebuffer = gl.createFramebuffer();
+
+                if (!framebuffer) {
+                  throw new Error("Unable to create multi sampled framebuffer");
+                }
+
+                var attachments = [];
+
+                for(var i = 0; i < textures.length; i++) {
+                    var texture = textures[i];
+                    var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+
+                    texture._MSAAFramebuffer = framebuffer;
+
+                    this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
+
+                    var colorRenderbuffer = gl.createRenderbuffer();
+
+                    if (!colorRenderbuffer) {
+                        throw new Error("Unable to create multi sampled framebuffer");
+                    }
+
+                    gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
+
+                    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, colorRenderbuffer);
+
+                    texture._MSAARenderBuffer = colorRenderbuffer;
+                    texture.samples = samples;
+                    texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
+                    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+                    attachments.push(attachment);
+                }
+                gl.drawBuffers(attachments);
+            } else {
+                this.bindUnboundFramebuffer(textures[0]._framebuffer);
+            }
+
             this.bindUnboundFramebuffer(null);
 
             return samples;
