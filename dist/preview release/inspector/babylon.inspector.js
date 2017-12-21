@@ -3567,6 +3567,12 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
                 });
+                _this._createStatLabel("Texture collisions", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._sceneInstrumentation.textureCollisionsCounter.current.toString(); }
+                });
                 _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({

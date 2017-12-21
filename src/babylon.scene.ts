@@ -2035,7 +2035,7 @@
             return null;
         }
 
-        public get Animatables(): Animatable[] {
+        public get animatables(): Animatable[] {
             return this._activeAnimatables;
         }
 
