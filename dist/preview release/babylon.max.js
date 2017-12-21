@@ -41932,13 +41932,39 @@ var BABYLON;
             this._animatables = new Array();
             this._from = Number.MAX_VALUE;
             this._to = Number.MIN_VALUE;
+            this._speedRatio = 1;
             this.onAnimationEndObservable = new BABYLON.Observable();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._scene.animationGroups.push(this);
         }
         Object.defineProperty(AnimationGroup.prototype, "isStarted", {
+            /**
+             * Define if the animations are started
+             */
             get: function () {
                 return this._isStarted;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AnimationGroup.prototype, "speedRatio", {
+            /**
+             * Gets or sets the speed ratio to use for all animations
+             */
+            get: function () {
+                return this._speedRatio;
+            },
+            /**
+             * Gets or sets the speed ratio to use for all animations
+             */
+            set: function (value) {
+                if (this._speedRatio === value) {
+                    return;
+                }
+                for (var index = 0; index < this._animatables.length; index++) {
+                    var animatable = this._animatables[index];
+                    animatable.speedRatio = this._speedRatio;
+                }
             },
             enumerable: true,
             configurable: true
@@ -42005,16 +42031,23 @@ var BABYLON;
          * @param speedRatio defines the ratio to apply to animation speed (1 by default)
          */
         AnimationGroup.prototype.start = function (loop, speedRatio) {
+            var _this = this;
             if (loop === void 0) { loop = false; }
             if (speedRatio === void 0) { speedRatio = 1; }
             if (this._isStarted || this._targetedAnimations.length === 0) {
                 return this;
             }
-            for (var index = 0; index < this._targetedAnimations.length; index++) {
-                var targetedAnimation = this._targetedAnimations[index];
-                this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], this._from, this._to, loop, speedRatio, function () {
+            var _loop_1 = function () {
+                var targetedAnimation = this_1._targetedAnimations[index];
+                this_1._animatables.push(this_1._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], this_1._from, this_1._to, loop, speedRatio, function () {
+                    _this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 }));
+            };
+            var this_1 = this;
+            for (var index = 0; index < this._targetedAnimations.length; index++) {
+                _loop_1();
             }
+            this._speedRatio = speedRatio;
             this._isStarted = true;
             return this;
         };
@@ -42034,10 +42067,16 @@ var BABYLON;
         /**
          * Play all animations to initial state
          * This function will start() the animations if they were not started or will restart() them if they were paused
+         * @param loop defines if animations must loop
          */
         AnimationGroup.prototype.play = function (loop) {
-            if (loop === void 0) { loop = false; }
             if (this.isStarted) {
+                if (loop !== undefined) {
+                    for (var index = 0; index < this._animatables.length; index++) {
+                        var animatable = this._animatables[index];
+                        animatable.loopAnimation = loop;
+                    }
+                }
                 this.restart();
             }
             else {
@@ -42539,12 +42578,11 @@ var BABYLON;
             for (var index = 0; index < runtimeAnimations.length; index++) {
                 runtimeAnimations[index].reset();
             }
-            this._localDelayOffset = null;
-            this._pausedDelay = null;
-            var oldPauseState = this._paused;
-            this._paused = false;
-            this._animate(0);
-            this._paused = oldPauseState;
+            // Reset to original value
+            for (index = 0; index < runtimeAnimations.length; index++) {
+                var animation = runtimeAnimations[index];
+                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio);
+            }
             this._localDelayOffset = null;
             this._pausedDelay = null;
         };
@@ -73014,6 +73052,10 @@ var BABYLON;
             this._padSensibilityUp = 0.65;
             this._padSensibilityDown = 0.35;
             this.onNewMeshSelected = new BABYLON.Observable();
+            /**
+            * Observable raised when current selected mesh gets unselected
+            */
+            this.onSelectedMeshUnselected = new BABYLON.Observable();
             this._pointerDownOnMeshAsked = false;
             this._isActionableMesh = false;
             this._teleportationEnabled = false;
@@ -73508,6 +73550,9 @@ var BABYLON;
             if (this._scene.activeCamera && this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
             }
+            if (this._interactionsEnabled) {
+                this._scene.registerBeforeRender(this.beforeRender);
+            }
         };
         /**
          * Attempt to exit VR, or fullscreen.
@@ -73539,6 +73584,9 @@ var BABYLON;
                 this._scene.activeCamera = this._existingCamera;
             }
             this.updateButtonVisibility();
+            if (this._interactionsEnabled) {
+                this._scene.unregisterBeforeRender(this.beforeRender);
+            }
         };
         Object.defineProperty(VRExperienceHelper.prototype, "position", {
             get: function () {
@@ -73579,7 +73627,6 @@ var BABYLON;
                     }
                     return false;
                 };
-                this._scene.registerBeforeRender(this.beforeRender);
                 this._interactionsEnabled = true;
             }
         };
@@ -73616,9 +73663,7 @@ var BABYLON;
             if (vrTeleportationOptions === void 0) { vrTeleportationOptions = {}; }
             if (!this._teleportationEnabled) {
                 this._teleportationRequested = true;
-                if (!vrTeleportationOptions.disableInteractions) {
-                    this.enableInteractions();
-                }
+                this.enableInteractions();
                 if (vrTeleportationOptions.floorMeshName) {
                     this._floorMeshName = vrTeleportationOptions.floorMeshName;
                 }
@@ -74216,6 +74261,9 @@ var BABYLON;
                         }
                     }
                     else {
+                        if (this._currentMeshSelected) {
+                            this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
+                        }
                         this._currentMeshSelected = null;
                         this.changeGazeColor(new BABYLON.Color3(0.7, 0.7, 0.7));
                         this.changeLaserColor(new BABYLON.Color3(0.7, 0.7, 0.7));
