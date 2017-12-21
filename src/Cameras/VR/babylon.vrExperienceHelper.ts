@@ -2,7 +2,6 @@ module BABYLON {
     export interface VRTeleportationOptions {
         floorMeshName?: string; // If you'd like to provide a mesh acting as the floor
         floorMeshes?: Mesh[];
-        disableInteractions?: boolean
     }
 
     export interface VRExperienceHelperOptions extends WebVROptions {
@@ -513,6 +512,10 @@ module BABYLON {
             if (this._scene.activeCamera && this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
             }
+
+            if (this._interactionsEnabled) {
+                this._scene.registerBeforeRender(this.beforeRender);
+            }
         }
 
         /**
@@ -547,6 +550,10 @@ module BABYLON {
             }
 
             this.updateButtonVisibility();
+
+            if (this._interactionsEnabled) {
+                this._scene.unregisterBeforeRender(this.beforeRender);
+            }
         }
 
         public get position(): Vector3 {
@@ -591,8 +598,6 @@ module BABYLON {
                     }
                     return false;
                 }
-
-                this._scene.registerBeforeRender(this.beforeRender);
 
                 this._interactionsEnabled = true;
             }
@@ -641,9 +646,7 @@ module BABYLON {
             if (!this._teleportationEnabled) {
                 this._teleportationRequested = true;
 
-                if (!vrTeleportationOptions.disableInteractions) {
-                    this.enableInteractions();
-                }
+                this.enableInteractions();
 
                 if (vrTeleportationOptions.floorMeshName) {
                     this._floorMeshName = vrTeleportationOptions.floorMeshName;
