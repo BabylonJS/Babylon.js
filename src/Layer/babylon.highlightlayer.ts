@@ -60,7 +60,7 @@
         /**
          * Threshold for cutting glow.
          */
-        threshold: number;
+        threshold?: number;
     }
 
     /**
