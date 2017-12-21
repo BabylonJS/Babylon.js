@@ -18,11 +18,36 @@ module BABYLON {
         private _from = Number.MAX_VALUE;
         private _to = Number.MIN_VALUE;
         private _isStarted: boolean;
+        private _speedRatio = 1;
 
-        public onAnimationEndObservable = new Observable<Animation>();
+        public onAnimationEndObservable = new Observable<TargetedAnimation>();
 
+        /**
+         * Define if the animations are started
+         */
         public get isStarted(): boolean {
             return this._isStarted;
+        }
+
+        /**
+         * Gets or sets the speed ratio to use for all animations
+         */
+        public get speedRatio(): number {
+            return this._speedRatio;
+        }
+
+        /**
+         * Gets or sets the speed ratio to use for all animations
+         */
+        public set speedRatio(value: number) {
+            if (this._speedRatio === value) {
+                return;
+            }
+
+            for (var index = 0; index < this._animatables.length; index++) {
+                let animatable = this._animatables[index];
+                animatable.speedRatio = this._speedRatio;
+            }
         }
 
         public constructor(public name: string, scene: Nullable<Scene> = null) {
@@ -110,9 +135,11 @@ module BABYLON {
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 let targetedAnimation = this._targetedAnimations[index];
                 this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], this._from, this._to, loop, speedRatio, () => {
-
+                    this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 }));
             }
+
+            this._speedRatio = speedRatio;
 
             this._isStarted = true;
 
@@ -138,9 +165,16 @@ module BABYLON {
         /**
          * Play all animations to initial state
          * This function will start() the animations if they were not started or will restart() them if they were paused
+         * @param loop defines if animations must loop
          */
-        public play(loop = false): AnimationGroup {
+        public play(loop?: boolean): AnimationGroup {
             if (this.isStarted) {
+                if (loop !== undefined) {
+                    for (var index = 0; index < this._animatables.length; index++) {
+                        let animatable = this._animatables[index];
+                        animatable.loopAnimation = loop;
+                    }
+                }
                 this.restart();
             } else {
                 this.start(loop);
