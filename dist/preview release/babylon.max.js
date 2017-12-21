@@ -48571,9 +48571,9 @@ var BABYLON;
                 for (name in this._textureArrays) {
                     this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
-                // Float    
+                // Int    
                 for (name in this._ints) {
-                    this._effect.setIntArray(name, this._ints[name]);
+                    this._effect.setInt(name, this._ints[name]);
                 }
                 // Float    
                 for (name in this._floats) {
