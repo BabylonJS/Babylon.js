@@ -708,6 +708,7 @@
         private _loadingScreen: ILoadingScreen;
 
         public _drawCalls = new PerfCounter();
+        public _textureCollisions = new PerfCounter();
 
         private _glVersion: string;
         private _glRenderer: string;
@@ -753,7 +754,7 @@
         private _internalTexturesCache = new Array<InternalTexture>();
         protected _activeChannel: number;
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-        protected _boundTexturesOrder = new Array<InternalTexture>();
+        protected _boundTexturesStack = new Array<InternalTexture>();
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
@@ -2963,12 +2964,12 @@
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
                 return;
             }
-            this.resetTextureCache();
             this._currentEffect = null;
 
             // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
+                this.resetTextureCache();
                 this._currentProgram = null;
 
                 this._stencilState.reset();
@@ -4602,21 +4603,22 @@
         }
 
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-            let index = this._boundTexturesOrder.indexOf(internalTexture);
+            let index = this._boundTexturesStack.indexOf(internalTexture);
 
-            if (index > -1 && index !== this._boundTexturesOrder.length - 1) {
-                this._boundTexturesOrder.splice(index, 1);
-                this._boundTexturesOrder.push(internalTexture);
+            if (index > -1 && index !== this._boundTexturesStack.length - 1) {
+                this._boundTexturesStack.splice(index, 1);
+                this._boundTexturesStack.push(internalTexture);
             }
         }
 
         private _removeDesignatedSlot(internalTexture: InternalTexture): number {
             let currentSlot = internalTexture._designatedSlot;
             internalTexture._designatedSlot = -1;
-            let index = this._boundTexturesOrder.indexOf(internalTexture);
+            let index = this._boundTexturesStack.indexOf(internalTexture);
 
             if (index > -1) {
-                this._boundTexturesOrder.splice(index, 1);
+                this._boundTexturesStack.splice(index, 1);
+                this._boundTexturesCache[currentSlot] = null;
             }
 
             return currentSlot;
@@ -4637,7 +4639,7 @@
                     this._boundTexturesCache[this._activeChannel] = texture;
 
                     if (isTextureForRendering) {
-                        this._boundTexturesOrder.push(texture!);
+                        this._boundTexturesStack.push(texture!);
                     }
                 }
             }
@@ -4708,7 +4710,8 @@
                             this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
                         }
                     } else { // We need to recycle the oldest bound texture, sorry.
-                        channel = this._removeDesignatedSlot(this._boundTexturesOrder[0]);
+                        channel = this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                        this._textureCollisions.addCount(1, false);
                     }
                 }
             }
