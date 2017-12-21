@@ -496,6 +496,9 @@
         }
 
         protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+            if (!this._texture) {
+                return;
+            }
             engine.unBindFramebuffer(this._texture, this.isCube, () => {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
             });
