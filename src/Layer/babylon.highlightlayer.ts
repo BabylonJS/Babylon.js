@@ -897,7 +897,9 @@
             this._downSamplePostprocess.dispose();
             this._horizontalBlurPostprocess.dispose();
             this._verticalBlurPostprocess.dispose();
-            this._thresholdPostProcess.dispose();
+            if (this._thresholdPostProcess) {
+                this._thresholdPostProcess.dispose();
+            }
         }
 
         /**
