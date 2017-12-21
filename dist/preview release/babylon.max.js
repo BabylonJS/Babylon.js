@@ -8681,7 +8681,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha0";
+                return "3.2.0-alpha1";
             },
             enumerable: true,
             configurable: true
@@ -10200,6 +10200,11 @@ var BABYLON;
             if (!uniform)
                 return;
             this._gl.uniformMatrix2fv(uniform, false, matrix);
+        };
+        Engine.prototype.setInt = function (uniform, value) {
+            if (!uniform)
+                return;
+            this._gl.uniform1i(uniform, value);
         };
         Engine.prototype.setFloat = function (uniform, value) {
             if (!uniform)
@@ -21811,7 +21816,7 @@ var BABYLON;
                     camera = freeCamera;
                 }
                 camera.minZ = radius * 0.01;
-                camera.maxZ = radius * 100;
+                camera.maxZ = radius * 1000;
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
                 var canvas = this.getEngine().getRenderingCanvas();
@@ -27312,6 +27317,14 @@ var BABYLON;
         };
         Effect.prototype.bindUniformBlock = function (blockName, index) {
             this._engine.bindUniformBlock(this._program, blockName, index);
+        };
+        Effect.prototype.setInt = function (uniformName, value) {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+            this._valueCache[uniformName] = value;
+            this._engine.setInt(this.getUniform(uniformName), value);
+            return this;
         };
         Effect.prototype.setIntArray = function (uniformName, array) {
             this._valueCache[uniformName] = null;
@@ -48306,6 +48319,7 @@ var BABYLON;
             _this._textures = {};
             _this._textureArrays = {};
             _this._floats = {};
+            _this._ints = {};
             _this._floatsArrays = {};
             _this._colors3 = {};
             _this._colors3Arrays = {};
@@ -48362,6 +48376,11 @@ var BABYLON;
         ShaderMaterial.prototype.setFloat = function (name, value) {
             this._checkUniform(name);
             this._floats[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setInt = function (name, value) {
+            this._checkUniform(name);
+            this._ints[name] = value;
             return this;
         };
         ShaderMaterial.prototype.setFloats = function (name, value) {
@@ -48553,10 +48572,14 @@ var BABYLON;
                     this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
                 // Float    
+                for (name in this._ints) {
+                    this._effect.setIntArray(name, this._ints[name]);
+                }
+                // Float    
                 for (name in this._floats) {
                     this._effect.setFloat(name, this._floats[name]);
                 }
-                // Float s   
+                // Floats   
                 for (name in this._floatsArrays) {
                     this._effect.setArray(name, this._floatsArrays[name]);
                 }
