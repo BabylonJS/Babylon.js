@@ -566,7 +566,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha0";
+            return "3.2.0-alpha1";
         }
 
         // Updatable statics so stick with vars here
@@ -2776,6 +2776,13 @@
                 return;
 
             this._gl.uniformMatrix2fv(uniform, false, matrix);
+        }
+
+        public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1i(uniform, value);
         }
 
         public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
