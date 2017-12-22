@@ -8815,6 +8815,7 @@ var BABYLON;
             // Caps
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
+            this._caps.maxCombinedTexturesImageUnits = this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
             this._caps.maxVertexTextureImageUnits = this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
@@ -9490,7 +9491,7 @@ var BABYLON;
         Engine.prototype.generateMipMapsForCubemap = function (texture) {
             if (texture.generateMipMaps) {
                 var gl = this._gl;
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
             }
@@ -10366,7 +10367,7 @@ var BABYLON;
             }
             this._currentEffect = null;
             // 6/8/2017: deltakosh: Should not be required anymore.
-            // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
+            // This message is then mostly for the future myself who will scream out loud when seeing that it was actually required :)
             if (bruteForce) {
                 this.resetTextureCache();
                 this._currentProgram = null;
@@ -10565,7 +10566,7 @@ var BABYLON;
                         }
                         // Using shaders to rescale because canvas.drawImage is lossy
                         var source = new BABYLON.InternalTexture(_this, BABYLON.InternalTexture.DATASOURCE_TEMP);
-                        _this._bindTextureDirectly(gl.TEXTURE_2D, source);
+                        _this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
                         gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, internalFormat, gl.UNSIGNED_BYTE, img);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -10573,7 +10574,7 @@ var BABYLON;
                         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
                         _this._rescaleTexture(source, texture, scene, internalFormat, function () {
                             _this._releaseTexture(source);
-                            _this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                            _this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
                             continuationCallback();
                         });
                         return true;
@@ -10617,7 +10618,7 @@ var BABYLON;
                     hostingScene = _this.scenes[_this.scenes.length - 1];
                 }
                 hostingScene.postProcessManager.directRender([_this._rescalePostProcess], rtt, true);
-                _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination);
+                _this._bindTextureDirectly(_this._gl.TEXTURE_2D, destination, true);
                 _this._gl.copyTexImage2D(_this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
                 _this.unBindFramebuffer(rtt);
                 _this._releaseTexture(rtt);
@@ -10656,7 +10657,7 @@ var BABYLON;
             var internalFormat = this._getInternalFormat(format);
             var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var textureType = this._getWebGLTextureType(type);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
@@ -10678,7 +10679,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode, compression, type) {
@@ -10699,7 +10700,7 @@ var BABYLON;
                 texture._bufferView = data;
             }
             this.updateRawTexture(texture, data, format, invertY, compression, type);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
             this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -10719,7 +10720,7 @@ var BABYLON;
                 width = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
                 height = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
             }
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.width = width;
             texture.height = height;
             texture.isReady = false;
@@ -10732,19 +10733,19 @@ var BABYLON;
         Engine.prototype.updateTextureSamplingMode = function (samplingMode, texture) {
             var filters = getSamplingParameters(samplingMode, texture.generateMipMaps, this._gl);
             if (texture.isCube) {
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_CUBE_MAP, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
             }
             else if (texture.is3D) {
-                this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
                 this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
             }
             else {
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
                 this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, filters.min);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
@@ -10756,7 +10757,7 @@ var BABYLON;
             if (!texture) {
                 return;
             }
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
@@ -10770,14 +10771,13 @@ var BABYLON;
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
             }
-            this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
             if (!texture || texture._isDisabled) {
                 return;
             }
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 0 : 1); // Video are upside down by default
             try {
                 // Testing video texture support
@@ -10812,7 +10812,7 @@ var BABYLON;
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-                this.resetTextureCache();
+                //    this.resetTextureCache();
                 texture.isReady = true;
             }
             catch (ex) {
@@ -10847,7 +10847,7 @@ var BABYLON;
             }
             var gl = this._gl;
             var texture = new BABYLON.InternalTexture(this, BABYLON.InternalTexture.DATASOURCE_RENDERTARGET);
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
             var width = size.width || size;
             var height = size.height || size;
             var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
@@ -10884,7 +10884,7 @@ var BABYLON;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
-            this.resetTextureCache();
+            // this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
         };
@@ -11097,7 +11097,7 @@ var BABYLON;
             texture.samples = 1;
             texture.samplingMode = samplingMode;
             var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             for (var face = 0; face < 6; face++) {
                 gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
             }
@@ -11111,7 +11111,6 @@ var BABYLON;
             texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
             // Mipmaps
             if (texture.generateMipMaps) {
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
             // Unbind
@@ -11122,7 +11121,7 @@ var BABYLON;
             texture.width = size;
             texture.height = size;
             texture.isReady = true;
-            this.resetTextureCache();
+            //this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
         };
@@ -11166,7 +11165,7 @@ var BABYLON;
                     var mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
                     var glTextureFromLod = new BABYLON.InternalTexture(_this, BABYLON.InternalTexture.DATASOURCE_TEMP);
                     glTextureFromLod.isCube = true;
-                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -11232,7 +11231,7 @@ var BABYLON;
                 BABYLON.Tools.LoadFile(rootUrl, function (data) {
                     var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 6);
                     var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
-                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
                     ktx.uploadLevels(_this._gl, !noMipmap);
                     _this.setCubeMapTextureParams(gl, loadMipmap);
@@ -11251,7 +11250,7 @@ var BABYLON;
                             var data = imgs[index];
                             info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                             loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-                            _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                            _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
                             BABYLON.Internals.DDSTools.UploadDDSLevels(_this, _this._gl, data, info, loadMipmap, 6, -1, index);
                             if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
@@ -11273,7 +11272,7 @@ var BABYLON;
                     BABYLON.Tools.LoadFile(rootUrl, function (data) {
                         var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
-                        _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                        _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
                         BABYLON.Internals.DDSTools.UploadDDSLevels(_this, _this._gl, data, info, loadMipmap, 6);
                         if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
@@ -11307,7 +11306,7 @@ var BABYLON;
                         gl.TEXTURE_CUBE_MAP_POSITIVE_X, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
                         gl.TEXTURE_CUBE_MAP_NEGATIVE_X, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z
                     ];
-                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
                     var internalFormat = format ? _this._getInternalFormat(format) : _this._gl.RGBA;
                     for (var index = 0; index < faces.length; index++) {
@@ -11340,7 +11339,7 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-            this.resetTextureCache();
+            //  this.resetTextureCache();
         };
         Engine.prototype.updateRawCubeTexture = function (texture, data, format, type, invertY, compression, level) {
             if (compression === void 0) { compression = null; }
@@ -11359,7 +11358,7 @@ var BABYLON;
                 internalFormat = gl.RGBA;
                 needConversion = true;
             }
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             if (texture.width % 4 !== 0) {
                 gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
@@ -11382,7 +11381,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawCubeTexture = function (data, size, format, type, generateMipMaps, invertY, samplingMode, compression) {
@@ -11414,7 +11413,7 @@ var BABYLON;
             if (data) {
                 this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
             }
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
             // Filters
             if (data && generateMipMaps) {
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
@@ -11469,7 +11468,7 @@ var BABYLON;
                         internalFormat = gl.RGBA;
                         needConversion = true;
                     }
-                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                    _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
                     var mipData = mipmmapGenerator(faceDataArrays);
                     for (var level = 0; level < mipData.length; level++) {
@@ -11489,7 +11488,7 @@ var BABYLON;
                     _this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
                 texture.isReady = true;
-                _this.resetTextureCache();
+                // this.resetTextureCache();
                 scene._removePendingData(texture);
                 if (onLoad) {
                     onLoad();
@@ -11504,7 +11503,7 @@ var BABYLON;
         Engine.prototype.updateRawTexture3D = function (texture, data, format, invertY, compression) {
             if (compression === void 0) { compression = null; }
             var internalFormat = this._getInternalFormat(format);
-            this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             if (!this._doNotHandleContextLost) {
                 texture._bufferView = data;
@@ -11525,7 +11524,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_3D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawTexture3D = function (data, width, height, depth, format, generateMipMaps, invertY, samplingMode, compression) {
@@ -11545,7 +11544,7 @@ var BABYLON;
                 texture._bufferView = data;
             }
             this.updateRawTexture3D(texture, data, format, invertY, compression);
-            this._bindTextureDirectly(this._gl.TEXTURE_3D, texture);
+            this._bindTextureDirectly(this._gl.TEXTURE_3D, texture, true);
             // Filters
             var filters = getSamplingParameters(samplingMode, generateMipMaps, this._gl);
             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -11569,7 +11568,7 @@ var BABYLON;
                 gl.generateMipmap(gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             if (scene) {
                 scene._removePendingData(texture);
             }
@@ -11586,13 +11585,13 @@ var BABYLON;
                 return;
             }
             if (!texture._webGLTexture) {
-                this.resetTextureCache();
+                //  this.resetTextureCache();
                 if (scene) {
                     scene._removePendingData(texture);
                 }
                 return;
             }
-            this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+            this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
             texture.baseWidth = width;
             texture.baseHeight = height;
