@@ -83,10 +83,10 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
         if (compare(renderData, resultCanvas)) {
             result.classList.add("failed");
             result.innerHTML = "×";
-            console.log("failed");
+            console.log('%c failed', 'color: red');
         } else {
             result.innerHTML = "✔";
-            console.log("validated");
+            console.log('%c validated', 'color: green');
         }
     }
     waitRing.classList.add("hidden");
