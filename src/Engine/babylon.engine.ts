@@ -2975,7 +2975,7 @@
             this._currentEffect = null;
 
             // 6/8/2017: deltakosh: Should not be required anymore.
-            // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
+            // This message is then mostly for the future myself who will scream out loud when seeing that it was actually required :)
             if (bruteForce) {
                 this.resetTextureCache();
                 this._currentProgram = null;
@@ -3323,7 +3323,7 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.isReady = true;
         }
 
@@ -3375,7 +3375,7 @@
                 height = this.needPOTTextures ? Tools.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
             }
 
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.width = width;
             texture.height = height;
             texture.isReady = false;
@@ -3416,11 +3416,10 @@
         }
 
         public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {
-
             if (!texture) {
                 return;
             }
-
+            
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
             if (premulAlpha) {
@@ -3435,7 +3434,8 @@
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
             }
-            this.resetTextureCache();
+            this._activeChannel = -1;
+            //this.resetTextureCache();
             texture.isReady = true;
         }
 
@@ -3486,7 +3486,7 @@
                 }
 
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-                this.resetTextureCache();
+                //    this.resetTextureCache();
                 texture.isReady = true;
 
             } catch (ex) {
@@ -3572,7 +3572,7 @@
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
-            this.resetTextureCache();
+            // this.resetTextureCache();
 
             this._internalTexturesCache.push(texture);
 
@@ -3883,7 +3883,7 @@
 
             // Mipmaps
             if (texture.generateMipMaps) {
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+              //  this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
@@ -3897,7 +3897,7 @@
             texture.height = size;
             texture.isReady = true;
 
-            this.resetTextureCache();
+            //this.resetTextureCache();
 
             this._internalTexturesCache.push(texture);
 
@@ -4175,7 +4175,7 @@
 
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
-            this.resetTextureCache();
+            //  this.resetTextureCache();
         }
 
         public updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string> = null, level = 0): void {
@@ -4223,7 +4223,7 @@
             }
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
 
-            this.resetTextureCache();
+            // this.resetTextureCache();
             texture.isReady = true;
         }
 
@@ -4354,7 +4354,7 @@
                 }
 
                 texture.isReady = true;
-                this.resetTextureCache();
+                // this.resetTextureCache();
                 scene._removePendingData(texture);
 
                 if (onLoad) {
@@ -4395,7 +4395,7 @@
                 this._gl.generateMipmap(this._gl.TEXTURE_3D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             texture.isReady = true;
         }
 
@@ -4453,7 +4453,7 @@
 
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
 
-            this.resetTextureCache();
+            // this.resetTextureCache();
             if (scene) {
                 scene._removePendingData(texture);
             }
@@ -4473,7 +4473,7 @@
             }
 
             if (!texture._webGLTexture) {
-                this.resetTextureCache();
+                //  this.resetTextureCache();
                 if (scene) {
                     scene._removePendingData(texture);
                 }

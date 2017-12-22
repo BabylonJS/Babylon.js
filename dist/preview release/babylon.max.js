@@ -10366,7 +10366,7 @@ var BABYLON;
             }
             this._currentEffect = null;
             // 6/8/2017: deltakosh: Should not be required anymore.
-            // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
+            // This message is then mostly for the future myself who will scream out loud when seeing that it was actually required :)
             if (bruteForce) {
                 this.resetTextureCache();
                 this._currentProgram = null;
@@ -10678,7 +10678,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawTexture = function (data, width, height, format, generateMipMaps, invertY, samplingMode, compression, type) {
@@ -10719,7 +10719,7 @@ var BABYLON;
                 width = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
                 height = this.needPOTTextures ? BABYLON.Tools.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
             }
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.width = width;
             texture.height = height;
             texture.isReady = false;
@@ -10770,7 +10770,7 @@ var BABYLON;
             if (premulAlpha) {
                 this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
             }
-            this.resetTextureCache();
+            //  this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.updateVideoTexture = function (texture, video, invertY) {
@@ -10812,7 +10812,7 @@ var BABYLON;
                     this._gl.generateMipmap(this._gl.TEXTURE_2D);
                 }
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-                this.resetTextureCache();
+                //    this.resetTextureCache();
                 texture.isReady = true;
             }
             catch (ex) {
@@ -10884,7 +10884,7 @@ var BABYLON;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
             texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
-            this.resetTextureCache();
+            // this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
         };
@@ -11111,7 +11111,7 @@ var BABYLON;
             texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
             // Mipmaps
             if (texture.generateMipMaps) {
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
+                //  this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture);
                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
             // Unbind
@@ -11122,7 +11122,7 @@ var BABYLON;
             texture.width = size;
             texture.height = size;
             texture.isReady = true;
-            this.resetTextureCache();
+            //this.resetTextureCache();
             this._internalTexturesCache.push(texture);
             return texture;
         };
@@ -11340,7 +11340,7 @@ var BABYLON;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-            this.resetTextureCache();
+            //  this.resetTextureCache();
         };
         Engine.prototype.updateRawCubeTexture = function (texture, data, format, type, invertY, compression, level) {
             if (compression === void 0) { compression = null; }
@@ -11382,7 +11382,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawCubeTexture = function (data, size, format, type, generateMipMaps, invertY, samplingMode, compression) {
@@ -11489,7 +11489,7 @@ var BABYLON;
                     _this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
                 }
                 texture.isReady = true;
-                _this.resetTextureCache();
+                // this.resetTextureCache();
                 scene._removePendingData(texture);
                 if (onLoad) {
                     onLoad();
@@ -11525,7 +11525,7 @@ var BABYLON;
                 this._gl.generateMipmap(this._gl.TEXTURE_3D);
             }
             this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             texture.isReady = true;
         };
         Engine.prototype.createRawTexture3D = function (data, width, height, depth, format, generateMipMaps, invertY, samplingMode, compression) {
@@ -11569,7 +11569,7 @@ var BABYLON;
                 gl.generateMipmap(gl.TEXTURE_2D);
             }
             this._bindTextureDirectly(gl.TEXTURE_2D, null);
-            this.resetTextureCache();
+            // this.resetTextureCache();
             if (scene) {
                 scene._removePendingData(texture);
             }
@@ -11586,7 +11586,7 @@ var BABYLON;
                 return;
             }
             if (!texture._webGLTexture) {
-                this.resetTextureCache();
+                //  this.resetTextureCache();
                 if (scene) {
                     scene._removePendingData(texture);
                 }
