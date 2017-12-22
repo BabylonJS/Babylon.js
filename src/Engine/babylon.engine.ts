@@ -1917,7 +1917,11 @@
                 gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
                 gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
 
-                var attachments = new Array(textures.length);
+                var attachments = textures[0]._attachments;
+                if(!attachments) {
+                    attachments = new Array(textures.length);
+                    textures[0]._attachments = attachments;
+                }
 
                 for(var i = 0; i < textures.length; i++) {
                     var texture = textures[i];
@@ -1958,8 +1962,6 @@
             }
 
             this.bindUnboundFramebuffer(null);
-
-
         }
 
         public generateMipMapsForCubemap(texture: InternalTexture) {
@@ -3716,6 +3718,7 @@
                 texture.type = type;
                 texture._generateDepthBuffer = generateDepthBuffer;
                 texture._generateStencilBuffer = generateStencilBuffer;
+                texture._attachments = attachments;
 
                 this._internalTexturesCache.push(texture);
             }
