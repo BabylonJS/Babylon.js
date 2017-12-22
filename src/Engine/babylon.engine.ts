@@ -791,7 +791,7 @@
 
         private _frameHandler: number;
 
-        private _nextFreeTextureSlot = 0;
+        private _nextFreeTextureSlots = new Array<number>();
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -1296,6 +1296,11 @@
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
+
+            // Texture maps
+            for (let slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
         }
 
         public get webGLVersion(): number {
@@ -1330,7 +1335,10 @@
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlot = 0;
+            this._nextFreeTextureSlots = [];
+            for (let slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
             this._activeChannel = -1;
         }
 
@@ -1891,7 +1899,7 @@
             }
 
             if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-                this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
             }
@@ -4596,7 +4604,7 @@
         }
 
         private _activateTextureChannel(channel: number): void {
-            if (this._activeChannel !== channel) {
+            if (this._activeChannel !== channel && channel > -1) {
                 this._gl.activeTexture(this._gl.TEXTURE0 + channel);
                 this._activeChannel = channel;
             }
@@ -4618,13 +4626,16 @@
 
             if (index > -1) {
                 this._boundTexturesStack.splice(index, 1);
-                this._boundTexturesCache[currentSlot] = null;
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
             }
 
             return currentSlot;
         }
 
-        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, isPartOfTextureArray = false): void {
+        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, doNotBindUniformToTextureChannel = false): void {
             let currentTextureBound = this._boundTexturesCache[this._activeChannel];
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
@@ -4639,6 +4650,10 @@
                     this._boundTexturesCache[this._activeChannel] = texture;
 
                     if (isTextureForRendering) {
+                        let slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
                         this._boundTexturesStack.push(texture!);
                     }
                 }
@@ -4646,7 +4661,7 @@
 
             if (isTextureForRendering && this._activeChannel > -1) {
                 texture!._designatedSlot = this._activeChannel;
-                if (!isPartOfTextureArray) {
+                if (!doNotBindUniformToTextureChannel) {
                     this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
                 }
             }
@@ -4692,7 +4707,7 @@
             this._setTexture(channel, texture);
         }
 
-        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>) {
+        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>): number {
             if (!internalTexture) {
                 return -1;
             }
@@ -4701,18 +4716,16 @@
 
             if (channel !== internalTexture._designatedSlot) {
                 if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                    channel = internalTexture._designatedSlot;
-                } else { // Not slot for this texture, let's pick a new one
-                    if (this._nextFreeTextureSlot > -1) { // We can use a free slot
-                        channel = this._nextFreeTextureSlot;
-                        this._nextFreeTextureSlot++;
-                        if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
-                            this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
-                        }
-                    } else { // We need to recycle the oldest bound texture, sorry.
-                        channel = this._removeDesignatedSlot(this._boundTexturesStack[0]);
-                        this._textureCollisions.addCount(1, false);
+                    return internalTexture._designatedSlot;
+                } else {
+                    // No slot for this texture, let's pick a new one (if we find a free slot)
+                    if (this._nextFreeTextureSlots.length) {
+                        return this._nextFreeTextureSlots[0];
                     }
+
+                    // We need to recycle the oldest bound texture, sorry.
+                    this._textureCollisions.addCount(1, false);
+                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
                 }
             }
 
