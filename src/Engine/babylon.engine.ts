@@ -566,7 +566,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha0";
+            return "3.2.0-alpha1";
         }
 
         // Updatable statics so stick with vars here
@@ -708,6 +708,7 @@
         private _loadingScreen: ILoadingScreen;
 
         public _drawCalls = new PerfCounter();
+        public _textureCollisions = new PerfCounter();
 
         private _glVersion: string;
         private _glRenderer: string;
@@ -753,7 +754,7 @@
         private _internalTexturesCache = new Array<InternalTexture>();
         protected _activeChannel: number;
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-        protected _boundTexturesOrder = new Array<InternalTexture>();
+        protected _boundTexturesStack = new Array<InternalTexture>();
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
@@ -790,7 +791,7 @@
 
         private _frameHandler: number;
 
-        private _nextFreeTextureSlot = 0;
+        private _nextFreeTextureSlots = new Array<number>();
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -1295,6 +1296,11 @@
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
+
+            // Texture maps
+            for (let slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
         }
 
         public get webGLVersion(): number {
@@ -1329,7 +1335,10 @@
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlot = 0;
+            this._nextFreeTextureSlots = [];
+            for (let slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
             this._activeChannel = -1;
         }
 
@@ -1890,7 +1899,7 @@
             }
 
             if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-                this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
             }
@@ -2778,6 +2787,13 @@
             this._gl.uniformMatrix2fv(uniform, false, matrix);
         }
 
+        public setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform1i(uniform, value);
+        }
+
         public setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void {
             if (!uniform)
                 return;
@@ -2956,12 +2972,12 @@
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
                 return;
             }
-            this.resetTextureCache();
             this._currentEffect = null;
 
             // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
+                this.resetTextureCache();
                 this._currentProgram = null;
 
                 this._stencilState.reset();
@@ -4588,34 +4604,38 @@
         }
 
         private _activateTextureChannel(channel: number): void {
-            if (this._activeChannel !== channel) {
+            if (this._activeChannel !== channel && channel > -1) {
                 this._gl.activeTexture(this._gl.TEXTURE0 + channel);
                 this._activeChannel = channel;
             }
         }
 
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-            let index = this._boundTexturesOrder.indexOf(internalTexture);
+            let index = this._boundTexturesStack.indexOf(internalTexture);
 
-            if (index > -1 && index !== this._boundTexturesOrder.length - 1) {
-                this._boundTexturesOrder.splice(index, 1);
-                this._boundTexturesOrder.push(internalTexture);
+            if (index > -1 && index !== this._boundTexturesStack.length - 1) {
+                this._boundTexturesStack.splice(index, 1);
+                this._boundTexturesStack.push(internalTexture);
             }
         }
 
         private _removeDesignatedSlot(internalTexture: InternalTexture): number {
             let currentSlot = internalTexture._designatedSlot;
             internalTexture._designatedSlot = -1;
-            let index = this._boundTexturesOrder.indexOf(internalTexture);
+            let index = this._boundTexturesStack.indexOf(internalTexture);
 
             if (index > -1) {
-                this._boundTexturesOrder.splice(index, 1);
+                this._boundTexturesStack.splice(index, 1);
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
             }
 
             return currentSlot;
         }
 
-        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, isPartOfTextureArray = false): void {
+        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, doNotBindUniformToTextureChannel = false): void {
             let currentTextureBound = this._boundTexturesCache[this._activeChannel];
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
@@ -4630,14 +4650,18 @@
                     this._boundTexturesCache[this._activeChannel] = texture;
 
                     if (isTextureForRendering) {
-                        this._boundTexturesOrder.push(texture!);
+                        let slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
+                        this._boundTexturesStack.push(texture!);
                     }
                 }
             }
 
             if (isTextureForRendering && this._activeChannel > -1) {
                 texture!._designatedSlot = this._activeChannel;
-                if (!isPartOfTextureArray) {
+                if (!doNotBindUniformToTextureChannel) {
                     this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
                 }
             }
@@ -4683,7 +4707,7 @@
             this._setTexture(channel, texture);
         }
 
-        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>) {
+        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>): number {
             if (!internalTexture) {
                 return -1;
             }
@@ -4692,17 +4716,16 @@
 
             if (channel !== internalTexture._designatedSlot) {
                 if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                    channel = internalTexture._designatedSlot;
-                } else { // Not slot for this texture, let's pick a new one
-                    if (this._nextFreeTextureSlot > -1) { // We can use a free slot
-                        channel = this._nextFreeTextureSlot;
-                        this._nextFreeTextureSlot++;
-                        if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
-                            this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
-                        }
-                    } else { // We need to recycle the oldest bound texture, sorry.
-                        channel = this._removeDesignatedSlot(this._boundTexturesOrder[0]);
+                    return internalTexture._designatedSlot;
+                } else {
+                    // No slot for this texture, let's pick a new one (if we find a free slot)
+                    if (this._nextFreeTextureSlots.length) {
+                        return this._nextFreeTextureSlots[0];
                     }
+
+                    // We need to recycle the oldest bound texture, sorry.
+                    this._textureCollisions.addCount(1, false);
+                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
                 }
             }
 

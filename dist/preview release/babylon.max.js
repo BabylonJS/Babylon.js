@@ -8093,6 +8093,7 @@ var BABYLON;
             this.onVRRequestPresentStart = new BABYLON.Observable();
             this._colorWrite = true;
             this._drawCalls = new BABYLON.PerfCounter();
+            this._textureCollisions = new BABYLON.PerfCounter();
             this._renderingQueueLaunched = false;
             this._activeRenderLoops = new Array();
             // Deterministic lockstepMaxSteps
@@ -8119,7 +8120,7 @@ var BABYLON;
             // Cache
             this._internalTexturesCache = new Array();
             this._boundTexturesCache = {};
-            this._boundTexturesOrder = new Array();
+            this._boundTexturesStack = new Array();
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
@@ -8129,7 +8130,7 @@ var BABYLON;
             this._currentInstanceBuffers = new Array();
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
-            this._nextFreeTextureSlot = 0;
+            this._nextFreeTextureSlots = new Array();
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
@@ -8681,7 +8682,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha0";
+                return "3.2.0-alpha1";
             },
             enumerable: true,
             configurable: true
@@ -8963,6 +8964,10 @@ var BABYLON;
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
+            // Texture maps
+            for (var slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
         };
         Object.defineProperty(Engine.prototype, "webGLVersion", {
             get: function () {
@@ -8999,7 +9004,10 @@ var BABYLON;
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlot = 0;
+            this._nextFreeTextureSlots = [];
+            for (var slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
             this._activeChannel = -1;
         };
         Engine.prototype.isDeterministicLockStep = function () {
@@ -9466,7 +9474,7 @@ var BABYLON;
                 gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
             }
             if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-                this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
             }
@@ -10201,6 +10209,11 @@ var BABYLON;
                 return;
             this._gl.uniformMatrix2fv(uniform, false, matrix);
         };
+        Engine.prototype.setInt = function (uniform, value) {
+            if (!uniform)
+                return;
+            this._gl.uniform1i(uniform, value);
+        };
         Engine.prototype.setFloat = function (uniform, value) {
             if (!uniform)
                 return;
@@ -10351,11 +10364,11 @@ var BABYLON;
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
                 return;
             }
-            this.resetTextureCache();
             this._currentEffect = null;
             // 6/8/2017: deltakosh: Should not be required anymore.
             // This message is then mostly for the future myself which will scream out loud when seeing that actually it was required :)
             if (bruteForce) {
+                this.resetTextureCache();
                 this._currentProgram = null;
                 this._stencilState.reset();
                 this._depthCullingState.reset();
@@ -11676,29 +11689,33 @@ var BABYLON;
             this._currentEffect = null;
         };
         Engine.prototype._activateTextureChannel = function (channel) {
-            if (this._activeChannel !== channel) {
+            if (this._activeChannel !== channel && channel > -1) {
                 this._gl.activeTexture(this._gl.TEXTURE0 + channel);
                 this._activeChannel = channel;
             }
         };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
-            var index = this._boundTexturesOrder.indexOf(internalTexture);
-            if (index > -1 && index !== this._boundTexturesOrder.length - 1) {
-                this._boundTexturesOrder.splice(index, 1);
-                this._boundTexturesOrder.push(internalTexture);
+            var index = this._boundTexturesStack.indexOf(internalTexture);
+            if (index > -1 && index !== this._boundTexturesStack.length - 1) {
+                this._boundTexturesStack.splice(index, 1);
+                this._boundTexturesStack.push(internalTexture);
             }
         };
         Engine.prototype._removeDesignatedSlot = function (internalTexture) {
             var currentSlot = internalTexture._designatedSlot;
             internalTexture._designatedSlot = -1;
-            var index = this._boundTexturesOrder.indexOf(internalTexture);
+            var index = this._boundTexturesStack.indexOf(internalTexture);
             if (index > -1) {
-                this._boundTexturesOrder.splice(index, 1);
+                this._boundTexturesStack.splice(index, 1);
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
             }
             return currentSlot;
         };
-        Engine.prototype._bindTextureDirectly = function (target, texture, isPartOfTextureArray) {
-            if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
+        Engine.prototype._bindTextureDirectly = function (target, texture, doNotBindUniformToTextureChannel) {
+            if (doNotBindUniformToTextureChannel === void 0) { doNotBindUniformToTextureChannel = false; }
             var currentTextureBound = this._boundTexturesCache[this._activeChannel];
             var isTextureForRendering = texture && texture._initialSlot > -1;
             if (currentTextureBound !== texture) {
@@ -11709,13 +11726,17 @@ var BABYLON;
                 if (this._activeChannel >= 0) {
                     this._boundTexturesCache[this._activeChannel] = texture;
                     if (isTextureForRendering) {
-                        this._boundTexturesOrder.push(texture);
+                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
+                        this._boundTexturesStack.push(texture);
                     }
                 }
             }
             if (isTextureForRendering && this._activeChannel > -1) {
                 texture._designatedSlot = this._activeChannel;
-                if (!isPartOfTextureArray) {
+                if (!doNotBindUniformToTextureChannel) {
                     this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
                 }
             }
@@ -11759,19 +11780,16 @@ var BABYLON;
             internalTexture._initialSlot = channel;
             if (channel !== internalTexture._designatedSlot) {
                 if (internalTexture._designatedSlot > -1) {
-                    channel = internalTexture._designatedSlot;
+                    return internalTexture._designatedSlot;
                 }
                 else {
-                    if (this._nextFreeTextureSlot > -1) {
-                        channel = this._nextFreeTextureSlot;
-                        this._nextFreeTextureSlot++;
-                        if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
-                            this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
-                        }
+                    // No slot for this texture, let's pick a new one (if we find a free slot)
+                    if (this._nextFreeTextureSlots.length) {
+                        return this._nextFreeTextureSlots[0];
                     }
-                    else {
-                        channel = this._removeDesignatedSlot(this._boundTexturesOrder[0]);
-                    }
+                    // We need to recycle the oldest bound texture, sorry.
+                    this._textureCollisions.addCount(1, false);
+                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
                 }
             }
             return channel;
@@ -19814,7 +19832,7 @@ var BABYLON;
             }
             return null;
         };
-        Object.defineProperty(Scene.prototype, "Animatables", {
+        Object.defineProperty(Scene.prototype, "animatables", {
             get: function () {
                 return this._activeAnimatables;
             },
@@ -21811,7 +21829,7 @@ var BABYLON;
                     camera = freeCamera;
                 }
                 camera.minZ = radius * 0.01;
-                camera.maxZ = radius * 100;
+                camera.maxZ = radius * 1000;
                 camera.speed = radius * 0.2;
                 this.activeCamera = camera;
                 var canvas = this.getEngine().getRenderingCanvas();
@@ -27118,6 +27136,10 @@ var BABYLON;
             this._fallbacks = null;
             this._prepareEffect();
         };
+        Effect.prototype.getSpecificUniformLocations = function (names) {
+            var engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        };
         Effect.prototype._prepareEffect = function () {
             var attributesNames = this._attributesNames;
             var defines = this.defines;
@@ -27312,6 +27334,14 @@ var BABYLON;
         };
         Effect.prototype.bindUniformBlock = function (blockName, index) {
             this._engine.bindUniformBlock(this._program, blockName, index);
+        };
+        Effect.prototype.setInt = function (uniformName, value) {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+            this._valueCache[uniformName] = value;
+            this._engine.setInt(this.getUniform(uniformName), value);
+            return this;
         };
         Effect.prototype.setIntArray = function (uniformName, array) {
             this._valueCache[uniformName] = null;
@@ -48306,6 +48336,7 @@ var BABYLON;
             _this._textures = {};
             _this._textureArrays = {};
             _this._floats = {};
+            _this._ints = {};
             _this._floatsArrays = {};
             _this._colors3 = {};
             _this._colors3Arrays = {};
@@ -48362,6 +48393,11 @@ var BABYLON;
         ShaderMaterial.prototype.setFloat = function (name, value) {
             this._checkUniform(name);
             this._floats[name] = value;
+            return this;
+        };
+        ShaderMaterial.prototype.setInt = function (name, value) {
+            this._checkUniform(name);
+            this._ints[name] = value;
             return this;
         };
         ShaderMaterial.prototype.setFloats = function (name, value) {
@@ -48552,11 +48588,15 @@ var BABYLON;
                 for (name in this._textureArrays) {
                     this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
+                // Int    
+                for (name in this._ints) {
+                    this._effect.setInt(name, this._ints[name]);
+                }
                 // Float    
                 for (name in this._floats) {
                     this._effect.setFloat(name, this._floats[name]);
                 }
-                // Float s   
+                // Floats   
                 for (name in this._floatsArrays) {
                     this._effect.setArray(name, this._floatsArrays[name]);
                 }
@@ -79211,6 +79251,7 @@ var BABYLON;
                     _this._animationsTime.beginMonitoring();
                 }
                 _this.scene.getEngine()._drawCalls.fetchNewFrame();
+                _this.scene.getEngine()._textureCollisions.fetchNewFrame();
             });
             // After render
             this._onAfterRenderObserver = scene.onAfterRenderObservable.add(function () {
@@ -79596,10 +79637,20 @@ var BABYLON;
         });
         Object.defineProperty(SceneInstrumentation.prototype, "drawCallsCounter", {
             /**
-             * Gets the perf counter used for frame time capture
+             * Gets the perf counter used for draw calls
              */
             get: function () {
                 return this.scene.getEngine()._drawCalls;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneInstrumentation.prototype, "textureCollisionsCounter", {
+            /**
+             * Gets the perf counter used for texture collisions
+             */
+            get: function () {
+                return this.scene.getEngine()._textureCollisions;
             },
             enumerable: true,
             configurable: true
