@@ -8130,7 +8130,7 @@ var BABYLON;
             this._currentInstanceBuffers = new Array();
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
-            this._nextFreeTextureSlot = 0;
+            this._nextFreeTextureSlots = new Array();
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
@@ -8964,6 +8964,10 @@ var BABYLON;
             this.setDepthBuffer(true);
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
+            // Texture maps
+            for (var slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
         };
         Object.defineProperty(Engine.prototype, "webGLVersion", {
             get: function () {
@@ -9000,7 +9004,10 @@ var BABYLON;
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlot = 0;
+            this._nextFreeTextureSlots = [];
+            for (var slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+                this._nextFreeTextureSlots.push(slot);
+            }
             this._activeChannel = -1;
         };
         Engine.prototype.isDeterministicLockStep = function () {
@@ -9467,7 +9474,7 @@ var BABYLON;
                 gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
             }
             if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
-                this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
                 gl.generateMipmap(gl.TEXTURE_2D);
                 this._bindTextureDirectly(gl.TEXTURE_2D, null);
             }
@@ -11682,7 +11689,7 @@ var BABYLON;
             this._currentEffect = null;
         };
         Engine.prototype._activateTextureChannel = function (channel) {
-            if (this._activeChannel !== channel) {
+            if (this._activeChannel !== channel && channel > -1) {
                 this._gl.activeTexture(this._gl.TEXTURE0 + channel);
                 this._activeChannel = channel;
             }
@@ -11700,12 +11707,15 @@ var BABYLON;
             var index = this._boundTexturesStack.indexOf(internalTexture);
             if (index > -1) {
                 this._boundTexturesStack.splice(index, 1);
-                this._boundTexturesCache[currentSlot] = null;
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
             }
             return currentSlot;
         };
-        Engine.prototype._bindTextureDirectly = function (target, texture, isPartOfTextureArray) {
-            if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
+        Engine.prototype._bindTextureDirectly = function (target, texture, doNotBindUniformToTextureChannel) {
+            if (doNotBindUniformToTextureChannel === void 0) { doNotBindUniformToTextureChannel = false; }
             var currentTextureBound = this._boundTexturesCache[this._activeChannel];
             var isTextureForRendering = texture && texture._initialSlot > -1;
             if (currentTextureBound !== texture) {
@@ -11716,13 +11726,17 @@ var BABYLON;
                 if (this._activeChannel >= 0) {
                     this._boundTexturesCache[this._activeChannel] = texture;
                     if (isTextureForRendering) {
+                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
                         this._boundTexturesStack.push(texture);
                     }
                 }
             }
             if (isTextureForRendering && this._activeChannel > -1) {
                 texture._designatedSlot = this._activeChannel;
-                if (!isPartOfTextureArray) {
+                if (!doNotBindUniformToTextureChannel) {
                     this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
                 }
             }
@@ -11766,20 +11780,16 @@ var BABYLON;
             internalTexture._initialSlot = channel;
             if (channel !== internalTexture._designatedSlot) {
                 if (internalTexture._designatedSlot > -1) {
-                    channel = internalTexture._designatedSlot;
+                    return internalTexture._designatedSlot;
                 }
                 else {
-                    if (this._nextFreeTextureSlot > -1) {
-                        channel = this._nextFreeTextureSlot;
-                        this._nextFreeTextureSlot++;
-                        if (this._nextFreeTextureSlot >= this._caps.maxTexturesImageUnits) {
-                            this._nextFreeTextureSlot = -1; // No more free slots, we will recycle
-                        }
+                    // No slot for this texture, let's pick a new one (if we find a free slot)
+                    if (this._nextFreeTextureSlots.length) {
+                        return this._nextFreeTextureSlots[0];
                     }
-                    else {
-                        channel = this._removeDesignatedSlot(this._boundTexturesStack[0]);
-                        this._textureCollisions.addCount(1, false);
-                    }
+                    // We need to recycle the oldest bound texture, sorry.
+                    this._textureCollisions.addCount(1, false);
+                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
                 }
             }
             return channel;
