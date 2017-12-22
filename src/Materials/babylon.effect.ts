@@ -544,6 +544,11 @@
             this._prepareEffect();
         }
 
+        public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
+            let engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
@@ -553,7 +558,7 @@
             var previousProgram = this._program;
 
             try {
-                var engine = this._engine;
+                let engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                     this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
@@ -767,6 +772,18 @@
 
         public bindUniformBlock(blockName: string, index: number): void {
             this._engine.bindUniformBlock(this._program, blockName, index);
+        }
+
+        public setInt(uniformName: string, value: number): Effect {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+
+            this._valueCache[uniformName] = value;
+
+            this._engine.setInt(this.getUniform(uniformName), value);
+
+            return this;
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {

@@ -1549,6 +1549,12 @@
                     "../../serializers/src/OBJ/babylon.objSerializer.ts"
                 ],
                 "output": "babylon.objSerializer.js"
+            },
+            {
+                "files": [
+                    "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts"
+                ],
+                "output": "babylon.glTF2Serializer.js"
             }
         ],
         "build": {
