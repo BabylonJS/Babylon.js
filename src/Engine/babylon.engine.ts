@@ -161,38 +161,6 @@
         }
     };
 
-    var partialLoadFile = (url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>,
-        onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var onload = (data: string | ArrayBuffer) => {
-            loadedFiles[index] = data;
-            (<any>loadedFiles)._internalCount++;
-
-            if ((<any>loadedFiles)._internalCount === 6) {
-                onfinish(loadedFiles);
-            }
-        };
-
-        const onerror = (request?: XMLHttpRequest, exception?: any) => {
-            if (onErrorCallBack && request) {
-                onErrorCallBack(request.status + " " + request.statusText, exception);
-            }
-        };
-
-        Tools.LoadFile(url, onload, undefined, undefined, true, onerror);
-    }
-
-    var cascadeLoadFiles = (rootUrl: string, scene: Nullable<Scene>,
-        onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null) => {
-
-        var loadedFiles: (string | ArrayBuffer)[] = [];
-        (<any>loadedFiles)._internalCount = 0;
-
-        for (let index = 0; index < 6; index++) {
-            partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
-        }
-    };
-
     class BufferPointer {
         public active: boolean;
         public index: number;
@@ -793,6 +761,8 @@
         private _frameHandler: number;
 
         private _nextFreeTextureSlots = new Array<number>();
+
+        private _activeRequests = new Array<IFileRequest>();
 
         // Hardware supported Compressed Textures
         private _texturesSupported = new Array<string>();
@@ -3161,7 +3131,7 @@
                 }
 
                 if (!buffer) {
-                    Tools.LoadFile(url, data => {
+                    this._loadFile(url, data => {
                         if (callback) {
                             callback(data);
                         }
@@ -4022,7 +3992,7 @@
             }
 
             if (isKTX) {
-                Tools.LoadFile(rootUrl, data => {
+                this._loadFile(rootUrl, data => {
                     var ktx = new Internals.KhronosTextureContainer(data, 6);
 
                     var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
@@ -4040,7 +4010,7 @@
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
                 if (files && files.length === 6) {
-                    cascadeLoadFiles(rootUrl,
+                    this._cascadeLoadFiles(rootUrl,
                         scene,
                         imgs => {
                             var info: Internals.DDSInfo | undefined;
@@ -4078,7 +4048,7 @@
                         onError);
 
                 } else {
-                    Tools.LoadFile(rootUrl,
+                    this._loadFile(rootUrl,
                         data => {
                             var info = Internals.DDSTools.GetDDSInfo(data);
 
@@ -4361,7 +4331,7 @@
                 }
             };
 
-            Tools.LoadFile(url, data => {
+            this._loadFile(url, data => {
                 internalCallback(data);
             }, undefined, scene.database, true, onerror);
 
@@ -5134,6 +5104,11 @@
             this.onEndFrameObservable.clear();
 
             Effect.ResetCache();
+
+            // Abort active requests
+            for (let request of this._activeRequests) {
+                request.abort();
+            }
         }
 
         // Loading screen
@@ -5556,6 +5531,43 @@
 
         public bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void {
             this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
+        }
+
+        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+            let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
+            this._activeRequests.push(request);
+            request.onCompleteObservable.add(request => {
+                this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+            });
+            return request;
+        }
+
+        private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>, onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
+            var onload = (data: string | ArrayBuffer) => {
+                loadedFiles[index] = data;
+                (<any>loadedFiles)._internalCount++;
+
+                if ((<any>loadedFiles)._internalCount === 6) {
+                    onfinish(loadedFiles);
+                }
+            };
+
+            const onerror = (request?: XMLHttpRequest, exception?: any) => {
+                if (onErrorCallBack && request) {
+                    onErrorCallBack(request.status + " " + request.statusText, exception);
+                }
+            };
+
+            this._loadFile(url, onload, undefined, undefined, true, onerror);
+        }
+
+        private _cascadeLoadFiles(rootUrl: string, scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+            var loadedFiles: (string | ArrayBuffer)[] = [];
+            (<any>loadedFiles)._internalCount = 0;
+
+            for (let index = 0; index < 6; index++) {
+                this._partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
+            }
         }
 
         // Statics

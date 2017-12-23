@@ -557,7 +557,7 @@
             }
 
             scene._addPendingData(this);
-            Tools.LoadFile(this.delayLoadingFile, data => {
+            scene._loadFile(this.delayLoadingFile, data => {
                 if (!this._delayLoadingFunction) {
                     return;
                 }
@@ -578,7 +578,7 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            }, undefined, true);
         }
 
         /**

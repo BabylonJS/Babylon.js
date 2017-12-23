@@ -30,6 +30,18 @@
         }
     }
 
+    export interface IFileRequest {
+        /**
+         * Raised when the request is complete (success or error).
+         */
+        onCompleteObservable: Observable<IFileRequest>;
+
+        /**
+         * Aborts the request for a file.
+         */
+        abort: () => void;
+    }
+
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
@@ -514,100 +526,141 @@
             return img;
         }
 
-        public static LoadFile(url: string, callback: (data: string | ArrayBuffer, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void, onRetry?: (oldRequest: XMLHttpRequest, newRequest: XMLHttpRequest) => void, retryStrategy: Nullable<(url: string, request: XMLHttpRequest, retryIndex: number) => number> = null): Nullable<XMLHttpRequest> {
+        public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
 
-            let request: Nullable<XMLHttpRequest> = null;
+            // If file and file input are set
+            if (url.indexOf("file:") !== -1) {
+                const fileName = decodeURIComponent(url.substring(5).toLowerCase());
+                if (FilesInput.FilesToLoad[fileName]) {
+                    return Tools.ReadFile(FilesInput.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
+                }
+            }
+
+            const loadUrl = Tools.BaseUrl + url;
+
             let aborted = false;
+            const fileRequest: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => aborted = true,
+            };
 
-            let noIndexedDB = (retryIndex?: number) => {
-                if (aborted) {
-                    return;
-                }
+            const requestFile = () => {
+                let request = new XMLHttpRequest();
+                let retryHandle: Nullable<number> = null;
 
-                let oldRequest = request;
-                request = new XMLHttpRequest();
-
-                let loadUrl = Tools.BaseUrl + url;
-                request.open('GET', loadUrl, true);
-
-                if (useArrayBuffer) {
-                    request.responseType = "arraybuffer";
-                }
-
-                if (progressCallBack) {
-                    request.onprogress = progressCallBack;
-                }
-
-                request.addEventListener("abort", () => {
+                fileRequest.abort = () => {
                     aborted = true;
-                });
 
-                let onreadystatechange = () => {
-                    let req = <XMLHttpRequest>request;
-                    // In case of undefined state in some browsers.
-                    if (req.readyState === (XMLHttpRequest.DONE || 4)) {
-                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
-                        req.removeEventListener("readystatechange", onreadystatechange);
+                    if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
+                        request.abort();
+                    }
 
-                        if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : <ArrayBuffer>req.response, req.responseURL);
-                            return;
-                        }
-
-                        retryStrategy = retryStrategy || Tools.DefaultRetryStrategy;
-                        if (retryStrategy) {
-                            let waitTime = retryStrategy(loadUrl, req, retryIndex || 0);
-                            if (waitTime !== -1) {
-                                setTimeout(() => noIndexedDB((retryIndex || 0) + 1), waitTime);
-                                return;
-                            }
-                        }
-
-                        let e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl);
-                        if (onError) {
-                            onError(req, e);
-                        } else {
-                            throw e;
-                        }
+                    if (retryHandle !== null) {
+                        clearTimeout(retryHandle);
+                        retryHandle = null;
                     }
                 };
 
-                request.addEventListener("readystatechange", onreadystatechange);
+                const retryLoop = (retryIndex: number) => {
+                    request.open('GET', loadUrl, true);
 
-                request.send();
+                    if (useArrayBuffer) {
+                        request.responseType = "arraybuffer";
+                    }
 
-                if (oldRequest && onRetry) {
-                    onRetry(oldRequest, request);
-                }
+                    if (onProgress) {
+                        request.addEventListener("progress", onProgress);
+                    }
+
+                    const onLoadEnd = () => {
+                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                    };
+
+                    request.addEventListener("loadend", onLoadEnd);
+
+                    const onReadyStateChange = () => {
+                        if (aborted) {
+                            return;
+                        }
+
+                        // In case of undefined state in some browsers.
+                        if (request.readyState === (XMLHttpRequest.DONE || 4)) {
+                            // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                            request.removeEventListener("readystatechange", onReadyStateChange);
+
+                            if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
+                                onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
+                                return;
+                            }
+
+                            let retryStrategy = Tools.DefaultRetryStrategy;
+                            if (retryStrategy) {
+                                let waitTime = retryStrategy(loadUrl, request, retryIndex);
+                                if (waitTime !== -1) {
+                                    // Prevent the request from completing for retry.
+                                    request.removeEventListener("loadend", onLoadEnd);
+                                    request = new XMLHttpRequest();
+                                    retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
+                                    return;
+                                }
+                            }
+
+                            let e = new LoadFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
+                            if (onError) {
+                                onError(request, e);
+                            } else {
+                                throw e;
+                            }
+                        }
+                    };
+
+                    request.addEventListener("readystatechange", onReadyStateChange);
+
+                    request.send();
+                };
+
+                retryLoop(0);
             };
-
-            let loadFromIndexedDB = () => {
-                if (database) {
-                    database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
-                }
-            };
-
-            // If file and file input are set
-            if (url.indexOf("file:") !== -1) {
-                let fileName = decodeURIComponent(url.substring(5).toLowerCase());
-                if (FilesInput.FilesToLoad[fileName]) {
-                    Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                    return request;
-                }
-            }
 
             // Caching all files
             if (database && database.enableSceneOffline) {
+                const noIndexedDB = () => {
+                    if (!aborted) {
+                        requestFile();
+                    }
+                };
+
+                const loadFromIndexedDB = () => {
+                    // TODO: database needs to support aborting and should return a IFileRequest
+                    if (aborted) {
+                        return;
+                    }
+
+                    if (database) {
+                        database.loadFileFromDB(url, data => {
+                            if (!aborted) {
+                                onSuccess(data);
+                            }
+
+                            fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        }, onProgress ? event => {
+                            if (!aborted) {
+                                onProgress(event);
+                            }
+                        } : undefined, noIndexedDB, useArrayBuffer);
+                    }
+                };
+
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                noIndexedDB();
+                requestFile();
             }
 
-            return request;
+            return fileRequest;
         }
 
         /** 
@@ -635,18 +688,38 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): void {
-            var reader = new FileReader();
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): IFileRequest {
+            let reader = new FileReader();
+
+            let request: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => reader.abort(),
+            };
+
+            reader.onloadend = e => {
+                request.onCompleteObservable.notifyObservers(request);
+            };
+
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
+
             reader.onprogress = progressCallback;
+
             reader.readAsDataURL(fileToLoad);
+
+            return request;
         }
 
-        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
-            var reader = new FileReader();
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
+            let reader = new FileReader();
+            let request: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => reader.abort(),
+            };
+
+            reader.onloadend = e => request.onCompleteObservable.notifyObservers(request);
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
@@ -655,7 +728,6 @@
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
-
             if (progressCallBack) {
                 reader.onprogress = progressCallBack;
             }
@@ -666,6 +738,8 @@
             else {
                 reader.readAsArrayBuffer(fileToLoad);
             }
+
+            return request;
         }
 
         //returns a downloadable url to a file content.
