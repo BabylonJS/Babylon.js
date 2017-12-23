@@ -226,14 +226,7 @@ gulp.task("build", ["shaders"], function () {
 /*
 * Compiles all typescript files and creating a js and a declaration file.
 */
-var alreadyCompiled = false;
-var forceCompile = false;
 gulp.task("typescript-compile", function () {
-    if (!forceCompile && alreadyCompiled) {
-        return;
-    }
-    alreadyCompiled = true;
-
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
@@ -495,11 +488,8 @@ gulp.task("srcTscWatch", function() {
  * Watch ts files and fire repective tasks.
  */
 gulp.task("watch", ["srcTscWatch"], function () {
-    forceCompile = true;
     var interval = 1000;
 
-    // Keep during Prod Tests of srcTscWatch.
-    // var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
     var tasks = [];
 
     config.modules.map(function (module) {
