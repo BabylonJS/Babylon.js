@@ -169,7 +169,14 @@ module BABYLON {
                 }
             }
 
-            Tools.LoadFile(this.url, callback);
+            let scene = this.getScene();
+            if (scene) {
+                scene._loadFile(this.url, callback);
+            }
+            else {
+                this._engine._loadFile(this.url, callback);
+            }
+
             return this._texture;
         }
 

@@ -870,6 +870,7 @@
         private _alternateProjectionUpdateFlag = -1;
 
         public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
+        private _activeRequests = new Array<IFileRequest>();
         private _pendingData = new Array();
         private _isDisposed = false;
 
@@ -3812,6 +3813,11 @@
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
 
+            // Abort active requests
+            for (let request of this._activeRequests) {
+                request.abort();
+            }
+
             // Debug layer
             if (this._debugLayer) {
                 this._debugLayer.hide();
@@ -4586,6 +4592,15 @@
                 }
                 material.markAsDirty(flag);
             }
+        }
+
+        public _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, useDatabase?: boolean, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
+            let request = Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
+            this._activeRequests.push(request);
+            request.onCompleteObservable.add(request => {
+                this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+            });
+            return request;
         }
     }
 }
