@@ -303,7 +303,7 @@
             }
 
             // Vertex shader
-            Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            this._engine._loadFile(vertexShaderUrl + ".vertex.fx", callback);
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
@@ -343,7 +343,7 @@
             }
 
             // Fragment shader
-            Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            this._engine._loadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
@@ -491,7 +491,7 @@
                 } else {
                     var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
+                    this._engine._loadFile(includeShaderUrl, (fileContent) => {
                         Effect.IncludesShadersStore[includeFile] = fileContent as string;
                         this._processIncludes(<string>returnValue, callback);
                     });
