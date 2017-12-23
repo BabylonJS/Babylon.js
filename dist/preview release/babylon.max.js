@@ -6214,83 +6214,115 @@ var BABYLON;
             }
             return img;
         };
-        Tools.LoadFile = function (url, callback, progressCallBack, database, useArrayBuffer, onError, onRetry, retryStrategy) {
-            if (retryStrategy === void 0) { retryStrategy = null; }
+        Tools.LoadFile = function (url, onSuccess, onProgress, database, useArrayBuffer, onError) {
             url = Tools.CleanUrl(url);
             url = Tools.PreprocessUrl(url);
-            var request = null;
-            var aborted = false;
-            var noIndexedDB = function (retryIndex) {
-                if (aborted) {
-                    return;
-                }
-                var oldRequest = request;
-                request = new XMLHttpRequest();
-                var loadUrl = Tools.BaseUrl + url;
-                request.open('GET', loadUrl, true);
-                if (useArrayBuffer) {
-                    request.responseType = "arraybuffer";
-                }
-                if (progressCallBack) {
-                    request.onprogress = progressCallBack;
-                }
-                request.addEventListener("abort", function () {
-                    aborted = true;
-                });
-                var onreadystatechange = function () {
-                    var req = request;
-                    // In case of undefined state in some browsers.
-                    if (req.readyState === (XMLHttpRequest.DONE || 4)) {
-                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
-                        req.removeEventListener("readystatechange", onreadystatechange);
-                        if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
-                            return;
-                        }
-                        retryStrategy = retryStrategy || Tools.DefaultRetryStrategy;
-                        if (retryStrategy) {
-                            var waitTime = retryStrategy(loadUrl, req, retryIndex || 0);
-                            if (waitTime !== -1) {
-                                setTimeout(function () { return noIndexedDB((retryIndex || 0) + 1); }, waitTime);
-                                return;
-                            }
-                        }
-                        var e = new LoadFileError("Error status: " + req.status + " - Unable to load " + loadUrl);
-                        if (onError) {
-                            onError(req, e);
-                        }
-                        else {
-                            throw e;
-                        }
-                    }
-                };
-                request.addEventListener("readystatechange", onreadystatechange);
-                request.send();
-                if (oldRequest && onRetry) {
-                    onRetry(oldRequest, request);
-                }
-            };
-            var loadFromIndexedDB = function () {
-                if (database) {
-                    database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
-                }
-            };
             // If file and file input are set
             if (url.indexOf("file:") !== -1) {
                 var fileName = decodeURIComponent(url.substring(5).toLowerCase());
                 if (BABYLON.FilesInput.FilesToLoad[fileName]) {
-                    Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                    return request;
+                    return Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
                 }
             }
+            var loadUrl = Tools.BaseUrl + url;
+            var aborted = false;
+            var fileRequest = {
+                onCompleteObservable: new BABYLON.Observable(),
+                abort: function () { return aborted = true; },
+            };
+            var requestFile = function () {
+                var request = new XMLHttpRequest();
+                var retryHandle = null;
+                fileRequest.abort = function () {
+                    aborted = true;
+                    if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
+                        request.abort();
+                    }
+                    if (retryHandle !== null) {
+                        clearTimeout(retryHandle);
+                        retryHandle = null;
+                    }
+                };
+                var retryLoop = function (retryIndex) {
+                    request.open('GET', loadUrl, true);
+                    if (useArrayBuffer) {
+                        request.responseType = "arraybuffer";
+                    }
+                    if (onProgress) {
+                        request.addEventListener("progress", onProgress);
+                    }
+                    var onLoadEnd = function () {
+                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                    };
+                    request.addEventListener("loadend", onLoadEnd);
+                    var onReadyStateChange = function () {
+                        if (aborted) {
+                            return;
+                        }
+                        // In case of undefined state in some browsers.
+                        if (request.readyState === (XMLHttpRequest.DONE || 4)) {
+                            // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                            request.removeEventListener("readystatechange", onReadyStateChange);
+                            if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
+                                onSuccess(!useArrayBuffer ? request.responseText : request.response, request.responseURL);
+                                return;
+                            }
+                            var retryStrategy = Tools.DefaultRetryStrategy;
+                            if (retryStrategy) {
+                                var waitTime = retryStrategy(loadUrl, request, retryIndex);
+                                if (waitTime !== -1) {
+                                    // Prevent the request from completing for retry.
+                                    request.removeEventListener("loadend", onLoadEnd);
+                                    request = new XMLHttpRequest();
+                                    retryHandle = setTimeout(function () { return retryLoop(retryIndex + 1); }, waitTime);
+                                    return;
+                                }
+                            }
+                            var e = new LoadFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
+                            if (onError) {
+                                onError(request, e);
+                            }
+                            else {
+                                throw e;
+                            }
+                        }
+                    };
+                    request.addEventListener("readystatechange", onReadyStateChange);
+                    request.send();
+                };
+                retryLoop(0);
+            };
             // Caching all files
             if (database && database.enableSceneOffline) {
-                database.openAsync(loadFromIndexedDB, noIndexedDB);
+                var noIndexedDB_1 = function () {
+                    if (!aborted) {
+                        requestFile();
+                    }
+                };
+                var loadFromIndexedDB = function () {
+                    // TODO: database needs to support aborting and should return a IFileRequest
+                    if (aborted) {
+                        return;
+                    }
+                    if (database) {
+                        database.loadFileFromDB(url, function (data) {
+                            if (!aborted) {
+                                onSuccess(data);
+                            }
+                            fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        }, onProgress ? function (event) {
+                            if (!aborted) {
+                                onProgress(event);
+                            }
+                        } : undefined, noIndexedDB_1, useArrayBuffer);
+                    }
+                };
+                database.openAsync(loadFromIndexedDB, noIndexedDB_1);
             }
             else {
-                noIndexedDB();
+                requestFile();
             }
-            return request;
+            return fileRequest;
         };
         /**
          * Load a script (identified by an url). When the url returns, the
@@ -6315,15 +6347,28 @@ var BABYLON;
         };
         Tools.ReadFileAsDataURL = function (fileToLoad, callback, progressCallback) {
             var reader = new FileReader();
+            var request = {
+                onCompleteObservable: new BABYLON.Observable(),
+                abort: function () { return reader.abort(); },
+            };
+            reader.onloadend = function (e) {
+                request.onCompleteObservable.notifyObservers(request);
+            };
             reader.onload = function (e) {
                 //target doesn't have result from ts 1.3
                 callback(e.target['result']);
             };
             reader.onprogress = progressCallback;
             reader.readAsDataURL(fileToLoad);
+            return request;
         };
         Tools.ReadFile = function (fileToLoad, callback, progressCallBack, useArrayBuffer) {
             var reader = new FileReader();
+            var request = {
+                onCompleteObservable: new BABYLON.Observable(),
+                abort: function () { return reader.abort(); },
+            };
+            reader.onloadend = function (e) { return request.onCompleteObservable.notifyObservers(request); };
             reader.onerror = function (e) {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
@@ -6342,6 +6387,7 @@ var BABYLON;
             else {
                 reader.readAsArrayBuffer(fileToLoad);
             }
+            return request;
         };
         //returns a downloadable url to a file content.
         Tools.FileAsURL = function (content) {
@@ -7962,30 +8008,6 @@ var BABYLON;
             partialLoadImg(files[index], index, loadedImages, scene, onfinish, onError);
         }
     };
-    var partialLoadFile = function (url, index, loadedFiles, scene, onfinish, onErrorCallBack) {
-        if (onErrorCallBack === void 0) { onErrorCallBack = null; }
-        var onload = function (data) {
-            loadedFiles[index] = data;
-            loadedFiles._internalCount++;
-            if (loadedFiles._internalCount === 6) {
-                onfinish(loadedFiles);
-            }
-        };
-        var onerror = function (request, exception) {
-            if (onErrorCallBack && request) {
-                onErrorCallBack(request.status + " " + request.statusText, exception);
-            }
-        };
-        BABYLON.Tools.LoadFile(url, onload, undefined, undefined, true, onerror);
-    };
-    var cascadeLoadFiles = function (rootUrl, scene, onfinish, files, onError) {
-        if (onError === void 0) { onError = null; }
-        var loadedFiles = [];
-        loadedFiles._internalCount = 0;
-        for (var index = 0; index < 6; index++) {
-            partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
-        }
-    };
     var BufferPointer = /** @class */ (function () {
         function BufferPointer() {
         }
@@ -8131,6 +8153,7 @@ var BABYLON;
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
             this._nextFreeTextureSlots = new Array();
+            this._activeRequests = new Array();
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
             this._onVRFullScreenTriggered = function () {
@@ -10534,7 +10557,7 @@ var BABYLON;
                     };
                 }
                 if (!buffer) {
-                    BABYLON.Tools.LoadFile(url, function (data) {
+                    this._loadFile(url, function (data) {
                         if (callback) {
                             callback(data);
                         }
@@ -11228,7 +11251,7 @@ var BABYLON;
                 }
             };
             if (isKTX) {
-                BABYLON.Tools.LoadFile(rootUrl, function (data) {
+                this._loadFile(rootUrl, function (data) {
                     var ktx = new BABYLON.Internals.KhronosTextureContainer(data, 6);
                     var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
                     _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -11242,7 +11265,7 @@ var BABYLON;
             }
             else if (isDDS) {
                 if (files && files.length === 6) {
-                    cascadeLoadFiles(rootUrl, scene, function (imgs) {
+                    this._cascadeLoadFiles(rootUrl, scene, function (imgs) {
                         var info;
                         var loadMipmap = false;
                         var width = 0;
@@ -11269,7 +11292,7 @@ var BABYLON;
                     }, files, onError);
                 }
                 else {
-                    BABYLON.Tools.LoadFile(rootUrl, function (data) {
+                    this._loadFile(rootUrl, function (data) {
                         var info = BABYLON.Internals.DDSTools.GetDDSInfo(data);
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
                         _this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -11494,7 +11517,7 @@ var BABYLON;
                     onLoad();
                 }
             };
-            BABYLON.Tools.LoadFile(url, function (data) {
+            this._loadFile(url, function (data) {
                 internalCallback(data);
             }, undefined, scene.database, true, onerror);
             return texture;
@@ -12139,6 +12162,11 @@ var BABYLON;
             this.onBeginFrameObservable.clear();
             this.onEndFrameObservable.clear();
             BABYLON.Effect.ResetCache();
+            // Abort active requests
+            for (var _i = 0, _a = this._activeRequests; _i < _a.length; _i++) {
+                var request = _a[_i];
+                request.abort();
+            }
         };
         // Loading screen
         Engine.prototype.displayLoadingUI = function () {
@@ -12499,6 +12527,39 @@ var BABYLON;
         };
         Engine.prototype.bindTransformFeedbackBuffer = function (value) {
             this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value);
+        };
+        Engine.prototype._loadFile = function (url, onSuccess, onProgress, database, useArrayBuffer, onError) {
+            var _this = this;
+            var request = BABYLON.Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
+            this._activeRequests.push(request);
+            request.onCompleteObservable.add(function (request) {
+                _this._activeRequests.splice(_this._activeRequests.indexOf(request), 1);
+            });
+            return request;
+        };
+        Engine.prototype._partialLoadFile = function (url, index, loadedFiles, scene, onfinish, onErrorCallBack) {
+            if (onErrorCallBack === void 0) { onErrorCallBack = null; }
+            var onload = function (data) {
+                loadedFiles[index] = data;
+                loadedFiles._internalCount++;
+                if (loadedFiles._internalCount === 6) {
+                    onfinish(loadedFiles);
+                }
+            };
+            var onerror = function (request, exception) {
+                if (onErrorCallBack && request) {
+                    onErrorCallBack(request.status + " " + request.statusText, exception);
+                }
+            };
+            this._loadFile(url, onload, undefined, undefined, true, onerror);
+        };
+        Engine.prototype._cascadeLoadFiles = function (rootUrl, scene, onfinish, files, onError) {
+            if (onError === void 0) { onError = null; }
+            var loadedFiles = [];
+            loadedFiles._internalCount = 0;
+            for (var index = 0; index < 6; index++) {
+                this._partialLoadFile(files[index], index, loadedFiles, scene, onfinish, onError);
+            }
         };
         // Statics
         Engine.isSupported = function () {
@@ -18506,6 +18567,7 @@ var BABYLON;
             this._alternateViewUpdateFlag = -1;
             this._alternateProjectionUpdateFlag = -1;
             this._toBeDisposed = new BABYLON.SmartArray(256);
+            this._activeRequests = new Array();
             this._pendingData = new Array();
             this._isDisposed = false;
             this._activeMeshes = new BABYLON.SmartArray(256);
@@ -21306,6 +21368,11 @@ var BABYLON;
             }
             this._meshesForIntersections.dispose();
             this._toBeDisposed.dispose();
+            // Abort active requests
+            for (var _i = 0, _a = this._activeRequests; _i < _a.length; _i++) {
+                var request = _a[_i];
+                request.abort();
+            }
             // Debug layer
             if (this._debugLayer) {
                 this._debugLayer.hide();
@@ -21955,6 +22022,15 @@ var BABYLON;
                 }
                 material.markAsDirty(flag);
             }
+        };
+        Scene.prototype._loadFile = function (url, onSuccess, onProgress, useDatabase, useArrayBuffer, onError) {
+            var _this = this;
+            var request = BABYLON.Tools.LoadFile(url, onSuccess, onProgress, useDatabase ? this.database : undefined, useArrayBuffer, onError);
+            this._activeRequests.push(request);
+            request.onCompleteObservable.add(function (request) {
+                _this._activeRequests.splice(_this._activeRequests.indexOf(request), 1);
+            });
+            return request;
         };
         // Statics
         Scene._FOGMODE_NONE = 0;
@@ -26926,7 +27002,7 @@ var BABYLON;
                 vertexShaderUrl = BABYLON.Engine.ShadersRepository + vertex;
             }
             // Vertex shader
-            BABYLON.Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            this._engine._loadFile(vertexShaderUrl + ".vertex.fx", callback);
         };
         Effect.prototype._loadFragmentShader = function (fragment, callback) {
             if (BABYLON.Tools.IsWindowObjectExist()) {
@@ -26960,7 +27036,7 @@ var BABYLON;
                 fragmentShaderUrl = BABYLON.Engine.ShadersRepository + fragment;
             }
             // Fragment shader
-            BABYLON.Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            this._engine._loadFile(fragmentShaderUrl + ".fragment.fx", callback);
         };
         Effect.prototype._dumpShadersSource = function (vertexCode, fragmentCode, defines) {
             // Rebuild shaders source code
@@ -27087,7 +27163,7 @@ var BABYLON;
                 }
                 else {
                     var includeShaderUrl = BABYLON.Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
-                    BABYLON.Tools.LoadFile(includeShaderUrl, function (fileContent) {
+                    this._engine._loadFile(includeShaderUrl, function (fileContent) {
                         Effect.IncludesShadersStore[includeFile] = fileContent;
                         _this._processIncludes(returnValue, callback);
                     });
@@ -31467,7 +31543,7 @@ var BABYLON;
                 return;
             }
             scene._addPendingData(this);
-            BABYLON.Tools.LoadFile(this.delayLoadingFile, function (data) {
+            scene._loadFile(this.delayLoadingFile, function (data) {
                 if (!_this._delayLoadingFunction) {
                     return;
                 }
@@ -31483,7 +31559,7 @@ var BABYLON;
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, function () { }, scene.database);
+            }, undefined, true);
         };
         /**
          * Invert the geometry to move from a right handed system to a left handed one.
@@ -33420,7 +33496,13 @@ var BABYLON;
                     engine.updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
                 }
             };
-            BABYLON.Tools.LoadFile(this.url, callback);
+            var scene = this.getScene();
+            if (scene) {
+                scene._loadFile(this.url, callback);
+            }
+            else {
+                this._engine._loadFile(this.url, callback);
+            }
             return this._texture;
         };
         /**
@@ -50332,7 +50414,7 @@ var BABYLON;
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        BABYLON.Tools.LoadFile(url, function (data) { _this._soundLoaded(data); }, undefined, this._scene.database, true);
+                                        this._scene._loadFile(url, function (data) { _this._soundLoaded(data); }, undefined, true, true);
                                     }
                                     else {
                                         this._htmlAudioElement = new Audio(url);
@@ -54092,7 +54174,7 @@ var BABYLON;
             }
             return null;
         };
-        SceneLoader._loadData = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
+        SceneLoader._loadData = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension) {
             var directLoad = SceneLoader._getDirectLoad(sceneFilename);
             var registeredPlugin = pluginExtension ? SceneLoader._getPluginForExtension(pluginExtension) : (directLoad ? SceneLoader._getPluginForDirectLoad(sceneFilename) : SceneLoader._getPluginForFilename(sceneFilename));
             var plugin;
@@ -54113,13 +54195,28 @@ var BABYLON;
                 scene.database = database;
                 onSuccess(plugin, data, responseURL);
             };
-            var manifestChecked = function (success) {
-                BABYLON.Tools.LoadFile(rootUrl + sceneFilename, dataCallback, onProgress ? function (event) {
+            var request = null;
+            var pluginDisposed = false;
+            var onDisposeObservable = plugin.onDisposeObservable;
+            if (onDisposeObservable) {
+                onDisposeObservable.add(function () {
+                    pluginDisposed = true;
+                    if (request) {
+                        request.abort();
+                        request = null;
+                    }
+                    onDispose();
+                });
+            }
+            var manifestChecked = function () {
+                if (pluginDisposed) {
+                    return;
+                }
+                var url = rootUrl + sceneFilename;
+                request = BABYLON.Tools.LoadFile(url, dataCallback, onProgress ? function (event) {
                     onProgress(SceneLoaderProgressEvent.FromProgressEvent(event));
                 } : undefined, database, useArrayBuffer, function (request, exception) {
-                    if (request) {
-                        onError(request.status + " " + request.statusText, exception);
-                    }
+                    onError("Failed to load scene." + (exception ? "" : " " + exception.message), exception);
                 });
             };
             if (directLoad) {
@@ -54132,16 +54229,16 @@ var BABYLON;
                     database = new BABYLON.Database(rootUrl + sceneFilename, manifestChecked);
                 }
                 else {
-                    manifestChecked(true);
+                    manifestChecked();
                 }
             }
             else {
                 var fileOrString = sceneFilename;
                 if (fileOrString.name) {
-                    BABYLON.Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
+                    request = BABYLON.Tools.ReadFile(fileOrString, dataCallback, onProgress, useArrayBuffer);
                 }
                 else if (BABYLON.FilesInput.FilesToLoad[sceneFilename]) {
-                    BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
+                    request = BABYLON.Tools.ReadFile(BABYLON.FilesInput.FilesToLoad[sceneFilename], dataCallback, onProgress, useArrayBuffer);
                 }
                 else {
                     onError("Unable to find file named " + sceneFilename);
@@ -54195,6 +54292,9 @@ var BABYLON;
             }
             var loadingToken = {};
             scene._addPendingData(loadingToken);
+            var disposeHandler = function () {
+                scene._removePendingData(loadingToken);
+            };
             var errorHandler = function (message, exception) {
                 var errorMessage = "Unable to import meshes from " + rootUrl + sceneFilename + ": " + message;
                 if (onError) {
@@ -54204,7 +54304,7 @@ var BABYLON;
                     BABYLON.Tools.Error(errorMessage);
                     // should the exception be thrown?
                 }
-                scene._removePendingData(loadingToken);
+                disposeHandler();
             };
             var progressHandler = onProgress ? function (event) {
                 try {
@@ -54248,7 +54348,7 @@ var BABYLON;
                         successHandler(meshes, particleSystems, skeletons);
                     }, progressHandler, errorHandler);
                 }
-            }, progressHandler, errorHandler, pluginExtension);
+            }, progressHandler, errorHandler, disposeHandler, pluginExtension);
         };
         /**
         * Load a scene
@@ -54289,6 +54389,10 @@ var BABYLON;
             }
             var loadingToken = {};
             scene._addPendingData(loadingToken);
+            var disposeHandler = function () {
+                scene._removePendingData(loadingToken);
+                scene.getEngine().hideLoadingUI();
+            };
             var errorHandler = function (message, exception) {
                 var errorMessage = "Unable to load from " + rootUrl + sceneFilename + (message ? ": " + message : "");
                 if (onError) {
@@ -54298,8 +54402,7 @@ var BABYLON;
                     BABYLON.Tools.Error(errorMessage);
                     // should the exception be thrown?
                 }
-                scene._removePendingData(loadingToken);
-                scene.getEngine().hideLoadingUI();
+                disposeHandler();
             };
             var progressHandler = onProgress ? function (event) {
                 try {
@@ -54341,7 +54444,7 @@ var BABYLON;
                         scene.getEngine().hideLoadingUI();
                     });
                 }
-            }, progressHandler, errorHandler, pluginExtension);
+            }, progressHandler, errorHandler, disposeHandler, pluginExtension);
         };
         // Flags
         SceneLoader._ForceFullSceneLoadingForIncremental = false;
@@ -76948,10 +77051,10 @@ var BABYLON;
         }
         TextFileAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
-            BABYLON.Tools.LoadFile(this.url, function (data) {
+            scene._loadFile(this.url, function (data) {
                 _this.text = data;
                 onSuccess();
-            }, undefined, scene.database, false, function (request, exception) {
+            }, undefined, false, true, function (request, exception) {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
@@ -76970,10 +77073,10 @@ var BABYLON;
         }
         BinaryFileAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
-            BABYLON.Tools.LoadFile(this.url, function (data) {
+            scene._loadFile(this.url, function (data) {
                 _this.data = data;
                 onSuccess();
-            }, undefined, scene.database, true, function (request, exception) {
+            }, undefined, true, true, function (request, exception) {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }

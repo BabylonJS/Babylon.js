@@ -29,18 +29,30 @@ declare module BABYLON {
         bin: Nullable<ArrayBufferView>;
     }
     interface IGLTFLoader extends IDisposable {
+        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        animationStartMode: GLTFLoaderAnimationStartMode;
+        compileMaterials: boolean;
+        useClipPlane: boolean;
+        compileShadowGenerators: boolean;
+        onDisposeObservable: Observable<IGLTFLoader>;
+        onMeshLoadedObservable: Observable<AbstractMesh>;
+        onTextureLoadedObservable: Observable<BaseTexture>;
+        onMaterialLoadedObservable: Observable<Material>;
+        onCompleteObservable: Observable<IGLTFLoader>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-        static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
-        static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
+        static CreateGLTFLoaderV1: () => IGLTFLoader;
+        static CreateGLTFLoaderV2: () => IGLTFLoader;
         /**
          * Raised when the asset has been parsed.
          * The data.json property stores the glTF JSON.
          * The data.bin property stores the BIN chunk from a glTF binary or null if the input is not a glTF binary.
          */
-        onParsed: (data: IGLTFLoaderData) => void;
+        onParsedObservable: Observable<IGLTFLoaderData>;
+        private _onParsedObserver;
+        onParsed: (loaderData: IGLTFLoaderData) => void;
         static IncrementalLoading: boolean;
         static HomogeneousCoordinates: boolean;
         /**
@@ -66,21 +78,35 @@ declare module BABYLON {
         /**
          * Raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
+        onMeshLoadedObservable: Observable<AbstractMesh>;
+        private _onMeshLoadedObserver;
         onMeshLoaded: (mesh: AbstractMesh) => void;
         /**
          * Raised when the loader creates a texture after parsing the glTF properties of the texture.
          */
-        onTextureLoaded: (texture: BaseTexture) => void;
+        onTextureLoadedObservable: Observable<BaseTexture>;
+        private _onTextureLoadedObserver;
+        onTextureLoaded: (Texture: BaseTexture) => void;
         /**
          * Raised when the loader creates a material after parsing the glTF properties of the material.
          */
-        onMaterialLoaded: (material: Material) => void;
+        onMaterialLoadedObservable: Observable<Material>;
+        private _onMaterialLoadedObserver;
+        onMaterialLoaded: (Material: Material) => void;
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after onSuccess.
          */
+        onCompleteObservable: Observable<GLTFFileLoader>;
+        private _onCompleteObserver;
         onComplete: () => void;
+        /**
+        * Raised when the loader is disposed.
+        */
+        onDisposeObservable: Observable<GLTFFileLoader>;
+        private _onDisposeObserver;
+        onDispose: () => void;
         private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
@@ -93,7 +119,7 @@ declare module BABYLON {
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        private static _parse(data);
+        private _parse(data);
         private _getLoader(loaderData);
         private static _parseBinary(data);
         private static _parseV1(binaryReader);
@@ -497,6 +523,16 @@ declare module BABYLON.GLTF1 {
             [name: string]: GLTFLoaderExtension;
         };
         static RegisterExtension(extension: GLTFLoaderExtension): void;
+        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        animationStartMode: GLTFLoaderAnimationStartMode;
+        compileMaterials: boolean;
+        useClipPlane: boolean;
+        compileShadowGenerators: boolean;
+        onDisposeObservable: Observable<IGLTFLoader>;
+        onMeshLoadedObservable: Observable<AbstractMesh>;
+        onTextureLoadedObservable: Observable<BaseTexture>;
+        onMaterialLoadedObservable: Observable<Material>;
+        onCompleteObservable: Observable<IGLTFLoader>;
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): boolean;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): void;
