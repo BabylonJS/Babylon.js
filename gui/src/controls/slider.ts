@@ -111,13 +111,13 @@ module BABYLON.GUI {
 
         public set value(value: number) {
             value = Math.max(Math.min(value, this._maximum), this._minimum);
+
             if (this._value === value) {
                 return;
             }
 
             this._value = value;
             this._markAsDirty();
-
             this.onValueChangedObservable.notifyObservers(this._value);
         }
 
@@ -173,9 +173,9 @@ module BABYLON.GUI {
                 }
 
 
-                var left = this._currentMeasure.left + effectiveThumbWidth / 2;
-                var width = this._currentMeasure.width - effectiveThumbWidth;
-                var thumbPosition = (this._value - this._minimum) / (this._maximum - this._minimum) * width;
+                var left = this._currentMeasure.left;
+                var width = this._currentMeasure.width;
+                var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * (width - effectiveThumbWidth);
 
                 // Bar
                 context.fillStyle = this._background;
@@ -188,7 +188,8 @@ module BABYLON.GUI {
                 }
 
                 context.fillStyle = this.color;
-                context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                     context.shadowColor = this.shadowColor;
@@ -200,7 +201,7 @@ module BABYLON.GUI {
                 // Thumb
                 if (this._isThumbCircle) {
                     context.beginPath();
-                    context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                    context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
                     context.fill();
 
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -213,7 +214,8 @@ module BABYLON.GUI {
                     context.stroke();
                 }
                 else {
-                    context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+
+                    context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
 
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowBlur = 0;
@@ -222,11 +224,13 @@ module BABYLON.GUI {
                     }
 
                     context.strokeStyle = this._borderColor;
-                    context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                 }
             }
             context.restore();
         }
+
+
 
         // Events
         private _pointerIsDown = false;
