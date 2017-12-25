@@ -61,7 +61,12 @@ module.exports = function (config) {
         logLevel: config.LOG_ERROR,
 
         sauceLabs: {
-            testName: 'Babylon JS Validation Tests'
+            testName: 'Babylon JS Validation Tests',
+            startConnect: false,
+            tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
+            build: process.env.TRAVIS_BUILD_NUMBER,
+            tags: [process.env.TRAVIS_BRANCH, process.env.TRAVIS_PULL_REQUEST],
+            public: 'public'
         },
         customLaunchers: launchers,
         browsers: ['sl_firefox'],
