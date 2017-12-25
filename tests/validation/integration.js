@@ -30,7 +30,7 @@ xhr.addEventListener("load", function () {
                 }
 
                 it(test.title, function(done) {
-                    this.timeout(180000);
+                    this.timeout(240000);
         
                     try {
                         runTest(index, function(result) {
