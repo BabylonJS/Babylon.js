@@ -1,3 +1,28 @@
+// sl_ie_11: {
+//     base: 'SauceLabs',
+//     browserName: 'internet explorer',
+//     platform: 'Windows 10',
+//     version: '11'
+// },
+// sl_android: {
+//     base: 'SauceLabs',
+//     browserName: 'Browser',
+//     platform: 'Android',
+//     version: '4.4',
+//     deviceName: 'Samsung Galaxy S3 Emulator',
+//     deviceOrientation: 'portrait'
+// }
+
+var launchers = {
+    sl_firefox: {
+      base: 'SauceLabs',
+      browserName: 'firefox',
+      platform: 'Windows 10',
+      version: '57',
+      tunnelIdentifier: ENV.TRAVIS_JOB_NUMBER
+    }
+};
+
 module.exports = function (config) {
     'use strict';
     config.set({
@@ -26,8 +51,6 @@ module.exports = function (config) {
             '/': '/base/'
         },
 
-        //reporters: ['progress'],
-
         port: 1338,
         colors: true,
         autoWatch: false,
@@ -37,36 +60,12 @@ module.exports = function (config) {
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_ERROR,
 
-        //browsers: ['Chrome'],
-
         sauceLabs: {
-            testName: 'Web App Unit Tests'
+            testName: 'Babylon JS Validation Tests'
         },
-        customLaunchers: {
-            sl_firefox: {
-              base: 'SauceLabs',
-              browserName: 'firefox',
-              platform: 'Windows 10',
-              version: '57'
-            },
-            sl_ie_11: {
-                base: 'SauceLabs',
-                browserName: 'internet explorer',
-                platform: 'Windows 10',
-                version: '11'
-            },
-            sl_android: {
-                base: 'SauceLabs',
-                browserName: 'Browser',
-                platform: 'Android',
-                version: '4.4',
-                deviceName: 'Samsung Galaxy S3 Emulator',
-                deviceOrientation: 'portrait'
-            }
-        },
+        customLaunchers: launchers,
         browsers: ['sl_firefox'],
         reporters: ['dots', 'saucelabs'],
         singleRun: true
-
     });
 };
