@@ -13,16 +13,6 @@
 //     deviceOrientation: 'portrait'
 // }
 
-var launchers = {
-    sl_firefox: {
-      base: 'SauceLabs',
-      browserName: 'firefox',
-      platform: 'Windows 10',
-      version: '57',
-      tunnelIdentifier: ENV.TRAVIS_JOB_NUMBER
-    }
-};
-
 module.exports = function (config) {
     'use strict';
     config.set({
@@ -68,7 +58,15 @@ module.exports = function (config) {
             tags: [process.env.TRAVIS_BRANCH, process.env.TRAVIS_PULL_REQUEST],
             public: 'public'
         },
-        customLaunchers: launchers,
+        customLaunchers: {
+            sl_firefox: {
+              base: 'SauceLabs',
+              browserName: 'firefox',
+              platform: 'Windows 10',
+              version: '57',
+              tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER
+            }
+        },
         browsers: ['sl_firefox'],
         reporters: ['dots', 'saucelabs'],
         singleRun: true
