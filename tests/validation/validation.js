@@ -145,7 +145,7 @@ function runTest(index, done) {
     var waitRing = document.createElement("img");
     waitRing.className = "waitRing";
     titleContainer.appendChild(waitRing);
-    waitRing.src = "/tests/integration/loading.gif";
+    waitRing.src = "/tests/validation/loading.gif";
 
     var resultCanvas = document.createElement("canvas");
     resultCanvas.className = "resultImage";
