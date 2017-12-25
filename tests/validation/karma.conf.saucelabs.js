@@ -13,7 +13,14 @@ module.exports = function (config) {
             './Tools/DevLoader/BabylonLoader.js',
             './tests/validation/index.css',
             './tests/validation/integration.js',
-            { pattern: '**/*', watched: false, included: false, served: true },
+            { pattern: 'dist/**/*', watched: false, included: false, served: true },
+            { pattern: 'assets/**/*', watched: false, included: false, served: true },
+            { pattern: 'tests/**/*', watched: false, included: false, served: true },
+            { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
+            { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
+            { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
+            { pattern: 'Tools/DevLoader/**/*', watched: false, included: false, served: true },            
+            { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
             '/': '/base/'

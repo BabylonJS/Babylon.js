@@ -163,7 +163,7 @@ function runTest(index, done) {
         resultContext.drawImage(img, 0, 0);
     }
 
-    img.src = "/tests/integration/ReferenceImages/" + test.referenceImage;
+    img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
 
     var renderImage = new Image();
     renderImage.className = "renderImage";
