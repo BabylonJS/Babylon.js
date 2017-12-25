@@ -76,16 +76,19 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
+function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
     var renderData = getRenderData(canvas, engine);
+    var testRes = true;
     if (!test.onlyVisual) {
 
         if (compare(renderData, resultCanvas)) {
             result.classList.add("failed");
             result.innerHTML = "×";
+            testRes = false;
             console.log('%c failed', 'color: red');
         } else {
             result.innerHTML = "✔";
+            testRes = true;
             console.log('%c validated', 'color: green');
         }
     }
@@ -95,12 +98,10 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
 
     currentScene.dispose();
 
-    if (!justOnce) {
-        runTest(index + 1);
-    }
+    done(testRes);
 }
 
-function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing) {
+function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.executeWhenReady(function () {
         var renderCount = test.renderCount || 1;
 
@@ -111,19 +112,16 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
             if (renderCount === 0) {
                 engine.stopRenderLoop();
-                evaluate(test, resultCanvas, result, renderImage, index, waitRing);
+                evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
             }
         });
 
     });
 }
 
-function
-
-
-runTest(index) {
+function runTest(index, done) {
     if (index >= config.tests.length) {
-        return;
+        done(false);
     }
 
     var test = config.tests[index];
@@ -147,7 +145,7 @@ runTest(index) {
     var waitRing = document.createElement("img");
     waitRing.className = "waitRing";
     titleContainer.appendChild(waitRing);
-    waitRing.src = "loading.gif";
+    waitRing.src = "/tests/integration/loading.gif";
 
     var resultCanvas = document.createElement("canvas");
     resultCanvas.className = "resultImage";
@@ -165,7 +163,7 @@ runTest(index) {
         resultContext.drawImage(img, 0, 0);
     }
 
-    img.src = "ReferenceImages/" + test.referenceImage;
+    img.src = "/tests/integration/ReferenceImages/" + test.referenceImage;
 
     var renderImage = new Image();
     renderImage.className = "renderImage";
@@ -176,12 +174,12 @@ runTest(index) {
     if (test.sceneFolder) {
         BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function (newScene) {
             currentScene = newScene;
-            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
+            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
         });
     }
     else if (test.playgroundId) {
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
-        var pgRoot = "/playground"
+        var pgRoot = "/Playground"
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
@@ -194,7 +192,7 @@ runTest(index) {
                     code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
 
                     currentScene = eval(code + "\r\ncreateScene(engine)");
-                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
+                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
                 }
             }
         }
@@ -238,7 +236,7 @@ runTest(index) {
                 }
 
                 currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
-                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
+                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
             }
         };
 
@@ -256,31 +254,3 @@ canvas.className = "renderCanvas";
 document.body.appendChild(canvas);
 engine = new BABYLON.Engine(canvas, false);
 engine.setDitheringState(false);
-
-// Loading tests
-var xhr = new XMLHttpRequest();
-
-xhr.open("GET", "config.json", true);
-
-xhr.addEventListener("load", function () {
-    if (xhr.status === 200) {
-
-        config = JSON.parse(xhr.responseText);
-
-        // Run tests
-        var index = 0;
-        if (window.location.search) {
-            justOnce = true;
-            var title = window.location.search.replace("?", "").replace(/%20/g, " ");
-            for (var index = 0; index < config.tests.length; index++) {
-                if (config.tests[index].title === title) {
-                    break;
-                }
-            }
-        }
-        runTest(index);
-
-    }
-}, false);
-
-xhr.send();
