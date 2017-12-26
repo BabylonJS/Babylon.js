@@ -1106,7 +1106,7 @@
             // Caps
             this._caps = new EngineCapabilities();
             this._caps.maxTexturesImageUnits = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
-            this._caps.maxCombinedTexturesImageUnits = this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);            
+            this._caps.maxCombinedTexturesImageUnits = this._gl.getParameter(this._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
             this._caps.maxVertexTextureImageUnits = this._gl.getParameter(this._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
             this._caps.maxTextureSize = this._gl.getParameter(this._gl.MAX_TEXTURE_SIZE);
             this._caps.maxCubemapTextureSize = this._gl.getParameter(this._gl.MAX_CUBE_MAP_TEXTURE_SIZE);
@@ -2958,12 +2958,11 @@
                 this._alphaState.reset();
             }
 
-            this._cachedVertexBuffers = null;
+            this._resetVertexBufferBinding();
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
             this._unbindVertexArrayObject();
             this.bindIndexBuffer(null);
-            this.bindArrayBuffer(null);
         }
 
         /**
@@ -3391,7 +3390,7 @@
             if (!texture) {
                 return;
             }
-            
+
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY ? 1 : 0);
             if (premulAlpha) {
