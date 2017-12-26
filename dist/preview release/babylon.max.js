@@ -10399,12 +10399,11 @@ var BABYLON;
                 this.setDepthFunctionToLessOrEqual();
                 this._alphaState.reset();
             }
-            this._cachedVertexBuffers = null;
+            this._resetVertexBufferBinding();
             this._cachedIndexBuffer = null;
             this._cachedEffectForVertexBuffers = null;
             this._unbindVertexArrayObject();
             this.bindIndexBuffer(null);
-            this.bindArrayBuffer(null);
         };
         /**
          * Set the compressed texture format to use, based on the formats you have, and the formats
