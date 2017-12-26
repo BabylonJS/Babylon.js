@@ -36,25 +36,25 @@
       "title": "Retail",
       "sceneFolder": "/Scenes/Retail/",
       "sceneFilename": "Retail.babylon",
-      "referenceImage": "Retail.png"
+      "referenceImage": "retail.png"
     },
     {
       "title": "Hill Valley",
       "sceneFolder": "/Scenes/hillvalley/",
       "sceneFilename": "HillValley.incremental.babylon",
-      "referenceImage": "HillValley.png"
+      "referenceImage": "Hillvalley.png"
     },
     {
       "title": "Heart",
       "sceneFolder": "/Scenes/Heart/",
       "sceneFilename": "Heart.babylon",
-      "referenceImage": "heart.png"
+      "referenceImage": "Heart.png"
     },
     {
       "title": "Mansion",
       "sceneFolder": "/Scenes/Mansion/",
       "sceneFilename": "Mansion.babylon",
-      "referenceImage": "Mansion.png"
+      "referenceImage": "mansion.png"
     },
     {
       "title": "SpaceDeK",
@@ -241,7 +241,8 @@
       "renderCount": 20,
       "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
       "functionToCall": "createScene",
-      "referenceImage": "gltf1CesiumMan.png"
+      "referenceImage": "gltf1CesiumMan.png",
+      "onlyVisual": true
     },
     {
       "title": "GLTF Mesh Primitive Attribute Test",
@@ -263,13 +264,14 @@
       "renderCount": 20,
       "scriptToRun": "/Demos/PBRRough/index.js",
       "functionToCall": "CreatePBRRoughScene",
-      "referenceImage": "PBRRough.png"
+      "referenceImage": "pbrrough.png"
     },
     {
       "title": "GLTF LOD",
       "renderCount": 500,
       "playgroundId": "#TC80RU#41",
-      "referenceImage": "GLTF LOD.png"
+      "referenceImage": "GLTF LOD.png",
+      "onlyVisual": true
     },
     {
       "title": "Reflection probes",
@@ -336,7 +338,8 @@
       "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
       "functionToCall": "CreateProceduralTextureTestScene",
       "referenceImage": "procedural.png",
-      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
+      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
+      "onlyVisual": true
     },
     {
       "title": "Water material (only visual check)",
