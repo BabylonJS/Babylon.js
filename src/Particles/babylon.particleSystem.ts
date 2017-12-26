@@ -169,34 +169,44 @@
             else if (this._emitterType === ParticleSystem.EMITTERTYPE_SPHERE) {
                 // Sphere behavior
                 this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-                    Vector3.TransformNormalFromFloatsToRef(particle.position.x * emitPower, particle.position.y * emitPower, particle.position.z * emitPower, worldMatrix, directionToUpdate);
+
+                    var emiiterPos = worldMatrix.getTranslation();
+                    var direction = particle.position.subtract(emiiterPos);
+                    
+                    Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
                 }
 
                 this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
                     var s = randomNumber(0, 360) * Math.PI / 180;
                     var t = randomNumber(0, 360) * Math.PI / 180;
                     var randX = this.redius * Math.cos(s) * Math.sin(t);
-                    var randY = this.redius * Math.sin(s) * Math.sin(t);
-                    var randZ = this.redius * Math.cos(t);
+                    var randY = this.redius * Math.cos(t);
+                    var randZ = this.redius * Math.sin(s) * Math.sin(t);
 
                     Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
                 }
             }
             else if (this._emitterType === ParticleSystem.EMITTERTYPE_CONE) {
-                // cone
                 this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-                    Vector3.TransformNormalFromFloatsToRef(particle.position.x * emitPower, particle.position.y * emitPower, particle.position.z * emitPower, worldMatrix, directionToUpdate);
+
+                    var s = randomNumber(0, 360) * Math.PI / 180;
+                    var t = randomNumber(this.coneAngle, this.coneAngle + 90) * Math.PI / 180;
+                    var redius = randomNumber(0, this.redius);
+                    var randX = redius * Math.cos(s) * Math.sin(t);
+                    var randY = redius * Math.cos(t);
+                    var randZ = redius * Math.sin(s) * Math.sin(t);
+
+
+                    Vector3.TransformNormalFromFloatsToRef(randX * emitPower, emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
                 }
 
                 this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var s = this.coneAngle * Math.PI / 180;
-                    var t = randomNumber(0, 360) * Math.PI / 180;
+                    var s = randomNumber(0, 360) * Math.PI / 180;
                     var redius = randomNumber(0, this.redius);
-                    var randX = redius * Math.cos(s) * Math.sin(t);
-                    var randY = redius * Math.sin(s) * Math.sin(t);
-                    var randZ = redius * Math.cos(t);
+                    var randX = redius * Math.sin(s);
+                    var randZ = redius * Math.cos(s);
 
-                    Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                    Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
                 }
             }
         }
@@ -397,14 +407,14 @@
 
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
 
+                this.startPositionFunction(worldMatrix, particle.position, particle);
+
                 this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
 
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
 
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
-
-                this.startPositionFunction(worldMatrix, particle.position, particle);
 
                 var step = randomNumber(0, 1.0);
 
