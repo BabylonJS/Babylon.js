@@ -63,13 +63,13 @@ module BABYLON {
             var samplingModes = [];
 
             for (var i = 0; i < count; i++) {
-                if (options.types && options.types[i]) {
+                if (options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 } else {
-                    types.push(Engine.TEXTURETYPE_FLOAT);
+                    types.push(Engine.TEXTURETYPE_UNSIGNED_INT);
                 }
 
-                if (options.samplingModes && options.samplingModes[i]) {
+                if (options.samplingModes && options.samplingModes[i] !== undefined) {
                     samplingModes.push(options.samplingModes[i]);
                 } else {
                     samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
@@ -132,15 +132,19 @@ module BABYLON {
                 return;
             }
 
-            for (var i = 0; i < this._internalTextures.length; i++) {
-                this._samples = this._engine.updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
-            }
+            this._samples = this._engine.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
         }
 
         public resize(size: any) {
             this.releaseInternalTextures();
             this._internalTextures = this._engine.createMultipleRenderTarget(size, this._multiRenderTargetOptions);
             this._createInternalTextures();
+        }
+
+        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+            engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, () => {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
         }
 
         public dispose(): void {
