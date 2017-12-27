@@ -141,9 +141,25 @@
         // end of sheet animation
 
         // Emitter Type
-        public defaultDirection = false;
+
+        /**
+         * This bool is used to specify whether to use the default sphere calculated direction or to calculate the direction using direction1 and direction2 properties.
+         * Used with Sphere emitter only.
+         */
+        public isSphereDefaultDirection = true;
+
+        /**
+         * The redus of the sphere or the cone
+         * Used with Sphere and Cone emitters.
+         */
         public redius = 1;
-        public coneAngle = 45;
+
+        /**
+        * The angle of the cone \_/, it is specified with Radian and calculated based on the Z axis. default value is PI/4 or 45 Degrees.
+        * Used with Cone emitter Only.
+        */
+        public coneAngle = Math.PI / 4;
+
         private _emitterType = ParticleSystem.EMITTERTYPE_BOX;
         public get emitterType(): number {
             return this._emitterType;
@@ -171,7 +187,7 @@
                 // Sphere behavior
                 this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
 
-                    if (this.defaultDirection) {
+                    if (this.isSphereDefaultDirection) {
                         // measure the direction Vector from the emitter to the particle.
                         var direction = particle.position.subtract(worldMatrix.getTranslation());
 
@@ -187,8 +203,8 @@
                 }
 
                 this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var phi = randomNumber(0, 360) * Math.PI / 180;
-                    var theta = randomNumber(0, 180) * Math.PI / 180;
+                    var phi = randomNumber(0, 2 * Math.PI);
+                    var theta = randomNumber(0, Math.PI);
                     var randX = this.redius * Math.cos(phi) * Math.sin(theta);
                     var randY = this.redius * Math.cos(theta);
                     var randZ = this.redius * Math.sin(phi) * Math.sin(theta);
@@ -199,20 +215,21 @@
             else if (this._emitterType === ParticleSystem.EMITTERTYPE_CONE) {
                 this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
 
-                    var phi = randomNumber(0, 360) * Math.PI / 180;
-                    var theta = this.coneAngle * Math.PI / 180;
+                    var phi = randomNumber(0, Math.PI * 2);
+                    var theta = randomNumber(0, this.coneAngle);
 
                     var randX = Math.cos(phi) * Math.sin(theta);
                     var randY = Math.cos(theta);
                     var randZ = Math.sin(phi) * Math.sin(theta);
 
+                    // get the direction vector between the new random point with angle and the particle.
                     var direction = new Vector3(randX, randY, randZ).subtract(particle.position);
 
                     Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
                 }
 
                 this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var s = randomNumber(0, 360) * Math.PI / 180;
+                    var s = randomNumber(0, Math.PI * 2);
                     var redius = randomNumber(0, this.redius);
                     var randX = redius * Math.sin(s);
                     var randZ = redius * Math.cos(s);
