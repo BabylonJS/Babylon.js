@@ -8989,7 +8989,7 @@ var BABYLON;
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
             // Texture maps
-            for (var slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         };
@@ -9029,7 +9029,7 @@ var BABYLON;
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (var slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
             this._activeChannel = -1;
@@ -9506,6 +9506,51 @@ var BABYLON;
                 if (texture._MSAAFramebuffer) {
                     // Bind the correct framebuffer
                     this.bindUnboundFramebuffer(texture._framebuffer);
+                }
+                onBeforeUnbind();
+            }
+            this.bindUnboundFramebuffer(null);
+        };
+        Engine.prototype.unBindMultiColorAttachmentFramebuffer = function (textures, disableGenerateMipMaps, onBeforeUnbind) {
+            if (disableGenerateMipMaps === void 0) { disableGenerateMipMaps = false; }
+            this._currentRenderTarget = null;
+            // If MSAA, we need to bitblt back to main texture
+            var gl = this._gl;
+            if (textures[0]._MSAAFramebuffer) {
+                gl.bindFramebuffer(gl.READ_FRAMEBUFFER, textures[0]._MSAAFramebuffer);
+                gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
+                var attachments = textures[0]._attachments;
+                if (!attachments) {
+                    attachments = new Array(textures.length);
+                    textures[0]._attachments = attachments;
+                }
+                for (var i = 0; i < textures.length; i++) {
+                    var texture = textures[i];
+                    for (var j = 0; j < attachments.length; j++) {
+                        attachments[j] = gl.NONE;
+                    }
+                    attachments[i] = gl[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+                    gl.readBuffer(attachments[i]);
+                    gl.drawBuffers(attachments);
+                    gl.blitFramebuffer(0, 0, texture.width, texture.height, 0, 0, texture.width, texture.height, gl.COLOR_BUFFER_BIT, gl.NEAREST);
+                }
+                for (var i = 0; i < attachments.length; i++) {
+                    attachments[i] = gl[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+                }
+                gl.drawBuffers(attachments);
+            }
+            for (var i = 0; i < textures.length; i++) {
+                var texture = textures[i];
+                if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+                    this._bindTextureDirectly(gl.TEXTURE_2D, texture);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                    this._bindTextureDirectly(gl.TEXTURE_2D, null);
+                }
+            }
+            if (onBeforeUnbind) {
+                if (textures[0]._MSAAFramebuffer) {
+                    // Bind the correct framebuffer
+                    this.bindUnboundFramebuffer(textures[0]._framebuffer);
                 }
                 onBeforeUnbind();
             }
@@ -10987,6 +11032,7 @@ var BABYLON;
                 texture.type = type;
                 texture._generateDepthBuffer = generateDepthBuffer;
                 texture._generateStencilBuffer = generateStencilBuffer;
+                texture._attachments = attachments;
                 this._internalTexturesCache.push(texture);
             }
             if (generateDepthTexture && this._caps.depthTextureExtension) {
@@ -11061,12 +11107,15 @@ var BABYLON;
             // Dispose previous render buffers
             if (texture._depthStencilBuffer) {
                 gl.deleteRenderbuffer(texture._depthStencilBuffer);
+                texture._depthStencilBuffer = null;
             }
             if (texture._MSAAFramebuffer) {
                 gl.deleteFramebuffer(texture._MSAAFramebuffer);
+                texture._MSAAFramebuffer = null;
             }
             if (texture._MSAARenderBuffer) {
                 gl.deleteRenderbuffer(texture._MSAARenderBuffer);
+                texture._MSAARenderBuffer = null;
             }
             if (samples > 1) {
                 var framebuffer = gl.createFramebuffer();
@@ -11090,6 +11139,63 @@ var BABYLON;
             texture.samples = samples;
             texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
             gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            this.bindUnboundFramebuffer(null);
+            return samples;
+        };
+        Engine.prototype.updateMultipleRenderTargetTextureSampleCount = function (textures, samples) {
+            if (this.webGLVersion < 2 || !textures || textures.length == 0) {
+                return 1;
+            }
+            if (textures[0].samples === samples) {
+                return samples;
+            }
+            var gl = this._gl;
+            samples = Math.min(samples, gl.getParameter(gl.MAX_SAMPLES));
+            // Dispose previous render buffers
+            if (textures[0]._depthStencilBuffer) {
+                gl.deleteRenderbuffer(textures[0]._depthStencilBuffer);
+                textures[0]._depthStencilBuffer = null;
+            }
+            if (textures[0]._MSAAFramebuffer) {
+                gl.deleteFramebuffer(textures[0]._MSAAFramebuffer);
+                textures[0]._MSAAFramebuffer = null;
+            }
+            for (var i = 0; i < textures.length; i++) {
+                if (textures[i]._MSAARenderBuffer) {
+                    gl.deleteRenderbuffer(textures[i]._MSAARenderBuffer);
+                    textures[i]._MSAARenderBuffer = null;
+                }
+            }
+            if (samples > 1) {
+                var framebuffer = gl.createFramebuffer();
+                if (!framebuffer) {
+                    throw new Error("Unable to create multi sampled framebuffer");
+                }
+                this.bindUnboundFramebuffer(framebuffer);
+                var depthStencilBuffer = this._setupFramebufferDepthAttachments(textures[0]._generateStencilBuffer, textures[0]._generateDepthBuffer, textures[0].width, textures[0].height, samples);
+                var attachments = [];
+                for (var i = 0; i < textures.length; i++) {
+                    var texture = textures[i];
+                    var attachment = gl[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
+                    var colorRenderbuffer = gl.createRenderbuffer();
+                    if (!colorRenderbuffer) {
+                        throw new Error("Unable to create multi sampled framebuffer");
+                    }
+                    gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
+                    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, colorRenderbuffer);
+                    texture._MSAAFramebuffer = framebuffer;
+                    texture._MSAARenderBuffer = colorRenderbuffer;
+                    texture.samples = samples;
+                    texture._depthStencilBuffer = depthStencilBuffer;
+                    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+                    attachments.push(attachment);
+                }
+                gl.drawBuffers(attachments);
+            }
+            else {
+                this.bindUnboundFramebuffer(textures[0]._framebuffer);
+            }
             this.bindUnboundFramebuffer(null);
             return samples;
         };
@@ -11776,7 +11882,7 @@ var BABYLON;
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         };
         Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
+            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
                 this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -51741,8 +51847,16 @@ var BABYLON;
             // Ensure we don't exceed the render dimension (while staying POT)
             return Math.min(BABYLON.Tools.FloorPOT(renderDimension), curved);
         };
-        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
+        RenderTargetTexture.prototype.unbindFrameBuffer = function (engine, faceIndex) {
             var _this = this;
+            if (!this._texture) {
+                return;
+            }
+            engine.unBindFramebuffer(this._texture, this.isCube, function () {
+                _this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
+        };
+        RenderTargetTexture.prototype.renderToTarget = function (faceIndex, currentRenderList, currentRenderListLength, useCameraPostProcess, dumpForDebug) {
             var scene = this.getScene();
             if (!scene) {
                 return;
@@ -51793,9 +51907,7 @@ var BABYLON;
                         engine.generateMipMapsForCubemap(this._texture);
                     }
                 }
-                engine.unBindFramebuffer(this._texture, this.isCube, function () {
-                    _this.onAfterRenderObservable.notifyObservers(faceIndex);
-                });
+                this.unbindFrameBuffer(engine, faceIndex);
             }
             else {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
@@ -51928,13 +52040,13 @@ var BABYLON;
             var types = [];
             var samplingModes = [];
             for (var i = 0; i < count; i++) {
-                if (options.types && options.types[i]) {
+                if (options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 }
                 else {
-                    types.push(BABYLON.Engine.TEXTURETYPE_FLOAT);
+                    types.push(BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
                 }
-                if (options.samplingModes && options.samplingModes[i]) {
+                if (options.samplingModes && options.samplingModes[i] !== undefined) {
                     samplingModes.push(options.samplingModes[i]);
                 }
                 else {
@@ -52031,9 +52143,7 @@ var BABYLON;
                 if (this._samples === value) {
                     return;
                 }
-                for (var i = 0; i < this._internalTextures.length; i++) {
-                    this._samples = this._engine.updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
-                }
+                this._samples = this._engine.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
             },
             enumerable: true,
             configurable: true
@@ -52042,6 +52152,12 @@ var BABYLON;
             this.releaseInternalTextures();
             this._internalTextures = this._engine.createMultipleRenderTarget(size, this._multiRenderTargetOptions);
             this._createInternalTextures();
+        };
+        MultiRenderTarget.prototype.unbindFrameBuffer = function (engine, faceIndex) {
+            var _this = this;
+            engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, function () {
+                _this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
         };
         MultiRenderTarget.prototype.dispose = function () {
             this.releaseInternalTextures();
@@ -61536,6 +61652,16 @@ var BABYLON;
         GeometryBufferRenderer.prototype.getGBuffer = function () {
             return this._multiRenderTarget;
         };
+        Object.defineProperty(GeometryBufferRenderer.prototype, "samples", {
+            get: function () {
+                return this._multiRenderTarget.samples;
+            },
+            set: function (value) {
+                this._multiRenderTarget.samples = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         // Methods
         GeometryBufferRenderer.prototype.dispose = function () {
             this.getGBuffer().dispose();
