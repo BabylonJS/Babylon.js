@@ -47,6 +47,7 @@ module BABYLON {
         public _depthStencilBuffer: Nullable<WebGLRenderbuffer>;
         public _MSAAFramebuffer: Nullable<WebGLFramebuffer>;
         public _MSAARenderBuffer: Nullable<WebGLRenderbuffer>;
+        public _attachments: Nullable<number[]>;
         public _cachedCoordinatesMode: Nullable<number>;
         public _cachedWrapU: Nullable<number>;
         public _cachedWrapV: Nullable<number>;
