@@ -12,7 +12,7 @@ module BABYLON {
         touched: boolean;
         pressed: boolean;
     }
-    
+
     export interface ExtendedGamepadButton extends GamepadButton {
         readonly pressed: boolean;
         readonly touched: boolean;
@@ -64,7 +64,7 @@ module BABYLON {
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
-        
+
         public _deviceToWorld = Matrix.Identity();
 
         constructor(browserGamepad: any) {
@@ -89,7 +89,7 @@ module BABYLON {
             this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
             this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation)
-            
+
             if (this._mesh) {
                 this._mesh.position.copyFrom(this.devicePosition);
 
@@ -166,18 +166,18 @@ module BABYLON {
 
         public getForwardRay(length = 100): Ray {
             if (!this.mesh) {
-                return new Ray(Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+                return new Ray(Vector3.Zero(), new Vector3(0, 0, 1), length);
             }
 
             var m = this.mesh.getWorldMatrix();
             var origin = m.getTranslation();
 
-            var forward = new BABYLON.Vector3(0, 0, -1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var forward = new Vector3(0, 0, -1);
+            var forwardWorld = Vector3.TransformNormal(forward, m);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);            
+            var direction = Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
-        } 
+        }
     }
 }

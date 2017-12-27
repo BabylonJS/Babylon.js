@@ -1304,7 +1304,7 @@
                 return this;
             }
 
-            this._effectiveMaterial = material
+            this._effectiveMaterial = material;
 
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
@@ -1338,7 +1338,15 @@
                 return this;
             }
 
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
+            var sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (this._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
+            }
+
+            var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
 
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
@@ -2478,7 +2486,7 @@
 
             // Physics
             if (parsedMesh.physicsImpostor) {
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
+                mesh.physicsImpostor = new PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,
                     friction: parsedMesh.physicsFriction,
                     restitution: parsedMesh.physicsRestitution
@@ -3256,7 +3264,7 @@
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         public static Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3 {
-            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 
@@ -3341,7 +3349,7 @@
 
                 //-- aplique la subdivision en fonction du tableau d'indices
                 while (index < indiceArray.length) {
-                    BABYLON.SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                    SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
                     offset += indiceArray[index];
                     index++;
                 }

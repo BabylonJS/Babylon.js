@@ -272,7 +272,7 @@
 
             var i = 0;
             while (i < numSamples) {
-                vector = new BABYLON.Vector3(
+                vector = new Vector3(
                     rand(-1.0, 1.0),
                     rand(-1.0, 1.0),
                     rand(0.30, 1.0));

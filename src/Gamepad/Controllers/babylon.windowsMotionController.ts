@@ -154,12 +154,12 @@ module BABYLON {
                 return;
             }
 
-            BABYLON.Quaternion.SlerpToRef(
+            Quaternion.SlerpToRef(
                 meshInfo.unpressed.rotationQuaternion,
                 meshInfo.pressed.rotationQuaternion,
                 buttonValue,
                 meshInfo.value.rotationQuaternion);
-            BABYLON.Vector3.LerpToRef(
+            Vector3.LerpToRef(
                 meshInfo.unpressed.position,
                 meshInfo.pressed.position,
                 buttonValue,
@@ -182,12 +182,12 @@ module BABYLON {
 
             // Convert from gamepad value range (-1 to +1) to lerp range (0 to 1)
             let lerpValue = axisValue * 0.5 + 0.5;
-            BABYLON.Quaternion.SlerpToRef(
+            Quaternion.SlerpToRef(
                 meshInfo.min.rotationQuaternion,
                 meshInfo.max.rotationQuaternion,
                 lerpValue,
                 meshInfo.value.rotationQuaternion);
-            BABYLON.Vector3.LerpToRef(
+            Vector3.LerpToRef(
                 meshInfo.min.position,
                 meshInfo.max.position,
                 lerpValue,
@@ -204,7 +204,7 @@ module BABYLON {
             let filename: string;
 
             // Checking if GLB loader is present
-            if (SceneLoader.IsPluginForExtensionAvailable("glb")) {
+            if (SceneLoader.IsPluginForExtensionAvailable(".glb")) {
                 // Determine the device specific folder based on the ID suffix
                 let device = 'default';
                 if (this.id && !forceDefault) {
@@ -263,7 +263,7 @@ module BABYLON {
             let loadedMeshInfo = null;
 
             // Create a new mesh to contain the glTF hierarchy
-            let parentMesh = new BABYLON.Mesh(this.id + " " + this.hand, scene);
+            let parentMesh = new Mesh(this.id + " " + this.hand, scene);
 
             // Find the root node in the loaded glTF scene, and attach it as a child of 'parentMesh'
             let childMesh: Nullable<AbstractMesh> = null;
@@ -391,10 +391,10 @@ module BABYLON {
             var m = this._loadedMeshInfo.pointingPoseNode.getWorldMatrix();
             var origin = m.getTranslation();
 
-            var forward = new BABYLON.Vector3(0, 0, -1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var forward = new Vector3(0, 0, -1);
+            var forwardWorld = Vector3.TransformNormal(forward, m);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            var direction = Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
         }

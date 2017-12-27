@@ -332,6 +332,7 @@
         "animations": {
             "files": [
                 "../../src/Animations/babylon.animation.js",
+                "../../src/Animations/babylon.animationGroup.js",
                 "../../src/Animations/babylon.runtimeAnimation.js",
                 "../../src/Animations/babylon.animatable.js",
                 "../../src/Animations/babylon.easing.js"
@@ -1548,6 +1549,12 @@
                     "../../serializers/src/OBJ/babylon.objSerializer.ts"
                 ],
                 "output": "babylon.objSerializer.js"
+            },
+            {
+                "files": [
+                    "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts"
+                ],
+                "output": "babylon.glTF2Serializer.js"
             }
         ],
         "build": {

@@ -514,6 +514,7 @@ declare module BABYLON.GUI {
         private _textVerticalAlignment;
         private _lines;
         private _resizeToFit;
+        private _lineSpacing;
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
@@ -524,6 +525,7 @@ declare module BABYLON.GUI {
         text: string;
         textHorizontalAlignment: number;
         textVerticalAlignment: number;
+        lineSpacing: string | number;
         constructor(name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
