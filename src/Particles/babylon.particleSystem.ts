@@ -141,6 +141,7 @@
         // end of sheet animation
 
         // Emitter Type
+        public defaultDirection = false;
         public redius = 1;
         public coneAngle = 45;
         private _emitterType = ParticleSystem.EMITTERTYPE_BOX;
@@ -170,18 +171,27 @@
                 // Sphere behavior
                 this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
 
-                    var emiiterPos = worldMatrix.getTranslation();
-                    var direction = particle.position.subtract(emiiterPos);
-                    
-                    Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+                    if (this.defaultDirection) {
+                        // measure the direction Vector from the emitter to the particle.
+                        var direction = particle.position.subtract(worldMatrix.getTranslation());
+
+                        Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+                    }
+                    else {
+                        var randX = randomNumber(this.direction1.x, this.direction2.x);
+                        var randY = randomNumber(this.direction1.y, this.direction2.y);
+                        var randZ = randomNumber(this.direction1.z, this.direction2.z);
+
+                        Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                    }
                 }
 
                 this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var s = randomNumber(0, 360) * Math.PI / 180;
-                    var t = randomNumber(0, 360) * Math.PI / 180;
-                    var randX = this.redius * Math.cos(s) * Math.sin(t);
-                    var randY = this.redius * Math.cos(t);
-                    var randZ = this.redius * Math.sin(s) * Math.sin(t);
+                    var phi = randomNumber(0, 360) * Math.PI / 180;
+                    var theta = randomNumber(0, 180) * Math.PI / 180;
+                    var randX = this.redius * Math.cos(phi) * Math.sin(theta);
+                    var randY = this.redius * Math.cos(theta);
+                    var randZ = this.redius * Math.sin(phi) * Math.sin(theta);
 
                     Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
                 }
@@ -189,15 +199,16 @@
             else if (this._emitterType === ParticleSystem.EMITTERTYPE_CONE) {
                 this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
 
-                    var s = randomNumber(0, 360) * Math.PI / 180;
-                    var t = randomNumber(this.coneAngle, this.coneAngle + 90) * Math.PI / 180;
-                    var redius = randomNumber(0, this.redius);
-                    var randX = redius * Math.cos(s) * Math.sin(t);
-                    var randY = redius * Math.cos(t);
-                    var randZ = redius * Math.sin(s) * Math.sin(t);
+                    var phi = randomNumber(0, 360) * Math.PI / 180;
+                    var theta = this.coneAngle * Math.PI / 180;
 
+                    var randX = Math.cos(phi) * Math.sin(theta);
+                    var randY = Math.cos(theta);
+                    var randZ = Math.sin(phi) * Math.sin(theta);
 
-                    Vector3.TransformNormalFromFloatsToRef(randX * emitPower, emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                    var direction = new Vector3(randX, randY, randZ).subtract(particle.position);
+
+                    Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
                 }
 
                 this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
