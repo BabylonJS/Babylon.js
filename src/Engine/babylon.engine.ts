@@ -3827,14 +3827,17 @@
             // Dispose previous render buffers
             if (texture._depthStencilBuffer) {
                 gl.deleteRenderbuffer(texture._depthStencilBuffer);
+                texture._depthStencilBuffer = null;
             }
 
             if (texture._MSAAFramebuffer) {
                 gl.deleteFramebuffer(texture._MSAAFramebuffer);
+                texture._MSAAFramebuffer = null;
             }
 
             if (texture._MSAARenderBuffer) {
                 gl.deleteRenderbuffer(texture._MSAARenderBuffer);
+                texture._MSAARenderBuffer = null;
             }
 
             if (samples > 1) {
@@ -3888,15 +3891,21 @@
             // Dispose previous render buffers
             if (textures[0]._depthStencilBuffer) {
                 gl.deleteRenderbuffer(textures[0]._depthStencilBuffer);
+                textures[0]._depthStencilBuffer = null;
             }
 
             if (textures[0]._MSAAFramebuffer) {
                 gl.deleteFramebuffer(textures[0]._MSAAFramebuffer);
+                textures[0]._MSAAFramebuffer = null;
             }
 
-            if (textures[0]._MSAARenderBuffer) {
-                gl.deleteRenderbuffer(textures[0]._MSAARenderBuffer);
+            for(var i = 0; i < textures.length; i++) {
+                if(textures[i]._MSAARenderBuffer) {
+                    gl.deleteRenderbuffer(textures[i]._MSAARenderBuffer);
+                    textures[i]._MSAARenderBuffer = null;
+                }
             }
+
             if (samples > 1) {
                 let framebuffer = gl.createFramebuffer();
 
@@ -3904,15 +3913,15 @@
                   throw new Error("Unable to create multi sampled framebuffer");
                 }
 
+                this.bindUnboundFramebuffer(framebuffer);
+
+                let depthStencilBuffer = this._setupFramebufferDepthAttachments(textures[0]._generateStencilBuffer, textures[0]._generateDepthBuffer, textures[0].width, textures[0].height, samples);
+
                 var attachments = [];
 
                 for(var i = 0; i < textures.length; i++) {
                     var texture = textures[i];
                     var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
-
-                    texture._MSAAFramebuffer = framebuffer;
-
-                    this.bindUnboundFramebuffer(texture._MSAAFramebuffer);
 
                     var colorRenderbuffer = gl.createRenderbuffer();
 
@@ -3925,9 +3934,10 @@
 
                     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, colorRenderbuffer);
 
+                    texture._MSAAFramebuffer = framebuffer;
                     texture._MSAARenderBuffer = colorRenderbuffer;
                     texture.samples = samples;
-                    texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(texture._generateStencilBuffer, texture._generateDepthBuffer, texture.width, texture.height, samples);
+                    texture._depthStencilBuffer = depthStencilBuffer;
                     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
                     attachments.push(attachment);
                 }
