@@ -66,7 +66,7 @@ module BABYLON {
                 if (options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 } else {
-                    types.push(Engine.TEXTURETYPE_FLOAT);
+                    types.push(Engine.TEXTURETYPE_UNSIGNED_INT);
                 }
 
                 if (options.samplingModes && options.samplingModes[i] !== undefined) {
