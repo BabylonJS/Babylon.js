@@ -1270,7 +1270,7 @@
             this.setDepthWrite(true);
 
             // Texture maps
-            for (let slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+            for (let slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         }
@@ -1308,7 +1308,7 @@
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._caps.maxTexturesImageUnits; slot++) {
+            for (let slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
             this._activeChannel = -1;
@@ -1899,15 +1899,15 @@
                 gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, textures[0]._framebuffer);
 
                 var attachments = textures[0]._attachments;
-                if(!attachments) {
+                if (!attachments) {
                     attachments = new Array(textures.length);
                     textures[0]._attachments = attachments;
                 }
 
-                for(var i = 0; i < textures.length; i++) {
+                for (var i = 0; i < textures.length; i++) {
                     var texture = textures[i];
 
-                    for(var j = 0; j < attachments.length; j++) {
+                    for (var j = 0; j < attachments.length; j++) {
                         attachments[j] = gl.NONE;
                     }
 
@@ -1919,13 +1919,13 @@
                         gl.COLOR_BUFFER_BIT, gl.NEAREST);
 
                 }
-                for(var i = 0; i < attachments.length; i++) {
+                for (var i = 0; i < attachments.length; i++) {
                     attachments[i] = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
                 }
                 gl.drawBuffers(attachments);
             }
 
-            for(var i = 0; i < textures.length; i++) {
+            for (var i = 0; i < textures.length; i++) {
                 var texture = textures[i];
                 if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
                     this._bindTextureDirectly(gl.TEXTURE_2D, texture);
@@ -3884,8 +3884,8 @@
                 textures[0]._MSAAFramebuffer = null;
             }
 
-            for(var i = 0; i < textures.length; i++) {
-                if(textures[i]._MSAARenderBuffer) {
+            for (var i = 0; i < textures.length; i++) {
+                if (textures[i]._MSAARenderBuffer) {
                     gl.deleteRenderbuffer(textures[i]._MSAARenderBuffer);
                     textures[i]._MSAARenderBuffer = null;
                 }
@@ -3895,7 +3895,7 @@
                 let framebuffer = gl.createFramebuffer();
 
                 if (!framebuffer) {
-                  throw new Error("Unable to create multi sampled framebuffer");
+                    throw new Error("Unable to create multi sampled framebuffer");
                 }
 
                 this.bindUnboundFramebuffer(framebuffer);
@@ -3904,7 +3904,7 @@
 
                 var attachments = [];
 
-                for(var i = 0; i < textures.length; i++) {
+                for (var i = 0; i < textures.length; i++) {
                     var texture = textures[i];
                     var attachment = (<any>gl)[this.webGLVersion > 1 ? "COLOR_ATTACHMENT" + i : "COLOR_ATTACHMENT" + i + "_WEBGL"];
 
@@ -4791,7 +4791,7 @@
         }
 
         public unbindAllTextures(): void {
-            for (var channel = 0; channel < this._caps.maxTexturesImageUnits; channel++) {
+            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
                 this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
