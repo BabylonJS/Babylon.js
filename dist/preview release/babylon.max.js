@@ -45905,7 +45905,7 @@ var BABYLON;
         return ((random * (max - min)) + min);
     };
     var ParticleSystem = /** @class */ (function () {
-        // end of sheet animation
+        // End of Emitter Type
         function ParticleSystem(name, capacity, scene, customEffect, _isAnimationSheetEnabled, epsilon) {
             if (customEffect === void 0) { customEffect = null; }
             if (_isAnimationSheetEnabled === void 0) { _isAnimationSheetEnabled = false; }
@@ -45970,6 +45970,24 @@ var BABYLON;
             this.spriteCellWidth = 0;
             this.spriteCellHeight = 0;
             this._vertexBufferSize = 11;
+            // end of sheet animation
+            // Emitter Type
+            /**
+             * This bool is used to specify whether to use the default sphere calculated direction or to calculate the direction using direction1 and direction2 properties.
+             * Used with Sphere emitter only.
+             */
+            this.isSphereDefaultDirection = true;
+            /**
+             * The redus of the sphere or the cone
+             * Used with Sphere and Cone emitters.
+             */
+            this.redius = 1;
+            /**
+            * The angle of the cone \_/, it is specified with Radian and calculated based on the Z axis. default value is PI/4 or 45 Degrees.
+            * Used with Cone emitter Only.
+            */
+            this.coneAngle = Math.PI / 4;
+            this._emitterType = ParticleSystem.EMITTERTYPE_BOX;
             this.appendParticleVertexes = null;
             this.id = name;
             this._capacity = capacity;
@@ -45994,19 +46012,7 @@ var BABYLON;
             this._vertexBuffers[BABYLON.VertexBuffer.PositionKind] = positions;
             this._vertexBuffers[BABYLON.VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
-            // Default behaviors
-            this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
-                var randX = randomNumber(_this.direction1.x, _this.direction2.x);
-                var randY = randomNumber(_this.direction1.y, _this.direction2.y);
-                var randZ = randomNumber(_this.direction1.z, _this.direction2.z);
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-            };
-            this.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
-                var randX = randomNumber(_this.minEmitBox.x, _this.maxEmitBox.x);
-                var randY = randomNumber(_this.minEmitBox.y, _this.maxEmitBox.y);
-                var randZ = randomNumber(_this.minEmitBox.z, _this.maxEmitBox.z);
-                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-            };
+            this.emitterType = ParticleSystem.EMITTERTYPE_BOX;
             this.updateFunction = function (particles) {
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
@@ -46046,6 +46052,74 @@ var BABYLON;
         Object.defineProperty(ParticleSystem.prototype, "isAnimationSheetEnabled", {
             get: function () {
                 return this._isAnimationSheetEnabled;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(ParticleSystem.prototype, "emitterType", {
+            get: function () {
+                return this._emitterType;
+            },
+            set: function (value) {
+                var _this = this;
+                this._emitterType = value;
+                if (this._emitterType === ParticleSystem.EMITTERTYPE_BOX) {
+                    this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+                        var randX = randomNumber(_this.direction1.x, _this.direction2.x);
+                        var randY = randomNumber(_this.direction1.y, _this.direction2.y);
+                        var randZ = randomNumber(_this.direction1.z, _this.direction2.z);
+                        BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                    };
+                    this.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
+                        var randX = randomNumber(_this.minEmitBox.x, _this.maxEmitBox.x);
+                        var randY = randomNumber(_this.minEmitBox.y, _this.maxEmitBox.y);
+                        var randZ = randomNumber(_this.minEmitBox.z, _this.maxEmitBox.z);
+                        BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                    };
+                }
+                else if (this._emitterType === ParticleSystem.EMITTERTYPE_SPHERE) {
+                    // Sphere behavior
+                    this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+                        if (_this.isSphereDefaultDirection) {
+                            // measure the direction Vector from the emitter to the particle.
+                            var direction = particle.position.subtract(worldMatrix.getTranslation());
+                            BABYLON.Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+                        }
+                        else {
+                            var randX = randomNumber(_this.direction1.x, _this.direction2.x);
+                            var randY = randomNumber(_this.direction1.y, _this.direction2.y);
+                            var randZ = randomNumber(_this.direction1.z, _this.direction2.z);
+                            BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                        }
+                    };
+                    this.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
+                        var phi = randomNumber(0, 2 * Math.PI);
+                        var theta = randomNumber(0, Math.PI);
+                        var randX = _this.redius * Math.cos(phi) * Math.sin(theta);
+                        var randY = _this.redius * Math.cos(theta);
+                        var randZ = _this.redius * Math.sin(phi) * Math.sin(theta);
+                        BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+                    };
+                }
+                else if (this._emitterType === ParticleSystem.EMITTERTYPE_CONE) {
+                    this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+                        var phi = randomNumber(0, Math.PI * 2);
+                        var theta = randomNumber(0, _this.coneAngle);
+                        var randX = Math.cos(phi) * Math.sin(theta);
+                        var randY = Math.cos(theta);
+                        var randZ = Math.sin(phi) * Math.sin(theta);
+                        // get the direction vector between the new random point with angle and the particle.
+                        var direction = new BABYLON.Vector3(randX, randY, randZ).subtract(particle.position);
+                        BABYLON.Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+                    };
+                    this.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
+                        var s = randomNumber(0, Math.PI * 2);
+                        var redius = randomNumber(0, _this.redius);
+                        var randX = redius * Math.sin(s);
+                        var randZ = redius * Math.cos(s);
+                        BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
+                    };
+                }
             },
             enumerable: true,
             configurable: true
@@ -46155,11 +46229,11 @@ var BABYLON;
                 }
                 this.particles.push(particle);
                 var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
+                this.startPositionFunction(worldMatrix, particle.position, particle);
                 this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
                 particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
                 particle.size = randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
-                this.startPositionFunction(worldMatrix, particle.position, particle);
                 var step = randomNumber(0, 1.0);
                 BABYLON.Color4.LerpToRef(this.color1, this.color2, step, particle.color);
                 this.colorDead.subtractToRef(particle.color, this._colorDiff);
@@ -46496,6 +46570,9 @@ var BABYLON;
         // Statics
         ParticleSystem.BLENDMODE_ONEONE = 0;
         ParticleSystem.BLENDMODE_STANDARD = 1;
+        ParticleSystem.EMITTERTYPE_BOX = 0;
+        ParticleSystem.EMITTERTYPE_SPHERE = 1;
+        ParticleSystem.EMITTERTYPE_CONE = 2;
         return ParticleSystem;
     }());
     BABYLON.ParticleSystem = ParticleSystem;
