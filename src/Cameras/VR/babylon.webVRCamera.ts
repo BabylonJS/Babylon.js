@@ -377,7 +377,6 @@ module BABYLON {
             Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
 
             super.update();
-            this.updateCalled = false;
         }
         public _getViewMatrix(): Matrix {
             return Matrix.Identity();
