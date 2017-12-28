@@ -39,7 +39,7 @@ var BABYLONDEVTOOLS;
             dependencies = [];
             callback = null;
             min = (document.location.href.toLowerCase().indexOf('dist=min') > 0);
-            useDist = (min || document.location.href.toLowerCase().indexOf('dist=true') > 0);            
+            useDist = (min || useDist || document.location.href.toLowerCase().indexOf('dist=true') > 0);            
             babylonJSPath = '';
         }
 
@@ -88,6 +88,11 @@ var BABYLONDEVTOOLS;
 
         Loader.prototype.onReady = function (newCallback) {
             callback = newCallback;
+            return this;
+        }
+
+        Loader.prototype.useDist = function() {
+            useDist = true;
             return this;
         }
 
@@ -236,6 +241,9 @@ var BABYLONDEVTOOLS;
             // Modules
             if (loadModules) {
                 for (var i = 0; i< settings.modules.length; i++) {
+                    if (settings.modules[i] === "viewer") {
+                        continue;
+                    }
                     this.loadModule(settings[settings.modules[i]]);
                 }
             }
