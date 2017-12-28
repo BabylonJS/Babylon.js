@@ -72863,7 +72863,11 @@ var BABYLON;
             var _this = this;
             if (!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)) {
                 // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
-                this.update();
+                if (!this.updateCacheCalled) {
+                    // make sure it is only called once per loop. this.update() might cause an infinite loop.
+                    this.updateCacheCalled = true;
+                    this.update();
+                }
                 // Set working vector to the device position in room space rotated by the new rotation
                 this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
                 BABYLON.Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._workingMatrix, this._workingVector);
@@ -72882,11 +72886,11 @@ var BABYLON;
                     controller._deviceToWorld = _this._deviceToWorld;
                     controller.update();
                 });
-                this.update();
             }
             if (!ignoreParentClass) {
                 _super.prototype._updateCache.call(this);
             }
+            this.updateCacheCalled = false;
         };
         WebVRFreeCamera.prototype.update = function () {
             // Get current device position in babylon world
