@@ -568,16 +568,16 @@
             this.onDisposeObservable.clear();
         }
 
-        public createSphereEmitter(redius = 1) {
-            this._particleEmitterType = new SphereParticleEmitter(redius);
+        public createSphereEmitter(radius = 1) {
+            this._particleEmitterType = new SphereParticleEmitter(radius);
         }
 
-        public createDirectedSphereEmitter(redius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)) {
-            this._particleEmitterType = new SphereDirectedParticleEmitter(redius, direction1, direction2);
+        public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)) {
+            this._particleEmitterType = new SphereDirectedParticleEmitter(radius, direction1, direction2);
         }
 
-        public createConeEmitter(redius = 1, angle = Math.PI / 4) {
-            this._particleEmitterType = new ConeParticleEmitter(redius, angle);
+        public createConeEmitter(radius = 1, angle = Math.PI / 4) {
+            this._particleEmitterType = new ConeParticleEmitter(radius, angle);
         }
 
         // this method need to be changed when breaking changes to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
