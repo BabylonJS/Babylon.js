@@ -148,7 +148,7 @@
                     if (onReady) {
                         onReady(new VideoTexture("video", video, scene, true, true));
                     }
-                }, function (e: DOMException) {
+                }, function (e: MediaStreamError) {
                     Tools.Error(e.name);
                 });
             }
