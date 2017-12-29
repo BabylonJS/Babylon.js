@@ -1,6 +1,6 @@
 module BABYLON {
     export class SphereParticleEmitter implements IParticleEmitterType {
-        constructor(private redius: number) {
+        constructor(private radius: number) {
 
         }
 
@@ -13,16 +13,16 @@ module BABYLON {
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var phi = ParticleSystem.randomNumber(0, 2 * Math.PI);
             var theta = ParticleSystem.randomNumber(0, Math.PI);
-            var randX = this.redius * Math.cos(phi) * Math.sin(theta);
-            var randY = this.redius * Math.cos(theta);
-            var randZ = this.redius * Math.sin(phi) * Math.sin(theta);
+            var randX = this.radius * Math.cos(phi) * Math.sin(theta);
+            var randY = this.radius * Math.cos(theta);
+            var randZ = this.radius * Math.sin(phi) * Math.sin(theta);
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         }
     }
 
     export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
-        constructor(redius: number, private direction1: Vector3, private direction2: Vector3) {
-            super(redius);
+        constructor(radius: number, private direction1: Vector3, private direction2: Vector3) {
+            super(radius);
         }
 
         startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {

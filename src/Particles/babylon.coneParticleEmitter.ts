@@ -1,6 +1,6 @@
 module BABYLON {
     export class ConeParticleEmitter implements IParticleEmitterType {
-        constructor(private redius: number, private angle: number) {
+        constructor(private radius: number, private angle: number) {
         }
 
         startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
@@ -19,9 +19,9 @@ module BABYLON {
 
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var s = ParticleSystem.randomNumber(0, Math.PI * 2);
-            var redius = ParticleSystem.randomNumber(0, this.redius);
-            var randX = redius * Math.sin(s);
-            var randZ = redius * Math.cos(s);
+            var radius = ParticleSystem.randomNumber(0, this.radius);
+            var randX = radius * Math.sin(s);
+            var randZ = radius * Math.cos(s);
 
             Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
         }
