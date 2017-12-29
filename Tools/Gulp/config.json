@@ -228,7 +228,11 @@
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
-                "../../src/Particles/babylon.particleSystem.js"
+                "../../src/Particles/babylon.particleSystem.js",
+                "../../src/Particles/babylon.boxParticleEmitter.js",
+                "../../src/Particles/babylon.coneParticleEmitter.js",
+                "../../src/Particles/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/babylon.iParticleEmitterType.js"
             ],
             "dependUpon": [
                 "core"
