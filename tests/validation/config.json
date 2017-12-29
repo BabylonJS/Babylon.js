@@ -176,8 +176,7 @@
     },
     {
       "title": "Normals",
-      "scriptToRun": "/Demos/Normals/index.js",
-      "functionToCall": "createScene",
+      "playgroundId": "#WXKLLJ#2",
       "referenceImage": "normals.png"
     },
     {
