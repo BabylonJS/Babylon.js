@@ -1,14 +1,4 @@
 ﻿module BABYLON {
-    var randomNumber = (min: number, max: number): number => {
-        if (min === max) {
-            return (min);
-        }
-
-        var random = Math.random();
-
-        return ((random * (max - min)) + min);
-    }
-
     export interface IParticleSystem {
         id: string;
         name: string;
@@ -29,9 +19,6 @@
         // Statics
         public static BLENDMODE_ONEONE = 0;
         public static BLENDMODE_STANDARD = 1;
-        public static readonly EMITTERTYPE_BOX = 0;
-        public static readonly EMITTERTYPE_SPHERE = 1;
-        public static readonly EMITTERTYPE_CONE = 2;
 
         // Members
         public animations: Animation[] = [];
@@ -96,8 +83,6 @@
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
         public colorDead = new Color4(0, 0, 0, 1.0);
         public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
-        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
-        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         private particles = new Array<Particle>();
 
@@ -140,105 +125,7 @@
         }
         // end of sheet animation
 
-        // Emitter Type
-
-        /**
-         * This bool is used to specify whether to use the default sphere calculated direction or to calculate the direction using direction1 and direction2 properties.
-         * Used with Sphere emitter only.
-         */
-        public isSphereDefaultDirection = true;
-
-        /**
-         * The redus of the sphere or the cone
-         * Used with Sphere and Cone emitters.
-         */
-        public redius = 1;
-
-        /**
-        * The angle of the cone \_/, it is specified with Radian and calculated based on the Z axis. default value is PI/4 or 45 Degrees.
-        * Used with Cone emitter Only.
-        */
-        public coneAngle = Math.PI / 4;
-
-        private _emitterType = ParticleSystem.EMITTERTYPE_BOX;
-        public get emitterType(): number {
-            return this._emitterType;
-        }
-        public set emitterType(value: number) {
-            this._emitterType = value;
-            if (this._emitterType === ParticleSystem.EMITTERTYPE_BOX) {
-                this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-                    var randX = randomNumber(this.direction1.x, this.direction2.x);
-                    var randY = randomNumber(this.direction1.y, this.direction2.y);
-                    var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                    Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-                }
-
-                this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-                    var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-                    var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-
-                    Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-                }
-            }
-            else if (this._emitterType === ParticleSystem.EMITTERTYPE_SPHERE) {
-                // Sphere behavior
-                this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-
-                    if (this.isSphereDefaultDirection) {
-                        // measure the direction Vector from the emitter to the particle.
-                        var direction = particle.position.subtract(worldMatrix.getTranslation());
-
-                        Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
-                    }
-                    else {
-                        var randX = randomNumber(this.direction1.x, this.direction2.x);
-                        var randY = randomNumber(this.direction1.y, this.direction2.y);
-                        var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                        Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-                    }
-                }
-
-                this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var phi = randomNumber(0, 2 * Math.PI);
-                    var theta = randomNumber(0, Math.PI);
-                    var randX = this.redius * Math.cos(phi) * Math.sin(theta);
-                    var randY = this.redius * Math.cos(theta);
-                    var randZ = this.redius * Math.sin(phi) * Math.sin(theta);
-
-                    Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-                }
-            }
-            else if (this._emitterType === ParticleSystem.EMITTERTYPE_CONE) {
-                this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-
-                    var phi = randomNumber(0, Math.PI * 2);
-                    var theta = randomNumber(0, this.coneAngle);
-
-                    var randX = Math.cos(phi) * Math.sin(theta);
-                    var randY = Math.cos(theta);
-                    var randZ = Math.sin(phi) * Math.sin(theta);
-
-                    // get the direction vector between the new random point with angle and the particle.
-                    var direction = new Vector3(randX, randY, randZ).subtract(particle.position);
-
-                    Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
-                }
-
-                this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                    var s = randomNumber(0, Math.PI * 2);
-                    var redius = randomNumber(0, this.redius);
-                    var randX = redius * Math.sin(s);
-                    var randZ = redius * Math.cos(s);
-
-                    Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
-                }
-            }
-        }
-        // End of Emitter Type
+        private particleEmitterType: IParticleEmitterType;
 
         constructor(public name: string, capacity: number, scene: Scene, customEffect: Nullable<Effect> = null, private _isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
             this.id = name;
@@ -274,7 +161,7 @@
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
 
-            this.emitterType = ParticleSystem.EMITTERTYPE_BOX;
+            this.particleEmitterType = new BoxPartcileEmitter(this);
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
@@ -433,18 +320,18 @@
 
                 this.particles.push(particle);
 
-                var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
+                var emitPower = ParticleSystem.randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                this.startPositionFunction(worldMatrix, particle.position, particle);
+                this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
 
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
 
-                particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
+                particle.lifeTime = ParticleSystem.randomNumber(this.minLifeTime, this.maxLifeTime);
 
-                particle.size = randomNumber(this.minSize, this.maxSize);
-                particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
+                particle.size = ParticleSystem.randomNumber(this.minSize, this.maxSize);
+                particle.angularSpeed = ParticleSystem.randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
 
-                var step = randomNumber(0, 1.0);
+                var step = ParticleSystem.randomNumber(0, 1.0);
 
                 Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
@@ -709,6 +596,37 @@
             }
 
             return result;
+        }
+
+        public createSphereEmitter(redius = 1) {
+            this.particleEmitterType = new SpherePartcileEmitter(redius);
+        }
+
+        public createDirectedSphereEmitter(redius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)) {
+            this.particleEmitterType = new SphereDirectedPartcileEmitter(redius, direction1, direction2);
+        }
+
+        public createConeEmitter(redius = 1, angle = Math.PI / 4) {
+            this.particleEmitterType = new ConePartcileEmitter(redius, angle);
+        }
+
+        // this method need to be changed when breaking changes to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3) {
+            this.direction1 = direction1;
+            this.direction2 = direction2;
+            this.minEmitBox = minEmitBox;
+            this.maxEmitBox = maxEmitBox;
+            this.particleEmitterType = new BoxPartcileEmitter(this);
+        }
+
+        public static randomNumber = (min: number, max: number): number => {
+            if (min === max) {
+                return (min);
+            }
+
+            var random = Math.random();
+
+            return ((random * (max - min)) + min);
         }
 
         public serialize(): any {
