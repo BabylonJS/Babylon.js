@@ -3,7 +3,7 @@ interface Window {
     mozIndexedDB: IDBFactory;
     webkitIndexedDB: IDBFactory;
     msIndexedDB: IDBFactory;
-    webkitURL: URL;
+    webkitURL: typeof URL;
     mozRequestAnimationFrame(callback: FrameRequestCallback): number;
     oRequestAnimationFrame(callback: FrameRequestCallback): number;
     WebGLRenderingContext: WebGLRenderingContext;
