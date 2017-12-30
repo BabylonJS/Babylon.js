@@ -1,6 +1,6 @@
 module BABYLON {
     export class SphereParticleEmitter implements IParticleEmitterType {
-        constructor(private radius: number) {
+        constructor(public radius: number) {
 
         }
 
@@ -21,7 +21,7 @@ module BABYLON {
     }
 
     export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
-        constructor(radius: number, private direction1: Vector3, private direction2: Vector3) {
+        constructor(radius: number, public direction1: Vector3, public direction2: Vector3) {
             super(radius);
         }
 
