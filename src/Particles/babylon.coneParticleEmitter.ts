@@ -1,6 +1,6 @@
 module BABYLON {
     export class ConeParticleEmitter implements IParticleEmitterType {
-        constructor(private radius: number, private angle: number) {
+        constructor(public radius: number, public angle: number) {
         }
 
         startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {

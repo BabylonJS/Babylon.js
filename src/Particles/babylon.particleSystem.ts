@@ -2,7 +2,7 @@
     export interface IParticleSystem {
         id: string;
         name: string;
-        emitter: Nullable<AbstractMesh | Vector3>; 
+        emitter: Nullable<AbstractMesh | Vector3>;
         renderingGroupId: number;
         layerMask: number;
         isStarted(): boolean;
@@ -83,7 +83,9 @@
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
         public colorDead = new Color4(0, 0, 0, 1.0);
         public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
-        private _particleEmitterType: IParticleEmitterType;
+        public particleEmitterType: IParticleEmitterType;
+        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
         private particles = new Array<Particle>();
 
@@ -161,7 +163,7 @@
             this._vertexBuffers["options"] = options;
 
             // Default behaviors
-            this._particleEmitterType = new BoxParticleEmitter(this);
+            this.particleEmitterType = new BoxParticleEmitter(this);
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
@@ -322,9 +324,19 @@
 
                 var emitPower = ParticleSystem.randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                this._particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                if (this.startDirectionFunction) {
+                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                else {
+                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
 
-                this._particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                if (this.startPositionFunction) {
+                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                }
+                else {
+                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                }
 
                 particle.lifeTime = ParticleSystem.randomNumber(this.minLifeTime, this.maxLifeTime);
 
@@ -569,24 +581,32 @@
         }
 
         public createSphereEmitter(radius = 1) {
-            this._particleEmitterType = new SphereParticleEmitter(radius);
+            var particleEmitter = new SphereParticleEmitter(radius);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         }
 
         public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)) {
-            this._particleEmitterType = new SphereDirectedParticleEmitter(radius, direction1, direction2);
+            var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         }
 
         public createConeEmitter(radius = 1, angle = Math.PI / 4) {
-            this._particleEmitterType = new ConeParticleEmitter(radius, angle);
+            var particleEmitter = new ConeParticleEmitter(radius, angle);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         }
 
         // this method need to be changed when breaking changes to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
         public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3) {
+            var particleEmitter = new BoxParticleEmitter(this);
             this.direction1 = direction1;
             this.direction2 = direction2;
             this.minEmitBox = minEmitBox;
             this.maxEmitBox = maxEmitBox;
-            this._particleEmitterType = new BoxParticleEmitter(this);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         }
 
         public static randomNumber = (min: number, max: number): number => {
