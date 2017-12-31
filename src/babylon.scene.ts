@@ -3121,7 +3121,7 @@
                 var len: number;
                 var subMeshes: SubMesh[];
 
-                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
+                if (mesh.useOctreeForRenderingSelection === true && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
                     var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
