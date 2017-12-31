@@ -279,7 +279,7 @@
      */
     export class Engine {
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        public static WebGL2UniformBuffersExceptionList = ["Chrome/63"];
+        public static WebGL2UniformBuffersExceptionList = ["Chrome/63", "Firefox/58"];
 
         public static Instances = new Array<Engine>();
 
@@ -861,6 +861,7 @@
                         for (var exception of Engine.WebGL2UniformBuffersExceptionList) {
                             if (ua.indexOf(exception) > -1) {
                                 this.disableUniformBuffers = true;
+                                console.log("TODO remove this!! this.disableUniformBuffers set to true!!!!")
                                 break;
                             }
                         }
