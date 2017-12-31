@@ -10,6 +10,7 @@ module BABYLON.GUI {
         private _borderColor = "white";
         private _barOffset = new ValueAndUnit(5, ValueAndUnit.UNITMODE_PIXEL, false);
         private _isThumbCircle = false;
+        private _isThumbClamped = false;
 
         public onValueChangedObservable = new Observable<number>();
 
@@ -134,6 +135,22 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+
+        public get isThumbClamped(): boolean {
+            return this._isThumbClamped;
+        }
+
+
+        public set isThumbClamped(value: boolean) {
+            if (this._isThumbClamped === value) {
+                return;
+            }
+
+            this._isThumbClamped = value;
+            this._markAsDirty();
+        }
+
+
         constructor(public name?: string) {
             super(name);
 
@@ -150,8 +167,6 @@ module BABYLON.GUI {
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {
                 // Main bar
-                var effectiveThumbWidth;
-                var effectiveBarOffset;
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                     context.shadowColor = this.shadowColor;
@@ -160,26 +175,63 @@ module BABYLON.GUI {
                     context.shadowOffsetY = this.shadowOffsetY;
                 }
 
-                if (this._thumbWidth.isPixel) {
-                    effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
-                } else {
-                    effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
+                if (this._isThumbClamped) {
+                    this._applyClampedThumbStyle(context);
+                }
+                else {
+                    this._applyDefaultThumbStyle(context);
                 }
 
-                if (this._barOffset.isPixel) {
-                    effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
-                } else {
-                    effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
-                }
+            }
+            context.restore();
+        }
+
+        private _applyClampedThumbStyle(context: CanvasRenderingContext2D): void {
+            var effectiveThumbWidth;
+            var effectiveBarOffset;
+
+            if (this._thumbWidth.isPixel) {
+                effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
+            } else {
+                effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
+            }
+
+            if (this._barOffset.isPixel) {
+                effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
+            } else {
+                effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
+            }
+
+            var left = this._currentMeasure.left;
+            var width = this._currentMeasure.width;
+            var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * (width - effectiveThumbWidth);
+
+            // Bar
+            context.fillStyle = this._background;
+            context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
+            }
+
+            context.fillStyle = this.color;
+            context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
 
 
-                var left = this._currentMeasure.left;
-                var width = this._currentMeasure.width;
-                var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * (width - effectiveThumbWidth);
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
 
-                // Bar
-                context.fillStyle = this._background;
-                context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+            // Thumb
+            if (this._isThumbCircle) {
+                context.beginPath();
+                context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                context.fill();
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                     context.shadowBlur = 0;
@@ -187,50 +239,94 @@ module BABYLON.GUI {
                     context.shadowOffsetY = 0;
                 }
 
-                context.fillStyle = this.color;
-                context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                context.strokeStyle = this._borderColor;
+                context.stroke();
+            }
+            else {
 
+                context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                    context.shadowColor = this.shadowColor;
-                    context.shadowBlur = this.shadowBlur;
-                    context.shadowOffsetX = this.shadowOffsetX;
-                    context.shadowOffsetY = this.shadowOffsetY;
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
                 }
 
-                // Thumb
-                if (this._isThumbCircle) {
-                    context.beginPath();
-                    context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
-                    context.fill();
-
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowBlur = 0;
-                        context.shadowOffsetX = 0;
-                        context.shadowOffsetY = 0;
-                    }
-
-                    context.strokeStyle = this._borderColor;
-                    context.stroke();
-                }
-                else {
-
-                    context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowBlur = 0;
-                        context.shadowOffsetX = 0;
-                        context.shadowOffsetY = 0;
-                    }
-
-                    context.strokeStyle = this._borderColor;
-                    context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-                }
+                context.strokeStyle = this._borderColor;
+                context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
             }
-            context.restore();
         }
 
+        private _applyDefaultThumbStyle(context: CanvasRenderingContext2D): void {
+            var effectiveThumbWidth;
+            var effectiveBarOffset;
 
+            if (this._thumbWidth.isPixel) {
+                effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
+            } else {
+                effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
+            }
+
+            if (this._barOffset.isPixel) {
+                effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
+            } else {
+                effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
+            }
+
+            var left = this._currentMeasure.left;
+            var width = this._currentMeasure.width - effectiveThumbWidth;
+            var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
+            
+            // Bar
+            context.fillStyle = this._background;
+            context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                context.shadowBlur = 0;
+                context.shadowOffsetX = 0;
+                context.shadowOffsetY = 0;
+            }
+
+            context.fillStyle = this.color;
+            context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+
+
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
+
+            // Thumb
+            if (this._isThumbCircle) {
+                context.beginPath();
+                context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                context.fill();
+
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
+
+                context.strokeStyle = this._borderColor;
+                context.stroke();
+            }
+            else {
+
+                context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
+
+                context.strokeStyle = this._borderColor;
+                context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+            }
+        }
 
         // Events
         private _pointerIsDown = false;
