@@ -3131,8 +3131,8 @@
                     len = subMeshes.length;
                 }
 
-                for (var subIndex = 0; subIndex < len; subIndex++) {
-                    var subMesh = subMeshes[subIndex];
+                for (var subIndex = 0, subMesh; subIndex < len; subIndex++) {
+                    subMesh = subMeshes[subIndex];
 
                     this._evaluateSubMesh(subMesh, mesh);
                 }
