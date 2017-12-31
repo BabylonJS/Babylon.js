@@ -12780,15 +12780,18 @@ var BABYLON;
                 if (this._parentNode === parent) {
                     return;
                 }
-                if (this._parentNode) {
+                // Remove self from list of children of parent
+                if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                     var index = this._parentNode._children.indexOf(this);
                     if (index !== -1) {
                         this._parentNode._children.splice(index, 1);
                     }
                 }
+                // Store new parent
                 this._parentNode = parent;
+                // Add as child to new parent
                 if (this._parentNode) {
-                    if (!this._parentNode._children) {
+                    if (this._parentNode._children === undefined || this._parentNode._children === null) {
                         this._parentNode._children = new Array();
                     }
                     this._parentNode._children.push(this);
@@ -12926,16 +12929,21 @@ var BABYLON;
         };
         /**
          * Is this node enabled.
-         * If the node has a parent and is enabled, the parent will be inspected as well.
+         * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true.
+         * @param {boolean} [checkAncestors=true] - Indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors.
          * @return {boolean} whether this node (and its parent) is enabled.
          * @see setEnabled
          */
-        Node.prototype.isEnabled = function () {
-            if (!this._isEnabled) {
+        Node.prototype.isEnabled = function (checkAncestors) {
+            if (checkAncestors === void 0) { checkAncestors = true; }
+            if (checkAncestors === false) {
+                return this._isEnabled;
+            }
+            if (this._isEnabled === false) {
                 return false;
             }
-            if (this.parent) {
-                return this.parent.isEnabled();
+            if (this.parent !== undefined && this.parent !== null) {
+                return this.parent.isEnabled(checkAncestors);
             }
             return true;
         };
@@ -17801,7 +17809,7 @@ var BABYLON;
             this._renderingGroups.length = 0;
         };
         RenderingManager.prototype._prepareRenderingGroup = function (renderingGroupId) {
-            if (!this._renderingGroups[renderingGroupId]) {
+            if (this._renderingGroups[renderingGroupId] === undefined) {
                 this._renderingGroups[renderingGroupId] = new BABYLON.RenderingGroup(renderingGroupId, this._scene, this._customOpaqueSortCompareFn[renderingGroupId], this._customAlphaTestSortCompareFn[renderingGroupId], this._customTransparentSortCompareFn[renderingGroupId]);
             }
         };
@@ -17815,11 +17823,18 @@ var BABYLON;
             this._prepareRenderingGroup(renderingGroupId);
             this._renderingGroups[renderingGroupId].dispatchParticles(particleSystem);
         };
-        RenderingManager.prototype.dispatch = function (subMesh) {
-            var mesh = subMesh.getMesh();
+        /**
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        RenderingManager.prototype.dispatch = function (subMesh, mesh, material) {
+            if (mesh === undefined) {
+                mesh = subMesh.getMesh();
+            }
             var renderingGroupId = mesh.renderingGroupId || 0;
             this._prepareRenderingGroup(renderingGroupId);
-            this._renderingGroups[renderingGroupId].dispatch(subMesh);
+            this._renderingGroups[renderingGroupId].dispatch(subMesh, mesh, material);
         };
         /**
          * Overrides the default sort function applied in the renderging group to prepare the meshes.
@@ -18161,29 +18176,36 @@ var BABYLON;
         /**
          * Inserts the submesh in its correct queue depending on its material.
          * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
          */
-        RenderingGroup.prototype.dispatch = function (subMesh) {
-            var material = subMesh.getMaterial();
-            var mesh = subMesh.getMesh();
-            if (!material) {
+        RenderingGroup.prototype.dispatch = function (subMesh, mesh, material) {
+            // Get mesh and materials if not provided
+            if (mesh === undefined) {
+                mesh = subMesh.getMesh();
+            }
+            if (material === undefined) {
+                material = subMesh.getMaterial();
+            }
+            if (material === null || material === undefined) {
                 return;
             }
             if (material.needAlphaBlendingForMesh(mesh)) {
                 this._transparentSubMeshes.push(subMesh);
             }
             else if (material.needAlphaTesting()) {
-                if (material.needDepthPrePass) {
+                if (material.needDepthPrePass === true) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
                 this._alphaTestSubMeshes.push(subMesh);
             }
             else {
-                if (material.needDepthPrePass) {
+                if (material.needDepthPrePass === true) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
-            if (mesh._edgesRenderer) {
+            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         };
@@ -18677,6 +18699,7 @@ var BABYLON;
             this._activeRequests = new Array();
             this._pendingData = new Array();
             this._isDisposed = false;
+            this.dispatchAllSubMeshesOfActiveMeshes = false;
             this._activeMeshes = new BABYLON.SmartArray(256);
             this._processedMaterials = new BABYLON.SmartArray(256);
             this._renderTargets = new BABYLON.SmartArrayNoDuplicate(256);
@@ -20744,15 +20767,17 @@ var BABYLON;
             return this._externalData.remove(key);
         };
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
-                var material = subMesh.getMaterial();
-                if (mesh.showSubMeshesBoundingBox) {
+            if (this.dispatchAllSubMeshesOfActiveMeshes === true || mesh.alwaysSelectAsActiveMesh === true || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.showSubMeshesBoundingBox === true) {
                     var boundingInfo = subMesh.getBoundingInfo();
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+                    if (boundingInfo !== null && boundingInfo !== undefined) {
+                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+                    }
                 }
-                if (material) {
+                var material = subMesh.getMaterial();
+                if (material !== null && material !== undefined) {
                     // Render targets
-                    if (material.getRenderTargetTextures) {
+                    if (material.getRenderTargetTextures !== undefined) {
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
                             this._renderTargets.concatWithNoDuplicate(material.getRenderTargetTextures());
@@ -20760,12 +20785,18 @@ var BABYLON;
                     }
                     // Dispatch
                     this._activeIndices.addCount(subMesh.indexCount, false);
-                    this._renderingManager.dispatch(subMesh);
+                    this._renderingManager.dispatch(subMesh, mesh, material);
                 }
             }
         };
         Scene.prototype._isInIntermediateRendering = function () {
             return this._intermediateRendering;
+        };
+        Scene.prototype.setActiveMeshCandidateProvider = function (provider) {
+            this._activeMeshCandidateProvider = provider;
+        };
+        Scene.prototype.getActiveMeshCandidateProvider = function () {
+            return this._activeMeshCandidateProvider;
         };
         /**
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
@@ -20803,22 +20834,38 @@ var BABYLON;
             // Meshes
             var meshes;
             var len;
-            if (this._selectionOctree) {
+            var checkIsEnabled = true;
+            // Determine mesh candidates
+            if (this._activeMeshCandidateProvider !== undefined) {
+                // Use _activeMeshCandidateProvider
+                meshes = this._activeMeshCandidateProvider.getMeshes(this);
+                checkIsEnabled = this._activeMeshCandidateProvider.checksIsEnabled === false;
+                if (meshes !== undefined) {
+                    len = meshes.length;
+                }
+                else {
+                    len = 0;
+                }
+            }
+            else if (this._selectionOctree !== undefined) {
+                // Octree
                 var selection = this._selectionOctree.select(this._frustumPlanes);
                 meshes = selection.data;
                 len = selection.length;
             }
             else {
+                // Full scene traversal
                 len = this.meshes.length;
                 meshes = this.meshes;
             }
-            for (var meshIndex = 0; meshIndex < len; meshIndex++) {
-                var mesh = meshes[meshIndex];
-                if (mesh.isBlocked) {
+            // Check each mesh
+            for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
+                mesh = meshes[meshIndex];
+                if (mesh.isBlocked === true) {
                     continue;
                 }
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
-                if (!mesh.isReady() || !mesh.isEnabled()) {
+                if (mesh.isReady() === false || (checkIsEnabled === true && mesh.isEnabled() === false)) {
                     continue;
                 }
                 mesh.computeWorldMatrix();
@@ -20827,8 +20874,8 @@ var BABYLON;
                     this._meshesForIntersections.pushNoDuplicate(mesh);
                 }
                 // Switch to current LOD
-                var meshLOD = mesh.getLOD(this.activeCamera);
-                if (!meshLOD) {
+                meshLOD = mesh.getLOD(this.activeCamera);
+                if (meshLOD === undefined || meshLOD === null) {
                     continue;
                 }
                 mesh._preActivate();
@@ -20862,7 +20909,7 @@ var BABYLON;
             }
         };
         Scene.prototype._activeMesh = function (sourceMesh, mesh) {
-            if (mesh.skeleton && this.skeletonsEnabled) {
+            if (this.skeletonsEnabled === true && mesh.skeleton !== null && mesh.skeleton !== undefined) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
                 }
@@ -20870,15 +20917,16 @@ var BABYLON;
                     this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
                 }
             }
-            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
+            if (sourceMesh.showBoundingBox === true || this.forceShowBoundingBoxes === true) {
                 var boundingInfo = sourceMesh.getBoundingInfo();
                 this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
-            if (mesh && mesh.subMeshes) {
+            if (mesh !== undefined && mesh !== null
+                && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0) {
                 // Submeshes Octrees
                 var len;
                 var subMeshes;
-                if (mesh._submeshesOctree && mesh.useOctreeForRenderingSelection) {
+                if (mesh.useOctreeForRenderingSelection === true && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
                     var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
                     len = intersections.length;
                     subMeshes = intersections.data;
@@ -20887,8 +20935,8 @@ var BABYLON;
                     subMeshes = mesh.subMeshes;
                     len = subMeshes.length;
                 }
-                for (var subIndex = 0; subIndex < len; subIndex++) {
-                    var subMesh = subMeshes[subIndex];
+                for (var subIndex = 0, subMesh; subIndex < len; subIndex++) {
+                    subMesh = subMeshes[subIndex];
                     this._evaluateSubMesh(subMesh, mesh);
                 }
             }
@@ -34557,25 +34605,24 @@ var BABYLON;
         MaterialHelper.BindLights = function (scene, mesh, effect, defines, maxSimultaneousLights, usePhysicalLightFalloff) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             if (usePhysicalLightFalloff === void 0) { usePhysicalLightFalloff = false; }
-            var lightIndex = 0;
-            for (var _i = 0, _a = mesh._lightSources; _i < _a.length; _i++) {
-                var light = _a[_i];
+            for (var i = 0, len = mesh._lightSources.length, light, iAsString; i < len; i++) {
+                light = mesh._lightSources[i];
+                iAsString = i.toString();
                 var scaledIntensity = light.getScaledIntensity();
-                light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
-                MaterialHelper.BindLightProperties(light, effect, lightIndex);
+                light._uniformBuffer.bindToEffect(effect, "Light" + i);
+                MaterialHelper.BindLightProperties(light, effect, i);
                 light.diffuse.scaleToRef(scaledIntensity, BABYLON.Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", BABYLON.Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, lightIndex + "");
+                light._uniformBuffer.updateColor4("vLightDiffuse", BABYLON.Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(scaledIntensity, BABYLON.Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3("vLightSpecular", BABYLON.Tmp.Color3[1], lightIndex + "");
+                    light._uniformBuffer.updateColor3("vLightSpecular", BABYLON.Tmp.Color3[1], iAsString);
                 }
                 // Shadows
-                if (scene.shadowsEnabled) {
-                    this.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
+                if (scene.shadowsEnabled === true) {
+                    this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
-                lightIndex++;
-                if (lightIndex === maxSimultaneousLights)
+                if (i === maxSimultaneousLights)
                     break;
             }
         };
@@ -51808,7 +51855,7 @@ var BABYLON;
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
                             scene._activeIndices.addCount(subMesh.indexCount, false);
-                            this._renderingManager.dispatch(subMesh);
+                            this._renderingManager.dispatch(subMesh, mesh);
                         }
                     }
                 }
