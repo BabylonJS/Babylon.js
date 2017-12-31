@@ -3107,13 +3107,16 @@
                 }
             }
 
-            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
+            if (sourceMesh.showBoundingBox === true || this.forceShowBoundingBoxes === true) {
                 let boundingInfo = sourceMesh.getBoundingInfo();
 
                 this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
 
-            if (mesh && mesh.subMeshes) {
+            if (
+                mesh !== undefined && mesh !== null
+                && mesh.subMeshes !== undefined && mesh.subMeshes !== null && mesh.subMeshes.length > 0
+            ) {
                 // Submeshes Octrees
                 var len: number;
                 var subMeshes: SubMesh[];
