@@ -267,7 +267,7 @@
         }
 
         public getTotalVertices(): number {
-            if (!this.isReady()) {
+            if (this.isReady() === false) {
                 return 0;
             }
 
