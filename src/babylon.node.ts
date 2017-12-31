@@ -44,17 +44,20 @@
                 return;
             }
 
-            if (this._parentNode) {
+            // Remove self from list of children of parent
+            if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                 var index = this._parentNode._children.indexOf(this);
                 if (index !== -1) {
                     this._parentNode._children.splice(index, 1);
                 }
             }
 
+            // Store new parent
             this._parentNode = parent;
 
+            // Add as child to new parent
             if (this._parentNode) {
-                if (!this._parentNode._children) {
+                if (this._parentNode._children === undefined || this._parentNode._children === null) {
                     this._parentNode._children = new Array<Node>();
                 }
                 this._parentNode._children.push(this);
