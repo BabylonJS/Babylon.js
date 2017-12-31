@@ -2925,8 +2925,8 @@
         }
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-            if (this.dispatchAllSubMeshesOfActiveMeshes === true || mesh.alwaysSelectAsActiveMesh === true || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
-                if (mesh.showSubMeshesBoundingBox === true) {
+            if (this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.showSubMeshesBoundingBox) {
                     const boundingInfo = subMesh.getBoundingInfo();
                     if (boundingInfo !== null && boundingInfo !== undefined) {
                         this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
@@ -3034,13 +3034,13 @@
             for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
                 mesh = meshes[meshIndex];
 
-                if (mesh.isBlocked === true) {
+                if (mesh.isBlocked) {
                     continue;
                 }
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (mesh.isReady() === false || (checkIsEnabled === true && mesh.isEnabled() === false)) {
+                if (!mesh.isReady() || (checkIsEnabled && !mesh.isEnabled())) {
                     continue;
                 }
 
@@ -3097,7 +3097,7 @@
         }
 
         private _activeMesh(sourceMesh: AbstractMesh, mesh: AbstractMesh): void {
-            if (this.skeletonsEnabled === true && mesh.skeleton !== null && mesh.skeleton !== undefined) {
+            if (this.skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
                 }
@@ -3107,7 +3107,7 @@
                 }
             }
 
-            if (sourceMesh.showBoundingBox === true || this.forceShowBoundingBoxes === true) {
+            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 let boundingInfo = sourceMesh.getBoundingInfo();
 
                 this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
@@ -3121,7 +3121,7 @@
                 var len: number;
                 var subMeshes: SubMesh[];
 
-                if (mesh.useOctreeForRenderingSelection === true && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
+                if (mesh.useOctreeForRenderingSelection && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
                     var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
 
                     len = intersections.length;
