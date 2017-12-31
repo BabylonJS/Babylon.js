@@ -2104,7 +2104,7 @@
             serializationObject.scaling = this.scaling.asArray();
             serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
-            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isEnabled = this.isEnabled(false);
             serializationObject.isVisible = this.isVisible;
             serializationObject.infiniteDistance = this.infiniteDistance;
             serializationObject.pickable = this.isPickable;
