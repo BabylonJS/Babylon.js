@@ -463,7 +463,7 @@ module BABYLON {
          */
         public setParent(node: Nullable<Node>): TransformNode {
 
-            if (node == null) {
+            if (node === null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
