@@ -8210,6 +8210,7 @@ var BABYLON;
                             var exception = _a[_i];
                             if (ua.indexOf(exception) > -1) {
                                 this.disableUniformBuffers = true;
+                                console.log("TODO remove this!! this.disableUniformBuffers set to true!!!!");
                                 break;
                             }
                         }
@@ -12678,7 +12679,7 @@ var BABYLON;
             }
         };
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        Engine.WebGL2UniformBuffersExceptionList = ["Chrome/63"];
+        Engine.WebGL2UniformBuffersExceptionList = ["Chrome/63", "Firefox/58"];
         Engine.Instances = new Array();
         // Const statics
         Engine._ALPHA_DISABLE = 0;
