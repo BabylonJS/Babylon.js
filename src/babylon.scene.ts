@@ -2941,7 +2941,7 @@
 
                     // Dispatch
                     this._activeIndices.addCount(subMesh.indexCount, false);
-                    this._renderingManager.dispatch(subMesh);
+                    this._renderingManager.dispatch(subMesh, mesh, material);
                 }
             }
         }
