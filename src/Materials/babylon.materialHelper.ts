@@ -387,7 +387,7 @@
                 }
 
                 // Shadows
-                if (scene.shadowsEnabled === true) {
+                if (scene.shadowsEnabled) {
                     this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();

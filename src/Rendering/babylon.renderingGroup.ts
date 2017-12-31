@@ -334,13 +334,13 @@
             if (material.needAlphaBlendingForMesh(mesh)) { // Transparent
                 this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) { // Alpha test
-                if (material.needDepthPrePass === true) {
+                if (material.needDepthPrePass) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
                 
                 this._alphaTestSubMeshes.push(subMesh);
             } else {
-                if (material.needDepthPrePass === true) {
+                if (material.needDepthPrePass) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
                 
