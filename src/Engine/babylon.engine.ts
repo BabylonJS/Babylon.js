@@ -861,7 +861,6 @@
                         for (var exception of Engine.WebGL2UniformBuffersExceptionList) {
                             if (ua.indexOf(exception) > -1) {
                                 this.disableUniformBuffers = true;
-                                console.log("TODO remove this!! this.disableUniformBuffers set to true!!!!")
                                 break;
                             }
                         }
