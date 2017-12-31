@@ -874,6 +874,7 @@
         private _pendingData = new Array();
         private _isDisposed = false;
 
+        public dispatchAllSubMeshesOfActiveMeshes:boolean = false;
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
@@ -2919,18 +2920,18 @@
         }
 
         private _evaluateSubMesh(subMesh: SubMesh, mesh: AbstractMesh): void {
-            if (mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
-                var material = subMesh.getMaterial();
-
-                if (mesh.showSubMeshesBoundingBox) {
-                    let boundingInfo = subMesh.getBoundingInfo();
-
-                    this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+            if (this.dispatchAllSubMeshesOfActiveMeshes === true || mesh.alwaysSelectAsActiveMesh === true || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.showSubMeshesBoundingBox === true) {
+                    const boundingInfo = subMesh.getBoundingInfo();
+                    if (boundingInfo !== null && boundingInfo !== undefined) {
+                        this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
+                    }
                 }
 
-                if (material) {
+                const material = subMesh.getMaterial();
+                if (material !== null && material !== undefined) {
                     // Render targets
-                    if (material.getRenderTargetTextures) {
+                    if (material.getRenderTargetTextures !== undefined) {
                         if (this._processedMaterials.indexOf(material) === -1) {
                             this._processedMaterials.push(material);
 
