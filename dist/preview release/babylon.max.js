@@ -13911,7 +13911,7 @@ var BABYLON;
          * Returns the TransformNode.
          */
         TransformNode.prototype.setParent = function (node) {
-            if (node == null) {
+            if (node === null) {
                 var rotation = BABYLON.Tmp.Quaternion[0];
                 var position = BABYLON.Tmp.Vector3[0];
                 var scale = BABYLON.Tmp.Vector3[1];
@@ -15644,7 +15644,7 @@ var BABYLON;
             if (disposeMaterialAndTextures === void 0) { disposeMaterialAndTextures = false; }
             var index;
             // Action manager
-            if (this.actionManager) {
+            if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
                 this.actionManager = null;
             }
@@ -15695,7 +15695,7 @@ var BABYLON;
             }
             // Octree
             var sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree) {
+            if (sceneOctree !== undefined && sceneOctree !== null) {
                 var index = sceneOctree.dynamicContent.indexOf(this);
                 if (index !== -1) {
                     sceneOctree.dynamicContent.splice(index, 1);
@@ -24000,7 +24000,7 @@ var BABYLON;
          * Returns a positive integer : the total number of vertices within the mesh geometry or zero if the mesh has no geometry.
          */
         Mesh.prototype.getTotalVertices = function () {
-            if (!this._geometry) {
+            if (this._geometry === null || this._geometry === undefined) {
                 return 0;
             }
             return this._geometry.getTotalVertices();
@@ -25467,7 +25467,7 @@ var BABYLON;
             }
             serializationObject.scaling = this.scaling.asArray();
             serializationObject.localMatrix = this.getPivotMatrix().asArray();
-            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isEnabled = this.isEnabled(false);
             serializationObject.isVisible = this.isVisible;
             serializationObject.infiniteDistance = this.infiniteDistance;
             serializationObject.pickable = this.isPickable;
@@ -26687,7 +26687,10 @@ var BABYLON;
          */
         SubMesh.prototype.getMaterial = function () {
             var rootMaterial = this._renderingMesh.material;
-            if (rootMaterial && rootMaterial.getSubMaterial) {
+            if (rootMaterial === null || rootMaterial === undefined) {
+                return this._mesh.getScene().defaultMaterial;
+            }
+            else if (rootMaterial.getSubMaterial) {
                 var multiMaterial = rootMaterial;
                 var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
                 if (this._currentMaterial !== effectiveMaterial) {
@@ -26695,9 +26698,6 @@ var BABYLON;
                     this._materialDefines = null;
                 }
                 return effectiveMaterial;
-            }
-            if (!rootMaterial) {
-                return this._mesh.getScene().defaultMaterial;
             }
             return rootMaterial;
         };
@@ -31449,7 +31449,7 @@ var BABYLON;
             this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
         };
         Geometry.prototype.getTotalVertices = function () {
-            if (!this.isReady()) {
+            if (this.isReady() === false) {
                 return 0;
             }
             return this._totalVertices;
@@ -32105,8 +32105,9 @@ var BABYLON;
             // Update
             mesh.computeWorldMatrix(true);
             // Octree
-            if (scene['_selectionOctree']) {
-                scene['_selectionOctree'].addMesh(mesh);
+            var sceneOctree = scene.selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
+                sceneOctree.addMesh(mesh);
             }
         };
         Geometry._CleanMatricesWeights = function (parsedGeometry, mesh) {
