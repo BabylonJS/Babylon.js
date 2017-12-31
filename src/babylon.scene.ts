@@ -3,6 +3,11 @@
         dispose(): void;
     }
 
+    export interface IActiveMeshCandidateProvider {
+        getMeshes(scene: Scene): AbstractMesh[];
+        readonly checksIsEnabled: boolean; // Indicates if the meshes have been checked to make sure they are isEnabled().
+    }
+
     class ClickInfo {
         private _singleClick = false;
         private _doubleClick = false;
@@ -2950,6 +2955,14 @@
             return this._intermediateRendering
         }
 
+        private _activeMeshCandidateProvider: IActiveMeshCandidateProvider;
+        public setActiveMeshCandidateProvider(provider: IActiveMeshCandidateProvider): void {
+            this._activeMeshCandidateProvider = provider;
+        }
+        public getActiveMeshCandidateProvider(): IActiveMeshCandidateProvider {
+            return this._activeMeshCandidateProvider;
+        }
+
         private _activeMeshesFrozen = false;
 
         /**
@@ -2994,26 +3007,40 @@
             // Meshes
             var meshes: AbstractMesh[];
             var len: number;
+            var checkIsEnabled = true;
 
-            if (this._selectionOctree) { // Octree
+            // Determine mesh candidates
+            if (this._activeMeshCandidateProvider !== undefined) {
+                // Use _activeMeshCandidateProvider
+                meshes = this._activeMeshCandidateProvider.getMeshes(this);
+                checkIsEnabled = this._activeMeshCandidateProvider.checksIsEnabled === false;
+                if (meshes !== undefined) {
+                    len = meshes.length;
+                } else {
+                    len = 0;
+                }
+            } else if (this._selectionOctree !== undefined) {
+                // Octree
                 var selection = this._selectionOctree.select(this._frustumPlanes);
                 meshes = selection.data;
                 len = selection.length;
-            } else { // Full scene traversal
+            } else {
+                // Full scene traversal
                 len = this.meshes.length;
                 meshes = this.meshes;
             }
 
-            for (var meshIndex = 0; meshIndex < len; meshIndex++) {
-                var mesh = meshes[meshIndex];
+            // Check each mesh
+            for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
+                mesh = meshes[meshIndex];
 
-                if (mesh.isBlocked) {
+                if (mesh.isBlocked === true) {
                     continue;
                 }
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (!mesh.isReady() || !mesh.isEnabled()) {
+                if (mesh.isReady() === false || (checkIsEnabled === true && mesh.isEnabled() === false)) {
                     continue;
                 }
 
@@ -3025,9 +3052,9 @@
                 }
 
                 // Switch to current LOD
-                var meshLOD = mesh.getLOD(this.activeCamera);
+                meshLOD = mesh.getLOD(this.activeCamera);
 
-                if (!meshLOD) {
+                if (meshLOD === undefined || meshLOD === null) {
                     continue;
                 }
 
