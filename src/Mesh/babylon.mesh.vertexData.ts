@@ -1401,10 +1401,10 @@
          * Creates the VertexData of the TiledGround.  
          */
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
-            var xmin = options.xmin || -1.0;
-            var zmin = options.zmin || -1.0;
-            var xmax = options.xmax || 1.0;
-            var zmax = options.zmax || 1.0;
+            var xmin = typeof options.xmin === 'number' ? options.xmin : -1.0;
+            var zmin = typeof options.zmin === 'number' ? options.zmin : -1.0;
+            var xmax = typeof options.xmax === 'number' ? options.xmax : 1.0;
+            var zmax = typeof options.zmax === 'number' ? options.zmax : 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
 
