@@ -8203,15 +8203,34 @@ var BABYLON;
                 this._lockstepMaxSteps = options.lockstepMaxSteps;
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
                 // Exceptions
-                if (!options.disableWebGL2Support) {
-                    if (navigator && navigator.userAgent) {
-                        var ua = navigator.userAgent;
-                        for (var _i = 0, _a = Engine.WebGL2UniformBuffersExceptionList; _i < _a.length; _i++) {
-                            var exception = _a[_i];
-                            if (ua.indexOf(exception) > -1) {
-                                this.disableUniformBuffers = true;
-                                break;
+                if (navigator && navigator.userAgent) {
+                    var ua = navigator.userAgent;
+                    for (var _i = 0, _a = Engine.ExceptionList; _i < _a.length; _i++) {
+                        var exception = _a[_i];
+                        var key = exception.key;
+                        var targets = exception.targets;
+                        if (ua.indexOf(key) > -1) {
+                            if (exception.capture && exception.captureConstraint) {
+                                var capture = exception.capture;
+                                var constraint = exception.captureConstraint;
+                                var regex = new RegExp(capture);
+                                var matches = regex.exec(ua);
+                                if (matches && matches.length > 0) {
+                                    var capturedValue = parseInt(matches[matches.length - 1]);
+                                    if (capturedValue >= constraint) {
+                                        continue;
+                                    }
+                                }
                             }
+                            for (var _b = 0, targets_1 = targets; _b < targets_1.length; _b++) {
+                                var target = targets_1[_b];
+                                switch (target) {
+                                    case "uniformBuffer":
+                                        this.disableUniformBuffers = true;
+                                        break;
+                                }
+                            }
+                            break;
                         }
                     }
                 }
@@ -12678,7 +12697,10 @@ var BABYLON;
             }
         };
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        Engine.WebGL2UniformBuffersExceptionList = ["Firefox/58"];
+        Engine.ExceptionList = [
+            { key: "Chrome/63", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+        ];
         Engine.Instances = new Array();
         // Const statics
         Engine._ALPHA_DISABLE = 0;
@@ -39027,6 +39049,7 @@ var BABYLON;
             return _this;
         }
         TargetCamera.prototype.getFrontPosition = function (distance) {
+            this.getWorldMatrix();
             var direction = this.getTarget().subtract(this.position);
             direction.normalize();
             direction.scaleInPlace(distance);
