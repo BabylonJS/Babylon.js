@@ -42296,7 +42296,7 @@ var BABYLON;
                 this.restart();
             }
             else {
-                this.start(loop);
+                this.start(loop, this._speedRatio);
             }
             return this;
         };

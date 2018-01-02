@@ -44,6 +44,8 @@ module BABYLON {
                 return;
             }
 
+            this._speedRatio = value;
+
             for (var index = 0; index < this._animatables.length; index++) {
                 let animatable = this._animatables[index];
                 animatable.speedRatio = this._speedRatio;
@@ -177,7 +179,7 @@ module BABYLON {
                 }
                 this.restart();
             } else {
-                this.start(loop);
+                this.start(loop, this._speedRatio);
             }
 
             return this;
