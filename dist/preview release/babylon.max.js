@@ -13585,7 +13585,7 @@ var BABYLON;
          */
         TransformNode.prototype._getWorldMatrixDeterminant = function () {
             if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this._worldMatrixDeterminant = this.computeWorldMatrix().determinant();
+                this.computeWorldMatrix();
             }
             return this._worldMatrixDeterminant;
         };
@@ -14233,6 +14233,8 @@ var BABYLON;
             if (!this._poseMatrix) {
                 this._poseMatrix = BABYLON.Matrix.Invert(this._worldMatrix);
             }
+            // Cache the determinant
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
             return this._worldMatrix;
         };
         TransformNode.prototype._afterComputeWorldMatrix = function () {
