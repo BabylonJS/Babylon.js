@@ -142,7 +142,7 @@
         }
 
         private _prepareRenderingGroup(renderingGroupId: number): void {
-            if (!this._renderingGroups[renderingGroupId]) {
+            if (this._renderingGroups[renderingGroupId] === undefined) {
                 this._renderingGroups[renderingGroupId] = new RenderingGroup(renderingGroupId, this._scene,
                     this._customOpaqueSortCompareFn[renderingGroupId],
                     this._customAlphaTestSortCompareFn[renderingGroupId],
@@ -167,13 +167,20 @@
             this._renderingGroups[renderingGroupId].dispatchParticles(particleSystem);
         }
 
-        public dispatch(subMesh: SubMesh): void {
-            var mesh = subMesh.getMesh();
+        /**
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        public dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void {
+            if (mesh === undefined) {
+                mesh = subMesh.getMesh();
+            }
             var renderingGroupId = mesh.renderingGroupId || 0;
 
             this._prepareRenderingGroup(renderingGroupId);
 
-            this._renderingGroups[renderingGroupId].dispatch(subMesh);
+            this._renderingGroups[renderingGroupId].dispatch(subMesh, mesh, material);
         }
 
         /**
