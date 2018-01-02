@@ -279,7 +279,10 @@
      */
     export class Engine {
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        public static WebGL2UniformBuffersExceptionList = ["Chrome/63", "Firefox/58"];
+        public static ExceptionList = [
+            { key: "Chrome/63", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+        ];
 
         public static Instances = new Array<Engine>();
 
@@ -854,15 +857,37 @@
                 this._doNotHandleContextLost = options.doNotHandleContextLost ? true : false;
 
                 // Exceptions
-                if (!options.disableWebGL2Support) {
-                    if (navigator && navigator.userAgent) {
-                        let ua = navigator.userAgent;
+                if (navigator && navigator.userAgent) {
+                    let ua = navigator.userAgent;
 
-                        for (var exception of Engine.WebGL2UniformBuffersExceptionList) {
-                            if (ua.indexOf(exception) > -1) {
-                                this.disableUniformBuffers = true;
-                                break;
+                    for (var exception of Engine.ExceptionList) {
+                        let key = exception.key;
+                        let targets = exception.targets;
+
+                        if (ua.indexOf(key) > -1) {
+                            if (exception.capture && exception.captureConstraint) {
+                                let capture = exception.capture;
+                                let constraint = exception.captureConstraint;
+
+                                let regex = new RegExp(capture);
+                                let matches = regex.exec(ua);
+
+                                if (matches && matches.length > 0) {
+                                    let capturedValue = parseInt(matches[matches.length - 1]);
+                                    if (capturedValue >= constraint) {
+                                        continue;
+                                    }
+                                }
                             }
+
+                            for (var target of targets) {
+                                switch (target) {
+                                    case "uniformBuffer":
+                                        this.disableUniformBuffers = true;
+                                        break;
+                                }
+                            }
+                            break;
                         }
                     }
                 }
