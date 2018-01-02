@@ -279,7 +279,7 @@
      */
     export class Engine {
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        public static WebGL2UniformBuffersExceptionList = ["Chrome/63"];
+        public static WebGL2UniformBuffersExceptionList = ["Chrome/63", "Firefox/58"];
 
         public static Instances = new Array<Engine>();
 
