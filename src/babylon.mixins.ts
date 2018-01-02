@@ -1,18 +1,11 @@
 ﻿// Mixins
 interface Window {
-    mozIndexedDB(func: any): any;
-    webkitIndexedDB(func: any): any;
+    mozIndexedDB: IDBFactory;
+    webkitIndexedDB: IDBFactory;
     msIndexedDB: IDBFactory;
-    IDBTransaction(func: any): any;
-    webkitIDBTransaction(func: any): any;
-    msIDBTransaction(func: any): any;
-    IDBKeyRange(func: any): any;
-    webkitIDBKeyRange(func: any): any;
-    msIDBKeyRange(func: any): any;
-    webkitURL: HTMLURL;
-    webkitRequestAnimationFrame(func: any): any;
-    mozRequestAnimationFrame(func: any): any;
-    oRequestAnimationFrame(func: any): any;
+    webkitURL: typeof URL;
+    mozRequestAnimationFrame(callback: FrameRequestCallback): number;
+    oRequestAnimationFrame(callback: FrameRequestCallback): number;
     WebGLRenderingContext: WebGLRenderingContext;
     MSGesture: MSGesture;
     CANNON: any;
@@ -23,8 +16,8 @@ interface Window {
     Math: Math;
     Uint8Array: Uint8ArrayConstructor;
     Float32Array: Float32ArrayConstructor;
-    mozURL: any;
-    msURL: any;
+    mozURL: typeof URL;
+    msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
 }
 
@@ -81,13 +74,7 @@ interface WebGLRenderingContext {
     QUERY_RESULT: number;
 }
 
-interface HTMLURL {
-    createObjectURL(param1: any, param2?: any): string;
-}
-
 interface Document {
-    exitFullscreen(): void;
-    webkitCancelFullScreen(): void;
     mozCancelFullScreen(): void;
     msCancelFullScreen(): void;
     mozFullScreen: boolean;
@@ -99,17 +86,12 @@ interface Document {
 }
 
 interface HTMLCanvasElement {
-    requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
 }
 
 interface CanvasRenderingContext2D {
-    imageSmoothingEnabled: boolean;
-    mozImageSmoothingEnabled: boolean;
-    oImageSmoothingEnabled: boolean;
-    webkitImageSmoothingEnabled: boolean;
     msImageSmoothingEnabled: boolean;
 }
 
@@ -133,23 +115,16 @@ interface MouseEvent {
     msMovementY: number;
 }
 
-interface MSStyleCSSProperties {
-    webkitTransform: string;
-    webkitTransition: string;
-}
-
 interface Navigator {
     getVRDisplays: () => any;
     mozGetVRDevices: (any: any) => any;
-    getUserMedia: any;
-    webkitGetUserMedia: any;
-    mozGetUserMedia: any;
-    msGetUserMedia: any;
+    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    msGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
 
-    getGamepads(func?: any): any;
-    webkitGetGamepads(func?: any): any
-    msGetGamepads(func?: any): any;
-    webkitGamepads(func?: any): any;
+    webkitGetGamepads(): Gamepad[];
+    msGetGamepads(): Gamepad[];
+    webkitGamepads(): Gamepad[];
 }
 
 interface HTMLVideoElement {
@@ -159,10 +134,6 @@ interface HTMLVideoElement {
 interface Screen {
     orientation: string;
     mozOrientation: string;
-}
-
-interface HTMLMediaElement {
-    crossOrigin: string | null;
 }
 
 interface Math {
