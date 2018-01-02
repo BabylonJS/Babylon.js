@@ -7,6 +7,7 @@ var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
 var babylonModuleExports = require("./gulp-babylonModule");
+var babylonES6ModuleExports = require("./gulp-es6ModuleExports");
 var dtsModuleSupport = require("./gulp-dtsModuleSupport");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
@@ -618,7 +619,7 @@ gulp.task("modules-compile", function () {
 // this holds the declared objects in each module
 let declared = {}
 
-gulp.task('prepare-for-modules', ["modules-compile"], function () {
+gulp.task('prepare-for-modules', /*["modules-compile"],*/ function () {
     let tasks = [];
     Object.keys(config.workloads).forEach((moduleName) => {
         let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
@@ -670,6 +671,28 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(optimisejs())
                 .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
 
+            let es6Task = merge2([
+                gulp.src(config.workloads[moduleName].files),
+                gulp.src(shadersFiles).
+                    pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", true)),
+                gulp.src(shaderIncludeFiles).
+                    pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
+            ]).pipe(concat(moduleName + '.js'))
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(babylonES6ModuleExports(moduleName, config.workloads[moduleName].dependUpon))
+                .pipe(gulp.dest(config.build.outputDirectory + '/es6/'))
+                .pipe(cleants())
+                .pipe(rename({ extname: ".min.js" }))
+                .pipe(uglify())
+                .pipe(optimisejs())
+                .pipe(gulp.dest(config.build.outputDirectory + '/es6/'));
+
 
             let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
             let dtsTask = gulp.src(dtsFiles)
@@ -679,7 +702,7 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(dtsModuleSupport(moduleName, true, declared))
                 .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
 
-            tasks.push(jsTask, dtsTask);
+            tasks.push(jsTask, es6Task, dtsTask);
         });
 
     return merge2(tasks);
