@@ -24,13 +24,14 @@ module.exports = function (moduleName, inject, declarations) {
             Object.keys(declarations).forEach(name => {
                 if (name === moduleName) return;
                 let imports = declarations[name].filter(obj => {
-                    let exists = declared.indexOf(obj) === -1;
+                    let exists = declared.indexOf(obj) !== -1;
                     if (!exists) {
                         declared.push(obj);
                     }
-                    return exists;
+                    return !exists;
                 });
-                importsString += `import {${imports.join(',')}} from 'babylonjs/${name}';
+                if (imports.length)
+                    importsString += `import {${imports.join(',')}} from 'babylonjs/${name}';
 `;
             });
         }
