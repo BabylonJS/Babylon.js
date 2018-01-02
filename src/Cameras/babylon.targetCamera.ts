@@ -37,6 +37,7 @@
         }
 
         public getFrontPosition(distance: number): Vector3 {
+            this.getWorldMatrix();
             var direction = this.getTarget().subtract(this.position);
             direction.normalize();
             direction.scaleInPlace(distance);
