@@ -370,28 +370,29 @@
         }
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
-            var lightIndex = 0;
-            for (var light of mesh._lightSources) {
-                let scaledIntensity = light.getScaledIntensity();
-                light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
+            for (var i = 0, len = mesh._lightSources.length, light, iAsString; i < len; i++) {
+                light = mesh._lightSources[i];
+                iAsString = i.toString();
 
-                MaterialHelper.BindLightProperties(light, effect, lightIndex);
+                let scaledIntensity = light.getScaledIntensity();
+                light._uniformBuffer.bindToEffect(effect, "Light" + i);
+
+                MaterialHelper.BindLightProperties(light, effect, i);
 
                 light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, lightIndex + "");
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex + "");
+                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    this.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
+                    this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
-                lightIndex++;
 
-                if (lightIndex === maxSimultaneousLights)
+                if (i === maxSimultaneousLights)
                     break;
             }
         }

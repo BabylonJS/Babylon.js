@@ -101,7 +101,9 @@
         public getMaterial(): Nullable<Material> {
             var rootMaterial = this._renderingMesh.material;
 
-            if (rootMaterial && (<MultiMaterial>rootMaterial).getSubMaterial) {
+            if (rootMaterial === null || rootMaterial === undefined) {
+                return this._mesh.getScene().defaultMaterial;
+            } else if ((<MultiMaterial>rootMaterial).getSubMaterial) {
                 var multiMaterial = <MultiMaterial>rootMaterial;
                 var effectiveMaterial = multiMaterial.getSubMaterial(this.materialIndex);
 
@@ -111,10 +113,6 @@
                 }
 
                 return effectiveMaterial;
-            }
-
-            if (!rootMaterial) {
-                return this._mesh.getScene().defaultMaterial;
             }
 
             return rootMaterial;
