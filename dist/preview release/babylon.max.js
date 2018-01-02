@@ -8210,7 +8210,6 @@ var BABYLON;
                             var exception = _a[_i];
                             if (ua.indexOf(exception) > -1) {
                                 this.disableUniformBuffers = true;
-                                console.log("TODO remove this!! this.disableUniformBuffers set to true!!!!");
                                 break;
                             }
                         }
@@ -12679,7 +12678,7 @@ var BABYLON;
             }
         };
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        Engine.WebGL2UniformBuffersExceptionList = ["Chrome/63", "Firefox/58"];
+        Engine.WebGL2UniformBuffersExceptionList = ["Firefox/58"];
         Engine.Instances = new Array();
         // Const statics
         Engine._ALPHA_DISABLE = 0;
@@ -18195,13 +18194,13 @@ var BABYLON;
                 this._transparentSubMeshes.push(subMesh);
             }
             else if (material.needAlphaTesting()) {
-                if (material.needDepthPrePass === true) {
+                if (material.needDepthPrePass) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
                 this._alphaTestSubMeshes.push(subMesh);
             }
             else {
-                if (material.needDepthPrePass === true) {
+                if (material.needDepthPrePass) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
                 this._opaqueSubMeshes.push(subMesh); // Opaque
@@ -20768,8 +20767,8 @@ var BABYLON;
             return this._externalData.remove(key);
         };
         Scene.prototype._evaluateSubMesh = function (subMesh, mesh) {
-            if (this.dispatchAllSubMeshesOfActiveMeshes === true || mesh.alwaysSelectAsActiveMesh === true || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
-                if (mesh.showSubMeshesBoundingBox === true) {
+            if (this.dispatchAllSubMeshesOfActiveMeshes || mesh.alwaysSelectAsActiveMesh || mesh.subMeshes.length === 1 || subMesh.isInFrustum(this._frustumPlanes)) {
+                if (mesh.showSubMeshesBoundingBox) {
                     var boundingInfo = subMesh.getBoundingInfo();
                     if (boundingInfo !== null && boundingInfo !== undefined) {
                         this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
@@ -20862,11 +20861,11 @@ var BABYLON;
             // Check each mesh
             for (var meshIndex = 0, mesh, meshLOD; meshIndex < len; meshIndex++) {
                 mesh = meshes[meshIndex];
-                if (mesh.isBlocked === true) {
+                if (mesh.isBlocked) {
                     continue;
                 }
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
-                if (mesh.isReady() === false || (checkIsEnabled === true && mesh.isEnabled() === false)) {
+                if (!mesh.isReady() || (checkIsEnabled && !mesh.isEnabled())) {
                     continue;
                 }
                 mesh.computeWorldMatrix();
@@ -20910,7 +20909,7 @@ var BABYLON;
             }
         };
         Scene.prototype._activeMesh = function (sourceMesh, mesh) {
-            if (this.skeletonsEnabled === true && mesh.skeleton !== null && mesh.skeleton !== undefined) {
+            if (this.skeletonsEnabled && mesh.skeleton !== null && mesh.skeleton !== undefined) {
                 if (this._activeSkeletons.pushNoDuplicate(mesh.skeleton)) {
                     mesh.skeleton.prepare();
                 }
@@ -20918,7 +20917,7 @@ var BABYLON;
                     this._softwareSkinnedMeshes.pushNoDuplicate(mesh);
                 }
             }
-            if (sourceMesh.showBoundingBox === true || this.forceShowBoundingBoxes === true) {
+            if (sourceMesh.showBoundingBox || this.forceShowBoundingBoxes) {
                 var boundingInfo = sourceMesh.getBoundingInfo();
                 this.getBoundingBoxRenderer().renderList.push(boundingInfo.boundingBox);
             }
@@ -20927,7 +20926,7 @@ var BABYLON;
                 // Submeshes Octrees
                 var len;
                 var subMeshes;
-                if (mesh.useOctreeForRenderingSelection === true && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
+                if (mesh.useOctreeForRenderingSelection && mesh._submeshesOctree !== undefined && mesh._submeshesOctree !== null) {
                     var intersections = mesh._submeshesOctree.select(this._frustumPlanes);
                     len = intersections.length;
                     subMeshes = intersections.data;
@@ -31450,7 +31449,7 @@ var BABYLON;
             this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
         };
         Geometry.prototype.getTotalVertices = function () {
-            if (this.isReady() === false) {
+            if (!this.isReady()) {
                 return 0;
             }
             return this._totalVertices;
@@ -34620,7 +34619,7 @@ var BABYLON;
                     light._uniformBuffer.updateColor3("vLightSpecular", BABYLON.Tmp.Color3[1], iAsString);
                 }
                 // Shadows
-                if (scene.shadowsEnabled === true) {
+                if (scene.shadowsEnabled) {
                     this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
@@ -42228,6 +42227,7 @@ var BABYLON;
                 if (this._speedRatio === value) {
                     return;
                 }
+                this._speedRatio = value;
                 for (var index = 0; index < this._animatables.length; index++) {
                     var animatable = this._animatables[index];
                     animatable.speedRatio = this._speedRatio;
@@ -77683,6 +77683,10 @@ var BABYLON;
             for (index = 0; index < scene.multiMaterials.length; index++) {
                 var multiMaterial = scene.multiMaterials[index];
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
+            }
+            // Environment texture
+            if (scene.environmentTexture) {
+                serializationObject.environmentTexture = scene.environmentTexture.name;
             }
             // Skeletons
             serializationObject.skeletons = [];
