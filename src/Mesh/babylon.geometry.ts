@@ -1059,8 +1059,9 @@
             mesh.computeWorldMatrix(true);
 
             // Octree
-            if (scene['_selectionOctree']) {
-                scene['_selectionOctree'].addMesh(<AbstractMesh>mesh);
+            const sceneOctree = scene.selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
+                sceneOctree.addMesh(<AbstractMesh>mesh);
             }
         }
 
