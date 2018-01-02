@@ -280,7 +280,7 @@
     export class Engine {
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         public static ExceptionList = [
-            { key: "Chrome/63", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+            { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
         ];
 
