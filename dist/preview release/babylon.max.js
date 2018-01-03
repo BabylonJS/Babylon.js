@@ -11148,7 +11148,7 @@ var BABYLON;
                     throw new Error("Unable to create multi sampled framebuffer");
                 }
                 gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
                 texture._MSAARenderBuffer = colorRenderbuffer;
             }
@@ -11201,7 +11201,7 @@ var BABYLON;
                         throw new Error("Unable to create multi sampled framebuffer");
                     }
                     gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
                     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, colorRenderbuffer);
                     texture._MSAAFramebuffer = framebuffer;
                     texture._MSAARenderBuffer = colorRenderbuffer;
@@ -12483,6 +12483,16 @@ var BABYLON;
                 return this._gl.RGBA16F;
             }
             return this._gl.RGBA;
+        };
+        ;
+        Engine.prototype._getRGBAMultiSampleBufferFormat = function (type) {
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                return this._gl.RGBA32F;
+            }
+            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                return this._gl.RGBA16F;
+            }
+            return this._gl.RGBA8;
         };
         ;
         Engine.prototype.createQuery = function () {

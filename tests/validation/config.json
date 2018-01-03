@@ -338,8 +338,7 @@
       "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
       "functionToCall": "CreateProceduralTextureTestScene",
       "referenceImage": "procedural.png",
-      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
-      "onlyVisual": true
+      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
     },
     {
       "title": "Water material (only visual check)",
