@@ -929,7 +929,7 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: Nullable<DepthRenderer>;
-        private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        protected _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
