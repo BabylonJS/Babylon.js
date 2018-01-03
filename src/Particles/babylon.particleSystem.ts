@@ -580,26 +580,26 @@
             this.onDisposeObservable.clear();
         }
 
-        public createSphereEmitter(radius = 1) {
+        public createSphereEmitter(radius = 1): SphereParticleEmitter {
             var particleEmitter = new SphereParticleEmitter(radius);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
 
-        public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)) {
+        public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
             var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
 
-        public createConeEmitter(radius = 1, angle = Math.PI / 4) {
+        public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
             var particleEmitter = new ConeParticleEmitter(radius, angle);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
 
-        // this method need to be changed when breaking changes to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
-        public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3) {
+        // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
             var particleEmitter = new BoxParticleEmitter(this);
             this.direction1 = direction1;
             this.direction2 = direction2;
@@ -609,7 +609,7 @@
             return particleEmitter;
         }
 
-        public static randomNumber = (min: number, max: number): number => {
+        public static randomNumber(min: number, max: number): number {
             if (min === max) {
                 return (min);
             }
