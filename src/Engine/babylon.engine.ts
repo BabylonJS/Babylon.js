@@ -538,7 +538,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha1";
+            return "3.2.0-alpha2";
         }
 
         // Updatable statics so stick with vars here
@@ -3867,7 +3867,7 @@
                 }
 
                 gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
+                gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
 
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, colorRenderbuffer);
 
@@ -3940,7 +3940,7 @@
                     }
 
                     gl.bindRenderbuffer(gl.RENDERBUFFER, colorRenderbuffer);
-                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, gl.RGBA8, texture.width, texture.height);
+                    gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, this._getRGBAMultiSampleBufferFormat(texture.type), texture.width, texture.height);
 
                     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, colorRenderbuffer);
 
@@ -5492,6 +5492,17 @@
             }
 
             return this._gl.RGBA;
+        };
+
+        public _getRGBAMultiSampleBufferFormat(type: number): number {
+            if (type === Engine.TEXTURETYPE_FLOAT) {
+                return this._gl.RGBA32F;
+            }
+            else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
+                return this._gl.RGBA16F;
+            }
+
+            return this._gl.RGBA8;
         };
 
         public createQuery(): WebGLQuery {
