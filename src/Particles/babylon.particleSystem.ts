@@ -1,18 +1,8 @@
 ﻿module BABYLON {
-    var randomNumber = (min: number, max: number): number => {
-        if (min === max) {
-            return (min);
-        }
-
-        var random = Math.random();
-
-        return ((random * (max - min)) + min);
-    }
-
     export interface IParticleSystem {
         id: string;
         name: string;
-        emitter: Nullable<AbstractMesh | Vector3>; 
+        emitter: Nullable<AbstractMesh | Vector3>;
         renderingGroupId: number;
         layerMask: number;
         isStarted(): boolean;
@@ -93,6 +83,7 @@
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
         public colorDead = new Color4(0, 0, 0, 1.0);
         public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
+        public particleEmitterType: IParticleEmitterType;
         public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
         public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
 
@@ -172,21 +163,7 @@
             this._vertexBuffers["options"] = options;
 
             // Default behaviors
-            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-                var randX = randomNumber(this.direction1.x, this.direction2.x);
-                var randY = randomNumber(this.direction1.y, this.direction2.y);
-                var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-            }
-
-            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-                var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-                var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-
-                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-            }
+            this.particleEmitterType = new BoxParticleEmitter(this);
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
@@ -345,18 +322,28 @@
 
                 this.particles.push(particle);
 
-                var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
+                var emitPower = ParticleSystem.randomNumber(this.minEmitPower, this.maxEmitPower);
 
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                if (this.startDirectionFunction) {
+                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                else {
+                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
 
-                particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
+                if (this.startPositionFunction) {
+                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                }
+                else {
+                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                }
 
-                particle.size = randomNumber(this.minSize, this.maxSize);
-                particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
+                particle.lifeTime = ParticleSystem.randomNumber(this.minLifeTime, this.maxLifeTime);
 
-                this.startPositionFunction(worldMatrix, particle.position, particle);
+                particle.size = ParticleSystem.randomNumber(this.minSize, this.maxSize);
+                particle.angularSpeed = ParticleSystem.randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
 
-                var step = randomNumber(0, 1.0);
+                var step = ParticleSystem.randomNumber(0, 1.0);
 
                 Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
@@ -592,6 +579,46 @@
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         }
+
+        public createSphereEmitter(radius = 1): SphereParticleEmitter {
+            var particleEmitter = new SphereParticleEmitter(radius);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
+            var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
+            var particleEmitter = new ConeParticleEmitter(radius, angle);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
+            var particleEmitter = new BoxParticleEmitter(this);
+            this.direction1 = direction1;
+            this.direction2 = direction2;
+            this.minEmitBox = minEmitBox;
+            this.maxEmitBox = maxEmitBox;
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        public static randomNumber(min: number, max: number): number {
+            if (min === max) {
+                return (min);
+            }
+
+            var random = Math.random();
+
+            return ((random * (max - min)) + min);
+        }
+
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
