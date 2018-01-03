@@ -45971,13 +45971,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var randomNumber = function (min, max) {
-        if (min === max) {
-            return (min);
-        }
-        var random = Math.random();
-        return ((random * (max - min)) + min);
-    };
     var ParticleSystem = /** @class */ (function () {
         // end of sheet animation
         function ParticleSystem(name, capacity, scene, customEffect, _isAnimationSheetEnabled, epsilon) {
@@ -46069,18 +46062,7 @@ var BABYLON;
             this._vertexBuffers[BABYLON.VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
             // Default behaviors
-            this.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
-                var randX = randomNumber(_this.direction1.x, _this.direction2.x);
-                var randY = randomNumber(_this.direction1.y, _this.direction2.y);
-                var randZ = randomNumber(_this.direction1.z, _this.direction2.z);
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-            };
-            this.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
-                var randX = randomNumber(_this.minEmitBox.x, _this.maxEmitBox.x);
-                var randY = randomNumber(_this.minEmitBox.y, _this.maxEmitBox.y);
-                var randZ = randomNumber(_this.minEmitBox.z, _this.maxEmitBox.z);
-                BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-            };
+            this._particleEmitterType = new BABYLON.BoxParticleEmitter(this);
             this.updateFunction = function (particles) {
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
@@ -46228,13 +46210,13 @@ var BABYLON;
                     particle = new BABYLON.Particle(this);
                 }
                 this.particles.push(particle);
-                var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
-                particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
-                particle.size = randomNumber(this.minSize, this.maxSize);
-                particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
-                this.startPositionFunction(worldMatrix, particle.position, particle);
-                var step = randomNumber(0, 1.0);
+                var emitPower = ParticleSystem.randomNumber(this.minEmitPower, this.maxEmitPower);
+                this._particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                this._particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                particle.lifeTime = ParticleSystem.randomNumber(this.minLifeTime, this.maxLifeTime);
+                particle.size = ParticleSystem.randomNumber(this.minSize, this.maxSize);
+                particle.angularSpeed = ParticleSystem.randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
+                var step = ParticleSystem.randomNumber(0, 1.0);
                 BABYLON.Color4.LerpToRef(this.color1, this.color2, step, particle.color);
                 this.colorDead.subtractToRef(particle.color, this._colorDiff);
                 this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
@@ -46418,6 +46400,29 @@ var BABYLON;
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         };
+        ParticleSystem.prototype.createSphereEmitter = function (redius) {
+            if (redius === void 0) { redius = 1; }
+            this._particleEmitterType = new BABYLON.SphereParticleEmitter(redius);
+        };
+        ParticleSystem.prototype.createDirectedSphereEmitter = function (redius, direction1, direction2) {
+            if (redius === void 0) { redius = 1; }
+            if (direction1 === void 0) { direction1 = new BABYLON.Vector3(0, 1.0, 0); }
+            if (direction2 === void 0) { direction2 = new BABYLON.Vector3(0, 1.0, 0); }
+            this._particleEmitterType = new BABYLON.SphereDirectedParticleEmitter(redius, direction1, direction2);
+        };
+        ParticleSystem.prototype.createConeEmitter = function (redius, angle) {
+            if (redius === void 0) { redius = 1; }
+            if (angle === void 0) { angle = Math.PI / 4; }
+            this._particleEmitterType = new BABYLON.ConeParticleEmitter(redius, angle);
+        };
+        // this method need to be changed when breaking changes to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        ParticleSystem.prototype.createBoxEmitter = function (direction1, direction2, minEmitBox, maxEmitBox) {
+            this.direction1 = direction1;
+            this.direction2 = direction2;
+            this.minEmitBox = minEmitBox;
+            this.maxEmitBox = maxEmitBox;
+            this._particleEmitterType = new BABYLON.BoxParticleEmitter(this);
+        };
         // Clone
         ParticleSystem.prototype.clone = function (name, newEmitter) {
             var custom = null;
@@ -46570,12 +46575,127 @@ var BABYLON;
         // Statics
         ParticleSystem.BLENDMODE_ONEONE = 0;
         ParticleSystem.BLENDMODE_STANDARD = 1;
+        ParticleSystem.randomNumber = function (min, max) {
+            if (min === max) {
+                return (min);
+            }
+            var random = Math.random();
+            return ((random * (max - min)) + min);
+        };
         return ParticleSystem;
     }());
     BABYLON.ParticleSystem = ParticleSystem;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.particleSystem.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var BoxParticleEmitter = /** @class */ (function () {
+        // to be updated like the rest of emitters when breaking changes.
+        function BoxParticleEmitter(particleSystem) {
+            this.particleSystem = particleSystem;
+        }
+        BoxParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+            var randX = BABYLON.ParticleSystem.randomNumber(this.particleSystem.direction1.x, this.particleSystem.direction2.x);
+            var randY = BABYLON.ParticleSystem.randomNumber(this.particleSystem.direction1.y, this.particleSystem.direction2.y);
+            var randZ = BABYLON.ParticleSystem.randomNumber(this.particleSystem.direction1.z, this.particleSystem.direction2.z);
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+        };
+        BoxParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
+            var randX = BABYLON.ParticleSystem.randomNumber(this.particleSystem.minEmitBox.x, this.particleSystem.maxEmitBox.x);
+            var randY = BABYLON.ParticleSystem.randomNumber(this.particleSystem.minEmitBox.y, this.particleSystem.maxEmitBox.y);
+            var randZ = BABYLON.ParticleSystem.randomNumber(this.particleSystem.minEmitBox.z, this.particleSystem.maxEmitBox.z);
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+        };
+        return BoxParticleEmitter;
+    }());
+    BABYLON.BoxParticleEmitter = BoxParticleEmitter;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.boxParticleEmitter.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    var ConeParticleEmitter = /** @class */ (function () {
+        function ConeParticleEmitter(redius, angle) {
+            this.redius = redius;
+            this.angle = angle;
+        }
+        ConeParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+            if (this.angle === 0) {
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(0, emitPower, 0, worldMatrix, directionToUpdate);
+            }
+            else {
+                var phi = BABYLON.ParticleSystem.randomNumber(0, 2 * Math.PI);
+                var theta = BABYLON.ParticleSystem.randomNumber(0, this.angle);
+                var randX = Math.cos(phi) * Math.sin(theta);
+                var randY = Math.cos(theta);
+                var randZ = Math.sin(phi) * Math.sin(theta);
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+            }
+        };
+        ConeParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
+            var s = BABYLON.ParticleSystem.randomNumber(0, Math.PI * 2);
+            var redius = BABYLON.ParticleSystem.randomNumber(0, this.redius);
+            var randX = redius * Math.sin(s);
+            var randZ = redius * Math.cos(s);
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
+        };
+        return ConeParticleEmitter;
+    }());
+    BABYLON.ConeParticleEmitter = ConeParticleEmitter;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.coneParticleEmitter.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var SphereParticleEmitter = /** @class */ (function () {
+        function SphereParticleEmitter(redius) {
+            this.redius = redius;
+        }
+        SphereParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+            // measure the direction Vector from the emitter to the particle.
+            var direction = particle.position.subtract(worldMatrix.getTranslation());
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
+        };
+        SphereParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
+            var phi = BABYLON.ParticleSystem.randomNumber(0, 2 * Math.PI);
+            var theta = BABYLON.ParticleSystem.randomNumber(0, Math.PI);
+            var randX = this.redius * Math.cos(phi) * Math.sin(theta);
+            var randY = this.redius * Math.cos(theta);
+            var randZ = this.redius * Math.sin(phi) * Math.sin(theta);
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+        };
+        return SphereParticleEmitter;
+    }());
+    BABYLON.SphereParticleEmitter = SphereParticleEmitter;
+    var SphereDirectedParticleEmitter = /** @class */ (function (_super) {
+        __extends(SphereDirectedParticleEmitter, _super);
+        function SphereDirectedParticleEmitter(redius, direction1, direction2) {
+            var _this = _super.call(this, redius) || this;
+            _this.direction1 = direction1;
+            _this.direction2 = direction2;
+            return _this;
+        }
+        SphereDirectedParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
+            var randX = BABYLON.ParticleSystem.randomNumber(this.direction1.x, this.direction2.x);
+            var randY = BABYLON.ParticleSystem.randomNumber(this.direction1.y, this.direction2.y);
+            var randZ = BABYLON.ParticleSystem.randomNumber(this.direction1.z, this.direction2.z);
+            BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+        };
+        return SphereDirectedParticleEmitter;
+    }(SphereParticleEmitter));
+    BABYLON.SphereDirectedParticleEmitter = SphereDirectedParticleEmitter;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.sphereParticleEmitter.js.map
+
+
+
+//# sourceMappingURL=babylon.iParticleEmitterType.js.map
 
 var BABYLON;
 (function (BABYLON) {
