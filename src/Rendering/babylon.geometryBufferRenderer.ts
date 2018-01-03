@@ -125,7 +125,9 @@ module BABYLON {
             var engine = this._scene.getEngine();
             var count = this._enablePosition ? 3 : 2;
 
-            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true });
+            this._multiRenderTarget = new MultiRenderTarget("gBuffer",
+                { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
+                { generateMipMaps: false, generateDepthTexture: true, defaultType: Engine.TEXTURETYPE_FLOAT });
             if (!this.isSupported) {
                 return;
             }
