@@ -12698,7 +12698,7 @@ var BABYLON;
         };
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         Engine.ExceptionList = [
-            { key: "Chrome/63", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+            { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
         ];
         Engine.Instances = new Array();
@@ -46062,7 +46062,7 @@ var BABYLON;
             this._vertexBuffers[BABYLON.VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
             // Default behaviors
-            this._particleEmitterType = new BABYLON.BoxParticleEmitter(this);
+            this.particleEmitterType = new BABYLON.BoxParticleEmitter(this);
             this.updateFunction = function (particles) {
                 for (var index = 0; index < particles.length; index++) {
                     var particle = particles[index];
@@ -46211,8 +46211,18 @@ var BABYLON;
                 }
                 this.particles.push(particle);
                 var emitPower = ParticleSystem.randomNumber(this.minEmitPower, this.maxEmitPower);
-                this._particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
-                this._particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                if (this.startDirectionFunction) {
+                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                else {
+                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                if (this.startPositionFunction) {
+                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                }
+                else {
+                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                }
                 particle.lifeTime = ParticleSystem.randomNumber(this.minLifeTime, this.maxLifeTime);
                 particle.size = ParticleSystem.randomNumber(this.minSize, this.maxSize);
                 particle.angularSpeed = ParticleSystem.randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
@@ -46400,28 +46410,43 @@ var BABYLON;
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         };
-        ParticleSystem.prototype.createSphereEmitter = function (redius) {
-            if (redius === void 0) { redius = 1; }
-            this._particleEmitterType = new BABYLON.SphereParticleEmitter(redius);
+        ParticleSystem.prototype.createSphereEmitter = function (radius) {
+            if (radius === void 0) { radius = 1; }
+            var particleEmitter = new BABYLON.SphereParticleEmitter(radius);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         };
-        ParticleSystem.prototype.createDirectedSphereEmitter = function (redius, direction1, direction2) {
-            if (redius === void 0) { redius = 1; }
+        ParticleSystem.prototype.createDirectedSphereEmitter = function (radius, direction1, direction2) {
+            if (radius === void 0) { radius = 1; }
             if (direction1 === void 0) { direction1 = new BABYLON.Vector3(0, 1.0, 0); }
             if (direction2 === void 0) { direction2 = new BABYLON.Vector3(0, 1.0, 0); }
-            this._particleEmitterType = new BABYLON.SphereDirectedParticleEmitter(redius, direction1, direction2);
+            var particleEmitter = new BABYLON.SphereDirectedParticleEmitter(radius, direction1, direction2);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         };
-        ParticleSystem.prototype.createConeEmitter = function (redius, angle) {
-            if (redius === void 0) { redius = 1; }
+        ParticleSystem.prototype.createConeEmitter = function (radius, angle) {
+            if (radius === void 0) { radius = 1; }
             if (angle === void 0) { angle = Math.PI / 4; }
-            this._particleEmitterType = new BABYLON.ConeParticleEmitter(redius, angle);
+            var particleEmitter = new BABYLON.ConeParticleEmitter(radius, angle);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
         };
-        // this method need to be changed when breaking changes to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
         ParticleSystem.prototype.createBoxEmitter = function (direction1, direction2, minEmitBox, maxEmitBox) {
+            var particleEmitter = new BABYLON.BoxParticleEmitter(this);
             this.direction1 = direction1;
             this.direction2 = direction2;
             this.minEmitBox = minEmitBox;
             this.maxEmitBox = maxEmitBox;
-            this._particleEmitterType = new BABYLON.BoxParticleEmitter(this);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        };
+        ParticleSystem.randomNumber = function (min, max) {
+            if (min === max) {
+                return (min);
+            }
+            var random = Math.random();
+            return ((random * (max - min)) + min);
         };
         // Clone
         ParticleSystem.prototype.clone = function (name, newEmitter) {
@@ -46575,13 +46600,6 @@ var BABYLON;
         // Statics
         ParticleSystem.BLENDMODE_ONEONE = 0;
         ParticleSystem.BLENDMODE_STANDARD = 1;
-        ParticleSystem.randomNumber = function (min, max) {
-            if (min === max) {
-                return (min);
-            }
-            var random = Math.random();
-            return ((random * (max - min)) + min);
-        };
         return ParticleSystem;
     }());
     BABYLON.ParticleSystem = ParticleSystem;
@@ -46593,19 +46611,60 @@ var BABYLON;
 (function (BABYLON) {
     var BoxParticleEmitter = /** @class */ (function () {
         // to be updated like the rest of emitters when breaking changes.
-        function BoxParticleEmitter(particleSystem) {
-            this.particleSystem = particleSystem;
+        // all property should be come public variables and passed through constructor.
+        function BoxParticleEmitter(_particleSystem) {
+            this._particleSystem = _particleSystem;
         }
+        Object.defineProperty(BoxParticleEmitter.prototype, "direction1", {
+            get: function () {
+                return this._particleSystem.direction1;
+            },
+            set: function (value) {
+                this._particleSystem.direction1 = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoxParticleEmitter.prototype, "direction2", {
+            get: function () {
+                return this._particleSystem.direction2;
+            },
+            set: function (value) {
+                this._particleSystem.direction2 = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoxParticleEmitter.prototype, "minEmitBox", {
+            get: function () {
+                return this._particleSystem.minEmitBox;
+            },
+            set: function (value) {
+                this._particleSystem.minEmitBox = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(BoxParticleEmitter.prototype, "maxEmitBox", {
+            get: function () {
+                return this._particleSystem.maxEmitBox;
+            },
+            set: function (value) {
+                this._particleSystem.maxEmitBox = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         BoxParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
-            var randX = BABYLON.ParticleSystem.randomNumber(this.particleSystem.direction1.x, this.particleSystem.direction2.x);
-            var randY = BABYLON.ParticleSystem.randomNumber(this.particleSystem.direction1.y, this.particleSystem.direction2.y);
-            var randZ = BABYLON.ParticleSystem.randomNumber(this.particleSystem.direction1.z, this.particleSystem.direction2.z);
+            var randX = BABYLON.ParticleSystem.randomNumber(this.direction1.x, this.direction2.x);
+            var randY = BABYLON.ParticleSystem.randomNumber(this.direction1.y, this.direction2.y);
+            var randZ = BABYLON.ParticleSystem.randomNumber(this.direction1.z, this.direction2.z);
             BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
         };
         BoxParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
-            var randX = BABYLON.ParticleSystem.randomNumber(this.particleSystem.minEmitBox.x, this.particleSystem.maxEmitBox.x);
-            var randY = BABYLON.ParticleSystem.randomNumber(this.particleSystem.minEmitBox.y, this.particleSystem.maxEmitBox.y);
-            var randZ = BABYLON.ParticleSystem.randomNumber(this.particleSystem.minEmitBox.z, this.particleSystem.maxEmitBox.z);
+            var randX = BABYLON.ParticleSystem.randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
+            var randY = BABYLON.ParticleSystem.randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
+            var randZ = BABYLON.ParticleSystem.randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         };
         return BoxParticleEmitter;
@@ -46618,8 +46677,8 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var ConeParticleEmitter = /** @class */ (function () {
-        function ConeParticleEmitter(redius, angle) {
-            this.redius = redius;
+        function ConeParticleEmitter(radius, angle) {
+            this.radius = radius;
             this.angle = angle;
         }
         ConeParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
@@ -46637,9 +46696,9 @@ var BABYLON;
         };
         ConeParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
             var s = BABYLON.ParticleSystem.randomNumber(0, Math.PI * 2);
-            var redius = BABYLON.ParticleSystem.randomNumber(0, this.redius);
-            var randX = redius * Math.sin(s);
-            var randZ = redius * Math.cos(s);
+            var radius = BABYLON.ParticleSystem.randomNumber(0, this.radius);
+            var randX = radius * Math.sin(s);
+            var randZ = radius * Math.cos(s);
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
         };
         return ConeParticleEmitter;
@@ -46653,8 +46712,8 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     var SphereParticleEmitter = /** @class */ (function () {
-        function SphereParticleEmitter(redius) {
-            this.redius = redius;
+        function SphereParticleEmitter(radius) {
+            this.radius = radius;
         }
         SphereParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
             // measure the direction Vector from the emitter to the particle.
@@ -46664,9 +46723,9 @@ var BABYLON;
         SphereParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
             var phi = BABYLON.ParticleSystem.randomNumber(0, 2 * Math.PI);
             var theta = BABYLON.ParticleSystem.randomNumber(0, Math.PI);
-            var randX = this.redius * Math.cos(phi) * Math.sin(theta);
-            var randY = this.redius * Math.cos(theta);
-            var randZ = this.redius * Math.sin(phi) * Math.sin(theta);
+            var randX = this.radius * Math.cos(phi) * Math.sin(theta);
+            var randY = this.radius * Math.cos(theta);
+            var randZ = this.radius * Math.sin(phi) * Math.sin(theta);
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         };
         return SphereParticleEmitter;
@@ -46674,8 +46733,8 @@ var BABYLON;
     BABYLON.SphereParticleEmitter = SphereParticleEmitter;
     var SphereDirectedParticleEmitter = /** @class */ (function (_super) {
         __extends(SphereDirectedParticleEmitter, _super);
-        function SphereDirectedParticleEmitter(redius, direction1, direction2) {
-            var _this = _super.call(this, redius) || this;
+        function SphereDirectedParticleEmitter(radius, direction1, direction2) {
+            var _this = _super.call(this, radius) || this;
             _this.direction1 = direction1;
             _this.direction2 = direction2;
             return _this;
@@ -52221,10 +52280,9 @@ var BABYLON;
         __extends(MultiRenderTarget, _super);
         function MultiRenderTarget(name, size, count, scene, options) {
             var _this = this;
-            options = options || {};
-            var generateMipMaps = options.generateMipMaps ? options.generateMipMaps : false;
-            var generateDepthTexture = options.generateDepthTexture ? options.generateDepthTexture : false;
-            var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
+            var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
+            var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
+            var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
             _this = _super.call(this, name, size, scene, generateMipMaps, doNotChangeAspectRatio) || this;
             _this._engine = scene.getEngine();
             if (!_this.isSupported) {
@@ -52234,21 +52292,21 @@ var BABYLON;
             var types = [];
             var samplingModes = [];
             for (var i = 0; i < count; i++) {
-                if (options.types && options.types[i] !== undefined) {
+                if (options && options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 }
                 else {
-                    types.push(BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
+                    types.push(options && options.defaultType ? options.defaultType : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT);
                 }
-                if (options.samplingModes && options.samplingModes[i] !== undefined) {
+                if (options && options.samplingModes && options.samplingModes[i] !== undefined) {
                     samplingModes.push(options.samplingModes[i]);
                 }
                 else {
                     samplingModes.push(BABYLON.Texture.BILINEAR_SAMPLINGMODE);
                 }
             }
-            var generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-            var generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+            var generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+            var generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
             _this._size = size;
             _this._multiRenderTargetOptions = {
                 samplingModes: samplingModes,
@@ -61864,7 +61922,7 @@ var BABYLON;
             var _this = this;
             var engine = this._scene.getEngine();
             var count = this._enablePosition ? 3 : 2;
-            this._multiRenderTarget = new BABYLON.MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true });
+            this._multiRenderTarget = new BABYLON.MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps: false, generateDepthTexture: true, defaultType: BABYLON.Engine.TEXTURETYPE_FLOAT });
             if (!this.isSupported) {
                 return;
             }
