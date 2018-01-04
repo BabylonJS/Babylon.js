@@ -9,6 +9,20 @@ var justOnce;
 var threshold = 25;
 var errorRatio = 5;
 
+// Overload the random to make it deterministic
+var seed = 100000,
+    constant = Math.pow(2, 13) + 1,
+    prime = 37,
+    maximum = Math.pow(2, 50);
+
+Math.random = function () {
+    seed *= constant;
+    seed += prime;
+    seed %= maximum;
+
+    return seed / maximum;
+}
+
 function compare(renderData, referenceCanvas) {
     var width = referenceCanvas.width;
     var height = referenceCanvas.height;
@@ -77,6 +91,7 @@ function saveRenderImage(data, canvas) {
 }
 
 function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
+    seed = 100000;
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
 
