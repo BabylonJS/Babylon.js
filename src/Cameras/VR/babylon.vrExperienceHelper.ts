@@ -113,6 +113,18 @@ module BABYLON {
         private _circleEase: CircleEase;
 
         /**
+         * Observable raised when camera is teleporting         
+        */
+
+        public onBeforeCameraTeleport = new Observable<Vector3>();
+
+        /**
+         *  Observable raised when camera finished teleportation 
+        */
+
+        public onAfterCameraTeleport = new Observable<Vector3>();
+
+        /**
         * Observable raised when current selected mesh gets unselected
         */
         public onSelectedMeshUnselected = new Observable<AbstractMesh>();
@@ -1223,6 +1235,8 @@ module BABYLON {
                 this._workingVector.y += this._defaultHeight;
             }
 
+            this.onBeforeCameraTeleport.notifyObservers(this._workingVector);
+
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new Animation("animationCameraTeleportation", "position", 90, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -1289,7 +1303,9 @@ module BABYLON {
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
-            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
+            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1, () => {
+                this.onAfterCameraTeleport.notifyObservers(this._workingVector);
+            });
         }
 
         private _castRayAndSelectObject() {
