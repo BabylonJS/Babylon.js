@@ -763,7 +763,7 @@
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
             let bufferName = this._uniformBuffersNames[name];
-            if (Effect._baseCache[bufferName] === buffer) {
+            if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
                 return;
             }
             Effect._baseCache[bufferName] = buffer;
