@@ -8724,7 +8724,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha1";
+                return "3.2.0-alpha2";
             },
             enumerable: true,
             configurable: true
@@ -27588,7 +27588,7 @@ var BABYLON;
         };
         Effect.prototype.bindUniformBuffer = function (buffer, name) {
             var bufferName = this._uniformBuffersNames[name];
-            if (Effect._baseCache[bufferName] === buffer) {
+            if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
                 return;
             }
             Effect._baseCache[bufferName] = buffer;
@@ -30232,10 +30232,10 @@ var BABYLON;
          * Creates the VertexData of the TiledGround.
          */
         VertexData.CreateTiledGround = function (options) {
-            var xmin = options.xmin || -1.0;
-            var zmin = options.zmin || -1.0;
-            var xmax = options.xmax || 1.0;
-            var zmax = options.zmax || 1.0;
+            var xmin = (options.xmin !== undefined && options.xmin !== null) ? options.xmin : -1.0;
+            var zmin = (options.zmin !== undefined && options.zmin !== null) ? options.zmin : -1.0;
+            var xmax = (options.xmax !== undefined && options.xmax !== null) ? options.xmax : 1.0;
+            var zmax = (options.zmax !== undefined && options.zmax !== null) ? options.zmax : 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
             var indices = new Array();
@@ -34638,9 +34638,10 @@ var BABYLON;
         MaterialHelper.BindLights = function (scene, mesh, effect, defines, maxSimultaneousLights, usePhysicalLightFalloff) {
             if (maxSimultaneousLights === void 0) { maxSimultaneousLights = 4; }
             if (usePhysicalLightFalloff === void 0) { usePhysicalLightFalloff = false; }
-            for (var i = 0, len = mesh._lightSources.length, light, iAsString; i < len; i++) {
-                light = mesh._lightSources[i];
-                iAsString = i.toString();
+            var len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
+            for (var i = 0; i < len; i++) {
+                var light = mesh._lightSources[i];
+                var iAsString = i.toString();
                 var scaledIntensity = light.getScaledIntensity();
                 light._uniformBuffer.bindToEffect(effect, "Light" + i);
                 MaterialHelper.BindLightProperties(light, effect, i);
@@ -34655,8 +34656,6 @@ var BABYLON;
                     this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
-                if (i === maxSimultaneousLights)
-                    break;
             }
         };
         MaterialHelper.BindFogParameters = function (scene, mesh, effect) {
@@ -81195,6 +81194,7 @@ var BABYLON;
                 groundMirrorFresnelWeight: 1,
                 groundMirrorFallOffDistance: 0,
                 groundMirrorTextureType: BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                groundYBias: 0.00001,
                 createSkybox: true,
                 skyboxSize: 20,
                 skyboxTexture: this._skyboxTextureCDNUrl,
@@ -81429,24 +81429,22 @@ var BABYLON;
             }
             var sceneExtends = this._scene.getWorldExtends();
             var sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-            var bias = 0.0001;
             if (this._options.sizeAuto) {
                 if (this._scene.activeCamera instanceof BABYLON.ArcRotateCamera &&
                     this._scene.activeCamera.upperRadiusLimit) {
                     groundSize = this._scene.activeCamera.upperRadiusLimit * 2;
-                }
-                if (this._scene.activeCamera) {
-                    bias = (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 10000;
+                    skyboxSize = groundSize;
                 }
                 var sceneDiagonalLenght = sceneDiagonal.length();
                 if (sceneDiagonalLenght > groundSize) {
                     groundSize = sceneDiagonalLenght * 2;
+                    skyboxSize = groundSize;
                 }
                 // 10 % bigger.
                 groundSize *= 1.1;
                 skyboxSize *= 1.5;
                 rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
-                rootPosition.y = sceneExtends.min.y - bias;
+                rootPosition.y = sceneExtends.min.y - this._options.groundYBias;
             }
             return { groundSize: groundSize, skyboxSize: skyboxSize, rootPosition: rootPosition };
         };
