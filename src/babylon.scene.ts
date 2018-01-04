@@ -879,7 +879,7 @@
         private _pendingData = new Array();
         private _isDisposed = false;
 
-        public dispatchAllSubMeshesOfActiveMeshes:boolean = false;
+        public dispatchAllSubMeshesOfActiveMeshes: boolean = false;
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);

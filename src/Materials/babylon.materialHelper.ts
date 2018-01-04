@@ -3,10 +3,10 @@
 
         public static BindEyePosition(effect: Effect, scene: Scene): void {
             if (scene._forcedViewPosition) {
-                effect.setVector3("vEyePosition", scene._forcedViewPosition);            
+                effect.setVector3("vEyePosition", scene._forcedViewPosition);
                 return;
             }
-            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);            
+            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);
         }
 
         public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
@@ -57,13 +57,13 @@
             if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
                 defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
                 changed = true;
-            }            
+            }
 
             if (defines["INSTANCES"] !== useInstances) {
                 defines["INSTANCES"] = useInstances;
                 changed = true;
             }
-            
+
             if (changed) {
                 defines.markAsUnprocessed();
             }
@@ -76,7 +76,7 @@
 
             defines._normals = defines._needNormals;
             defines._uvs = defines._needUVs;
-            
+
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
             if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
@@ -111,7 +111,7 @@
                 var manager = (<Mesh>mesh).morphTargetManager;
                 if (manager) {
                     defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
-                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
+                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
                     defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
                     defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
                 } else {
@@ -146,7 +146,7 @@
                     }
 
                     defines["LIGHT" + lightIndex] = true;
-                    
+
                     defines["SPOTLIGHT" + lightIndex] = false;
                     defines["HEMILIGHT" + lightIndex] = false;
                     defines["POINTLIGHT" + lightIndex] = false;
@@ -184,7 +184,7 @@
                         }
                     }
 
-                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
+                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
                         lightmapMode = true;
                         defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
@@ -208,7 +208,7 @@
                     defines["LIGHT" + index] = false;
                     defines["HEMILIGHT" + lightIndex] = false;
                     defines["POINTLIGHT" + lightIndex] = false;
-                    defines["DIRLIGHT" + lightIndex] = false;                    
+                    defines["DIRLIGHT" + lightIndex] = false;
                     defines["SPOTLIGHT" + lightIndex] = false;
                     defines["SHADOW" + lightIndex] = false;
                 }
@@ -220,9 +220,9 @@
                 needRebuild = true;
             }
 
-            defines["SHADOWFLOAT"] = shadowEnabled && 
-                                    ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
-                                         (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
+            defines["SHADOWFLOAT"] = shadowEnabled &&
+                ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
+                    (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
             defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
@@ -370,9 +370,12 @@
         }
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
-            for (var i = 0, len = mesh._lightSources.length, light, iAsString; i < len; i++) {
-                light = mesh._lightSources[i];
-                iAsString = i.toString();
+            let len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
+
+            for (var i = 0; i < len; i++) {
+
+                let light = mesh._lightSources[i];
+                let iAsString = i.toString();
 
                 let scaledIntensity = light.getScaledIntensity();
                 light._uniformBuffer.bindToEffect(effect, "Light" + i);
@@ -391,9 +394,6 @@
                     this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
-
-                if (i === maxSimultaneousLights)
-                    break;
             }
         }
 

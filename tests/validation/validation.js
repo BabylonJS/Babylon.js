@@ -79,17 +79,28 @@ function saveRenderImage(data, canvas) {
 function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
     var renderData = getRenderData(canvas, engine);
     var testRes = true;
-    if (!test.onlyVisual) {
 
-        if (compare(renderData, resultCanvas)) {
-            result.classList.add("failed");
-            result.innerHTML = "×";
-            testRes = false;
-            console.log('%c failed', 'color: red');
-        } else {
-            result.innerHTML = "✔";
-            testRes = true;
-            console.log('%c validated', 'color: green');
+    // gl check
+    var gl = engine._gl;
+    if (gl.getError() !== 0) {
+        result.classList.add("failed");
+        result.innerHTML = "×";
+        testRes = false;
+        console.log('%c failed (gl error)', 'color: red');
+    } else {
+
+        // Visual check
+        if (!test.onlyVisual) {
+            if (compare(renderData, resultCanvas)) {
+                result.classList.add("failed");
+                result.innerHTML = "×";
+                testRes = false;
+                console.log('%c failed', 'color: red');
+            } else {
+                result.innerHTML = "✔";
+                testRes = true;
+                console.log('%c validated', 'color: green');
+            }
         }
     }
     waitRing.classList.add("hidden");
