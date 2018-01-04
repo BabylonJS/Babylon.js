@@ -619,7 +619,7 @@ gulp.task("modules-compile", function () {
 // this holds the declared objects in each module
 let declared = {}
 
-gulp.task('prepare-for-modules', /*["modules-compile"],*/ function () {
+gulp.task('prepare-for-modules', ["modules-compile"], function () {
     let tasks = [];
     Object.keys(config.workloads).forEach((moduleName) => {
         let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
@@ -664,11 +664,6 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
                 .pipe(babylonModuleExports(moduleName, config.workloads[moduleName].dependUpon))
-                .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'))
-                .pipe(cleants())
-                .pipe(rename({ extname: ".min.js" }))
-                .pipe(uglify())
-                .pipe(optimisejs())
                 .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
 
             let es6Task = merge2([
@@ -686,19 +681,14 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
                 .pipe(babylonES6ModuleExports(moduleName, config.workloads[moduleName].dependUpon))
-                .pipe(gulp.dest(config.build.outputDirectory + '/es6/'))
-                .pipe(cleants())
-                .pipe(rename({ extname: ".min.js" }))
-                .pipe(uglify())
-                .pipe(optimisejs())
                 .pipe(gulp.dest(config.build.outputDirectory + '/es6/'));
 
 
             let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat(moduleName + ".d.ts"))
-                //.pipe(addDtsExport("BABYLON", "babylonjs/es6/" + moduleName))
                 .pipe(replace(/declare module BABYLON {/g, `declare module 'babylonjs/${moduleName}' {`))
+                .pipe(replace(/\ninterface /g, `\nexport interface `))
                 .pipe(dtsModuleSupport(moduleName, true, declared))
                 .pipe(gulp.dest(config.build.outputDirectory + '/commonjs/'));
 
