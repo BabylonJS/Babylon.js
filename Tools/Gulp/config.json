@@ -256,7 +256,9 @@
         },
         "nullEngine": {
             "files": [
-                "../../src/Engine/babylon.nullEngine.js"
+                "../../src/Engine/babylon.nullEngine.js",
+                "../../src/Engine/babylon.webgl2.js",
+                "../../src/babylon.mixins.js"
             ],
             "dependUpon": [
                 "core"
@@ -264,6 +266,7 @@
         },
         "instrumentation": {
             "files": [
+                "../../src/Engine/babylon.webgl2.js",
                 "../../src/Instrumentation/babylon.engineInstrumentation.js",
                 "../../src/Instrumentation/babylon.sceneInstrumentation.js",
                 "../../src/Instrumentation/babylon.timeToken.js"
@@ -497,31 +500,36 @@
                 "fogFragment"
             ]
         },
-        "freeCamera": {
+        "targetCamera": {
             "files": [
                 "../../src/Cameras/babylon.cameraInputsManager.js",
-                "../../src/Cameras/Inputs/babylon.freeCameraMouseInput.js",
-                "../../src/Cameras/Inputs/babylon.freeCameraKeyboardMoveInput.js",
-                "../../src/Cameras/babylon.freeCameraInputsManager.js",
-                "../../src/Cameras/babylon.targetCamera.js",
-                "../../src/Cameras/babylon.freeCamera.js"
+                "../../src/Cameras/babylon.targetCamera.js"
             ],
             "dependUpon": [
                 "core"
             ]
         },
+        "freeCamera": {
+            "files": [
+                "../../src/Cameras/Inputs/babylon.freeCameraMouseInput.js",
+                "../../src/Cameras/Inputs/babylon.freeCameraKeyboardMoveInput.js",
+                "../../src/Cameras/babylon.freeCameraInputsManager.js",
+                "../../src/Cameras/babylon.freeCamera.js"
+            ],
+            "dependUpon": [
+                "targetCamera"
+            ]
+        },
         "arcRotateCamera": {
             "files": [
-                "../../src/Cameras/babylon.cameraInputsManager.js",
-                "../../src/Cameras/babylon.targetCamera.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraKeyboardMoveInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraMouseWheelInput.js",
                 "../../src/Cameras/Inputs/babylon.arcRotateCameraPointersInput.js",
-                "../../src/Cameras/babylon.arcRotateCamera.js",
-                "../../src/Cameras/babylon.arcRotateCameraInputsManager.js"
+                "../../src/Cameras/babylon.arcRotateCameraInputsManager.js",
+                "../../src/Cameras/babylon.arcRotateCamera.js"
             ],
             "dependUpon": [
-                "core"
+                "targetCamera"
             ]
         },
         "hemisphericLight": {
