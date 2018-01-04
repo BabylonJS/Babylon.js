@@ -241,8 +241,7 @@
       "renderCount": 20,
       "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
       "functionToCall": "createScene",
-      "referenceImage": "gltf1CesiumMan.png",
-      "onlyVisual": true
+      "referenceImage": "gltf1CesiumMan.png"
     },
     {
       "title": "GLTF Mesh Primitive Attribute Test",
@@ -265,13 +264,6 @@
       "scriptToRun": "/Demos/PBRRough/index.js",
       "functionToCall": "CreatePBRRoughScene",
       "referenceImage": "pbrrough.png"
-    },
-    {
-      "title": "GLTF LOD",
-      "renderCount": 500,
-      "playgroundId": "#TC80RU#41",
-      "referenceImage": "GLTF LOD.png",
-      "onlyVisual": true
     },
     {
       "title": "Reflection probes",
@@ -341,30 +333,20 @@
       "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
     },
     {
-      "title": "Water material (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/WaterMaterial/water.js",
-      "functionToCall": "CreateWaterTestScene",
-      "referenceImage": "waterMaterial.png",
-      "onlyVisual": true
-    },
-    {
-      "title": "Instances (only visual check)",
+      "title": "Instances",
       "renderCount": 10,
       "scriptToRun": "/Demos/Instances/instances.js",
       "functionToCall": "CreateInstancesTestScene",
       "referenceImage": "instances.png",
-      "replace": "ground., Ground.",
-      "onlyVisual": true
+      "replace": "ground., Ground."
     },
     {
-      "title": "Instanced Bones (only visual check)",
+      "title": "Instanced Bones",
       "renderCount": 10,
       "scriptToRun": "/Demos/InstancedBones/bones2.js",
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",
-      "replace": "Dude.babylon, dude.babylon",
-      "onlyVisual": true
+      "replace": "Dude.babylon, dude.babylon"
     }
   ]
 }

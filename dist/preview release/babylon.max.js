@@ -73585,6 +73585,14 @@ var BABYLON;
             this._padSensibilityDown = 0.35;
             this.onNewMeshSelected = new BABYLON.Observable();
             /**
+             * Observable raised before camera teleportation
+            */
+            this.onBeforeCameraTeleport = new BABYLON.Observable();
+            /**
+             *  Observable raised after camera teleportation
+            */
+            this.onAfterCameraTeleport = new BABYLON.Observable();
+            /**
             * Observable raised when current selected mesh gets unselected
             */
             this.onSelectedMeshUnselected = new BABYLON.Observable();
@@ -74635,6 +74643,7 @@ var BABYLON;
             else {
                 this._workingVector.y += this._defaultHeight;
             }
+            this.onBeforeCameraTeleport.notifyObservers(this._workingVector);
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -74689,7 +74698,9 @@ var BABYLON;
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, function () {
                 _this._webVRCamera.detachPostProcess(_this._postProcessMove);
             });
-            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
+            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1, function () {
+                _this.onAfterCameraTeleport.notifyObservers(_this._workingVector);
+            });
         };
         VRExperienceHelper.prototype._castRayAndSelectObject = function () {
             if (!(this.currentVRCamera instanceof BABYLON.FreeCamera)) {
@@ -77577,6 +77588,7 @@ var BABYLON;
     BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
     var AssetsManager = /** @class */ (function () {
         function AssetsManager(scene) {
+            this._isLoading = false;
             this.tasks = new Array();
             this.waitingTasksCount = 0;
             //Observables
@@ -77650,6 +77662,7 @@ var BABYLON;
                     BABYLON.Tools.Error("Error running tasks-done callbacks.");
                     console.log(e);
                 }
+                this._isLoading = false;
                 this._scene.getEngine().hideLoadingUI();
             }
         };
@@ -77681,16 +77694,22 @@ var BABYLON;
             task.run(this._scene, done, error);
         };
         AssetsManager.prototype.reset = function () {
+            this._isLoading = false;
             this.tasks = new Array();
             return this;
         };
         AssetsManager.prototype.load = function () {
+            if (this._isLoading) {
+                return this;
+            }
+            this._isLoading = true;
             this.waitingTasksCount = this.tasks.length;
             if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
                     this.onFinish(this.tasks);
                 }
                 this.onTasksDoneObservable.notifyObservers(this.tasks);
+                this._isLoading = false;
                 return this;
             }
             if (this.useDefaultLoadingScreen) {
