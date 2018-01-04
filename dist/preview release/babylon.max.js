@@ -20040,12 +20040,44 @@ var BABYLON;
             animatable.reset();
             return animatable;
         };
+        /**
+         * Begin a new animation on a given node
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {BABYLON.Animation[]} defines the list of animations to start
+         * @param {number} from defines the initial value
+         * @param {number} to defines the final value
+         * @param {boolean} loop defines if you want animation to loop (off by default)
+         * @param {number} speedRatio defines the speed ratio to apply to all animations
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of created animatables
+         */
         Scene.prototype.beginDirectAnimation = function (target, animations, from, to, loop, speedRatio, onAnimationEnd) {
             if (speedRatio === undefined) {
                 speedRatio = 1.0;
             }
             var animatable = new BABYLON.Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd, animations);
             return animatable;
+        };
+        /**
+         * Begin a new animation on a given node and its hierarchy
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {boolean} directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+         * @param {BABYLON.Animation[]} defines the list of animations to start
+         * @param {number} from defines the initial value
+         * @param {number} to defines the final value
+         * @param {boolean} loop defines if you want animation to loop (off by default)
+         * @param {number} speedRatio defines the speed ratio to apply to all animations
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
+         */
+        Scene.prototype.beginDirectHierarchyAnimation = function (target, directDescendantsOnly, animations, from, to, loop, speedRatio, onAnimationEnd) {
+            var children = target.getDescendants(directDescendantsOnly);
+            var result = [];
+            for (var _i = 0, children_1 = children; _i < children_1.length; _i++) {
+                var child = children_1[_i];
+                result.push(this.beginDirectAnimation(child, animations, from, to, loop, speedRatio, onAnimationEnd));
+            }
+            return result;
         };
         Scene.prototype.getAnimatableByTarget = function (target) {
             for (var index = 0; index < this._activeAnimatables.length; index++) {
@@ -41776,12 +41808,49 @@ var BABYLON;
             animation.setEasingFunction(easingFunction);
             return animation;
         };
+        /**
+         * Create and start an animation on a node
+         * @param {string} name defines the name of the global animation that will be run on all nodes
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {string} targetProperty defines property to animate
+         * @param {number} framePerSecond defines the number of frame per second yo use
+         * @param {number} totalFrame defines the number of frames in total
+         * @param {any} from defines the initial value
+         * @param {any} to defines the final value
+         * @param {number} loopMode defines which loop mode you want to use (off by default)
+         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when animation end
+         * @returns the animatable created for this animation
+         */
         Animation.CreateAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
             if (!animation) {
                 return null;
             }
             return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        };
+        /**
+         * Create and start an animation on a node and its descendants
+         * @param {string} name defines the name of the global animation that will be run on all nodes
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {boolean} directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+         * @param {string} targetProperty defines property to animate
+         * @param {number} framePerSecond defines the number of frame per second yo use
+         * @param {number} totalFrame defines the number of frames in total
+         * @param {any} from defines the initial value
+         * @param {any} to defines the final value
+         * @param {number} loopMode defines which loop mode you want to use (off by default)
+         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
+         */
+        Animation.CreateAndStartHierarchyAnimation = function (name, node, directDescendantsOnly, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
+            var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+            if (!animation) {
+                return null;
+            }
+            var scene = node.getScene();
+            return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         };
         Animation.CreateMergeAndStartAnimation = function (name, node, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
@@ -73585,6 +73654,14 @@ var BABYLON;
             this._padSensibilityDown = 0.35;
             this.onNewMeshSelected = new BABYLON.Observable();
             /**
+             * Observable raised before camera teleportation
+            */
+            this.onBeforeCameraTeleport = new BABYLON.Observable();
+            /**
+             *  Observable raised after camera teleportation
+            */
+            this.onAfterCameraTeleport = new BABYLON.Observable();
+            /**
             * Observable raised when current selected mesh gets unselected
             */
             this.onSelectedMeshUnselected = new BABYLON.Observable();
@@ -74635,6 +74712,7 @@ var BABYLON;
             else {
                 this._workingVector.y += this._defaultHeight;
             }
+            this.onBeforeCameraTeleport.notifyObservers(this._workingVector);
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new BABYLON.Animation("animationCameraTeleportation", "position", 90, BABYLON.Animation.ANIMATIONTYPE_VECTOR3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -74689,7 +74767,9 @@ var BABYLON;
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, function () {
                 _this._webVRCamera.detachPostProcess(_this._postProcessMove);
             });
-            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
+            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1, function () {
+                _this.onAfterCameraTeleport.notifyObservers(_this._workingVector);
+            });
         };
         VRExperienceHelper.prototype._castRayAndSelectObject = function () {
             if (!(this.currentVRCamera instanceof BABYLON.FreeCamera)) {
@@ -77577,6 +77657,7 @@ var BABYLON;
     BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
     var AssetsManager = /** @class */ (function () {
         function AssetsManager(scene) {
+            this._isLoading = false;
             this.tasks = new Array();
             this.waitingTasksCount = 0;
             //Observables
@@ -77650,6 +77731,7 @@ var BABYLON;
                     BABYLON.Tools.Error("Error running tasks-done callbacks.");
                     console.log(e);
                 }
+                this._isLoading = false;
                 this._scene.getEngine().hideLoadingUI();
             }
         };
@@ -77681,16 +77763,22 @@ var BABYLON;
             task.run(this._scene, done, error);
         };
         AssetsManager.prototype.reset = function () {
+            this._isLoading = false;
             this.tasks = new Array();
             return this;
         };
         AssetsManager.prototype.load = function () {
+            if (this._isLoading) {
+                return this;
+            }
+            this._isLoading = true;
             this.waitingTasksCount = this.tasks.length;
             if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
                     this.onFinish(this.tasks);
                 }
                 this.onTasksDoneObservable.notifyObservers(this.tasks);
+                this._isLoading = false;
                 return this;
             }
             if (this.useDefaultLoadingScreen) {

@@ -485,6 +485,9 @@ var BABYLON;
                     }
                     gltf.meshes.push(mesh);
                     node.mesh = gltf.meshes.length - 1;
+                    if (babylonMesh.name) {
+                        node.name = babylonMesh.name;
+                    }
                     gltf.nodes.push(node);
                     scene.nodes.push(gltf.nodes.length - 1);
                 }
