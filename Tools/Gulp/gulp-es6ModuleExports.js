@@ -80,11 +80,14 @@ ${decorateAddition}
 
         let exportedItems = '';
         exportsArray.forEach((e, idx) => {
-            if (e.indexOf('.') === -1)
+            if (e.indexOf('.') === -1) {
                 exportedItems += `${idx ? ',' : ''}${e}`
+                exportsText += `var ${e} = BABYLON.${e};
+`
+            }
         });
 
-        exportsText = `let { ${exportedItems} } = BABYLON;
+        exportsText += `
 export { ${exportedItems} };`
 
         if (file.isNull()) {
