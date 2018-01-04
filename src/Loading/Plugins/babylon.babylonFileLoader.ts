@@ -83,25 +83,25 @@
                                                 if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                     switch (geometryType) {
                                                         case "boxes":
-                                                            Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
+                                                            BoxGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "spheres":
-                                                            Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
+                                                            SphereGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "cylinders":
-                                                            Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
+                                                            CylinderGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "toruses":
-                                                            Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
+                                                            TorusGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "grounds":
-                                                            Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
+                                                            GroundGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "planes":
-                                                            Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
+                                                            PlaneGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "torusKnots":
-                                                            Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
+                                                            TorusKnotGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "vertexData":
                                                             Geometry.Parse(parsedGeometryData, scene, rootUrl);
@@ -366,7 +366,7 @@
                     if (boxes !== undefined && boxes !== null) {
                         for (index = 0, cache = boxes.length; index < cache; index++) {
                             var parsedBox = boxes[index];
-                            Geometry.Primitives.Box.Parse(parsedBox, scene);
+                            BoxGeometry.Parse(parsedBox, scene);
                         }
                     }
 
@@ -375,7 +375,7 @@
                     if (spheres !== undefined && spheres !== null) {
                         for (index = 0, cache = spheres.length; index < cache; index++) {
                             var parsedSphere = spheres[index];
-                            Geometry.Primitives.Sphere.Parse(parsedSphere, scene);
+                            SphereGeometry.Parse(parsedSphere, scene);
                         }
                     }
 
@@ -384,7 +384,7 @@
                     if (cylinders !== undefined && cylinders !== null) {
                         for (index = 0, cache = cylinders.length; index < cache; index++) {
                             var parsedCylinder = cylinders[index];
-                            Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene);
+                            CylinderGeometry.Parse(parsedCylinder, scene);
                         }
                     }
 
@@ -393,7 +393,7 @@
                     if (toruses !== undefined && toruses !== null) {
                         for (index = 0, cache = toruses.length; index < cache; index++) {
                             var parsedTorus = toruses[index];
-                            Geometry.Primitives.Torus.Parse(parsedTorus, scene);
+                            TorusGeometry.Parse(parsedTorus, scene);
                         }
                     }
 
@@ -402,7 +402,7 @@
                     if (grounds !== undefined && grounds !== null) {
                         for (index = 0, cache = grounds.length; index < cache; index++) {
                             var parsedGround = grounds[index];
-                            Geometry.Primitives.Ground.Parse(parsedGround, scene);
+                            GroundGeometry.Parse(parsedGround, scene);
                         }
                     }
 
@@ -411,7 +411,7 @@
                     if (planes !== undefined && planes !== null) {
                         for (index = 0, cache = planes.length; index < cache; index++) {
                             var parsedPlane = planes[index];
-                            Geometry.Primitives.Plane.Parse(parsedPlane, scene);
+                            PlaneGeometry.Parse(parsedPlane, scene);
                         }
                     }
 
@@ -420,7 +420,7 @@
                     if (torusKnots !== undefined && torusKnots !== null) {
                         for (index = 0, cache = torusKnots.length; index < cache; index++) {
                             var parsedTorusKnot = torusKnots[index];
-                            Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene);
+                            TorusKnotGeometry.Parse(parsedTorusKnot, scene);
                         }
                     }
 

@@ -1201,398 +1201,398 @@
     }
 
     /////// Primitives //////////////////////////////////////////////
-    export module Geometry.Primitives {
+    //export module Geometry.Primitives {
 
-        /// Abstract class
-        export class _Primitive extends Geometry {
+    /// Abstract class
+    export class _PrimitiveGeometry extends Geometry {
 
-            private _beingRegenerated: boolean;
+        private _beingRegenerated: boolean;
 
-            constructor(id: string, scene: Scene, private _canBeRegenerated: boolean = false, mesh: Nullable<Mesh> = null) {
-                super(id, scene, undefined, false, mesh); // updatable = false to be sure not to update vertices
-                this._beingRegenerated = true;
-                this.regenerate();
-                this._beingRegenerated = false;
-            }
-
-            public canBeRegenerated(): boolean {
-                return this._canBeRegenerated;
-            }
-
-            public regenerate(): void {
-                if (!this._canBeRegenerated) {
-                    return;
-                }
-                this._beingRegenerated = true;
-                this.setAllVerticesData(this._regenerateVertexData(), false);
-                this._beingRegenerated = false;
-            }
-
-            public asNewGeometry(id: string): Geometry {
-                return super.copy(id);
-            }
-
-            // overrides
-            public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
-                if (!this._beingRegenerated) {
-                    return;
-                }
-                super.setAllVerticesData(vertexData, false);
-            }
-
-            public setVerticesData(kind: string, data: FloatArray, updatable?: boolean): void {
-                if (!this._beingRegenerated) {
-                    return;
-                }
-                super.setVerticesData(kind, data, false);
-            }
-
-            // to override
-            // protected
-            public _regenerateVertexData(): VertexData {
-                throw new Error("Abstract method");
-            }
-
-            public copy(id: string): Geometry {
-                throw new Error("Must be overriden in sub-classes.");
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.canBeRegenerated = this.canBeRegenerated();
-
-                return serializationObject;
-            }
+        constructor(id: string, scene: Scene, private _canBeRegenerated: boolean = false, mesh: Nullable<Mesh> = null) {
+            super(id, scene, undefined, false, mesh); // updatable = false to be sure not to update vertices
+            this._beingRegenerated = true;
+            this.regenerate();
+            this._beingRegenerated = false;
         }
 
-        export class Ribbon extends _Primitive {
-            // Members
-
-            constructor(id: string, scene: Scene, public pathArray: Vector3[][], public closeArray: boolean, public closePath: boolean, public offset: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), undefined, this.side);
-            }
+        public canBeRegenerated(): boolean {
+            return this._canBeRegenerated;
         }
 
-        export class Box extends _Primitive {
-            // Members
-            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
+        public regenerate(): void {
+            if (!this._canBeRegenerated) {
+                return;
             }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), undefined, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.size = this.size;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedBox: any, scene: Scene): Nullable<Box> {
-                if (scene.getGeometryByID(parsedBox.id)) {
-                    return null; // null since geometry could be something else than a box...
-                }
-
-                var box = new Geometry.Primitives.Box(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(box, parsedBox.tags);
-                }
-
-                scene.pushGeometry(box, true);
-
-                return box;
-            }
+            this._beingRegenerated = true;
+            this.setAllVerticesData(this._regenerateVertexData(), false);
+            this._beingRegenerated = false;
         }
 
-        export class Sphere extends _Primitive {
-
-            constructor(id: string, scene: Scene, public segments: number, public diameter: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.segments = this.segments;
-                serializationObject.diameter = this.diameter;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedSphere: any, scene: Scene): Nullable<Geometry.Primitives.Sphere> {
-                if (scene.getGeometryByID(parsedSphere.id)) {
-                    return null; // null since geometry could be something else than a sphere...
-                }
-
-                var sphere = new Geometry.Primitives.Sphere(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(sphere, parsedSphere.tags);
-                }
-
-                scene.pushGeometry(sphere, true);
-
-                return sphere;
-            }
+        public asNewGeometry(id: string): Geometry {
+            return super.copy(id);
         }
 
-        export class Disc extends _Primitive {
-            // Members
-
-            constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
+        // overrides
+        public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
+            if (!this._beingRegenerated) {
+                return;
             }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
-            }
+            super.setAllVerticesData(vertexData, false);
         }
 
-
-        export class Cylinder extends _Primitive {
-
-            constructor(id: string, scene: Scene, public height: number, public diameterTop: number, public diameterBottom: number, public tessellation: number, public subdivisions: number = 1, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean): void {
+            if (!this._beingRegenerated) {
+                return;
             }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.height = this.height;
-                serializationObject.diameterTop = this.diameterTop;
-                serializationObject.diameterBottom = this.diameterBottom;
-                serializationObject.tessellation = this.tessellation;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedCylinder: any, scene: Scene): Nullable<Geometry.Primitives.Cylinder> {
-                if (scene.getGeometryByID(parsedCylinder.id)) {
-                    return null; // null since geometry could be something else than a cylinder...
-                }
-
-                var cylinder = new Geometry.Primitives.Cylinder(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(cylinder, parsedCylinder.tags);
-                }
-
-                scene.pushGeometry(cylinder, true);
-
-                return cylinder;
-            }
+            super.setVerticesData(kind, data, false);
         }
 
-        export class Torus extends _Primitive {
-
-            constructor(id: string, scene: Scene, public diameter: number, public thickness: number, public tessellation: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.diameter = this.diameter;
-                serializationObject.thickness = this.thickness;
-                serializationObject.tessellation = this.tessellation;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedTorus: any, scene: Scene): Nullable<Geometry.Primitives.Torus> {
-                if (scene.getGeometryByID(parsedTorus.id)) {
-                    return null; // null since geometry could be something else than a torus...
-                }
-
-                var torus = new Geometry.Primitives.Torus(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(torus, parsedTorus.tags);
-                }
-
-                scene.pushGeometry(torus, true);
-
-                return torus;
-            }
+        // to override
+        // protected
+        public _regenerateVertexData(): VertexData {
+            throw new Error("Abstract method");
         }
 
-        export class Ground extends _Primitive {
-
-            constructor(id: string, scene: Scene, public width: number, public height: number, public subdivisions: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
-            }
-
-            public copy(id: string): Geometry {
-                return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.width = this.width;
-                serializationObject.height = this.height;
-                serializationObject.subdivisions = this.subdivisions;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedGround: any, scene: Scene): Nullable<Geometry.Primitives.Ground> {
-                if (scene.getGeometryByID(parsedGround.id)) {
-                    return null; // null since geometry could be something else than a ground...
-                }
-
-                var ground = new Geometry.Primitives.Ground(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(ground, parsedGround.tags);
-                }
-
-                scene.pushGeometry(ground, true);
-
-                return ground;
-            }
+        public copy(id: string): Geometry {
+            throw new Error("Must be overriden in sub-classes.");
         }
 
-        export class TiledGround extends _Primitive {
+        public serialize(): any {
+            var serializationObject = super.serialize();
 
-            constructor(id: string, scene: Scene, public xmin: number, public zmin: number, public xmax: number, public zmax: number, public subdivisions: { w: number; h: number; }, public precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
+            serializationObject.canBeRegenerated = this.canBeRegenerated();
 
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
-            }
-
-            public copy(id: string): Geometry {
-                return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
-            }
-        }
-
-        export class Plane extends _Primitive {
-
-            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.size = this.size;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedPlane: any, scene: Scene): Nullable<Geometry.Primitives.Plane> {
-                if (scene.getGeometryByID(parsedPlane.id)) {
-                    return null; // null since geometry could be something else than a ground...
-                }
-
-                var plane = new Geometry.Primitives.Plane(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(plane, parsedPlane.tags);
-                }
-
-                scene.pushGeometry(plane, true);
-
-                return plane;
-            }
-        }
-
-        export class TorusKnot extends _Primitive {
-
-            constructor(id: string, scene: Scene, public radius: number, public tube: number, public radialSegments: number, public tubularSegments: number, public p: number, public q: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.radius = this.radius;
-                serializationObject.tube = this.tube;
-                serializationObject.radialSegments = this.radialSegments;
-                serializationObject.tubularSegments = this.tubularSegments;
-                serializationObject.p = this.p;
-                serializationObject.q = this.q;
-
-                return serializationObject;
-            };
-
-            public static Parse(parsedTorusKnot: any, scene: Scene): Nullable<Geometry.Primitives.TorusKnot> {
-                if (scene.getGeometryByID(parsedTorusKnot.id)) {
-                    return null; // null since geometry could be something else than a ground...
-                }
-
-                var torusKnot = new Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
-                }
-
-                scene.pushGeometry(torusKnot, true);
-
-                return torusKnot;
-            }
+            return serializationObject;
         }
     }
+
+    export class RibbonGeometry extends _PrimitiveGeometry {
+        // Members
+
+        constructor(id: string, scene: Scene, public pathArray: Vector3[][], public closeArray: boolean, public closePath: boolean, public offset: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new RibbonGeometry(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), undefined, this.side);
+        }
+    }
+
+    export class BoxGeometry extends _PrimitiveGeometry {
+        // Members
+        constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new BoxGeometry(id, this.getScene(), this.size, this.canBeRegenerated(), undefined, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.size = this.size;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedBox: any, scene: Scene): Nullable<BoxGeometry> {
+            if (scene.getGeometryByID(parsedBox.id)) {
+                return null; // null since geometry could be something else than a box...
+            }
+
+            var box = new BoxGeometry(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(box, parsedBox.tags);
+            }
+
+            scene.pushGeometry(box, true);
+
+            return box;
+        }
+    }
+
+    export class SphereGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public segments: number, public diameter: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new SphereGeometry(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.segments = this.segments;
+            serializationObject.diameter = this.diameter;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedSphere: any, scene: Scene): Nullable<SphereGeometry> {
+            if (scene.getGeometryByID(parsedSphere.id)) {
+                return null; // null since geometry could be something else than a sphere...
+            }
+
+            var sphere = new SphereGeometry(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(sphere, parsedSphere.tags);
+            }
+
+            scene.pushGeometry(sphere, true);
+
+            return sphere;
+        }
+    }
+
+    export class DiscGeometry extends _PrimitiveGeometry {
+        // Members
+
+        constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new DiscGeometry(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
+        }
+    }
+
+
+    export class CylinderGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public height: number, public diameterTop: number, public diameterBottom: number, public tessellation: number, public subdivisions: number = 1, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new CylinderGeometry(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.height = this.height;
+            serializationObject.diameterTop = this.diameterTop;
+            serializationObject.diameterBottom = this.diameterBottom;
+            serializationObject.tessellation = this.tessellation;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedCylinder: any, scene: Scene): Nullable<CylinderGeometry> {
+            if (scene.getGeometryByID(parsedCylinder.id)) {
+                return null; // null since geometry could be something else than a cylinder...
+            }
+
+            var cylinder = new CylinderGeometry(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+            }
+
+            scene.pushGeometry(cylinder, true);
+
+            return cylinder;
+        }
+    }
+
+    export class TorusGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public diameter: number, public thickness: number, public tessellation: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new TorusGeometry(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.diameter = this.diameter;
+            serializationObject.thickness = this.thickness;
+            serializationObject.tessellation = this.tessellation;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedTorus: any, scene: Scene): Nullable<TorusGeometry> {
+            if (scene.getGeometryByID(parsedTorus.id)) {
+                return null; // null since geometry could be something else than a torus...
+            }
+
+            var torus = new TorusGeometry(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(torus, parsedTorus.tags);
+            }
+
+            scene.pushGeometry(torus, true);
+
+            return torus;
+        }
+    }
+
+    export class GroundGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public width: number, public height: number, public subdivisions: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
+        }
+
+        public copy(id: string): Geometry {
+            return new GroundGeometry(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.width = this.width;
+            serializationObject.height = this.height;
+            serializationObject.subdivisions = this.subdivisions;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedGround: any, scene: Scene): Nullable<GroundGeometry> {
+            if (scene.getGeometryByID(parsedGround.id)) {
+                return null; // null since geometry could be something else than a ground...
+            }
+
+            var ground = new GroundGeometry(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(ground, parsedGround.tags);
+            }
+
+            scene.pushGeometry(ground, true);
+
+            return ground;
+        }
+    }
+
+    export class TiledGroundGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public xmin: number, public zmin: number, public xmax: number, public zmax: number, public subdivisions: { w: number; h: number; }, public precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
+        }
+
+        public copy(id: string): Geometry {
+            return new TiledGroundGeometry(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
+        }
+    }
+
+    export class PlaneGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new PlaneGeometry(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.size = this.size;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedPlane: any, scene: Scene): Nullable<PlaneGeometry> {
+            if (scene.getGeometryByID(parsedPlane.id)) {
+                return null; // null since geometry could be something else than a ground...
+            }
+
+            var plane = new PlaneGeometry(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(plane, parsedPlane.tags);
+            }
+
+            scene.pushGeometry(plane, true);
+
+            return plane;
+        }
+    }
+
+    export class TorusKnotGeometry extends _PrimitiveGeometry {
+
+        constructor(id: string, scene: Scene, public radius: number, public tube: number, public radialSegments: number, public tubularSegments: number, public p: number, public q: number, canBeRegenerated?: boolean, mesh: Nullable<Mesh> = null, public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new TorusKnotGeometry(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.radius = this.radius;
+            serializationObject.tube = this.tube;
+            serializationObject.radialSegments = this.radialSegments;
+            serializationObject.tubularSegments = this.tubularSegments;
+            serializationObject.p = this.p;
+            serializationObject.q = this.q;
+
+            return serializationObject;
+        };
+
+        public static Parse(parsedTorusKnot: any, scene: Scene): Nullable<TorusKnotGeometry> {
+            if (scene.getGeometryByID(parsedTorusKnot.id)) {
+                return null; // null since geometry could be something else than a ground...
+            }
+
+            var torusKnot = new TorusKnotGeometry(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+            }
+
+            scene.pushGeometry(torusKnot, true);
+
+            return torusKnot;
+        }
+    }
+    //}
 }
 
 
