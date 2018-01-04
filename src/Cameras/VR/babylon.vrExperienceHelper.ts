@@ -113,15 +113,13 @@ module BABYLON {
         private _circleEase: CircleEase;
 
         /**
-         * Observable raised when camera is teleporting         
+         * Observable raised before camera teleportation        
         */
-
         public onBeforeCameraTeleport = new Observable<Vector3>();
 
         /**
-         *  Observable raised when camera finished teleportation 
+         *  Observable raised after camera teleportation
         */
-
         public onAfterCameraTeleport = new Observable<Vector3>();
 
         /**
