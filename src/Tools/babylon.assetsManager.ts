@@ -7,7 +7,7 @@ module BABYLON {
         ERROR
     }
 
-    export abstract class AbstractAssetTask  {
+    export abstract class AbstractAssetTask {
         public onSuccess: (task: any) => void;
         public onError: (task: any, message?: string, exception?: any) => void;
 
@@ -112,7 +112,7 @@ module BABYLON {
         public text: string;
 
         public onSuccess: (task: TextFileAssetTask) => void;
-        public onError: (task: TextFileAssetTask, message?: string, exception?: any) => void;        
+        public onError: (task: TextFileAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string) {
             super(name);
@@ -134,7 +134,7 @@ module BABYLON {
         public data: ArrayBuffer;
 
         public onSuccess: (task: BinaryFileAssetTask) => void;
-        public onError: (task: BinaryFileAssetTask, message?: string, exception?: any) => void;               
+        public onError: (task: BinaryFileAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string) {
             super(name);
@@ -156,7 +156,7 @@ module BABYLON {
         public image: HTMLImageElement;
 
         public onSuccess: (task: ImageAssetTask) => void;
-        public onError: (task: ImageAssetTask, message?: string, exception?: any) => void;            
+        public onError: (task: ImageAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string) {
             super(name);
@@ -186,9 +186,9 @@ module BABYLON {
 
     export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture> {
         public texture: Texture;
-        
+
         public onSuccess: (task: TextureAssetTask) => void;
-        public onError: (task: TextureAssetTask, message?: string, exception?: any) => void;    
+        public onError: (task: TextureAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(name);
@@ -212,7 +212,7 @@ module BABYLON {
         public texture: CubeTexture;
 
         public onSuccess: (task: CubeTextureAssetTask) => void;
-        public onError: (task: CubeTextureAssetTask, message?: string, exception?: any) => void;            
+        public onError: (task: CubeTextureAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
             super(name);
@@ -236,7 +236,7 @@ module BABYLON {
         public texture: HDRCubeTexture;
 
         public onSuccess: (task: HDRCubeTextureAssetTask) => void;
-        public onError: (task: HDRCubeTextureAssetTask, message?: string, exception?: any) => void;               
+        public onError: (task: HDRCubeTextureAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
             super(name);
@@ -258,6 +258,7 @@ module BABYLON {
 
     export class AssetsManager {
         private _scene: Scene;
+        private _isLoading = false;
 
         protected tasks = new Array<AbstractAssetTask>();
         protected waitingTasksCount = 0;
@@ -365,7 +366,7 @@ module BABYLON {
                     Tools.Error("Error running tasks-done callbacks.");
                     console.log(e);
                 }
-
+                this._isLoading = false;
                 this._scene.getEngine().hideLoadingUI();
             }
         }
@@ -401,11 +402,16 @@ module BABYLON {
         }
 
         public reset(): AssetsManager {
+            this._isLoading = false;
             this.tasks = new Array<AbstractAssetTask>();
             return this;
         }
 
         public load(): AssetsManager {
+            if (this._isLoading) {
+                return this;
+            }
+            this._isLoading = true;
             this.waitingTasksCount = this.tasks.length;
 
             if (this.waitingTasksCount === 0) {
@@ -413,6 +419,7 @@ module BABYLON {
                     this.onFinish(this.tasks);
                 }
                 this.onTasksDoneObservable.notifyObservers(this.tasks);
+                this._isLoading = false;
                 return this;
             }
 
