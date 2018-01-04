@@ -41843,6 +41843,7 @@ var BABYLON;
          * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
          * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
          * @returns the list of animatables created for all nodes
+         * @example https://www.babylonjs-playground.com/#MH0VLI
          */
         Animation.CreateAndStartHierarchyAnimation = function (name, node, directDescendantsOnly, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction, onAnimationEnd) {
             var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
