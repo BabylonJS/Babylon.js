@@ -10,12 +10,15 @@ module.exports = function (moduleName, inject, declarations) {
 
         if (!inject) {
             declarations[moduleName] = declarations[moduleName] || [];
-            let regexp = /    (class|interface|type|const|enum|var) ([\w]*)/g;
+            let regexp = /    (abstract class|function|class|interface|type|const|enum|var) ([\w]*)/g;
 
             var match = regexp.exec(fileContent);
             while (match != null) {
                 if (match[2]) {
-                    declarations[moduleName].push(match[2])
+                    // check it is not SIMD:
+                    let simdMatch = /    interface (\w*\dx\d{1,2}\w*)/.exec(match[0]);
+                    if (!simdMatch && match[2] !== 'earcut' && match[2] !== 'deviation' && match[2] !== 'flatten')
+                        declarations[moduleName].push(match[2]);
                 }
                 match = regexp.exec(fileContent);
             }
