@@ -39,6 +39,8 @@ return function (d, b) {
         let dependenciesText = `${extendsAddition}
 ${decorateAddition}
 if(typeof require !== 'undefined'){
+    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+    var BABYLON = globalObject["BABYLON"] || {}; 
 `;
         if (dependencies) {
             /*if (dependencies.length > 1) {
@@ -46,12 +48,10 @@ if(typeof require !== 'undefined'){
             }*/
 
             dependencies.forEach(function (d, idx) {
-                dependenciesText += `var BABYLON${idx === 0 ? '' : '' + idx} = require('babylonjs/${d}');
+                dependenciesText += `var BABYLON${idx} = require('babylonjs/${d}');
 `;
-                if (idx > 0) {
-                    dependenciesText += `__extends(BABYLON, BABYLON${idx});
+                dependenciesText += `if(BABYLON !== BABYLON${idx}) __extends(BABYLON, BABYLON${idx});
 `;
-                }
             });
         }
 
@@ -72,8 +72,7 @@ if(typeof require !== 'undefined'){
         let exportsText = '';
         if (moduleName === "core") {
             exportsText = `(function() {
-    var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-    globalObject["BABYLON"] = BABYLON;
+    globalObject["BABYLON"] = globalObject["BABYLON"] || BABYLON;
     module.exports = BABYLON; 
 })();
 }`
@@ -87,6 +86,7 @@ var EXPORTS = {};`
             });
 
             exportsText += `
+    globalObject["BABYLON"] = globalObject["BABYLON"] || BABYLON;
     module.exports = EXPORTS;
     })();
 }`
