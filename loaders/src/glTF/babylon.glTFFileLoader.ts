@@ -36,13 +36,25 @@ module BABYLON {
     }
 
     export interface IGLTFLoader extends IDisposable {
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+        animationStartMode: GLTFLoaderAnimationStartMode;
+        compileMaterials: boolean;
+        useClipPlane: boolean;
+        compileShadowGenerators: boolean;
+
+        onDisposeObservable: Observable<IGLTFLoader>;
+        onMeshLoadedObservable: Observable<AbstractMesh>;
+        onTextureLoadedObservable: Observable<BaseTexture>;
+        onMaterialLoadedObservable: Observable<Material>;
+        onCompleteObservable: Observable<IGLTFLoader>;
+
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
 
     export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-        public static CreateGLTFLoaderV1: (parent: GLTFFileLoader) => IGLTFLoader;
-        public static CreateGLTFLoaderV2: (parent: GLTFFileLoader) => IGLTFLoader;
+        public static CreateGLTFLoaderV1: () => IGLTFLoader;
+        public static CreateGLTFLoaderV2: () => IGLTFLoader;
 
         // #region Common options
 
@@ -51,7 +63,15 @@ module BABYLON {
          * The data.json property stores the glTF JSON.
          * The data.bin property stores the BIN chunk from a glTF binary or null if the input is not a glTF binary.
          */
-        public onParsed: (data: IGLTFLoaderData) => void;
+        public onParsedObservable = new Observable<IGLTFLoaderData>();
+
+        private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
+        public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
+            if (this._onParsedObserver) {
+                this.onParsedObservable.remove(this._onParsedObserver);
+            }
+            this._onParsedObserver = this.onParsedObservable.add(callback);
+        }
 
         // #endregion
 
@@ -93,28 +113,73 @@ module BABYLON {
         /**
          * Raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
-        public onMeshLoaded: (mesh: AbstractMesh) => void;
+        public onMeshLoadedObservable = new Observable<AbstractMesh>();
+
+        private _onMeshLoadedObserver: Nullable<Observer<AbstractMesh>>;
+        public set onMeshLoaded(callback: (mesh: AbstractMesh) => void) {
+            if (this._onMeshLoadedObserver) {
+                this.onMeshLoadedObservable.remove(this._onMeshLoadedObserver);
+            }
+            this._onMeshLoadedObserver = this.onMeshLoadedObservable.add(callback);
+        }
 
         /**
          * Raised when the loader creates a texture after parsing the glTF properties of the texture.
          */
-        public onTextureLoaded: (texture: BaseTexture) => void;
+        public onTextureLoadedObservable = new Observable<BaseTexture>();
+
+        private _onTextureLoadedObserver: Nullable<Observer<BaseTexture>>;
+        public set onTextureLoaded(callback: (Texture: BaseTexture) => void) {
+            if (this._onTextureLoadedObserver) {
+                this.onTextureLoadedObservable.remove(this._onTextureLoadedObserver);
+            }
+            this._onTextureLoadedObserver = this.onTextureLoadedObservable.add(callback);
+        }
 
         /**
          * Raised when the loader creates a material after parsing the glTF properties of the material.
          */
-        public onMaterialLoaded: (material: Material) => void;
+        public onMaterialLoadedObservable = new Observable<Material>();
+
+        private _onMaterialLoadedObserver: Nullable<Observer<Material>>;
+        public set onMaterialLoaded(callback: (Material: Material) => void) {
+            if (this._onMaterialLoadedObserver) {
+                this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
+            }
+            this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
+        }
 
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after onSuccess.
          */
-        public onComplete: () => void;
+        public onCompleteObservable = new Observable<GLTFFileLoader>();
+
+        private _onCompleteObserver: Nullable<Observer<GLTFFileLoader>>;
+        public set onComplete(callback: () => void) {
+            if (this._onCompleteObserver) {
+                this.onCompleteObservable.remove(this._onCompleteObserver);
+            }
+            this._onCompleteObserver = this.onCompleteObservable.add(callback);
+        }
+
+        /**
+        * Raised when the loader is disposed.
+        */
+        public onDisposeObservable = new Observable<GLTFFileLoader>();
+
+        private _onDisposeObserver: Nullable<Observer<GLTFFileLoader>>;
+        public set onDispose(callback: () => void) {
+            if (this._onDisposeObserver) {
+                this.onDisposeObservable.remove(this._onDisposeObserver);
+            }
+            this._onDisposeObserver = this.onDisposeObservable.add(callback);
+        }
 
         // #endregion
 
-        private _loader: IGLTFLoader;
+        private _loader: Nullable<IGLTFLoader> = null;
 
         public name = "gltf";
 
@@ -129,17 +194,22 @@ module BABYLON {
         public dispose(): void {
             if (this._loader) {
                 this._loader.dispose();
+                this._loader = null;
             }
+
+            this.onParsedObservable.clear();
+            this.onMeshLoadedObservable.clear();
+            this.onTextureLoadedObservable.clear();
+            this.onMaterialLoadedObservable.clear();
+            this.onCompleteObservable.clear();
+
+            this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             try {
-                const loaderData = GLTFFileLoader._parse(data);
-
-                if (this.onParsed) {
-                    this.onParsed(loaderData);
-                }
-
+                const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
                 this._loader.importMeshAsync(meshesNames, scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
@@ -153,14 +223,9 @@ module BABYLON {
             }
         }
 
-        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: ProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+        public loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
             try {
-                const loaderData = GLTFFileLoader._parse(data);
-
-                if (this.onParsed) {
-                    this.onParsed(loaderData);
-                }
-
+                const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
                 this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
             }
@@ -184,15 +249,20 @@ module BABYLON {
             return new GLTFFileLoader();
         }
 
-        private static _parse(data: string | ArrayBuffer): IGLTFLoaderData {
+        private _parse(data: string | ArrayBuffer): IGLTFLoaderData {
+            let parsedData: IGLTFLoaderData;
             if (data instanceof ArrayBuffer) {
-                return GLTFFileLoader._parseBinary(data);
+                parsedData = GLTFFileLoader._parseBinary(data);
+            }
+            else {
+                parsedData = {
+                    json: JSON.parse(data),
+                    bin: null
+                };
             }
 
-            return {
-                json: JSON.parse(data),
-                bin: null
-            };
+            this.onParsedObservable.notifyObservers(parsedData);
+            return parsedData;
         }
 
         private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
@@ -216,7 +286,7 @@ module BABYLON {
                 }
             }
 
-            const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
+            const createLoaders: { [key: number]: () => IGLTFLoader } = {
                 1: GLTFFileLoader.CreateGLTFLoaderV1,
                 2: GLTFFileLoader.CreateGLTFLoaderV2
             };
@@ -226,7 +296,17 @@ module BABYLON {
                 throw new Error("Unsupported version: " + asset.version);
             }
 
-            return createLoader(this);
+            const loader = createLoader();
+            loader.coordinateSystemMode = this.coordinateSystemMode;
+            loader.animationStartMode = this.animationStartMode;
+            loader.compileMaterials = this.compileMaterials;
+            loader.useClipPlane = this.useClipPlane;
+            loader.compileShadowGenerators = this.compileShadowGenerators;
+            loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
+            loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
+            loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
+            loader.onCompleteObservable.add(() => this.onCompleteObservable.notifyObservers(this));
+            return loader;
         }
 
         private static _parseBinary(data: ArrayBuffer): IGLTFLoaderData {

@@ -1557,11 +1557,23 @@ module BABYLON.GLTF1 {
             GLTFLoader.Extensions[extension.name] = extension;
         }
 
-        public dispose(): void {
-            // do nothing
-        }
+        // #region Stubs for IGLTFLoader interface
+        public coordinateSystemMode = GLTFLoaderCoordinateSystemMode.AUTO;
+        public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
+        public compileMaterials = false;
+        public useClipPlane = false;
+        public compileShadowGenerators = false;
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): boolean {
+        public onDisposeObservable = new Observable<IGLTFLoader>();
+        public onMeshLoadedObservable = new Observable<AbstractMesh>();
+        public onTextureLoadedObservable = new Observable<BaseTexture>();
+        public onMaterialLoadedObservable = new Observable<Material>();
+        public onCompleteObservable = new Observable<IGLTFLoader>();
+
+        public dispose(): void {}
+        // #endregion
+
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1624,7 +1636,7 @@ module BABYLON.GLTF1 {
             return true;
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: ProgressEvent) => void, onError: (message: string) => void): void {
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): void {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1688,7 +1700,7 @@ module BABYLON.GLTF1 {
             }
         };
 
-        private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void, onProgress?: (event: ProgressEvent) => void): void {
+        private _loadBuffersAsync(gltfRuntime: IGLTFRuntime, onLoad: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void): void {
             var hasBuffers = false;
 
             var processBuffer = (buf: string, buffer: IGLTFBuffer) => {

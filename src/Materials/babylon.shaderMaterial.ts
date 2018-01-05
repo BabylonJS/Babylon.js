@@ -5,6 +5,7 @@
         private _textures: { [name: string]: Texture } = {};
         private _textureArrays: { [name: string]: Texture[] } = {};
         private _floats: { [name: string]: number } = {};
+        private _ints: { [name: string]: number } = {};
         private _floatsArrays: { [name: string]: number[] } = {};
         private _colors3: { [name: string]: Color3 } = {};
         private _colors3Arrays: { [name: string]: number[] } = {};
@@ -77,6 +78,13 @@
         public setFloat(name: string, value: number): ShaderMaterial {
             this._checkUniform(name);
             this._floats[name] = value;
+
+            return this;
+        }
+
+        public setInt(name: string, value: number): ShaderMaterial {
+            this._checkUniform(name);
+            this._ints[name] = value;
 
             return this;
         }
@@ -322,12 +330,17 @@
                     this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
 
+                // Int    
+                for (name in this._ints) {
+                    this._effect.setInt(name, this._ints[name]);
+                }
+
                 // Float    
                 for (name in this._floats) {
                     this._effect.setFloat(name, this._floats[name]);
                 }
 
-                // Float s   
+                // Floats   
                 for (name in this._floatsArrays) {
                     this._effect.setArray(name, this._floatsArrays[name]);
                 }

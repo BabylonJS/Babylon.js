@@ -209,6 +209,11 @@
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
 
+            // Environment texture
+            if (scene.environmentTexture) {
+                serializationObject.environmentTexture = scene.environmentTexture.name;
+            }
+
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {

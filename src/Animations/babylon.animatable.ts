@@ -76,13 +76,14 @@
                 runtimeAnimations[index].reset();
             }
 
+            // Reset to original value
+            for (index = 0; index < runtimeAnimations.length; index++) {
+                var animation = runtimeAnimations[index];
+                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio);
+            }
+
             this._localDelayOffset = null;
             this._pausedDelay = null;
-
-            let oldPauseState = this._paused;
-            this._paused = false;
-            this._animate(0);
-            this._paused = oldPauseState;
         }
 
         public enableBlending(blendingSpeed: number): void {

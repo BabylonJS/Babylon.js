@@ -557,7 +557,7 @@
             }
 
             scene._addPendingData(this);
-            Tools.LoadFile(this.delayLoadingFile, data => {
+            scene._loadFile(this.delayLoadingFile, data => {
                 if (!this._delayLoadingFunction) {
                     return;
                 }
@@ -578,7 +578,7 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            }, undefined, true);
         }
 
         /**
@@ -1059,8 +1059,9 @@
             mesh.computeWorldMatrix(true);
 
             // Octree
-            if (scene['_selectionOctree']) {
-                scene['_selectionOctree'].addMesh(<AbstractMesh>mesh);
+            const sceneOctree = scene.selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
+                sceneOctree.addMesh(<AbstractMesh>mesh);
             }
         }
 

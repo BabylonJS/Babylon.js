@@ -325,40 +325,48 @@ module BABYLON {
         private _workingVector = Vector3.Zero();
         private _oneVector = Vector3.One();
         private _workingMatrix = Matrix.Identity();
+
+        private updateCacheCalled: boolean;
+
         public _updateCache(ignoreParentClass?: boolean): void {
             if (!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)) {
                 // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
-                this.update();
+                if (!this.updateCacheCalled) {
+                    // make sure it is only called once per loop. this.update() might cause an infinite loop.
+                    this.updateCacheCalled = true;
+                    this.update();
+                }
 
                 // Set working vector to the device position in room space rotated by the new rotation
                 this.rotationQuaternion.toRotationMatrix(this._workingMatrix);
                 Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._workingMatrix, this._workingVector);
 
                 // Subtract this vector from the current device position in world to get the translation for the device world matrix
-                this.devicePosition.subtractToRef(this._workingVector, this._workingVector)
+                this.devicePosition.subtractToRef(this._workingVector, this._workingVector);
                 Matrix.ComposeToRef(this._oneVector, this.rotationQuaternion, this._workingVector, this._deviceToWorld);
 
                 // Add translation from anchor position
-                this._deviceToWorld.getTranslationToRef(this._workingVector)
+                this._deviceToWorld.getTranslationToRef(this._workingVector);
                 this._workingVector.addInPlace(this.position);
-                this._workingVector.subtractInPlace(this._cache.position)
-                this._deviceToWorld.setTranslation(this._workingVector)
+                this._workingVector.subtractInPlace(this._cache.position);
+                this._deviceToWorld.setTranslation(this._workingVector);
 
                 // Set an inverted matrix to be used when updating the camera
-                this._deviceToWorld.invertToRef(this._worldToDevice)
+                this._deviceToWorld.invertToRef(this._worldToDevice);
 
                 // Update the gamepad to ensure the mesh is updated on the same frame as camera
                 this.controllers.forEach((controller) => {
                     controller._deviceToWorld = this._deviceToWorld;
                     controller.update();
-                })
-                this.update();
+                });
             }
 
             if (!ignoreParentClass) {
                 super._updateCache();
             }
+            this.updateCacheCalled = false;
         }
+
         public update() {
             // Get current device position in babylon world
             Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
