@@ -16570,11 +16570,6 @@ var BABYLON;
             }
             // Animations
             this.getScene().stopAnimation(this);
-            // Remove from meshes
-            for (var _i = 0, _a = this.getScene().meshes; _i < _a.length; _i++) {
-                var mesh = _a[_i];
-                mesh._removeLightSource(this);
-            }
             this._uniformBuffer.dispose();
             // Remove from scene
             this.getScene().removeLight(this);
@@ -20255,6 +20250,11 @@ var BABYLON;
         Scene.prototype.removeLight = function (toRemove) {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
+                // Remove from meshes
+                for (var _i = 0, _a = this.meshes; _i < _a.length; _i++) {
+                    var mesh = _a[_i];
+                    mesh._removeLightSource(toRemove);
+                }
                 // Remove from the scene if mesh found
                 this.lights.splice(index, 1);
                 this.sortLightsByPriority();
@@ -20289,6 +20289,14 @@ var BABYLON;
         Scene.prototype.addLight = function (newLight) {
             this.lights.push(newLight);
             this.sortLightsByPriority();
+            // Add light to all meshes (To support if the light is removed and then readded)
+            for (var _i = 0, _a = this.meshes; _i < _a.length; _i++) {
+                var mesh = _a[_i];
+                if (mesh._lightSources.indexOf(newLight) === -1) {
+                    mesh._lightSources.push(newLight);
+                    mesh._resyncLightSources();
+                }
+            }
             this.onNewLightAddedObservable.notifyObservers(newLight);
         };
         Scene.prototype.sortLightsByPriority = function () {
