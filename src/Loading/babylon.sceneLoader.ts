@@ -23,6 +23,8 @@
     export interface ISceneLoaderPlugin {
         name: string;
         extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
         canDirectLoad?: (data: string) => boolean;
         rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
         loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => SceneAssetContainer;
@@ -339,22 +341,9 @@
                     var particleSystems = new Array<ParticleSystem>();
                     var skeletons = new Array<Skeleton>();
 
-                    var container = syncedPlugin.loadAssets(scene, data, rootUrl, errorHandler)
-                    if (!container) {
+                    if (!syncedPlugin.importMesh(meshNames, scene, data, rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
-                    container.meshes.forEach((mesh, index)=>{
-                        meshes.push(mesh)
-                        scene.addMesh(mesh)
-                    })
-                    container.particleSystems.forEach((particleSystem, index)=>{
-                        particleSystems.push(particleSystem)
-                        scene.particleSystems.push(particleSystem)
-                    })
-                    container.skeletons.forEach((skeleton, index)=>{
-                        skeletons.push(skeleton)
-                        scene.skeletons.push(skeleton)
-                    })
 
                     scene.loadingPluginName = plugin.name;
                     successHandler(meshes, particleSystems, skeletons);
@@ -446,11 +435,9 @@
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
                 if ((<any>plugin).load) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    var container = syncedPlugin.loadAssets(scene, data, rootUrl, errorHandler)
-                    if (!container) {
+                    if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
                         return;
                     }
-                    container.addAllToScene();
 
                     scene.loadingPluginName = plugin.name;
                     successHandler();
