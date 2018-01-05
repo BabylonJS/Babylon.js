@@ -10,9 +10,7 @@ declare module BABYLON {
          * @returns {[fileName: string]: string | Blob} Returns an object with a .gltf, .glb and associates textures
          * as keys and their data and paths as values.
          */
-        static GLTF(scene: BABYLON.Scene, filename: string): {
-            [fileName: string]: string | Blob;
-        };
+        static GLTF(scene: BABYLON.Scene, filename: string): _GLTFData;
         /**
          *
          * @param meshes
@@ -20,17 +18,7 @@ declare module BABYLON {
          *
          * @returns {[fileName: string]: string | Blob} Returns an object with a .glb filename as key and data as value
          */
-        static GLB(scene: BABYLON.Scene, filename: string): {
-            [fileName: string]: string | Blob;
-        };
-        /**
-         * Downloads data from glTF object.
-         *
-         * @param gltfData glTF object with keys being file names and values being data
-         */
-        static downloadFiles(gltfData: {
-            [fileName: string]: string | Blob;
-        }): void;
+        static GLB(scene: BABYLON.Scene, filename: string): _GLTFData;
     }
 }
 
@@ -108,9 +96,7 @@ declare module BABYLON {
          * @returns {[x: string]: string | Blob} object with glTF json tex filename
          * and binary file name as keys and their data as values
          */
-        _generateGLTF(glTFPrefix: string): {
-            [x: string]: string | Blob;
-        };
+        _generateGLTF(glTFPrefix: string): _GLTFData;
         /**
          * Creates a binary buffer for glTF
          *
@@ -126,9 +112,7 @@ declare module BABYLON {
          *
          * @returns {[glbFileName: string]: Blob} object with glb filename as key and data as value
          */
-        _generateGLB(glTFPrefix: string): {
-            [glbFileName: string]: Blob;
-        };
+        _generateGLB(glTFPrefix: string): _GLTFData;
         /**
          * Sets the TRS for each node
          * @param node
@@ -158,5 +142,21 @@ declare module BABYLON {
          * @returns {number} bytelength + byteoffset
          */
         private createScene(babylonScene, byteOffset, dataBuffer?);
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Class for holding and downloading glTF file data
+     */
+    class _GLTFData {
+        _glTFFiles: {
+            [fileName: string]: string | Blob;
+        };
+        constructor();
+        /**
+         * Downloads glTF data.
+         */
+        downloadFiles(): void;
     }
 }
