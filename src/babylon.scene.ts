@@ -929,7 +929,16 @@
         private _debugLayer: DebugLayer;
 
         private _depthRenderer: Nullable<DepthRenderer>;
-        protected _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
+        public get geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+            return this._geometryBufferRenderer;
+        }
+        public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
+            this._geometryBufferRenderer = geometryBufferRenderer;
+            if (this._geometryBufferRenderer && !this._geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = null;
+            }
+        }
 
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
