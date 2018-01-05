@@ -92,6 +92,7 @@ module BABYLON {
         private _rotationAllowed: boolean = true;
         private _teleportationRequestInitiated = false;
         private _teleportationBackRequestInitiated = false;
+        private _teleportationInputsEnabled = true;
         private teleportBackwardsVector = new Vector3(0, -1, -1);
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
@@ -153,6 +154,20 @@ module BABYLON {
 
         public get teleportationTarget(): Mesh {
             return this._teleportationTarget;
+        }
+
+        /**
+        * Set if VR Controllers / Gamepad inputs are enabled to teleport camera
+        */
+        public set teleportationInputsEnabled(value: boolean) {
+            this._teleportationInputsEnabled = value;
+        }
+
+        /**
+        * Get if VR Controllers / Gamepad inputs are enabled to teleport camera
+        */
+        public get teleportationInputsEnabled() {
+            return this._teleportationInputsEnabled;
         }
 
         public set teleportationTarget(value: Mesh) {
@@ -700,7 +715,7 @@ module BABYLON {
             if (gamepad.type !== Gamepad.POSE_ENABLED) {
                 if (gamepad.leftStick) {
                     gamepad.onleftstickchanged((stickValues) => {
-                        if (this._teleportationEnabled) {
+                        if (this._teleportationEnabled && this._teleportationInputsEnabled) {
                             // Listening to classic/xbox gamepad only if no VR controller is active
                             if ((!this._leftLaserPointer && !this._rightLaserPointer) ||
                                 ((this._leftLaserPointer && !this._leftLaserPointer.isVisible) &&
@@ -997,9 +1012,11 @@ module BABYLON {
                     });
                 }
                 webVRController.onPadValuesChangedObservable.add((stateObject) => {
-                    this._checkTeleportBackwards(stateObject);
-                    this._checkTeleportWithRay(stateObject, webVRController);
-                    this._checkRotate(stateObject)
+                    if (this._teleportationInputsEnabled) {
+                        this._checkTeleportBackwards(stateObject);
+                        this._checkTeleportWithRay(stateObject, webVRController);
+                    }
+                    this._checkRotate(stateObject);
                 });
             }
         }
