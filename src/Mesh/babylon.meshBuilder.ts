@@ -775,6 +775,10 @@
                     throw new Error("Unable to get 2d context for CreateGroundFromHeightMap");
                 }
 
+                if (scene.isDisposed) {
+                    return;
+                }
+
                 var bufferWidth = img.width;
                 var bufferHeight = img.height;
                 canvas.width = bufferWidth;
@@ -1264,7 +1268,7 @@
 
                 var angle = 0;
                 var returnScale: { (i: number, distance: number): number; } = () => { return scale !== null ? scale : 1; };
-                var returnRotation: { (i: number, distance: number): number; } = () => { return rotation!== null ? rotation : 0; };
+                var returnRotation: { (i: number, distance: number): number; } = () => { return rotation !== null ? rotation : 0; };
                 var rotate: { (i: number, distance: number): number; } = custom && rotateFunction ? rotateFunction : returnRotation;
                 var scl: { (i: number, distance: number): number; } = custom && scaleFunction ? scaleFunction : returnScale;
                 var index = (cap === Mesh.NO_CAP || cap === Mesh.CAP_END) ? 0 : 2;
