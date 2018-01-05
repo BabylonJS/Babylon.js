@@ -1,13 +1,12 @@
 module BABYLON {
     export class GeometryBufferRenderer {
-        protected _scene: Scene;
-        protected _multiRenderTarget: MultiRenderTarget;
+        private _scene: Scene;
+        private _multiRenderTarget: MultiRenderTarget;
+        private _ratio: number;
+        private _enablePosition: boolean = false;
+
         protected _effect: Effect;
-        protected _ratio: number;
-
         protected _cachedDefines: string;
-
-        protected _enablePosition: boolean = false;
 
         public set renderList(meshes: Mesh[]) {
             this._multiRenderTarget.renderList = meshes;
@@ -25,6 +24,14 @@ module BABYLON {
             this._enablePosition = enable;
             this.dispose();
             this._createRenderTargets();
+        }
+
+        public get scene(): Scene {
+            return this._scene;
+        }
+
+        public get ratio(): number {
+            return this._ratio
         }
 
         constructor(scene: Scene, ratio: number = 1) {
