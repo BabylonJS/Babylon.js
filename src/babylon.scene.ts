@@ -934,8 +934,9 @@
             return this._geometryBufferRenderer;
         }
         public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
-            if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
-                this._geometryBufferRenderer = geometryBufferRenderer;
+            this._geometryBufferRenderer = geometryBufferRenderer;
+            if (this._geometryBufferRenderer && !this._geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = null;
             }
         }
 

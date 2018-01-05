@@ -1521,23 +1521,6 @@ var BABYLON;
             return s;
         };
         /**
-         * Get angle between two vectors.
-         * @param vector0 {BABYLON.Vector3}
-         * @param vector1 {BABYLON.Vector3}
-         * @param normal  {BABYLON.Vector3}  direction of the normal.
-         * @return {number} the angle between vector0 and vector1.
-         */
-        Vector3.GetAngleBetweenVectors = function (vector0, vector1, normal) {
-            var v0 = vector0.clone().normalize();
-            var v1 = vector1.clone().normalize();
-            var dot = Vector3.Dot(v0, v1);
-            var n = Vector3.Cross(v0, v1);
-            if (Vector3.Dot(n, normal) > 0) {
-                return Math.acos(dot);
-            }
-            return -Math.acos(dot);
-        };
-        /**
          * Returns a new Vector3 set from the index "offset" of the passed array.
          */
         Vector3.FromArray = function (array, offset) {
@@ -19091,18 +19074,6 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "frustumPlanes", {
             get: function () {
                 return this._frustumPlanes;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
-            get: function () {
-                return this._geometryBufferRenderer;
-            },
-            set: function (geometryBufferRenderer) {
-                if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
-                    this._geometryBufferRenderer = geometryBufferRenderer;
-                }
             },
             enumerable: true,
             configurable: true
@@ -43912,24 +43883,6 @@ var BABYLON;
             return action;
         };
         /**
-         * Unregisters an action to this action manager
-         * @param {BABYLON.Action} action - the action to be unregistered
-         * @return {Boolean}
-         */
-        ActionManager.prototype.unregisterAction = function (action) {
-            var index = this.actions.indexOf(action);
-            if (index !== -1) {
-                this.actions.splice(index, 1);
-                ActionManager.Triggers[action.trigger] -= 1;
-                if (ActionManager.Triggers[action.trigger] === 0) {
-                    delete ActionManager.Triggers[action.trigger];
-                }
-                delete action._actionManager;
-                return true;
-            }
-            return false;
-        };
-        /**
          * Process a specific trigger
          * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
@@ -61712,20 +61665,6 @@ var BABYLON;
                 this._enablePosition = enable;
                 this.dispose();
                 this._createRenderTargets();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GeometryBufferRenderer.prototype, "scene", {
-            get: function () {
-                return this._scene;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GeometryBufferRenderer.prototype, "ratio", {
-            get: function () {
-                return this._ratio;
             },
             enumerable: true,
             configurable: true
