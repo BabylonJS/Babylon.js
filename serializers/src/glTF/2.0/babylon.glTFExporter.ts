@@ -75,7 +75,7 @@ module BABYLON {
             let totalByteLength = 0;
 
             totalByteLength = this.createScene(this.babylonScene, totalByteLength);
-            
+
             this.totalByteLength = totalByteLength;
         }
 
@@ -334,7 +334,7 @@ module BABYLON {
             let binaryBuffer = new ArrayBuffer(this.totalByteLength);
             let dataBuffer = new DataView(binaryBuffer);
             byteOffset = this.createScene(this.babylonScene, byteOffset, dataBuffer);
-            
+
             return binaryBuffer;
         }
         /**
@@ -691,7 +691,7 @@ module BABYLON {
          * @returns {number} bytelength + byteoffset
          */
         private createScene(babylonScene: BABYLON.Scene, byteOffset: number, dataBuffer?: DataView): number {
-            if (babylonScene.meshes.length > 0 ) {
+            if (babylonScene.meshes.length > 0) {
                 let babylonMeshes = babylonScene.meshes;
                 let scene = { nodes: new Array<number>() };
 

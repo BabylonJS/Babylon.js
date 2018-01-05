@@ -420,7 +420,7 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    runSequence("typescript-all", "intellisense", "tests-saucelabs", cb);
+    runSequence("typescript-all", "intellisense", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -478,7 +478,7 @@ gulp.task("typescript-all", function (cb) {
 /**
  * Watch ts files from typescript .
  */
-gulp.task("srcTscWatch", function() {
+gulp.task("srcTscWatch", function () {
     // Reuse The TSC CLI from gulp to enable -w.
     process.argv[2] = "-w";
     process.argv[3] = "-p";
