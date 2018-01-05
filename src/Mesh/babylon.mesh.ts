@@ -427,7 +427,7 @@
          * Returns a positive integer : the total number of vertices within the mesh geometry or zero if the mesh has no geometry.
          */
         public getTotalVertices(): number {
-            if (!this._geometry) {
+            if (this._geometry === null || this._geometry === undefined) {
                 return 0;
             }
             return this._geometry.getTotalVertices();
@@ -2104,7 +2104,7 @@
             serializationObject.scaling = this.scaling.asArray();
             serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
-            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isEnabled = this.isEnabled(false);
             serializationObject.isVisible = this.isVisible;
             serializationObject.infiniteDistance = this.infiniteDistance;
             serializationObject.pickable = this.isPickable;

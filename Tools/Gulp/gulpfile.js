@@ -28,6 +28,8 @@ var config = require("./config.json");
 
 var del = require("del");
 
+var karmaServer = require('karma').Server;
+
 var debug = require("gulp-debug");
 var includeShadersStream;
 var shadersStream;
@@ -229,14 +231,7 @@ gulp.task("build", ["shaders"], function () {
 /*
 * Compiles all typescript files and creating a js and a declaration file.
 */
-var alreadyCompiled = false;
-var forceCompile = false;
 gulp.task("typescript-compile", function () {
-    if (!forceCompile && alreadyCompiled) {
-        return;
-    }
-    alreadyCompiled = true;
-
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
@@ -428,7 +423,7 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    runSequence("typescript-all", "intellisense", cb);
+    runSequence("typescript-all", "intellisense", "tests-saucelabs", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -498,11 +493,8 @@ gulp.task("srcTscWatch", function () {
  * Watch ts files and fire repective tasks.
  */
 gulp.task("watch", ["srcTscWatch"], function () {
-    forceCompile = true;
     var interval = 1000;
 
-    // Keep during Prod Tests of srcTscWatch.
-    // var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
     var tasks = [];
 
     config.modules.map(function (module) {
@@ -568,6 +560,32 @@ gulp.task("webserver", function () {
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
 gulp.task("run", ["watch", "webserver"], function () {
+});
+
+
+gulp.task("tests-integration", function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.js",
+        singleRun: false
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+gulp.task("tests-saucelabs", function (done) {
+    if (!process.env.TRAVIS) {
+        done();
+        return;
+    }
+
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.saucelabs.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
 });
 
 gulp.task("clean-JS-MAP", function () {

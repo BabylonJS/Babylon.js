@@ -112,6 +112,21 @@ module BABYLON {
         public onNewMeshSelected = new Observable<AbstractMesh>();
         private _circleEase: CircleEase;
 
+        /**
+         * Observable raised before camera teleportation        
+        */
+        public onBeforeCameraTeleport = new Observable<Vector3>();
+
+        /**
+         *  Observable raised after camera teleportation
+        */
+        public onAfterCameraTeleport = new Observable<Vector3>();
+
+        /**
+        * Observable raised when current selected mesh gets unselected
+        */
+        public onSelectedMeshUnselected = new Observable<AbstractMesh>();
+
         private _raySelectionPredicate: (mesh: AbstractMesh) => boolean;
 
         /**
@@ -483,6 +498,8 @@ module BABYLON {
 
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
+                // make sure that we return to the last active camera
+                this._existingCamera = this._scene.activeCamera;
             }
 
             if (this._webVRrequesting)
@@ -504,6 +521,10 @@ module BABYLON {
 
             if (this._scene.activeCamera && this._canvas) {
                 this._scene.activeCamera.attachControl(this._canvas);
+            }
+
+            if (this._interactionsEnabled) {
+                this._scene.registerBeforeRender(this.beforeRender);
             }
         }
 
@@ -539,6 +560,10 @@ module BABYLON {
             }
 
             this.updateButtonVisibility();
+
+            if (this._interactionsEnabled) {
+                this._scene.unregisterBeforeRender(this.beforeRender);
+            }
         }
 
         public get position(): Vector3 {
@@ -583,8 +608,6 @@ module BABYLON {
                     }
                     return false;
                 }
-
-                this._scene.registerBeforeRender(this.beforeRender);
 
                 this._interactionsEnabled = true;
             }
@@ -635,13 +658,11 @@ module BABYLON {
 
                 this.enableInteractions();
 
-                if (vrTeleportationOptions) {
-                    if (vrTeleportationOptions.floorMeshName) {
-                        this._floorMeshName = vrTeleportationOptions.floorMeshName;
-                    }
-                    if (vrTeleportationOptions.floorMeshes) {
-                        this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
-                    }
+                if (vrTeleportationOptions.floorMeshName) {
+                    this._floorMeshName = vrTeleportationOptions.floorMeshName;
+                }
+                if (vrTeleportationOptions.floorMeshes) {
+                    this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
                 }
 
                 if (this._leftControllerReady && this._webVRCamera.leftController) {
@@ -1212,6 +1233,8 @@ module BABYLON {
                 this._workingVector.y += this._defaultHeight;
             }
 
+            this.onBeforeCameraTeleport.notifyObservers(this._workingVector);
+
             // Create animation from the camera's position to the new location
             this.currentVRCamera.animations = [];
             var animationCameraTeleportation = new Animation("animationCameraTeleportation", "position", 90, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
@@ -1278,7 +1301,9 @@ module BABYLON {
             this._scene.beginAnimation(this._postProcessMove, 0, 11, false, 1, () => {
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
             });
-            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1);
+            this._scene.beginAnimation(this.currentVRCamera, 0, 11, false, 1, () => {
+                this.onAfterCameraTeleport.notifyObservers(this._workingVector);
+            });
         }
 
         private _castRayAndSelectObject() {
@@ -1392,6 +1417,9 @@ module BABYLON {
                         }
                     }
                     else {
+                        if (this._currentMeshSelected) {
+                            this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
+                        }
                         this._currentMeshSelected = null;
                         this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
                         this.changeLaserColor(new Color3(0.7, 0.7, 0.7));

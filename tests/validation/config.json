@@ -36,25 +36,25 @@
       "title": "Retail",
       "sceneFolder": "/Scenes/Retail/",
       "sceneFilename": "Retail.babylon",
-      "referenceImage": "Retail.png"
+      "referenceImage": "retail.png"
     },
     {
       "title": "Hill Valley",
       "sceneFolder": "/Scenes/hillvalley/",
       "sceneFilename": "HillValley.incremental.babylon",
-      "referenceImage": "HillValley.png"
+      "referenceImage": "Hillvalley.png"
     },
     {
       "title": "Heart",
       "sceneFolder": "/Scenes/Heart/",
       "sceneFilename": "Heart.babylon",
-      "referenceImage": "heart.png"
+      "referenceImage": "Heart.png"
     },
     {
       "title": "Mansion",
       "sceneFolder": "/Scenes/Mansion/",
       "sceneFilename": "Mansion.babylon",
-      "referenceImage": "Mansion.png"
+      "referenceImage": "mansion.png"
     },
     {
       "title": "SpaceDeK",
@@ -64,6 +64,7 @@
     },
     {
       "title": "Flat2009",
+      "renderCount": 20,
       "sceneFolder": "/Scenes/Flat2009/",
       "sceneFilename": "Flat2009.babylon",
       "referenceImage": "Flat2009.png"
@@ -176,8 +177,7 @@
     },
     {
       "title": "Normals",
-      "scriptToRun": "/Demos/Normals/index.js",
-      "functionToCall": "createScene",
+      "playgroundId": "#WXKLLJ#2",
       "referenceImage": "normals.png"
     },
     {
@@ -263,13 +263,7 @@
       "renderCount": 20,
       "scriptToRun": "/Demos/PBRRough/index.js",
       "functionToCall": "CreatePBRRoughScene",
-      "referenceImage": "PBRRough.png"
-    },
-    {
-      "title": "GLTF LOD",
-      "renderCount": 500,
-      "playgroundId": "#TC80RU#41",
-      "referenceImage": "GLTF LOD.png"
+      "referenceImage": "pbrrough.png"
     },
     {
       "title": "Reflection probes",
@@ -339,30 +333,20 @@
       "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
     },
     {
-      "title": "Water material (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/WaterMaterial/water.js",
-      "functionToCall": "CreateWaterTestScene",
-      "referenceImage": "waterMaterial.png",
-      "onlyVisual": true
-    },
-    {
-      "title": "Instances (only visual check)",
+      "title": "Instances",
       "renderCount": 10,
       "scriptToRun": "/Demos/Instances/instances.js",
       "functionToCall": "CreateInstancesTestScene",
       "referenceImage": "instances.png",
-      "replace": "ground., Ground.",
-      "onlyVisual": true
+      "replace": "ground., Ground."
     },
     {
-      "title": "Instanced Bones (only visual check)",
+      "title": "Instanced Bones",
       "renderCount": 10,
       "scriptToRun": "/Demos/InstancedBones/bones2.js",
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",
-      "replace": "Dude.babylon, dude.babylon",
-      "onlyVisual": true
+      "replace": "Dude.babylon, dude.babylon"
     }
   ]
 }

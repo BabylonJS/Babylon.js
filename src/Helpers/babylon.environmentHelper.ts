@@ -81,6 +81,11 @@ module BABYLON {
          * Unsigned Int by Default.
          */
         groundMirrorTextureType: number;
+        /**
+         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
+         * the shown objects.
+         */
+        groundYBias: number;
 
         /**
          * Specifies wether or not to create a skybox.
@@ -203,6 +208,8 @@ module BABYLON {
                 groundMirrorFresnelWeight: 1,
                 groundMirrorFallOffDistance: 0,
                 groundMirrorTextureType: Engine.TEXTURETYPE_UNSIGNED_INT,
+
+                groundYBias: 0.00001,
 
                 createSkybox: true,
                 skyboxSize: 20,
@@ -471,28 +478,25 @@ module BABYLON {
 
             const sceneExtends = this._scene.getWorldExtends();
             const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-            let bias = 0.0001;
 
             if (this._options.sizeAuto) {
                 if (this._scene.activeCamera instanceof ArcRotateCamera &&
                     this._scene.activeCamera.upperRadiusLimit) {
                     groundSize = this._scene.activeCamera.upperRadiusLimit * 2;
-                }
-
-                if (this._scene.activeCamera) {
-                    bias = (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 10000;
+                    skyboxSize = groundSize;
                 }
 
                 const sceneDiagonalLenght = sceneDiagonal.length();
                 if (sceneDiagonalLenght > groundSize) {
                     groundSize = sceneDiagonalLenght * 2;
+                    skyboxSize = groundSize;
                 }
 
                 // 10 % bigger.
                 groundSize *= 1.1;
                 skyboxSize *= 1.5;
                 rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
-                rootPosition.y = sceneExtends.min.y - bias;
+                rootPosition.y = sceneExtends.min.y - this._options.groundYBias;
             }
 
             return { groundSize, skyboxSize, rootPosition };
@@ -506,7 +510,7 @@ module BABYLON {
                 this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
                 this._ground.rotation.x = Math.PI / 2; // Face up by default.
                 this._ground.parent = this._rootMesh;
-                this._ground.onDisposeObservable.add(() => { this._ground = null; })
+                this._ground.onDisposeObservable.add(() => { this._ground = null; });
             }
 
             this._ground.receiveShadows = this._options.enableGroundShadow;

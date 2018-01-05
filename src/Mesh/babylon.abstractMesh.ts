@@ -904,14 +904,14 @@
                 for (var descendant of descendants) {
                     let childMesh = <AbstractMesh>descendant;
 
+                    childMesh.computeWorldMatrix(true);
+
                     //make sure we have the needed params to get mix and max
                     if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
 
-                    childMesh.computeWorldMatrix(true);
                     let childBoundingInfo = childMesh.getBoundingInfo();
-
                     let boundingBox = childBoundingInfo.boundingBox;
 
                     var minBox = boundingBox.minimumWorld;
@@ -1322,7 +1322,7 @@
             var index: number;
 
             // Action manager
-            if (this.actionManager) {
+            if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
                 this.actionManager = null;
             }
@@ -1388,8 +1388,8 @@
             }
 
             // Octree
-            var sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree) {
+            const sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
                 var index = sceneOctree.dynamicContent.indexOf(this);
 
                 if (index !== -1) {

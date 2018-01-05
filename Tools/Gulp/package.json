@@ -43,7 +43,16 @@
         "through2": "~0.6.5",
         "ts-loader": "^2.3.7",
         "typescript": "^2.6.2",
-        "webpack-stream": "^4.0.0"
+        "webpack-stream": "^4.0.0",
+        "karma": "^2.0.0",
+        "karma-chrome-launcher": "^2.2.0",
+        "karma-sauce-launcher": "^1.2.0",
+        "mocha": "^4.0.1",
+        "chai": "^4.1.2",
+        "sinon": "^4.1.3",
+        "karma-mocha": "^1.3.0",
+        "karma-chai": "^0.1.0",
+        "karma-sinon": "^1.0.5"
     },
     "scripts": {
         "install": "npm --prefix ../../Playground/ install ../../Playground/ && gulp typescript-compile && gulp typescript-libraries && gulp deployLocalDev"

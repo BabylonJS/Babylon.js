@@ -230,7 +230,11 @@
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
-                "../../src/Particles/babylon.particleSystem.js"
+                "../../src/Particles/babylon.particleSystem.js",
+                "../../src/Particles/babylon.boxParticleEmitter.js",
+                "../../src/Particles/babylon.coneParticleEmitter.js",
+                "../../src/Particles/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/babylon.iParticleEmitterType.js"
             ],
             "dependUpon": [
                 "core"
@@ -1557,6 +1561,13 @@
                     "../../serializers/src/OBJ/babylon.objSerializer.ts"
                 ],
                 "output": "babylon.objSerializer.js"
+            },
+            {
+                "files": [
+                    "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts"
+                ],
+                "output": "babylon.glTF2Serializer.js"
             }
         ],
         "build": {

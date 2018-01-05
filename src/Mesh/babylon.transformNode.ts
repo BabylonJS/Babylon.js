@@ -119,7 +119,7 @@ module BABYLON {
          */
         protected _getWorldMatrixDeterminant(): number {
             if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this._worldMatrixDeterminant = this.computeWorldMatrix().determinant();
+                this.computeWorldMatrix();
             }
             return this._worldMatrixDeterminant;
         }
@@ -463,7 +463,7 @@ module BABYLON {
          */
         public setParent(node: Nullable<Node>): TransformNode {
 
-            if (node == null) {
+            if (node === null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
@@ -834,6 +834,9 @@ module BABYLON {
             if (!this._poseMatrix) {
                 this._poseMatrix = Matrix.Invert(this._worldMatrix);
             }
+
+            // Cache the determinant
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
 
             return this._worldMatrix;
         }

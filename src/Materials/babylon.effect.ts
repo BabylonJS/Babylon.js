@@ -303,7 +303,7 @@
             }
 
             // Vertex shader
-            Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            this._engine._loadFile(vertexShaderUrl + ".vertex.fx", callback);
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
@@ -343,7 +343,7 @@
             }
 
             // Fragment shader
-            Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            this._engine._loadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
@@ -491,7 +491,7 @@
                 } else {
                     var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
+                    this._engine._loadFile(includeShaderUrl, (fileContent) => {
                         Effect.IncludesShadersStore[includeFile] = fileContent as string;
                         this._processIncludes(<string>returnValue, callback);
                     });
@@ -544,6 +544,11 @@
             this._prepareEffect();
         }
 
+        public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
+            let engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
@@ -553,7 +558,7 @@
             var previousProgram = this._program;
 
             try {
-                var engine = this._engine;
+                let engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                     this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
@@ -758,7 +763,7 @@
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
             let bufferName = this._uniformBuffersNames[name];
-            if (Effect._baseCache[bufferName] === buffer) {
+            if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
                 return;
             }
             Effect._baseCache[bufferName] = buffer;
@@ -767,6 +772,18 @@
 
         public bindUniformBlock(blockName: string, index: number): void {
             this._engine.bindUniformBlock(this._program, blockName, index);
+        }
+
+        public setInt(uniformName: string, value: number): Effect {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+
+            this._valueCache[uniformName] = value;
+
+            this._engine.setInt(this.getUniform(uniformName), value);
+
+            return this;
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {
