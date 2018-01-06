@@ -217,6 +217,7 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
+        hasVertexAlpha: boolean;
     }
 
     export interface IGLTFNode extends IGLTFChildRootProperty {
