@@ -37,6 +37,7 @@
         loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
         canDirectLoad?: (data: string) => boolean;
         rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: SceneAssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
 
     interface IRegisteredPlugin {
@@ -446,6 +447,87 @@
                     asyncedPlugin.loadAsync(scene, data, rootUrl, () => {
                         scene.loadingPluginName = plugin.name;
                         successHandler();
+                    }, progressHandler, errorHandler);
+                }
+
+                if (SceneLoader.ShowLoadingScreen) {
+                    scene.executeWhenReady(() => {
+                        scene.getEngine().hideLoadingUI();
+                    });
+                }
+            }, progressHandler, errorHandler, disposeHandler, pluginExtension);
+        }
+        
+        public static LoadAssetContainer(
+            rootUrl: string,
+            sceneFilename: any,
+            scene: Scene,
+            onSuccess: Nullable<(assets: SceneAssetContainer) => void> = null,
+            onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null,
+            onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+            pluginExtension: Nullable<string> = null
+        ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                Tools.Error("Wrong sceneFilename parameter");
+                return null;
+            }
+
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
+
+            var disposeHandler = () => {
+                scene._removePendingData(loadingToken);
+            };
+
+            var errorHandler = (message: Nullable<string>, exception?: any) => {
+                let errorMessage = "Unable to load assets from " + rootUrl + sceneFilename + (message ? ": " + message : "");
+                if (onError) {
+                    onError(scene, errorMessage, exception);
+                } else {
+                    Tools.Error(errorMessage);
+                    // should the exception be thrown?
+                }
+
+                disposeHandler();
+            };
+
+            var progressHandler = onProgress ? (event: SceneLoaderProgressEvent) => {
+                try {
+                    onProgress(event);
+                }
+                catch (e) {
+                    errorHandler("Error in onProgress callback", e);
+                }
+            } : undefined;
+
+            var successHandler = (assets: SceneAssetContainer) => {
+                if (onSuccess) {
+                    try {
+                        onSuccess(assets);
+                    }
+                    catch (e) {
+                        errorHandler("Error in onSuccess callback", e);
+                    }
+                }
+
+                scene._removePendingData(loadingToken);
+            };
+
+            return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
+                if ((<any>plugin).loadAssets) {
+                    var syncedPlugin = <ISceneLoaderPlugin>plugin;
+                    var assetContainer = syncedPlugin.loadAssets(scene, data, rootUrl, errorHandler);
+                    if (!assetContainer) {
+                        return;
+                    }
+
+                    scene.loadingPluginName = plugin.name;
+                    successHandler(assetContainer);
+                } else {
+                    var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
+                    asyncedPlugin.loadAssetsAsync(scene, data, rootUrl, (assetContainer) => {
+                        scene.loadingPluginName = plugin.name;
+                        successHandler(assetContainer);
                     }, progressHandler, errorHandler);
                 }
 
