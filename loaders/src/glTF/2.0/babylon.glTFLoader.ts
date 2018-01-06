@@ -358,7 +358,6 @@ module BABYLON.GLTF2 {
             }
 
             node.babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
-            node.babylonMesh.hasVertexAlpha = true;
 
             this._loadTransform(node);
 
@@ -426,7 +425,7 @@ module BABYLON.GLTF2 {
                 for (const primitive of primitives) {
                     vertexData.merge(primitive.vertexData);
                 }
-
+                node.babylonMesh.hasVertexAlpha = mesh.hasVertexAlpha;
                 new Geometry(node.babylonMesh.name, this._babylonScene, vertexData, false, node.babylonMesh);
 
                 // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
@@ -647,6 +646,10 @@ module BABYLON.GLTF2 {
                         }
                         case "COLOR_0": {
                             vertexData.colors = this._convertToFloat4ColorArray(context, data, accessor);
+                            const hasVertexAlpha = GLTFLoader._GetNumComponents(context, accessor.type) === 4;
+                            if (!mesh.hasVertexAlpha && hasVertexAlpha) {
+                                mesh.hasVertexAlpha = hasVertexAlpha;
+                            }
                             break;
                         }
                         default: {
@@ -678,7 +681,7 @@ module BABYLON.GLTF2 {
                 });
             }
         }
-
+        
         private _createMorphTargets(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
             const primitives = mesh.primitives;
 
