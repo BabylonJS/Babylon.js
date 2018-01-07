@@ -157,11 +157,17 @@
         /**
          * Remove a callback from the Observable object
          * @param callback the callback to remove. If it doesn't belong to this Observable, false will be returned.
+         * @param scope optional scope.  If used only the callbacks with this scope will be removed.
         */
-        public removeCallback(callback: (eventData: T, eventState: EventState) => void): boolean {
+        public removeCallback(callback: (eventData: T, eventState: EventState) => void, scope?: any): boolean {
 
             for (var index = 0; index < this._observers.length; index++) {
-                if (this._observers[index].callback === callback) {
+                if(scope){
+                    if (this._observers[index].callback === callback && scope === this._observers[index].scope) {
+                        this._observers.splice(index, 1);
+                        return true;
+                    }
+                } else if (this._observers[index].callback === callback) {
                     this._observers.splice(index, 1);
                     return true;
                 }
