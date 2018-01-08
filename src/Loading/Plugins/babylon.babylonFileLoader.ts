@@ -624,8 +624,8 @@
 
             return false;
         },
-        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): SceneAssetContainer =>{
-            var container = new SceneAssetContainer(scene);
+        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer =>{
+            var container = new AssetContainer(scene);
 
             // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
             // when SceneLoader.debugLogging = true (default), or exception encountered.
