@@ -14,6 +14,8 @@
   ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now has the public property teleportationEnabled to enable / disable camera teleportation. 
    ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
+   ([carloslanderas](https://github.com/carloslanderas))
   
   
 
@@ -21,4 +23,4 @@
 
 ## Breaking changes
 
-- VRHelper onNewMeshSelected now notifies a PickingInfo to subscribers instead of an AbstractMesh ([carloslanderas](https://github.com/carloslanderas))
+
