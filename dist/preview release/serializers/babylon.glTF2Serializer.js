@@ -30,42 +30,6 @@ var BABYLON;
             var gltfGenerator = new BABYLON._GLTF2Exporter(scene);
             return gltfGenerator._generateGLB(glTFPrefix);
         };
-        /**
-         * Downloads data from glTF object.
-         *
-         * @param gltfData glTF object with keys being file names and values being data
-         */
-        GLTF2Export.downloadFiles = function (gltfData) {
-            /**
-             * Checks for a matching suffix at the end of a string (for ES5 and lower)
-             * @param str
-             * @param suffix
-             *
-             * @returns {boolean} indicating whether the suffix matches or not
-             */
-            function endsWith(str, suffix) {
-                return str.indexOf(suffix, str.length - suffix.length) !== -1;
-            }
-            for (var key in gltfData) {
-                var link = document.createElement('a');
-                document.body.appendChild(link);
-                link.setAttribute("type", "hidden");
-                link.download = key;
-                var blob = gltfData[key];
-                var mimeType = void 0;
-                if (endsWith(key, ".glb")) {
-                    mimeType = { type: "model/gltf-binary" };
-                }
-                else if (endsWith(key, ".bin")) {
-                    mimeType = { type: "application/octet-stream" };
-                }
-                else if (endsWith(key, ".gltf")) {
-                    mimeType = { type: "model/gltf+json" };
-                }
-                link.href = window.URL.createObjectURL(new Blob([blob], mimeType));
-                link.click();
-            }
-        };
         return GLTF2Export;
     }());
     BABYLON.GLTF2Export = GLTF2Export;
@@ -282,7 +246,7 @@ var BABYLON;
          */
         _GLTF2Exporter.prototype.generateJSON = function (glb, glTFPrefix, prettyPrint) {
             var buffer = { byteLength: this.totalByteLength };
-            var glTf = {
+            var glTF = {
                 buffers: [buffer],
                 asset: this.asset,
                 meshes: this.meshes,
@@ -292,12 +256,12 @@ var BABYLON;
                 accessors: this.accessors
             };
             if (this.scenes.length > 0) {
-                glTf.scene = 0;
+                glTF.scene = 0;
             }
             if (!glb) {
                 buffer.uri = glTFPrefix + ".bin";
             }
-            var jsonText = prettyPrint ? JSON.stringify(glTf, null, 2) : JSON.stringify(glTf);
+            var jsonText = prettyPrint ? JSON.stringify(glTF, null, 2) : JSON.stringify(glTF);
             return jsonText;
         };
         /**
@@ -313,11 +277,10 @@ var BABYLON;
             var bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
             var glTFFileName = glTFPrefix + '.gltf';
             var glTFBinFile = glTFPrefix + '.bin';
-            return _a = {},
-                _a[glTFFileName] = jsonText,
-                _a[glTFBinFile] = bin,
-                _a;
-            var _a;
+            var container = new BABYLON._GLTFData();
+            container._glTFFiles[glTFFileName] = jsonText;
+            container._glTFFiles[glTFBinFile] = bin;
+            return container;
         };
         /**
          * Creates a binary buffer for glTF
@@ -386,10 +349,9 @@ var BABYLON;
             }
             // binary data
             var glbFile = new Blob([headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer, binPaddingBuffer], { type: 'application/octet-stream' });
-            return _a = {},
-                _a[glbFileName] = glbFile,
-                _a;
-            var _a;
+            var container = new BABYLON._GLTFData();
+            container._glTFFiles[glbFileName] = glbFile;
+            return container;
         };
         /**
          * Sets the TRS for each node
@@ -647,3 +609,53 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.glTFExporter.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Class for holding and downloading glTF file data
+     */
+    var _GLTFData = /** @class */ (function () {
+        function _GLTFData() {
+            this._glTFFiles = {};
+        }
+        /**
+         * Downloads glTF data.
+         */
+        _GLTFData.prototype.downloadFiles = function () {
+            /**
+            * Checks for a matching suffix at the end of a string (for ES5 and lower)
+            * @param str
+            * @param suffix
+            *
+            * @returns {boolean} indicating whether the suffix matches or not
+            */
+            function endsWith(str, suffix) {
+                return str.indexOf(suffix, str.length - suffix.length) !== -1;
+            }
+            for (var key in this._glTFFiles) {
+                var link = document.createElement('a');
+                document.body.appendChild(link);
+                link.setAttribute("type", "hidden");
+                link.download = key;
+                var blob = this._glTFFiles[key];
+                var mimeType = void 0;
+                if (endsWith(key, ".glb")) {
+                    mimeType = { type: "model/gltf-binary" };
+                }
+                else if (endsWith(key, ".bin")) {
+                    mimeType = { type: "application/octet-stream" };
+                }
+                else if (endsWith(key, ".gltf")) {
+                    mimeType = { type: "model/gltf+json" };
+                }
+                link.href = window.URL.createObjectURL(new Blob([blob], mimeType));
+                link.click();
+            }
+        };
+        return _GLTFData;
+    }());
+    BABYLON._GLTFData = _GLTFData;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.glTFData.js.map

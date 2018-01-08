@@ -2911,7 +2911,6 @@ var BABYLON;
                     return;
                 }
                 node.babylonMesh = new BABYLON.Mesh(node.name || "mesh" + node.index, this._babylonScene);
-                node.babylonMesh.hasVertexAlpha = true;
                 this._loadTransform(node);
                 if (node.mesh != null) {
                     var mesh = GLTFLoader._GetProperty(this._gltf.meshes, node.mesh);
@@ -2966,6 +2965,7 @@ var BABYLON;
                         var primitive = primitives_1[_i];
                         vertexData.merge(primitive.vertexData);
                     }
+                    node.babylonMesh.hasVertexAlpha = mesh.hasVertexAlpha;
                     new BABYLON.Geometry(node.babylonMesh.name, _this._babylonScene, vertexData, false, node.babylonMesh);
                     // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
                     // Sub meshes must be cleared and created after setting vertex data because of mesh._createGlobalSubMesh.
@@ -3174,6 +3174,10 @@ var BABYLON;
                             }
                             case "COLOR_0": {
                                 vertexData.colors = _this._convertToFloat4ColorArray(context, data, accessor);
+                                var hasVertexAlpha = GLTFLoader._GetNumComponents(context, accessor.type) === 4;
+                                if (!mesh.hasVertexAlpha && hasVertexAlpha) {
+                                    mesh.hasVertexAlpha = hasVertexAlpha;
+                                }
                                 break;
                             }
                             default: {

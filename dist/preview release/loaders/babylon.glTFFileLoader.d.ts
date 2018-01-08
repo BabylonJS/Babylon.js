@@ -868,6 +868,7 @@ declare module BABYLON.GLTF2 {
         primitives: IGLTFMeshPrimitive[];
         weights?: number[];
         index: number;
+        hasVertexAlpha: boolean;
     }
     interface IGLTFNode extends IGLTFChildRootProperty {
         camera?: number;

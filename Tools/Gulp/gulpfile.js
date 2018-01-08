@@ -423,7 +423,8 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    runSequence("typescript-all", "intellisense", "tests-saucelabs", cb);
+    // runSequence("typescript-all", "intellisense", "tests-browserStack", cb);
+    runSequence("typescript-all", "intellisense", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -573,14 +574,14 @@ gulp.task("tests-integration", function (done) {
     server.start();
 });
 
-gulp.task("tests-saucelabs", function (done) {
+gulp.task("tests-browserStack", function (done) {
     if (!process.env.TRAVIS) {
         done();
         return;
     }
 
     var kamaServerOptions = {
-        configFile: __dirname + "/../../tests/validation/karma.conf.saucelabs.js",
+        configFile: __dirname + "/../../tests/validation/karma.conf.browserstack.js",
         singleRun: true
     };
 
