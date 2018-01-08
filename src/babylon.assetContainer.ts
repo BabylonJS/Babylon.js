@@ -17,6 +17,7 @@ module BABYLON {
         public lensFlareSystems = new Array<LensFlareSystem>();
         public shadowGenerators = new Array<ShadowGenerator>();
         public actionManagers = new Array<ActionManager>();
+        public sounds = new Array<Sound>();
         
         constructor(scene:Scene){
             this.scene = scene;
@@ -62,6 +63,11 @@ module BABYLON {
             this.actionManagers.forEach((o)=>{
                 this.scene.addActionManager(o);
             });
+            this.sounds.forEach((o)=>{
+                o.play();
+                o.autoplay=true;
+                this.scene.mainSoundTrack.AddSound(o)
+            })
         }
         removeAllFromScene(){
             this.cameras.forEach((o)=>{
@@ -104,6 +110,11 @@ module BABYLON {
                 this.scene.removeActionManager(o);
             });
             // TODO, do shadow generators need to be removed somehow?
+            this.sounds.forEach((o)=>{
+                o.stop();
+                o.autoplay = false
+                this.scene.mainSoundTrack.RemoveSound(o)
+            })
         }
     }
 }
