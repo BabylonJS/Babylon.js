@@ -1,5 +1,5 @@
 module BABYLON {
-    export class SceneAssetContainer {
+    export class AssetContainer {
         public scene: Scene;
 
         // Objects
@@ -23,7 +23,45 @@ module BABYLON {
         }
         
         addAllToScene(){
-            // TODO
+            this.cameras.forEach((o)=>{
+                this.scene.addCamera(o);
+            });
+            this.lights.forEach((o)=>{
+                this.scene.addLight(o);
+            });
+            this.meshes.forEach((o)=>{
+                this.scene.addMesh(o);
+            });
+            this.skeletons.forEach((o)=>{
+                this.scene.addSkeleton(o);
+            });
+            this.particleSystems.forEach((o)=>{
+                this.scene.addParticleSystem(o);
+            });
+            this.animations.forEach((o)=>{
+                this.scene.addAnimation(o);
+            });
+            this.multiMaterials.forEach((o)=>{
+                this.scene.addMultiMaterial(o);
+            });
+            this.materials.forEach((o)=>{
+                this.scene.addMaterial(o);
+            });
+            this.morphTargetManagers.forEach((o)=>{
+                this.scene.addMorphTargetManager(o);
+            });
+            this.geometries.forEach((o)=>{
+                this.scene.addGeometry(o);
+            });
+            this.transformNodes.forEach((o)=>{
+                this.scene.addTransformNode(o);
+            });
+            this.lensFlareSystems.forEach((o)=>{
+                this.scene.addLensFlareSystem(o);
+            });
+            this.actionManagers.forEach((o)=>{
+                this.scene.addActionManager(o);
+            });
         }
         removeAllFromScene(){
             this.cameras.forEach((o)=>{
@@ -37,9 +75,6 @@ module BABYLON {
             });
             this.skeletons.forEach((o)=>{
                 this.scene.removeSkeleton(o);
-            });
-            this.particleSystems.forEach((o)=>{
-                this.scene.removeParticleSystem(o);
             });
             this.particleSystems.forEach((o)=>{
                 this.scene.removeParticleSystem(o);

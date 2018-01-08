@@ -27,7 +27,7 @@
         load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
         canDirectLoad?: (data: string) => boolean;
         rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => SceneAssetContainer;
+        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => AssetContainer;
     }
 
     export interface ISceneLoaderPluginAsync {
@@ -37,7 +37,7 @@
         loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
         canDirectLoad?: (data: string) => boolean;
         rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: SceneAssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: AssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
     }
 
     interface IRegisteredPlugin {
@@ -462,7 +462,7 @@
             rootUrl: string,
             sceneFilename: any,
             scene: Scene,
-            onSuccess: Nullable<(assets: SceneAssetContainer) => void> = null,
+            onSuccess: Nullable<(assets: AssetContainer) => void> = null,
             onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null,
             onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
             pluginExtension: Nullable<string> = null
@@ -500,7 +500,7 @@
                 }
             } : undefined;
 
-            var successHandler = (assets: SceneAssetContainer) => {
+            var successHandler = (assets: AssetContainer) => {
                 if (onSuccess) {
                     try {
                         onSuccess(assets);
