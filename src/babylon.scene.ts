@@ -2315,6 +2315,50 @@
             return index;
         }
 
+        
+        public removeParticleSystem(toRemove: ParticleSystem): number {
+            var index = this.particleSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.particleSystems.splice(index, 1);
+            }
+            return index;
+        };
+        public removeAnimation(toRemove: Animation): number {
+            var index = this.animations.indexOf(toRemove);
+            if (index !== -1) {
+                this.animations.splice(index, 1);
+            }
+            return index;
+        };
+        public removeMultiMaterial(toRemove: MultiMaterial): number {
+            var index = this.multiMaterials.indexOf(toRemove);
+            if (index !== -1) {
+                this.multiMaterials.splice(index, 1);
+            }
+            return index;
+        };
+        public removeMaterial(toRemove: Material): number {
+            var index = this.materials.indexOf(toRemove);
+            if (index !== -1) {
+                this.materials.splice(index, 1);
+            }
+            return index;
+        };
+        public removeLensFlareSystem(toRemove:LensFlareSystem){
+            var index = this.lensFlareSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.lensFlareSystems.splice(index, 1);
+            }
+            return index;
+        };
+        public removeActionManager(toRemove:ActionManager){
+            var index = this._actionManagers.indexOf(toRemove);
+            if (index !== -1) {
+                this._actionManagers.splice(index, 1);
+            }
+            return index;
+        };
+
         public addLight(newLight: Light) {
             this.lights.push(newLight);
             this.sortLightsByPriority();
