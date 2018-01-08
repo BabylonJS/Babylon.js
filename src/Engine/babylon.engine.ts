@@ -717,9 +717,9 @@
         }
 
         // States
-        protected _depthCullingState = new Internals._DepthCullingState();
-        protected _stencilState = new Internals._StencilState();
-        protected _alphaState = new Internals._AlphaState();
+        protected _depthCullingState = new _DepthCullingState();
+        protected _stencilState = new _StencilState();
+        protected _alphaState = new _AlphaState();
         protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
@@ -3181,7 +3181,7 @@
             if (isKTX || isTGA || isDDS) {
                 if (isKTX) {
                     callback = (data) => {
-                        var ktx = new Internals.KhronosTextureContainer(data, 1);
+                        var ktx = new KhronosTextureContainer(data, 1);
 
                         this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
                             ktx.uploadLevels(this._gl, !noMipmap);
@@ -3192,21 +3192,21 @@
                     callback = (arrayBuffer) => {
                         var data = new Uint8Array(arrayBuffer);
 
-                        var header = Internals.TGATools.GetTGAHeader(data);
+                        var header = TGATools.GetTGAHeader(data);
 
                         this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                            Internals.TGATools.UploadContent(this._gl, data);
+                            TGATools.UploadContent(this._gl, data);
                             return false;
                         }, samplingMode);
                     };
 
                 } else if (isDDS) {
                     callback = (data) => {
-                        var info = Internals.DDSTools.GetDDSInfo(data);
+                        var info = DDSTools.GetDDSInfo(data);
 
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                            Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
+                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
                             return false;
                         }, samplingMode);
                     };
@@ -4089,11 +4089,11 @@
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
                     if (loadData.isDDS) {
-                        var info: Internals.DDSInfo = loadData.info;
+                        var info: DDSInfo = loadData.info;
                         var data: any = loadData.data;
                         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                        Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
+                        DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
                     }
                     else {
                         Tools.Warn("DDS is the only prefiltered cube map supported so far.")
@@ -4155,7 +4155,7 @@
 
             if (isKTX) {
                 this._loadFile(rootUrl, data => {
-                    var ktx = new Internals.KhronosTextureContainer(data, 6);
+                    var ktx = new KhronosTextureContainer(data, 6);
 
                     var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
 
@@ -4175,19 +4175,19 @@
                     this._cascadeLoadFiles(rootUrl,
                         scene,
                         imgs => {
-                            var info: Internals.DDSInfo | undefined;
+                            var info: DDSInfo | undefined;
                             var loadMipmap: boolean = false;
                             var width: number = 0;
                             for (let index = 0; index < imgs.length; index++) {
                                 let data = imgs[index];
-                                info = Internals.DDSTools.GetDDSInfo(data);
+                                info = DDSTools.GetDDSInfo(data);
 
                                 loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                                Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
+                                DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
 
                                 if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -4212,14 +4212,14 @@
                 } else {
                     this._loadFile(rootUrl,
                         data => {
-                            var info = Internals.DDSTools.GetDDSInfo(data);
+                            var info = DDSTools.GetDDSInfo(data);
 
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                            Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
 
                             if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);

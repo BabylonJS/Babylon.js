@@ -402,6 +402,7 @@
             var center = impostor.getObjectCenter();
             //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
             this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
+            this._tmpDeltaPosition.divideInPlace(impostor.object.scaling);
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
 

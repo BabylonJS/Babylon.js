@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     /*
     * Based on jsTGALoader - Javascript loader for TGA file
     * By Vincent Thibault

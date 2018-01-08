@@ -1,33 +1,33 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
     // All values and structures referenced from:
     // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
     var DDS_MAGIC = 0x20534444;
 
-    var 
+    var
         //DDSD_CAPS = 0x1,
         //DDSD_HEIGHT = 0x2,
         //DDSD_WIDTH = 0x4,
         //DDSD_PITCH = 0x8,
         //DDSD_PIXELFORMAT = 0x1000,
         DDSD_MIPMAPCOUNT = 0x20000
-        //DDSD_LINEARSIZE = 0x80000,
-        //DDSD_DEPTH = 0x800000;
+    //DDSD_LINEARSIZE = 0x80000,
+    //DDSD_DEPTH = 0x800000;
 
     // var DDSCAPS_COMPLEX = 0x8,
     //     DDSCAPS_MIPMAP = 0x400000,
     //     DDSCAPS_TEXTURE = 0x1000;
 
     var DDSCAPS2_CUBEMAP = 0x200
-        // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
-        // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
-        // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
-        // DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000,
-        // DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000,
-        // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
-        // DDSCAPS2_VOLUME = 0x200000;
+    // DDSCAPS2_CUBEMAP_POSITIVEX = 0x400,
+    // DDSCAPS2_CUBEMAP_NEGATIVEX = 0x800,
+    // DDSCAPS2_CUBEMAP_POSITIVEY = 0x1000,
+    // DDSCAPS2_CUBEMAP_NEGATIVEY = 0x2000,
+    // DDSCAPS2_CUBEMAP_POSITIVEZ = 0x4000,
+    // DDSCAPS2_CUBEMAP_NEGATIVEZ = 0x8000,
+    // DDSCAPS2_VOLUME = 0x200000;
 
-    var 
+    var
         //DDPF_ALPHAPIXELS = 0x1,
         //DDPF_ALPHA = 0x2,
         DDPF_FOURCC = 0x4,
@@ -48,7 +48,7 @@
             (value >> 8) & 0xff,
             (value >> 16) & 0xff,
             (value >> 24) & 0xff
-            );
+        );
     }
 
     var FOURCC_DXT1 = FourCCToInt32("DXT1");
@@ -116,19 +116,19 @@
             var textureType = Engine.TEXTURETYPE_UNSIGNED_INT;
 
             switch (fourCC) {
-                case FOURCC_D3DFMT_R16G16B16A16F:  
-                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;                           
+                case FOURCC_D3DFMT_R16G16B16A16F:
+                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;
                     break;
                 case FOURCC_D3DFMT_R32G32B32A32F:
                     textureType = Engine.TEXTURETYPE_FLOAT;
-                    break;                    
+                    break;
                 case FOURCC_DX10:
                     if (dxgiFormat === DXGI_FORMAT_R16G16B16A16_FLOAT) {
                         textureType = Engine.TEXTURETYPE_HALF_FLOAT;
                         break;
                     }
             }
-  
+
             return {
                 width: header[off_width],
                 height: header[off_height],
@@ -151,7 +151,7 @@
                 DDSTools._FloatView = new Float32Array(1);
                 DDSTools._Int32View = new Int32Array(DDSTools._FloatView.buffer);
             }
-            
+
             DDSTools._FloatView[0] = value;
             var x = DDSTools._Int32View[0];
 
@@ -193,16 +193,16 @@
             var e = (value & 0x7C00) >> 10;
             var f = value & 0x03FF;
 
-            if(e === 0) {
+            if (e === 0) {
                 return (s ? -1 : 1) * Math.pow(2, -14) * (f / Math.pow(2, 10));
             } else if (e == 0x1F) {
                 return f ? NaN : ((s ? -1 : 1) * Infinity);
             }
 
-            return (s ? -1 : 1) * Math.pow(2, e-15) * (1 + (f / Math.pow(2, 10)));
+            return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + (f / Math.pow(2, 10)));
         }
 
-        private static _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {   
+        private static _GetHalfFloatAsFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
             var destArray = new Float32Array(dataLength);
             var srcData = new Uint16Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -222,9 +222,9 @@
             }
 
             return destArray;
-        } 
-    
-        private static _GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {   
+        }
+
+        private static _GetHalfFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Uint16Array {
             if (DDSTools.StoreLODInAlphaChannel) {
                 var destArray = new Uint16Array(dataLength);
                 var srcData = new Uint16Array(arrayBuffer, dataOffset);
@@ -244,7 +244,7 @@
             }
 
             return new Uint16Array(arrayBuffer, dataOffset, dataLength);
-        }           
+        }
 
         private static _GetFloatRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
             if (DDSTools.StoreLODInAlphaChannel) {
@@ -263,11 +263,11 @@
                 }
 
                 return destArray;
-            }            
+            }
             return new Float32Array(arrayBuffer, dataOffset, dataLength);
         }
 
-        private static _GetFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {   
+        private static _GetFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
             var destArray = new Uint8Array(dataLength);
             var srcData = new Float32Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -289,7 +289,7 @@
             return destArray;
         }
 
-        private static _GetHalfFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {   
+        private static _GetHalfFloatAsUIntRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number): Float32Array {
             var destArray = new Uint8Array(dataLength);
             var srcData = new Uint16Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -329,7 +329,7 @@
             return byteArray;
         }
 
-        private static _GetRGBArrayBuffer(width: number, height: number, dataOffset:number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {            
+        private static _GetRGBArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
@@ -361,7 +361,7 @@
             return byteArray;
         }
 
-        public static UploadDDSLevels(engine: Engine, gl:WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number): void {
+        public static UploadDDSLevels(engine: Engine, gl: WebGLRenderingContext, arrayBuffer: any, info: DDSInfo, loadMipmaps: boolean, faces: number, lodIndex = -1, currentFace?: number): void {
             var ext = engine.getCaps().s3tc;
 
             var header = new Int32Array(arrayBuffer, 0, headerLengthInt);
@@ -394,53 +394,53 @@
             if (info.isFourCC) {
                 fourCC = header[off_pfFourCC];
                 switch (fourCC) {
-                case FOURCC_DXT1:
-                    blockBytes = 8;
-                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT1_EXT;
-                    break;
-                case FOURCC_DXT3:
-                    blockBytes = 16;
-                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT3_EXT;
-                    break;
-                case FOURCC_DXT5:
-                    blockBytes = 16;
-                    internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT5_EXT;
-                    break;
-                case FOURCC_D3DFMT_R16G16B16A16F:  
-                    computeFormats = true;
-                    break;
-                case FOURCC_D3DFMT_R32G32B32A32F:
-                    computeFormats = true;
-                    break;
-                case FOURCC_DX10:
-                    // There is an additionnal header so dataOffset need to be changed
-                    dataOffset += 5 * 4; // 5 uints
-
-                    let supported = false;
-                    switch (info.dxgiFormat) {
-                        case DXGI_FORMAT_R16G16B16A16_FLOAT:
-                            computeFormats = true;
-                            supported = true;
-                            break;
-                        case DXGI_FORMAT_B8G8R8X8_UNORM:
-                            info.isRGB = true;
-                            info.isFourCC = false;
-                            bpp = 32;
-                            supported = true;
-                            break;
-                    }
-
-                    if (supported) {
+                    case FOURCC_DXT1:
+                        blockBytes = 8;
+                        internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT1_EXT;
                         break;
-                    }
-                default:
-                    console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
-                    return;
+                    case FOURCC_DXT3:
+                        blockBytes = 16;
+                        internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT3_EXT;
+                        break;
+                    case FOURCC_DXT5:
+                        blockBytes = 16;
+                        internalFormat = (<WEBGL_compressed_texture_s3tc>ext).COMPRESSED_RGBA_S3TC_DXT5_EXT;
+                        break;
+                    case FOURCC_D3DFMT_R16G16B16A16F:
+                        computeFormats = true;
+                        break;
+                    case FOURCC_D3DFMT_R32G32B32A32F:
+                        computeFormats = true;
+                        break;
+                    case FOURCC_DX10:
+                        // There is an additionnal header so dataOffset need to be changed
+                        dataOffset += 5 * 4; // 5 uints
+
+                        let supported = false;
+                        switch (info.dxgiFormat) {
+                            case DXGI_FORMAT_R16G16B16A16_FLOAT:
+                                computeFormats = true;
+                                supported = true;
+                                break;
+                            case DXGI_FORMAT_B8G8R8X8_UNORM:
+                                info.isRGB = true;
+                                info.isFourCC = false;
+                                bpp = 32;
+                                supported = true;
+                                break;
+                        }
+
+                        if (supported) {
+                            break;
+                        }
+                    default:
+                        console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
+                        return;
                 }
             }
 
             if (computeFormats) {
-                format = engine._getWebGLTextureType(info.textureType);    
+                format = engine._getWebGLTextureType(info.textureType);
                 internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
             }
 
@@ -448,7 +448,7 @@
             if (header[off_flags] & DDSD_MIPMAPCOUNT && loadMipmaps !== false) {
                 mipmapCount = Math.max(1, header[off_mipmapCount]);
             }
-            
+
             for (var face = 0; face < faces; face++) {
                 var sampler = faces === 1 ? gl.TEXTURE_2D : (gl.TEXTURE_CUBE_MAP_POSITIVE_X + face + (currentFace ? currentFace : 0));
 
@@ -466,7 +466,7 @@
 
                             if (engine.badOS || engine.badDesktopOS || (!engine.getCaps().textureHalfFloat && !engine.getCaps().textureFloat)) { // Required because iOS has many issues with float and half float generation
                                 if (bpp === 128) {
-                                    floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);                                    
+                                    floatArray = DDSTools._GetFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }
                                 else if (bpp === 64) {
                                     floatArray = DDSTools._GetHalfFloatAsUIntRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
@@ -483,8 +483,8 @@
                                     floatArray = DDSTools._GetHalfFloatAsFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
 
                                     info.textureType = Engine.TEXTURETYPE_FLOAT;
-                                    format = engine._getWebGLTextureType(info.textureType);    
-                                    internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);                            
+                                    format = engine._getWebGLTextureType(info.textureType);
+                                    internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
                                 } else { // 64
                                     floatArray = DDSTools._GetHalfFloatRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, i);
                                 }

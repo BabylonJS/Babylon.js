@@ -120,11 +120,12 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
     }
     waitRing.classList.add("hidden");
 
-    renderImage.src = saveRenderImage(renderData, canvas);
+    var renderB64 = saveRenderImage(renderData, canvas);
+    renderImage.src = renderB64;
 
     currentScene.dispose();
 
-    done(testRes);
+    done(testRes, renderB64);
 }
 
 function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
