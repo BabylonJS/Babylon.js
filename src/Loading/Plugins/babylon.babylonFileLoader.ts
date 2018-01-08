@@ -846,12 +846,13 @@
                             if (!loadedSounds[parsedSound.url]) {
                                 loadedSound = Sound.Parse(parsedSound, scene, rootUrl);
                                 loadedSounds[parsedSound.url] = loadedSound;
+                                container.sounds.push(loadedSound);
                             }
                             else {
-                                Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
+                                container.sounds.push(Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
                             }
                         } else {
-                            new Sound(parsedSound.name, null, scene);
+                            container.sounds.push(new Sound(parsedSound.name, null, scene));
                         }
                     }
                 }
