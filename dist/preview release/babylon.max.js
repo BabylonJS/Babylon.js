@@ -73634,6 +73634,10 @@ var BABYLON;
              */
             this.onNewMeshSelected = new BABYLON.Observable();
             /**
+             * Observable raised when a new mesh is picked based on meshSelectionPredicate
+             */
+            this.onNewMeshPicked = new BABYLON.Observable();
+            /**
              * Observable raised before camera teleportation
             */
             this.onBeforeCameraTeleport = new BABYLON.Observable();
@@ -74840,6 +74844,7 @@ var BABYLON;
                 this._teleportationAllowed = false;
                 if (hit.pickedMesh !== this._currentMeshSelected) {
                     if (this.meshSelectionPredicate(hit.pickedMesh)) {
+                        this.onNewMeshPicked.notifyObservers(hit);
                         this._currentMeshSelected = hit.pickedMesh;
                         if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
                             this.changeGazeColor(new BABYLON.Color3(0, 0, 1));
@@ -74852,7 +74857,7 @@ var BABYLON;
                             this._isActionableMesh = false;
                         }
                         try {
-                            this.onNewMeshSelected.notifyObservers(hit);
+                            this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);
                         }
                         catch (err) {
                             BABYLON.Tools.Warn("Error in your custom logic onNewMeshSelected: " + err);

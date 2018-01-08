@@ -1372,6 +1372,7 @@ var BABYLON;
                             break;
                         }
                     }
+                    sampler.interpolation = sampler.interpolation || "LINEAR";
                     var getNextKey;
                     switch (sampler.interpolation) {
                         case "LINEAR": {
