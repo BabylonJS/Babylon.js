@@ -762,6 +762,15 @@
             result.y = this.y / otherVector.y;
             return this;
         }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector2): Vector2 {
+            return this.divideToRef(otherVector, this);
+        }
+
         /**
          * Returns a new Vector2 with current Vector2 negated coordinates.  
          */
@@ -1287,6 +1296,14 @@
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
             return this;
+        }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector3): Vector3 {
+            return this.divideToRef(otherVector, this);
         }
 
         /**
@@ -2119,6 +2136,14 @@
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
             return this;
+        }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector4): Vector4 {
+            return this.divideToRef(otherVector, this);
         }
 
         /**

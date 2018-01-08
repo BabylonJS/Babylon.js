@@ -2286,6 +2286,11 @@
         public removeLight(toRemove: Light): number {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
+                // Remove from meshes
+                for (var mesh of this.meshes) {
+                    mesh._removeLightSource(toRemove);
+                }
+
                 // Remove from the scene if mesh found
                 this.lights.splice(index, 1);
                 this.sortLightsByPriority();
@@ -2321,6 +2326,14 @@
         public addLight(newLight: Light) {
             this.lights.push(newLight);
             this.sortLightsByPriority();
+
+            // Add light to all meshes (To support if the light is removed and then readded)
+            for (var mesh of this.meshes) {
+                if(mesh._lightSources.indexOf(newLight) === -1){
+                    mesh._lightSources.push(newLight);
+                    mesh._resyncLightSources();
+                }
+            }
 
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }

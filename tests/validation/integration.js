@@ -18,6 +18,10 @@ xhr.addEventListener("load", function () {
                     .require('/tests/validation/validation.js')
                     .useDist()
                     .load(function () {
+                        var info = engine.getGlInfo();
+                        console.log("Webgl Version: " + info.version);
+                        console.log("Webgl Vendor: " + info.vendor);
+                        console.log("Webgl Renderer: " + info.renderer);
                         done();
                     });
             });
@@ -33,12 +37,15 @@ xhr.addEventListener("load", function () {
                     this.timeout(240000);
 
                     try {
-                        runTest(index, function (result) {
+                        runTest(index, function(result, screenshot) {
                             try {
-                                expect(result).to.be.true;
+                                expect(result).to.be.true; 
                                 done();
                             }
                             catch (e) {
+                                if (screenshot) {
+                                    console.error(screenshot);
+                                }
                                 done(e);
                             }
                         });
