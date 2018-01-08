@@ -4,10 +4,10 @@ module INSPECTOR {
         extends Adapter
         implements IToolVisible {
 
-        private _viewer: BABYLON.Debug.PhysicsViewer;
+        private _viewer: any;
         private _isVisible = false;
 
-        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer) {
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: any) {
             super(obj);
             this._viewer = viewer;
         }

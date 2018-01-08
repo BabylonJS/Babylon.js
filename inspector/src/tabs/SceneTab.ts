@@ -8,7 +8,7 @@ module INSPECTOR {
         private _actions: HTMLDivElement;
 
         /** The list of skeleton viewer */
-        private _skeletonViewers: Array<BABYLON.Debug.SkeletonViewer> = [];
+        private _skeletonViewers: Array<any> = [];
 
         /** The detail of the scene */
         private _detailsPanel: DetailPanel;
