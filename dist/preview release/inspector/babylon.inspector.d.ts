@@ -301,7 +301,7 @@ declare module INSPECTOR {
     class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
         private _viewer;
         private _isVisible;
-        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: any);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -868,7 +868,7 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class PhysicsTab extends PropertyTab {
-        viewer: BABYLON.Debug.PhysicsViewer;
+        viewer: any;
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }
