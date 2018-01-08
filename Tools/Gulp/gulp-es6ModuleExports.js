@@ -46,7 +46,7 @@ ${decorateAddition}
 
             dependencies.forEach(function (d, idx) {
                 let name = d === 'core' ? 'BABYLON' : d;
-                dependenciesText += `import * as ${name} from 'babylonjs/es6/${d}';
+                dependenciesText += `import * as ${name} from 'babylonjs/${d}/es6';
 `;
                 if (idx > 0) {
                     dependenciesText += `__extends(BABYLON, ${d});
