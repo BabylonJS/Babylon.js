@@ -951,49 +951,7 @@
                     ActionManager.Parse(parsedData.actions, null, scene);
                 }
                 
-                container.cameras.forEach((o)=>{
-                    scene.removeCamera(o);
-                });
-                container.lights.forEach((o)=>{
-                    scene.removeLight(o);
-                });
-                container.meshes.forEach((o)=>{
-                    scene.removeMesh(o);
-                });
-                container.skeletons.forEach((o)=>{
-                    scene.removeSkeleton(o);
-                });
-                container.particleSystems.forEach((o)=>{
-                    scene.removeParticleSystem(o);
-                });
-                container.particleSystems.forEach((o)=>{
-                    scene.removeParticleSystem(o);
-                });
-                container.animations.forEach((o)=>{
-                    scene.removeAnimation(o);
-                });
-                container.multiMaterials.forEach((o)=>{
-                    scene.removeMultiMaterial(o);
-                });
-                container.materials.forEach((o)=>{
-                    scene.removeMaterial(o);
-                });
-                container.morphTargetManagers.forEach((o)=>{
-                    scene.removeMorphTargetManager(o);
-                });
-                container.geometries.forEach((o)=>{
-                    scene.removeGeometry(o);
-                });
-                container.transformNodes.forEach((o)=>{
-                    scene.removeTransformNode(o);
-                });
-                container.lensFlareSystems.forEach((o)=>{
-                    scene.removeLensFlareSystem(o);
-                });
-                container.actionManagers.forEach((o)=>{
-                    scene.removeActionManager(o);
-                });
-                // TODO, do shadow generators need to be removed somehow?
+                container.removeAllFromScene();
 
                 return container;
 

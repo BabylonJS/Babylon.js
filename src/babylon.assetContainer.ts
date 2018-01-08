@@ -26,7 +26,49 @@ module BABYLON {
             // TODO
         }
         removeAllFromScene(){
-            // TODO
+            this.cameras.forEach((o)=>{
+                this.scene.removeCamera(o);
+            });
+            this.lights.forEach((o)=>{
+                this.scene.removeLight(o);
+            });
+            this.meshes.forEach((o)=>{
+                this.scene.removeMesh(o);
+            });
+            this.skeletons.forEach((o)=>{
+                this.scene.removeSkeleton(o);
+            });
+            this.particleSystems.forEach((o)=>{
+                this.scene.removeParticleSystem(o);
+            });
+            this.particleSystems.forEach((o)=>{
+                this.scene.removeParticleSystem(o);
+            });
+            this.animations.forEach((o)=>{
+                this.scene.removeAnimation(o);
+            });
+            this.multiMaterials.forEach((o)=>{
+                this.scene.removeMultiMaterial(o);
+            });
+            this.materials.forEach((o)=>{
+                this.scene.removeMaterial(o);
+            });
+            this.morphTargetManagers.forEach((o)=>{
+                this.scene.removeMorphTargetManager(o);
+            });
+            this.geometries.forEach((o)=>{
+                this.scene.removeGeometry(o);
+            });
+            this.transformNodes.forEach((o)=>{
+                this.scene.removeTransformNode(o);
+            });
+            this.lensFlareSystems.forEach((o)=>{
+                this.scene.removeLensFlareSystem(o);
+            });
+            this.actionManagers.forEach((o)=>{
+                this.scene.removeActionManager(o);
+            });
+            // TODO, do shadow generators need to be removed somehow?
         }
     }
 }

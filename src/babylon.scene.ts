@@ -2385,6 +2385,42 @@
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
 
+        public addSkeleton(newSkeleton:Skeleton){
+            this.skeletons.push(newSkeleton)
+        }
+
+        public addParticleSystem(newParticleSystem:ParticleSystem){
+            this.particleSystems.push(newParticleSystem)
+        }
+
+        public addAnimation(newAnimation:Animation){
+            this.animations.push(newAnimation)
+        }
+
+        public addMultiMaterial(newMultiMaterial:MultiMaterial){
+            this.multiMaterials.push(newMultiMaterial)
+        }
+
+        public addMaterial(newMaterial:Material){
+            this.materials.push(newMaterial)
+        }
+
+        public addMorphTargetManager(newMorphTargetManager:MorphTargetManager){
+            this.morphTargetManagers.push(newMorphTargetManager)
+        }
+
+        public addGeometry(newGeometrie:Geometry){
+            this._geometries.push(newGeometrie)
+        }
+
+        public addLensFlareSystem(newLensFlareSystem:LensFlareSystem){
+            this.lensFlareSystems.push(newLensFlareSystem)
+        }
+
+        public addActionManager(newActionManager:ActionManager){
+            this._actionManagers.push(newActionManager)
+        }
+
         /**
          * Switch active camera
          * @param {Camera} newCamera - new active camera
