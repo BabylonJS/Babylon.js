@@ -277,11 +277,11 @@ module BABYLON {
                     return null;
                 }
                 // Extract the raw linear data.
-                var data = Internals.HDRTools.GetCubeMapTextureData(buffer, this._size);
+                var data = HDRTools.GetCubeMapTextureData(buffer, this._size);
 
                 // Generate harmonics if needed.
                 if (this._generateHarmonics) {
-                    var sphericalPolynomial = Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                    var sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
                     this.sphericalPolynomial = sphericalPolynomial;
                 }
 
@@ -350,7 +350,7 @@ module BABYLON {
             //     this._usePMREMGenerator) {
             //     mipmapGenerator = (data: ArrayBufferView[]) => {
             //         // Custom setup of the generator matching with the PBR shader values.
-            //         var generator = new BABYLON.Internals.PMREMGenerator(data,
+            //         var generator = new BABYLON.PMREMGenerator(data,
             //             this._size,
             //             this._size,
             //             0,
