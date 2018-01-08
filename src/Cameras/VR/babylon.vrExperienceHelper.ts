@@ -109,7 +109,11 @@ module BABYLON {
         private _leftLaserPointer: Nullable<Mesh>;
         private _rightLaserPointer: Nullable<Mesh>;
         private _currentMeshSelected: Nullable<AbstractMesh>;
-        public onNewMeshSelected = new Observable<AbstractMesh>();
+
+        /**
+         * Observable raised when a new mesh is selected based on meshSelectionPredicate
+         */        
+        public onNewMeshSelected = new Observable<PickingInfo>();
         private _circleEase: CircleEase;
 
         /**
@@ -1417,7 +1421,7 @@ module BABYLON {
                             this._isActionableMesh = false;
                         }
                         try {
-                            this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);
+                            this.onNewMeshSelected.notifyObservers(hit);
                         }
                         catch (err) {
                             Tools.Warn("Error in your custom logic onNewMeshSelected: " + err);

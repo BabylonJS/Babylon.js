@@ -20,3 +20,5 @@
 ## Bug fixes
 
 ## Breaking changes
+
+- VRHelper onNewMeshSelected now notifies a PickingInfo to subscribers instead of an AbstractMesh ([carloslanderas](https://github.com/carloslanderas))
