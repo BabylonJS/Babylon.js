@@ -113,7 +113,13 @@ module BABYLON {
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
          */        
-        public onNewMeshSelected = new Observable<PickingInfo>();
+        public onNewMeshSelected = new Observable<AbstractMesh>();
+
+        /**
+         * Observable raised when a new mesh is picked based on meshSelectionPredicate
+         */        
+        public onNewMeshPicked = new Observable<PickingInfo>();
+
         private _circleEase: CircleEase;
 
         /**
@@ -1409,6 +1415,7 @@ module BABYLON {
                 this._teleportationAllowed = false;
                 if (hit.pickedMesh !== this._currentMeshSelected) {
                     if (this.meshSelectionPredicate(hit.pickedMesh)) {
+                        this.onNewMeshPicked.notifyObservers(hit);
                         this._currentMeshSelected = hit.pickedMesh;
                         if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
                             this.changeGazeColor(new Color3(0, 0, 1));
@@ -1421,7 +1428,7 @@ module BABYLON {
                             this._isActionableMesh = false;
                         }
                         try {
-                            this.onNewMeshSelected.notifyObservers(hit);
+                            this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);                            
                         }
                         catch (err) {
                             Tools.Warn("Error in your custom logic onNewMeshSelected: " + err);
