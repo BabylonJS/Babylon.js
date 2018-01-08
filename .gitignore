@@ -26,7 +26,6 @@ serializers/src/**/*.js
 gui/src/**/*.js
 
 # Build results
-[Dd]ebug/
 [Rr]elease/
 x64/
 *_i.c
