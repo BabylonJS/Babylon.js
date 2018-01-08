@@ -202,10 +202,8 @@
                 "../../src/Mesh/babylon.mesh.js",
                 "../../src/Mesh/babylon.subMesh.js",
                 "../../src/Materials/babylon.effect.js",
-                "../../src/Materials/babylon.materialHelper.js",
                 "../../src/Materials/babylon.material.js",
                 "../../src/Materials/babylon.uniformBuffer.js",
-                "../../src/Materials/babylon.pushMaterial.js",
                 "../../src/Mesh/babylon.mesh.vertexData.js",
                 "../../src/Mesh/babylon.geometry.js",
                 "../../src/PostProcess/babylon.postProcessManager.js",
@@ -218,10 +216,23 @@
                 "depthPrePass"
             ]
         },
+        "materialCore": {
+            "files": [
+                "../../src/Materials/babylon.materialHelper.js",
+                "../../src/Materials/babylon.pushMaterial.js"
+            ],
+            "dependUpon": [
+                "core"
+            ]
+        },
         "particles": {
             "files": [
                 "../../src/Particles/babylon.particle.js",
-                "../../src/Particles/babylon.particleSystem.js"
+                "../../src/Particles/babylon.particleSystem.js",
+                "../../src/Particles/babylon.boxParticleEmitter.js",
+                "../../src/Particles/babylon.coneParticleEmitter.js",
+                "../../src/Particles/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/babylon.iParticleEmitterType.js"
             ],
             "dependUpon": [
                 "core"
@@ -325,6 +336,7 @@
         "animations": {
             "files": [
                 "../../src/Animations/babylon.animation.js",
+                "../../src/Animations/babylon.animationGroup.js",
                 "../../src/Animations/babylon.runtimeAnimation.js",
                 "../../src/Animations/babylon.animatable.js",
                 "../../src/Animations/babylon.easing.js"
@@ -373,7 +385,7 @@
                 "../../src/Materials/babylon.shaderMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "materialCore"
             ]
         },
         "standardMaterial": {
@@ -381,7 +393,7 @@
                 "../../src/Materials/babylon.standardMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "materialCore"
             ],
             "shaders": [
                 "default.vertex",
@@ -438,7 +450,7 @@
                 "../../src/Materials/PBR/babylon.pbrSpecularGlossinessMaterial.js"
             ],
             "dependUpon": [
-                "core"
+                "materialCore"
             ],
             "shaders": [
                 "pbr.vertex",
@@ -926,11 +938,13 @@
                 "../../src/Physics/babylon.physicsJoint.js",
                 "../../src/Physics/babylon.physicsImpostor.js",
                 "../../src/Physics/babylon.physicsEngine.js",
+                "../../src/Physics/babylon.physicsHelper.js",
                 "../../src/Physics/Plugins/babylon.cannonJSPlugin.js",
                 "../../src/Physics/Plugins/babylon.oimoJSPlugin.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "picking"
             ]
         },
         "textureFormats": {
@@ -1177,7 +1191,8 @@
         "loaders",
         "serializers",
         "inspector",
-        "gui"
+        "gui",
+        "viewer"
     ],
     "materialsLibrary": {
         "libraries": [
@@ -1538,6 +1553,14 @@
                     "../../serializers/src/OBJ/babylon.objSerializer.ts"
                 ],
                 "output": "babylon.objSerializer.js"
+            },
+            {
+                "files": [
+                    "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFData.ts"
+                ],
+                "output": "babylon.glTF2Serializer.js"
             }
         ],
         "build": {
@@ -1565,12 +1588,12 @@
                     "../../gui/src/controls/ellipse.ts",
                     "../../gui/src/controls/line.ts",
                     "../../gui/src/controls/slider.ts",
-                    "../../gui/src/controls/checkBox.ts",
+                    "../../gui/src/controls/checkbox.ts",
                     "../../gui/src/controls/radioButton.ts",
                     "../../gui/src/controls/textBlock.ts",
                     "../../gui/src/controls/image.ts",
                     "../../gui/src/controls/button.ts",
-                    "../../gui/src/controls/colorPicker.ts",
+                    "../../gui/src/controls/colorpicker.ts",
                     "../../gui/src/controls/inputText.ts",
                     "../../gui/src/controls/virtualKeyboard.ts"
                 ],
@@ -1659,6 +1682,22 @@
         "build": {
             "srcOutputDirectory": "../../inspector/",
             "distOutputDirectory": "/inspector/"
+        }
+    },
+    "viewer": {
+        "libraries": [
+            {
+                "files": [],
+                "noBundleInName": true,
+                "output": "babylon.viewer.js",
+                "webpack": "../../Viewer/webpack.gulp.config.js",
+                "bundle": "true",
+                "moduleDeclaration": "BabylonViewer"
+            }
+        ],
+        "build": {
+            "srcOutputDirectory": "../../Viewer/",
+            "distOutputDirectory": "/viewer/"
         }
     }
 }

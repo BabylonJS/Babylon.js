@@ -2,7 +2,7 @@
     var __decoratorInitialStore = {};
     var __mergedStore = {};
 
-    var _copySource = function<T>(creationFunction: () => T, source: T, instanciate: boolean): T {
+    var _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean): T {
         var destination = creationFunction();
 
         // Tags
@@ -25,14 +25,15 @@
                         (<any>destination)[property] = sourceProperty;
                         break;
                     case 1:     // Texture
-                        (<any>destination)[property] = (instanciate||sourceProperty.isRenderTarget)?sourceProperty:sourceProperty.clone();
+                        (<any>destination)[property] = (instanciate || sourceProperty.isRenderTarget) ? sourceProperty : sourceProperty.clone();
                         break;
                     case 2:     // Color3
                     case 3:     // FresnelParameters
                     case 4:     // Vector2
                     case 5:     // Vector3
                     case 7:     // Color Curves
-                        (<any>destination)[property] = instanciate?sourceProperty:sourceProperty.clone();
+                    case 10:    // Quaternion
+                        (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
                         break;
                 }
             }
@@ -70,7 +71,7 @@
         while (currentKey) {
             let initialStore = (<any>__decoratorInitialStore)[currentKey];
             for (var property in initialStore) {
-                store[property] = initialStore[property];                
+                store[property] = initialStore[property];
             }
 
             let parent: any;
@@ -94,7 +95,7 @@
             if (done) {
                 break;
             }
-            
+
             currentKey = parent.getClassName();
             currentTarget = parent;
         }
@@ -116,15 +117,15 @@
         return (target: any, propertyKey: string) => {
             var key = targetKey || ("_" + propertyKey);
             Object.defineProperty(target, propertyKey, {
-                get: function () {
+                get: function (this: any) {
                     return this[key];
                 },
-                set: function (value) {
+                set: function (this: any, value) {
                     if (this[key] === value) {
                         return;
                     }
                     this[key] = value;
-                    
+
                     target[setCallback].apply(this);
                 },
                 enumerable: true,
@@ -164,7 +165,7 @@
     export function serializeAsMeshReference(sourceName?: string) {
         return generateSerializableMember(6, sourceName); // mesh reference member
     }
-    
+
     export function serializeAsColorCurves(sourceName?: string) {
         return generateSerializableMember(7, sourceName); // color curves
     }
@@ -175,6 +176,10 @@
 
     export function serializeAsImageProcessingConfiguration(sourceName?: string) {
         return generateSerializableMember(9, sourceName); // image processing
+    }
+
+    export function serializeAsQuaternion(sourceName?: string) {
+        return generateSerializableMember(10, sourceName); // quaternion member
     }
 
 

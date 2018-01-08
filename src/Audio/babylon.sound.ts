@@ -19,7 +19,6 @@ module BABYLON {
         private _position: Vector3 = Vector3.Zero();
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
-        private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
         public isPlaying: boolean = false;
         public isPaused: boolean = false;
@@ -40,7 +39,7 @@ module BABYLON {
         private _scene: Scene;
         private _connectedMesh: Nullable<AbstractMesh>;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
-        private _registerFunc: Nullable<(connectedMesh: AbstractMesh) => any>;
+        private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
         private _isOutputConnected = false;
         private _htmlAudioElement: HTMLAudioElement;
         private _urlType: string = "Unknown";
@@ -98,9 +97,9 @@ module BABYLON {
                     if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
                     if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
 
-                    var urls:string[] = [];
+                    var urls: string[] = [];
                     var codecSupportedFound = false;
- 
+
                     switch (this._urlType) {
                         case "ArrayBuffer":
                             if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
@@ -130,14 +129,14 @@ module BABYLON {
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data); }, undefined, this._scene.database, true);
+                                        this._scene._loadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, true, true);
                                     }
                                     // Streaming sound using HTML5 Audio tag
                                     else {
                                         this._htmlAudioElement = new Audio(url);
                                         this._htmlAudioElement.controls = false;
                                         this._htmlAudioElement.loop = this.loop;
-                                        this._htmlAudioElement.crossOrigin = "anonymous";
+                                        Tools.SetCorsBehavior(url, this._htmlAudioElement);
                                         this._htmlAudioElement.preload = "auto";
                                         this._htmlAudioElement.addEventListener("canplaythrough", () => {
                                             this._isReadyToPlay = true;
@@ -239,7 +238,6 @@ module BABYLON {
         }
 
         private _soundLoaded(audioData: ArrayBuffer) {
-            this._isLoaded = true;
             if (!Engine.audioEngine.audioContext) {
                 return;
             }
@@ -482,7 +480,7 @@ module BABYLON {
                 else if (Engine.audioEngine.audioContext && this._soundSource) {
                     var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
-                    this._soundSource.onended = () => {};
+                    this._soundSource.onended = () => { };
                     if (!this.isPaused) {
                         this._startOffset = 0;
                     }
@@ -549,7 +547,7 @@ module BABYLON {
                 }
             }
             this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
-            this._registerFunc = (connectedMesh: AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            this._registerFunc = (connectedMesh: TransformNode) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
@@ -561,8 +559,12 @@ module BABYLON {
             }
         }
 
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh): void {
-            let boundingInfo = connectedMesh.getBoundingInfo();
+        private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
+            if (!(<any>node).getBoundingInfo) {
+                return;
+            }
+            let mesh = node as AbstractMesh;
+            let boundingInfo = mesh.getBoundingInfo();
             this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();

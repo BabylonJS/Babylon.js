@@ -1,9 +1,9 @@
 module BABYLON {
 
     export class OculusTouchController extends WebVRController {
-        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/oculus/';
-        private static readonly MODEL_LEFT_FILENAME:string = 'left.babylon';
-        private static readonly MODEL_RIGHT_FILENAME:string = 'right.babylon';
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/oculus/';
+        public static MODEL_LEFT_FILENAME: string = 'left.babylon';
+        public static MODEL_RIGHT_FILENAME: string = 'right.babylon';
 
         public onSecondaryTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 

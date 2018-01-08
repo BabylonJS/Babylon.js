@@ -1,15 +1,19 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "experimentalDecorators": true,
-    "module": "commonjs",
+    "noResolve": true,
     "target": "es5",
+    "declaration": true,
+    "experimentalDecorators": true,
+    "isolatedModules": false,
     "sourceMap": true,
+    "types": [],
     "noImplicitAny": true,
-    "lib": ["dom", "es2015.promise", "es5"],
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,    
-    "strictNullChecks": true
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "skipLibCheck": true
   }
 }

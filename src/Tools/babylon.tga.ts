@@ -65,7 +65,6 @@
 
             var use_rle = false;
             var use_pal = false;
-            var use_rgb = false;
             var use_grey = false;
 
             // Get some informations.
@@ -79,7 +78,7 @@
                 case TGATools._TYPE_RLE_RGB:
                     use_rle = true;
                 case TGATools._TYPE_RGB:
-                    use_rgb = true;
+                    // use_rgb = true;
                     break;
 
                 case TGATools._TYPE_RLE_GREY:
@@ -91,7 +90,7 @@
 
             var pixel_data;
 
-           // var numAlphaBits = header.flags & 0xf;
+            // var numAlphaBits = header.flags & 0xf;
             var pixel_size = header.pixel_size >> 3;
             var pixel_total = header.width * header.height * pixel_size;
 
@@ -143,7 +142,7 @@
                 pixel_data = data.subarray(
                     offset,
                     offset += (use_pal ? header.width * header.height : pixel_total)
-                    );
+                );
             }
 
             // Load to texture

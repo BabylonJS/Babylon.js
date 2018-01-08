@@ -369,6 +369,9 @@ module INSPECTOR {
             } else {
                 // Create popup
                 let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
+                if (!popup) {
+                    return;
+                }
                 popup.document.title = 'Babylon.js INSPECTOR';
                 // Get the inspector style      
                 let styles = Inspector.DOCUMENT.querySelectorAll('style');

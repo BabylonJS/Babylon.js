@@ -721,6 +721,10 @@ declare module INSPECTOR {
          */
         static IsBrowserEdge(): boolean;
         /**
+         * Returns true if the user browser is IE.
+         */
+        static IsBrowserIE(): boolean;
+        /**
          * Returns the name of the type of the given object, where the name
          * is in PROPERTIES constant.
          * Returns 'Undefined' if no type exists for this object
@@ -762,7 +766,7 @@ declare module INSPECTOR {
          * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
          * @param obj
          */
-        static GetAllLinesPropertiesAsString(obj: any): Array<string>;
+        static GetAllLinesPropertiesAsString(obj: any, dontTakeThis?: Array<string>): Array<string>;
         static Capitalize(str: string): string;
     }
 }
@@ -770,8 +774,6 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     class Scheduler {
         private static _instance;
-        /** The number of the set interval */
-        private _timer;
         /** Is this scheduler in pause ? */
         pause: boolean;
         /** All properties are refreshed every 250ms */
@@ -1247,7 +1249,6 @@ declare module INSPECTOR {
      */
     class SoundInteractions extends AbstractTreeTool {
         private playSound;
-        private b;
         constructor(playSound: ISoundInteractions);
         protected action(): void;
         private _playSound();
@@ -1299,7 +1300,6 @@ declare module INSPECTOR {
      */
     class Info extends AbstractTreeTool {
         private _obj;
-        private _tooltip;
         constructor(obj: IToolInfo);
         protected action(): void;
     }

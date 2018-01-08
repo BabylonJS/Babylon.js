@@ -397,11 +397,6 @@
             // Animations
             this.getScene().stopAnimation(this);
 
-            // Remove from meshes
-            for (var mesh of this.getScene().meshes) {
-                mesh._removeLightSource(this);
-            }
-
             this._uniformBuffer.dispose();
 
             // Remove from scene

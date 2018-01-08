@@ -48,7 +48,7 @@
 
         public static CreateGeometryForMesh(mesh: Mesh): Geometry {
             let geometry = new Geometry(Geometry.RandomId(), mesh.getScene());
-            
+
             geometry.applyToMesh(mesh);
 
             return geometry;
@@ -80,7 +80,7 @@
             // applyToMesh
             if (mesh) {
                 if (mesh.getClassName() === "LinesMesh") {
-                    this.boundingBias = new Vector2(0, (<LinesMesh> mesh).intersectionThreshold);
+                    this.boundingBias = new Vector2(0, (<LinesMesh>mesh).intersectionThreshold);
                     this.updateExtend();
                 }
 
@@ -307,7 +307,7 @@
          * - BABYLON.VertexBuffer.MatricesIndicesExtraKind
          * - BABYLON.VertexBuffer.MatricesWeightsKind
          * - BABYLON.VertexBuffer.MatricesWeightsExtraKind
-         */        
+         */
         public isVertexBufferUpdatable(kind: string): boolean {
             let vb = this._vertexBuffers[kind];
 
@@ -482,7 +482,7 @@
             }
         }
 
-        private updateExtend(data: Nullable<FloatArray> = null, stride? : number) {
+        private updateExtend(data: Nullable<FloatArray> = null, stride?: number) {
             if (!data) {
                 data = <FloatArray>this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
@@ -557,12 +557,12 @@
             }
 
             scene._addPendingData(this);
-            Tools.LoadFile(this.delayLoadingFile, data => {
+            scene._loadFile(this.delayLoadingFile, data => {
                 if (!this._delayLoadingFunction) {
                     return;
                 }
 
-                this._delayLoadingFunction(JSON.parse(data), this);
+                this._delayLoadingFunction(JSON.parse(data as string), this);
 
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
@@ -578,7 +578,7 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            }, undefined, true);
         }
 
         /**
@@ -617,13 +617,11 @@
         }
 
         // Cache
-        public _resetPointsArrayCache(): void
-        {
+        public _resetPointsArrayCache(): void {
             this._positions = null;
         }
 
-        public _generatePointsArray(): boolean
-        {
+        public _generatePointsArray(): boolean {
             if (this._positions)
                 return true;
 
@@ -753,7 +751,7 @@
             return serializationObject;
         }
 
-        private toNumberArray(origin: Nullable<Float32Array | IndicesArray>) : number[] {
+        private toNumberArray(origin: Nullable<Float32Array | IndicesArray>): number[] {
             if (Array.isArray(origin)) {
                 return origin;
             } else {
@@ -933,7 +931,7 @@
                 }
 
                 if (binaryInfo.matricesWeightsAttrDesc && binaryInfo.matricesWeightsAttrDesc.count > 0) {
-                    var matricesWeightsData = new Float32Array(parsedGeometry, binaryInfo.matricesWeightsAttrDesc.offset, binaryInfo.matricesWeightsAttrDesc.count);                    
+                    var matricesWeightsData = new Float32Array(parsedGeometry, binaryInfo.matricesWeightsAttrDesc.offset, binaryInfo.matricesWeightsAttrDesc.count);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, matricesWeightsData, false);
                 }
 
@@ -1034,7 +1032,7 @@
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
-                if (parsedGeometry.matricesWeightsExtra) {       
+                if (parsedGeometry.matricesWeightsExtra) {
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
@@ -1061,12 +1059,13 @@
             mesh.computeWorldMatrix(true);
 
             // Octree
-            if (scene['_selectionOctree']) {
-                scene['_selectionOctree'].addMesh(<AbstractMesh>mesh);
+            const sceneOctree = scene.selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
+                sceneOctree.addMesh(<AbstractMesh>mesh);
             }
         }
 
-        private static _CleanMatricesWeights(parsedGeometry:any, mesh:Mesh): void {
+        private static _CleanMatricesWeights(parsedGeometry: any, mesh: Mesh): void {
             const epsilon: number = 1e-3;
             if (!SceneLoader.CleanBoneMatrixWeights) {
                 return;
@@ -1108,7 +1107,7 @@
                         }
                     }
                 }
-                if (firstZeroWeight < 0  || firstZeroWeight > (influencers - 1)) {
+                if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
                     firstZeroWeight = influencers - 1;
                 }
                 if (weight > epsilon) {
@@ -1119,7 +1118,7 @@
                     if (matricesWeightsExtra) {
                         for (var j = 0; j < 4; j++) {
                             matricesWeightsExtra[i + j] *= mweight;
-                        }    
+                        }
                     }
                 } else {
                     if (firstZeroWeight >= 4) {
@@ -1133,7 +1132,7 @@
             }
 
             mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
-            if (parsedGeometry.matricesWeightsExtra) {       
+            if (parsedGeometry.matricesWeightsExtra) {
                 mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
             }
         }

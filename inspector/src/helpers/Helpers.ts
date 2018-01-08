@@ -51,6 +51,14 @@ module INSPECTOR {
             var regexp = /Edge/
             return regexp.test(navigator.userAgent);
         }
+        /**
+         * Returns true if the user browser is IE.
+         */
+        public static IsBrowserIE(): boolean {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./
+            return regexp.test(navigator.userAgent);
+        }
 
         /** 
          * Returns the name of the type of the given object, where the name 
@@ -153,17 +161,17 @@ module INSPECTOR {
         public static LoadScript() {
             BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js", (elem) => {
                 let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body);
-                script.textContent = elem;
+                script.textContent = elem as string;
 
                 // Load glsl detection
                 BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/languages/glsl.min.js", (elem) => {
                     let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body);
-                    script.textContent = elem;
+                    script.textContent = elem as string;
 
                     // Load css style
                     BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/zenburn.min.css", (elem) => {
                         let style = Helpers.CreateElement('style', '', Inspector.DOCUMENT.body);
-                        style.textContent = elem;
+                        style.textContent = elem as string;
                     });
                 }, undefined, undefined, undefined, () => {
                     console.log("erreur");
@@ -202,12 +210,12 @@ module INSPECTOR {
          * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
          * @param obj 
          */
-        public static GetAllLinesPropertiesAsString(obj: any): Array<string> {
+        public static GetAllLinesPropertiesAsString(obj: any, dontTakeThis: Array<string> = []): Array<string> {
             let props: Array<string> = [];
 
             for (let prop in obj) {
                 //No private and no function
-                if (prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
+                if (dontTakeThis.indexOf(prop) === -1 && prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
                     props.push(prop);
                 }
             }

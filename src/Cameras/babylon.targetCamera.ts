@@ -25,7 +25,7 @@
         private _rigCamTransformMatrix: Matrix;
 
         public _referencePoint = new Vector3(0, 0, 1);
-        private _defaultUpVector = new Vector3(0, 1, 0);
+        private _currentUpVector = new Vector3(0, 1, 0);
         public _transformedReferencePoint = Vector3.Zero();
         public _lookAtTemp = Matrix.Zero();
         public _tempMatrix = Matrix.Zero();
@@ -37,6 +37,7 @@
         }
 
         public getFrontPosition(distance: number): Vector3 {
+            this.getWorldMatrix();
             var direction = this.getTarget().subtract(this.position);
             direction.normalize();
             direction.scaleInPlace(distance);
@@ -148,7 +149,7 @@
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
-            Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
             this._camMatrix.invert();
 
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -271,31 +272,28 @@
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
+
             //update the up vector!
-            BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         }
 
         public _getViewMatrix(): Matrix {
-            if (!this.lockedTarget) {
-                // Compute
-                this._updateCameraRotationMatrix();
-
-                Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-
-                // Computing target and final matrix
-                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-            } else {
-                let targetPosition = this._getLockedTargetPosition();
-
-                if (targetPosition) {
-                    this._currentTarget.copyFrom(targetPosition);
-                }
+            if (this.lockedTarget) {
+                this.setTarget(this._getLockedTargetPosition()!);
             }
 
+            // Compute
+            this._updateCameraRotationMatrix();
+
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+
             if (this.getScene().useRightHandedSystem) {
-                Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                Matrix.LookAtRHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             } else {
-                Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                Matrix.LookAtLHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             }
 
             return this._viewMatrix;

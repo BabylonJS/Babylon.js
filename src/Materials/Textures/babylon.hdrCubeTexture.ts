@@ -92,8 +92,8 @@ module BABYLON {
                 this._size = size;
                 this._useInGammaSpace = useInGammaSpace;
                 this._usePMREMGenerator = usePMREMGenerator &&
-                        caps.textureLOD &&
-                        caps.textureFloat &&
+                    caps.textureLOD &&
+                    caps.textureFloat &&
                     !this._useInGammaSpace;
             }
             else {
@@ -216,9 +216,9 @@ module BABYLON {
 
                             // Put in gamma space if requested.
                             if (this._useInGammaSpace) {
-                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], BABYLON.ToGammaSpace);
+                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], ToGammaSpace);
+                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], ToGammaSpace);
+                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], ToGammaSpace);
                             }
 
                             // Convert to int texture for fallback.
@@ -259,7 +259,7 @@ module BABYLON {
             if (scene) {
                 this._texture = (<any>scene.getEngine()).createRawCubeTextureFromUrl(this.url, scene, this._size,
                     Engine.TEXTUREFORMAT_RGB,
-                    scene.getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                    scene.getEngine().getCaps().textureFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT,
                     this._noMipmap,
                     callback,
                     mipmapGenerator, this._onLoad, this._onError);
@@ -277,11 +277,11 @@ module BABYLON {
                     return null;
                 }
                 // Extract the raw linear data.
-                var data = BABYLON.Internals.HDRTools.GetCubeMapTextureData(buffer, this._size);
+                var data = Internals.HDRTools.GetCubeMapTextureData(buffer, this._size);
 
                 // Generate harmonics if needed.
                 if (this._generateHarmonics) {
-                    var sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                    var sphericalPolynomial = Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
                     this.sphericalPolynomial = sphericalPolynomial;
                 }
 
@@ -306,9 +306,9 @@ module BABYLON {
 
                             // Put in gamma space if requested.
                             if (this._useInGammaSpace) {
-                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], BABYLON.ToGammaSpace);
+                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], ToGammaSpace);
+                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], ToGammaSpace);
+                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], ToGammaSpace);
                             }
 
                             // Convert to int texture for fallback.
@@ -369,7 +369,7 @@ module BABYLON {
             if (scene) {
                 this._texture = scene.getEngine().createRawCubeTextureFromUrl(this.url, scene, this._size,
                     Engine.TEXTUREFORMAT_RGB,
-                    scene.getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                    scene.getEngine().getCaps().textureFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT,
                     this._noMipmap,
                     callback,
                     mipmapGenerator, this._onLoad, this._onError);
@@ -434,7 +434,7 @@ module BABYLON {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 var size = parsedTexture.isBABYLONPreprocessed ? null : parsedTexture.size;
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap,
+                texture = new HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap,
                     parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;
@@ -517,7 +517,7 @@ module BABYLON {
             }
 
             // Coming Back in 3.x.
-            Tools.Error("Generation of Babylon HDR is coming back in 3.1.");
+            Tools.Error("Generation of Babylon HDR is coming back in 3.2.");
         }
     }
 }

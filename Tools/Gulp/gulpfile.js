@@ -25,6 +25,8 @@ var config = require("./config.json");
 
 var del = require("del");
 
+var karmaServer = require('karma').Server;
+
 var debug = require("gulp-debug");
 var includeShadersStream;
 var shadersStream;
@@ -48,7 +50,9 @@ var tsConfig = {
     noImplicitReturns: true,
     noImplicitThis: true,
     noUnusedLocals: true,
-    strictNullChecks: true
+    strictNullChecks: true,
+    strictFunctionTypes: true,
+    types: []
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -63,7 +67,8 @@ var externalTsConfig = {
     noImplicitReturns: true,
     noImplicitThis: true,
     noUnusedLocals: true,
-    strictNullChecks: true
+    strictNullChecks: true,
+    types: []
 };
 
 var minimist = require("minimist");
@@ -397,9 +402,11 @@ var buildExternalLibrary = function (library, settings, watch) {
 
         if (library.webpack) {
             return waitAll.on("end", function () {
-                webpack(require(library.webpack))
-                    .pipe(rename(library.output.replace(".js", ".bundle.js")))
+                return webpack(require(library.webpack))
+                    .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
+                    .pipe(uglify())
+                    .pipe(optimisejs())
                     .pipe(gulp.dest(outputDirectory))
             });
         }
@@ -413,6 +420,7 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
+    // runSequence("typescript-all", "intellisense", "tests-browserStack", cb);
     runSequence("typescript-all", "intellisense", cb);
 });
 
@@ -469,11 +477,23 @@ gulp.task("typescript-all", function (cb) {
 });
 
 /**
+ * Watch ts files from typescript .
+ */
+gulp.task("srcTscWatch", function () {
+    // Reuse The TSC CLI from gulp to enable -w.
+    process.argv[2] = "-w";
+    process.argv[3] = "-p";
+    process.argv[4] = "../../src/tsconfig.json";
+    require("./node_modules/typescript/lib/tsc.js");
+});
+
+/**
  * Watch ts files and fire repective tasks.
  */
-gulp.task("watch", [], function () {
+gulp.task("watch", ["srcTscWatch"], function () {
     var interval = 1000;
-    var tasks = [gulp.watch(config.typescript, { interval: interval }, ["typescript-compile"])];
+
+    var tasks = [];
 
     config.modules.map(function (module) {
         config[module].libraries.map(function (library) {
@@ -538,6 +558,32 @@ gulp.task("webserver", function () {
  * Combine Webserver and Watch as long as vscode does not handle multi tasks.
  */
 gulp.task("run", ["watch", "webserver"], function () {
+});
+
+
+gulp.task("tests-integration", function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.js",
+        singleRun: false
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+gulp.task("tests-browserStack", function (done) {
+    if (!process.env.TRAVIS) {
+        done();
+        return;
+    }
+
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.browserstack.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
 });
 
 gulp.task("clean-JS-MAP", function () {

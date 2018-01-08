@@ -71,7 +71,7 @@ float hgPhase(float cosTheta, float g)
 
 float sunIntensity(float zenithAngleCos)
 {
-	return EE * max(0.0, 1.0 - exp(-((cutoffAngle - acos(zenithAngleCos))/steepness)));
+	return EE * max(0.0, 1.0 - exp((-(cutoffAngle - acos(zenithAngleCos))/steepness)));
 }
 
 float A = 0.15;

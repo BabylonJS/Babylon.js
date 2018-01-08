@@ -301,6 +301,9 @@ var INSPECTOR;
             else {
                 // Create popup
                 var popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
+                if (!popup) {
+                    return;
+                }
                 popup.document.title = 'Babylon.js INSPECTOR';
                 // Get the inspector style      
                 var styles = Inspector.DOCUMENT.querySelectorAll('style');
@@ -1559,8 +1562,9 @@ var INSPECTOR;
         PropertyLine.prototype._createElements = function () {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
-                //this._elements.push(new ColorElement(this.value));
+                if (!INSPECTOR.Helpers.IsBrowserIE()) {
+                    this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
+                }
             }
             // Texture
             if (this.type == 'Texture') {
@@ -1696,7 +1700,13 @@ var INSPECTOR;
                     var objToDetail = this.value;
                     // Display all properties that are not functions
                     var propToDisplay = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(objToDetail);
-                    propToDisplay.sort().reverse();
+                    // special case for color3
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
+                        propToDisplay.sort();
+                    }
+                    else {
+                        propToDisplay.sort().reverse();
+                    }
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
@@ -2250,6 +2260,14 @@ var INSPECTOR;
             return regexp.test(navigator.userAgent);
         };
         /**
+         * Returns true if the user browser is IE.
+         */
+        Helpers.IsBrowserIE = function () {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./;
+            return regexp.test(navigator.userAgent);
+        };
+        /**
          * Returns the name of the type of the given object, where the name
          * is in PROPERTIES constant.
          * Returns 'Undefined' if no type exists for this object
@@ -2386,11 +2404,12 @@ var INSPECTOR;
          * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
          * @param obj
          */
-        Helpers.GetAllLinesPropertiesAsString = function (obj) {
+        Helpers.GetAllLinesPropertiesAsString = function (obj, dontTakeThis) {
+            if (dontTakeThis === void 0) { dontTakeThis = []; }
             var props = [];
             for (var prop in obj) {
                 //No private and no function
-                if (prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
+                if (dontTakeThis.indexOf(prop) === -1 && prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
                     props.push(prop);
                 }
             }
@@ -2412,7 +2431,7 @@ var INSPECTOR;
             this.pause = false;
             /** The list of data to update */
             this._updatableProperties = [];
-            this._timer = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+            setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
         Scheduler.getInstance = function () {
             if (!Scheduler._instance) {
@@ -3193,9 +3212,12 @@ var INSPECTOR;
             _this._panel.appendChild(_this._detailsPanel.toHtml());
             // build propertiesline
             var details = [];
-            var props = INSPECTOR.Helpers.GetAllLinesProperties(_this._inspector.scene);
+            // Remove deprecated properties generating warning in console
+            var dontTakeThis = ['interFramePerfCounter', 'lastFramePerfCounter', 'evaluateActiveMeshesDurationPerfCounter', 'renderDurationPerfCounter', 'particlesDurationPerfCounter', 'spriteDuractionPerfCounter'];
+            var props = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(_this._inspector.scene, dontTakeThis);
             for (var _i = 0, props_1 = props; _i < props_1.length; _i++) {
-                var prop = props_1[_i];
+                var propString = props_1[_i];
+                var prop = new INSPECTOR.PropertyLine(new INSPECTOR.Property(propString, _this._inspector.scene));
                 details.push(prop);
             }
             _this._detailsPanel.details = details;
@@ -3533,61 +3555,67 @@ var INSPECTOR;
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Count";
             {
-                var elemLabel = _this._createStatLabel("Total meshes", _this._panel);
+                _this._createStatLabel("Total meshes", _this._panel);
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.meshes.length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Draw calls", _this._panel);
+                _this._createStatLabel("Draw calls", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Total lights", _this._panel);
+                _this._createStatLabel("Texture collisions", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._sceneInstrumentation.textureCollisionsCounter.current.toString(); }
+                });
+                _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.lights.length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Total vertices", _this._panel);
+                _this._createStatLabel("Total vertices", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getTotalVertices().toString(); }
                 });
-                elemLabel = _this._createStatLabel("Total materials", _this._panel);
+                _this._createStatLabel("Total materials", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.materials.length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Total textures", _this._panel);
+                _this._createStatLabel("Total textures", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.textures.length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Active meshes", _this._panel);
+                _this._createStatLabel("Active meshes", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveMeshes().length.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Active indices", _this._panel);
+                _this._createStatLabel("Active indices", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveIndices().toString(); }
                 });
-                elemLabel = _this._createStatLabel("Active bones", _this._panel);
+                _this._createStatLabel("Active bones", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._scene.getActiveBones().toString(); }
                 });
-                elemLabel = _this._createStatLabel("Active particles", _this._panel);
+                _this._createStatLabel("Active particles", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
@@ -3597,79 +3625,79 @@ var INSPECTOR;
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Duration";
             {
-                var elemLabel = _this._createStatLabel("Meshes selection", _this._panel);
+                _this._createStatLabel("Meshes selection", _this._panel);
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.activeMeshesEvaluationTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Render targets", _this._panel);
+                _this._createStatLabel("Render targets", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.renderTargetsRenderTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Particles", _this._panel);
+                _this._createStatLabel("Particles", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.particlesRenderTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Sprites", _this._panel);
+                _this._createStatLabel("Sprites", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.spritesRenderTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Animations", _this._panel);
+                _this._createStatLabel("Animations", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.animationsTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Physics", _this._panel);
+                _this._createStatLabel("Physics", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.physicsTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Render", _this._panel);
+                _this._createStatLabel("Render", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.renderTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Frame", _this._panel);
+                _this._createStatLabel("Frame", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.frameTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("Inter-frame", _this._panel);
+                _this._createStatLabel("Inter-frame", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._sceneInstrumentation.interFrameTimeCounter.current); }
                 });
-                elemLabel = _this._createStatLabel("GPU Frame time", _this._panel);
+                _this._createStatLabel("GPU Frame time", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._engineInstrumentation.gpuFrameTimeCounter.current * 0.000001); }
                 });
-                elemLabel = _this._createStatLabel("GPU Frame time (average)", _this._panel);
+                _this._createStatLabel("GPU Frame time (average)", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(_this._engineInstrumentation.gpuFrameTimeCounter.average * 0.000001); }
                 });
-                elemLabel = _this._createStatLabel("Potential FPS", _this._panel);
+                _this._createStatLabel("Potential FPS", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return BABYLON.Tools.Format(1000.0 / _this._sceneInstrumentation.frameTimeCounter.current, 0); }
                 });
-                elemLabel = _this._createStatLabel("Resolution", _this._panel);
+                _this._createStatLabel("Resolution", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
@@ -3679,61 +3707,61 @@ var INSPECTOR;
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Extensions";
             {
-                var elemLabel = _this._createStatLabel("Std derivatives", _this._panel);
+                _this._createStatLabel("Std derivatives", _this._panel);
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().standardDerivatives ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Compressed textures", _this._panel);
+                _this._createStatLabel("Compressed textures", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().s3tc ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Hardware instances", _this._panel);
+                _this._createStatLabel("Hardware instances", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().instancedArrays ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Texture float", _this._panel);
+                _this._createStatLabel("Texture float", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().textureFloat ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("32bits indices", _this._panel);
+                _this._createStatLabel("32bits indices", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().uintIndices ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Fragment depth", _this._panel);
+                _this._createStatLabel("Fragment depth", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().fragmentDepthSupported ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("High precision shaders", _this._panel);
+                _this._createStatLabel("High precision shaders", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().highPrecisionShaderSupported ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Draw buffers", _this._panel);
+                _this._createStatLabel("Draw buffers", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().drawBuffersExtension ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Vertex array object", _this._panel);
+                _this._createStatLabel("Vertex array object", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.getCaps().vertexArrayObject ? "Yes" : "No"); }
                 });
-                elemLabel = _this._createStatLabel("Timer query", _this._panel);
+                _this._createStatLabel("Timer query", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
@@ -3743,25 +3771,25 @@ var INSPECTOR;
             title = INSPECTOR.Helpers.CreateDiv('stat-title2', _this._panel);
             title.textContent = "Caps.";
             {
-                var elemLabel = _this._createStatLabel("Stencil", _this._panel);
+                _this._createStatLabel("Stencil", _this._panel);
                 var elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return (_this._engine.isStencilEnable ? "Enabled" : "Disabled"); }
                 });
-                elemLabel = _this._createStatLabel("Max textures units", _this._panel);
+                _this._createStatLabel("Max textures units", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.getCaps().maxTexturesImageUnits.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Max textures size", _this._panel);
+                _this._createStatLabel("Max textures size", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._engine.getCaps().maxTextureSize.toString(); }
                 });
-                elemLabel = _this._createStatLabel("Max anisotropy", _this._panel);
+                _this._createStatLabel("Max anisotropy", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
                     elem: elemValue,
@@ -4768,7 +4796,6 @@ var INSPECTOR;
         function SoundInteractions(playSound) {
             var _this = _super.call(this) || this;
             _this.playSound = playSound;
-            _this.b = false;
             _this._elem.classList.add('fa-play');
             return _this;
         }
@@ -4907,7 +4934,7 @@ var INSPECTOR;
             var _this = _super.call(this) || this;
             _this._obj = obj;
             _this._elem.classList.add('fa-info-circle');
-            _this._tooltip = new INSPECTOR.Tooltip(_this._elem, _this._obj.getInfo(), _this._elem);
+            new INSPECTOR.Tooltip(_this._elem, _this._obj.getInfo(), _this._elem);
             return _this;
         }
         // Nothing to do on click

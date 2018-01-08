@@ -16,8 +16,10 @@
     width:100%;
 
     .base-property {
-        word-wrap: break-word;
         padding: 2px 0 2px 0;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
     // Property name
     .prop-name {

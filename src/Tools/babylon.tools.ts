@@ -3,6 +3,45 @@
         animations: Array<Animation>;
     }
 
+    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
+    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+    export class LoadFileError extends Error {
+        // Polyfill for Object.setPrototypeOf if necessary.
+        private static _setPrototypeOf: (o: any, proto: object | null) => any =
+            (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
+
+        constructor(message: string, public request?: XMLHttpRequest) {
+            super(message);
+            this.name = "LoadFileError";
+
+            LoadFileError._setPrototypeOf(this, LoadFileError.prototype);
+        }
+    }
+
+    export class RetryStrategy {
+        public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
+            return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
+                if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
+                    return -1;
+                }
+
+                return Math.pow(2, retryIndex) * baseInterval;
+            };
+        }
+    }
+
+    export interface IFileRequest {
+        /**
+         * Raised when the request is complete (success or error).
+         */
+        onCompleteObservable: Observable<IFileRequest>;
+
+        /**
+         * Aborts the request for a file.
+         */
+        abort: () => void;
+    }
+
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
@@ -24,7 +63,15 @@
 
     export class Tools {
         public static BaseUrl = "";
-        public static CorsBehavior: any = "anonymous";
+        public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
+
+        /**
+         * Default behaviour for cors in the application.
+         * It can be a string if the expected behavior is identical in the entire app.
+         * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
+         */
+        public static CorsBehavior: string | ((url: string | string[]) => string) = "anonymous";
+
         public static UseFallbackTexture = true;
 
         /**
@@ -384,19 +431,20 @@
             }
         }
 
-        public static SetCorsBehavior(url: string, img: HTMLImageElement): void {
+        public static SetCorsBehavior(url: string | string[], element: { crossOrigin: string | null }): void {
+            if (url && url.indexOf("data:") === 0) {
+                return;
+            }
+
             if (Tools.CorsBehavior) {
-                switch (typeof (Tools.CorsBehavior)) {
-                    case "function":
-                        var result = Tools.CorsBehavior(url);
-                        if (result) {
-                            img.crossOrigin = result;
-                        }
-                        break;
-                    case "string":
-                    default:
-                        img.crossOrigin = Tools.CorsBehavior;
-                        break;
+                if (typeof (Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
+                    element.crossOrigin = <string>Tools.CorsBehavior;
+                }
+                else {
+                    var result = Tools.CorsBehavior(url);
+                    if (result) {
+                        element.crossOrigin = result;
+                    }
                 }
             }
         }
@@ -421,10 +469,7 @@
             url = Tools.PreprocessUrl(url);
 
             var img = new Image();
-
-            if (url.substr(0, 5) !== "data:") {
-                Tools.SetCorsBehavior(url, img);
-            }
+            Tools.SetCorsBehavior(url, img);
 
             img.onload = () => {
                 onLoad(img);
@@ -433,10 +478,7 @@
             img.onerror = err => {
                 Tools.Error("Error while trying to load image: " + url);
 
-                if (Tools.UseFallbackTexture) {
-                    img.src = Tools.fallbackTexture;
-                    onLoad(img);
-                } else {
+                if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
@@ -457,10 +499,7 @@
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                if (url.indexOf("file:") !== 0) {
-                    noIndexedDB();
-                }
-                else {
+                if (url.indexOf("file:") !== -1) {
                     var textureName = decodeURIComponent(url.substring(5).toLowerCase());
                     if (FilesInput.FilesToLoad[textureName]) {
                         try {
@@ -477,92 +516,151 @@
                         catch (e) {
                             img.src = "";
                         }
-                    }
-                    else {
-                        Tools.Error("Image: " + textureName + " not found. Did you forget to provide it?");
-                        img.src = Tools.fallbackTexture;
+                        return img;
                     }
                 }
+
+                noIndexedDB();
             }
 
             return img;
         }
 
-        //ANY
-        public static LoadFile(url: string, callback: (data: any, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
+        public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
 
-            var request: Nullable<XMLHttpRequest> = null;
-
-            var noIndexedDB = () => {
-                request = new XMLHttpRequest();
-                var loadUrl = Tools.BaseUrl + url;
-                request.open('GET', loadUrl, true);
-
-                if (useArrayBuffer) {
-                    request.responseType = "arraybuffer";
+            // If file and file input are set
+            if (url.indexOf("file:") !== -1) {
+                const fileName = decodeURIComponent(url.substring(5).toLowerCase());
+                if (FilesInput.FilesToLoad[fileName]) {
+                    return Tools.ReadFile(FilesInput.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
                 }
+            }
 
-                if (progressCallBack) {
-                    request.onprogress = progressCallBack;
-                }
+            const loadUrl = Tools.BaseUrl + url;
 
-                request.onreadystatechange = () => {
-                    let req = <XMLHttpRequest>request;
-                    // In case of undefined state in some browsers.
-                    if (req.readyState === (XMLHttpRequest.DONE || 4)) {
-                        req.onreadystatechange = () => { };//some browsers have issues where onreadystatechange can be called multiple times with the same value
+            let aborted = false;
+            const fileRequest: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => aborted = true,
+            };
 
-                        if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : req.response, req.responseURL);
-                        } else { // Failed
-                            let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+            const requestFile = () => {
+                let request = new XMLHttpRequest();
+                let retryHandle: Nullable<number> = null;
+
+                fileRequest.abort = () => {
+                    aborted = true;
+
+                    if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
+                        request.abort();
+                    }
+
+                    if (retryHandle !== null) {
+                        clearTimeout(retryHandle);
+                        retryHandle = null;
+                    }
+                };
+
+                const retryLoop = (retryIndex: number) => {
+                    request.open('GET', loadUrl, true);
+
+                    if (useArrayBuffer) {
+                        request.responseType = "arraybuffer";
+                    }
+
+                    if (onProgress) {
+                        request.addEventListener("progress", onProgress);
+                    }
+
+                    const onLoadEnd = () => {
+                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                    };
+
+                    request.addEventListener("loadend", onLoadEnd);
+
+                    const onReadyStateChange = () => {
+                        if (aborted) {
+                            return;
+                        }
+
+                        // In case of undefined state in some browsers.
+                        if (request.readyState === (XMLHttpRequest.DONE || 4)) {
+                            // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                            request.removeEventListener("readystatechange", onReadyStateChange);
+
+                            if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
+                                onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
+                                return;
+                            }
+
+                            let retryStrategy = Tools.DefaultRetryStrategy;
+                            if (retryStrategy) {
+                                let waitTime = retryStrategy(loadUrl, request, retryIndex);
+                                if (waitTime !== -1) {
+                                    // Prevent the request from completing for retry.
+                                    request.removeEventListener("loadend", onLoadEnd);
+                                    request = new XMLHttpRequest();
+                                    retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
+                                    return;
+                                }
+                            }
+
+                            let e = new LoadFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
                             if (onError) {
-                                onError(req, e);
+                                onError(request, e);
                             } else {
                                 throw e;
                             }
                         }
+                    };
+
+                    request.addEventListener("readystatechange", onReadyStateChange);
+
+                    request.send();
+                };
+
+                retryLoop(0);
+            };
+
+            // Caching all files
+            if (database && database.enableSceneOffline) {
+                const noIndexedDB = () => {
+                    if (!aborted) {
+                        requestFile();
                     }
                 };
 
-                request.send(null);
-            };
-
-            var loadFromIndexedDB = () => {
-                if (database) {
-                    database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
-                }
-            };
-
-            if (url.indexOf("file:") !== -1) {
-                var fileName = decodeURIComponent(url.substring(5).toLowerCase());
-                if (FilesInput.FilesToLoad[fileName]) {
-                    Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                }
-                else {
-                    let errorMessage = "File: " + fileName + " not found. Did you forget to provide it?";
-                    if (onError) {
-                        let e = new Error(errorMessage);
-                        onError(undefined, e);
-                    } else {
-                        Tools.Error(errorMessage);
+                const loadFromIndexedDB = () => {
+                    // TODO: database needs to support aborting and should return a IFileRequest
+                    if (aborted) {
+                        return;
                     }
-                }
+
+                    if (database) {
+                        database.loadFileFromDB(url, data => {
+                            if (!aborted) {
+                                onSuccess(data);
+                            }
+
+                            fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        }, onProgress ? event => {
+                            if (!aborted) {
+                                onProgress(event);
+                            }
+                        } : undefined, noIndexedDB, useArrayBuffer);
+                    }
+                };
+
+                database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                // Caching all files
-                if (database && database.enableSceneOffline) {
-                    database.openAsync(loadFromIndexedDB, noIndexedDB);
-                }
-                else {
-                    noIndexedDB();
-                }
+                requestFile();
             }
 
-            return request;
+            return fileRequest;
         }
 
         /** 
@@ -590,18 +688,38 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): void {
-            var reader = new FileReader();
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): IFileRequest {
+            let reader = new FileReader();
+
+            let request: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => reader.abort(),
+            };
+
+            reader.onloadend = e => {
+                request.onCompleteObservable.notifyObservers(request);
+            };
+
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
+
             reader.onprogress = progressCallback;
+
             reader.readAsDataURL(fileToLoad);
+
+            return request;
         }
 
-        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
-            var reader = new FileReader();
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
+            let reader = new FileReader();
+            let request: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => reader.abort(),
+            };
+
+            reader.onloadend = e => request.onCompleteObservable.notifyObservers(request);
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
@@ -610,7 +728,6 @@
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
-
             if (progressCallBack) {
                 reader.onprogress = progressCallBack;
             }
@@ -621,6 +738,8 @@
             else {
                 reader.readAsArrayBuffer(fileToLoad);
             }
+
+            return request;
         }
 
         //returns a downloadable url to a file content.
@@ -704,14 +823,14 @@
             return true;
         }
 
-        public static RegisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+        public static RegisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.addEventListener(event.name, event.handler, false);
+                window.addEventListener(event.name, <any>event.handler, false);
 
                 try {
                     if (window.parent) {
-                        window.parent.addEventListener(event.name, event.handler, false);
+                        window.parent.addEventListener(event.name, <any>event.handler, false);
                     }
                 } catch (e) {
                     // Silently fails...
@@ -719,14 +838,14 @@
             }
         }
 
-        public static UnregisterTopRootEvents(events: { name: string; handler: EventListener }[]): void {
+        public static UnregisterTopRootEvents(events: { name: string; handler: Nullable<(e: FocusEvent) => any> }[]): void {
             for (var index = 0; index < events.length; index++) {
                 var event = events[index];
-                window.removeEventListener(event.name, event.handler);
+                window.removeEventListener(event.name, <any>event.handler);
 
                 try {
                     if (window.parent) {
-                        window.parent.removeEventListener(event.name, event.handler);
+                        window.parent.removeEventListener(event.name, <any>event.handler);
                     }
                 } catch (e) {
                     // Silently fails...
@@ -734,7 +853,7 @@
             }
         }
 
-        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName? : string): void {
+        public static DumpFramebuffer(width: number, height: number, engine: Engine, successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string): void {
             // Read the contents of the framebuffer
             var numberOfChannelsByLine = width * 4;
             var halfHeight = height / 2;
@@ -774,7 +893,7 @@
             }
         }
 
-        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName? : string) {
+        static EncodeScreenshotCanvasData(successCallback?: (data: string) => void, mimeType: string = "image/png", fileName?: string) {
             var base64Image = screenshotCanvas.toDataURL(mimeType);
             if (successCallback) {
                 successCallback(base64Image);
@@ -784,26 +903,25 @@
                 if (!screenshotCanvas.toBlob) {
                     //  low performance polyfill based on toDataURL (https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob)
                     screenshotCanvas.toBlob = function (callback, type, quality) {
-                        var canvas = this;
-                        setTimeout(function() {
-                            var binStr = atob( canvas.toDataURL(type, quality).split(',')[1] ),
+                        setTimeout(() => {
+                            var binStr = atob(this.toDataURL(type, quality).split(',')[1]),
                                 len = binStr.length,
                                 arr = new Uint8Array(len);
 
-                            for (var i = 0; i < len; i++ ) {
+                            for (var i = 0; i < len; i++) {
                                 arr[i] = binStr.charCodeAt(i);
                             }
-                            callback( new Blob( [arr], {type: type || 'image/png'} ) );
+                            callback(new Blob([arr], { type: type || 'image/png' }));
                         });
                     }
                 }
-                screenshotCanvas.toBlob(function(blob) {
+                screenshotCanvas.toBlob(function (blob) {
                     var url = URL.createObjectURL(blob);
                     //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
                     if (("download" in document.createElement("a"))) {
                         var a = window.document.createElement("a");
                         a.href = url;
-                        if(fileName) {
+                        if (fileName) {
                             a.setAttribute("download", fileName);
                         }
                         else {
@@ -821,8 +939,9 @@
                     }
                     else {
                         var newWindow = window.open("");
+                        if (!newWindow) return;
                         var img = newWindow.document.createElement("img");
-                        img.onload = function() {
+                        img.onload = function () {
                             // no longer need to read the blob so it's revoked
                             URL.revokeObjectURL(url);
                         };
@@ -895,7 +1014,7 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
-        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing : boolean = false, fileName? : string): void {
+        public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             var width: number;
             var height: number;
 
@@ -943,8 +1062,8 @@
             var texture = new RenderTargetTexture("screenShot", size, scene, false, false, Engine.TEXTURETYPE_UNSIGNED_INT, false, Texture.NEAREST_SAMPLINGMODE);
             texture.renderList = null;
             texture.samples = samples;
-            if(antialiasing) {
-                texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
+            if (antialiasing) {
+                texture.addPostProcess(new FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
             }
             texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);

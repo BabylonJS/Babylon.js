@@ -3,7 +3,7 @@
         public lensFlares = new Array<LensFlare>();
         public borderLimit = 300;
         public viewportBorder = 0;
-        public meshesSelectionPredicate: (mesh: Mesh) => boolean;
+        public meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
         public layerMask: number = 0x0FFFFFFF;
         public id: string;
 
@@ -234,7 +234,7 @@
                 this._effect.setFloat4("color", flare.color.r * intensity, flare.color.g * intensity, flare.color.b * intensity, 1.0);
 
                 // Draw order
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
 
             engine.setDepthBuffer(true);

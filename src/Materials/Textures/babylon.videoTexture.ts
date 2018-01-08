@@ -26,18 +26,19 @@
             if (urlsOrVideo instanceof HTMLVideoElement) {
                 this.video = <any>urlsOrVideo;
             } else {
-                urls = <any>urlsOrVideo;
+                urls = urlsOrVideo;
 
                 this.video = document.createElement("video");
                 this.video.autoplay = false;
                 this.video.loop = true;
+                Tools.SetCorsBehavior(urls, this.video);
             }
 
             this._engine = (<Scene>this.getScene()).getEngine();
             this._generateMipMaps = generateMipMaps;
             this._samplingMode = samplingMode;
 
-            if (!this._engine.needPOTTextures ||(Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
+            if (!this._engine.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
@@ -48,7 +49,9 @@
 
             if (urls) {
                 this.video.addEventListener("canplay", () => {
-                    this._createTexture();
+                    if (this._texture === undefined){ 
+                      this._createTexture();
+                    }
                 });
                 urls.forEach(url => {
                     var source = document.createElement("source");
@@ -79,7 +82,7 @@
             this.video.addEventListener("playing", this._setTextureReady);
         }
 
-        
+
         public _rebuild(): void {
             this.update();
         }
@@ -102,25 +105,25 @@
         }
 
         public static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
-                minWidth: number,
-                maxWidth: number,
-                minHeight: number,
-                maxHeight: number,
-                deviceId: string
-            }): void {
+            minWidth: number,
+            maxWidth: number,
+            minHeight: number,
+            maxHeight: number,
+            deviceId: string
+        }): void {
             var video = document.createElement("video");
             var constraintsDeviceId;
-            if (constraints && constraints.deviceId){
+            if (constraints && constraints.deviceId) {
                 constraintsDeviceId = {
                     exact: constraints.deviceId
                 }
             }
 
-		    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-		    window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 
-		    if (navigator.getUserMedia) {
-			    navigator.getUserMedia({
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia({
                     video: {
                         deviceId: constraintsDeviceId,
                         width: {
@@ -143,9 +146,9 @@
                     video.play();
 
                     if (onReady) {
-                        onReady(new BABYLON.VideoTexture("video", video, scene, true, true));
+                        onReady(new VideoTexture("video", video, scene, true, true));
                     }
-			    }, function (e: DOMException) {
+                }, function (e: MediaStreamError) {
                     Tools.Error(e.name);
                 });
             }

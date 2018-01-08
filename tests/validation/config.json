@@ -36,25 +36,25 @@
       "title": "Retail",
       "sceneFolder": "/Scenes/Retail/",
       "sceneFilename": "Retail.babylon",
-      "referenceImage": "Retail.png"
+      "referenceImage": "retail.png"
     },
     {
       "title": "Hill Valley",
       "sceneFolder": "/Scenes/hillvalley/",
       "sceneFilename": "HillValley.incremental.babylon",
-      "referenceImage": "HillValley.png"
+      "referenceImage": "Hillvalley.png"
     },
     {
       "title": "Heart",
       "sceneFolder": "/Scenes/Heart/",
       "sceneFilename": "Heart.babylon",
-      "referenceImage": "heart.png"
+      "referenceImage": "Heart.png"
     },
     {
       "title": "Mansion",
       "sceneFolder": "/Scenes/Mansion/",
       "sceneFilename": "Mansion.babylon",
-      "referenceImage": "Mansion.png"
+      "referenceImage": "mansion.png"
     },
     {
       "title": "SpaceDeK",
@@ -64,6 +64,7 @@
     },
     {
       "title": "Flat2009",
+      "renderCount": 20,
       "sceneFolder": "/Scenes/Flat2009/",
       "sceneFilename": "Flat2009.babylon",
       "referenceImage": "Flat2009.png"
@@ -76,7 +77,7 @@
     },
     {
       "title": "Charting",
-      "renderCount": 3,
+      "renderCount": 20,
       "scriptToRun": "/Demos/Charting/charting.js",
       "functionToCall": "CreateChartingTestScene",
       "referenceImage": "charting.png"
@@ -176,9 +177,15 @@
     },
     {
       "title": "Normals",
-      "scriptToRun": "/Demos/Normals/index.js",
-      "functionToCall": "createScene",
+      "playgroundId": "#WXKLLJ#2",
       "referenceImage": "normals.png"
+    },
+    {
+      "title": "Custom render target",
+      "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
+      "renderCount": 10,
+      "functionToCall": "CreateCustomRenderTargetTestScene",
+      "referenceImage": "customRTT.png"
     },
     {
       "title": "GLTF Normals",
@@ -230,6 +237,21 @@
       "referenceImage": "gltfTextureSampler.png"
     },
     {
+      "title": "GLTF 1.0 Skin Animation Test",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltf1CesiumMan.png",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "GLTF Mesh Primitive Attribute Test",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTFMeshPrimitiveAttributeTest/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfMeshPrimAttribTest.png"
+    },
+    {
       "title": "PBR glossy",
       "renderCount": 20,
       "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
@@ -242,13 +264,7 @@
       "renderCount": 20,
       "scriptToRun": "/Demos/PBRRough/index.js",
       "functionToCall": "CreatePBRRoughScene",
-      "referenceImage": "PBRRough.png"
-    },
-    {
-      "title": "GLTF LOD",
-      "renderCount": 500,
-      "playgroundId": "#TC80RU#41",
-      "referenceImage": "GLTF LOD.png"
+      "referenceImage": "pbrrough.png"
     },
     {
       "title": "Reflection probes",
@@ -285,46 +301,55 @@
       "referenceImage": "DefaultRenderingPipeline.png"
     },
     {
+      "title": "Billboard",
+      "renderCount": 20,
+      "playgroundId": "#UJEIL#13",
+      "referenceImage": "Billboard.png"
+    },
+    {
+      "title": "setParent",
+      "renderCount": 20,
+      "playgroundId": "#JD49CT#2",
+      "referenceImage": "setParent.png"
+    },
+    {
       "title": "GUI",
       "renderCount": 20,
       "scriptToRun": "/Demos/GUI/gui.js",
       "functionToCall": "createScene",
       "referenceImage": "GUI.png"
-    },    
-    {
-      "title": "Water material (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/WaterMaterial/water.js",
-      "functionToCall": "CreateWaterTestScene",
-      "referenceImage": "waterMaterial.png",
-      "onlyVisual": true
     },
     {
-      "title": "Instances (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/Instances/instances.js",
-      "functionToCall": "CreateInstancesTestScene",
-      "referenceImage": "instances.png",
-      "replace": "ground., Ground.",
-      "onlyVisual": true
+      "title": "Up Vector",
+      "renderCount": 20,
+      "playgroundId": "#2FNBTG#27",
+      "referenceImage": "upVector.png"
     },
     {
-      "title": "Procedural textures (only visual check)",
+      "title": "Procedural textures",
       "renderCount": 10,
       "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
       "functionToCall": "CreateProceduralTextureTestScene",
       "referenceImage": "procedural.png",
       "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
-      "onlyVisual": true
+      "excludeFromAutomaticTesting": true
     },
     {
-      "title": "Instanced Bones (only visual check)",
+      "title": "Instances",
+      "renderCount": 10,
+      "scriptToRun": "/Demos/Instances/instances.js",
+      "functionToCall": "CreateInstancesTestScene",
+      "referenceImage": "instances.png",
+      "replace": "ground., Ground.",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "Instanced Bones",
       "renderCount": 10,
       "scriptToRun": "/Demos/InstancedBones/bones2.js",
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",
-      "replace": "Dude.babylon, dude.babylon",
-      "onlyVisual": true
+      "replace": "Dude.babylon, dude.babylon"
     }
   ]
 }

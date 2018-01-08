@@ -296,7 +296,7 @@ var BABYLON;
                 return this._groundColor;
             },
             set: function (value) {
-                this.groundColor = value;
+                this._groundColor = value;
                 this.updateShaderUniforms();
             },
             enumerable: true,

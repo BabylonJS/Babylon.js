@@ -11,16 +11,14 @@ module INSPECTOR{
      */
     export class Info extends AbstractTreeTool{
 
-        private _obj : IToolInfo;
-
-        private _tooltip : Tooltip;
+        private _obj: IToolInfo;
 
         constructor(obj:IToolInfo) {
             super (); 
             this._obj = obj;
             this._elem.classList.add('fa-info-circle');
 
-            this._tooltip = new Tooltip(this._elem, this._obj.getInfo(), this._elem);
+            new Tooltip(this._elem, this._obj.getInfo(), this._elem);
         }
 
         // Nothing to do on click

@@ -1,6 +1,5 @@
 ﻿module BABYLON {
-    export interface IGetSetVerticesData
-    {
+    export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
         getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
@@ -323,7 +322,7 @@
             this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
             this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
             this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
-            this.colors = this._mergeElement(this.colors, other.colors, count * 4);
+            this.colors = this._mergeElement(this.colors, other.colors, count * 4, 1);
             this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
             this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
             this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
@@ -331,13 +330,15 @@
             return this;
         }
 
-        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>, length = 0): Nullable<FloatArray> {
+        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>, length = 0, defaultValue = 0): Nullable<FloatArray> {
             if (!other && !source) {
                 return null;
             }
 
             if (!other) {
-                return this._mergeElement(source, new Float32Array((<FloatArray>source).length), length);
+                var padding = new Float32Array((<FloatArray>source).length);
+                padding.fill(defaultValue);
+                return this._mergeElement(source, padding, length);
             }
 
             if (!source) {
@@ -345,7 +346,9 @@
                     return other;
                 }
 
-                return this._mergeElement(new Float32Array(length - other.length), other, length);
+                var padding = new Float32Array(length - other.length);
+                padding.fill(defaultValue);
+                return this._mergeElement(padding, other, length);
             }
 
             var len = other.length + source.length;
@@ -740,7 +743,7 @@
             var positions32 = new Float32Array(positions);
             var normals32 = new Float32Array(normals);
             var uvs32 = new Float32Array(uvs);
-            
+
             vertexData.indices = indices;
             vertexData.positions = positions32;
             vertexData.normals = normals32;
@@ -1397,10 +1400,10 @@
          * Creates the VertexData of the TiledGround.  
          */
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
-            var xmin = options.xmin || -1.0;
-            var zmin = options.zmin || -1.0;
-            var xmax = options.xmax || 1.0;
-            var zmax = options.zmax || 1.0;
+            var xmin = (options.xmin !== undefined && options.xmin !== null) ? options.xmin : -1.0;
+            var zmin = (options.zmin !== undefined && options.zmin !== null) ? options.zmin : -1.0;
+            var xmax = (options.xmax !== undefined && options.xmax !== null) ? options.xmax : 1.0;
+            var zmax = (options.zmax !== undefined && options.zmax !== null) ? options.zmax : 1.0;
             var subdivisions = options.subdivisions || { w: 1, h: 1 };
             var precision = options.precision || { w: 1, h: 1 };
 
@@ -1490,7 +1493,7 @@
             var uvs = [];
             var row, col;
             var filter = options.colorFilter || new Color3(0.3, 0.59, 0.11);
-            
+
             // Vertices
             for (row = 0; row <= options.subdivisions; row++) {
                 for (col = 0; col <= options.subdivisions; col++) {
@@ -1655,8 +1658,8 @@
         /**
          * Re-creates the VertexData of the Polygon for sideOrientation.  
          */
-        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?:Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4) {
-			var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
+        public static CreatePolygon(polygon: Mesh, sideOrientation: number, fUV?: Vector4[], fColors?: Color4[], frontUVs?: Vector4, backUVs?: Vector4) {
+            var faceUV: Vector4[] = fUV || new Array<Vector4>(3);
             var faceColors = fColors;
             var colors = [];
 
@@ -1669,39 +1672,39 @@
                     faceColors[f] = new Color4(1, 1, 1, 1);
                 }
             }
-            
+
             var positions = <FloatArray>polygon.getVerticesData(VertexBuffer.PositionKind);
-			var normals = <FloatArray>polygon.getVerticesData(VertexBuffer.NormalKind);
-			var uvs = <FloatArray>polygon.getVerticesData(VertexBuffer.UVKind);
+            var normals = <FloatArray>polygon.getVerticesData(VertexBuffer.NormalKind);
+            var uvs = <FloatArray>polygon.getVerticesData(VertexBuffer.UVKind);
             var indices = <IndicesArray>polygon.getIndices();
-            
+
             // set face colours and textures
             var idx: number = 0;
             var face: number = 0;
-            for (var index = 0; index < normals.length; index += 3) { 
+            for (var index = 0; index < normals.length; index += 3) {
                 //Edge Face  no. 1
-                if(Math.abs(normals[index + 1]) < 0.001) {
-                   face = 1; 
+                if (Math.abs(normals[index + 1]) < 0.001) {
+                    face = 1;
                 }
                 //Top Face  no. 0
-                if(Math.abs(normals[index + 1] - 1) < 0.001 ) {
-                   face = 0; 
+                if (Math.abs(normals[index + 1] - 1) < 0.001) {
+                    face = 0;
                 }
                 //Bottom Face  no. 2
-                if(Math.abs(normals[index + 1] + 1) < 0.001 ) {
-                   face = 2; 
+                if (Math.abs(normals[index + 1] + 1) < 0.001) {
+                    face = 2;
                 }
                 idx = index / 3;
-                uvs[2*idx] = (1 - uvs[2*idx])*faceUV[face].x + uvs[2*idx]*faceUV[face].z;
-                uvs[2*idx + 1] = (1 - uvs[2*idx + 1])*faceUV[face].y + uvs[2*idx + 1]*faceUV[face].w;
+                uvs[2 * idx] = (1 - uvs[2 * idx]) * faceUV[face].x + uvs[2 * idx] * faceUV[face].z;
+                uvs[2 * idx + 1] = (1 - uvs[2 * idx + 1]) * faceUV[face].y + uvs[2 * idx + 1] * faceUV[face].w;
                 if (faceColors) {
                     colors.push(faceColors[face].r, faceColors[face].g, faceColors[face].b, faceColors[face].a);
                 }
             }
 
-			// sides
+            // sides
             VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, frontUVs, backUVs);
-            
+
             // Result
             var vertexData = new VertexData();
             vertexData.indices = indices;
@@ -1715,8 +1718,8 @@
             }
 
             return vertexData;
-			
-		}
+
+        }
 
         /**
          * Creates the VertexData of the IcoSphere.  
@@ -2230,8 +2233,10 @@
          * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
          */
         public static ComputeNormals(positions: any, indices: any, normals: any,
-            options?: { facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any, 
-                useRightHandedSystem?: boolean, depthSort?: boolean, distanceTo?: Vector3, depthSortedFacets?: any }): void {
+            options?: {
+                facetNormals?: any, facetPositions?: any, facetPartitioning?: any, ratio?: number, bInfo?: any, bbSize?: Vector3, subDiv?: any,
+                useRightHandedSystem?: boolean, depthSort?: boolean, distanceTo?: Vector3, depthSortedFacets?: any
+            }): void {
 
             // temporary scalar variables
             var index = 0;                      // facet index     
@@ -2272,7 +2277,7 @@
                 if (computeDepthSort) {
                     if (distanceTo === undefined) {
                         distanceTo = Vector3.Zero();
-                    } 
+                    }
                     var depthSortedFacets = options.depthSortedFacets;
                 }
             }
@@ -2315,7 +2320,7 @@
             }
 
             // Loop : 1 indice triplet = 1 facet
-            var nbFaces = (indices.length / 3)|0;
+            var nbFaces = (indices.length / 3) | 0;
             for (index = 0; index < nbFaces; index++) {
 
                 // get the indexes of the coordinates of each vertex of the facet
@@ -2382,10 +2387,10 @@
                     block_idx_v3 = b3x + options.subDiv.max * b3y + subSq * b3z;
                     block_idx_o = ox + options.subDiv.max * oy + subSq * oz;
 
-                    options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] :new Array();
-                    options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] :new Array();
-                    options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] :new Array();
-                    options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] :new Array();
+                    options.facetPartitioning[block_idx_o] = options.facetPartitioning[block_idx_o] ? options.facetPartitioning[block_idx_o] : new Array();
+                    options.facetPartitioning[block_idx_v1] = options.facetPartitioning[block_idx_v1] ? options.facetPartitioning[block_idx_v1] : new Array();
+                    options.facetPartitioning[block_idx_v2] = options.facetPartitioning[block_idx_v2] ? options.facetPartitioning[block_idx_v2] : new Array();
+                    options.facetPartitioning[block_idx_v3] = options.facetPartitioning[block_idx_v3] ? options.facetPartitioning[block_idx_v3] : new Array();
 
                     // push each facet index in each block containing the vertex
                     options.facetPartitioning[block_idx_v1].push(index);
@@ -2484,12 +2489,12 @@
                     var lu: number = uvs.length;
                     var u: number = 0;
                     for (u = 0; u < lu; u++) {
-                        uvs[u + lu] = uvs[u];                       
+                        uvs[u + lu] = uvs[u];
                     }
                     frontUVs = frontUVs ? frontUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
-                    backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0); 
+                    backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
                     u = 0;
-                    for (i = 0; i < lu / 2; i++) {    
+                    for (i = 0; i < lu / 2; i++) {
                         uvs[u] = frontUVs.x + (frontUVs.z - frontUVs.x) * uvs[u];
                         uvs[u + 1] = frontUVs.y + (frontUVs.w - frontUVs.y) * uvs[u + 1];
                         uvs[u + lu] = backUVs.x + (backUVs.z - backUVs.x) * uvs[u + lu];
