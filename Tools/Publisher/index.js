@@ -1,11 +1,11 @@
 let prompt = require('prompt');
 let shelljs = require('shelljs');
-let fs = require('fs');
+let fs = require('fs-extra');
 
 let basePath = '../../dist/preview release';
 
 // This can be changed when we have a new major release.
-let minimumDependency = '>=3.1.0-alpha';
+let minimumDependency = '>=3.2.0-alpha';
 
 let packages = [
     {
@@ -47,24 +47,120 @@ let packages = [
 ];
 
 //check if logged in
+console.log("Using npm user:");
 let loginCheck = shelljs.exec('npm whoami');
-
+console.log("No that I can check, but - did you forget to run gulp typescript-all?");
 if (loginCheck.code === 0) {
     prompt.start();
 
     prompt.get(['version'], function (err, result) {
         let version = result.version;
         packages.forEach((package) => {
-            let packageJson = require(package.path + 'package.json');
-            packageJson.version = version;
-            if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
-            fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
-            console.log('Publishing ' + package.name + " from " + package.path);
-            //publish the respected package
-            shelljs.exec('npm publish \"' + package.path + "\"");
+            if (package.name === "core") {
+                processCore(package, version);
+            } else {
+                let packageJson = require(package.path + 'package.json');
+                packageJson.version = version;
+                if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
+                fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
+                console.log('Publishing ' + package.name + " from " + package.path);
+                //publish the respected package
+                shelljs.exec('npm publish \"' + package.path + "\"");
+            }
+
         });
+        console.log("done, please don't forget to commit the changes")
     });
 } else {
     console.log('not logged in.');
+}
+
+function processCore(package, version) {
+    let packageJson = require(package.path + 'package.json');
+
+    // make a temporary directory
+    fs.ensureDirSync(basePath + '/package/');
+
+    let files = [
+        {
+            path: basePath + "/babylon.d.ts",
+            objectName: "babylon.d.ts"
+        },
+        {
+            path: basePath + "/babylon.js",
+            objectName: "babylon.js"
+        },
+        {
+            path: basePath + "/babylon.max.js",
+            objectName: "babylon.max.js"
+        },
+        {
+            path: basePath + "/babylon.worker.js",
+            objectName: "babylon.worker.js"
+        },
+        {
+            path: basePath + "/Oimo.js",
+            objectName: "Oimo.js"
+        },
+        {
+            path: package.path + "readme.md",
+            objectName: "readme.md"
+        }
+    ];
+
+    fs.readdirSync(basePath + '/modules/').forEach(object => {
+        console.log(object);
+        if (fs.statSync(basePath + '/modules/' + object).isDirectory) {
+            files.push({
+                path: basePath + '/modules/' + object,
+                objectName: object,
+                isDir: true
+            });
+        }
+    })
+
+    //copy them to the package path
+    files.forEach(file => {
+        fs.copySync(file.path, basePath + '/package/' + file.objectName);
+    });
+
+    // update package.json
+    packageJson.version = version;
+    console.log("generating file list");
+    let packageFiles = ["package.json"];
+    files.forEach(file => {
+        if (!file.isDir) {
+            packageFiles.push(file.objectName);
+        } else {
+            //todo is it better to read the content and add it? leave it like that ATM
+            packageFiles.push(file.objectName + "/index.js", file.objectName + "/index.d.ts", file.objectName + "/es6.js")
+        }
+    });
+    console.log("updating package.json");
+    packageJson.files = packageFiles;
+    packageJson.main = "babylon.max.js";
+    packageJson.typings = "babylon.d.ts";
+
+    fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
+
+    console.log('Publishing ' + package.name + " from " + package.path);
+    //publish the respected package
+    shelljs.exec('npm publish \"' + basePath + '/package/' + "\"");
+
+    // remove package directory
+    fs.removeSync(basePath + '/package/');
+
+    // now update the main package.json
+    packageJson.files = packageJson.files.map(file => {
+        if (file !== 'package.json' && file !== 'readme.md') {
+            return 'dist/preview release/' + file;
+        } else {
+            return file;
+        }
+    });
+    packageJson.main = "dist/preview release/babylon.max.js";
+    packageJson.typings = "dist/preview release/babylon.d.ts";
+
+    fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
 }
 
