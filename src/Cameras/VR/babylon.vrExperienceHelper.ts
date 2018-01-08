@@ -112,8 +112,7 @@ module BABYLON {
 
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
-         */
-        
+         */        
         public onNewMeshSelected = new Observable<PickingInfo>();
         private _circleEase: CircleEase;
 
