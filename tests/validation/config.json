@@ -241,7 +241,8 @@
       "renderCount": 20,
       "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
       "functionToCall": "createScene",
-      "referenceImage": "gltf1CesiumMan.png"
+      "referenceImage": "gltf1CesiumMan.png",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "GLTF Mesh Primitive Attribute Test",
@@ -330,7 +331,8 @@
       "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
       "functionToCall": "CreateProceduralTextureTestScene",
       "referenceImage": "procedural.png",
-      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land"
+      "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "Instances",
@@ -338,7 +340,8 @@
       "scriptToRun": "/Demos/Instances/instances.js",
       "functionToCall": "CreateInstancesTestScene",
       "referenceImage": "instances.png",
-      "replace": "ground., Ground."
+      "replace": "ground., Ground.",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "Instanced Bones",

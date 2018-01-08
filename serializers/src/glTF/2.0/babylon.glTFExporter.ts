@@ -52,8 +52,8 @@ module BABYLON {
         bufferViews: _IGLTFBufferView[];
         accessors: _IGLTFAccessor[];
     }
-    export class _GLTF2Exporter {
 
+    export class _GLTF2Exporter {
         private bufferViews: _IGLTFBufferView[];
         private accessors: _IGLTFAccessor[];
         private nodes: _IGLTFNode[];
@@ -75,7 +75,7 @@ module BABYLON {
             let totalByteLength = 0;
 
             totalByteLength = this.createScene(this.babylonScene, totalByteLength);
-            
+
             this.totalByteLength = totalByteLength;
         }
 
@@ -282,7 +282,7 @@ module BABYLON {
         private generateJSON(glb: boolean, glTFPrefix?: string, prettyPrint?: boolean): string {
             let buffer: _IGLTFBuffer = { byteLength: this.totalByteLength };
 
-            let glTf: _IGLTF = {
+            let glTF: _IGLTF = {
                 buffers: [buffer],
                 asset: this.asset,
                 meshes: this.meshes,
@@ -292,14 +292,14 @@ module BABYLON {
                 accessors: this.accessors
             };
             if (this.scenes.length > 0) {
-                glTf.scene = 0;
+                glTF.scene = 0;
             }
 
             if (!glb) {
                 buffer.uri = glTFPrefix + ".bin";
             }
 
-            let jsonText = prettyPrint ? JSON.stringify(glTf, null, 2) : JSON.stringify(glTf);
+            let jsonText = prettyPrint ? JSON.stringify(glTF, null, 2) : JSON.stringify(glTF);
 
             return jsonText;
         }
@@ -310,7 +310,7 @@ module BABYLON {
          * @returns {[x: string]: string | Blob} object with glTF json tex filename 
          * and binary file name as keys and their data as values
          */
-        public _generateGLTF(glTFPrefix: string): { [x: string]: string | Blob } {
+        public _generateGLTF(glTFPrefix: string): _GLTFData {
             const jsonText = this.generateJSON(false, glTFPrefix, true);
             const binaryBuffer = this.generateBinary();
             const bin = new Blob([binaryBuffer], { type: 'application/octet-stream' });
@@ -318,10 +318,11 @@ module BABYLON {
             const glTFFileName = glTFPrefix + '.gltf';
             const glTFBinFile = glTFPrefix + '.bin';
 
-            return {
-                [glTFFileName]: jsonText,
-                [glTFBinFile]: bin
-            };
+            let container = new _GLTFData();
+            container._glTFFiles[glTFFileName] = jsonText;
+            container._glTFFiles[glTFBinFile] = bin;
+
+            return container;
         }
         /**
          * Creates a binary buffer for glTF
@@ -333,7 +334,7 @@ module BABYLON {
             let binaryBuffer = new ArrayBuffer(this.totalByteLength);
             let dataBuffer = new DataView(binaryBuffer);
             byteOffset = this.createScene(this.babylonScene, byteOffset, dataBuffer);
-            
+
             return binaryBuffer;
         }
         /**
@@ -345,7 +346,7 @@ module BABYLON {
          * 
          * @returns {[glbFileName: string]: Blob} object with glb filename as key and data as value
          */
-        public _generateGLB(glTFPrefix: string): { [glbFileName: string]: Blob } {
+        public _generateGLB(glTFPrefix: string): _GLTFData {
             const jsonText = this.generateJSON(true);
             const binaryBuffer = this.generateBinary();
             let glbFileName = glTFPrefix + '.glb';
@@ -399,9 +400,10 @@ module BABYLON {
             // binary data
             let glbFile = new Blob([headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer, binPaddingBuffer], { type: 'application/octet-stream' });
 
-            return {
-                [glbFileName]: glbFile
-            };
+            let container = new _GLTFData();
+            container._glTFFiles[glbFileName] = glbFile;
+
+            return container;
         }
         /**
          * Sets the TRS for each node
@@ -689,7 +691,7 @@ module BABYLON {
          * @returns {number} bytelength + byteoffset
          */
         private createScene(babylonScene: BABYLON.Scene, byteOffset: number, dataBuffer?: DataView): number {
-            if (babylonScene.meshes.length > 0 ) {
+            if (babylonScene.meshes.length > 0) {
                 let babylonMeshes = babylonScene.meshes;
                 let scene = { nodes: new Array<number>() };
 
