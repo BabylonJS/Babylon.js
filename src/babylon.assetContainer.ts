@@ -66,7 +66,7 @@ module BABYLON {
             this.sounds.forEach((o)=>{
                 o.play();
                 o.autoplay=true;
-                this.scene.mainSoundTrack.AddSound(o)
+                this.scene.mainSoundTrack.AddSound(o);
             })
         }
         removeAllFromScene(){
@@ -112,8 +112,8 @@ module BABYLON {
             // TODO, do shadow generators need to be removed somehow?
             this.sounds.forEach((o)=>{
                 o.stop();
-                o.autoplay = false
-                this.scene.mainSoundTrack.RemoveSound(o)
+                o.autoplay = false;
+                this.scene.mainSoundTrack.RemoveSound(o);
             })
         }
     }
