@@ -64,8 +64,8 @@ module Earcut {
 
         public z: any = null;
         public prevZ: any = null;
-        public nextZ: any = null;  
-        
+        public nextZ: any = null;
+
         public steiner: boolean = false;
 
         public constructor(public i: number, public x: number, public y: number) {
@@ -74,7 +74,7 @@ module Earcut {
 
     // create a circular doubly linked list from polygon points in the specified winding order
     function linkedList(data: number[], start: number, end: number, dim: number, clockwise: boolean): Node {
-        var i, last: BABYLON.Nullable<Node> = null;
+        var i, last: Node | null = null;
 
         if (clockwise === (signedArea(data, start, end, dim) > 0)) {
             for (i = start; i < end; i += dim) last = insertNode(i, data[i], data[i + 1], (<Node>last));
@@ -492,8 +492,8 @@ module Earcut {
     // check if a point lies within a convex triangle
     function pointInTriangle(ax: number, ay: number, bx: number, by: number, cx: number, cy: number, px: number, py: number) {
         return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
-        (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
-        (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+            (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
+            (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
     }
 
     // check if a diagonal between two polygon nodes is valid (lies in polygon interior)
@@ -519,7 +519,7 @@ module Earcut {
     // check if two segments intersect
     function intersects(p1: Node, q1: Node, p2: Node, q2: Node) {
         if ((equals(p1, q1) && equals(p2, q2)) ||
-        (equals(p1, q2) && equals(p2, q1))) return true;
+            (equals(p1, q2) && equals(p2, q1))) return true;
         return area(p1, q1, p2) > 0 !== area(p1, q1, q2) > 0 &&
             area(p2, q2, p1) > 0 !== area(p2, q2, q1) > 0;
     }
@@ -632,8 +632,8 @@ module Earcut {
             var b = triangles[i + 1] * dim;
             var c = triangles[i + 2] * dim;
             trianglesArea += Math.abs(
-            (data[a] - data[c]) * (data[b + 1] - data[a + 1]) -
-            (data[a] - data[b]) * (data[c + 1] - data[a + 1]));
+                (data[a] - data[c]) * (data[b + 1] - data[a + 1]) -
+                (data[a] - data[b]) * (data[c + 1] - data[a + 1]));
         }
 
         return polygonArea === 0 && trianglesArea === 0 ? 0 : Math.abs((trianglesArea - polygonArea) / polygonArea);

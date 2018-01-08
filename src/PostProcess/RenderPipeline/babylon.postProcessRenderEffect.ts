@@ -1,14 +1,12 @@
 module BABYLON {
     export class PostProcessRenderEffect {
-        private _engine: Engine;
-
         private _postProcesses: any;
         private _getPostProcess: () => Nullable<PostProcess>;
 
         private _singleInstance: boolean;
 
-        private _cameras: { [key:string]: Nullable<Camera>};
-        private _indicesForCamera: { [key:string]: number[]};
+        private _cameras: { [key: string]: Nullable<Camera> };
+        private _indicesForCamera: { [key: string]: number[] };
 
         private _renderPasses: any;
         private _renderEffectAsPasses: any;
@@ -19,7 +17,6 @@ module BABYLON {
         public applyParameters: (postProcess: PostProcess) => void;
 
         constructor(engine: Engine, name: string, getPostProcess: () => Nullable<PostProcess>, singleInstance?: boolean) {
-            this._engine = engine;
             this._name = name;
             this._singleInstance = singleInstance || true;
 

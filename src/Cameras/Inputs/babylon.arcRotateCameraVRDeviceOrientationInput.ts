@@ -7,7 +7,6 @@ module BABYLON {
         public gammaCorrection = 1;
 
         private _alpha = 0;
-        private _beta = 0;
         private _gamma = 0;
         private _dirty = false;
 
@@ -27,11 +26,7 @@ module BABYLON {
                 this._alpha = +evt.alpha | 0;
             }
 
-            if (evt.beta !== null) {
-                this._beta = +evt.beta | 0;
-            }
-
-            if (evt.gamma !== null) {               
+            if (evt.gamma !== null) {
                 this._gamma = +evt.gamma | 0;
             }
             this._dirty = true;

@@ -67,6 +67,7 @@
 
             setToMultipleID("currentScript", "innerHTML", "Custom");
             setToMultipleID("safemodeToggle", "addClass", "checked");
+            setToMultipleID("minimapToggle", "addClass", "checked");
 
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
@@ -86,7 +87,7 @@
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-        if (location.href.indexOf("Stable") !== -1) {
+        if (location.href.indexOf("indexstable") !== -1) {
             setToMultipleID("currentVersion", "innerHTML", "Version: Stable");
         } else {
             setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
@@ -326,7 +327,7 @@
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
                 showBJSPGMenu();
-                jsEditor.updateOptions({readOnly: false});
+                jsEditor.updateOptions({ readOnly: false });
 
                 if (document.getElementsByClassName('insp-wrapper').length > 0) {
                     for (var i = 0; i < engine.scenes.length; i++) {
@@ -354,11 +355,66 @@
                 }
 
                 var canvas = document.getElementById("renderCanvas");
-                engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                 document.getElementById("errorZone").style.display = 'none';
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
                 var checkCamera = true;
+                var wrappedEval = false;
+                var createEngineFunction = "createDefaultEngine";
+                var createSceneFunction;
+
+                var code = jsEditor.getValue();
+
+                var createDefaultEngine = function () {
+                    return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                }
+
+                var scene;
+
+                if (code.indexOf("createEngine") !== -1) {
+                    createEngineFunction = "createEngine";
+                }
+
+                if (code.indexOf("delayCreateScene") !== -1) { // createScene
+                    createSceneFunction = "delayCreateScene";
+                    checkCamera = false;
+                } else if (code.indexOf("createScene") !== -1) { // createScene
+                    createSceneFunction = "createScene";
+                } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
+                    createSceneFunction = "CreateScene";
+                } else if (code.indexOf("createscene") !== -1) { // createscene
+                    createSceneFunction = "createscene";
+                }
+
+                if (!createSceneFunction) {
+                    // just pasted code.
+                    engine = createDefaultEngine();
+                    scene = new BABYLON.Scene(engine);
+                    eval("runScript = function(scene, canvas) {" + code + "}");
+                    runScript(scene, canvas);
+
+                    zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                } else {
+                    //execute the code
+                    eval(code);
+                    //create engine
+                    eval("engine = " + createEngineFunction + "()");
+                    if (!engine) {
+                        showError("createEngine function must return an engine.", null);
+                        return;
+                    }
+
+                    //create scene
+                    eval("scene = " + createSceneFunction + "()");
+
+                    if (!scene) {
+                        showError(createSceneFunction + " function must return a scene.", null);
+                        return;
+                    }
+
+                    // update the scene code for the zip file
+                    zipCode = code + "\r\n\r\nvar scene = " + createSceneFunction + "()";
+                }
 
                 engine.runRenderLoop(function () {
                     if (engine.scenes.length === 0) {
@@ -378,53 +434,6 @@
                     fpsLabel.style.right = document.body.clientWidth - (jsEditor.domElement.clientWidth + canvas.clientWidth) + "px";
                     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                 });
-
-                var code = jsEditor.getValue();
-                var scene;
-                if (code.indexOf("delayCreateScene") !== -1) { // createScene
-                    eval(code);
-                    scene = delayCreateScene();
-                    checkCamera = false;
-                    if (!scene) {
-                        showError("delayCreateScene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = createScene();";
-                } else if (code.indexOf("createScene") !== -1) { // createScene
-                    eval(code);
-                    scene = createScene();
-                    if (!scene) {
-                        showError("createScene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = createScene();";
-                } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
-                    eval(code);
-                    scene = CreateScene();
-                    if (!scene) {
-                        showError("CreateScene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = CreateScene();";
-                } else if (code.indexOf("createscene") !== -1) { // createscene
-                    eval(code);
-                    scene = createscene();
-                    if (!scene) {
-                        showError("createscene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = createscene();";
-                } else { // Direct code
-                    scene = new BABYLON.Scene(engine);
-                    eval("runScript = function(scene, canvas) {" + code + "}");
-                    runScript(scene, canvas);
-
-                    zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
-                }
 
                 if (engine.scenes.length === 0) {
                     showError("You must at least create a scene.", null);
@@ -640,7 +649,7 @@
         // Fonts
         setFontSize = function (size) {
             fontSize = size;
-            document.querySelector(".view-lines").style.fontSize = size + "px";
+            jsEditor.updateOptions({ fontSize: size });
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
@@ -760,6 +769,18 @@
 
         var formatCode = function () {
             jsEditor.getAction('editor.action.format').run();
+        }
+
+        var toggleMinimap = function () {
+            var minimapToggle = document.getElementById("minimapToggle1600");
+            if (minimapToggle.classList.contains('checked')) {
+                jsEditor.updateOptions({ minimap: { enabled: false } });
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square-o" aria-hidden="true"></i>');
+            } else {
+                jsEditor.updateOptions({ minimap: { enabled: true } });
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
+            }
+            minimapToggle.classList.toggle('checked');
         }
 
 
@@ -971,6 +992,8 @@
         setToMultipleID("editorFullscreenButton", "click", editorGoFullscreen);
         // Format
         setToMultipleID("formatButton", "click", formatCode);
+        // Format
+        setToMultipleID("minimapToggle", "click", toggleMinimap);
         // Debug
         setToMultipleID("debugButton", "click", toggleDebug);
         // Metadata

@@ -12,7 +12,7 @@ module BABYLON {
         touched: boolean;
         pressed: boolean;
     }
-    
+
     export interface ExtendedGamepadButton extends GamepadButton {
         readonly pressed: boolean;
         readonly touched: boolean;
@@ -41,8 +41,14 @@ module BABYLON {
     }
 
     export class PoseEnabledController extends Gamepad implements PoseControlled {
-        devicePosition: Vector3;
-        deviceRotationQuaternion: Quaternion;
+        // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
+        private _deviceRoomPosition = Vector3.Zero();
+        private _deviceRoomRotationQuaternion = new Quaternion();
+
+        // Represents device position and rotation in babylon space
+        public devicePosition = Vector3.Zero();
+        public deviceRotationQuaternion = new Quaternion();
+
         deviceScaleFactor: number = 1;
 
         public position: Vector3;
@@ -58,30 +64,37 @@ module BABYLON {
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
-        
+
+        public _deviceToWorld = Matrix.Identity();
+
         constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);
             this.type = Gamepad.POSE_ENABLED;
             this.controllerType = PoseEnabledControllerType.GENERIC;
             this.position = Vector3.Zero();
             this.rotationQuaternion = new Quaternion();
-            this.devicePosition = Vector3.Zero();
-            this.deviceRotationQuaternion = new Quaternion();
 
             this._calculatedPosition = Vector3.Zero();
             this._calculatedRotation = new Quaternion();
             Quaternion.RotationYawPitchRollToRef(Math.PI, 0, 0, this._leftHandSystemQuaternion);
         }
 
+        private _workingMatrix = Matrix.Identity();
         public update() {
             super.update();
             var pose: GamepadPose = this.browserGamepad.pose;
             this.updateFromDevice(pose);
-            
+
+            Vector3.TransformCoordinatesToRef(this._calculatedPosition, this._deviceToWorld, this.devicePosition)
+            this._deviceToWorld.getRotationMatrixToRef(this._workingMatrix);
+            Quaternion.FromRotationMatrixToRef(this._workingMatrix, this.deviceRotationQuaternion);
+            this.deviceRotationQuaternion.multiplyInPlace(this._calculatedRotation)
+
             if (this._mesh) {
-                this._mesh.position.copyFrom(this._calculatedPosition);
+                this._mesh.position.copyFrom(this.devicePosition);
+
                 if (this._mesh.rotationQuaternion) {
-                    this._mesh.rotationQuaternion.copyFrom(this._calculatedRotation);
+                    this._mesh.rotationQuaternion.copyFrom(this.deviceRotationQuaternion);
                 }
             }
         }
@@ -90,29 +103,29 @@ module BABYLON {
             if (poseData) {
                 this.rawPose = poseData;
                 if (poseData.position) {
-                    this.devicePosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
+                    this._deviceRoomPosition.copyFromFloats(poseData.position[0], poseData.position[1], -poseData.position[2]);
                     if (this._mesh && this._mesh.getScene().useRightHandedSystem) {
-                        this.devicePosition.z *= -1;
+                        this._deviceRoomPosition.z *= -1;
                     }
 
-                    this.devicePosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
+                    this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
 
                 }
                 let pose = this.rawPose;
                 if (poseData.orientation && pose.orientation) {
-                    this.deviceRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
+                    this._deviceRoomRotationQuaternion.copyFromFloats(pose.orientation[0], pose.orientation[1], -pose.orientation[2], -pose.orientation[3]);
                     if (this._mesh) {
                         if (this._mesh.getScene().useRightHandedSystem) {
-                            this.deviceRotationQuaternion.z *= -1;
-                            this.deviceRotationQuaternion.w *= -1;
+                            this._deviceRoomRotationQuaternion.z *= -1;
+                            this._deviceRoomRotationQuaternion.w *= -1;
                         } else {
-                            this.deviceRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this.deviceRotationQuaternion);
+                            this._deviceRoomRotationQuaternion.multiplyToRef(this._leftHandSystemQuaternion, this._deviceRoomRotationQuaternion);
                         }
                     }
 
                     // if the camera is set, rotate to the camera's rotation
-                    this.deviceRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
+                    this._deviceRoomRotationQuaternion.multiplyToRef(this.rotationQuaternion, this._calculatedRotation);
                 }
             }
         }
@@ -153,18 +166,18 @@ module BABYLON {
 
         public getForwardRay(length = 100): Ray {
             if (!this.mesh) {
-                return new Ray(Vector3.Zero(), new BABYLON.Vector3(0, 0, 1), length);
+                return new Ray(Vector3.Zero(), new Vector3(0, 0, 1), length);
             }
 
             var m = this.mesh.getWorldMatrix();
             var origin = m.getTranslation();
 
-            var forward = new BABYLON.Vector3(0, 0, -1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, m);
+            var forward = new Vector3(0, 0, -1);
+            var forwardWorld = Vector3.TransformNormal(forward, m);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);            
+            var direction = Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
-        } 
+        }
     }
 }

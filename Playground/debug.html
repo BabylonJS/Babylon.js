@@ -6,24 +6,24 @@
     <meta charset='utf-8' />
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <link rel="shortcut icon" href="https://www.babylonjs.com/img/favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="57x57" href="https://www.babylonjs.com/img/favicon/apple-icon-57x57.png">
-	<link rel="apple-touch-icon" sizes="60x60" href="https://www.babylonjs.com/img/favicon/apple-icon-60x60.png">
-	<link rel="apple-touch-icon" sizes="72x72" href="https://www.babylonjs.com/img/favicon/apple-icon-72x72.png">
-	<link rel="apple-touch-icon" sizes="76x76" href="https://www.babylonjs.com/img/favicon/apple-icon-76x76.png">
-	<link rel="apple-touch-icon" sizes="114x114" href="https://www.babylonjs.com/img/favicon/apple-icon-114x114.png">
-	<link rel="apple-touch-icon" sizes="120x120" href="https://www.babylonjs.com/img/favicon/apple-icon-120x120.png">
-	<link rel="apple-touch-icon" sizes="144x144" href="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png">
-	<link rel="apple-touch-icon" sizes="152x152" href="https://www.babylonjs.com/img/favicon/apple-icon-152x152.png">
-	<link rel="apple-touch-icon" sizes="180x180" href="https://www.babylonjs.com/img/favicon/apple-icon-180x180.png">
-	<link rel="icon" type="image/png" sizes="192x192"  href="https://www.babylonjs.com/img/favicon/android-icon-192x192.png">
-	<link rel="icon" type="image/png" sizes="32x32" href="https://www.babylonjs.com/img/favicon/favicon-32x32.png">
-	<link rel="icon" type="image/png" sizes="96x96" href="https://www.babylonjs.com/img/favicon/favicon-96x96.png">
-	<link rel="icon" type="image/png" sizes="16x16" href="https://www.babylonjs.com/img/favicon/favicon-16x16.png">
-	<link rel="manifest" href="https://www.babylonjs.com/img/favicon/manifest.json">
-	<meta name="msapplication-TileColor" content="#ffffff">
-	<meta name="msapplication-TileImage" content="https://www.babylonjs.com/img/favicon/ms-icon-144x144.png">
-	<meta name="msapplication-config" content="https://www.babylonjs.com/img/favicon/browserconfig.xml">
-	<meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" sizes="57x57" href="https://www.babylonjs.com/img/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="https://www.babylonjs.com/img/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="https://www.babylonjs.com/img/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="https://www.babylonjs.com/img/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="https://www.babylonjs.com/img/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="https://www.babylonjs.com/img/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://www.babylonjs.com/img/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://www.babylonjs.com/img/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="https://www.babylonjs.com/img/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.babylonjs.com/img/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="https://www.babylonjs.com/img/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.babylonjs.com/img/favicon/favicon-16x16.png">
+    <link rel="manifest" href="https://www.babylonjs.com/img/favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="https://www.babylonjs.com/img/favicon/ms-icon-144x144.png">
+    <meta name="msapplication-config" content="https://www.babylonjs.com/img/favicon/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
 
     <script src="https://code.jquery.com/pep/0.4.2/pep.min.js"></script>
     <!--For canvas/code separator-->
@@ -38,7 +38,7 @@
     <!-- Babylon.js -->
     <script src="https://preview.babylonjs.com/cannon.js"></script>
     <script src="https://preview.babylonjs.com/Oimo.js"></script>
-    <script src="https://preview.babylonjs.com/babylon.max.js"></script>    
+    <script src="https://preview.babylonjs.com/babylon.max.js"></script>
     <script src="https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
     <script src="https://preview.babylonjs.com/materialsLibrary/babylon.fireMaterial.min.js"></script>
@@ -73,6 +73,8 @@
 
     <script src="https://preview.babylonjs.com/gui/babylon.gui.js"></script>
 
+    <script src="https://preview.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+
     <script src="https://rawgit.com/BabylonJS/Extensions/master/ClonerSystem/src/babylonx.cloner.js"></script>
     <script src="https://rawgit.com/BabylonJS/Extensions/master/canvas2D/dist/preview%20release/babylon.canvas2d.js"></script>
     <script src="https://rawgit.com/BabylonJS/Extensions/master/CompoundShader/src/babylonx.CompoundShader.js"></script>
@@ -90,30 +92,43 @@
         </div>
 
         <div class="category">
-            <div class="button run" id="runButton1600">Run <i class="fa fa-play" aria-hidden="true"></i></div>
+            <div class="button run" id="runButton1600">Run
+                <i class="fa fa-play" aria-hidden="true"></i>
+            </div>
         </div>
 
 
         <div class="category">
-            <div class="button" id="newButton1600">New<i class="fa fa-file" aria-hidden="true"></i></div>
-            <div class="button removeOnPhone" id="clearButton1600">Clear<i class="fa fa-trash" aria-hidden="true"></i></div>
+            <div class="button" id="newButton1600">New
+                <i class="fa fa-file" aria-hidden="true"></i>
+            </div>
+            <div class="button removeOnPhone" id="clearButton1600">Clear
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </div>
         </div>
 
         <div class="category">
-            <div class="button" id="saveButton1600">Save <i class="fa fa-floppy-o" aria-hidden="true"></i></div>
-            <div class="button removeOnPhone" id="zipButton1600">Zip<i class="fa fa-download" aria-hidden="true"></i></div>
+            <div class="button" id="saveButton1600">Save
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            </div>
+            <div class="button removeOnPhone" id="zipButton1600">Zip
+                <i class="fa fa-download" aria-hidden="true"></i>
+            </div>
         </div>
 
         <div class="category">
             <div class="button select">Settings
                 <div class="toDisplay">
-                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">Theme
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" id="darkTheme1600">Dark</div>
                             <div class="option" id="lightTheme1600">Light</div>
                         </div>
                     </div>
-                    <div class="option subSelect"><span id="currentFontSize1600">Font: 14</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentFontSize1600">Font: 14</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setFontSize(12);">12</div>
                             <div class="option" onclick="setFontSize(14);">14</div>
@@ -123,29 +138,39 @@
                             <div class="option" onclick="setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option" id="safemodeToggle1600">Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
-                    <div class="option checked" id="editorButton1600">Editor <i class="fa fa-check-square" aria-hidden="true"></i>
+                    <div class="option" id="safemodeToggle1600">Safe mode
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option checked" id="editorButton1600">Editor
+                        <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
                     <div class="option" id="fullscreenButton1600">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton1600">Editor Fullscreen</div>
                     <div class="option" id="formatButton1600">Format code</div>
+                    <div class="option" id="minimapToggle1600">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="button uncheck" id="debugButton1600">Debug layer <i class="fa fa-square-o" aria-hidden="true"></i></div>
+            <div class="button uncheck" id="debugButton1600">Debug layer
+                <i class="fa fa-square-o" aria-hidden="true"></i>
+            </div>
             <div class="button" id="metadataButton1600">Metadata</div>
         </div>
 
 
 
         <div class="category right">
-            <div class="button select"><span id="currentVersion1600">Version: Latest</span>
+            <div class="button select">
+                <span id="currentVersion1600">Version: Latest</span>
                 <div class="toDisplay">
                     <div class="option" onclick="setVersion('latest');">Latest</div>
                     <div class="option" onclick="setVersion('2.5');">2.5</div>
                 </div>
             </div>
-            <div class="button select"> <span id="currentScript1600">Scenes</span>
+            <div class="button select">
+                <span id="currentScript1600">Scenes</span>
                 <div class="toDisplayBig">
                     <ul id="scriptsList1600">
                     </ul>
@@ -166,30 +191,43 @@
         </div>
 
         <div class="category">
-            <div class="button run" id="runButton1475">Run <i class="fa fa-play" aria-hidden="true"></i></div>
+            <div class="button run" id="runButton1475">Run
+                <i class="fa fa-play" aria-hidden="true"></i>
+            </div>
         </div>
 
 
         <div class="category">
-            <div class="button" id="newButton1475">New<i class="fa fa-file" aria-hidden="true"></i></div>
-            <div class="button removeOnPhone" id="clearButton1475">Clear<i class="fa fa-trash" aria-hidden="true"></i></div>
+            <div class="button" id="newButton1475">New
+                <i class="fa fa-file" aria-hidden="true"></i>
+            </div>
+            <div class="button removeOnPhone" id="clearButton1475">Clear
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </div>
         </div>
 
         <div class="category">
-            <div class="button" id="saveButton1475">Save <i class="fa fa-floppy-o" aria-hidden="true"></i></div>
-            <div class="button removeOnPhone" id="zipButton1475">Zip<i class="fa fa-download" aria-hidden="true"></i></div>
+            <div class="button" id="saveButton1475">Save
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            </div>
+            <div class="button removeOnPhone" id="zipButton1475">Zip
+                <i class="fa fa-download" aria-hidden="true"></i>
+            </div>
         </div>
 
         <div class="category">
             <div class="button select">Settings
                 <div class="toDisplay">
-                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">Theme
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" id="darkTheme1475">Dark</div>
                             <div class="option" id="lightTheme1475">Light</div>
                         </div>
                     </div>
-                    <div class="option subSelect"><span id="currentFontSize1475">Font: 14</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentFontSize1475">Font: 14</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setFontSize(12);">12</div>
                             <div class="option" onclick="setFontSize(14);">14</div>
@@ -199,15 +237,25 @@
                             <div class="option" onclick="setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option" id='safemodeToggle1475'>Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
-                    <div class="option checked" id="editorButton1475">Editor <i class="fa fa-check-square" aria-hidden="true"></i>
+                    <div class="option" id='safemodeToggle1475'>Safe mode
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option checked" id="editorButton1475">Editor
+                        <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
                     <div class="option" id="fullscreenButton1475">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton1475">Editor Fullscreen</div>
                     <div class="option" id="formatButton1475">Format code</div>
-                    <div class="option" id="debugButton1475">Debug layer<i class="fa fa-square-o" aria-hidden="true"></i></div>
+                    <div class="option" id="minimapToggle1475">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="debugButton1475">Debug layer
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                     <div class="option" id="metadataButton1475">Metadata</div>
-                    <div class="option subSelect"><span id="currentVersion1475">Vers. : Latest</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentVersion1475">Vers. : Latest</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setVersion('latest');">Latest</div>
                             <div class="option" onclick="setVersion('2.5');">2.5</div>
@@ -218,7 +266,8 @@
         </div>
 
         <div class="category right">
-            <div class="button select"> <span id="currentScript1475">Scenes</span>
+            <div class="button select">
+                <span id="currentScript1475">Scenes</span>
                 <div class="toDisplayBig">
                     <ul id="scriptsList1475">
                     </ul>
@@ -232,30 +281,43 @@
 
     <div class="navbar navBar1030">
         <div class="category">
-            <div class="button run" id="runButton1030">Run <i class="fa fa-play" aria-hidden="true"></i></div>
+            <div class="button run" id="runButton1030">Run
+                <i class="fa fa-play" aria-hidden="true"></i>
+            </div>
         </div>
 
 
         <div class="category">
-            <div class="button" id="newButton1030">New<i class="fa fa-file" aria-hidden="true"></i></div>
-            <div class="button removeOnPhone" id="clearButton1030">Clear<i class="fa fa-trash" aria-hidden="true"></i></div>
+            <div class="button" id="newButton1030">New
+                <i class="fa fa-file" aria-hidden="true"></i>
+            </div>
+            <div class="button removeOnPhone" id="clearButton1030">Clear
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </div>
         </div>
 
         <div class="category">
-            <div class="button" id="saveButton1030">Save <i class="fa fa-floppy-o" aria-hidden="true"></i></div>
-            <div class="button removeOnPhone" id="zipButton1030">Zip<i class="fa fa-download" aria-hidden="true"></i></div>
+            <div class="button" id="saveButton1030">Save
+                <i class="fa fa-floppy-o" aria-hidden="true"></i>
+            </div>
+            <div class="button removeOnPhone" id="zipButton1030">Zip
+                <i class="fa fa-download" aria-hidden="true"></i>
+            </div>
         </div>
 
         <div class="category">
             <div class="button select">Settings
                 <div class="toDisplay">
-                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">Theme
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" id="darkTheme1030">Dark</div>
                             <div class="option" id="lightTheme1030">Light</div>
                         </div>
                     </div>
-                    <div class="option subSelect"><span id="currentFontSize1030">Font: 14</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentFontSize1030">Font: 14</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setFontSize(12);">12</div>
                             <div class="option" onclick="setFontSize(14);">14</div>
@@ -265,15 +327,25 @@
                             <div class="option" onclick="setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option" id="safemodeToggle1030">Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
-                    <div class="option checked" id="editorButton1030">Editor <i class="fa fa-check-square" aria-hidden="true"></i>
+                    <div class="option" id="safemodeToggle1030">Safe mode
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option checked" id="editorButton1030">Editor
+                        <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
                     <div class="option" id="fullscreenButton1030">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton1030">Editor Fullscreen</div>
                     <div class="option" id="formatButton1030">Format code</div>
-                    <div class="option" id="debugButton1030">Debug layer<i class="fa fa-square-o" aria-hidden="true"></i></div>
+                    <div class="option" id="minimapToggle1030">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="debugButton1030">Debug layer
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                     <div class="option" id="metadataButton1030">Metadata</div>
-                    <div class="option subSelect"><span id="currentVersion1030">Vers. : Latest</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentVersion1030">Vers. : Latest</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setVersion('latest');">Latest</div>
                             <div class="option" onclick="setVersion('2.5');">2.5</div>
@@ -284,7 +356,8 @@
         </div>
 
         <div class="category right">
-            <div class="button select"> <span id="currentScript1030">Scenes</span>
+            <div class="button select">
+                <span id="currentScript1030">Scenes</span>
                 <div class="toDisplayBig">
                     <ul id="scriptsList1030">
                     </ul>
@@ -300,11 +373,21 @@
         <div class="category">
             <div class="button select">File
                 <div class="toDisplay">
-                    <div class="option" id="runButton750">Run <i class="fa fa-play" aria-hidden="true"></i></div>
-                    <div class="option" id="newButton750">New <i class="fa fa-file" aria-hidden="true"></i></div>
-                    <div class="option" id="clearButton750">Clear <i class="fa fa-trash" aria-hidden="true"></i></div>
-                    <div class="option" id="saveButton750">Save <i class="fa fa-floppy-o" aria-hidden="true"></i></div>
-                    <div class="option" id="zipButton750">Zip <i class="fa fa-download" aria-hidden="true"></i></div>
+                    <div class="option" id="runButton750">Run
+                        <i class="fa fa-play" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="newButton750">New
+                        <i class="fa fa-file" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="clearButton750">Clear
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="saveButton750">Save
+                        <i class="fa fa-floppy-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="zipButton750">Zip
+                        <i class="fa fa-download" aria-hidden="true"></i>
+                    </div>
                 </div>
             </div>
         </div>
@@ -312,13 +395,16 @@
         <div class="category">
             <div class="button select">Settings
                 <div class="toDisplay">
-                    <div class="option subSelect">Theme <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">Theme
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" id="darkTheme750">Dark</div>
                             <div class="option" id="lightTheme750">Light</div>
                         </div>
                     </div>
-                    <div class="option subSelect"><span id="currentFontSize750">Font: 14</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentFontSize750">Font: 14</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setFontSize(12);">12</div>
                             <div class="option" onclick="setFontSize(14);">14</div>
@@ -328,15 +414,25 @@
                             <div class="option" onclick="setFontSize(22);">22</div>
                         </div>
                     </div>
-                    <div class="option" id="safemodeToggle750">Safe mode <i class="fa fa-square-o" aria-hidden="true"></i></div>
-                    <div style="display:none;" class="option checked" id="editorButton750">Editor <i class="fa fa-check-square" aria-hidden="true"></i>
+                    <div class="option" id="safemodeToggle750">Safe mode
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div style="display:none;" class="option checked" id="editorButton750">Editor
+                        <i class="fa fa-check-square" aria-hidden="true"></i>
                     </div>
                     <div class="option" id="fullscreenButton750">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton750">Editor Fullscreen</div>
                     <div class="option" id="formatButton750">Format code</div>
-                    <div class="option" id="debugButton750">Debug layer<i class="fa fa-square-o" aria-hidden="true"></i></div>
+                    <div class="option" id="minimapToggle750">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
+                    <div class="option" id="debugButton750">Debug layer
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                     <div class="option" id="metadataButton750">Metadata</div>
-                    <div class="option subSelect"><span id="currentVersion750">Vers. : Latest</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                    <div class="option subSelect">
+                        <span id="currentVersion750">Vers. : Latest</span>
+                        <i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <div class="toDisplaySub">
                             <div class="option" onclick="setVersion('latest');">Latest</div>
                             <div class="option" onclick="setVersion('2.5');">2.5</div>
@@ -347,7 +443,8 @@
         </div>
 
         <div class="category right">
-            <div class="button select"> <span id="currentScript750">Scenes</span>
+            <div class="button select">
+                <span id="currentScript750">Scenes</span>
                 <div class="toDisplayBig">
                     <ul id="scriptsList750">
                     </ul>
@@ -374,11 +471,21 @@
     <div class="navbarBottom">
         <div id="statusBar"></div>
         <div class="links">
-            <div class='link'><a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a></div>
-            <div class='link'> <a target='_new' href="http://www.html5gamedevs.com/forum/16-babylonjs/">Forum</a></div>
-            <div class='link'><a target='_new' href="https://www.babylonjs.com/sandbox">Sandbox</a></div>
-            <div class='link'><a target='_new' href="https://doc.babylonjs.com">Documentation</a></div>
-            <div class='link'><a target='_new' href="https://doc.babylonjs.com/playground">Search</a></div>
+            <div class='link'>
+                <a target='_new' href="https://www.netlify.com/">Deployed by Netlify</a>
+            </div>
+            <div class='link'>
+                <a target='_new' href="http://www.html5gamedevs.com/forum/16-babylonjs/">Forum</a>
+            </div>
+            <div class='link'>
+                <a target='_new' href="https://www.babylonjs.com/sandbox">Sandbox</a>
+            </div>
+            <div class='link'>
+                <a target='_new' href="https://doc.babylonjs.com">Documentation</a>
+            </div>
+            <div class='link'>
+                <a target='_new' href="https://doc.babylonjs.com/playground">Search</a>
+            </div>
         </div>
     </div>
 

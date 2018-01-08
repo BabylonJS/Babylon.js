@@ -3,7 +3,9 @@ Babylon.js
 
 Getting started? Play directly with the Babylon.js API via our [playground](http://www.babylonjs.com/playground). It contains also lot of simple samples to learn how to use it.
 
-[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js)
+[![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js) 
+
+[![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=d0pZcGpNU0NPeTM5cEpEc2lTU2JJTWc2Mk9NSlAzTzdIaFBpTnF2TjBycz0tLStUWkVBejdVQmN4Y0dIUVVYeU0yc2c9PQ==--4e576f7b7c21279bc6d026b6f51796f58134856b)](https://www.browserstack.com/automate/public-build/d0pZcGpNU0NPeTM5cEpEc2lTU2JJTWc2Mk9NSlAzTzdIaFBpTnF2TjBycz0tLStUWkVBejdVQmN4Y0dIUVVYeU0yc2c9PQ==--4e576f7b7c21279bc6d026b6f51796f58134856b)
 
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
@@ -57,7 +59,7 @@ To add a module install the respected package. A list of extra packages and thei
 
 ## Preview release
 
-**3.1-alpha** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
+Preview version of **3.2** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
 If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
 
 ## Documentation

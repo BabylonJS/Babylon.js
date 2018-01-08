@@ -374,26 +374,26 @@
             });
 
             if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
-                this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
+                this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
-                this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
             }
             else {
-                this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
+                this._horizontalBlurPostprocess = new BlurPostProcess("HighlightLayerHBP", new Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
-                this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
+                this._verticalBlurPostprocess = new BlurPostProcess("HighlightLayerVBP", new Vector2(0, 1.0), this._options.blurVerticalSize, 1,
                     null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
                 this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
@@ -426,6 +426,11 @@
                 var engine = scene.getEngine();
 
                 if (!material) {
+                    return;
+                }
+
+                // Do not block in blend mode.
+                if (material.needAlphaBlendingForMesh(mesh)) {
                     return;
                 }
 
@@ -686,12 +691,12 @@
             if (this.outerGlow) {
                 currentEffect.setFloat("offset", 0);
                 engine.setStencilFunction(Engine.NOTEQUAL);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
             if (this.innerGlow) {
                 currentEffect.setFloat("offset", 1);
                 engine.setStencilFunction(Engine.EQUAL);
-                engine.draw(true, 0, 6);
+                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
 
             // Restore Cache
@@ -819,13 +824,12 @@
                 if (meshHighlight.observerDefault) {
                     mesh.onAfterRenderObservable.remove(meshHighlight.observerDefault);
                 }
+                delete this._meshes[mesh.uniqueId];
             }
-
-            this._meshes[mesh.uniqueId] = null;
 
             this._shouldRender = false;
             for (var meshHighlightToCheck in this._meshes) {
-                if (meshHighlightToCheck) {
+                if (this._meshes[meshHighlightToCheck]) {
                     this._shouldRender = true;
                     break;
                 }

@@ -80,9 +80,6 @@
 
         private _firstUpdate: boolean = true;
 
-        @serialize()
-        private _ratio: any;
-
         /**
          * @constructor
          * @param {string} name - The rendering pipeline name
@@ -101,10 +98,6 @@
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var combineRatio = ratio.combineRatio || ratio;
-            this._ratio = {
-                ssaoRatio: ssaoRatio,
-                combineRatio: combineRatio
-            };
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", combineRatio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(ssaoRatio);
@@ -155,8 +148,8 @@
         private _createBlurPostProcess(ratio: number): void {
             var size = 16;
 
-            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
             this._blurHPostProcess.onActivateObservable.add(() => {
                 let dw = this._blurHPostProcess.width / this._scene.getEngine().getRenderWidth();
@@ -171,7 +164,7 @@
 
         public _rebuild() {
             this._firstUpdate = true;
-            super._rebuild();            
+            super._rebuild();
         }
 
         private _createSSAOPostProcess(ratio: number): void {
@@ -197,14 +190,14 @@
             var samplesFactor = 1.0 / numSamples;
 
             this._ssaoPostProcess = new PostProcess("ssao", "ssao",
-                                                    [
-                                                        "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "area", "fallOff", "base", "range", "viewport"
-                                                    ],
-                                                    ["randomSampler"],
-                                                    ratio, null, Texture.BILINEAR_SAMPLINGMODE,
-                                                    this._scene.getEngine(), false,
-                                                    "#define SAMPLES " + numSamples + "\n#define SSAO");
+                [
+                    "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
+                    "area", "fallOff", "base", "range", "viewport"
+                ],
+                ["randomSampler"],
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE,
+                this._scene.getEngine(), false,
+                "#define SAMPLES " + numSamples + "\n#define SSAO");
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
@@ -226,8 +219,8 @@
 
         private _createSSAOCombinePostProcess(ratio: number): void {
             this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"],
-                                                           ratio, null, Texture.BILINEAR_SAMPLINGMODE,
-                                                           this._scene.getEngine(), false);
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE,
+                this._scene.getEngine(), false);
 
             this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);

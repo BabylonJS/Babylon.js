@@ -4,19 +4,17 @@ module INSPECTOR {
 
         private static _instance: Scheduler;
 
-        /** The number of the set interval */
-        private _timer          : number;
         /** Is this scheduler in pause ? */
-        public pause            : boolean = false;
+        public pause: boolean = false;
 
         /** All properties are refreshed every 250ms */
-        public static REFRESH_TIME  : number = 250;
+        public static REFRESH_TIME: number = 250;
 
         /** The list of data to update */
         private _updatableProperties: Array<PropertyLine> = [];
 
         constructor () {
-            this._timer = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+            setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
 
         public static getInstance() : Scheduler {

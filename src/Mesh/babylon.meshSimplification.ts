@@ -66,7 +66,7 @@
                 //parallel simplifier
                 task.settings.forEach((setting) => {
                     var simplifier = this.getSimplifier(task);
-                    simplifier.simplify(setting,(newMesh) => {
+                    simplifier.simplify(setting, (newMesh) => {
                         task.mesh.addLODLevel(setting.distance, newMesh);
                         newMesh.isVisible = true;
                         //check if it is the last
@@ -82,7 +82,7 @@
                 var simplifier = this.getSimplifier(task);
 
                 var runDecimation = (setting: ISimplificationSettings, callback: () => void) => {
-                    simplifier.simplify(setting,(newMesh) => {
+                    simplifier.simplify(setting, (newMesh) => {
                         task.mesh.addLODLevel(setting.distance, newMesh);
                         newMesh.isVisible = true;
                         //run the next quality level
@@ -90,17 +90,17 @@
                     });
                 }
 
-                AsyncLoop.Run(task.settings.length,(loop: AsyncLoop) => {
-                    runDecimation(task.settings[loop.index],() => {
+                AsyncLoop.Run(task.settings.length, (loop: AsyncLoop) => {
+                    runDecimation(task.settings[loop.index], () => {
                         loop.executeNext();
                     });
-                },() => {
-                        //execution ended, run the success callback.
-                        if (task.successCallback) {
-                            task.successCallback();
-                        }
-                        this.executeNext();
-                    });
+                }, () => {
+                    //execution ended, run the success callback.
+                    if (task.successCallback) {
+                        task.successCallback();
+                    }
+                    this.executeNext();
+                });
             }
         }
 
@@ -229,8 +229,6 @@
         private vertices: Array<DecimationVertex>;
         private references: Array<Reference>;
 
-        private initialized: boolean = false;
-
         private _reconstructedMesh: Mesh;
 
         public syncIterations = 5000;
@@ -249,17 +247,17 @@
         public simplify(settings: ISimplificationSettings, successCallback: (simplifiedMesh: Mesh) => void) {
             this.initDecimatedMesh();
             //iterating through the submeshes array, one after the other.
-            AsyncLoop.Run(this._mesh.subMeshes.length,(loop: AsyncLoop) => {
-                this.initWithMesh(loop.index,() => {
-                    this.runDecimation(settings, loop.index,() => {
+            AsyncLoop.Run(this._mesh.subMeshes.length, (loop: AsyncLoop) => {
+                this.initWithMesh(loop.index, () => {
+                    this.runDecimation(settings, loop.index, () => {
                         loop.executeNext();
                     });
                 }, settings.optimizeMesh);
-            },() => {
-                    setTimeout(() => {
-                        successCallback(this._reconstructedMesh);
-                    }, 0);
-                });
+            }, () => {
+                setTimeout(() => {
+                    successCallback(this._reconstructedMesh);
+                }, 0);
+            });
         }
 
         private runDecimation(settings: ISimplificationSettings, submeshIndex: number, successCallback: () => void) {
@@ -348,24 +346,24 @@
                             }
                         }
                     };
-                    AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, trianglesIterator, callback,() => { return (triangleCount - deletedTriangles <= targetCount) });
+                    AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, trianglesIterator, callback, () => { return (triangleCount - deletedTriangles <= targetCount) });
                 }, 0);
             };
 
-            AsyncLoop.Run(this.decimationIterations,(loop: AsyncLoop) => {
+            AsyncLoop.Run(this.decimationIterations, (loop: AsyncLoop) => {
                 if (triangleCount - deletedTriangles <= targetCount) loop.breakLoop();
                 else {
-                    iterationFunction(loop.index,() => {
+                    iterationFunction(loop.index, () => {
                         loop.executeNext();
                     });
                 }
-            },() => {
-                    setTimeout(() => {
-                        //reconstruct this part of the mesh
-                        this.reconstructMesh(submeshIndex);
-                        successCallback();
-                    }, 0);
-                });
+            }, () => {
+                setTimeout(() => {
+                    //reconstruct this part of the mesh
+                    this.reconstructMesh(submeshIndex);
+                    successCallback();
+                }, 0);
+            });
         }
 
         private initWithMesh(submeshIndex: number, callback: Function, optimizeMesh?: boolean) {
@@ -408,7 +406,7 @@
             };
             //var totalVertices = mesh.getTotalVertices();
             var totalVertices = submesh.verticesCount;
-            AsyncLoop.SyncAsyncForLoop(totalVertices,(this.syncIterations / 4) >> 0, vertexInit,() => {
+            AsyncLoop.SyncAsyncForLoop(totalVertices, (this.syncIterations / 4) >> 0, vertexInit, () => {
 
                 var indicesInit = (i: number) => {
                     if (!indices) {
@@ -427,7 +425,7 @@
                     triangle.originalOffset = pos;
                     this.triangles.push(triangle);
                 };
-                AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, this.syncIterations, indicesInit,() => {
+                AsyncLoop.SyncAsyncForLoop(submesh.indexCount / 3, this.syncIterations, indicesInit, () => {
                     this.init(callback);
                 });
             });
@@ -441,7 +439,7 @@
                     t.vertices[j].q.addArrayInPlace(QuadraticMatrix.DataFromNumbers(t.normal.x, t.normal.y, t.normal.z, -(Vector3.Dot(t.normal, t.vertices[0].position))));
                 }
             };
-            AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit1,() => {
+            AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit1, () => {
 
                 var triangleInit2 = (i: number) => {
                     var t = this.triangles[i];
@@ -450,8 +448,7 @@
                     }
                     t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
                 };
-                AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit2,() => {
-                    this.initialized = true;
+                AsyncLoop.SyncAsyncForLoop(this.triangles.length, this.syncIterations, triangleInit2, () => {
                     callback();
                 });
             });
@@ -542,7 +539,7 @@
                 this._reconstructedMesh.setVerticesData(VertexBuffer.UVKind, newUVsData);
             if (newColorsData.length > 0)
                 this._reconstructedMesh.setVerticesData(VertexBuffer.ColorKind, newColorsData);
-            
+
             //create submesh
             var originalSubmesh = this._mesh.subMeshes[submeshIndex];
             if (submeshIndex > 0) {
@@ -559,7 +556,7 @@
             this._reconstructedMesh.material = this._mesh.material;
             this._reconstructedMesh.parent = this._mesh.parent;
             this._reconstructedMesh.isVisible = false;
-            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId; 
+            this._reconstructedMesh.renderingGroupId = this._mesh.renderingGroupId;
         }
 
         private isFlipped(vertex1: DecimationVertex, vertex2: DecimationVertex, point: Vector3, deletedArray: Array<boolean>, borderFactor: number, delTr: Array<DecimationTriangle>): boolean {

@@ -103,7 +103,7 @@
             return this._samplingMode;
         }
 
-        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, esception?: any) => void> = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
+        constructor(url: Nullable<string>, scene: Nullable<Scene>, noMipmap: boolean = false, invertY: boolean = true, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null, buffer: any = null, deleteBuffer: boolean = false, format?: number) {
             super(scene);
 
             this.name = url || "";

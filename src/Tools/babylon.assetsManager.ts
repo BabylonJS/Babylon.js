@@ -7,29 +7,13 @@ module BABYLON {
         ERROR
     }
 
-    export interface IAssetTask<T extends AbstractAssetTask> {
-        onSuccess: (task: T) => void;
-        onError: (task: T, message?: string, exception?: any) => void;
-        isCompleted: boolean;
-        name: string;
-
-        taskState: AssetTaskState;
-        errorObject: {
-            message?: string;
-            exception?: any;
-        }
-
-        runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void): void;
-    }
-
-    export abstract class AbstractAssetTask implements IAssetTask<AbstractAssetTask> {
+    export abstract class AbstractAssetTask {
+        public onSuccess: (task: any) => void;
+        public onError: (task: any, message?: string, exception?: any) => void;
 
         constructor(public name: string) {
             this.taskState = AssetTaskState.INIT;
         }
-
-        onSuccess: (task: this) => void;
-        onError: (task: this, message?: string, exception?: any) => void;
 
         isCompleted: boolean = false;
         taskState: AssetTaskState;
@@ -98,10 +82,13 @@ module BABYLON {
         }
     }
 
-    export class MeshAssetTask extends AbstractAssetTask implements IAssetTask<MeshAssetTask> {
+    export class MeshAssetTask extends AbstractAssetTask {
         public loadedMeshes: Array<AbstractMesh>;
         public loadedParticleSystems: Array<ParticleSystem>;
         public loadedSkeletons: Array<Skeleton>;
+
+        public onSuccess: (task: MeshAssetTask) => void;
+        public onError: (task: MeshAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public meshesNames: any, public rootUrl: string, public sceneFilename: string) {
             super(name);
@@ -121,18 +108,21 @@ module BABYLON {
         }
     }
 
-    export class TextFileAssetTask extends AbstractAssetTask implements IAssetTask<TextFileAssetTask> {
+    export class TextFileAssetTask extends AbstractAssetTask {
         public text: string;
 
+        public onSuccess: (task: TextFileAssetTask) => void;
+        public onError: (task: TextFileAssetTask, message?: string, exception?: any) => void;
+
         constructor(public name: string, public url: string) {
             super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-            Tools.LoadFile(this.url, (data) => {
-                this.text = data;
+            scene._loadFile(this.url, (data) => {
+                this.text = data as string;
                 onSuccess();
-            }, undefined, scene.database, false, (request, exception) => {
+            }, undefined, false, true, (request, exception) => {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
@@ -140,19 +130,21 @@ module BABYLON {
         }
     }
 
-    export class BinaryFileAssetTask extends AbstractAssetTask implements IAssetTask<BinaryFileAssetTask> {
+    export class BinaryFileAssetTask extends AbstractAssetTask {
         public data: ArrayBuffer;
 
+        public onSuccess: (task: BinaryFileAssetTask) => void;
+        public onError: (task: BinaryFileAssetTask, message?: string, exception?: any) => void;
+
         constructor(public name: string, public url: string) {
             super(name);
         }
 
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
-            Tools.LoadFile(this.url, (data) => {
-
-                this.data = data;
+            scene._loadFile(this.url, (data) => {
+                this.data = data as ArrayBuffer;
                 onSuccess();
-            }, undefined, scene.database, true, (request, exception) => {
+            }, undefined, true, true, (request, exception) => {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
@@ -160,8 +152,11 @@ module BABYLON {
         }
     }
 
-    export class ImageAssetTask extends AbstractAssetTask implements IAssetTask<ImageAssetTask> {
+    export class ImageAssetTask extends AbstractAssetTask {
         public image: HTMLImageElement;
+
+        public onSuccess: (task: ImageAssetTask) => void;
+        public onError: (task: ImageAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string) {
             super(name);
@@ -185,12 +180,15 @@ module BABYLON {
         }
     }
 
-    export interface ITextureAssetTask<TEX extends BaseTexture, T extends AbstractAssetTask> extends IAssetTask<T> {
+    export interface ITextureAssetTask<TEX extends BaseTexture> {
         texture: TEX;
     }
 
-    export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture, TextureAssetTask> {
+    export class TextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<Texture> {
         public texture: Texture;
+
+        public onSuccess: (task: TextureAssetTask) => void;
+        public onError: (task: TextureAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string, public noMipmap?: boolean, public invertY?: boolean, public samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(name);
@@ -202,16 +200,19 @@ module BABYLON {
                 onSuccess();
             };
 
-            var onerror = (msg: string, exception: any) => {
-                onError(msg, exception);
+            var onerror = (message?: string, exception?: any) => {
+                onError(message, exception);
             };
 
             this.texture = new Texture(this.url, scene, this.noMipmap, this.invertY, this.samplingMode, onload, onerror);
         }
     }
 
-    export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture, CubeTextureAssetTask> {
+    export class CubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<CubeTexture> {
         public texture: CubeTexture;
+
+        public onSuccess: (task: CubeTextureAssetTask) => void;
+        public onError: (task: CubeTextureAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string, public extensions?: string[], public noMipmap?: boolean, public files?: string[]) {
             super(name);
@@ -223,16 +224,19 @@ module BABYLON {
                 onSuccess();
             };
 
-            var onerror = (msg: string, exception: any) => {
-                onError(msg, exception);
+            var onerror = (message?: string, exception?: any) => {
+                onError(message, exception);
             };
 
             this.texture = new CubeTexture(this.url, scene, this.extensions, this.noMipmap, this.files, onload, onerror);
         }
     }
 
-    export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture, HDRCubeTextureAssetTask> {
+    export class HDRCubeTextureAssetTask extends AbstractAssetTask implements ITextureAssetTask<HDRCubeTexture> {
         public texture: HDRCubeTexture;
+
+        public onSuccess: (task: HDRCubeTextureAssetTask) => void;
+        public onError: (task: HDRCubeTextureAssetTask, message?: string, exception?: any) => void;
 
         constructor(public name: string, public url: string, public size?: number, public noMipmap = false, public generateHarmonics = true, public useInGammaSpace = false, public usePMREMGenerator = false) {
             super(name);
@@ -254,20 +258,21 @@ module BABYLON {
 
     export class AssetsManager {
         private _scene: Scene;
+        private _isLoading = false;
 
         protected tasks = new Array<AbstractAssetTask>();
         protected waitingTasksCount = 0;
 
-        public onFinish: (tasks: IAssetTask<AbstractAssetTask>[]) => void;
-        public onTaskSuccess: (task: IAssetTask<AbstractAssetTask>) => void;
-        public onTaskError: (task: IAssetTask<AbstractAssetTask>) => void;
-        public onProgress: (remainingCount: number, totalCount: number, task: IAssetTask<AbstractAssetTask>) => void;
+        public onFinish: (tasks: AbstractAssetTask[]) => void;
+        public onTaskSuccess: (task: AbstractAssetTask) => void;
+        public onTaskError: (task: AbstractAssetTask) => void;
+        public onProgress: (remainingCount: number, totalCount: number, task: AbstractAssetTask) => void;
 
         //Observables
 
-        public onTaskSuccessObservable = new Observable<IAssetTask<AbstractAssetTask>>();
-        public onTaskErrorObservable = new Observable<IAssetTask<AbstractAssetTask>>();
-        public onTasksDoneObservable = new Observable<IAssetTask<AbstractAssetTask>[]>();
+        public onTaskSuccessObservable = new Observable<AbstractAssetTask>();
+        public onTaskErrorObservable = new Observable<AbstractAssetTask>();
+        public onTasksDoneObservable = new Observable<AbstractAssetTask[]>();
         public onProgressObservable = new Observable<IAssetsProgressEvent>();
 
         public useDefaultLoadingScreen = true;
@@ -361,7 +366,7 @@ module BABYLON {
                     Tools.Error("Error running tasks-done callbacks.");
                     console.log(e);
                 }
-
+                this._isLoading = false;
                 this._scene.getEngine().hideLoadingUI();
             }
         }
@@ -397,11 +402,16 @@ module BABYLON {
         }
 
         public reset(): AssetsManager {
+            this._isLoading = false;
             this.tasks = new Array<AbstractAssetTask>();
             return this;
         }
 
         public load(): AssetsManager {
+            if (this._isLoading) {
+                return this;
+            }
+            this._isLoading = true;
             this.waitingTasksCount = this.tasks.length;
 
             if (this.waitingTasksCount === 0) {
@@ -409,6 +419,7 @@ module BABYLON {
                     this.onFinish(this.tasks);
                 }
                 this.onTasksDoneObservable.notifyObservers(this.tasks);
+                this._isLoading = false;
                 return this;
             }
 

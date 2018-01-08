@@ -47,7 +47,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public directIntensity: number = 1.0;
-        
+
         /**
          * Intensity of the emissive part of the material.
          * This helps controlling the emissive effect without modifying the emissive color.
@@ -55,7 +55,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveIntensity: number = 1.0;
-        
+
         /**
          * Intensity of the environment e.g. how much the environment will light the object
          * either through harmonics for rough material or through the refelction for shiny ones.
@@ -63,7 +63,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public environmentIntensity: number = 1.0;
-        
+
         /**
          * This is a special control allowing the reduction of the specular highlights coming from the 
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
@@ -85,7 +85,7 @@
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public albedoTexture: BaseTexture;
-        
+
         /**
          * AKA Occlusion Texture in other nomenclature.
          */
@@ -111,7 +111,7 @@
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveTexture: BaseTexture;
-        
+
         /**
          * AKA Specular texture in other nomenclature.
          */
@@ -172,7 +172,7 @@
         @serializeAsColor3("albedo")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public albedoColor = new Color3(1, 1, 1);
-        
+
         /**
          * AKA Specular Color in other nomenclature.
          */
@@ -187,7 +187,7 @@
         @serializeAsColor3("emissive")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Glossiness in other nomenclature.
          */
@@ -201,7 +201,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public indexOfRefraction = 0.66;
-        
+
         /**
          * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
          */
@@ -220,7 +220,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
-        
+
         /**
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
@@ -241,7 +241,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public alphaCutOff = 0.4;
-        
+
         /**
          * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
@@ -249,7 +249,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useSpecularOverAlpha = true;
-        
+
         /**
          * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
          */
@@ -291,7 +291,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAmbientInGrayScale = false;
-        
+
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
          * The material will try to infer what glossiness each pixel should be.
@@ -299,7 +299,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAutoMicroSurfaceFromReflectivityMap = false;
-        
+
         /**
          * BJS is using an harcoded light falloff based on a manually sets up range.
          * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
@@ -308,7 +308,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public usePhysicalLightFalloff = true;
-        
+
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
@@ -316,7 +316,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useRadianceOverAlpha = true;
-        
+
         /**
          * Allows using the bump map in parallax mode.
          */
@@ -337,7 +337,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public parallaxScaleBias = 0.05;
-        
+
         /**
          * If sets to true, disables all the lights affecting the material.
          */
@@ -350,14 +350,14 @@
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public forceIrradianceInFragment = false;        
+        public forceIrradianceInFragment = false;
 
         /**
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights = 4;  
+        public maxSimultaneousLights = 4;
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
@@ -382,11 +382,19 @@
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part.
+         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAlphaFresnel = false;
+
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useLinearAlphaFresnel = false;
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
@@ -398,11 +406,26 @@
 
         /**
          * Force normal to face away from face.
-         * (Temporary internal fix to remove before 3.1)
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public forceNormalForward = false;
+
+        /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useHorizonOcclusion = true;
+
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useRadianceOcclusion = true;
 
         /**
          * Gets the image processing configuration used either in this material.
@@ -478,7 +501,7 @@
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
         };
-        
+
         /**
          * Gets The camera contrast used on this material.
          */
@@ -492,7 +515,7 @@
         public set cameraContrast(value: number) {
             this._imageProcessingConfiguration.contrast = value;
         }
-        
+
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
@@ -602,7 +625,7 @@
 
             if (this._ambientTexture === texture) {
                 return true;
-            }       
+            }
 
             if (this._opacityTexture === texture) {
                 return true;
@@ -610,34 +633,34 @@
 
             if (this._reflectionTexture === texture) {
                 return true;
-            }     
+            }
 
             if (this._reflectivityTexture === texture) {
                 return true;
-            }                
+            }
 
             if (this._metallicTexture === texture) {
                 return true;
-            }      
+            }
 
             if (this._microSurfaceTexture === texture) {
                 return true;
-            }      
+            }
 
             if (this._bumpTexture === texture) {
                 return true;
-            }                                               
+            }
 
             if (this._lightmapTexture === texture) {
                 return true;
-            }                                               
+            }
 
             if (this._refractionTexture === texture) {
                 return true;
-            }                                               
+            }
 
-            return false;    
-        }         
+            return false;
+        }
 
         public clone(name: string): PBRMaterial {
             var clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);

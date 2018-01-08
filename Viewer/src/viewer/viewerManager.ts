@@ -1,3 +1,5 @@
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
 import { Observable } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 

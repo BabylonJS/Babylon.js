@@ -78,15 +78,20 @@ module BABYLON {
             var engine = this._engine;
             var texture: InternalTexture;
             if (engine.webGLVersion === 1) {
-                texture = engine.createRawTexture(null, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
-            } 
+                texture = engine.createRawTexture(null, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+            }
             else {
-                texture = engine.createRawTexture3D(null, 1, 1, 1, BABYLON.Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
+                texture = engine.createRawTexture3D(null, 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.BILINEAR_SAMPLINGMODE);
             }
 
             this._texture = texture;
 
-            var callback = (text: string) => {
+            var callback = (text: string | ArrayBuffer) => {
+
+                if (typeof text !== "string") {
+                    return;
+                }
+
                 var data: Nullable<Uint8Array> = null;
                 var tempData: Nullable<Float32Array> = null;
 
@@ -144,7 +149,7 @@ module BABYLON {
 
                 if (tempData && data) {
                     for (let i = 0; i < tempData.length; i++) {
-                        if (i > 0 && (i+1) % 4 === 0) {
+                        if (i > 0 && (i + 1) % 4 === 0) {
                             data[i] = 255;
                         }
                         else {
@@ -156,15 +161,22 @@ module BABYLON {
 
                 if (texture.is3D) {
                     texture.updateSize(size, size, size);
-                    engine.updateRawTexture3D(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                    engine.updateRawTexture3D(texture, data, Engine.TEXTUREFORMAT_RGBA, false);
                 }
                 else {
                     texture.updateSize(size * size, size);
-                    engine.updateRawTexture(texture, data, BABYLON.Engine.TEXTUREFORMAT_RGBA, false);
+                    engine.updateRawTexture(texture, data, Engine.TEXTUREFORMAT_RGBA, false);
                 }
             }
 
-            Tools.LoadFile(this.url, callback);
+            let scene = this.getScene();
+            if (scene) {
+                scene._loadFile(this.url, callback);
+            }
+            else {
+                this._engine._loadFile(this.url, callback);
+            }
+
             return this._texture;
         }
 
@@ -215,7 +227,7 @@ module BABYLON {
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): Nullable<ColorGradingTexture> {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
-                texture = new BABYLON.ColorGradingTexture(parsedTexture.name, scene);
+                texture = new ColorGradingTexture(parsedTexture.name, scene);
                 texture.name = parsedTexture.name;
                 texture.level = parsedTexture.level;
             }

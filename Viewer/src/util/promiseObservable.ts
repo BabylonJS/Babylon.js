@@ -1,4 +1,4 @@
-import { Observable, Nullable, Observer } from "babylonjs";
+import { Observable } from 'babylonjs';
 
 export class PromiseObservable<T> extends Observable<T> {
 

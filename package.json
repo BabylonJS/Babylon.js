@@ -4,11 +4,12 @@
     },
     "contributors": [
         "David ROUSSET",
-        "Sebastien VANDENBERGHE"
+        "Sebastien VANDENBERGHE",
+        "Raanan Weber"
     ],
     "name": "babylonjs",
     "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-    "version": "3.1.0-beta3",
+    "version": "3.2.0-alpha0",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
@@ -64,7 +65,5 @@
         "node": "*"
     },
     "readme": "Babylon.js is a 3D engine based on webgl and javascript",
-    "readmeFilename": "README.md",
-    "_id": "babylonjs@3.1.0-alpha2",
-    "_from": "babylonjs@"
+    "readmeFilename": "README.md"
 }

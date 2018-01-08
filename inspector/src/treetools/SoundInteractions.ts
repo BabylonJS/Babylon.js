@@ -9,12 +9,10 @@ module INSPECTOR {
      */
     export class SoundInteractions extends AbstractTreeTool {
         private playSound: ISoundInteractions;
-        private b: boolean;
 
         constructor(playSound: ISoundInteractions) {
             super();
             this.playSound = playSound;
-            this.b = false;
             this._elem.classList.add('fa-play');
         }
 
