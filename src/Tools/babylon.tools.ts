@@ -1096,7 +1096,7 @@
 
                 if (dataType & 2) {
                     // Check header width and height since there is no "TGA" magic number
-                    var tgaHeader = Internals.TGATools.GetTGAHeader(xhr.response);
+                    var tgaHeader = TGATools.GetTGAHeader(xhr.response);
 
                     if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
                         return true;
