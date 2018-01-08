@@ -595,13 +595,13 @@ gulp.task("clean-JS-MAP", function () {
     ], { force: true });
 });
 
-
+// this is needed for the modules for the declaration files.
 gulp.task("modules-compile", function () {
     var tsResult = gulp.src(config.typescript)
         .pipe(sourcemaps.init())
         .pipe(tsProject());
 
-    //If this gulp task is running on travis, file the build!
+    // If this gulp task is running on travis
     if (process.env.TRAVIS) {
         var error = false;
         tsResult.on("error", function () {
@@ -643,8 +643,10 @@ gulp.task('prepare-for-modules', ["modules-compile"], function () {
     });
 
     return merge2(tasks);
-})
+});
 
+// generate the modules directory, along with commonjs modules and es6 modules
+// Note - the generated modules are UNMINIFIED! The user will choose whether they want to minify or not.
 gulp.task("modules", ["prepare-for-modules"], function () {
     let tasks = [];
 
@@ -662,6 +664,7 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 shaderIncludeFiles[index] = "../../src/Shaders/ShadersInclude/" + shaderIncludeFiles[index] + ".fx";
             }
 
+            //commonjs js generation task
             let jsTask = merge2([
                 gulp.src(config.workloads[moduleName].files),
                 gulp.src(shadersFiles).
@@ -679,6 +682,7 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(babylonModuleExports(moduleName, config.workloads[moduleName].dependUpon))
                 .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));
 
+            // es6 modules generation task
             let es6Task = merge2([
                 gulp.src(config.workloads[moduleName].files),
                 gulp.src(shadersFiles).
@@ -696,7 +700,7 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(babylonES6ModuleExports(moduleName, config.workloads[moduleName].dependUpon))
                 .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));
 
-
+            // dts genration task
             let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat("index.d.ts"))
@@ -708,5 +712,6 @@ gulp.task("modules", ["prepare-for-modules"], function () {
             tasks.push(jsTask, es6Task, dtsTask);
         });
 
+    // run da tasks man!
     return merge2(tasks);
 })
