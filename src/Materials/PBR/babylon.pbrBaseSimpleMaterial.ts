@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     /**
      * The Physically based simple base material of BJS.
      * 

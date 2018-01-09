@@ -1043,6 +1043,8 @@ module BABYLON.GLTF2 {
                     }
                 }
 
+                sampler.interpolation = sampler.interpolation || "LINEAR";
+
                 let getNextKey: (frameIndex: number) => any;
                 switch (sampler.interpolation) {
                     case "LINEAR": {

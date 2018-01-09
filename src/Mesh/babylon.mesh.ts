@@ -97,7 +97,7 @@
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
-        private _LODLevels = new Array<Internals.MeshLODLevel>();
+        private _LODLevels = new Array<MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
         // Morph
@@ -323,7 +323,7 @@
                 return this;
             }
 
-            var level = new Internals.MeshLODLevel(distance, mesh);
+            var level = new MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
             if (mesh) {

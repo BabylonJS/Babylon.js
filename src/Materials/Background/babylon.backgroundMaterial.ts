@@ -1,4 +1,4 @@
-﻿namespace BABYLON {
+﻿module BABYLON {
     /**
      * Background material defines definition.
      */

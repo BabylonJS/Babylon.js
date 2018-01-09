@@ -1,7 +1,7 @@
 var gutil = require('gulp-util');
 var through = require('through2');
 
-module.exports = function (varName, moduleName, subModule, extendsRoot) {
+module.exports = function (varName, moduleName, subModule, extendsRoot, dependencies) {
     return through.obj(function (file, enc, cb) {
 
         let exportText = "BABYLON";
@@ -9,8 +9,21 @@ module.exports = function (varName, moduleName, subModule, extendsRoot) {
             exportText += '.' + varName;
         }
 
+        let referenceText = '';
+        if (subModule) {
+            referenceText = '/// <reference types="babylonjs"/>\n';
+        }
+
+        if (dependencies) {
+            referenceText = '';
+            dependencies.forEach(element => {
+                referenceText += `/// <reference types="babylonjs/${element}"/>
+`
+            });
+        }
+
         var moduleExportsAddition =
-            `${subModule ? '/// <reference types="babylonjs"/>' : ''}
+            `${referenceText}
 
 declare module '${moduleName}' { 
     export = ${exportText}; 
