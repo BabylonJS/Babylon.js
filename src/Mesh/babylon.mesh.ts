@@ -186,14 +186,19 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
 
+                // Metadata
+                if (source.metadata && source.metadata.clone) {
+                    this.metadata = source.metadata.clone();
+                 } else {
+                    this.metadata = source.metadata;
+                 }                
+                
                 // Tags
                 if (Tags && Tags.HasTags(source)) {
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
-
-                this.metadata = source.metadata;
 
                 // Parent
                 this.parent = source.parent;
