@@ -428,6 +428,11 @@
         protected _forceNormalForward = false;
 
         /**
+         * Force metallic workflow.
+         */
+        protected _forceMetallicWorkflow = false;
+
+        /**
          * Default configuration related to image processing available in the PBR Material.
          */
         @serializeAsImageProcessingConfiguration()
@@ -862,7 +867,7 @@
 
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
 
-                if ((this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
+                if (this._forceMetallicWorkflow || (this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
                     defines.METALLICWORKFLOW = true;
                 } else {
                     defines.METALLICWORKFLOW = false;

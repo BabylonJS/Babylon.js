@@ -15218,7 +15218,6 @@ var BABYLON;
             this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeTransformNode(this);
-            this._cache = {};
             if (!doNotRecurse) {
                 // Children
                 var objects = this.getDescendants(true);
@@ -20792,6 +20791,34 @@ var BABYLON;
         Scene.prototype.unregisterAfterRender = function (func) {
             this.onAfterRenderObservable.removeCallback(func);
         };
+        Scene.prototype._executeOnceBeforeRender = function (func) {
+            var _this = this;
+            var execFunc = function () {
+                func();
+                setTimeout(function () {
+                    _this.unregisterBeforeRender(execFunc);
+                });
+            };
+            this.registerBeforeRender(execFunc);
+        };
+        /**
+         * The provided function will run before render once and will be disposed afterwards.
+         * A timeout delay can be provided so that the function will be executed in N ms.
+         * The timeout is using the browser's native setTimeout so time percision cannot be guaranteed.
+         * @param func The function to be executed.
+         * @param timeout optional delay in ms
+         */
+        Scene.prototype.executeOnceBeforeRender = function (func, timeout) {
+            var _this = this;
+            if (timeout !== undefined) {
+                setTimeout(function () {
+                    _this._executeOnceBeforeRender(func);
+                }, timeout);
+            }
+            else {
+                this._executeOnceBeforeRender(func);
+            }
+        };
         Scene.prototype._addPendingData = function (data) {
             this._pendingData.push(data);
         };
@@ -24579,12 +24606,18 @@ var BABYLON;
                     source._geometry.applyToMesh(_this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
+                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
+                // Metadata
+                if (source.metadata && source.metadata.clone) {
+                    _this.metadata = source.metadata.clone();
+                }
+                else {
+                    _this.metadata = source.metadata;
+                }
                 // Tags
                 if (BABYLON.Tags && BABYLON.Tags.HasTags(source)) {
                     BABYLON.Tags.AddTagsTo(_this, BABYLON.Tags.GetTags(source, true));
                 }
-                _this.metadata = source.metadata;
                 // Parent
                 _this.parent = source.parent;
                 // Pivot
@@ -36598,6 +36631,10 @@ var BABYLON;
              * Force normal to face away from face.
              */
             _this._forceNormalForward = false;
+            /**
+             * Force metallic workflow.
+             */
+            _this._forceMetallicWorkflow = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             // Setup the default processing configuration to the scene.
@@ -36968,7 +37005,7 @@ var BABYLON;
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
                 defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
-                if ((this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
+                if (this._forceMetallicWorkflow || (this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
                     defines.METALLICWORKFLOW = true;
                 }
                 else {
@@ -38459,6 +38496,7 @@ var BABYLON;
             _this._useRoughnessFromMetallicTextureAlpha = false;
             _this._useRoughnessFromMetallicTextureGreen = true;
             _this._useMetallnessFromMetallicTextureBlue = true;
+            _this._forceMetallicWorkflow = true;
             return _this;
         }
         /**
@@ -74210,13 +74248,13 @@ var BABYLON;
                 }
                 this._createGazeTracker();
                 this.raySelectionPredicate = function (mesh) {
-                    return true;
+                    return mesh.isVisible;
                 };
                 this.meshSelectionPredicate = function (mesh) {
                     return true;
                 };
                 this._raySelectionPredicate = function (mesh) {
-                    if (_this._isTeleportationFloor(mesh) || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
+                    if (_this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
                         && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
