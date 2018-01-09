@@ -116,7 +116,7 @@
                     if (boxes !== undefined && boxes !== null) {
                         for (index = 0, cache = boxes.length; index < cache; index++) {
                             var parsedBox = boxes[index];
-                            addedGeometry.push(Geometry.Primitives.Box.Parse(parsedBox, scene));
+                            addedGeometry.push(BoxGeometry.Parse(parsedBox, scene));
                         }
                     }
 
@@ -125,7 +125,7 @@
                     if (spheres !== undefined && spheres !== null) {
                         for (index = 0, cache = spheres.length; index < cache; index++) {
                             var parsedSphere = spheres[index];
-                            addedGeometry.push(Geometry.Primitives.Sphere.Parse(parsedSphere, scene));
+                            addedGeometry.push(SphereGeometry.Parse(parsedSphere, scene));
                         }
                     }
 
@@ -134,7 +134,7 @@
                     if (cylinders !== undefined && cylinders !== null) {
                         for (index = 0, cache = cylinders.length; index < cache; index++) {
                             var parsedCylinder = cylinders[index];
-                            addedGeometry.push(Geometry.Primitives.Cylinder.Parse(parsedCylinder, scene));
+                            addedGeometry.push(CylinderGeometry.Parse(parsedCylinder, scene));
                         }
                     }
 
@@ -143,7 +143,7 @@
                     if (toruses !== undefined && toruses !== null) {
                         for (index = 0, cache = toruses.length; index < cache; index++) {
                             var parsedTorus = toruses[index];
-                            addedGeometry.push(Geometry.Primitives.Torus.Parse(parsedTorus, scene));
+                            addedGeometry.push(TorusGeometry.Parse(parsedTorus, scene));
                         }
                     }
 
@@ -152,7 +152,7 @@
                     if (grounds !== undefined && grounds !== null) {
                         for (index = 0, cache = grounds.length; index < cache; index++) {
                             var parsedGround = grounds[index];
-                            addedGeometry.push(Geometry.Primitives.Ground.Parse(parsedGround, scene));
+                            addedGeometry.push(GroundGeometry.Parse(parsedGround, scene));
                         }
                     }
 
@@ -161,7 +161,7 @@
                     if (planes !== undefined && planes !== null) {
                         for (index = 0, cache = planes.length; index < cache; index++) {
                             var parsedPlane = planes[index];
-                            addedGeometry.push(Geometry.Primitives.Plane.Parse(parsedPlane, scene));
+                            addedGeometry.push(PlaneGeometry.Parse(parsedPlane, scene));
                         }
                     }
 
@@ -170,7 +170,7 @@
                     if (torusKnots !== undefined && torusKnots !== null) {
                         for (index = 0, cache = torusKnots.length; index < cache; index++) {
                             var parsedTorusKnot = torusKnots[index];
-                            addedGeometry.push(Geometry.Primitives.TorusKnot.Parse(parsedTorusKnot, scene));
+                            addedGeometry.push(TorusKnotGeometry.Parse(parsedTorusKnot, scene));
                         }
                     }
 
