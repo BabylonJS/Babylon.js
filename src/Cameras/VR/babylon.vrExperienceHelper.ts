@@ -607,7 +607,7 @@ module BABYLON {
                 this._createGazeTracker();
 
                 this.raySelectionPredicate = (mesh) => {
-                    return true;
+                    return mesh.isVisible;
                 }
 
                 this.meshSelectionPredicate = (mesh) => {
@@ -615,7 +615,7 @@ module BABYLON {
                 }
 
                 this._raySelectionPredicate = (mesh) => {
-                    if (this._isTeleportationFloor(mesh) || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
+                    if (this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
                         && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
