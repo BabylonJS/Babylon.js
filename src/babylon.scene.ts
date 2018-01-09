@@ -1924,6 +1924,33 @@
             this.onAfterRenderObservable.removeCallback(func);
         }
 
+        private _executeOnceBeforeRender(func: () => void): void {
+            let execFunc = () => {
+                func();
+                setTimeout(() => {
+                    this.unregisterBeforeRender(execFunc);
+                });
+            }
+            this.registerBeforeRender(execFunc);
+        }
+
+        /**
+         * The provided function will run before render once and will be disposed afterwards.
+         * A timeout delay can be provided so that the function will be executed in N ms.
+         * The timeout is using the browser's native setTimeout so time percision cannot be guaranteed.
+         * @param func The function to be executed.
+         * @param timeout optional delay in ms
+         */
+        public executeOnceBeforeRender(func: () => void, timeout?: number): void {
+            if (timeout !== undefined) {
+                setTimeout(() => {
+                    this._executeOnceBeforeRender(func);
+                }, timeout);
+            } else {
+                this._executeOnceBeforeRender(func);
+            }
+        }
+
         public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
@@ -2321,7 +2348,7 @@
 
             // Add light to all meshes (To support if the light is removed and then readded)
             for (var mesh of this.meshes) {
-                if(mesh._lightSources.indexOf(newLight) === -1){
+                if (mesh._lightSources.indexOf(newLight) === -1) {
                     mesh._lightSources.push(newLight);
                     mesh._resyncLightSources();
                 }
