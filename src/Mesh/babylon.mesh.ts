@@ -189,7 +189,7 @@
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
 
                 // Metadata
-                if (source.metadata.clone) {
+                if (source.metadata && source.metadata.clone) {
                     this.metadata = source.metadata.clone();
                  } else {
                     this.metadata = source.metadata;
