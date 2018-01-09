@@ -1927,7 +1927,9 @@
         private _executeOnceBeforeRender(func: () => void): void {
             let execFunc = () => {
                 func();
-                this.unregisterBeforeRender(execFunc);
+                setTimeout(() => {
+                    this.unregisterBeforeRender(execFunc);
+                });
             }
             this.registerBeforeRender(execFunc);
         }
@@ -1940,7 +1942,7 @@
          * @param timeout optional delay in ms
          */
         public executeOnceBeforeRender(func: () => void, timeout?: number): void {
-            if (typeof timeout === 'number') {
+            if (timeout !== undefined) {
                 setTimeout(() => {
                     this._executeOnceBeforeRender(func);
                 }, timeout);
