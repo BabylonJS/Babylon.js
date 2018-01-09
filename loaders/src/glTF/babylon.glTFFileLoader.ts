@@ -245,9 +245,9 @@ module BABYLON {
                 this._loader = this._getLoader(loaderData);
                 this._loader.importMeshAsync(null, scene, loaderData, rootUrl,  (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
                     var container = new AssetContainer(scene);
-                    container.meshes.concat(meshes)
-                    container.particleSystems.concat(particleSystems)
-                    container.skeletons.concat(skeletons)
+                    Array.prototype.push.apply(container.meshes, meshes)
+                    Array.prototype.push.apply(container.particleSystems, particleSystems)
+                    Array.prototype.push.apply(container.skeletons, skeletons)
                     container.removeAllFromScene();
                     onSuccess(container)
                 }, onProgress, onError);
