@@ -523,7 +523,7 @@
 
                     scene.loadingPluginName = plugin.name;
                     successHandler(assetContainer);
-                } else {
+                } else if ((<any>plugin).loadAssetsAsync) {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin.loadAssetsAsync(scene, data, rootUrl, (assetContainer) => {
                         if(assetContainer){
@@ -531,6 +531,8 @@
                             successHandler(assetContainer);
                         }
                     }, progressHandler, errorHandler);
+                }else{
+                    errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssets or loadAssetsAsync method.")
                 }
 
                 if (SceneLoader.ShowLoadingScreen) {
