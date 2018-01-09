@@ -962,8 +962,6 @@ module BABYLON {
             // Remove from scene
             this.getScene().removeTransformNode(this);
 
-            this._cache = {};
-
             if (!doNotRecurse) {
                 // Children
                 var objects = this.getDescendants(true);
