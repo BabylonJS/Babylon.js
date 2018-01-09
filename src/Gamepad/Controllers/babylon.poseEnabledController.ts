@@ -40,7 +40,6 @@ module BABYLON {
             }
             // Generic 
             else {
-                console.log('unknown gamepadId:', vrGamepad)
                 return new GenericController(vrGamepad);
             }
         }
