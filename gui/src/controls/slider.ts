@@ -191,18 +191,43 @@ module BABYLON.GUI {
                     context.shadowOffsetY = this.shadowOffsetY;
                 }
 
-                var left;
-                var width;
-                var thumbPosition;
+                var left = this._currentMeasure.left;
+                var width = this._currentMeasure.width - effectiveThumbWidth;
+                var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
+                
+                context.fillStyle = this._background;
+                if (this.isThumbClamped) {
+                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                }
+                else {
+                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                }
 
-                if (this._isThumbClamped) {
-                    left = this._currentMeasure.left;
-                    width = this._currentMeasure.width;
-                    thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * (width - effectiveThumbWidth);
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
 
-                    // Bar
-                    context.fillStyle = this._background;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                context.fillStyle = this.color;
+                if (this.isThumbClamped) {
+                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                }
+                else {
+                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                }
+
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+
+                if (this._isThumbCircle) {
+                    context.beginPath();
+                    context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                    context.fill();
 
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowBlur = 0;
@@ -210,51 +235,12 @@ module BABYLON.GUI {
                         context.shadowOffsetY = 0;
                     }
 
-                    context.fillStyle = this.color;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
-
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowColor = this.shadowColor;
-                        context.shadowBlur = this.shadowBlur;
-                        context.shadowOffsetX = this.shadowOffsetX;
-                        context.shadowOffsetY = this.shadowOffsetY;
-                    }
-                    if (this._isThumbCircle) {
-                        context.beginPath();
-                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
-                        context.fill();
-
-                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                            context.shadowBlur = 0;
-                            context.shadowOffsetX = 0;
-                            context.shadowOffsetY = 0;
-                        }
-
-                        context.strokeStyle = this._borderColor;
-                        context.stroke();
-                    }
-                    else {
-                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-
-                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                            context.shadowBlur = 0;
-                            context.shadowOffsetX = 0;
-                            context.shadowOffsetY = 0;
-                        }
-
-                        context.strokeStyle = this._borderColor;
-                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-                    }                   
+                    context.strokeStyle = this._borderColor;
+                    context.stroke();
                 }
 
                 else {
-                    left = this._currentMeasure.left;
-                    width = this._currentMeasure.width - effectiveThumbWidth;
-                    thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
-
-                    // Bar
-                    context.fillStyle = this._background;
-                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
 
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowBlur = 0;
@@ -262,44 +248,8 @@ module BABYLON.GUI {
                         context.shadowOffsetY = 0;
                     }
 
-                    context.fillStyle = this.color;
-                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
-
-
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowColor = this.shadowColor;
-                        context.shadowBlur = this.shadowBlur;
-                        context.shadowOffsetX = this.shadowOffsetX;
-                        context.shadowOffsetY = this.shadowOffsetY;
-                    }
-
-                    // Thumb
-                    if (this._isThumbCircle) {
-                        context.beginPath();
-                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
-                        context.fill();
-
-                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                            context.shadowBlur = 0;
-                            context.shadowOffsetX = 0;
-                            context.shadowOffsetY = 0;
-                        }
-
-                        context.strokeStyle = this._borderColor;
-                        context.stroke();
-                    }
-                    else {
-                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-
-                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                            context.shadowBlur = 0;
-                            context.shadowOffsetX = 0;
-                            context.shadowOffsetY = 0;
-                        }
-
-                        context.strokeStyle = this._borderColor;
-                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-                    }            
+                    context.strokeStyle = this._borderColor;
+                    context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                 }
             }
             context.restore();
