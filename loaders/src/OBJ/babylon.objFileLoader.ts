@@ -274,10 +274,6 @@ module BABYLON {
             return null;
         }
 
-        public loadAssetContainer(){
-
-        }
-
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.
