@@ -1,24 +1,24 @@
-module INSPECTOR{
-    
+module INSPECTOR {
+
     export class PhysicsTab extends PropertyTab {
 
-        public viewer:BABYLON.Debug.PhysicsViewer;
-        
-        constructor(tabbar:TabBar, inspector:Inspector) {
-            super(tabbar, 'Physics', inspector); 
+        public viewer: any;
+
+        constructor(tabbar: TabBar, inspector: Inspector) {
+            super(tabbar, 'Physics', inspector);
         }
 
         /* Overrides super */
-        protected _getTree() : Array<TreeItem> {
+        protected _getTree(): Array<TreeItem> {
             let arr = new Array<TreeItem>();
 
             let scene = this._inspector.scene;
-            
-            if(!scene.isPhysicsEnabled()){
+
+            if (!scene.isPhysicsEnabled()) {
                 return arr;
             }
 
-            if(!this.viewer){
+            if (!this.viewer) {
                 this.viewer = new BABYLON.Debug.PhysicsViewer(scene);
             }
 
@@ -29,6 +29,6 @@ module INSPECTOR{
             }
             return arr;
         }
-        
+
     }
 }

@@ -1,5 +1,6 @@
 /// <reference types="babylonjs"/>
 
+
 declare module 'babylonjs-procedural-textures' { 
     export = BABYLON; 
 }

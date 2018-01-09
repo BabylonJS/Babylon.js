@@ -7,7 +7,7 @@ var File = gutil.File;
 // Consts
 const PLUGIN_NAME = 'gulp-appendSrcToVariable';
 
-var appendSrcToVariable = function appendSrcToVariable(varName, namingCallback, output) {
+var appendSrcToVariable = function appendSrcToVariable(varName, namingCallback, output, lastFile) {
 
     var content;
     var firstFile;
