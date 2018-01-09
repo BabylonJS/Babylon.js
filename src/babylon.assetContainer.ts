@@ -109,7 +109,6 @@ module BABYLON {
             this.actionManagers.forEach((o)=>{
                 this.scene.removeActionManager(o);
             });
-            // TODO, do shadow generators need to be removed somehow?
             this.sounds.forEach((o)=>{
                 o.stop();
                 o.autoplay = false;
