@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     export class _DepthCullingState {
         private _isDepthTestDirty = false;
         private _isDepthMaskDirty = false;
@@ -7,7 +7,7 @@
         private _isCullDirty = false;
         private _isZOffsetDirty = false;
         private _isFrontFaceDirty = false;
-        
+
         private _depthTest: boolean;
         private _depthMask: boolean;
         private _depthFunc: Nullable<number>;
@@ -15,7 +15,7 @@
         private _cullFace: Nullable<number>;
         private _zOffset: number;
         private _frontFace: Nullable<number>;
-        
+
         /**
          * Initializes the state.
          */

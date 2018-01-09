@@ -1,4 +1,4 @@
-module BABYLON.Internals {
+module BABYLON {
     /**
      * Header information of HDR texture files.
      */
@@ -7,12 +7,12 @@ module BABYLON.Internals {
          * The height of the texture in pixels.
          */
         height: number;
-        
+
         /**
          * The width of the texture in pixels.
          */
         width: number;
-        
+
         /**
          * The index of the beginning of the data in the binary file.
          */
