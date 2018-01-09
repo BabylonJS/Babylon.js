@@ -1041,7 +1041,9 @@ var INSPECTOR;
     var MeshAdapter = /** @class */ (function (_super) {
         __extends(MeshAdapter, _super);
         function MeshAdapter(mesh) {
-            return _super.call(this, mesh) || this;
+            var _this = _super.call(this, mesh) || this;
+            new BABYLON.Debug.AxesViewer(mesh.getScene());
+            return _this;
         }
         /** Returns the name displayed in the tree */
         MeshAdapter.prototype.id = function () {

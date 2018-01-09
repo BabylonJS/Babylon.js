@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
 
     var parseMaterialById = (id: string, parsedData: any, scene: Scene, rootUrl: string) => {
         for (var index = 0, cache = parsedData.materials.length; index < cache; index++) {
@@ -434,25 +434,25 @@
                                                 if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                     switch (geometryType) {
                                                         case "boxes":
-                                                            Geometry.Primitives.Box.Parse(parsedGeometryData, scene);
+                                                            BoxGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "spheres":
-                                                            Geometry.Primitives.Sphere.Parse(parsedGeometryData, scene);
+                                                            SphereGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "cylinders":
-                                                            Geometry.Primitives.Cylinder.Parse(parsedGeometryData, scene);
+                                                            CylinderGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "toruses":
-                                                            Geometry.Primitives.Torus.Parse(parsedGeometryData, scene);
+                                                            TorusGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "grounds":
-                                                            Geometry.Primitives.Ground.Parse(parsedGeometryData, scene);
+                                                            GroundGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "planes":
-                                                            Geometry.Primitives.Plane.Parse(parsedGeometryData, scene);
+                                                            PlaneGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "torusKnots":
-                                                            Geometry.Primitives.TorusKnot.Parse(parsedGeometryData, scene);
+                                                            TorusKnotGeometry.Parse(parsedGeometryData, scene);
                                                             break;
                                                         case "vertexData":
                                                             Geometry.Parse(parsedGeometryData, scene, rootUrl);

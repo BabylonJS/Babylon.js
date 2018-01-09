@@ -138,7 +138,8 @@ module BABYLON {
                     if (i === impostor) {
                         var center = impostor.getObjectCenter();
 
-                        impostor.object.position.subtractToRef(center, this._tmpPositionVector);
+                        impostor.object.getAbsolutePivotPoint().subtractToRef(center, this._tmpPositionVector);
+                        this._tmpPositionVector.divideInPlace(impostor.object.scaling);
 
                         //Can also use Array.prototype.push.apply
                         bodyConfig.pos.push(center.x);
