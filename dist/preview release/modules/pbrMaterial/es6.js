@@ -342,6 +342,10 @@ var BABYLON;
              * Force normal to face away from face.
              */
             _this._forceNormalForward = false;
+            /**
+             * Force metallic workflow.
+             */
+            _this._forceMetallicWorkflow = false;
             _this._renderTargets = new BABYLON.SmartArray(16);
             _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
             // Setup the default processing configuration to the scene.
@@ -712,7 +716,7 @@ var BABYLON;
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
                 defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
-                if ((this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
+                if (this._forceMetallicWorkflow || (this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
                     defines.METALLICWORKFLOW = true;
                 }
                 else {
@@ -2191,6 +2195,7 @@ var BABYLON;
             _this._useRoughnessFromMetallicTextureAlpha = false;
             _this._useRoughnessFromMetallicTextureGreen = true;
             _this._useMetallnessFromMetallicTextureBlue = true;
+            _this._forceMetallicWorkflow = true;
             return _this;
         }
         /**

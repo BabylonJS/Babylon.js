@@ -1017,7 +1017,14 @@ var BABYLON;
             this._haloCenter = new BABYLON.Vector3(0, 0, 0);
             this._padSensibilityUp = 0.65;
             this._padSensibilityDown = 0.35;
+            /**
+             * Observable raised when a new mesh is selected based on meshSelectionPredicate
+             */
             this.onNewMeshSelected = new BABYLON.Observable();
+            /**
+             * Observable raised when a new mesh is picked based on meshSelectionPredicate
+             */
+            this.onNewMeshPicked = new BABYLON.Observable();
             /**
              * Observable raised before camera teleportation
             */
@@ -1030,9 +1037,13 @@ var BABYLON;
             * Observable raised when current selected mesh gets unselected
             */
             this.onSelectedMeshUnselected = new BABYLON.Observable();
+            /**
+             * Set teleportation enabled. If set to false camera teleportation will be disabled but camera rotation will be kept.
+             */
+            this.teleportationEnabled = true;
             this._pointerDownOnMeshAsked = false;
             this._isActionableMesh = false;
-            this._teleportationEnabled = false;
+            this._teleportationInitialized = false;
             this._interactionsEnabled = false;
             this._interactionsRequested = false;
             this._displayGaze = true;
@@ -1072,7 +1083,7 @@ var BABYLON;
                 if (gamepad.type !== BABYLON.Gamepad.POSE_ENABLED) {
                     if (gamepad.leftStick) {
                         gamepad.onleftstickchanged(function (stickValues) {
-                            if (_this._teleportationEnabled) {
+                            if (_this._teleportationInitialized && _this.teleportationEnabled) {
                                 // Listening to classic/xbox gamepad only if no VR controller is active
                                 if ((!_this._leftLaserPointer && !_this._rightLaserPointer) ||
                                     ((_this._leftLaserPointer && !_this._leftLaserPointer.isVisible) &&
@@ -1085,7 +1096,7 @@ var BABYLON;
                     }
                     if (gamepad.rightStick) {
                         gamepad.onrightstickchanged(function (stickValues) {
-                            if (_this._teleportationEnabled) {
+                            if (_this._teleportationInitialized) {
                                 _this._checkRotate(stickValues);
                             }
                         });
@@ -1587,13 +1598,13 @@ var BABYLON;
                 }
                 this._createGazeTracker();
                 this.raySelectionPredicate = function (mesh) {
-                    return true;
+                    return mesh.isVisible;
                 };
                 this.meshSelectionPredicate = function (mesh) {
                     return true;
                 };
                 this._raySelectionPredicate = function (mesh) {
-                    if (_this._isTeleportationFloor(mesh) || (mesh.isVisible && mesh.name.indexOf("gazeTracker") === -1
+                    if (_this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
                         && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
@@ -1635,7 +1646,7 @@ var BABYLON;
         };
         VRExperienceHelper.prototype.enableTeleportation = function (vrTeleportationOptions) {
             if (vrTeleportationOptions === void 0) { vrTeleportationOptions = {}; }
-            if (!this._teleportationEnabled) {
+            if (!this._teleportationInitialized) {
                 this._teleportationRequested = true;
                 this.enableInteractions();
                 if (vrTeleportationOptions.floorMeshName) {
@@ -1659,7 +1670,7 @@ var BABYLON;
                 this._postProcessMove = new BABYLON.ImageProcessingPostProcess("postProcessMove", 1.0, this._webVRCamera, undefined, undefined, undefined, undefined, imageProcessingConfiguration);
                 this._webVRCamera.detachPostProcess(this._postProcessMove);
                 this._passProcessMove = new BABYLON.PassPostProcess("pass", 1.0, this._webVRCamera);
-                this._teleportationEnabled = true;
+                this._teleportationInitialized = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._createTeleportationCircles();
                 }
@@ -1880,8 +1891,10 @@ var BABYLON;
                     });
                 }
                 webVRController.onPadValuesChangedObservable.add(function (stateObject) {
-                    _this._checkTeleportBackwards(stateObject);
-                    _this._checkTeleportWithRay(stateObject, webVRController);
+                    if (_this.teleportationEnabled) {
+                        _this._checkTeleportBackwards(stateObject);
+                        _this._checkTeleportWithRay(stateObject, webVRController);
+                    }
                     _this._checkRotate(stateObject);
                 });
             }
@@ -1947,7 +1960,7 @@ var BABYLON;
             this._hideTeleportationTarget();
         };
         VRExperienceHelper.prototype._displayTeleportationTarget = function () {
-            if (this._teleportationEnabled) {
+            if (this._teleportationInitialized) {
                 this._teleportationTarget.isVisible = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._teleportationTarget.getChildren()[0].isVisible = true;
@@ -1955,7 +1968,7 @@ var BABYLON;
             }
         };
         VRExperienceHelper.prototype._hideTeleportationTarget = function () {
-            if (this._teleportationEnabled) {
+            if (this._teleportationInitialized) {
                 this._teleportationTarget.isVisible = false;
                 if (this._isDefaultTeleportationTarget) {
                     this._teleportationTarget.getChildren()[0].isVisible = false;
@@ -2209,7 +2222,7 @@ var BABYLON;
                     this._scene.simulatePointerMove(this._currentHit);
                 }
                 // The object selected is the floor, we're in a teleportation scenario
-                if (this._teleportationEnabled && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
+                if (this._teleportationInitialized && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
                     // Moving the teleportation area to this targetted point
                     this._moveTeleportationSelectorTo(hit);
                     return;
@@ -2219,6 +2232,7 @@ var BABYLON;
                 this._teleportationAllowed = false;
                 if (hit.pickedMesh !== this._currentMeshSelected) {
                     if (this.meshSelectionPredicate(hit.pickedMesh)) {
+                        this.onNewMeshPicked.notifyObservers(hit);
                         this._currentMeshSelected = hit.pickedMesh;
                         if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
                             this.changeGazeColor(new BABYLON.Color3(0, 0, 1));

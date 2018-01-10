@@ -1733,6 +1733,13 @@ var BABYLON;
             return this;
         };
         /**
+         * Divides the current Vector3 coordinates by the passed ones.
+         * Returns the updated Vector3.
+         */
+        Vector2.prototype.divideInPlace = function (otherVector) {
+            return this.divideToRef(otherVector, this);
+        };
+        /**
          * Returns a new Vector2 with current Vector2 negated coordinates.
          */
         Vector2.prototype.negate = function () {
@@ -2206,6 +2213,13 @@ var BABYLON;
             result.y = this.y / otherVector.y;
             result.z = this.z / otherVector.z;
             return this;
+        };
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.
+         * Returns the updated Vector3.
+         */
+        Vector3.prototype.divideInPlace = function (otherVector) {
+            return this.divideToRef(otherVector, this);
         };
         /**
          * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.
@@ -2935,6 +2949,13 @@ var BABYLON;
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
             return this;
+        };
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.
+         * Returns the updated Vector3.
+         */
+        Vector4.prototype.divideInPlace = function (otherVector) {
+            return this.divideToRef(otherVector, this);
         };
         /**
          * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones.
@@ -6426,10 +6447,11 @@ var BABYLON;
         /**
          * Remove a callback from the Observable object
          * @param callback the callback to remove. If it doesn't belong to this Observable, false will be returned.
+         * @param scope optional scope. If used only the callbacks with this scope will be removed.
         */
-        Observable.prototype.removeCallback = function (callback) {
+        Observable.prototype.removeCallback = function (callback, scope) {
             for (var index = 0; index < this._observers.length; index++) {
-                if (this._observers[index].callback === callback) {
+                if (this._observers[index].callback === callback && (!scope || scope === this._observers[index].scope)) {
                     this._observers.splice(index, 1);
                     return true;
                 }
@@ -15204,7 +15226,6 @@ var BABYLON;
             this.getScene().stopAnimation(this);
             // Remove from scene
             this.getScene().removeTransformNode(this);
-            this._cache = {};
             if (!doNotRecurse) {
                 // Children
                 var objects = this.getDescendants(true);
@@ -17704,6 +17725,10 @@ var BABYLON;
             _this.orthoRight = null;
             _this.orthoBottom = null;
             _this.orthoTop = null;
+            /**
+             * default : 0.8
+             * FOV is set in Radians.
+             */
             _this.fov = 0.8;
             _this.minZ = 1;
             _this.maxZ = 10000.0;
@@ -17711,7 +17736,15 @@ var BABYLON;
             _this.mode = Camera.PERSPECTIVE_CAMERA;
             _this.isIntermediate = false;
             _this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
+            /**
+            * Restricts the camera to viewing objects with the same layerMask.
+            * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
+            */
             _this.layerMask = 0x0FFFFFFF;
+            /**
+            * default : FOVMODE_VERTICAL_FIXED
+            * fovMode sets the camera frustum bounds to the viewport bounds.
+            */
             _this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
             // Camera rig members
             _this.cameraRigMode = Camera.RIG_MODE_NONE;
@@ -17755,6 +17788,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Camera, "FOVMODE_VERTICAL_FIXED", {
+            /**
+             * This is the default FOV mode for perspective cameras.
+             * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+             *
+             */
             get: function () {
                 return Camera._FOVMODE_VERTICAL_FIXED;
             },
@@ -17762,6 +17800,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
+            /**
+             * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+             *
+             */
             get: function () {
                 return Camera._FOVMODE_HORIZONTAL_FIXED;
             },
@@ -17972,7 +18014,7 @@ var BABYLON;
             for (var i = 0, len = this._rigCameras.length; i < len; i++) {
                 var cam = this._rigCameras[i];
                 var rigPostProcess = cam._rigPostProcess;
-                // for VR rig, there does not have to be a post process 
+                // for VR rig, there does not have to be a post process
                 if (rigPostProcess) {
                     var isPass = rigPostProcess instanceof BABYLON.PassPostProcess;
                     if (isPass) {
@@ -17999,7 +18041,7 @@ var BABYLON;
             else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
-            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return this._postProcesses.indexOf(postProcess);
         };
         Camera.prototype.detachPostProcess = function (postProcess) {
@@ -18232,7 +18274,7 @@ var BABYLON;
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
-            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
             //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
             this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
             this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
@@ -20769,6 +20811,34 @@ var BABYLON;
         };
         Scene.prototype.unregisterAfterRender = function (func) {
             this.onAfterRenderObservable.removeCallback(func);
+        };
+        Scene.prototype._executeOnceBeforeRender = function (func) {
+            var _this = this;
+            var execFunc = function () {
+                func();
+                setTimeout(function () {
+                    _this.unregisterBeforeRender(execFunc);
+                });
+            };
+            this.registerBeforeRender(execFunc);
+        };
+        /**
+         * The provided function will run before render once and will be disposed afterwards.
+         * A timeout delay can be provided so that the function will be executed in N ms.
+         * The timeout is using the browser's native setTimeout so time percision cannot be guaranteed.
+         * @param func The function to be executed.
+         * @param timeout optional delay in ms
+         */
+        Scene.prototype.executeOnceBeforeRender = function (func, timeout) {
+            var _this = this;
+            if (timeout !== undefined) {
+                setTimeout(function () {
+                    _this._executeOnceBeforeRender(func);
+                }, timeout);
+            }
+            else {
+                this._executeOnceBeforeRender(func);
+            }
         };
         Scene.prototype._addPendingData = function (data) {
             this._pendingData.push(data);
@@ -24553,12 +24623,18 @@ var BABYLON;
                     source._geometry.applyToMesh(_this);
                 }
                 // Deep copy
-                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
+                BABYLON.Tools.DeepCopy(source, _this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
+                // Metadata
+                if (source.metadata && source.metadata.clone) {
+                    _this.metadata = source.metadata.clone();
+                }
+                else {
+                    _this.metadata = source.metadata;
+                }
                 // Tags
                 if (BABYLON.Tags && BABYLON.Tags.HasTags(source)) {
                     BABYLON.Tags.AddTagsTo(_this, BABYLON.Tags.GetTags(source, true));
                 }
-                _this.metadata = source.metadata;
                 // Parent
                 _this.parent = source.parent;
                 // Pivot

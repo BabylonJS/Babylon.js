@@ -49,7 +49,7 @@ let packages = [
 //check if logged in
 console.log("Using npm user:");
 let loginCheck = shelljs.exec('npm whoami');
-console.log("No that I can check, but - did you forget to run gulp typescript-all?");
+console.log("Not that I can check, but - did you run gulp typescript-all?");
 if (loginCheck.code === 0) {
     prompt.start();
 
@@ -143,12 +143,12 @@ function processCore(package, version) {
 
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
 
-    console.log('Publishing ' + package.name + " from " + package.path);
+    console.log('Publishing ' + package.name + " from " + basePath + '/package/');
     //publish the respected package
     shelljs.exec('npm publish \"' + basePath + '/package/' + "\"");
 
     // remove package directory
-    fs.removeSync(basePath + '/package/');
+    //fs.removeSync(basePath + '/package/');
 
     // now update the main package.json
     packageJson.files = packageJson.files.map(file => {

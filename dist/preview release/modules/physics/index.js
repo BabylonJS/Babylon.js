@@ -1849,6 +1849,7 @@ var BABYLON;
             var center = impostor.getObjectCenter();
             //m.getAbsolutePosition().subtract(m.getBoundingInfo().boundingBox.centerWorld)
             this._tmpDeltaPosition.copyFrom(object.getAbsolutePivotPoint().subtract(center));
+            this._tmpDeltaPosition.divideInPlace(impostor.object.scaling);
             this._tmpPosition.copyFrom(center);
             var quaternion = object.rotationQuaternion;
             if (!quaternion) {
@@ -2168,7 +2169,8 @@ var BABYLON;
                     var extendSize = i.getObjectExtendSize();
                     if (i === impostor) {
                         var center = impostor.getObjectCenter();
-                        impostor.object.position.subtractToRef(center, _this._tmpPositionVector);
+                        impostor.object.getAbsolutePivotPoint().subtractToRef(center, _this._tmpPositionVector);
+                        _this._tmpPositionVector.divideInPlace(impostor.object.scaling);
                         //Can also use Array.prototype.push.apply
                         bodyConfig.pos.push(center.x);
                         bodyConfig.pos.push(center.y);
