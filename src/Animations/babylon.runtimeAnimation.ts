@@ -75,6 +75,10 @@
 
                     var startKey = keys[key];
                     var startValue = this._getKeyValue(startKey.value);
+                    if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
+                        return startValue;
+                    }
+
                     var endValue = this._getKeyValue(endKey.value);
 
                     var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
