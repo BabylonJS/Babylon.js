@@ -10,6 +10,10 @@ module BABYLON.GLTF2 {
 
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { return false; }
 
+        protected _loadRoot(loader: GLTFLoader, context: string, root: IGLTF): boolean { return false; }
+
+        protected _loadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean { return false; }
+
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
 
         protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean {
@@ -41,6 +45,14 @@ module BABYLON.GLTF2 {
 
         public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
             return this._ApplyExtensions(extension => extension._traverseNode(loader, context, node, action, parentNode));
+        }
+
+        public static LoadRoot(loader: GLTFLoader, context: string, root: IGLTF): boolean {
+            return this._ApplyExtensions(extension => extension._loadRoot(loader, context, root));
+        }
+
+        public static LoadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean {
+            return this._ApplyExtensions(extension => extension._loadScene(loader, context, scene));
         }
 
         public static LoadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean {
