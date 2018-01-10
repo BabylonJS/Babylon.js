@@ -4,6 +4,7 @@ module BABYLON {
         VIVE,
         OCULUS,
         WINDOWS,
+        GEAR_VR,
         GENERIC
     }
 
@@ -32,6 +33,10 @@ module BABYLON {
             // HTC Vive
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new ViveController(vrGamepad);
+            }
+            // Samsung/Oculus Gear VR
+            else if (vrGamepad.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0) {
+                return new GearVRController(vrGamepad);
             }
             // Generic 
             else {
