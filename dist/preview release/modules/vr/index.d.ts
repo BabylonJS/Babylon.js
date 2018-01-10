@@ -348,7 +348,14 @@ declare module 'babylonjs/vr' {
         private _leftLaserPointer;
         private _rightLaserPointer;
         private _currentMeshSelected;
+        /**
+         * Observable raised when a new mesh is selected based on meshSelectionPredicate
+         */
         onNewMeshSelected: Observable<AbstractMesh>;
+        /**
+         * Observable raised when a new mesh is picked based on meshSelectionPredicate
+         */
+        onNewMeshPicked: Observable<PickingInfo>;
         private _circleEase;
         /**
          * Observable raised before camera teleportation
@@ -371,11 +378,15 @@ declare module 'babylonjs/vr' {
          * To be optionaly changed by user to define custom selection logic (after ray selection)
          */
         meshSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        /**
+         * Set teleportation enabled. If set to false camera teleportation will be disabled but camera rotation will be kept.
+         */
+        teleportationEnabled: boolean;
         private _currentHit;
         private _pointerDownOnMeshAsked;
         private _isActionableMesh;
         private _defaultHeight;
-        private _teleportationEnabled;
+        private _teleportationInitialized;
         private _interactionsEnabled;
         private _interactionsRequested;
         private _displayGaze;
@@ -449,65 +460,65 @@ import {EffectFallbacks,EffectCreationOptions,Effect,Nullable,float,double,int,F
 import {EngineInstrumentation,SceneInstrumentation,_TimeToken} from 'babylonjs/instrumentation';
 import {Particle,IParticleSystem,ParticleSystem,BoxParticleEmitter,ConeParticleEmitter,SphereParticleEmitter,SphereDirectedParticleEmitter,IParticleEmitterType} from 'babylonjs/particles';
 import {GPUParticleSystem} from 'babylonjs/gpuParticles';
-import {NullEngineOptions,NullEngine} from 'babylonjs/nullEngine';
 import {FramingBehavior,BouncingBehavior,AutoRotationBehavior} from 'babylonjs/cameraBehaviors';
+import {NullEngineOptions,NullEngine} from 'babylonjs/nullEngine';
 import {TextureTools} from 'babylonjs/textureTools';
+import {SolidParticle,ModelShape,DepthSortedParticle,SolidParticleSystem} from 'babylonjs/solidParticles';
 import {Collider,CollisionWorker,ICollisionCoordinator,SerializedMesh,SerializedSubMesh,SerializedGeometry,BabylonMessage,SerializedColliderToWorker,WorkerTaskType,WorkerReply,CollisionReplyPayload,InitPayload,CollidePayload,UpdatePayload,WorkerReplyType,CollisionCoordinatorWorker,CollisionCoordinatorLegacy} from 'babylonjs/collisions';
 import {IntersectionInfo,PickingInfo,Ray} from 'babylonjs/picking';
-import {SolidParticle,ModelShape,DepthSortedParticle,SolidParticleSystem} from 'babylonjs/solidParticles';
-import {AnimationRange,AnimationEvent,PathCursor,Animation,TargetedAnimation,AnimationGroup,RuntimeAnimation,Animatable,IEasingFunction,EasingFunction,CircleEase,BackEase,BounceEase,CubicEase,ElasticEase,ExponentialEase,PowerEase,QuadraticEase,QuarticEase,QuinticEase,SineEase,BezierCurveEase} from 'babylonjs/animations';
 import {SpriteManager,Sprite} from 'babylonjs/sprites';
+import {AnimationRange,AnimationEvent,PathCursor,Animation,TargetedAnimation,AnimationGroup,RuntimeAnimation,Animatable,IEasingFunction,EasingFunction,CircleEase,BackEase,BounceEase,CubicEase,ElasticEase,ExponentialEase,PowerEase,QuadraticEase,QuarticEase,QuinticEase,SineEase,BezierCurveEase} from 'babylonjs/animations';
 import {Condition,ValueCondition,PredicateCondition,StateCondition,Action,ActionEvent,ActionManager,InterpolateValueAction,SwitchBooleanAction,SetStateAction,SetValueAction,IncrementValueAction,PlayAnimationAction,StopAnimationAction,DoNothingAction,CombineAction,ExecuteCodeAction,SetParentAction,PlaySoundAction,StopSoundAction} from 'babylonjs/actions';
 import {GroundMesh,InstancedMesh,LinesMesh} from 'babylonjs/additionalMeshes';
 import {ShaderMaterial} from 'babylonjs/shaderMaterial';
 import {MeshBuilder} from 'babylonjs/meshBuilder';
 import {PBRBaseMaterial,PBRBaseSimpleMaterial,PBRMaterial,PBRMetallicRoughnessMaterial,PBRSpecularGlossinessMaterial} from 'babylonjs/pbrMaterial';
 import {CameraInputTypes,ICameraInput,CameraInputsMap,CameraInputsManager,TargetCamera} from 'babylonjs/targetCamera';
-import {FreeCameraMouseInput,FreeCameraKeyboardMoveInput,FreeCameraInputsManager,FreeCamera} from 'babylonjs/freeCamera';
 import {ArcRotateCameraKeyboardMoveInput,ArcRotateCameraMouseWheelInput,ArcRotateCameraPointersInput,ArcRotateCameraInputsManager,ArcRotateCamera} from 'babylonjs/arcRotateCamera';
+import {FreeCameraMouseInput,FreeCameraKeyboardMoveInput,FreeCameraInputsManager,FreeCamera} from 'babylonjs/freeCamera';
 import {HemisphericLight} from 'babylonjs/hemisphericLight';
 import {IShadowLight,ShadowLight,PointLight} from 'babylonjs/pointLight';
 import {DirectionalLight} from 'babylonjs/directionalLight';
 import {SpotLight} from 'babylonjs/spotLight';
-import {AudioEngine,Sound,SoundTrack,Analyser} from 'babylonjs/audio';
 import {CubeTexture,RenderTargetTexture,IMultiRenderTargetOptions,MultiRenderTarget,MirrorTexture,RefractionTexture,DynamicTexture,VideoTexture,RawTexture} from 'babylonjs/additionalTextures';
-import {IShadowGenerator,ShadowGenerator} from 'babylonjs/shadows';
+import {AudioEngine,Sound,SoundTrack,Analyser} from 'babylonjs/audio';
 import {ILoadingScreen,DefaultLoadingScreen,SceneLoaderProgressEvent,ISceneLoaderPluginExtensions,ISceneLoaderPluginFactory,ISceneLoaderPlugin,ISceneLoaderPluginAsync,SceneLoader,FilesInput} from 'babylonjs/loader';
-import {Tags,AndOrNotEvaluator} from 'babylonjs/userData';
+import {IShadowGenerator,ShadowGenerator} from 'babylonjs/shadows';
 import {StringDictionary} from 'babylonjs/stringDictionary';
-import {Database} from 'babylonjs/offline';
-import {MultiMaterial} from 'babylonjs/multiMaterial';
-import {FreeCameraTouchInput,TouchCamera} from 'babylonjs/touchCamera';
+import {Tags,AndOrNotEvaluator} from 'babylonjs/userData';
 import {FresnelParameters} from 'babylonjs/fresnel';
+import {MultiMaterial} from 'babylonjs/multiMaterial';
+import {Database} from 'babylonjs/offline';
+import {FreeCameraTouchInput,TouchCamera} from 'babylonjs/touchCamera';
 import {ProceduralTexture,CustomProceduralTexture} from 'babylonjs/procedural';
 import {FreeCameraGamepadInput,ArcRotateCameraGamepadInput,GamepadManager,StickValues,GamepadButtonChanges,Gamepad,GenericPad,Xbox360Button,Xbox360Dpad,Xbox360Pad,PoseEnabledControllerType,MutableGamepadButton,ExtendedGamepadButton,PoseEnabledControllerHelper,PoseEnabledController,WebVRController,OculusTouchController,ViveController,GenericController,WindowsMotionController} from 'babylonjs/gamepad';
 import {FollowCamera,ArcFollowCamera,UniversalCamera,GamepadCamera} from 'babylonjs/additionalCameras';
-import {GeometryBufferRenderer} from 'babylonjs/geometryBufferRenderer';
 import {DepthRenderer} from 'babylonjs/depthRenderer';
+import {GeometryBufferRenderer} from 'babylonjs/geometryBufferRenderer';
 import {PostProcessOptions,PostProcess,PassPostProcess} from 'babylonjs/postProcesses';
+import {BlurPostProcess} from 'babylonjs/additionalPostProcess_blur';
 import {FxaaPostProcess} from 'babylonjs/additionalPostProcess_fxaa';
 import {HighlightsPostProcess} from 'babylonjs/additionalPostProcess_highlights';
-import {BlurPostProcess} from 'babylonjs/additionalPostProcess_blur';
 import {RefractionPostProcess,BlackAndWhitePostProcess,ConvolutionPostProcess,FilterPostProcess,VolumetricLightScatteringPostProcess,ColorCorrectionPostProcess,TonemappingOperator,TonemapPostProcess,DisplayPassPostProcess,ImageProcessingPostProcess} from 'babylonjs/additionalPostProcesses';
 import {PostProcessRenderPipelineManager,PostProcessRenderPass,PostProcessRenderEffect,PostProcessRenderPipeline} from 'babylonjs/renderingPipeline';
 import {SSAORenderingPipeline,SSAO2RenderingPipeline,LensRenderingPipeline,StandardRenderingPipeline} from 'babylonjs/additionalRenderingPipeline';
-import {Bone,BoneIKController,BoneLookController,Skeleton} from 'babylonjs/bones';
 import {DefaultRenderingPipeline} from 'babylonjs/defaultRenderingPipeline';
+import {Bone,BoneIKController,BoneLookController,Skeleton} from 'babylonjs/bones';
 import {SphericalPolynomial,SphericalHarmonics,CubeMapToSphericalPolynomialTools,CubeMapInfo,PanoramaToCubeMapTools,HDRInfo,HDRTools,HDRCubeTexture} from 'babylonjs/hdr';
 import {CSG} from 'babylonjs/csg';
 import {Polygon,PolygonMeshBuilder} from 'babylonjs/polygonMesh';
-import {PhysicsJointData,PhysicsJoint,DistanceJoint,MotorEnabledJoint,HingeJoint,Hinge2Joint,IMotorEnabledJoint,DistanceJointData,SpringJointData,PhysicsImpostorParameters,IPhysicsEnabledObject,PhysicsImpostor,PhysicsImpostorJoint,PhysicsEngine,IPhysicsEnginePlugin,PhysicsHelper,PhysicsRadialExplosionEvent,PhysicsGravitationalFieldEvent,PhysicsUpdraftEvent,PhysicsVortexEvent,PhysicsRadialImpulseFalloff,PhysicsUpdraftMode,PhysicsForceAndContactPoint,PhysicsRadialExplosionEventData,PhysicsGravitationalFieldEventData,PhysicsUpdraftEventData,PhysicsVortexEventData,CannonJSPlugin,OimoJSPlugin} from 'babylonjs/physics';
 import {LensFlare,LensFlareSystem} from 'babylonjs/lensFlares';
+import {PhysicsJointData,PhysicsJoint,DistanceJoint,MotorEnabledJoint,HingeJoint,Hinge2Joint,IMotorEnabledJoint,DistanceJointData,SpringJointData,PhysicsImpostorParameters,IPhysicsEnabledObject,PhysicsImpostor,PhysicsImpostorJoint,PhysicsEngine,IPhysicsEnginePlugin,PhysicsHelper,PhysicsRadialExplosionEvent,PhysicsGravitationalFieldEvent,PhysicsUpdraftEvent,PhysicsVortexEvent,PhysicsRadialImpulseFalloff,PhysicsUpdraftMode,PhysicsForceAndContactPoint,PhysicsRadialExplosionEventData,PhysicsGravitationalFieldEventData,PhysicsUpdraftEventData,PhysicsVortexEventData,CannonJSPlugin,OimoJSPlugin} from 'babylonjs/physics';
 import {TGATools,DDSInfo,DDSTools,KhronosTextureContainer} from 'babylonjs/textureFormats';
-import {RayHelper,DebugLayer,BoundingBoxRenderer} from 'babylonjs/debug';
-import {IOctreeContainer,Octree,OctreeBlock} from 'babylonjs/octrees';
+import {Debug,RayHelper,DebugLayer,BoundingBoxRenderer} from 'babylonjs/debug';
 import {MorphTarget,MorphTargetManager} from 'babylonjs/morphTargets';
+import {IOctreeContainer,Octree,OctreeBlock} from 'babylonjs/octrees';
 import {SIMDHelper} from 'babylonjs/simd';
 import {JoystickAxis,VirtualJoystick,VirtualJoysticksCamera,FreeCameraVirtualJoystickInput} from 'babylonjs/virtualJoystick';
 import {ISimplifier,ISimplificationSettings,SimplificationSettings,ISimplificationTask,SimplificationQueue,SimplificationType,DecimationTriangle,DecimationVertex,QuadraticMatrix,Reference,QuadraticErrorSimplification,MeshLODLevel,SceneOptimization,TextureOptimization,HardwareScalingOptimization,ShadowsOptimization,PostProcessesOptimization,LensFlaresOptimization,ParticlesOptimization,RenderTargetsOptimization,MergeMeshesOptimization,SceneOptimizerOptions,SceneOptimizer} from 'babylonjs/optimizations';
 import {OutlineRenderer,EdgesRenderer,IHighlightLayerOptions,HighlightLayer} from 'babylonjs/highlights';
-import {AssetTaskState,AbstractAssetTask,IAssetsProgressEvent,AssetsProgressEvent,MeshAssetTask,TextFileAssetTask,BinaryFileAssetTask,ImageAssetTask,ITextureAssetTask,TextureAssetTask,CubeTextureAssetTask,HDRCubeTextureAssetTask,AssetsManager} from 'babylonjs/assetsManager';
 import {SceneSerializer} from 'babylonjs/serialization';
+import {AssetTaskState,AbstractAssetTask,IAssetsProgressEvent,AssetsProgressEvent,MeshAssetTask,TextFileAssetTask,BinaryFileAssetTask,ImageAssetTask,ITextureAssetTask,TextureAssetTask,CubeTextureAssetTask,HDRCubeTextureAssetTask,AssetsManager} from 'babylonjs/assetsManager';
 import {ReflectionProbe} from 'babylonjs/probes';
 import {BackgroundMaterial} from 'babylonjs/backgroundMaterial';
 import {Layer} from 'babylonjs/layer';
