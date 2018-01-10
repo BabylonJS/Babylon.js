@@ -17725,6 +17725,10 @@ var BABYLON;
             _this.orthoRight = null;
             _this.orthoBottom = null;
             _this.orthoTop = null;
+            /**
+             * default : 0.8
+             * FOV is set in Radians.
+             */
             _this.fov = 0.8;
             _this.minZ = 1;
             _this.maxZ = 10000.0;
@@ -17732,7 +17736,15 @@ var BABYLON;
             _this.mode = Camera.PERSPECTIVE_CAMERA;
             _this.isIntermediate = false;
             _this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
+            /**
+            * Restricts the camera to viewing objects with the same layerMask.
+            * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
+            */
             _this.layerMask = 0x0FFFFFFF;
+            /**
+            * default : FOVMODE_VERTICAL_FIXED
+            * fovMode sets the camera frustum bounds to the viewport bounds.
+            */
             _this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
             // Camera rig members
             _this.cameraRigMode = Camera.RIG_MODE_NONE;
@@ -17776,6 +17788,11 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Camera, "FOVMODE_VERTICAL_FIXED", {
+            /**
+             * This is the default FOV mode for perspective cameras.
+             * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+             *
+             */
             get: function () {
                 return Camera._FOVMODE_VERTICAL_FIXED;
             },
@@ -17783,6 +17800,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(Camera, "FOVMODE_HORIZONTAL_FIXED", {
+            /**
+             * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+             *
+             */
             get: function () {
                 return Camera._FOVMODE_HORIZONTAL_FIXED;
             },
@@ -17993,7 +18014,7 @@ var BABYLON;
             for (var i = 0, len = this._rigCameras.length; i < len; i++) {
                 var cam = this._rigCameras[i];
                 var rigPostProcess = cam._rigPostProcess;
-                // for VR rig, there does not have to be a post process 
+                // for VR rig, there does not have to be a post process
                 if (rigPostProcess) {
                     var isPass = rigPostProcess instanceof BABYLON.PassPostProcess;
                     if (isPass) {
@@ -18020,7 +18041,7 @@ var BABYLON;
             else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
-            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return this._postProcesses.indexOf(postProcess);
         };
         Camera.prototype.detachPostProcess = function (postProcess) {
@@ -18253,7 +18274,7 @@ var BABYLON;
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
-            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
             //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
             this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
             this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
@@ -58326,7 +58347,8 @@ var BABYLON;
         PoseEnabledControllerType[PoseEnabledControllerType["VIVE"] = 0] = "VIVE";
         PoseEnabledControllerType[PoseEnabledControllerType["OCULUS"] = 1] = "OCULUS";
         PoseEnabledControllerType[PoseEnabledControllerType["WINDOWS"] = 2] = "WINDOWS";
-        PoseEnabledControllerType[PoseEnabledControllerType["GENERIC"] = 3] = "GENERIC";
+        PoseEnabledControllerType[PoseEnabledControllerType["GEAR_VR"] = 3] = "GEAR_VR";
+        PoseEnabledControllerType[PoseEnabledControllerType["GENERIC"] = 4] = "GENERIC";
     })(PoseEnabledControllerType = BABYLON.PoseEnabledControllerType || (BABYLON.PoseEnabledControllerType = {}));
     var PoseEnabledControllerHelper = /** @class */ (function () {
         function PoseEnabledControllerHelper() {
@@ -58341,6 +58363,9 @@ var BABYLON;
             }
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new BABYLON.ViveController(vrGamepad);
+            }
+            else if (vrGamepad.id.indexOf(BABYLON.GearVRController.GAMEPAD_ID_PREFIX) === 0) {
+                return new BABYLON.GearVRController(vrGamepad);
             }
             else {
                 return new BABYLON.GenericController(vrGamepad);
@@ -59198,6 +59223,50 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.windowsMotionController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var GearVRController = /** @class */ (function (_super) {
+        __extends(GearVRController, _super);
+        function GearVRController(vrGamepad) {
+            var _this = _super.call(this, vrGamepad) || this;
+            _this._buttonIndexToObservableNameMap = [
+                'onTrackpadChangedObservable',
+                'onTriggerStateChangedObservable' // Trigger
+            ];
+            _this.controllerType = BABYLON.PoseEnabledControllerType.GEAR_VR;
+            return _this;
+        }
+        GearVRController.prototype.initControllerMesh = function (scene, meshLoaded) {
+            var _this = this;
+            BABYLON.SceneLoader.ImportMesh("", GearVRController.MODEL_BASE_URL, GearVRController.MODEL_FILENAME, scene, function (newMeshes) {
+                _this._defaultModel = newMeshes[1];
+                _this.attachToMesh(_this._defaultModel);
+                if (meshLoaded) {
+                    meshLoaded(_this._defaultModel);
+                }
+            });
+        };
+        GearVRController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
+            if (buttonIdx < this._buttonIndexToObservableNameMap.length) {
+                var observableName = this._buttonIndexToObservableNameMap[buttonIdx];
+                // Only emit events for buttons that we know how to map from index to observable
+                var observable = this[observableName];
+                if (observable) {
+                    observable.notifyObservers(state);
+                }
+            }
+        };
+        GearVRController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/generic/';
+        GearVRController.MODEL_FILENAME = 'generic.babylon';
+        GearVRController.GAMEPAD_ID_PREFIX = 'Gear VR'; // id is 'Gear VR Controller'
+        return GearVRController;
+    }(BABYLON.WebVRController));
+    BABYLON.GearVRController = GearVRController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.gearVRController.js.map
 
 
 

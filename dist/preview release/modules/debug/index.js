@@ -23,6 +23,384 @@ var BABYLON3 = require('babylonjs/stringDictionary');
 if(BABYLON !== BABYLON3) __extends(BABYLON, BABYLON3);
 var BABYLON4 = require('babylonjs/actions');
 if(BABYLON !== BABYLON4) __extends(BABYLON, BABYLON4);
+
+var BABYLON;
+(function (BABYLON) {
+    var Debug = /** @class */ (function () {
+        function Debug() {
+        }
+        Debug.AxesViewer = /** @class */ (function () {
+            function AxesViewer(scene, scaleLines) {
+                if (scaleLines === void 0) { scaleLines = 1; }
+                this._xline = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+                this._yline = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+                this._zline = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+                this.scaleLines = 1;
+                this.scaleLines = scaleLines;
+                this._xmesh = BABYLON.Mesh.CreateLines("xline", this._xline, scene, true);
+                this._ymesh = BABYLON.Mesh.CreateLines("yline", this._yline, scene, true);
+                this._zmesh = BABYLON.Mesh.CreateLines("zline", this._zline, scene, true);
+                this._xmesh.renderingGroupId = 2;
+                this._ymesh.renderingGroupId = 2;
+                this._zmesh.renderingGroupId = 2;
+                this._xmesh.material.checkReadyOnlyOnce = true;
+                this._xmesh.color = new BABYLON.Color3(1, 0, 0);
+                this._ymesh.material.checkReadyOnlyOnce = true;
+                this._ymesh.color = new BABYLON.Color3(0, 1, 0);
+                this._zmesh.material.checkReadyOnlyOnce = true;
+                this._zmesh.color = new BABYLON.Color3(0, 0, 1);
+                this.scene = scene;
+            }
+            AxesViewer.prototype.update = function (position, xaxis, yaxis, zaxis) {
+                var scaleLines = this.scaleLines;
+                if (this._xmesh) {
+                    this._xmesh.position.copyFrom(position);
+                }
+                if (this._ymesh) {
+                    this._ymesh.position.copyFrom(position);
+                }
+                if (this._zmesh) {
+                    this._zmesh.position.copyFrom(position);
+                }
+                var point2 = this._xline[1];
+                point2.x = xaxis.x * scaleLines;
+                point2.y = xaxis.y * scaleLines;
+                point2.z = xaxis.z * scaleLines;
+                BABYLON.Mesh.CreateLines("", this._xline, null, false, this._xmesh);
+                point2 = this._yline[1];
+                point2.x = yaxis.x * scaleLines;
+                point2.y = yaxis.y * scaleLines;
+                point2.z = yaxis.z * scaleLines;
+                BABYLON.Mesh.CreateLines("", this._yline, null, false, this._ymesh);
+                point2 = this._zline[1];
+                point2.x = zaxis.x * scaleLines;
+                point2.y = zaxis.y * scaleLines;
+                point2.z = zaxis.z * scaleLines;
+                BABYLON.Mesh.CreateLines("", this._zline, null, false, this._zmesh);
+            };
+            AxesViewer.prototype.dispose = function () {
+                if (this._xmesh) {
+                    this._xmesh.dispose();
+                }
+                if (this._ymesh) {
+                    this._ymesh.dispose();
+                }
+                if (this._zmesh) {
+                    this._zmesh.dispose();
+                }
+                this._xmesh = null;
+                this._ymesh = null;
+                this._zmesh = null;
+                this.scene = null;
+            };
+            return AxesViewer;
+        }());
+        Debug.BoneAxesViewer = /** @class */ (function (_super) {
+            __extends(BoneAxesViewer, _super);
+            function BoneAxesViewer(scene, bone, mesh, scaleLines) {
+                if (scaleLines === void 0) { scaleLines = 1; }
+                var _this = _super.call(this, scene, scaleLines) || this;
+                _this.pos = BABYLON.Vector3.Zero();
+                _this.xaxis = BABYLON.Vector3.Zero();
+                _this.yaxis = BABYLON.Vector3.Zero();
+                _this.zaxis = BABYLON.Vector3.Zero();
+                _this.mesh = mesh;
+                _this.bone = bone;
+                return _this;
+            }
+            BoneAxesViewer.prototype.update = function () {
+                if (!this.mesh || !this.bone) {
+                    return;
+                }
+                var bone = this.bone;
+                bone.getAbsolutePositionToRef(this.mesh, this.pos);
+                bone.getDirectionToRef(BABYLON.Axis.X, this.mesh, this.xaxis);
+                bone.getDirectionToRef(BABYLON.Axis.Y, this.mesh, this.yaxis);
+                bone.getDirectionToRef(BABYLON.Axis.Z, this.mesh, this.zaxis);
+                _super.prototype.update.call(this, this.pos, this.xaxis, this.yaxis, this.zaxis);
+            };
+            BoneAxesViewer.prototype.dispose = function () {
+                if (this.mesh) {
+                    this.mesh = null;
+                    this.bone = null;
+                    _super.prototype.dispose.call(this);
+                }
+            };
+            return BoneAxesViewer;
+        }(Debug.AxesViewer));
+        Debug.PhysicsViewer = /** @class */ (function () {
+            function PhysicsViewer(scene) {
+                this._impostors = [];
+                this._meshes = [];
+                this._numMeshes = 0;
+                this._scene = scene || BABYLON.Engine.LastCreatedScene;
+                var physicEngine = this._scene.getPhysicsEngine();
+                if (physicEngine) {
+                    this._physicsEnginePlugin = physicEngine.getPhysicsPlugin();
+                }
+            }
+            PhysicsViewer.prototype._updateDebugMeshes = function () {
+                var plugin = this._physicsEnginePlugin;
+                for (var i = 0; i < this._numMeshes; i++) {
+                    var impostor = this._impostors[i];
+                    if (!impostor) {
+                        continue;
+                    }
+                    if (impostor.isDisposed) {
+                        this.hideImpostor(this._impostors[i--]);
+                    }
+                    else {
+                        var mesh = this._meshes[i];
+                        if (mesh && plugin) {
+                            plugin.syncMeshWithImpostor(mesh, impostor);
+                        }
+                    }
+                }
+            };
+            PhysicsViewer.prototype.showImpostor = function (impostor) {
+                if (!this._scene) {
+                    return;
+                }
+                for (var i = 0; i < this._numMeshes; i++) {
+                    if (this._impostors[i] == impostor) {
+                        return;
+                    }
+                }
+                var debugMesh = this._getDebugMesh(impostor, this._scene);
+                if (debugMesh) {
+                    this._impostors[this._numMeshes] = impostor;
+                    this._meshes[this._numMeshes] = debugMesh;
+                    if (this._numMeshes === 0) {
+                        this._renderFunction = this._updateDebugMeshes.bind(this);
+                        this._scene.registerBeforeRender(this._renderFunction);
+                    }
+                    this._numMeshes++;
+                }
+            };
+            PhysicsViewer.prototype.hideImpostor = function (impostor) {
+                if (!impostor || !this._scene) {
+                    return;
+                }
+                var removed = false;
+                for (var i = 0; i < this._numMeshes; i++) {
+                    if (this._impostors[i] == impostor) {
+                        var mesh = this._meshes[i];
+                        if (!mesh) {
+                            continue;
+                        }
+                        this._scene.removeMesh(mesh);
+                        mesh.dispose();
+                        this._numMeshes--;
+                        if (this._numMeshes > 0) {
+                            this._meshes[i] = this._meshes[this._numMeshes];
+                            this._impostors[i] = this._impostors[this._numMeshes];
+                            this._meshes[this._numMeshes] = null;
+                            this._impostors[this._numMeshes] = null;
+                        }
+                        else {
+                            this._meshes[0] = null;
+                            this._impostors[0] = null;
+                        }
+                        removed = true;
+                        break;
+                    }
+                }
+                if (removed && this._numMeshes === 0) {
+                    this._scene.unregisterBeforeRender(this._renderFunction);
+                }
+            };
+            PhysicsViewer.prototype._getDebugMaterial = function (scene) {
+                if (!this._debugMaterial) {
+                    this._debugMaterial = new BABYLON.StandardMaterial('', scene);
+                    this._debugMaterial.wireframe = true;
+                }
+                return this._debugMaterial;
+            };
+            PhysicsViewer.prototype._getDebugBoxMesh = function (scene) {
+                if (!this._debugBoxMesh) {
+                    this._debugBoxMesh = BABYLON.MeshBuilder.CreateBox('physicsBodyBoxViewMesh', { size: 1 }, scene);
+                    this._debugBoxMesh.renderingGroupId = 1;
+                    this._debugBoxMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                    this._debugBoxMesh.material = this._getDebugMaterial(scene);
+                    scene.removeMesh(this._debugBoxMesh);
+                }
+                return this._debugBoxMesh.createInstance('physicsBodyBoxViewInstance');
+            };
+            PhysicsViewer.prototype._getDebugSphereMesh = function (scene) {
+                if (!this._debugSphereMesh) {
+                    this._debugSphereMesh = BABYLON.MeshBuilder.CreateSphere('physicsBodySphereViewMesh', { diameter: 1 }, scene);
+                    this._debugSphereMesh.renderingGroupId = 1;
+                    this._debugSphereMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
+                    this._debugSphereMesh.material = this._getDebugMaterial(scene);
+                    scene.removeMesh(this._debugSphereMesh);
+                }
+                return this._debugSphereMesh.createInstance('physicsBodyBoxViewInstance');
+            };
+            PhysicsViewer.prototype._getDebugMesh = function (impostor, scene) {
+                var mesh = null;
+                if (impostor.type == BABYLON.PhysicsImpostor.BoxImpostor) {
+                    mesh = this._getDebugBoxMesh(scene);
+                    impostor.getBoxSizeToRef(mesh.scaling);
+                }
+                else if (impostor.type == BABYLON.PhysicsImpostor.SphereImpostor) {
+                    mesh = this._getDebugSphereMesh(scene);
+                    var radius = impostor.getRadius();
+                    mesh.scaling.x = radius * 2;
+                    mesh.scaling.y = radius * 2;
+                    mesh.scaling.z = radius * 2;
+                }
+                return mesh;
+            };
+            PhysicsViewer.prototype.dispose = function () {
+                for (var i = 0; i < this._numMeshes; i++) {
+                    this.hideImpostor(this._impostors[i]);
+                }
+                if (this._debugBoxMesh) {
+                    this._debugBoxMesh.dispose();
+                }
+                if (this._debugSphereMesh) {
+                    this._debugSphereMesh.dispose();
+                }
+                if (this._debugMaterial) {
+                    this._debugMaterial.dispose();
+                }
+                this._impostors.length = 0;
+                this._scene = null;
+                this._physicsEnginePlugin = null;
+            };
+            return PhysicsViewer;
+        }());
+        Debug.SkeletonViewer = /** @class */ (function () {
+            function SkeletonViewer(skeleton, mesh, scene, autoUpdateBonesMatrices, renderingGroupId) {
+                if (autoUpdateBonesMatrices === void 0) { autoUpdateBonesMatrices = true; }
+                if (renderingGroupId === void 0) { renderingGroupId = 1; }
+                this.skeleton = skeleton;
+                this.mesh = mesh;
+                this.autoUpdateBonesMatrices = autoUpdateBonesMatrices;
+                this.renderingGroupId = renderingGroupId;
+                this.color = BABYLON.Color3.White();
+                this._debugLines = new Array();
+                this._isEnabled = false;
+                this._scene = scene;
+                this.update();
+                this._renderFunction = this.update.bind(this);
+            }
+            Object.defineProperty(SkeletonViewer.prototype, "isEnabled", {
+                get: function () {
+                    return this._isEnabled;
+                },
+                set: function (value) {
+                    if (this._isEnabled === value) {
+                        return;
+                    }
+                    this._isEnabled = value;
+                    if (value) {
+                        this._scene.registerBeforeRender(this._renderFunction);
+                    }
+                    else {
+                        this._scene.unregisterBeforeRender(this._renderFunction);
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            SkeletonViewer.prototype._getBonePosition = function (position, bone, meshMat, x, y, z) {
+                if (x === void 0) { x = 0; }
+                if (y === void 0) { y = 0; }
+                if (z === void 0) { z = 0; }
+                var tmat = BABYLON.Tmp.Matrix[0];
+                var parentBone = bone.getParent();
+                tmat.copyFrom(bone.getLocalMatrix());
+                if (x !== 0 || y !== 0 || z !== 0) {
+                    var tmat2 = BABYLON.Tmp.Matrix[1];
+                    BABYLON.Matrix.IdentityToRef(tmat2);
+                    tmat2.m[12] = x;
+                    tmat2.m[13] = y;
+                    tmat2.m[14] = z;
+                    tmat2.multiplyToRef(tmat, tmat);
+                }
+                if (parentBone) {
+                    tmat.multiplyToRef(parentBone.getAbsoluteTransform(), tmat);
+                }
+                tmat.multiplyToRef(meshMat, tmat);
+                position.x = tmat.m[12];
+                position.y = tmat.m[13];
+                position.z = tmat.m[14];
+            };
+            SkeletonViewer.prototype._getLinesForBonesWithLength = function (bones, meshMat) {
+                var len = bones.length;
+                var meshPos = this.mesh.position;
+                for (var i = 0; i < len; i++) {
+                    var bone = bones[i];
+                    var points = this._debugLines[i];
+                    if (!points) {
+                        points = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+                        this._debugLines[i] = points;
+                    }
+                    this._getBonePosition(points[0], bone, meshMat);
+                    this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
+                }
+            };
+            SkeletonViewer.prototype._getLinesForBonesNoLength = function (bones, meshMat) {
+                var len = bones.length;
+                var boneNum = 0;
+                var meshPos = this.mesh.position;
+                for (var i = len - 1; i >= 0; i--) {
+                    var childBone = bones[i];
+                    var parentBone = childBone.getParent();
+                    if (!parentBone) {
+                        continue;
+                    }
+                    var points = this._debugLines[boneNum];
+                    if (!points) {
+                        points = [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()];
+                        this._debugLines[boneNum] = points;
+                    }
+                    childBone.getAbsolutePositionToRef(this.mesh, points[0]);
+                    parentBone.getAbsolutePositionToRef(this.mesh, points[1]);
+                    points[0].subtractInPlace(meshPos);
+                    points[1].subtractInPlace(meshPos);
+                    boneNum++;
+                }
+            };
+            SkeletonViewer.prototype.update = function () {
+                if (this.autoUpdateBonesMatrices) {
+                    this.skeleton.computeAbsoluteTransforms();
+                }
+                if (this.skeleton.bones[0].length === undefined) {
+                    this._getLinesForBonesNoLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+                }
+                else {
+                    this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+                }
+                if (!this._debugMesh) {
+                    this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, this._scene);
+                    this._debugMesh.renderingGroupId = this.renderingGroupId;
+                }
+                else {
+                    BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
+                }
+                this._debugMesh.position.copyFrom(this.mesh.position);
+                this._debugMesh.color = this.color;
+            };
+            SkeletonViewer.prototype.dispose = function () {
+                if (this._debugMesh) {
+                    this.isEnabled = false;
+                    this._debugMesh.dispose();
+                    this._debugMesh = null;
+                }
+            };
+            return SkeletonViewer;
+        }());
+        return Debug;
+    }());
+    BABYLON.Debug = Debug;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.debugModules.js.map
+
 var BABYLON;
 (function (BABYLON) {
     var RayHelper = /** @class */ (function () {
@@ -371,7 +749,7 @@ BABYLON.Effect.IncludesShadersStore['lightFragment'] = "#ifdef LIGHT{X}\n#if def
 BABYLON.Effect.IncludesShadersStore['logDepthFragment'] = "#ifdef LOGARITHMICDEPTH\ngl_FragDepthEXT=log2(vFragmentDepth)*logarithmicDepthConstant*0.5;\n#endif";
 BABYLON.Effect.IncludesShadersStore['fogFragment'] = "#ifdef FOG\nfloat fog=CalcFogFactor();\ncolor.rgb=fog*color.rgb+(1.0-fog)*vFogColor;\n#endif";
 (function() {
-var EXPORTS = {};EXPORTS['RayHelper'] = BABYLON['RayHelper'];EXPORTS['DebugLayer'] = BABYLON['DebugLayer'];EXPORTS['BoundingBoxRenderer'] = BABYLON['BoundingBoxRenderer'];
+var EXPORTS = {};EXPORTS['Debug'] = BABYLON['Debug'];EXPORTS['RayHelper'] = BABYLON['RayHelper'];EXPORTS['DebugLayer'] = BABYLON['DebugLayer'];EXPORTS['BoundingBoxRenderer'] = BABYLON['BoundingBoxRenderer'];
     globalObject["BABYLON"] = globalObject["BABYLON"] || BABYLON;
     module.exports = EXPORTS;
     })();
