@@ -447,6 +447,7 @@ declare module BABYLON.GUI {
         private _borderColor;
         private _barOffset;
         private _isThumbCircle;
+        private _isThumbClamped;
         onValueChangedObservable: Observable<number>;
         borderColor: string;
         background: string;
@@ -458,6 +459,7 @@ declare module BABYLON.GUI {
         maximum: number;
         value: number;
         isThumbCircle: boolean;
+        isThumbClamped: boolean;
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;

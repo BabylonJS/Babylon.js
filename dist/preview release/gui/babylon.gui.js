@@ -2622,6 +2622,7 @@ var BABYLON;
                 _this._borderColor = "white";
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 _this._isThumbCircle = false;
+                _this._isThumbClamped = false;
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -2760,6 +2761,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "isThumbClamped", {
+                get: function () {
+                    return this._isThumbClamped;
+                },
+                set: function (value) {
+                    if (this._isThumbClamped === value) {
+                        return;
+                    }
+                    this._isThumbClamped = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Slider.prototype._getTypeName = function () {
                 return "Slider";
             };
@@ -2770,12 +2785,6 @@ var BABYLON;
                     // Main bar
                     var effectiveThumbWidth;
                     var effectiveBarOffset;
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowColor = this.shadowColor;
-                        context.shadowBlur = this.shadowBlur;
-                        context.shadowOffsetX = this.shadowOffsetX;
-                        context.shadowOffsetY = this.shadowOffsetY;
-                    }
                     if (this._thumbWidth.isPixel) {
                         effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
@@ -2788,29 +2797,43 @@ var BABYLON;
                     else {
                         effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
                     }
-                    var left = this._currentMeasure.left + effectiveThumbWidth / 2;
-                    var width = this._currentMeasure.width - effectiveThumbWidth;
-                    var thumbPosition = (this._value - this._minimum) / (this._maximum - this._minimum) * width;
-                    // Bar
-                    context.fillStyle = this._background;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowBlur = 0;
-                        context.shadowOffsetX = 0;
-                        context.shadowOffsetY = 0;
-                    }
-                    context.fillStyle = this.color;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowColor = this.shadowColor;
                         context.shadowBlur = this.shadowBlur;
                         context.shadowOffsetX = this.shadowOffsetX;
                         context.shadowOffsetY = this.shadowOffsetY;
                     }
-                    // Thumb
+                    var left = this._currentMeasure.left;
+                    var width = this._currentMeasure.width - effectiveThumbWidth;
+                    var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
+                    context.fillStyle = this._background;
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
+                    context.fillStyle = this.color;
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     if (this._isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
                         context.fill();
                         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                             context.shadowBlur = 0;
@@ -2821,14 +2844,14 @@ var BABYLON;
                         context.stroke();
                     }
                     else {
-                        context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                             context.shadowBlur = 0;
                             context.shadowOffsetX = 0;
                             context.shadowOffsetY = 0;
                         }
                         context.strokeStyle = this._borderColor;
-                        context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                     }
                 }
                 context.restore();
