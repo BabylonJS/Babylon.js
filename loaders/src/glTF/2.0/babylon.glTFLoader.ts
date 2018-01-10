@@ -198,6 +198,9 @@ module BABYLON.GLTF2 {
             GLTFLoader._AssignIndices(this._gltf.skins);
             GLTFLoader._AssignIndices(this._gltf.textures);
 
+            // Handle global extensions as they may add their own data types.
+            GLTFLoaderExtension.LoadRoot(this, "#/", this._gltf);
+
             if (data.bin) {
                 const buffers = this._gltf.buffers;
                 if (buffers && buffers[0] && !buffers[0].uri) {
@@ -290,6 +293,8 @@ module BABYLON.GLTF2 {
         }
 
         private _loadScene(context: string, scene: IGLTFScene, nodeNames: any): void {
+            GLTFLoaderExtension.LoadScene(this, context, scene)) {
+            
             this._rootNode = { babylonMesh: new Mesh("__root__", this._babylonScene) } as IGLTFNode;
 
             switch (this.coordinateSystemMode) {
