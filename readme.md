@@ -57,6 +57,44 @@ If using TypeScript, don't forget to add 'babylonjs' to 'types' in tsconfig.json
 
 To add a module install the respected package. A list of extra packages and their installation instructions can be found on [babylonjs' user at npm](https://www.npmjs.com/~babylonjs).
 
+## Usage
+#### Import the library
+Using an HTML file:
+```
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+```
+Or in Javascript/Typescript using a bundler such as [Webpack](https://webpack.js.org/) or [Parcel](https://parceljs.org/):
+```
+import * as BABYLON from 'babylonjs';
+```
+#### Add a script
+```javascript
+// Create canvas html element on webpage
+var canvas = document.createElement('canvas');;
+document.body.appendChild(canvas);
+
+// Initialize Babylon scene and engine
+var engine = new BABYLON.Engine(canvas, true);
+var scene = new BABYLON.Scene(engine);
+engine.runRenderLoop(()=>{
+    scene.render();
+});
+
+// Create objects in the scene
+var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
+camera.attachControl(canvas,true)
+var light = new BABYLON.PointLight("light", new BABYLON.Vector3(10,10,0), scene);
+var box = BABYLON.Mesh.CreateBox("box", 1.0, scene);
+box.position.z = 5;
+
+// Run's once per game frame
+scene.onBeforeRenderObservable.add(()=>{
+    box.position.x += 0.01;
+    box.rotation.x += 0.01;
+    box.rotation.y += 0.01;
+});
+```
+
 ## Preview release
 
 Preview version of **3.2** can be found [here](https://github.com/BabylonJS/Babylon.js/tree/master/dist/preview%20release).
