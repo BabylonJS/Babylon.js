@@ -25,10 +25,19 @@
             return Camera._ORTHOGRAPHIC_CAMERA;
         }
 
+        /**
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+         *
+         */
         public static get FOVMODE_VERTICAL_FIXED(): number {
             return Camera._FOVMODE_VERTICAL_FIXED;
         }
 
+		/**
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+         *
+         */
         public static get FOVMODE_HORIZONTAL_FIXED(): number {
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
@@ -84,6 +93,10 @@
         @serialize()
         public orthoTop: Nullable<number> = null;
 
+        /**
+         * default : 0.8
+         * FOV is set in Radians.
+         */
         @serialize()
         public fov = 0.8;
 
@@ -102,9 +115,17 @@
 
         public viewport = new Viewport(0, 0, 1.0, 1.0);
 
+        /**
+        * Restricts the camera to viewing objects with the same layerMask.
+        * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
+        */
         @serialize()
         public layerMask: number = 0x0FFFFFFF;
 
+        /**
+        * default : FOVMODE_VERTICAL_FIXED
+        * fovMode sets the camera frustum bounds to the viewport bounds.
+        */
         @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
 
@@ -340,7 +361,7 @@
                 var cam = this._rigCameras[i];
                 var rigPostProcess = cam._rigPostProcess;
 
-                // for VR rig, there does not have to be a post process 
+                // for VR rig, there does not have to be a post process
                 if (rigPostProcess) {
                     var isPass = rigPostProcess instanceof PassPostProcess;
                     if (isPass) {
@@ -367,7 +388,7 @@
             } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
-            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return this._postProcesses.indexOf(postProcess);
         }
 
@@ -662,7 +683,7 @@
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
-            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
             //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
             this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
             this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
