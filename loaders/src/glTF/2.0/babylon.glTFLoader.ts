@@ -1045,8 +1045,16 @@ module BABYLON.GLTF2 {
 
                 sampler.interpolation = sampler.interpolation || "LINEAR";
 
-                let getNextKey: (frameIndex: number) => any;
+                let getNextKey: (frameIndex: number) => IAnimationKey;
                 switch (sampler.interpolation) {
+                    case "STEP": {
+                        getNextKey = frameIndex => ({
+                            frame: inputData[frameIndex],
+                            value: getNextOutputValue(),
+                            interpolation: AnimationKeyInterpolation.STEP
+                        });
+                        break;
+                    }
                     case "LINEAR": {
                         getNextKey = frameIndex => ({
                             frame: inputData[frameIndex],
@@ -1068,7 +1076,7 @@ module BABYLON.GLTF2 {
                     }
                 };
 
-                let keys: Array<any>;
+                let keys: Array<IAnimationKey>;
                 if (inputData.length === 1) {
                     let key = getNextKey(0);
                     keys = [
