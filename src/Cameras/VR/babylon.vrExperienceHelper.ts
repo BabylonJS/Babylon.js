@@ -1408,7 +1408,7 @@ module BABYLON {
                 if (this._teleportationInitialized && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
                     // Moving the teleportation area to this targetted point
 
-                    //Raise Mesh unselected event if we trigger the floor meshes and a non-floor mesh was previously selected
+                    //Raise onSelectedMeshUnselected observable if ray collided floor mesh/meshes and a non floor mesh was previously selected
                     if (this._currentMeshSelected &&
                         !this._isTeleportationFloor(this._currentMeshSelected)) {
                         this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
