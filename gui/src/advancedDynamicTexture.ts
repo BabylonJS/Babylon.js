@@ -529,6 +529,9 @@ module BABYLON.GUI {
             return result;
         }
 
+		/**
+		 * FullScreenUI is created in a layer. This allows texture.layer.layerMask to be set.
+		 */
         public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
 

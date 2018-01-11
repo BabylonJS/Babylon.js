@@ -1,5 +1,10 @@
 module BABYLON {
-    // We're mainly based on the logic defined into the FreeCamera code
+	// We're mainly based on the logic defined into the FreeCamera code
+
+	/**
+	 * This camera responds to input from the deviceorientation event.
+	 * camera.angularSensibility and camera.moveSensibility do not affect input from the deviceorientation event.
+	 */
     export class DeviceOrientationCamera extends FreeCamera {
 
         private _initialQuaternion: Quaternion;
@@ -24,7 +29,7 @@ module BABYLON {
         }
 
 		/**
-		 * Rotates the camera to 0Deg around the axis passed. If Axis.Y is passed, the camera will be moved to face z+.
+		 * Rotates the camera to 0Deg around the axis passed. If Axis.Y is passed, the camera will be moved around Y to face z+.
 		 */
         public resetToCurrentRotation(axis: Axis = Axis.Y) {
             //can only work if this camera has a rotation quaternion already.

@@ -78,6 +78,10 @@
         @serializeAsVector3()
         public position: Vector3;
 
+		/**
+		 * default : Vector3(0.0, 0.1, 0.0) Y+ is up.
+		 *
+		 */
         @serializeAsVector3()
         public upVector = Vector3.Up();
 

@@ -15,7 +15,10 @@
         public inputs: FreeCameraInputsManager;
 
         //-- begin properties for backward compatibility for inputs
-        public get angularSensibility(): number {
+		/**
+		 * This setting affects input for the mouse.
+		 */
+		public get angularSensibility(): number {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
                 return mouse.angularSensibility;
@@ -23,6 +26,9 @@
             return 0;
         }
 
+		/**
+		 * This setting affects input for the mouse.
+		 */
         public set angularSensibility(value: number) {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
@@ -212,4 +218,4 @@
             return "FreeCamera";
         }
     }
-} 
+}
