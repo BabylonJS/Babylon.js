@@ -63,7 +63,7 @@
             return rtt;
         }
 
-        public static GetEnvironmentBRDFTexture(scene: Scene) {
+        public static GetEnvironmentBRDFTexture(scene: Scene): BaseTexture {
             if (!scene._environmentBRDFTexture) {
                 var texture = Texture.CreateFromBase64String(this._environmentBRDFBase64Texture, "EnvironmentBRDFTexture", scene, true, false, Texture.BILINEAR_SAMPLINGMODE);
 
