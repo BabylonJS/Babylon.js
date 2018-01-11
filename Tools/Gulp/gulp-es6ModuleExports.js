@@ -28,7 +28,7 @@ return function (d, b) {
             '};\n';
 
         let content = file.contents.toString();
-        if (content.indexOf('__extends') === -1 && dependencies.length < 2) {
+        if (content.indexOf('__extends') === -1 && !dependencies.length) {
             extendsAddition = '';
         }
 
@@ -39,19 +39,28 @@ return function (d, b) {
         let dependenciesText = `${extendsAddition}
 ${decorateAddition}
 `;
+        if (moduleName !== 'core') {
+            dependenciesText += `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+            var BABYLON = globalObject["BABYLON"] || {};
+`;
+        } else {
+            dependenciesText += `var BABYLON;
+`;
+        }
+
         if (dependencies) {
             /*if (dependencies.length > 1) {
                 dependenciesText += 'function nse(ns1, ns2) { Object.keys(ns2).forEach(function(c) {if(!ns1[c]) {ns1[c] = ns2[c]}}) };\n';
             }*/
 
             dependencies.forEach(function (d, idx) {
-                let name = d === 'core' ? 'BABYLON' : d;
-                dependenciesText += `import * as ${name} from 'babylonjs/${d}/es6';
+                if (d === 'core') return;
+                dependenciesText += `import * as ${d} from 'babylonjs/${d}/es6';
 `;
-                if (idx > 0) {
-                    dependenciesText += `__extends(BABYLON, ${d});
+                //if (idx > 0) {
+                dependenciesText += `__extends(BABYLON, ${d});
 `;
-                }
+                //}
             });
         }
 
