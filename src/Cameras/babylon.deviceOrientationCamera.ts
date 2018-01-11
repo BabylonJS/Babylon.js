@@ -23,6 +23,9 @@ module BABYLON {
             }
         }
 
+		/**
+		 * Rotates the camera to 0Deg around the axis passed. If Axis.Y is passed, the camera will be moved to face z+.
+		 */
         public resetToCurrentRotation(axis: Axis = Axis.Y) {
             //can only work if this camera has a rotation quaternion already.
             if (!this.rotationQuaternion) return;
