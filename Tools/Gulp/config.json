@@ -192,6 +192,7 @@
                 "../../src/Rendering/babylon.renderingManager.js",
                 "../../src/Rendering/babylon.renderingGroup.js",
                 "../../src/babylon.scene.js",
+                "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
                 "../../src/Materials/Textures/babylon.internalTexture.js",

@@ -245,6 +245,12 @@
       "excludeFromAutomaticTesting": true
     },
     {
+      "title": "Asset Containers",
+      "playgroundId": "#P3U079#19",
+      "renderCount": 20,
+      "referenceImage": "assetContainer.png"
+    },   
+    {
       "title": "GLTF Mesh Primitive Attribute Test",
       "renderCount": 20,
       "scriptToRun": "/Demos/GLTFMeshPrimitiveAttributeTest/index.js",
