@@ -9,6 +9,7 @@ declare module BABYLON {
         extensions: ISceneLoaderPluginExtensions;
         importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
         load(scene: Scene, data: any, rootUrl: string): boolean;
+        loadAssets(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): Nullable<AssetContainer>;
         private isBinary(data);
         private parseBinary(mesh, data);
         private parseASCII(mesh, solidData);
