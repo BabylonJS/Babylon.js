@@ -112,12 +112,12 @@ module BABYLON {
 
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
-         */        
+         */
         public onNewMeshSelected = new Observable<AbstractMesh>();
 
         /**
          * Observable raised when a new mesh is picked based on meshSelectionPredicate
-         */        
+         */
         public onNewMeshPicked = new Observable<PickingInfo>();
 
         private _circleEase: CircleEase;
@@ -152,7 +152,7 @@ module BABYLON {
         /**
          * Set teleportation enabled. If set to false camera teleportation will be disabled but camera rotation will be kept.
          */
-        public teleportationEnabled : boolean = true;
+        public teleportationEnabled: boolean = true;
 
         private _currentHit: Nullable<PickingInfo>;
         private _pointerDownOnMeshAsked = false;
@@ -1407,6 +1407,15 @@ module BABYLON {
                 // The object selected is the floor, we're in a teleportation scenario
                 if (this._teleportationInitialized && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
                     // Moving the teleportation area to this targetted point
+
+                    //Raise onSelectedMeshUnselected observable if ray collided floor mesh/meshes and a non floor mesh was previously selected
+                    if (this._currentMeshSelected &&
+                        !this._isTeleportationFloor(this._currentMeshSelected)) {
+                        this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
+                    }
+
+                    this._currentMeshSelected = null;
+
                     this._moveTeleportationSelectorTo(hit);
                     return;
                 }
@@ -1428,7 +1437,7 @@ module BABYLON {
                             this._isActionableMesh = false;
                         }
                         try {
-                            this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);                            
+                            this.onNewMeshSelected.notifyObservers(this._currentMeshSelected);
                         }
                         catch (err) {
                             Tools.Warn("Error in your custom logic onNewMeshSelected: " + err);

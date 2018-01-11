@@ -2256,6 +2256,7 @@
             if (this.collisionCoordinator) {
                 this.collisionCoordinator.onMeshAdded(newMesh);
             }
+            newMesh._resyncLightSources();
 
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
@@ -2350,6 +2351,50 @@
             return index;
         }
 
+        
+        public removeParticleSystem(toRemove: ParticleSystem): number {
+            var index = this.particleSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.particleSystems.splice(index, 1);
+            }
+            return index;
+        };
+        public removeAnimation(toRemove: Animation): number {
+            var index = this.animations.indexOf(toRemove);
+            if (index !== -1) {
+                this.animations.splice(index, 1);
+            }
+            return index;
+        };
+        public removeMultiMaterial(toRemove: MultiMaterial): number {
+            var index = this.multiMaterials.indexOf(toRemove);
+            if (index !== -1) {
+                this.multiMaterials.splice(index, 1);
+            }
+            return index;
+        };
+        public removeMaterial(toRemove: Material): number {
+            var index = this.materials.indexOf(toRemove);
+            if (index !== -1) {
+                this.materials.splice(index, 1);
+            }
+            return index;
+        };
+        public removeLensFlareSystem(toRemove:LensFlareSystem){
+            var index = this.lensFlareSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.lensFlareSystems.splice(index, 1);
+            }
+            return index;
+        };
+        public removeActionManager(toRemove:ActionManager){
+            var index = this._actionManagers.indexOf(toRemove);
+            if (index !== -1) {
+                this._actionManagers.splice(index, 1);
+            }
+            return index;
+        };
+
         public addLight(newLight: Light) {
             this.lights.push(newLight);
             this.sortLightsByPriority();
@@ -2374,6 +2419,42 @@
         public addCamera(newCamera: Camera) {
             this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        }
+
+        public addSkeleton(newSkeleton:Skeleton){
+            this.skeletons.push(newSkeleton)
+        }
+
+        public addParticleSystem(newParticleSystem:ParticleSystem){
+            this.particleSystems.push(newParticleSystem)
+        }
+
+        public addAnimation(newAnimation:Animation){
+            this.animations.push(newAnimation)
+        }
+
+        public addMultiMaterial(newMultiMaterial:MultiMaterial){
+            this.multiMaterials.push(newMultiMaterial)
+        }
+
+        public addMaterial(newMaterial:Material){
+            this.materials.push(newMaterial)
+        }
+
+        public addMorphTargetManager(newMorphTargetManager:MorphTargetManager){
+            this.morphTargetManagers.push(newMorphTargetManager)
+        }
+
+        public addGeometry(newGeometrie:Geometry){
+            this._geometries.push(newGeometrie)
+        }
+
+        public addLensFlareSystem(newLensFlareSystem:LensFlareSystem){
+            this.lensFlareSystems.push(newLensFlareSystem)
+        }
+
+        public addActionManager(newActionManager:ActionManager){
+            this._actionManagers.push(newActionManager)
         }
 
         /**
