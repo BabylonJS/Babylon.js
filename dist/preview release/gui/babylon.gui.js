@@ -2820,10 +2820,10 @@ var BABYLON;
                     }
                     context.fillStyle = this.color;
                     if (this.isThumbClamped) {
-                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                     }
                     else {
-                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                     }
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowColor = this.shadowColor;
