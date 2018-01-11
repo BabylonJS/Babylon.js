@@ -194,7 +194,7 @@ module BABYLON.GUI {
                 var left = this._currentMeasure.left;
                 var width = this._currentMeasure.width - effectiveThumbWidth;
                 var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
-                
+
                 context.fillStyle = this._background;
                 if (this.isThumbClamped) {
                     context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
@@ -211,10 +211,10 @@ module BABYLON.GUI {
 
                 context.fillStyle = this.color;
                 if (this.isThumbClamped) {
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                 }
                 else {
-                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                 }
 
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -238,7 +238,6 @@ module BABYLON.GUI {
                     context.strokeStyle = this._borderColor;
                     context.stroke();
                 }
-
                 else {
                     context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
 
@@ -254,7 +253,7 @@ module BABYLON.GUI {
             }
             context.restore();
         }
-       
+
 
         // Events
         private _pointerIsDown = false;
