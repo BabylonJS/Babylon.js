@@ -251,7 +251,6 @@
                 "imageProcessingFunctions",
                 "bumpFragmentFunctions",
                 "clipPlaneFragmentDeclaration",
-                "logDepthDeclaration",
                 "fogFragmentDeclaration",
                 "clipPlaneFragment",
                 "bumpFragment",
@@ -443,45 +442,12 @@
                 "pbr.fragment"
             ],
             "shaderIncludes": [
-                "bonesDeclaration",
-                "instancesDeclaration",
-                "bumpVertexDeclaration",
-                "clipPlaneVertexDeclaration",
-                "fogVertexDeclaration",
-                "morphTargetsVertexGlobalDeclaration",
-                "morphTargetsVertexDeclaration",
-                "logDepthDeclaration",
-                "morphTargetsVertex",
-                "instancesVertex",
-                "bonesVertex",
-                "bumpVertex",
-                "clipPlaneVertex",
-                "fogVertex",
-                "shadowsVertex",
-                "logDepthVertex",
-                "lightFragmentDeclaration",
-                "lightUboDeclaration",
                 "pbrVertexDeclaration",
                 "pbrFragmentDeclaration",
                 "pbrUboDeclaration",
-                "fresnelFunction",
-                "reflectionFunction",
-                "shadowsFragmentFunctions",
                 "pbrFunctions",
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions",
                 "harmonicsFunctions",
-                "pbrLightFunctions",
-                "helperFunctions",
-                "bumpFragmentFunctions",
-                "clipPlaneFragmentDeclaration",
-                "logDepthDeclaration",
-                "fogFragmentDeclaration",
-                "clipPlaneFragment",
-                "bumpFragment",
-                "lightFragment",
-                "logDepthFragment",
-                "fogFragment"
+                "pbrLightFunctions"
             ]
         },
         "targetCamera": {
@@ -615,7 +581,6 @@
                 "../../src/Tools/babylon.andOrNotEvaluator.js"
             ],
             "dependUpon": [
-                "core",
                 "stringDictionary"
             ]
         },
@@ -703,12 +668,7 @@
                 "depth.vertex",
                 "depth.fragment"
             ],
-            "shaderIncludes": [
-                "bonesDeclaration",
-                "instancesDeclaration",
-                "instancesVertex",
-                "bonesVertex"
-            ]
+            "shaderIncludes": []
         },
         "geometryBufferRenderer": {
             "files": [
@@ -724,9 +684,7 @@
             "shaderIncludes": [
                 "mrtFragmentDeclaration",
                 "bones300Declaration",
-                "instances300Declaration",
-                "instancesVertex",
-                "bonesVertex"
+                "instances300Declaration"
             ]
         },
         "postProcesses": {
@@ -793,10 +751,7 @@
             "shaders": [
                 "imageProcessing.fragment"
             ],
-            "shaderIncludes": [
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions"
-            ]
+            "shaderIncludes": []
         },
         "additionalPostProcesses": {
             "files": [
@@ -962,10 +917,7 @@
                 "stringDictionary",
                 "actions"
             ],
-            "shaders": [
-                "color.vertex",
-                "color.fragment"
-            ]
+            "shaders": []
         },
         "morphTargets": {
             "files": [
@@ -1008,7 +960,9 @@
                 "../../src/Cameras/VR/babylon.vrExperienceHelper.js"
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "postProcesses",
+                "freeCamera"
             ],
             "shaders": [
                 "anaglyph.fragment",
@@ -1105,45 +1059,9 @@
                 "background.fragment"
             ],
             "shaderIncludes": [
-                "bonesDeclaration",
-                "instancesDeclaration",
-                "pointCloudVertexDeclaration",
-                "bumpVertexDeclaration",
-                "clipPlaneVertexDeclaration",
-                "fogVertexDeclaration",
-                "morphTargetsVertexGlobalDeclaration",
-                "morphTargetsVertexDeclaration",
-                "logDepthDeclaration",
-                "morphTargetsVertex",
-                "instancesVertex",
-                "bonesVertex",
-                "bumpVertex",
-                "clipPlaneVertex",
-                "fogVertex",
-                "shadowsVertex",
-                "pointCloudVertex",
-                "logDepthVertex",
-                "helperFunctions",
-                "lightFragmentDeclaration",
-                "lightsFragmentFunctions",
-                "lightUboDeclaration",
                 "backgroundVertexDeclaration",
                 "backgroundFragmentDeclaration",
-                "backgroundUboDeclaration",
-                "shadowsFragmentFunctions",
-                "fresnelFunction",
-                "reflectionFunction",
-                "imageProcessingDeclaration",
-                "imageProcessingFunctions",
-                "bumpFragmentFunctions",
-                "clipPlaneFragmentDeclaration",
-                "logDepthDeclaration",
-                "fogFragmentDeclaration",
-                "clipPlaneFragment",
-                "bumpFragment",
-                "lightFragment",
-                "logDepthFragment",
-                "fogFragment"
+                "backgroundUboDeclaration"
             ]
         },
         "environmentHelper": {
