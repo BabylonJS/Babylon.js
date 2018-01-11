@@ -174,7 +174,7 @@
                 this._uvs32 = new Float32Array(this._uvs);
                 this._colors32 = new Float32Array(this._colors);
                 if (this.recomputeNormals) {
-                    VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+                    VertexData.ComputeNormals(this._positions32, this._indices32, this._normals);
                 }
                 this._normals32 = new Float32Array(this._normals);
                 this._fixedNormal32 = new Float32Array(this._normals);
@@ -899,7 +899,7 @@
                         if (this._computeParticleVertex || this.mesh.isFacetDataEnabled) {
                             // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
                             var params = this.mesh.isFacetDataEnabled ? this.mesh.getFacetDataParameters() : null;
-                            VertexData.ComputeNormals(this._positions32, this._indices, this._normals32, params);
+                            VertexData.ComputeNormals(this._positions32, this._indices32, this._normals32, params);
                             for (var i = 0; i < this._normals32.length; i++) {
                                 this._fixedNormal32[i] = this._normals32[i];
                             }                       
