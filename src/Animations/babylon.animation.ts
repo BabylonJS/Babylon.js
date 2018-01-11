@@ -81,10 +81,25 @@
         }
     }
 
+    export interface IAnimationKey {
+        frame: number;
+        value: any;
+        inTangent?: any;
+        outTangent?: any;
+        interpolation?: AnimationKeyInterpolation;
+    }
+
+    export enum AnimationKeyInterpolation {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored.
+         */
+        STEP = 1
+    }
+
     export class Animation {
         public static AllowMatricesInterpolation = false;
 
-        private _keys: Array<{ frame: number, value: any, inTangent?: any, outTangent?: any }>;
+        private _keys: Array<IAnimationKey>;
         private _easingFunction: IEasingFunction;
 
         public _runtimeAnimations = new Array<RuntimeAnimation>();
@@ -122,7 +137,7 @@
 
             var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
 
-            var keys: Array<{ frame: number, value: any }> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
+            var keys: Array<IAnimationKey> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
             animation.setKeys(keys);
 
             if (easingFunction !== undefined) {
@@ -370,7 +385,7 @@
         }
 
 
-        public getKeys(): Array<{ frame: number, value: any, inTangent?: any, outTangent?: any }> {
+        public getKeys(): Array<IAnimationKey> {
             return this._keys;
         }
 
@@ -461,7 +476,7 @@
             return clone;
         }
 
-        public setKeys(values: Array<{ frame: number, value: any }>): void {
+        public setKeys(values: Array<IAnimationKey>): void {
             this._keys = values.slice(0);
         }
 
@@ -573,7 +588,7 @@
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;
-            var keys: Array<{ frame: number, value: any, inTangent: any, outTangent: any }> = [];
+            var keys: Array<IAnimationKey> = [];
             var data;
             var index: number;
 
