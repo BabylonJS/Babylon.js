@@ -9,6 +9,7 @@ var addModuleExports = require("./gulp-addModuleExports");
 var babylonModuleExports = require("./gulp-babylonModule");
 var babylonES6ModuleExports = require("./gulp-es6ModuleExports");
 var dtsModuleSupport = require("./gulp-dtsModuleSupport");
+let calculateDependencies = require("./gulp-calculateDependencies");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
@@ -631,15 +632,41 @@ gulp.task("modules-compile", function () {
 
 // this holds the declared objects in each module
 let declared = {}
+let perFile = {};
+let dependencyTree = {};
 
-gulp.task('prepare-for-modules', ["modules-compile"], function () {
+gulp.task('prepare-for-modules', /*["modules-compile"],*/ function () {
     let tasks = [];
     Object.keys(config.workloads).forEach((moduleName) => {
         let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
         let dtsTask = gulp.src(dtsFiles)
-            .pipe(dtsModuleSupport(moduleName, false, declared));
+            .pipe(dtsModuleSupport(moduleName, false, declared, perFile));
 
         tasks.push(dtsTask);
+    });
+
+    // now calculate internal dependencies in the .ts files!
+    /*Object.keys(config.workloads).forEach((moduleName) => {
+        let tsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".ts"))
+        let depTask = gulp.src(tsFiles)
+            .pipe(calculateDependencies(moduleName, perFile, dependencyTree));
+
+        tasks.push(depTask);
+    });*/
+
+    return merge2(tasks);
+});
+
+gulp.task('prepare-dependency-tree', ["prepare-for-modules"], function () {
+    let tasks = [];
+
+    // now calculate internal dependencies in the .ts files!
+    Object.keys(config.workloads).forEach((moduleName) => {
+        let tsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".ts"))
+        let depTask = gulp.src(tsFiles)
+            .pipe(calculateDependencies(moduleName, perFile, declared, dependencyTree));
+
+        tasks.push(depTask);
     });
 
     return merge2(tasks);
@@ -647,7 +674,7 @@ gulp.task('prepare-for-modules', ["modules-compile"], function () {
 
 // generate the modules directory, along with commonjs modules and es6 modules
 // Note - the generated modules are UNMINIFIED! The user will choose whether they want to minify or not.
-gulp.task("modules", ["prepare-for-modules"], function () {
+gulp.task("modules", ["prepare-dependency-tree"], function () {
     let tasks = [];
 
     Object.keys(config.workloads)
@@ -668,11 +695,11 @@ gulp.task("modules", ["prepare-for-modules"], function () {
             let jsTask = merge2([
                 gulp.src(config.workloads[moduleName].files),
                 gulp.src(shadersFiles).
-                    pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
+                    //pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
                     pipe(uncommentShader()).
                     pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", true)),
                 gulp.src(shaderIncludeFiles).
-                    pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
+                    //pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
                     pipe(uncommentShader()).
                     pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
             ]).pipe(concat('index.js'))
@@ -686,17 +713,18 @@ gulp.task("modules", ["prepare-for-modules"], function () {
             let es6Task = merge2([
                 gulp.src(config.workloads[moduleName].files),
                 gulp.src(shadersFiles).
-                    pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
+                    //pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
                     pipe(uncommentShader()).
                     pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", true)),
                 gulp.src(shaderIncludeFiles).
-                    pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
+                    //pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
                     pipe(uncommentShader()).
                     pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
             ]).pipe(concat('es6.js'))
                 .pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
+                .pipe(replace(/var BABYLON;/g, ""))
                 .pipe(babylonES6ModuleExports(moduleName, config.workloads[moduleName].dependUpon))
                 .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));
 
@@ -706,7 +734,7 @@ gulp.task("modules", ["prepare-for-modules"], function () {
                 .pipe(concat("index.d.ts"))
                 .pipe(replace(/declare module BABYLON {/g, `declare module 'babylonjs/${moduleName}' {`))
                 .pipe(replace(/\ninterface /g, `\nexport interface `))
-                .pipe(dtsModuleSupport(moduleName, true, declared))
+                .pipe(dtsModuleSupport(moduleName, true, declared, perFile, dependencyTree))
                 .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));
 
             tasks.push(jsTask, es6Task, dtsTask);
