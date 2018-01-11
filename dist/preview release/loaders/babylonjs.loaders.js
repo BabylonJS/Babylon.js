@@ -4497,6 +4497,14 @@ var BABYLON;
                     sampler.interpolation = sampler.interpolation || "LINEAR";
                     var getNextKey;
                     switch (sampler.interpolation) {
+                        case "STEP": {
+                            getNextKey = function (frameIndex) { return ({
+                                frame: inputData[frameIndex],
+                                value: getNextOutputValue(),
+                                interpolation: BABYLON.AnimationKeyInterpolation.STEP
+                            }); };
+                            break;
+                        }
                         case "LINEAR": {
                             getNextKey = function (frameIndex) { return ({
                                 frame: inputData[frameIndex],

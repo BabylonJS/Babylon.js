@@ -41833,6 +41833,13 @@ var BABYLON;
         return PathCursor;
     }());
     BABYLON.PathCursor = PathCursor;
+    var AnimationKeyInterpolation;
+    (function (AnimationKeyInterpolation) {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored.
+         */
+        AnimationKeyInterpolation[AnimationKeyInterpolation["STEP"] = 1] = "STEP";
+    })(AnimationKeyInterpolation = BABYLON.AnimationKeyInterpolation || (BABYLON.AnimationKeyInterpolation = {}));
     var Animation = /** @class */ (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
             this.name = name;
@@ -42656,6 +42663,9 @@ var BABYLON;
                 if (endKey.frame >= currentFrame) {
                     var startKey = keys[key];
                     var startValue = this._getKeyValue(startKey.value);
+                    if (startKey.interpolation === BABYLON.AnimationKeyInterpolation.STEP) {
+                        return startValue;
+                    }
                     var endValue = this._getKeyValue(endKey.value);
                     var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
                     var frameDelta = endKey.frame - startKey.frame;
@@ -72222,16 +72232,12 @@ var BABYLON;
             this._vertexCount = 0;
             for (var _i = 0, _a = this._targets; _i < _a.length; _i++) {
                 var target = _a[_i];
-                if (target.influence > 0) {
-                    this._activeTargets.push(target);
-                    this._tempInfluences[influenceCount++] = target.influence;
+                this._activeTargets.push(target);
+                this._tempInfluences[influenceCount++] = target.influence;
+                var positions = target.getPositions();
+                if (positions) {
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
-                    var positions = target.getPositions();
-                    if (!positions) {
-                        BABYLON.Tools.Error("Invalid target. Target must positions.");
-                        return;
-                    }
                     var vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {
                         this._vertexCount = vertexCount;
@@ -76085,131 +76091,309 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    // Standard optimizations
+    /**
+     * Defines the root class used to create scene optimization to use with SceneOptimizer
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var SceneOptimization = /** @class */ (function () {
+        /**
+         * Creates the SceneOptimization object
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param desc defines the description associated with the optimization
+         */
         function SceneOptimization(priority) {
             if (priority === void 0) { priority = 0; }
             this.priority = priority;
-            this.apply = function (scene) {
-                return true; // Return true if everything that can be done was applied
-            };
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        SceneOptimization.prototype.getDescription = function () {
+            return "";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         * @returnstrue if everything that can be done was applied
+         */
+        SceneOptimization.prototype.apply = function (scene) {
+            return true;
+        };
+        ;
         return SceneOptimization;
     }());
     BABYLON.SceneOptimization = SceneOptimization;
+    /**
+     * Defines an optimization used to reduce the size of render target textures
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var TextureOptimization = /** @class */ (function (_super) {
         __extends(TextureOptimization, _super);
-        function TextureOptimization(priority, maximumSize) {
+        /**
+         * Creates the TextureOptimization object
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumSize defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
+         * @param step defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
+         */
+        function TextureOptimization(priority, maximumSize, step) {
             if (priority === void 0) { priority = 0; }
             if (maximumSize === void 0) { maximumSize = 1024; }
+            if (step === void 0) { step = 0.5; }
             var _this = _super.call(this, priority) || this;
             _this.priority = priority;
             _this.maximumSize = maximumSize;
-            _this.apply = function (scene) {
-                var allDone = true;
-                for (var index = 0; index < scene.textures.length; index++) {
-                    var texture = scene.textures[index];
-                    if (!texture.canRescale || texture.getContext) {
-                        continue;
-                    }
-                    var currentSize = texture.getSize();
-                    var maxDimension = Math.max(currentSize.width, currentSize.height);
-                    if (maxDimension > _this.maximumSize) {
-                        texture.scale(0.5);
-                        allDone = false;
-                    }
-                }
-                return allDone;
-            };
+            _this.step = step;
             return _this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        TextureOptimization.prototype.getDescription = function () {
+            return "Reducing render target texture size to " + this.maximumSize;
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        TextureOptimization.prototype.apply = function (scene) {
+            var allDone = true;
+            for (var index = 0; index < scene.textures.length; index++) {
+                var texture = scene.textures[index];
+                if (!texture.canRescale || texture.getContext) {
+                    continue;
+                }
+                var currentSize = texture.getSize();
+                var maxDimension = Math.max(currentSize.width, currentSize.height);
+                if (maxDimension > this.maximumSize) {
+                    texture.scale(this.step);
+                    allDone = false;
+                }
+            }
+            return allDone;
+        };
         return TextureOptimization;
     }(SceneOptimization));
     BABYLON.TextureOptimization = TextureOptimization;
+    /**
+     * Defines an optimization used to increase or decrease the rendering resolution
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var HardwareScalingOptimization = /** @class */ (function (_super) {
         __extends(HardwareScalingOptimization, _super);
-        function HardwareScalingOptimization(priority, maximumScale) {
+        /**
+         * Creates the HardwareScalingOptimization object
+         * @param priority priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumScale
+         * @param step
+         */
+        function HardwareScalingOptimization(priority, maximumScale, step) {
             if (priority === void 0) { priority = 0; }
             if (maximumScale === void 0) { maximumScale = 2; }
+            if (step === void 0) { step = 0.25; }
             var _this = _super.call(this, priority) || this;
             _this.priority = priority;
             _this.maximumScale = maximumScale;
-            _this._currentScale = 1;
-            _this.apply = function (scene) {
-                _this._currentScale++;
-                scene.getEngine().setHardwareScalingLevel(_this._currentScale);
-                return _this._currentScale >= _this.maximumScale;
-            };
+            _this.step = step;
+            _this._currentScale = -1;
+            _this._directionOffset = 1;
             return _this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        HardwareScalingOptimization.prototype.getDescription = function () {
+            return "Setting hardware scaling level to " + this._currentScale;
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        HardwareScalingOptimization.prototype.apply = function (scene) {
+            if (this._currentScale === -1) {
+                this._currentScale = scene.getEngine().getHardwareScalingLevel();
+                if (this._currentScale > this.maximumScale) {
+                    this._directionOffset = -1;
+                }
+            }
+            this._currentScale += this._directionOffset * this.step;
+            scene.getEngine().setHardwareScalingLevel(this._currentScale);
+            return this._directionOffset === 1 ? this._currentScale >= this.maximumScale : this._currentScale <= this.maximumScale;
+        };
+        ;
         return HardwareScalingOptimization;
     }(SceneOptimization));
     BABYLON.HardwareScalingOptimization = HardwareScalingOptimization;
+    /**
+     * Defines an optimization used to remove shadows
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var ShadowsOptimization = /** @class */ (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.shadowsEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        ShadowsOptimization.prototype.getDescription = function () {
+            return "Turning shadows off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        ShadowsOptimization.prototype.apply = function (scene) {
+            scene.shadowsEnabled = false;
+            return true;
+        };
+        ;
         return ShadowsOptimization;
     }(SceneOptimization));
     BABYLON.ShadowsOptimization = ShadowsOptimization;
+    /**
+     * Defines an optimization used to turn post-processes off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var PostProcessesOptimization = /** @class */ (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.postProcessesEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        PostProcessesOptimization.prototype.getDescription = function () {
+            return "Turning post-processes off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        PostProcessesOptimization.prototype.apply = function (scene) {
+            scene.postProcessesEnabled = false;
+            return true;
+        };
+        ;
         return PostProcessesOptimization;
     }(SceneOptimization));
     BABYLON.PostProcessesOptimization = PostProcessesOptimization;
+    /**
+     * Defines an optimization used to turn lens flares off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var LensFlaresOptimization = /** @class */ (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.lensFlaresEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        LensFlaresOptimization.prototype.getDescription = function () {
+            return "Turning lens flares off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        LensFlaresOptimization.prototype.apply = function (scene) {
+            scene.lensFlaresEnabled = false;
+            return true;
+        };
+        ;
         return LensFlaresOptimization;
     }(SceneOptimization));
     BABYLON.LensFlaresOptimization = LensFlaresOptimization;
+    /**
+     * Defines an optimization based on user defined callback.
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
+    var CustomOptimization = /** @class */ (function (_super) {
+        __extends(CustomOptimization, _super);
+        function CustomOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        CustomOptimization.prototype.getDescription = function () {
+            if (this.onGetDescription) {
+                return this.onGetDescription();
+            }
+            return "Running user defined callback";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        CustomOptimization.prototype.apply = function (scene) {
+            if (this.onApply) {
+                return this.onApply(scene);
+            }
+            return true;
+        };
+        ;
+        return CustomOptimization;
+    }(SceneOptimization));
+    BABYLON.CustomOptimization = CustomOptimization;
+    /**
+     * Defines an optimization used to turn particles off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var ParticlesOptimization = /** @class */ (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.particlesEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        ParticlesOptimization.prototype.getDescription = function () {
+            return "Turning particles off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        ParticlesOptimization.prototype.apply = function (scene) {
+            scene.particlesEnabled = false;
+            return true;
+        };
+        ;
         return ParticlesOptimization;
     }(SceneOptimization));
     BABYLON.ParticlesOptimization = ParticlesOptimization;
+    /**
+     * Defines an optimization used to turn render targets off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var RenderTargetsOptimization = /** @class */ (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.renderTargetsEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        RenderTargetsOptimization.prototype.getDescription = function () {
+            return "Turning render targets off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        RenderTargetsOptimization.prototype.apply = function (scene) {
+            scene.renderTargetsEnabled = false;
+            return true;
+        };
+        ;
         return RenderTargetsOptimization;
     }(SceneOptimization));
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
+    /**
+     * Defines an optimization used to merge meshes with compatible materials
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var MergeMeshesOptimization = /** @class */ (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
@@ -76233,145 +76417,346 @@ var BABYLON;
                 }
                 return true;
             };
-            _this.apply = function (scene, updateSelectionTree) {
-                var globalPool = scene.meshes.slice(0);
-                var globalLength = globalPool.length;
-                for (var index = 0; index < globalLength; index++) {
-                    var currentPool = new Array();
-                    var current = globalPool[index];
-                    // Checks
-                    if (!_this._canBeMerged(current)) {
-                        continue;
-                    }
-                    currentPool.push(current);
-                    // Find compatible meshes
-                    for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
-                        var otherMesh = globalPool[subIndex];
-                        if (!_this._canBeMerged(otherMesh)) {
-                            continue;
-                        }
-                        if (otherMesh.material !== current.material) {
-                            continue;
-                        }
-                        if (otherMesh.checkCollisions !== current.checkCollisions) {
-                            continue;
-                        }
-                        currentPool.push(otherMesh);
-                        globalLength--;
-                        globalPool.splice(subIndex, 1);
-                        subIndex--;
-                    }
-                    if (currentPool.length < 2) {
-                        continue;
-                    }
-                    // Merge meshes
-                    BABYLON.Mesh.MergeMeshes(currentPool);
-                }
-                if (updateSelectionTree != undefined) {
-                    if (updateSelectionTree) {
-                        scene.createOrUpdateSelectionOctree();
-                    }
-                }
-                else if (MergeMeshesOptimization.UpdateSelectionTree) {
-                    scene.createOrUpdateSelectionOctree();
-                }
-                return true;
-            };
             return _this;
         }
         Object.defineProperty(MergeMeshesOptimization, "UpdateSelectionTree", {
+            /**
+             * Gets or sets a boolean which defines if optimization octree has to be updated
+             */
             get: function () {
                 return MergeMeshesOptimization._UpdateSelectionTree;
             },
+            /**
+             * Gets or sets a boolean which defines if optimization octree has to be updated
+             */
             set: function (value) {
                 MergeMeshesOptimization._UpdateSelectionTree = value;
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        MergeMeshesOptimization.prototype.getDescription = function () {
+            return "Merging similar meshes together";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        MergeMeshesOptimization.prototype.apply = function (scene, updateSelectionTree) {
+            var globalPool = scene.meshes.slice(0);
+            var globalLength = globalPool.length;
+            for (var index = 0; index < globalLength; index++) {
+                var currentPool = new Array();
+                var current = globalPool[index];
+                // Checks
+                if (!this._canBeMerged(current)) {
+                    continue;
+                }
+                currentPool.push(current);
+                // Find compatible meshes
+                for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                    var otherMesh = globalPool[subIndex];
+                    if (!this._canBeMerged(otherMesh)) {
+                        continue;
+                    }
+                    if (otherMesh.material !== current.material) {
+                        continue;
+                    }
+                    if (otherMesh.checkCollisions !== current.checkCollisions) {
+                        continue;
+                    }
+                    currentPool.push(otherMesh);
+                    globalLength--;
+                    globalPool.splice(subIndex, 1);
+                    subIndex--;
+                }
+                if (currentPool.length < 2) {
+                    continue;
+                }
+                // Merge meshes
+                BABYLON.Mesh.MergeMeshes(currentPool);
+            }
+            if (updateSelectionTree != undefined) {
+                if (updateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
+            }
+            else if (MergeMeshesOptimization.UpdateSelectionTree) {
+                scene.createOrUpdateSelectionOctree();
+            }
+            return true;
+        };
+        ;
         MergeMeshesOptimization._UpdateSelectionTree = false;
         return MergeMeshesOptimization;
     }(SceneOptimization));
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
-    // Options
+    /**
+     * Defines a list of options used by SceneOptimizer
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var SceneOptimizerOptions = /** @class */ (function () {
+        /**
+         * Creates a new list of options used by SceneOptimizer
+         * @param targetFrameRate defines the target frame rate to reach (60 by default)
+         * @param trackerDuration defines the interval between two checkes (2000ms by default)
+         */
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
             if (targetFrameRate === void 0) { targetFrameRate = 60; }
             if (trackerDuration === void 0) { trackerDuration = 2000; }
             this.targetFrameRate = targetFrameRate;
             this.trackerDuration = trackerDuration;
+            /**
+             * Gets the list of optimizations to apply
+             */
             this.optimizations = new Array();
         }
+        /**
+         * Add a new optimization
+         * @param optimization defines the SceneOptimization to add to the list of active optimizations
+         */
+        SceneOptimizerOptions.prototype.addOptimization = function (optimization) {
+            this.optimizations.push(optimization);
+            return this;
+        };
+        /**
+         * Add a new custom optimization
+         * @param onApply defines the callback called to apply the custom optimization.
+         * @param onGetDescription defines the callback called to get the description attached with the optimization.
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         */
+        SceneOptimizerOptions.prototype.addCustomOptimization = function (onApply, onGetDescription, priority) {
+            if (priority === void 0) { priority = 0; }
+            var optimization = new CustomOptimization(priority);
+            optimization.onApply = onApply;
+            optimization.onGetDescription = onGetDescription;
+            this.optimizations.push(optimization);
+            return this;
+        };
+        /**
+         * Creates a list of pre-defined optimizations aimed to reduce the visual impact on the scene
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         SceneOptimizerOptions.LowDegradationAllowed = function (targetFrameRate) {
             var result = new SceneOptimizerOptions(targetFrameRate);
             var priority = 0;
-            result.optimizations.push(new MergeMeshesOptimization(priority));
-            result.optimizations.push(new ShadowsOptimization(priority));
-            result.optimizations.push(new LensFlaresOptimization(priority));
+            result.addOptimization(new MergeMeshesOptimization(priority));
+            result.addOptimization(new ShadowsOptimization(priority));
+            result.addOptimization(new LensFlaresOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesOptimization(priority));
-            result.optimizations.push(new ParticlesOptimization(priority));
+            result.addOptimization(new PostProcessesOptimization(priority));
+            result.addOptimization(new ParticlesOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new TextureOptimization(priority, 1024));
+            result.addOptimization(new TextureOptimization(priority, 1024));
             return result;
         };
+        /**
+         * Creates a list of pre-defined optimizations aimed to have a moderate impact on the scene visual
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         SceneOptimizerOptions.ModerateDegradationAllowed = function (targetFrameRate) {
             var result = new SceneOptimizerOptions(targetFrameRate);
             var priority = 0;
-            result.optimizations.push(new MergeMeshesOptimization(priority));
-            result.optimizations.push(new ShadowsOptimization(priority));
-            result.optimizations.push(new LensFlaresOptimization(priority));
+            result.addOptimization(new MergeMeshesOptimization(priority));
+            result.addOptimization(new ShadowsOptimization(priority));
+            result.addOptimization(new LensFlaresOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesOptimization(priority));
-            result.optimizations.push(new ParticlesOptimization(priority));
+            result.addOptimization(new PostProcessesOptimization(priority));
+            result.addOptimization(new ParticlesOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new TextureOptimization(priority, 512));
+            result.addOptimization(new TextureOptimization(priority, 512));
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsOptimization(priority));
+            result.addOptimization(new RenderTargetsOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingOptimization(priority, 2));
+            result.addOptimization(new HardwareScalingOptimization(priority, 2));
             return result;
         };
+        /**
+         * Creates a list of pre-defined optimizations aimed to have a big impact on the scene visual
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         SceneOptimizerOptions.HighDegradationAllowed = function (targetFrameRate) {
             var result = new SceneOptimizerOptions(targetFrameRate);
             var priority = 0;
-            result.optimizations.push(new MergeMeshesOptimization(priority));
-            result.optimizations.push(new ShadowsOptimization(priority));
-            result.optimizations.push(new LensFlaresOptimization(priority));
+            result.addOptimization(new MergeMeshesOptimization(priority));
+            result.addOptimization(new ShadowsOptimization(priority));
+            result.addOptimization(new LensFlaresOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesOptimization(priority));
-            result.optimizations.push(new ParticlesOptimization(priority));
+            result.addOptimization(new PostProcessesOptimization(priority));
+            result.addOptimization(new ParticlesOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new TextureOptimization(priority, 256));
+            result.addOptimization(new TextureOptimization(priority, 256));
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsOptimization(priority));
+            result.addOptimization(new RenderTargetsOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingOptimization(priority, 4));
+            result.addOptimization(new HardwareScalingOptimization(priority, 4));
             return result;
         };
         return SceneOptimizerOptions;
     }());
     BABYLON.SceneOptimizerOptions = SceneOptimizerOptions;
-    // Scene optimizer tool
+    /**
+     * Class used to run optimizations in order to reach a target frame rate
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var SceneOptimizer = /** @class */ (function () {
-        function SceneOptimizer() {
-        }
-        SceneOptimizer._CheckCurrentState = function (scene, options, currentPriorityLevel, onSuccess, onFailure) {
-            // TODO: add an epsilon
-            if (scene.getEngine().getFps() >= options.targetFrameRate) {
-                if (onSuccess) {
-                    onSuccess();
+        /**
+         * Creates a new SceneOptimizer
+         * @param scene defines the scene to work on
+         * @param options defines the options to use with the SceneOptimizer
+         * @param autoGeneratePriorities defines if priorities must be generated and not read from SceneOptimization property (true by default)
+         */
+        function SceneOptimizer(scene, options, autoGeneratePriorities) {
+            if (autoGeneratePriorities === void 0) { autoGeneratePriorities = true; }
+            this._isRunning = false;
+            this._currentPriorityLevel = 0;
+            this._targetFrameRate = 60;
+            this._trackerDuration = 2000;
+            this._currentFrameRate = 0;
+            /**
+             * Defines an observable called when the optimizer reaches the target frame rate
+             */
+            this.onSuccessObservable = new BABYLON.Observable();
+            /**
+             * Defines an observable called when the optimizer enables an optimization
+             */
+            this.onNewOptimizationAppliedObservable = new BABYLON.Observable();
+            /**
+             * Defines an observable called when the optimizer is not able to reach the target frame rate
+             */
+            this.onFailureObservable = new BABYLON.Observable();
+            if (!options) {
+                this._options = new SceneOptimizerOptions();
+            }
+            else {
+                this._options = options;
+            }
+            if (this._options.targetFrameRate) {
+                this._targetFrameRate = this._options.targetFrameRate;
+            }
+            if (this._options.trackerDuration) {
+                this._trackerDuration = this._options.trackerDuration;
+            }
+            if (autoGeneratePriorities) {
+                var priority = 0;
+                for (var _i = 0, _a = this._options.optimizations; _i < _a.length; _i++) {
+                    var optim = _a[_i];
+                    optim.priority = priority++;
                 }
+            }
+            this._scene = scene || BABYLON.Engine.LastCreatedScene;
+        }
+        Object.defineProperty(SceneOptimizer.prototype, "currentPriorityLevel", {
+            /**
+             * Gets the current priority level (0 at start)
+             */
+            get: function () {
+                return this._currentPriorityLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "currentFrameRate", {
+            /**
+             * Gets the current frame rate checked by the SceneOptimizer
+             */
+            get: function () {
+                return this._currentFrameRate;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "targetFrameRate", {
+            /**
+             * Gets or sets the current target frame rate (60 by default)
+             */
+            get: function () {
+                return this._targetFrameRate;
+            },
+            /**
+             * Gets or sets the current target frame rate (60 by default)
+             */
+            set: function (value) {
+                this._targetFrameRate = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "trackerDuration", {
+            /**
+             * Gets or sets the current interval between two checks (every 2000ms by default)
+             */
+            get: function () {
+                return this._trackerDuration;
+            },
+            /**
+             * Gets or sets the current interval between two checks (every 2000ms by default)
+             */
+            set: function (value) {
+                this._trackerDuration = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "optimizations", {
+            /**
+             * Gets the list of active optimizations
+             */
+            get: function () {
+                return this._options.optimizations;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Stops the current optimizer
+         */
+        SceneOptimizer.prototype.stop = function () {
+            this._isRunning = false;
+        };
+        SceneOptimizer.prototype.reset = function () {
+            this._currentPriorityLevel = 0;
+        };
+        SceneOptimizer.prototype.start = function () {
+            var _this = this;
+            if (this._isRunning) {
+                return;
+            }
+            this._isRunning = true;
+            // Let's wait for the scene to be ready before running our check
+            this._scene.executeWhenReady(function () {
+                setTimeout(function () {
+                    _this._checkCurrentState();
+                }, _this._trackerDuration);
+            });
+        };
+        SceneOptimizer.prototype._checkCurrentState = function () {
+            var _this = this;
+            if (!this._isRunning) {
+                return;
+            }
+            var scene = this._scene;
+            var options = this._options;
+            this._currentFrameRate = Math.round(scene.getEngine().getFps());
+            if (this._currentFrameRate >= this._targetFrameRate) {
+                this._isRunning = false;
+                this.onSuccessObservable.notifyObservers(this);
                 return;
             }
             // Apply current level of optimizations
@@ -76379,39 +76764,58 @@ var BABYLON;
             var noOptimizationApplied = true;
             for (var index = 0; index < options.optimizations.length; index++) {
                 var optimization = options.optimizations[index];
-                if (optimization.priority === currentPriorityLevel) {
+                if (optimization.priority === this._currentPriorityLevel) {
                     noOptimizationApplied = false;
                     allDone = allDone && optimization.apply(scene);
+                    this.onNewOptimizationAppliedObservable.notifyObservers(optimization);
                 }
             }
             // If no optimization was applied, this is a failure :(
             if (noOptimizationApplied) {
-                if (onFailure) {
-                    onFailure();
-                }
+                this._isRunning = false;
+                this.onFailureObservable.notifyObservers(this);
                 return;
             }
             // If all optimizations were done, move to next level
             if (allDone) {
-                currentPriorityLevel++;
+                this._currentPriorityLevel++;
             }
             // Let's the system running for a specific amount of time before checking FPS
             scene.executeWhenReady(function () {
                 setTimeout(function () {
-                    SceneOptimizer._CheckCurrentState(scene, options, currentPriorityLevel, onSuccess, onFailure);
-                }, options.trackerDuration);
+                    _this._checkCurrentState();
+                }, _this._trackerDuration);
             });
         };
+        /**
+         * Release all resources
+         */
+        SceneOptimizer.prototype.dispose = function () {
+            this.onSuccessObservable.clear();
+            this.onFailureObservable.clear();
+            this.onNewOptimizationAppliedObservable.clear();
+        };
+        /**
+         * Helper function to create a SceneOptimizer with one single line of code
+         * @param scene defines the scene to work on
+         * @param options defines the options to use with the SceneOptimizer
+         * @param onSuccess defines a callback to call on success
+         * @param onFailure defines a callback to call on failure
+         */
         SceneOptimizer.OptimizeAsync = function (scene, options, onSuccess, onFailure) {
-            if (!options) {
-                options = SceneOptimizerOptions.ModerateDegradationAllowed();
+            var optimizer = new SceneOptimizer(scene, options || SceneOptimizerOptions.ModerateDegradationAllowed(), false);
+            if (onSuccess) {
+                optimizer.onSuccessObservable.add(function () {
+                    onSuccess();
+                });
             }
-            // Let's the system running for a specific amount of time before checking FPS
-            scene.executeWhenReady(function () {
-                setTimeout(function () {
-                    SceneOptimizer._CheckCurrentState(scene, options, 0, onSuccess, onFailure);
-                }, options.trackerDuration);
-            });
+            if (onFailure) {
+                optimizer.onFailureObservable.add(function () {
+                    onFailure();
+                });
+            }
+            optimizer.start();
+            return optimizer;
         };
         return SceneOptimizer;
     }());
