@@ -1410,8 +1410,7 @@ module BABYLON {
 
                     //Raise Mesh unselected event if we trigger the floor meshes and a non-floor mesh was previously selected
                     if (this._currentMeshSelected &&
-                        !this._isTeleportationFloor(this._currentMeshSelected) &&
-                        this.onSelectedMeshUnselected.hasObservers()) {
+                        !this._isTeleportationFloor(this._currentMeshSelected)) {
                         this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
                     }
 
@@ -1445,7 +1444,7 @@ module BABYLON {
                         }
                     }
                     else {
-                        if (this._currentMeshSelected && this.onSelectedMeshUnselected.hasObservers()) {
+                        if (this._currentMeshSelected) {
                             this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
                         }
                         this._currentMeshSelected = null;
