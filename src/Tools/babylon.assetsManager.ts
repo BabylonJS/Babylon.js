@@ -7,8 +7,20 @@ module BABYLON {
         ERROR
     }
 
+    /**
+     * Define an abstract asset task used with a {BABYLON.AssetsManager} class to load assets into a scene
+     */
     export abstract class AbstractAssetTask {
+        /**
+         * Callback called when the task is successful
+         * @param task contains the successful task
+         */
         public onSuccess: (task: any) => void;
+
+        /**
+         * Callback called when the task is successful
+         * @param task contains the successful task
+         */
         public onError: (task: any, message?: string, exception?: any) => void;
 
         constructor(public name: string) {
@@ -262,6 +274,7 @@ module BABYLON {
 
         protected tasks = new Array<AbstractAssetTask>();
         protected waitingTasksCount = 0;
+        protected totalTasksCount = 0;
 
         public onFinish: (tasks: AbstractAssetTask[]) => void;
         public onTaskSuccess: (task: AbstractAssetTask) => void;
@@ -335,10 +348,21 @@ module BABYLON {
             this.waitingTasksCount--;
 
             try {
+                if (task.taskState === AssetTaskState.DONE) {
+                    // Let's remove successfull tasks
+                    Tools.SetImmediate(() => {
+                        let index = this.tasks.indexOf(task);
+
+                        if (index > -1) {
+                            this.tasks.splice(index, 1);
+                        }
+                    });
+                }
+
                 if (this.onProgress) {
                     this.onProgress(
                         this.waitingTasksCount,
-                        this.tasks.length,
+                        this.totalTasksCount,
                         task
                     );
                 }
@@ -346,7 +370,7 @@ module BABYLON {
                 this.onProgressObservable.notifyObservers(
                     new AssetsProgressEvent(
                         this.waitingTasksCount,
-                        this.tasks.length,
+                        this.totalTasksCount,
                         task
                     )
                 );
@@ -413,13 +437,13 @@ module BABYLON {
             }
             this._isLoading = true;
             this.waitingTasksCount = this.tasks.length;
+            this.totalTasksCount = this.tasks.length;
 
             if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
                     this.onFinish(this.tasks);
                 }
                 this.onTasksDoneObservable.notifyObservers(this.tasks);
-                this._isLoading = false;
                 return this;
             }
 
