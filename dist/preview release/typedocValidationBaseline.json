@@ -1,7 +1,7 @@
 {
-  "errors": 11187,
+  "errors": 11183,
   "babylon.typedoc.json": {
-    "errors": 11187,
+    "errors": 11183,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -43197,11 +43197,6 @@
             "MissingText": true
           }
         },
-        "isReady": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "markAllMaterialsAsDirty": {
           "Parameter": {
             "flag": {
@@ -58062,23 +58057,6 @@
         "getClassName": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "isReady": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useInstances": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "setCustomMeshPosition": {
