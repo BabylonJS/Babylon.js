@@ -106,7 +106,6 @@
     },
     {
       "title": "Highlights",
-      "": 10,
       "scriptToRun": "/Demos/Highlights/highlights.js",
       "functionToCall": "CreateHighlightsScene",
       "referenceImage": "highlights.png",
