@@ -7,6 +7,7 @@ module.exports = function (config) {
         browserNoActivityTimeout: 3e5,
         browserDisconnectTimeout: 3e5,
         browserDisconnectTolerance: 3,
+        concurrency: 1,
 
         urlRoot: '/karma',
 
@@ -43,7 +44,10 @@ module.exports = function (config) {
             project: 'Babylon JS Validation Tests',
             video: false,
             debug : 'true',
-            timeout: 900
+            timeout: 1200,
+            build: process.env.TRAVIS_BUILD_NUMBER,
+            username: process.env.BROWSER_STACK_USERNAME,
+            accessKey: process.env.BROWSER_STACK_ACCESS_KEY
         },
         customLaunchers: {
             bs_chrome_win: {
