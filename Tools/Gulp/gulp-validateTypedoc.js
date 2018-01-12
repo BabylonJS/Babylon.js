@@ -502,8 +502,7 @@ Validate.prototype.validateNaming = function(parent, node) {
                 node.kindString,
                 "Naming",
                 "NotUnderscorePascalCase",
-                node.name + " should be Underscore Pascal Case (id: " + node.id + ")", Validate.position(node),
-        );
+                node.name + " should be Underscore Pascal Case (id: " + node.id + ")", Validate.position(node));
         }
     }
     else if (node.flags.isPrivate || node.flags.isProtected) {
