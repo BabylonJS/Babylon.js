@@ -1901,7 +1901,7 @@
                     hardwareInstancedRendering = engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
                 }
 
-                let mat = mesh.material;
+                let mat = mesh.material || this.defaultMaterial;
                 if (mat) {
                     let currentAlphaTestingState = engine.getAlphaTesting();
 
@@ -1909,7 +1909,7 @@
                         for (var subMesh of mesh.subMeshes) {
                             let effectiveMaterial = subMesh.getMaterial();
                             if (effectiveMaterial) {
-                                engine.setAlphaTesting(effectiveMaterial.needAlphaTesting());
+                                engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(mesh));
                                 if (!effectiveMaterial.isReadyForSubMesh(mesh, subMesh, hardwareInstancedRendering)) {
                                     engine.setAlphaTesting(currentAlphaTestingState);
                                     return false;
@@ -1917,7 +1917,7 @@
                             }
                         }
                     } else {
-                        engine.setAlphaTesting(mat.needAlphaTesting());
+                        engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(mesh));
                         if (!mat.isReady(mesh, hardwareInstancedRendering)) {
                             engine.setAlphaTesting(currentAlphaTestingState);
                             return false;
@@ -1936,6 +1936,15 @@
                             if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
                                 return false;
                             }
+                        }
+                    }
+                }
+
+                // Highlight layers
+                for (var layer of this.highlightLayers) {
+                    for (var subMesh of mesh.subMeshes) {
+                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
                         }
                     }
                 }
