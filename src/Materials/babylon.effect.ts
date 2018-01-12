@@ -1,12 +1,11 @@
 ﻿module BABYLON {
     export class EffectFallbacks {
-        private _defines = {};
+        private _defines: { [key: string]: Array<String> } = {};
 
         private _currentRank = 32;
         private _maxRank = -1;
 
-        private _mesh: AbstractMesh;
-        private _meshRank: number;
+        private _mesh: Nullable<AbstractMesh>;
 
         public unBindMesh() {
             this._mesh = null;
@@ -28,8 +27,7 @@
             this._defines[rank].push(define);
         }
 
-        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
-            this._meshRank = rank;
+        public addCPUSkinningFallback(rank: number, mesh: AbstractMesh) {
             this._mesh = mesh;
 
             if (rank < this._currentRank) {
@@ -81,19 +79,20 @@
         public uniformBuffersNames: string[];
         public samplers: string[];
         public defines: any;
-        public fallbacks: EffectFallbacks;
-        public onCompiled: (effect: Effect) => void;
-        public onError: (effect: Effect, errors: string) => void;
+        public fallbacks: Nullable<EffectFallbacks>;
+        public onCompiled: Nullable<(effect: Effect) => void>;
+        public onError: Nullable<(effect: Effect, errors: string) => void>;
         public indexParameters: any;
         public maxSimultaneousLights: number;
+        public transformFeedbackVaryings: Nullable<string[]>;
     }
 
     export class Effect {
         public name: any;
         public defines: string;
-        public onCompiled: (effect: Effect) => void;
-        public onError: (effect: Effect, errors: string) => void;
-        public onBind: (effect: Effect) => void;
+        public onCompiled: Nullable<(effect: Effect) => void>;
+        public onError: Nullable<(effect: Effect, errors: string) => void>;
+        public onBind: Nullable<(effect: Effect) => void>;
         public uniqueId = 0;
         public onCompileObservable = new Observable<Effect>();
         public onErrorObservable = new Observable<Effect>();
@@ -108,18 +107,22 @@
         private _compilationError = "";
         private _attributesNames: string[];
         private _attributes: number[];
-        private _uniforms: WebGLUniformLocation[];
+        private _uniforms: Nullable<WebGLUniformLocation>[];
         public _key: string;
         private _indexParameters: any;
-        private _fallbacks: EffectFallbacks;
+        private _fallbacks: Nullable<EffectFallbacks>;
         private _vertexSourceCode: string;
         private _fragmentSourceCode: string;
+        private _vertexSourceCodeOverride: string;
+        private _fragmentSourceCodeOverride: string;
+        private _transformFeedbackVaryings: Nullable<string[]>;
 
-        private _program: WebGLProgram;
+        public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
-        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], engine?: Engine, defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any) {
+        constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
+            fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
             this.name = baseName;
 
             if ((<EffectCreationOptions>attributesNamesOrOptions).attributes) {
@@ -133,18 +136,19 @@
                 this.onError = options.onError;
                 this.onCompiled = options.onCompiled;
                 this._fallbacks = options.fallbacks;
-                this._indexParameters = options.indexParameters;  
+                this._indexParameters = options.indexParameters;
+                this._transformFeedbackVaryings = options.transformFeedbackVaryings;
 
                 if (options.uniformBuffersNames) {
                     for (var i = 0; i < options.uniformBuffersNames.length; i++) {
                         this._uniformBuffersNames[options.uniformBuffersNames[i]] = i;
-                    }          
-                }    
+                    }
+                }
             } else {
-                this._engine = engine;
-                this.defines = defines;
-                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(samplers);
-                this._samplers = samplers;
+                this._engine = <Engine>engine;
+                this.defines = <string>defines;
+                this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
+                this._samplers = <string[]>samplers;
                 this._attributesNames = (<string[]>attributesNamesOrOptions);
 
                 this.onError = onError;
@@ -153,11 +157,11 @@
                 this._indexParameters = indexParameters;
                 this._fallbacks = fallbacks;
             }
-        
+
             this.uniqueId = Effect._uniqueIdSeed++;
 
-            var vertexSource;
-            var fragmentSource;
+            var vertexSource: any;
+            var fragmentSource: any;
 
             if (baseName.vertexElement) {
                 vertexSource = document.getElementById(baseName.vertexElement);
@@ -186,8 +190,11 @@
                             this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
                                 this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
                                     if (baseName) {
-                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + baseName + "\n" + migratedVertexCode;
-                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + baseName + "\n" + migratedFragmentCode;
+                                        var vertex = baseName.vertexElement || baseName.vertex || baseName;
+                                        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+
+                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
+                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
                                     } else {
                                         this._vertexSourceCode = migratedVertexCode;
                                         this._fragmentSourceCode = migratedFragmentCode;
@@ -240,7 +247,7 @@
             return this._uniformsNames.indexOf(uniformName);
         }
 
-        public getUniform(uniformName: string): WebGLUniformLocation {
+        public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
             return this._uniforms[this._uniformsNames.indexOf(uniformName)];
         }
 
@@ -258,25 +265,27 @@
                 func(this);
                 return;
             }
-            
+
             this.onCompileObservable.add((effect) => {
                 func(effect);
             });
         }
 
         public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (vertex instanceof HTMLElement) {
-                var vertexCode = Tools.GetDOMTextContent(vertex);
-                callback(vertexCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (vertex instanceof HTMLElement) {
+                    var vertexCode = Tools.GetDOMTextContent(vertex);
+                    callback(vertexCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
             if (vertex.substr(0, 7) === "base64:") {
-            	var vertexBinary = window.atob(vertex.substr(7));
-            	callback(vertexBinary);
-            	return;
+                var vertexBinary = window.atob(vertex.substr(7));
+                callback(vertexBinary);
+                return;
             }
 
             // Is in local store ?
@@ -294,22 +303,24 @@
             }
 
             // Vertex shader
-            Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            this._engine._loadFile(vertexShaderUrl + ".vertex.fx", callback);
         }
 
         public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
-            // DOM element ?
-            if (fragment instanceof HTMLElement) {
-                var fragmentCode = Tools.GetDOMTextContent(fragment);
-                callback(fragmentCode);
-                return;
+            if (Tools.IsWindowObjectExist()) {
+                // DOM element ?
+                if (fragment instanceof HTMLElement) {
+                    var fragmentCode = Tools.GetDOMTextContent(fragment);
+                    callback(fragmentCode);
+                    return;
+                }
             }
 
             // Base64 encoded ?
             if (fragment.substr(0, 7) === "base64:") {
-            	var fragmentBinary = window.atob(fragment.substr(7));
-            	callback(fragmentBinary);
-            	return;
+                var fragmentBinary = window.atob(fragment.substr(7));
+                callback(fragmentBinary);
+                return;
             }
 
             // Is in local store ?
@@ -332,7 +343,7 @@
             }
 
             // Fragment shader
-            Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            this._engine._loadFile(fragmentShaderUrl + ".fragment.fx", callback);
         }
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
@@ -345,22 +356,22 @@
             // Number lines of shaders source code
             var i = 2;
             var regex = /\n/gm;
-            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedVertexCode = "\n1\t" + vertexCode.replace(regex, function () { return "\n" + (i++) + "\t"; });
             i = 2;
-            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function() { return "\n" + (i++) + "\t"; });
+            var formattedFragmentCode = "\n1\t" + fragmentCode.replace(regex, function () { return "\n" + (i++) + "\t"; });
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
             else if (this.name.vertex) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
             }
             else {
-                BABYLON.Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
             }
         };
 
@@ -378,29 +389,33 @@
                 callback(preparedSourceCode.replace("#version 300 es", ""));
                 return;
             }
-            
+
+            var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
+
             // Remove extensions 
             // #extension GL_OES_standard_derivatives : enable
             // #extension GL_EXT_shader_texture_lod : enable
             // #extension GL_EXT_frag_depth : enable
-            var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth).+enable/g;
+            // #extension GL_EXT_draw_buffers : require
+            var regex = /#extension.+(GL_OES_standard_derivatives|GL_EXT_shader_texture_lod|GL_EXT_frag_depth|GL_EXT_draw_buffers).+(enable|require)/g;
             var result = preparedSourceCode.replace(regex, "");
 
             // Migrate to GLSL v300
             result = result.replace(/varying(?![\n\r])\s/g, isFragment ? "in " : "out ");
             result = result.replace(/attribute[ \t]/g, "in ");
             result = result.replace(/[ \t]attribute/g, " in");
-            
+
             if (isFragment) {
-                result = result.replace(/texture2DLodEXT\(/g, "textureLod(");
-                result = result.replace(/textureCubeLodEXT\(/g, "textureLod(");
-                result = result.replace(/texture2D\(/g, "texture(");
-                result = result.replace(/textureCube\(/g, "texture(");
+                result = result.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
+                result = result.replace(/texture2D\s*\(/g, "texture(");
+                result = result.replace(/textureCube\s*\(/g, "texture(");
                 result = result.replace(/gl_FragDepthEXT/g, "gl_FragDepth");
                 result = result.replace(/gl_FragColor/g, "glFragColor");
-                result = result.replace(/void\s+?main\(/g, "out vec4 glFragColor;\nvoid main(");
+                result = result.replace(/gl_FragData/g, "glFragData");
+                result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
-            
+
             callback(result);
         }
 
@@ -458,7 +473,7 @@
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i) + "\n";
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
                             }
                         } else {
                             if (!this._engine.supportsUniformBuffers) {
@@ -476,8 +491,8 @@
                 } else {
                     var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
-                        Effect.IncludesShadersStore[includeFile] = fileContent;
+                    this._engine._loadFile(includeShaderUrl, (fileContent) => {
+                        Effect.IncludesShadersStore[includeFile] = fileContent as string;
                         this._processIncludes(<string>returnValue, callback);
                     });
                     return;
@@ -505,17 +520,55 @@
             return source;
         }
 
+        public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
+            this._isReady = false;
+
+            this._vertexSourceCodeOverride = vertexSourceCode;
+            this._fragmentSourceCodeOverride = fragmentSourceCode;
+            this.onError = (effect, error) => {
+                if (onError) {
+                    onError(error);
+                }
+            };
+            this.onCompiled = () => {
+                var scenes = this.getEngine().scenes;
+                for (var i = 0; i < scenes.length; i++) {
+                    scenes[i].markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                }
+
+                if (onCompiled) {
+                    onCompiled(this._program);
+                }
+            };
+            this._fallbacks = null;
+            this._prepareEffect();
+        }
+
+        public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
+            let engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
             let fallbacks = this._fallbacks;
             this._valueCache = {};
 
-            try {
-                var engine = this._engine;
-                this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines);
+            var previousProgram = this._program;
 
-                if (engine.webGLVersion > 1) {
+            try {
+                let engine = this._engine;
+
+                if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
+                    this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
+                }
+                else {
+                    this._program = engine.createShaderProgram(this._vertexSourceCode, this._fragmentSourceCode, defines, undefined, this._transformFeedbackVaryings);
+                }
+                this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
+
+                if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
@@ -548,19 +601,31 @@
                 if (this._fallbacks) {
                     this._fallbacks.unBindMesh();
                 }
+
+                if (previousProgram) {
+                    this.getEngine()._deleteProgram(previousProgram);
+                }
             } catch (e) {
                 this._compilationError = e.message;
 
                 // Let's go through fallbacks then
                 Tools.Error("Unable to compile effect:");
-                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function(uniform) {
+                Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
                     return " " + uniform;
                 }));
-                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function(attribute) {
+                Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
                     return " " + attribute;
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
                 Tools.Error("Error: " + this._compilationError);
+                if (previousProgram) {
+                    this._program = previousProgram;
+                    this._isReady = true;
+                    if (this.onError) {
+                        this.onError(this, this._compilationError);
+                    }
+                    this.onErrorObservable.notifyObservers(this);
+                }
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Trying next fallback.");
@@ -579,7 +644,7 @@
                         this._fallbacks.unBindMesh();
                     }
                 }
-            }            
+            }
         }
 
         public get isSupported(): boolean {
@@ -590,7 +655,7 @@
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 
-        public setTexture(channel: string, texture: BaseTexture): void {
+        public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
             this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
 
@@ -605,7 +670,7 @@
             this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         }
 
-        public setTextureFromPostProcess(channel: string, postProcess: PostProcess): void {
+        public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
@@ -697,15 +762,28 @@
         }
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
-            if (Effect._baseCache[this._uniformBuffersNames[name]] === buffer) {
+            let bufferName = this._uniformBuffersNames[name];
+            if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
                 return;
             }
-            Effect._baseCache[this._uniformBuffersNames[name]] = buffer;
-            this._engine.bindUniformBufferBase(buffer, this._uniformBuffersNames[name]);
+            Effect._baseCache[bufferName] = buffer;
+            this._engine.bindUniformBufferBase(buffer, bufferName);
         }
 
         public bindUniformBlock(blockName: string, index: number): void {
             this._engine.bindUniformBlock(this._program, blockName, index);
+        }
+
+        public setInt(uniformName: string, value: number): Effect {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+
+            this._valueCache[uniformName] = value;
+
+            this._engine.setInt(this.getUniform(uniformName), value);
+
+            return this;
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {
@@ -794,7 +872,7 @@
 
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
             if (!matrices) {
-                return;
+                return this;
             }
 
             this._valueCache[uniformName] = null;
@@ -906,8 +984,8 @@
         }
 
         // Statics
-        public static ShadersStore = {};
-        public static IncludesShadersStore = {};
+        public static ShadersStore: { [key: string]: string } = {};
+        public static IncludesShadersStore: { [key: string]: string } = {};
 
         public static ResetCache() {
             Effect._baseCache = {};

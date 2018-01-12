@@ -6,6 +6,7 @@ module BABYLON {
         public DIFFUSE = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public UV1 = false;
@@ -23,21 +24,21 @@ module BABYLON {
 
     export class FireMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
-        private _diffuseTexture: BaseTexture;
+        private _diffuseTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public diffuseTexture: BaseTexture;        
+        public diffuseTexture: Nullable<BaseTexture>;        
         
         @serializeAsTexture("distortionTexture")
-        private _distortionTexture: BaseTexture;
+        private _distortionTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public distortionTexture: BaseTexture;       
+        public distortionTexture: Nullable<BaseTexture>;       
         
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: BaseTexture;
+        private _opacityTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityTexture: BaseTexture;
+        public opacityTexture: Nullable<BaseTexture>;
         
-        @serialize("diffuseColor")
+        @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
         
         @serialize()
@@ -59,7 +60,7 @@ module BABYLON {
             return true;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -106,7 +107,7 @@ module BABYLON {
             }
             
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
@@ -146,7 +147,7 @@ module BABYLON {
                 
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
-                    <EffectCreationOptions>{
+                    {
                         attributes: attribs,
                         uniformsNames: ["world", "view", "viewProjection", "vEyePosition",
                                 "vFogInfos", "vFogColor", "pointSize",
@@ -164,11 +165,14 @@ module BABYLON {
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
-                        onError: this.onError
+                        onError: this.onError,
+                        indexParameters: null,
+                        maxSimultaneousLights: 4,
+                        transformFeedbackVaryings: null
                     }, engine), defines);
             }
             
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -187,6 +191,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices
@@ -219,7 +226,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);               
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);

@@ -4,33 +4,33 @@
         * Public members
         */
         // Post-processes
-        public originalPostProcess: PostProcess;
-        public downSampleX4PostProcess: PostProcess = null;
-        public brightPassPostProcess: PostProcess = null;
+        public originalPostProcess: Nullable<PostProcess>;
+        public downSampleX4PostProcess: Nullable<PostProcess> = null;
+        public brightPassPostProcess: Nullable<PostProcess> = null;
         public blurHPostProcesses: PostProcess[] = [];
         public blurVPostProcesses: PostProcess[] = [];
-        public textureAdderPostProcess: PostProcess = null;
+        public textureAdderPostProcess: Nullable<PostProcess> = null;
 
-        public volumetricLightPostProcess: PostProcess = null;
-        public volumetricLightSmoothXPostProcess: BlurPostProcess = null;
-        public volumetricLightSmoothYPostProcess: BlurPostProcess = null;
-        public volumetricLightMergePostProces: PostProcess = null;
-        public volumetricLightFinalPostProcess: PostProcess = null;
+        public volumetricLightPostProcess: Nullable<PostProcess> = null;
+        public volumetricLightSmoothXPostProcess: Nullable<BlurPostProcess> = null;
+        public volumetricLightSmoothYPostProcess: Nullable<BlurPostProcess> = null;
+        public volumetricLightMergePostProces: Nullable<PostProcess> = null;
+        public volumetricLightFinalPostProcess: Nullable<PostProcess> = null;
 
-        public luminancePostProcess: PostProcess = null;
+        public luminancePostProcess: Nullable<PostProcess> = null;
         public luminanceDownSamplePostProcesses: PostProcess[] = [];
-        public hdrPostProcess: PostProcess = null;
+        public hdrPostProcess: Nullable<PostProcess> = null;
 
-        public textureAdderFinalPostProcess: PostProcess = null;
-        public lensFlareFinalPostProcess: PostProcess = null;
-        public hdrFinalPostProcess: PostProcess = null;
+        public textureAdderFinalPostProcess: Nullable<PostProcess> = null;
+        public lensFlareFinalPostProcess: Nullable<PostProcess> = null;
+        public hdrFinalPostProcess: Nullable<PostProcess> = null;
 
-        public lensFlarePostProcess: PostProcess = null;
-        public lensFlareComposePostProcess: PostProcess = null;
+        public lensFlarePostProcess: Nullable<PostProcess> = null;
+        public lensFlareComposePostProcess: Nullable<PostProcess> = null;
 
-        public motionBlurPostProcess: PostProcess = null;
+        public motionBlurPostProcess: Nullable<PostProcess> = null;
 
-        public depthOfFieldPostProcess: PostProcess = null;
+        public depthOfFieldPostProcess: Nullable<PostProcess> = null;
 
         // Values
         @serialize()
@@ -44,7 +44,7 @@
         @serialize()
         public exposure: number = 1.0;
         @serializeAsTexture("lensTexture")
-        public lensTexture: Texture = null;
+        public lensTexture: Nullable<Texture> = null;
 
         @serialize()
         public volumetricLightCoefficient: number = 0.2;
@@ -53,7 +53,7 @@
         @serialize()
         public volumetricLightBlurScale: number = 64.0;
 
-        public sourceLight: SpotLight | DirectionalLight = null;
+        public sourceLight: Nullable<SpotLight |  DirectionalLight> = null;
 
         @serialize()
         public hdrMinimumLuminance: number = 1.0;
@@ -63,7 +63,7 @@
         public hdrIncreaseRate: number = 0.5;
 
         @serializeAsTexture("lensColorTexture")
-        public lensColorTexture: Texture = null;
+        public lensColorTexture: Nullable<Texture> = null;
         @serialize()
         public lensFlareStrength: number = 20.0;
         @serialize()
@@ -73,9 +73,9 @@
         @serialize()
         public lensFlareDistortionStrength: number = 16.0;
         @serializeAsTexture("lensStarTexture")
-        public lensStarTexture: Texture = null;
+        public lensStarTexture: Nullable<Texture> = null;
         @serializeAsTexture("lensFlareDirtTexture")
-        public lensFlareDirtTexture: Texture = null;
+        public lensFlareDirtTexture: Nullable<Texture> = null;
 
         @serialize()
         public depthOfFieldDistance: number = 10.0;
@@ -93,12 +93,14 @@
         * Private members
         */
         private _scene: Scene;
-        private _currentDepthOfFieldSource: PostProcess = null;
-        private _basePostProcess: PostProcess;
+        private _currentDepthOfFieldSource: Nullable<PostProcess> = null;
+        private _basePostProcess: Nullable<PostProcess>;
 
         private _hdrCurrentLuminance: number = 1.0;
 
         private _floatTextureType: number;
+
+        @serialize()
         private _ratio: number;
 
         // Getters and setters
@@ -185,7 +187,7 @@
                     return;
                 }
             }
-        
+
             this._vlsEnabled = enabled;
             this._buildPipeline();
         }
@@ -209,7 +211,7 @@
             return this._volumetricLightStepsCount;
         }
 
-        public set volumetricLightStepsCount(count: number) {
+        public set volumetricLightStepsCount(count: number)  {
             if (this.volumetricLightPostProcess) {
                 this.volumetricLightPostProcess.updateEffect("#define VLS\n#define NB_STEPS " + count.toFixed(1));
             }
@@ -226,7 +228,7 @@
             if (this.motionBlurPostProcess) {
                 this.motionBlurPostProcess.updateEffect("#define MOTION_BLUR\n#define MAX_MOTION_SAMPLES " + samples.toFixed(1));
             }
-            
+
             this._motionBlurSamples = samples;
         }
 
@@ -238,9 +240,9 @@
          * @param {BABYLON.PostProcess} originalPostProcess - the custom original color post-process. Must be "reusable". Can be null.
          * @param {BABYLON.Camera[]} cameras - The array of cameras that the rendering pipeline will be attached to
          */
-        constructor(name: string, scene: Scene, ratio: number, originalPostProcess: PostProcess = null, cameras?: Camera[]) {
+        constructor(name: string, scene: Scene, ratio: number, originalPostProcess: Nullable<PostProcess> = null, cameras?: Camera[]) {
             super(scene.getEngine(), name);
-            this._cameras = cameras || [];
+            this._cameras = cameras ||  [];
 
             // Initialize
             this._scene = scene;
@@ -280,7 +282,7 @@
             if (this._vlsEnabled) {
                 // Create volumetric light
                 this._createVolumetricLightPostProcess(scene, ratio);
-        
+
                 // Create volumetric light final post-process
                 this.volumetricLightFinalPostProcess = new PostProcess("HDRVLSFinal", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRVLSFinal", () => { return this.volumetricLightFinalPostProcess; }, true));
@@ -312,7 +314,7 @@
                 this.lensFlareFinalPostProcess = new PostProcess("HDRPostLensFlareDepthOfFieldSource", "standard", [], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define PASS_POST_PROCESS", Engine.TEXTURETYPE_UNSIGNED_INT);
                 this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRPostLensFlareDepthOfFieldSource", () => { return this.lensFlareFinalPostProcess; }, true));
             }
-        
+
             if (this._hdrEnabled) {
                 // Create luminance
                 this._createLuminancePostProcesses(scene, this._floatTextureType);
@@ -350,10 +352,14 @@
 
             this.downSampleX4PostProcess.onApply = (effect: Effect) => {
                 var id = 0;
+                let width = (<PostProcess>this.downSampleX4PostProcess).width;
+                let height = (<PostProcess>this.downSampleX4PostProcess).height;
+
+
                 for (var i = -2; i < 2; i++) {
                     for (var j = -2; j < 2; j++) {
-                        downSampleX4Offsets[id] = (i + 0.5) * (1.0 / this.downSampleX4PostProcess.width);
-                        downSampleX4Offsets[id + 1] = (j + 0.5) * (1.0 / this.downSampleX4PostProcess.height);
+                        downSampleX4Offsets[id] = (i + 0.5) * (1.0 / width);
+                        downSampleX4Offsets[id + 1] = (j + 0.5) * (1.0 / height);
                         id += 2;
                     }
                 }
@@ -371,8 +377,8 @@
             this.brightPassPostProcess = new PostProcess("HDRBrightPass", "standard", ["dsOffsets", "brightThreshold"], [], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, "#define BRIGHT_PASS", Engine.TEXTURETYPE_UNSIGNED_INT);
 
             this.brightPassPostProcess.onApply = (effect: Effect) => {
-                var sU = (1.0 / this.brightPassPostProcess.width);
-                var sV = (1.0 / this.brightPassPostProcess.height);
+                var sU = (1.0 / (<PostProcess>this.brightPassPostProcess).width);
+                var sV = (1.0 / (<PostProcess>this.brightPassPostProcess).height);
 
                 brightOffsets[0] = -0.5 * sU;
                 brightOffsets[1] = 0.5 * sV;
@@ -395,17 +401,17 @@
         private _createBlurPostProcesses(scene: Scene, ratio: number, indice: number, blurWidthKey: string = "blurWidth"): void {
             var engine = scene.getEngine();
 
-            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), this[blurWidthKey], ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurX = new BlurPostProcess("HDRBlurH" + "_" + indice, new Vector2(1, 0), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            var blurY = new BlurPostProcess("HDRBlurV" + "_" + indice, new Vector2(0, 1), (<any>this)[blurWidthKey], ratio, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
             blurX.onActivateObservable.add(() => {
-                let dw = blurX.width / engine.getRenderingCanvas().width;
-                blurX.kernel = this[blurWidthKey] * dw;
+                let dw = blurX.width / engine.getRenderWidth();
+                blurX.kernel = (<any>this)[blurWidthKey] * dw;
             });
 
             blurY.onActivateObservable.add(() => {
-                let dw = blurY.height / engine.getRenderingCanvas().height;
-                blurY.kernel = this.horizontalBlur ? 64 * dw : this[blurWidthKey] * dw;
+                let dw = blurY.height / engine.getRenderHeight();
+                blurY.kernel = this.horizontalBlur ? 64 * dw : (<any>this)[blurWidthKey] * dw;
             });
 
             this.addEffect(new PostProcessRenderEffect(scene.getEngine(), "HDRBlurH" + indice, () => { return blurX; }, true));
@@ -432,7 +438,7 @@
         }
 
         private _createVolumetricLightPostProcess(scene: Scene, ratio: number): void {
-            var geometryRenderer = scene.enableGeometryBufferRenderer();
+            var geometryRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
             geometryRenderer.enablePosition = true;
 
             var geometry = geometryRenderer.getGBuffer();
@@ -440,7 +446,7 @@
             // Base post-process
             this.volumetricLightPostProcess = new PostProcess("HDRVLS", "standard",
                 ["shadowViewProjection", "cameraPosition", "sunDirection", "sunColor", "scatteringCoefficient", "scatteringPower", "depthValues"],
-                ["shadowMapSampler", "positionSampler" ],
+                ["shadowMapSampler", "positionSampler"],
                 ratio / 8,
                 null,
                 Texture.BILINEAR_SAMPLINGMODE,
@@ -450,7 +456,7 @@
             var depthValues = Vector2.Zero();
 
             this.volumetricLightPostProcess.onApply = (effect: Effect) => {
-                if (this.sourceLight && this.sourceLight.getShadowGenerator()) {
+                if (this.sourceLight && this.sourceLight.getShadowGenerator() && this._scene.activeCamera) {
                     var generator = <ShadowGenerator>this.sourceLight.getShadowGenerator();
 
                     effect.setTexture("shadowMapSampler", generator.getShadowMap());
@@ -458,8 +464,8 @@
 
                     effect.setColor3("sunColor", this.sourceLight.diffuse);
                     effect.setVector3("sunDirection", this.sourceLight.getShadowDirection());
-                    
-                    effect.setVector3("cameraPosition", scene.activeCamera.globalPosition);
+
+                    effect.setVector3("cameraPosition", this._scene.activeCamera.globalPosition);
                     effect.setMatrix("shadowViewProjection", generator.getTransformMatrix());
 
                     effect.setFloat("scatteringCoefficient", this.volumetricLightCoefficient);
@@ -496,8 +502,8 @@
 
             var offsets: number[] = [];
             this.luminancePostProcess.onApply = (effect: Effect) => {
-                var sU = (1.0 / this.luminancePostProcess.width);
-                var sV = (1.0 / this.luminancePostProcess.height);
+                var sU = (1.0 / (<PostProcess>this.luminancePostProcess).width);
+                var sV = (1.0 / (<PostProcess>this.luminancePostProcess).height);
 
                 offsets[0] = -0.5 * sU;
                 offsets[1] = 0.5 * sV;
@@ -528,12 +534,16 @@
             }
 
             // Create callbacks and add effects
-            var lastLuminance = this.luminancePostProcess;
+            var lastLuminance: Nullable<PostProcess> = this.luminancePostProcess;
 
             this.luminanceDownSamplePostProcesses.forEach((pp, index) => {
                 var downSampleOffsets = new Array<number>(18);
 
                 pp.onApply = (effect: Effect) => {
+                    if (!lastLuminance) {
+                        return;
+                    }
+
                     var id = 0;
                     for (var x = -1; x < 2; x++) {
                         for (var y = -1; y < 2; y++) {
@@ -627,8 +637,8 @@
                 effect.setFloat("haloWidth", this.lensFlareHaloWidth);
 
                 // Shift
-                resolution.x = this.lensFlarePostProcess.width;
-                resolution.y = this.lensFlarePostProcess.height;
+                resolution.x = (<PostProcess>this.lensFlarePostProcess).width;
+                resolution.y = (<PostProcess>this.lensFlarePostProcess).height;
                 effect.setVector2("resolution", resolution);
 
                 effect.setFloat("distortionStrength", this.lensFlareDistortionStrength);
@@ -650,13 +660,17 @@
             );
 
             this.lensFlareComposePostProcess.onApply = (effect: Effect) => {
+                if (!this._scene.activeCamera) {
+                    return;
+                }
+
                 effect.setTextureFromPostProcess("otherSampler", this._currentDepthOfFieldSource);
                 effect.setTexture("lensDirtSampler", this.lensFlareDirtTexture);
                 effect.setTexture("lensStarSampler", this.lensStarTexture);
 
                 // Lens start rotation matrix
-                var camerax = this._scene.activeCamera.getViewMatrix().getRow(0);
-                var cameraz = this._scene.activeCamera.getViewMatrix().getRow(2);
+                var camerax = (<Vector4>this._scene.activeCamera.getViewMatrix().getRow(0));
+                var cameraz = (<Vector4>this._scene.activeCamera.getViewMatrix().getRow(2));
                 var camRot = Vector3.Dot(camerax.toVector3(), new Vector3(1.0, 0.0, 0.0)) + Vector3.Dot(cameraz.toVector3(), new Vector3(0.0, 0.0, 1.0));
                 camRot *= 4.0;
 
@@ -711,8 +725,8 @@
                 effect.setMatrix("prevViewProjection", prevViewProjection);
                 prevViewProjection = viewProjection;
 
-                screenSize.x = this.motionBlurPostProcess.width;
-                screenSize.y = this.motionBlurPostProcess.height;
+                screenSize.x = (<PostProcess>this.motionBlurPostProcess).width;
+                screenSize.y = (<PostProcess>this.motionBlurPostProcess).height;
                 effect.setVector2("screenSize", screenSize);
 
                 motionScale = scene.getEngine().getFps() / 60.0;
@@ -726,9 +740,9 @@
         }
 
         private _getDepthTexture(): Texture {
-            var geometry = this._scene.enableGeometryBufferRenderer();
-            if (geometry) {
-                return geometry.getGBuffer().textures[0];
+            if (this._scene.getEngine().getCaps().drawBuffersExtension) {
+                let renderer = <GeometryBufferRenderer>this._scene.enableGeometryBufferRenderer();
+                return renderer.getGBuffer().textures[0];
             }
 
             return this._scene.enableDepthRenderer().getDepthMap();
@@ -744,13 +758,13 @@
                 if (this.brightPassPostProcess) { this.brightPassPostProcess.dispose(camera); }
                 if (this.textureAdderPostProcess) { this.textureAdderPostProcess.dispose(camera); }
                 if (this.textureAdderFinalPostProcess) { this.textureAdderFinalPostProcess.dispose(camera); }
-                
+
                 if (this.volumetricLightPostProcess) { this.volumetricLightPostProcess.dispose(camera); }
                 if (this.volumetricLightSmoothXPostProcess) { this.volumetricLightSmoothXPostProcess.dispose(camera); }
                 if (this.volumetricLightSmoothYPostProcess) { this.volumetricLightSmoothYPostProcess.dispose(camera); }
                 if (this.volumetricLightMergePostProces) { this.volumetricLightMergePostProces.dispose(camera); }
                 if (this.volumetricLightFinalPostProcess) { this.volumetricLightFinalPostProcess.dispose(camera); }
-            
+
                 if (this.lensFlarePostProcess) { this.lensFlarePostProcess.dispose(camera); }
                 if (this.lensFlareComposePostProcess) { this.lensFlareComposePostProcess.dispose(camera); }
 
@@ -761,7 +775,7 @@
                 if (this.luminancePostProcess) { this.luminancePostProcess.dispose(camera); }
                 if (this.hdrPostProcess) { this.hdrPostProcess.dispose(camera); }
                 if (this.hdrFinalPostProcess) { this.hdrFinalPostProcess.dispose(camera); }
-            
+
                 if (this.depthOfFieldPostProcess) { this.depthOfFieldPostProcess.dispose(camera); }
 
                 if (this.motionBlurPostProcess) { this.motionBlurPostProcess.dispose(camera); }

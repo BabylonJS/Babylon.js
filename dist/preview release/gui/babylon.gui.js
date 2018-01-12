@@ -1,19 +1,29 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
+var BABYLON = babylonDependency;
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+            var extendStatics = Object.setPrototypeOf ||
+                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            return function (d, b) {
+                extendStatics(d, b);
+                function __() { this.constructor = d; }
+                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+            };
+        })();
+        /// <reference path="../../dist/preview release/babylon.d.ts"/>
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var AdvancedDynamicTexture = (function (_super) {
+        var AdvancedDynamicTexture = /** @class */ (function (_super) {
             __extends(AdvancedDynamicTexture, _super);
             function AdvancedDynamicTexture(name, width, height, scene, generateMipMaps, samplingMode) {
                 if (width === void 0) { width = 0; }
@@ -29,16 +39,45 @@ var BABYLON;
                 _this._idealWidth = 0;
                 _this._idealHeight = 0;
                 _this._renderAtIdealSize = false;
-                _this._renderObserver = _this.getScene().onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
+                _this._blockNextFocusCheck = false;
+                _this._renderScale = 1;
+                scene = _this.getScene();
+                if (!scene || !_this._texture) {
+                    return _this;
+                }
+                _this._renderObserver = scene.onBeforeCameraRenderObservable.add(function (camera) { return _this._checkUpdate(camera); });
+                _this._preKeyboardObserver = scene.onPreKeyboardObservable.add(function (info) {
+                    if (!_this._focusedControl) {
+                        return;
+                    }
+                    if (info.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+                        _this._focusedControl.processKeyboard(info.event);
+                    }
+                    info.skipOnPointerObservable = true;
+                });
                 _this._rootContainer._link(null, _this);
                 _this.hasAlpha = true;
                 if (!width || !height) {
-                    _this._resizeObserver = _this.getScene().getEngine().onResizeObservable.add(function () { return _this._onResize(); });
+                    _this._resizeObserver = scene.getEngine().onResizeObservable.add(function () { return _this._onResize(); });
                     _this._onResize();
                 }
                 _this._texture.isReady = true;
                 return _this;
             }
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "renderScale", {
+                get: function () {
+                    return this._renderScale;
+                },
+                set: function (value) {
+                    if (value === this._renderScale) {
+                        return;
+                    }
+                    this._renderScale = value;
+                    this._onResize();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(AdvancedDynamicTexture.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -111,6 +150,44 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "focusedControl", {
+                get: function () {
+                    return this._focusedControl;
+                },
+                set: function (control) {
+                    if (this._focusedControl == control) {
+                        return;
+                    }
+                    if (this._focusedControl) {
+                        this._focusedControl.onBlur();
+                    }
+                    if (control) {
+                        control.onFocus();
+                    }
+                    this._focusedControl = control;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AdvancedDynamicTexture.prototype, "isForeground", {
+                get: function () {
+                    if (!this.layer) {
+                        return true;
+                    }
+                    return (!this.layer.isBackground);
+                },
+                set: function (value) {
+                    if (!this.layer) {
+                        return;
+                    }
+                    if (this.layer.isBackground === !value) {
+                        return;
+                    }
+                    this.layer.isBackground = !value;
+                },
+                enumerable: true,
+                configurable: true
+            });
             AdvancedDynamicTexture.prototype.executeOnAllControls = function (func, container) {
                 if (!container) {
                     container = this._rootContainer;
@@ -136,32 +213,44 @@ var BABYLON;
                 return this;
             };
             AdvancedDynamicTexture.prototype.dispose = function () {
-                this.getScene().onBeforeCameraRenderObservable.remove(this._renderObserver);
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
+                scene.onBeforeCameraRenderObservable.remove(this._renderObserver);
                 if (this._resizeObserver) {
-                    this.getScene().getEngine().onResizeObservable.remove(this._resizeObserver);
+                    scene.getEngine().onResizeObservable.remove(this._resizeObserver);
                 }
                 if (this._pointerMoveObserver) {
-                    this.getScene().onPrePointerObservable.remove(this._pointerMoveObserver);
+                    scene.onPrePointerObservable.remove(this._pointerMoveObserver);
                 }
                 if (this._pointerObserver) {
-                    this.getScene().onPointerObservable.remove(this._pointerObserver);
+                    scene.onPointerObservable.remove(this._pointerObserver);
                 }
-                if (this._canvasBlurObserver) {
-                    this.getScene().getEngine().onCanvasBlurObservable.remove(this._canvasBlurObserver);
+                if (this._preKeyboardObserver) {
+                    scene.onPreKeyboardObservable.remove(this._preKeyboardObserver);
+                }
+                if (this._canvasPointerOutObserver) {
+                    scene.getEngine().onCanvasPointerOutObservable.remove(this._canvasPointerOutObserver);
                 }
                 if (this._layerToDispose) {
                     this._layerToDispose.texture = null;
                     this._layerToDispose.dispose();
                     this._layerToDispose = null;
                 }
+                this._rootContainer.dispose();
                 _super.prototype.dispose.call(this);
             };
             AdvancedDynamicTexture.prototype._onResize = function () {
+                var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
                 // Check size
-                var engine = this.getScene().getEngine();
+                var engine = scene.getEngine();
                 var textureSize = this.getSize();
-                var renderWidth = engine.getRenderWidth();
-                var renderHeight = engine.getRenderHeight();
+                var renderWidth = engine.getRenderWidth() * this._renderScale;
+                var renderHeight = engine.getRenderHeight() * this._renderScale;
                 if (this._renderAtIdealSize) {
                     if (this._idealWidth) {
                         renderHeight = (renderHeight * this._idealWidth) / renderWidth;
@@ -192,6 +281,9 @@ var BABYLON;
                 }
                 if (this._isFullscreen && this._linkedControls.length) {
                     var scene = this.getScene();
+                    if (!scene) {
+                        return;
+                    }
                     var globalViewport = this._getGlobalViewport(scene);
                     for (var _i = 0, _a = this._linkedControls; _i < _a.length; _i++) {
                         var control = _a[_i];
@@ -212,6 +304,8 @@ var BABYLON;
                             continue;
                         }
                         control.notRenderable = false;
+                        // Account for RenderScale.
+                        projectedPosition.scaleInPlace(this.renderScale);
                         control._moveToProjectedPosition(projectedPosition);
                     }
                 }
@@ -223,7 +317,6 @@ var BABYLON;
                 this.update();
             };
             AdvancedDynamicTexture.prototype._render = function () {
-                var engine = this.getScene().getEngine();
                 var textureSize = this.getSize();
                 var renderWidth = textureSize.width;
                 var renderHeight = textureSize.height;
@@ -242,83 +335,123 @@ var BABYLON;
                 var measure = new GUI.Measure(0, 0, renderWidth, renderHeight);
                 this._rootContainer._draw(measure, context);
             };
-            AdvancedDynamicTexture.prototype._doPicking = function (x, y, type) {
+            AdvancedDynamicTexture.prototype._doPicking = function (x, y, type, buttonIndex) {
                 var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
                 var engine = scene.getEngine();
                 var textureSize = this.getSize();
                 if (this._isFullscreen) {
-                    x = x * (textureSize.width / engine.getRenderWidth());
-                    y = y * (textureSize.height / engine.getRenderHeight());
+                    x = x * ((textureSize.width / this._renderScale) / engine.getRenderWidth());
+                    y = y * ((textureSize.height / this._renderScale) / engine.getRenderHeight());
                 }
                 if (this._capturingControl) {
-                    this._capturingControl._processObservables(type, x, y);
+                    this._capturingControl._processObservables(type, x, y, buttonIndex);
                     return;
                 }
-                if (!this._rootContainer._processPicking(x, y, type)) {
+                if (!this._rootContainer._processPicking(x, y, type, buttonIndex)) {
                     if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (this._lastControlOver) {
-                            this._lastControlOver._onPointerOut();
+                            this._lastControlOver._onPointerOut(this._lastControlOver);
                         }
                         this._lastControlOver = null;
                     }
                 }
+                this._manageFocus();
             };
             AdvancedDynamicTexture.prototype.attach = function () {
                 var _this = this;
                 var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
                 this._pointerMoveObserver = scene.onPrePointerObservable.add(function (pi, state) {
                     if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                         && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                         && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                         return;
                     }
+                    if (!scene) {
+                        return;
+                    }
                     var camera = scene.cameraToUseForPointers || scene.activeCamera;
+                    if (!camera) {
+                        return;
+                    }
                     var engine = scene.getEngine();
                     var viewport = camera.viewport;
-                    var x = (scene.pointerX - viewport.x * engine.getRenderWidth()) / viewport.width;
-                    var y = (scene.pointerY - viewport.y * engine.getRenderHeight()) / viewport.height;
+                    var x = (scene.pointerX / engine.getHardwareScalingLevel() - viewport.x * engine.getRenderWidth()) / viewport.width;
+                    var y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
                     _this._shouldBlockPointer = false;
-                    _this._doPicking(x, y, pi.type);
-                    pi.skipOnPointerObservable = _this._shouldBlockPointer && pi.type !== BABYLON.PointerEventTypes.POINTERUP;
+                    _this._doPicking(x, y, pi.type, pi.event.button);
+                    pi.skipOnPointerObservable = _this._shouldBlockPointer;
                 });
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
             AdvancedDynamicTexture.prototype.attachToMesh = function (mesh, supportPointerMove) {
                 var _this = this;
                 if (supportPointerMove === void 0) { supportPointerMove = true; }
                 var scene = this.getScene();
+                if (!scene) {
+                    return;
+                }
                 this._pointerObserver = scene.onPointerObservable.add(function (pi, state) {
                     if (pi.type !== BABYLON.PointerEventTypes.POINTERMOVE
                         && pi.type !== BABYLON.PointerEventTypes.POINTERUP
                         && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                         return;
                     }
-                    if (pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
+                    if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                         var uv = pi.pickInfo.getTextureCoordinates();
-                        var size = _this.getSize();
-                        _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type);
+                        if (uv) {
+                            var size = _this.getSize();
+                            _this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pi.event.button);
+                        }
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                         if (_this._lastControlDown) {
                             _this._lastControlDown.forcePointerUp();
                         }
                         _this._lastControlDown = null;
+                        _this.focusedControl = null;
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
                         if (_this._lastControlOver) {
-                            _this._lastControlOver._onPointerOut();
+                            _this._lastControlOver._onPointerOut(_this._lastControlOver);
                         }
                         _this._lastControlOver = null;
                     }
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
-                this._attachToOnBlur(scene);
+                this._attachToOnPointerOut(scene);
             };
-            AdvancedDynamicTexture.prototype._attachToOnBlur = function (scene) {
+            AdvancedDynamicTexture.prototype.moveFocusToControl = function (control) {
+                this.focusedControl = control;
+                this._lastPickedControl = control;
+                this._blockNextFocusCheck = true;
+            };
+            AdvancedDynamicTexture.prototype._manageFocus = function () {
+                if (this._blockNextFocusCheck) {
+                    this._blockNextFocusCheck = false;
+                    this._lastPickedControl = this._focusedControl;
+                    return;
+                }
+                // Focus management
+                if (this._focusedControl) {
+                    if (this._focusedControl !== this._lastPickedControl) {
+                        if (this._lastPickedControl.isFocusInvisible) {
+                            return;
+                        }
+                        this.focusedControl = null;
+                    }
+                }
+            };
+            AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
-                this._canvasBlurObserver = scene.getEngine().onCanvasBlurObservable.add(function () {
+                this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function () {
                     if (_this._lastControlOver) {
-                        _this._lastControlOver._onPointerOut();
+                        _this._lastControlOver._onPointerOut(_this._lastControlOver);
                     }
                     _this._lastControlOver = null;
                     if (_this._lastControlDown) {
@@ -343,10 +476,11 @@ var BABYLON;
                 result.attachToMesh(mesh, supportPointerMove);
                 return result;
             };
-            AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene) {
+            AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling) {
                 if (foreground === void 0) { foreground = true; }
                 if (scene === void 0) { scene = null; }
-                var result = new AdvancedDynamicTexture(name, 0, 0, scene);
+                if (sampling === void 0) { sampling = BABYLON.Texture.BILINEAR_SAMPLINGMODE; }
+                var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
                 // Display
                 var layer = new BABYLON.Layer(name + "_layer", null, scene, !foreground);
                 layer.texture = result;
@@ -369,7 +503,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Measure = (function () {
+        var Measure = /** @class */ (function () {
             function Measure(left, top, width, height) {
                 this.left = left;
                 this.top = top;
@@ -409,11 +543,23 @@ var BABYLON;
 //# sourceMappingURL=measure.js.map
 
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Matrix2D = (function () {
+        var Vector2WithInfo = /** @class */ (function (_super) {
+            __extends(Vector2WithInfo, _super);
+            function Vector2WithInfo(source, buttonIndex) {
+                if (buttonIndex === void 0) { buttonIndex = 0; }
+                var _this = _super.call(this, source.x, source.y) || this;
+                _this.buttonIndex = buttonIndex;
+                return _this;
+            }
+            return Vector2WithInfo;
+        }(BABYLON.Vector2));
+        GUI.Vector2WithInfo = Vector2WithInfo;
+        var Matrix2D = /** @class */ (function () {
             function Matrix2D(m00, m01, m10, m11, m20, m21) {
                 this.m = new Float32Array(6);
                 this.fromValues(m00, m01, m10, m11, m20, m21);
@@ -534,7 +680,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var ValueAndUnit = (function () {
+        var ValueAndUnit = /** @class */ (function () {
             function ValueAndUnit(value, unit, negativeValueAllowed) {
                 if (unit === void 0) { unit = ValueAndUnit.UNITMODE_PIXEL; }
                 if (negativeValueAllowed === void 0) { negativeValueAllowed = true; }
@@ -652,7 +798,7 @@ var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Control = (function () {
+        var Control = /** @class */ (function () {
             // Functions
             function Control(name) {
                 this.name = name;
@@ -661,6 +807,7 @@ var BABYLON;
                 this._zIndex = 0;
                 this._currentMeasure = GUI.Measure.Empty();
                 this._fontFamily = "Arial";
+                this._fontStyle = "";
                 this._fontSize = new GUI.ValueAndUnit(18, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 this._width = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
                 this._height = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
@@ -692,6 +839,11 @@ var BABYLON;
                 this._doNotRender = false;
                 this.isHitTestVisible = true;
                 this.isPointerBlocker = false;
+                this.isFocusInvisible = false;
+                this.shadowOffsetX = 0;
+                this.shadowOffsetY = 0;
+                this.shadowBlur = 0;
+                this.shadowColor = '#000';
                 this._linkOffsetX = new GUI.ValueAndUnit(0);
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
                 /**
@@ -724,6 +876,11 @@ var BABYLON;
                 * @type {BABYLON.Observable}
                 */
                 this.onDirtyObservable = new BABYLON.Observable();
+                /**
+               * An event triggered after the control is drawn
+               * @type {BABYLON.Observable}
+               */
+                this.onAfterDrawObservable = new BABYLON.Observable();
             }
             Object.defineProperty(Control.prototype, "typeName", {
                 // Properties
@@ -866,6 +1023,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "widthInPixels", {
+                get: function () {
+                    return this._width.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "height", {
                 get: function () {
                     return this._height.toString(this._host);
@@ -881,6 +1045,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "heightInPixels", {
+                get: function () {
+                    return this._height.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "fontFamily", {
                 get: function () {
                     return this._fontFamily;
@@ -891,6 +1062,27 @@ var BABYLON;
                     }
                     this._fontFamily = value;
                     this._fontSet = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontStyle", {
+                get: function () {
+                    return this._fontStyle;
+                },
+                set: function (value) {
+                    if (this._fontStyle === value) {
+                        return;
+                    }
+                    this._fontStyle = value;
+                    this._fontSet = true;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "fontSizeInPixels", {
+                get: function () {
+                    return this._fontSize.getValueInPixel(this._host, 100);
                 },
                 enumerable: true,
                 configurable: true
@@ -988,6 +1180,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "paddingLeftInPixels", {
+                get: function () {
+                    return this._paddingLeft.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "paddingRight", {
                 get: function () {
                     return this._paddingRight.toString(this._host);
@@ -996,6 +1195,13 @@ var BABYLON;
                     if (this._paddingRight.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "paddingRightInPixels", {
+                get: function () {
+                    return this._paddingRight.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
                 enumerable: true,
                 configurable: true
@@ -1012,6 +1218,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "paddingTopInPixels", {
+                get: function () {
+                    return this._paddingTop.getValueInPixel(this._host, this._cachedParentMeasure.height);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "paddingBottom", {
                 get: function () {
                     return this._paddingBottom.toString(this._host);
@@ -1020,6 +1233,13 @@ var BABYLON;
                     if (this._paddingBottom.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "paddingBottomInPixels", {
+                get: function () {
+                    return this._paddingBottom.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1036,6 +1256,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "leftInPixels", {
+                get: function () {
+                    return this._left.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "top", {
                 get: function () {
                     return this._top.toString(this._host);
@@ -1044,6 +1271,13 @@ var BABYLON;
                     if (this._top.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "topInPixels", {
+                get: function () {
+                    return this._top.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1060,6 +1294,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "linkOffsetXInPixels", {
+                get: function () {
+                    return this._linkOffsetX.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "linkOffsetY", {
                 get: function () {
                     return this._linkOffsetY.toString(this._host);
@@ -1068,6 +1309,13 @@ var BABYLON;
                     if (this._linkOffsetY.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Control.prototype, "linkOffsetYInPixels", {
+                get: function () {
+                    return this._linkOffsetY.getValueInPixel(this._host, this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1099,6 +1347,12 @@ var BABYLON;
                 result.y = globalCoordinates.y - this._currentMeasure.top;
                 return this;
             };
+            Control.prototype.getParentLocalCoordinates = function (globalCoordinates) {
+                var result = BABYLON.Vector2.Zero();
+                result.x = globalCoordinates.x - this._cachedParentMeasure.left;
+                result.y = globalCoordinates.y - this._cachedParentMeasure.top;
+                return result;
+            };
             Control.prototype.moveToVector3 = function (position, scene) {
                 if (!this._host || this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
@@ -1106,7 +1360,6 @@ var BABYLON;
                 }
                 this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
-                var engine = scene.getEngine();
                 var globalViewport = this._host._getGlobalViewport(scene);
                 var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
                 this._moveToProjectedPosition(projectedPosition);
@@ -1117,7 +1370,7 @@ var BABYLON;
                 this.notRenderable = false;
             };
             Control.prototype.linkWithMesh = function (mesh) {
-                if (!this._host || this._root !== this._host._rootContainer) {
+                if (!this._host || this._root && this._root !== this._host._rootContainer) {
                     BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
                     return;
                 }
@@ -1240,7 +1493,19 @@ var BABYLON;
             };
             Control.prototype._clip = function (context) {
                 context.beginPath();
-                context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    var shadowOffsetX = this.shadowOffsetX;
+                    var shadowOffsetY = this.shadowOffsetY;
+                    var shadowBlur = this.shadowBlur;
+                    var leftShadowOffset = Math.min(Math.min(shadowOffsetX, 0) - shadowBlur * 2, 0);
+                    var rightShadowOffset = Math.max(Math.max(shadowOffsetX, 0) + shadowBlur * 2, 0);
+                    var topShadowOffset = Math.min(Math.min(shadowOffsetY, 0) - shadowBlur * 2, 0);
+                    var bottomShadowOffset = Math.max(Math.max(shadowOffsetY, 0) + shadowBlur * 2, 0);
+                    context.rect(this._currentMeasure.left + leftShadowOffset, this._currentMeasure.top + topShadowOffset, this._currentMeasure.width + rightShadowOffset - leftShadowOffset, this._currentMeasure.height + bottomShadowOffset - topShadowOffset);
+                }
+                else {
+                    context.rect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                }
             };
             Control.prototype._measure = function () {
                 // Width / Height
@@ -1362,78 +1627,79 @@ var BABYLON;
                 }
                 return true;
             };
-            Control.prototype._processPicking = function (x, y, type) {
+            Control.prototype._processPicking = function (x, y, type, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                     return false;
                 }
                 if (!this.contains(x, y)) {
                     return false;
                 }
-                this._processObservables(type, x, y);
+                this._processObservables(type, x, y, buttonIndex);
                 return true;
             };
-            Control.prototype._onPointerMove = function (coordinates) {
-                if (this.onPointerMoveObservable.hasObservers()) {
-                    this.onPointerMoveObservable.notifyObservers(coordinates);
-                }
+            Control.prototype._onPointerMove = function (target, coordinates) {
+                var canNotify = this.onPointerMoveObservable.notifyObservers(coordinates, -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerMove(target, coordinates);
             };
-            Control.prototype._onPointerEnter = function () {
+            Control.prototype._onPointerEnter = function (target) {
                 if (this._enterCount !== 0) {
                     return false;
                 }
                 this._enterCount++;
-                if (this.onPointerEnterObservable.hasObservers()) {
-                    this.onPointerEnterObservable.notifyObservers(this);
-                }
+                var canNotify = this.onPointerEnterObservable.notifyObservers(this, -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerEnter(target);
                 return true;
             };
-            Control.prototype._onPointerOut = function () {
+            Control.prototype._onPointerOut = function (target) {
                 this._enterCount = 0;
-                if (this.onPointerOutObservable.hasObservers()) {
-                    this.onPointerOutObservable.notifyObservers(this);
-                }
+                var canNotify = this.onPointerOutObservable.notifyObservers(this, -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerOut(target);
             };
-            Control.prototype._onPointerDown = function (coordinates) {
+            Control.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
                 if (this._downCount !== 0) {
                     return false;
                 }
                 this._downCount++;
-                if (this.onPointerDownObservable.hasObservers()) {
-                    this.onPointerDownObservable.notifyObservers(coordinates);
-                }
+                var canNotify = this.onPointerDownObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerDown(target, coordinates, buttonIndex);
                 return true;
             };
-            Control.prototype._onPointerUp = function (coordinates) {
+            Control.prototype._onPointerUp = function (target, coordinates, buttonIndex) {
                 this._downCount = 0;
-                if (this.onPointerUpObservable.hasObservers()) {
-                    this.onPointerUpObservable.notifyObservers(coordinates);
-                }
+                var canNotify = this.onPointerUpObservable.notifyObservers(new GUI.Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+                if (canNotify && this.parent != null)
+                    this.parent._onPointerUp(target, coordinates, buttonIndex);
             };
             Control.prototype.forcePointerUp = function () {
-                this._onPointerUp(BABYLON.Vector2.Zero());
+                this._onPointerUp(this, BABYLON.Vector2.Zero(), 0);
             };
-            Control.prototype._processObservables = function (type, x, y) {
+            Control.prototype._processObservables = function (type, x, y, buttonIndex) {
                 this._dummyVector2.copyFromFloats(x, y);
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    this._onPointerMove(this._dummyVector2);
+                    this._onPointerMove(this, this._dummyVector2);
                     var previousControlOver = this._host._lastControlOver;
                     if (previousControlOver && previousControlOver !== this) {
-                        previousControlOver._onPointerOut();
+                        previousControlOver._onPointerOut(this);
                     }
                     if (previousControlOver !== this) {
-                        this._onPointerEnter();
+                        this._onPointerEnter(this);
                     }
                     this._host._lastControlOver = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                    this._onPointerDown(this._dummyVector2);
+                    this._onPointerDown(this, this._dummyVector2, buttonIndex);
                     this._host._lastControlDown = this;
+                    this._host._lastPickedControl = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._host._lastControlDown) {
-                        this._host._lastControlDown._onPointerUp(this._dummyVector2);
+                        this._host._lastControlDown._onPointerUp(this, this._dummyVector2, buttonIndex);
                     }
                     this._host._lastControlDown = null;
                     return true;
@@ -1444,8 +1710,25 @@ var BABYLON;
                 if (!this._font && !this._fontSet) {
                     return;
                 }
-                this._font = this._fontSize.getValue(this._host) + "px " + this._fontFamily;
+                this._font = this._fontStyle + " " + this._fontSize.getValue(this._host) + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
+            };
+            Control.prototype.dispose = function () {
+                this.onDirtyObservable.clear();
+                this.onAfterDrawObservable.clear();
+                this.onPointerDownObservable.clear();
+                this.onPointerEnterObservable.clear();
+                this.onPointerMoveObservable.clear();
+                this.onPointerOutObservable.clear();
+                this.onPointerUpObservable.clear();
+                if (this._root) {
+                    this._root.removeControl(this);
+                    this._root = null;
+                }
+                var index = this._host._linkedControls.indexOf(this);
+                if (index > -1) {
+                    this.linkWithMesh(null);
+                }
             };
             Object.defineProperty(Control, "HORIZONTAL_ALIGNMENT_LEFT", {
                 get: function () {
@@ -1544,6 +1827,10 @@ var BABYLON;
                     panel.addControl(control);
                     header.paddingRight = "5px";
                 }
+                header.shadowBlur = control.shadowBlur;
+                header.shadowColor = control.shadowColor;
+                header.shadowOffsetX = control.shadowOffsetX;
+                header.shadowOffsetY = control.shadowOffsetY;
                 return panel;
             };
             Control.drawEllipse = function (x, y, width, height, context) {
@@ -1572,21 +1859,12 @@ var BABYLON;
 //# sourceMappingURL=control.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Container = (function (_super) {
+        var Container = /** @class */ (function (_super) {
             __extends(Container, _super);
             function Container(name) {
                 var _this = _super.call(this, name) || this;
@@ -1646,6 +1924,7 @@ var BABYLON;
                     return this;
                 }
                 control._link(this, this._host);
+                control._markAllAsDirty();
                 this._reOrderControl(control);
                 this._markAsDirty();
                 return this;
@@ -1654,6 +1933,7 @@ var BABYLON;
                 var index = this._children.indexOf(control);
                 if (index !== -1) {
                     this._children.splice(index, 1);
+                    control.parent = null;
                 }
                 this._markAsDirty();
                 return this;
@@ -1667,6 +1947,7 @@ var BABYLON;
                     }
                 }
                 this._children.push(control);
+                control.parent = this;
                 this._markAsDirty();
             };
             Container.prototype._markMatrixAsDirty = function () {
@@ -1683,8 +1964,19 @@ var BABYLON;
             };
             Container.prototype._localDraw = function (context) {
                 if (this._background) {
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     context.fillStyle = this._background;
                     context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                 }
             };
             Container.prototype._link = function (root, host) {
@@ -1707,13 +1999,19 @@ var BABYLON;
                         var child = _a[_i];
                         if (child.isVisible && !child.notRenderable) {
                             child._draw(this._measureForChildren, context);
+                            if (child.onAfterDrawObservable.hasObservers()) {
+                                child.onAfterDrawObservable.notifyObservers(child);
+                            }
                         }
                     }
                 }
                 context.restore();
+                if (this.onAfterDrawObservable.hasObservers()) {
+                    this.onAfterDrawObservable.notifyObservers(this);
+                }
             };
-            Container.prototype._processPicking = function (x, y, type) {
-                if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
+            Container.prototype._processPicking = function (x, y, type, buttonIndex) {
+                if (!this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {
@@ -1722,11 +2020,14 @@ var BABYLON;
                 // Checking backwards to pick closest first
                 for (var index = this._children.length - 1; index >= 0; index--) {
                     var child = this._children[index];
-                    if (child._processPicking(x, y, type)) {
+                    if (child._processPicking(x, y, type, buttonIndex)) {
                         return true;
                     }
                 }
-                return this._processObservables(type, x, y);
+                if (!this.isHitTestVisible) {
+                    return false;
+                }
+                return this._processObservables(type, x, y, buttonIndex);
             };
             Container.prototype._clipForChildren = function (context) {
                 // DO nothing
@@ -1734,6 +2035,13 @@ var BABYLON;
             Container.prototype._additionalProcessing = function (parentMeasure, context) {
                 _super.prototype._additionalProcessing.call(this, parentMeasure, context);
                 this._measureForChildren.copyFrom(this._currentMeasure);
+            };
+            Container.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                    var control = _a[_i];
+                    control.dispose();
+                }
             };
             return Container;
         }(GUI.Control));
@@ -1744,21 +2052,12 @@ var BABYLON;
 //# sourceMappingURL=container.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var StackPanel = (function (_super) {
+        var StackPanel = /** @class */ (function (_super) {
             __extends(StackPanel, _super);
             function StackPanel(name) {
                 var _this = _super.call(this, name) || this;
@@ -1895,21 +2194,12 @@ var BABYLON;
 //# sourceMappingURL=stackPanel.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Rectangle = (function (_super) {
+        var Rectangle = /** @class */ (function (_super) {
             __extends(Rectangle, _super);
             function Rectangle(name) {
                 var _this = _super.call(this, name) || this;
@@ -1954,6 +2244,12 @@ var BABYLON;
             };
             Rectangle.prototype._localDraw = function (context) {
                 context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 if (this._background) {
                     context.fillStyle = this._background;
                     if (this._cornerRadius) {
@@ -1965,6 +2261,11 @@ var BABYLON;
                     }
                 }
                 if (this._thickness) {
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     if (this.color) {
                         context.strokeStyle = this.color;
                     }
@@ -2020,21 +2321,12 @@ var BABYLON;
 //# sourceMappingURL=rectangle.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Ellipse = (function (_super) {
+        var Ellipse = /** @class */ (function (_super) {
             __extends(Ellipse, _super);
             function Ellipse(name) {
                 var _this = _super.call(this, name) || this;
@@ -2061,10 +2353,21 @@ var BABYLON;
             };
             Ellipse.prototype._localDraw = function (context) {
                 context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                 if (this._background) {
                     context.fillStyle = this._background;
                     context.fill();
+                }
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
                 }
                 if (this._thickness) {
                     if (this.color) {
@@ -2095,21 +2398,12 @@ var BABYLON;
 //# sourceMappingURL=ellipse.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Line = (function (_super) {
+        var Line = /** @class */ (function (_super) {
             __extends(Line, _super);
             function Line(name) {
                 var _this = _super.call(this, name) || this;
@@ -2268,6 +2562,12 @@ var BABYLON;
             };
             Line.prototype._draw = function (parentMeasure, context) {
                 context.save();
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     context.strokeStyle = this.color;
@@ -2304,21 +2604,12 @@ var BABYLON;
 //# sourceMappingURL=line.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Slider = (function (_super) {
+        var Slider = /** @class */ (function (_super) {
             __extends(Slider, _super);
             function Slider(name) {
                 var _this = _super.call(this, name) || this;
@@ -2330,6 +2621,8 @@ var BABYLON;
                 _this._background = "black";
                 _this._borderColor = "white";
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
+                _this._isThumbCircle = false;
+                _this._isThumbClamped = false;
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -2379,6 +2672,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "barOffsetInPixels", {
+                get: function () {
+                    return this._barOffset.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Slider.prototype, "thumbWidth", {
                 get: function () {
                     return this._thumbWidth.toString(this._host);
@@ -2390,6 +2690,13 @@ var BABYLON;
                     if (this._thumbWidth.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "thumbWidthInPixels", {
+                get: function () {
+                    return this._thumbWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
                 enumerable: true,
                 configurable: true
@@ -2440,6 +2747,34 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "isThumbCircle", {
+                get: function () {
+                    return this._isThumbCircle;
+                },
+                set: function (value) {
+                    if (this._isThumbCircle === value) {
+                        return;
+                    }
+                    this._isThumbCircle = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Slider.prototype, "isThumbClamped", {
+                get: function () {
+                    return this._isThumbClamped;
+                },
+                set: function (value) {
+                    if (this._isThumbClamped === value) {
+                        return;
+                    }
+                    this._isThumbClamped = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Slider.prototype._getTypeName = function () {
                 return "Slider";
             };
@@ -2451,10 +2786,10 @@ var BABYLON;
                     var effectiveThumbWidth;
                     var effectiveBarOffset;
                     if (this._thumbWidth.isPixel) {
-                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.height);
+                        effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
                     else {
-                        effectiveThumbWidth = this._currentMeasure.height * this._thumbWidth.getValue(this._host);
+                        effectiveThumbWidth = this._currentMeasure.width * this._thumbWidth.getValue(this._host);
                     }
                     if (this._barOffset.isPixel) {
                         effectiveBarOffset = Math.min(this._barOffset.getValue(this._host), this._currentMeasure.height);
@@ -2462,42 +2797,91 @@ var BABYLON;
                     else {
                         effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
                     }
-                    var left = this._currentMeasure.left + effectiveThumbWidth / 2;
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
+                    var left = this._currentMeasure.left;
                     var width = this._currentMeasure.width - effectiveThumbWidth;
-                    var thumbPosition = (this._value - this._minimum) / (this._maximum - this._minimum) * width;
-                    // Bar
+                    var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
                     context.fillStyle = this._background;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     context.fillStyle = this.color;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
-                    // Thumb
-                    context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
-                    context.strokeStyle = this._borderColor;
-                    context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
+                    if (this._isThumbCircle) {
+                        context.beginPath();
+                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                        context.fill();
+                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                            context.shadowBlur = 0;
+                            context.shadowOffsetX = 0;
+                            context.shadowOffsetY = 0;
+                        }
+                        context.strokeStyle = this._borderColor;
+                        context.stroke();
+                    }
+                    else {
+                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                            context.shadowBlur = 0;
+                            context.shadowOffsetX = 0;
+                            context.shadowOffsetY = 0;
+                        }
+                        context.strokeStyle = this._borderColor;
+                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                    }
                 }
                 context.restore();
             };
-            Slider.prototype._updateValueFromPointer = function (x) {
+            Slider.prototype._updateValueFromPointer = function (x, y) {
+                if (this.rotation != 0) {
+                    this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
+                    x = this._transformedPosition.x;
+                }
                 this.value = this._minimum + ((x - this._currentMeasure.left) / this._currentMeasure.width) * (this._maximum - this._minimum);
             };
-            Slider.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            Slider.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, target, coordinates, buttonIndex)) {
                     return false;
                 }
                 this._pointerIsDown = true;
-                this._updateValueFromPointer(coordinates.x);
+                this._updateValueFromPointer(coordinates.x, coordinates.y);
                 this._host._capturingControl = this;
                 return true;
             };
-            Slider.prototype._onPointerMove = function (coordinates) {
+            Slider.prototype._onPointerMove = function (target, coordinates) {
                 if (this._pointerIsDown) {
-                    this._updateValueFromPointer(coordinates.x);
+                    this._updateValueFromPointer(coordinates.x, coordinates.y);
                 }
+                _super.prototype._onPointerMove.call(this, target, coordinates);
             };
-            Slider.prototype._onPointerUp = function (coordinates) {
+            Slider.prototype._onPointerUp = function (target, coordinates, buttonIndex) {
                 this._pointerIsDown = false;
                 this._host._capturingControl = null;
-                _super.prototype._onPointerUp.call(this, coordinates);
+                _super.prototype._onPointerUp.call(this, target, coordinates, buttonIndex);
             };
             return Slider;
         }(GUI.Control));
@@ -2508,21 +2892,12 @@ var BABYLON;
 //# sourceMappingURL=slider.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Checkbox = (function (_super) {
+        var Checkbox = /** @class */ (function (_super) {
             __extends(Checkbox, _super);
             function Checkbox(name) {
                 var _this = _super.call(this, name) || this;
@@ -2602,8 +2977,19 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     var actualWidth = this._currentMeasure.width - this._thickness;
                     var actualHeight = this._currentMeasure.height - this._thickness;
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     context.fillStyle = this._background;
                     context.fillRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     if (this._isChecked) {
                         context.fillStyle = this.color;
                         var offsetWidth = actualWidth * this._checkSizeRatio;
@@ -2617,8 +3003,8 @@ var BABYLON;
                 context.restore();
             };
             // Events
-            Checkbox.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            Checkbox.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, target, coordinates, buttonIndex)) {
                     return false;
                 }
                 this.isChecked = !this.isChecked;
@@ -2630,24 +3016,15 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
-//# sourceMappingURL=checkBox.js.map
+//# sourceMappingURL=checkbox.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var RadioButton = (function (_super) {
+        var RadioButton = /** @class */ (function (_super) {
             __extends(RadioButton, _super);
             function RadioButton(name) {
                 var _this = _super.call(this, name) || this;
@@ -2744,10 +3121,21 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     var actualWidth = this._currentMeasure.width - this._thickness;
                     var actualHeight = this._currentMeasure.height - this._thickness;
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     // Outer
                     GUI.Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                     context.fillStyle = this._background;
                     context.fill();
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     context.strokeStyle = this.color;
                     context.lineWidth = this._thickness;
                     context.stroke();
@@ -2763,8 +3151,8 @@ var BABYLON;
                 context.restore();
             };
             // Events
-            RadioButton.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            RadioButton.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, target, coordinates, buttonIndex)) {
                     return false;
                 }
                 this.isChecked = !this.isChecked;
@@ -2779,21 +3167,12 @@ var BABYLON;
 //# sourceMappingURL=radioButton.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var TextBlock = (function (_super) {
+        var TextBlock = /** @class */ (function (_super) {
             __extends(TextBlock, _super);
             function TextBlock(name, text) {
                 if (text === void 0) { text = ""; }
@@ -2803,9 +3182,30 @@ var BABYLON;
                 _this._textWrapping = false;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+                _this._resizeToFit = false;
+                _this._lineSpacing = new GUI.ValueAndUnit(0);
+                /**
+                * An event triggered after the text is changed
+                * @type {BABYLON.Observable}
+                */
+                _this.onTextChangedObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
+            Object.defineProperty(TextBlock.prototype, "resizeToFit", {
+                get: function () {
+                    return this._resizeToFit;
+                },
+                set: function (value) {
+                    this._resizeToFit = value;
+                    if (this._resizeToFit) {
+                        this._width.ignoreAdaptiveScaling = true;
+                        this._height.ignoreAdaptiveScaling = true;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(TextBlock.prototype, "textWrapping", {
                 get: function () {
                     return this._textWrapping;
@@ -2830,6 +3230,7 @@ var BABYLON;
                     }
                     this._text = value;
                     this._markAsDirty();
+                    this.onTextChangedObservable.notifyObservers(this);
                 },
                 enumerable: true,
                 configurable: true
@@ -2862,6 +3263,18 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(TextBlock.prototype, "lineSpacing", {
+                get: function () {
+                    return this._lineSpacing.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._lineSpacing.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
             TextBlock.prototype._getTypeName = function () {
                 return "TextBlock";
             };
@@ -2879,6 +3292,12 @@ var BABYLON;
                         x = (width - textWidth) / 2;
                         break;
                 }
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
             TextBlock.prototype._draw = function (parentMeasure, context) {
@@ -2893,7 +3312,7 @@ var BABYLON;
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
                 this._lines = [];
                 var _lines = this.text.split("\n");
-                if (this._textWrapping) {
+                if (this._textWrapping && !this._resizeToFit) {
                     for (var _i = 0, _lines_1 = _lines; _i < _lines_1.length; _i++) {
                         var _line = _lines_1[_i];
                         this._lines.push(this._parseLineWithTextWrapping(_line, context));
@@ -2932,7 +3351,6 @@ var BABYLON;
                 return { text: line, width: lineWidth };
             };
             TextBlock.prototype._renderLines = function (context) {
-                var width = this._currentMeasure.width;
                 var height = this._currentMeasure.height;
                 if (!this._fontOffset) {
                     this._fontOffset = GUI.Control._GetFontOffset(context.font);
@@ -2950,11 +3368,30 @@ var BABYLON;
                         break;
                 }
                 rootY += this._currentMeasure.top;
-                for (var _i = 0, _a = this._lines; _i < _a.length; _i++) {
-                    var line = _a[_i];
+                var maxLineWidth = 0;
+                for (var i = 0; i < this._lines.length; i++) {
+                    var line = this._lines[i];
+                    if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+                        if (this._lineSpacing.isPixel) {
+                            rootY += this._lineSpacing.getValue(this._host);
+                        }
+                        else {
+                            rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        }
+                    }
                     this._drawText(line.text, line.width, rootY, context);
                     rootY += this._fontOffset.height;
+                    if (line.width > maxLineWidth)
+                        maxLineWidth = line.width;
                 }
+                if (this._resizeToFit) {
+                    this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+                    this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
+                }
+            };
+            TextBlock.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                this.onTextChangedObservable.clear();
             };
             return TextBlock;
         }(GUI.Control));
@@ -2965,24 +3402,16 @@ var BABYLON;
 //# sourceMappingURL=textBlock.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var DOMImage = Image;
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Image = (function (_super) {
+        var Image = /** @class */ (function (_super) {
             __extends(Image, _super);
             function Image(name, url) {
+                if (url === void 0) { url = null; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._loaded = false;
@@ -2992,6 +3421,9 @@ var BABYLON;
                 _this._sourceTop = 0;
                 _this._sourceWidth = 0;
                 _this._sourceHeight = 0;
+                _this._cellWidth = 0;
+                _this._cellHeight = 0;
+                _this._cellId = -1;
                 _this.source = url;
                 return _this;
             }
@@ -3122,8 +3554,52 @@ var BABYLON;
                     this._domImage.onload = function () {
                         _this._onImageLoaded();
                     };
-                    this._domImage.crossOrigin = "anonymous";
-                    this._domImage.src = value;
+                    if (value) {
+                        BABYLON.Tools.SetCorsBehavior(value, this._domImage);
+                        this._domImage.src = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellWidth", {
+                get: function () {
+                    return this._cellWidth;
+                },
+                set: function (value) {
+                    if (this._cellWidth === value) {
+                        return;
+                    }
+                    this._cellWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellHeight", {
+                get: function () {
+                    return this._cellHeight;
+                },
+                set: function (value) {
+                    if (this._cellHeight === value) {
+                        return;
+                    }
+                    this._cellHeight = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Image.prototype, "cellId", {
+                get: function () {
+                    return this._cellId;
+                },
+                set: function (value) {
+                    if (this._cellId === value) {
+                        return;
+                    }
+                    this._cellId = value;
+                    this._markAsDirty();
                 },
                 enumerable: true,
                 configurable: true
@@ -3140,10 +3616,28 @@ var BABYLON;
             };
             Image.prototype._draw = function (parentMeasure, context) {
                 context.save();
-                var x = this._sourceLeft;
-                var y = this._sourceTop;
-                var width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
-                var height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+                var x, y, width, height;
+                if (this.cellId == -1) {
+                    x = this._sourceLeft;
+                    y = this._sourceTop;
+                    width = this._sourceWidth ? this._sourceWidth : this._imageWidth;
+                    height = this._sourceHeight ? this._sourceHeight : this._imageHeight;
+                }
+                else {
+                    var rowCount = this._domImage.naturalWidth / this.cellWidth;
+                    var column = (this.cellId / rowCount) >> 0;
+                    var row = this.cellId % rowCount;
+                    x = this.cellWidth * row;
+                    y = this.cellHeight * column;
+                    width = this.cellWidth;
+                    height = this.cellHeight;
+                }
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
                     if (this._loaded) {
@@ -3167,8 +3661,10 @@ var BABYLON;
                                 if (this._autoScale) {
                                     this.synchronizeSizeWithContent();
                                 }
-                                this._root.width = this.width;
-                                this._root.height = this.height;
+                                if (this._root && this._root.parent) {
+                                    this._root.width = this.width;
+                                    this._root.height = this.height;
+                                }
                                 break;
                         }
                     }
@@ -3217,21 +3713,12 @@ var BABYLON;
 //# sourceMappingURL=image.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var Button = (function (_super) {
+        var Button = /** @class */ (function (_super) {
             __extends(Button, _super);
             function Button(name) {
                 var _this = _super.call(this, name) || this;
@@ -3258,18 +3745,18 @@ var BABYLON;
                 return "Button";
             };
             // While being a container, the button behaves like a control.
-            Button.prototype._processPicking = function (x, y, type) {
+            Button.prototype._processPicking = function (x, y, type, buttonIndex) {
                 if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                     return false;
                 }
                 if (!_super.prototype.contains.call(this, x, y)) {
                     return false;
                 }
-                this._processObservables(type, x, y);
+                this._processObservables(type, x, y, buttonIndex);
                 return true;
             };
-            Button.prototype._onPointerEnter = function () {
-                if (!_super.prototype._onPointerEnter.call(this)) {
+            Button.prototype._onPointerEnter = function (target) {
+                if (!_super.prototype._onPointerEnter.call(this, target)) {
                     return false;
                 }
                 if (this.pointerEnterAnimation) {
@@ -3277,14 +3764,14 @@ var BABYLON;
                 }
                 return true;
             };
-            Button.prototype._onPointerOut = function () {
+            Button.prototype._onPointerOut = function (target) {
                 if (this.pointerOutAnimation) {
                     this.pointerOutAnimation();
                 }
-                _super.prototype._onPointerOut.call(this);
+                _super.prototype._onPointerOut.call(this, target);
             };
-            Button.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            Button.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, target, coordinates, buttonIndex)) {
                     return false;
                 }
                 if (this.pointerDownAnimation) {
@@ -3292,11 +3779,11 @@ var BABYLON;
                 }
                 return true;
             };
-            Button.prototype._onPointerUp = function (coordinates) {
+            Button.prototype._onPointerUp = function (target, coordinates, buttonIndex) {
                 if (this.pointerUpAnimation) {
                     this.pointerUpAnimation();
                 }
-                _super.prototype._onPointerUp.call(this, coordinates);
+                _super.prototype._onPointerUp.call(this, target, coordinates, buttonIndex);
             };
             // Statics
             Button.CreateImageButton = function (name, text, imageUrl) {
@@ -3333,6 +3820,19 @@ var BABYLON;
                 result.addControl(textBlock);
                 return result;
             };
+            Button.CreateImageWithCenterTextButton = function (name, text, imageUrl) {
+                var result = new Button(name);
+                // Adding image
+                var iconImage = new BABYLON.GUI.Image(name + "_icon", imageUrl);
+                iconImage.stretch = BABYLON.GUI.Image.STRETCH_FILL;
+                result.addControl(iconImage);
+                // Adding text
+                var textBlock = new BABYLON.GUI.TextBlock(name + "_button", text);
+                textBlock.textWrapping = true;
+                textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+                result.addControl(textBlock);
+                return result;
+            };
             return Button;
         }(GUI.Rectangle));
         GUI.Button = Button;
@@ -3342,21 +3842,12 @@ var BABYLON;
 //# sourceMappingURL=button.js.map
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var ColorPicker = (function (_super) {
+        var ColorPicker = /** @class */ (function (_super) {
             __extends(ColorPicker, _super);
             function ColorPicker(name) {
                 var _this = _super.call(this, name) || this;
@@ -3603,8 +4094,20 @@ var BABYLON;
                     if (!this._colorWheelCanvas || this._colorWheelCanvas.width != radius * 2) {
                         this._colorWheelCanvas = this._createColorWheelCanvas(radius, wheelThickness);
                     }
-                    context.drawImage(this._colorWheelCanvas, left, top);
                     this._updateSquareProps();
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                        context.fillRect(this._squareLeft, this._squareTop, this._squareSize, this._squareSize);
+                    }
+                    context.drawImage(this._colorWheelCanvas, left, top);
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
                     this._drawGradientSquare(this._h, this._squareLeft, this._squareTop, this._squareSize, this._squareSize, context);
                     var cx = this._squareLeft + this._squareSize * this._s;
                     var cy = this._squareTop + this._squareSize * (1 - this._v);
@@ -3662,8 +4165,8 @@ var BABYLON;
                 }
                 return false;
             };
-            ColorPicker.prototype._onPointerDown = function (coordinates) {
-                if (!_super.prototype._onPointerDown.call(this, coordinates)) {
+            ColorPicker.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, target, coordinates, buttonIndex)) {
                     return false;
                 }
                 this._pointerIsDown = true;
@@ -3679,16 +4182,16 @@ var BABYLON;
                 this._host._capturingControl = this;
                 return true;
             };
-            ColorPicker.prototype._onPointerMove = function (coordinates) {
+            ColorPicker.prototype._onPointerMove = function (target, coordinates) {
                 if (this._pointerIsDown) {
                     this._updateValueFromPointer(coordinates.x, coordinates.y);
                 }
-                _super.prototype._onPointerMove.call(this, coordinates);
+                _super.prototype._onPointerMove.call(this, target, coordinates);
             };
-            ColorPicker.prototype._onPointerUp = function (coordinates) {
+            ColorPicker.prototype._onPointerUp = function (target, coordinates, buttonIndex) {
                 this._pointerIsDown = false;
                 this._host._capturingControl = null;
-                _super.prototype._onPointerUp.call(this, coordinates);
+                _super.prototype._onPointerUp.call(this, target, coordinates, buttonIndex);
             };
             return ColorPicker;
         }(GUI.Control));
@@ -3697,32 +4200,33 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+
 var BABYLON;
 (function (BABYLON) {
     var GUI;
     (function (GUI) {
-        var InputText = (function (_super) {
+        var InputText = /** @class */ (function (_super) {
             __extends(InputText, _super);
             function InputText(name, text) {
                 if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
                 _this._text = "";
-                _this._background = "black";
+                _this._placeholderText = "";
+                _this._background = "#222222";
+                _this._focusedBackground = "#000000";
+                _this._placeholderColor = "gray";
                 _this._thickness = 1;
                 _this._margin = new GUI.ValueAndUnit(10, GUI.ValueAndUnit.UNITMODE_PIXEL);
                 _this._autoStretchWidth = true;
                 _this._maxWidth = new GUI.ValueAndUnit(1, GUI.ValueAndUnit.UNITMODE_PERCENTAGE, false);
+                _this._isFocused = false;
+                _this._blinkIsEven = false;
+                _this._cursorOffset = 0;
+                _this.promptMessage = "Please enter text:";
+                _this.onTextChangedObservable = new BABYLON.Observable();
+                _this.onFocusObservable = new BABYLON.Observable();
+                _this.onBlurObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
@@ -3741,6 +4245,13 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "maxWidthInPixels", {
+                get: function () {
+                    return this._maxWidth.getValueInPixel(this._host, this._cachedParentMeasure.width);
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "margin", {
                 get: function () {
                     return this._margin.toString(this._host);
@@ -3752,6 +4263,13 @@ var BABYLON;
                     if (this._margin.fromString(value)) {
                         this._markAsDirty();
                     }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "marginInPixels", {
+                get: function () {
+                    return this._margin.getValueInPixel(this._host, this._cachedParentMeasure.width);
                 },
                 enumerable: true,
                 configurable: true
@@ -3784,6 +4302,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "focusedBackground", {
+                get: function () {
+                    return this._focusedBackground;
+                },
+                set: function (value) {
+                    if (this._focusedBackground === value) {
+                        return;
+                    }
+                    this._focusedBackground = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(InputText.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -3793,6 +4325,34 @@ var BABYLON;
                         return;
                     }
                     this._background = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "placeholderColor", {
+                get: function () {
+                    return this._placeholderColor;
+                },
+                set: function (value) {
+                    if (this._placeholderColor === value) {
+                        return;
+                    }
+                    this._placeholderColor = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(InputText.prototype, "placeholderText", {
+                get: function () {
+                    return this._placeholderText;
+                },
+                set: function (value) {
+                    if (this._placeholderText === value) {
+                        return;
+                    }
+                    this._placeholderText = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -3808,33 +4368,240 @@ var BABYLON;
                     }
                     this._text = value;
                     this._markAsDirty();
+                    this.onTextChangedObservable.notifyObservers(this);
                 },
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(InputText.prototype, "width", {
+                get: function () {
+                    return this._width.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._width.toString(this._host) === value) {
+                        return;
+                    }
+                    if (this._width.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                    this.autoStretchWidth = false;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            InputText.prototype.onBlur = function () {
+                this._isFocused = false;
+                this._scrollLeft = null;
+                this._cursorOffset = 0;
+                clearTimeout(this._blinkTimeout);
+                this._markAsDirty();
+                this.onBlurObservable.notifyObservers(this);
+            };
+            InputText.prototype.onFocus = function () {
+                this._scrollLeft = null;
+                this._isFocused = true;
+                this._blinkIsEven = false;
+                this._cursorOffset = 0;
+                this._markAsDirty();
+                this.onFocusObservable.notifyObservers(this);
+                if (navigator.userAgent.indexOf("Mobile") !== -1) {
+                    var value = prompt(this.promptMessage);
+                    if (value !== null) {
+                        this.text = value;
+                    }
+                    this._host.focusedControl = null;
+                    return;
+                }
+            };
             InputText.prototype._getTypeName = function () {
                 return "InputText";
             };
+            InputText.prototype.processKey = function (keyCode, key) {
+                // Specific cases
+                switch (keyCode) {
+                    case 32://SPACE
+                        key = " "; //ie11 key for space is "Spacebar" 
+                        break;
+                    case 8:// BACKSPACE
+                        if (this._text && this._text.length > 0) {
+                            if (this._cursorOffset === 0) {
+                                this.text = this._text.substr(0, this._text.length - 1);
+                            }
+                            else {
+                                var deletePosition = this._text.length - this._cursorOffset;
+                                if (deletePosition > 0) {
+                                    this.text = this._text.slice(0, deletePosition - 1) + this._text.slice(deletePosition);
+                                }
+                            }
+                        }
+                        return;
+                    case 46:// DELETE
+                        if (this._text && this._text.length > 0) {
+                            var deletePosition = this._text.length - this._cursorOffset;
+                            this.text = this._text.slice(0, deletePosition) + this._text.slice(deletePosition + 1);
+                            this._cursorOffset--;
+                        }
+                        return;
+                    case 13:// RETURN
+                        this._host.focusedControl = null;
+                        return;
+                    case 35:// END
+                        this._cursorOffset = 0;
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 36:// HOME
+                        this._cursorOffset = this._text.length;
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 37:// LEFT
+                        this._cursorOffset++;
+                        if (this._cursorOffset > this._text.length) {
+                            this._cursorOffset = this._text.length;
+                        }
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                    case 39:// RIGHT
+                        this._cursorOffset--;
+                        if (this._cursorOffset < 0) {
+                            this._cursorOffset = 0;
+                        }
+                        this._blinkIsEven = false;
+                        this._markAsDirty();
+                        return;
+                }
+                // Printable characters
+                if ((keyCode === -1) || // Direct access
+                    (keyCode === 32) || // Space
+                    (keyCode > 47 && keyCode < 58) || // Numbers
+                    (keyCode > 64 && keyCode < 91) || // Letters
+                    (keyCode > 185 && keyCode < 193) || // Special characters
+                    (keyCode > 218 && keyCode < 223) || // Special characters
+                    (keyCode > 95 && keyCode < 112)) {
+                    if (this._cursorOffset === 0) {
+                        this.text += key;
+                    }
+                    else {
+                        var insertPosition = this._text.length - this._cursorOffset;
+                        this.text = this._text.slice(0, insertPosition) + key + this._text.slice(insertPosition);
+                    }
+                }
+            };
+            InputText.prototype.processKeyboard = function (evt) {
+                this.processKey(evt.keyCode, evt.key);
+            };
             InputText.prototype._draw = function (parentMeasure, context) {
+                var _this = this;
                 context.save();
                 this._applyStates(context);
                 if (this._processMeasures(parentMeasure, context)) {
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     // Background
-                    if (this._background) {
+                    if (this._isFocused) {
+                        if (this._focusedBackground) {
+                            context.fillStyle = this._focusedBackground;
+                            context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                        }
+                    }
+                    else if (this._background) {
                         context.fillStyle = this._background;
                         context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
+                    if (!this._fontOffset) {
+                        this._fontOffset = GUI.Control._GetFontOffset(context.font);
+                    }
                     // Text
-                    if (this._text) {
-                        if (this.color) {
-                            context.fillStyle = this.color;
-                        }
-                        var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
-                        context.fillText(this._text, this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width), this._currentMeasure.top + rootY);
-                        if (this._autoStretchWidth) {
-                            this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), context.measureText(this._text).width + this._margin.getValueInPixel(this._host, parentMeasure.width) * 2) + "px";
+                    var clipTextLeft = this._currentMeasure.left + this._margin.getValueInPixel(this._host, parentMeasure.width);
+                    if (this.color) {
+                        context.fillStyle = this.color;
+                    }
+                    var text = this._text;
+                    if (!this._isFocused && !this._text && this._placeholderText) {
+                        text = this._placeholderText;
+                        if (this._placeholderColor) {
+                            context.fillStyle = this._placeholderColor;
                         }
                     }
+                    this._textWidth = context.measureText(text).width;
+                    var marginWidth = this._margin.getValueInPixel(this._host, parentMeasure.width) * 2;
+                    if (this._autoStretchWidth) {
+                        this.width = Math.min(this._maxWidth.getValueInPixel(this._host, parentMeasure.width), this._textWidth + marginWidth) + "px";
+                    }
+                    var rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+                    var availableWidth = this._width.getValueInPixel(this._host, parentMeasure.width) - marginWidth;
+                    context.save();
+                    context.beginPath();
+                    context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
+                    context.clip();
+                    if (this._isFocused && this._textWidth > availableWidth) {
+                        var textLeft = clipTextLeft - this._textWidth + availableWidth;
+                        if (!this._scrollLeft) {
+                            this._scrollLeft = textLeft;
+                        }
+                    }
+                    else {
+                        this._scrollLeft = clipTextLeft;
+                    }
+                    context.fillText(text, this._scrollLeft, this._currentMeasure.top + rootY);
+                    // Cursor
+                    if (this._isFocused) {
+                        // Need to move cursor
+                        if (this._clickedCoordinate) {
+                            var rightPosition = this._scrollLeft + this._textWidth;
+                            var absoluteCursorPosition = rightPosition - this._clickedCoordinate;
+                            var currentSize = 0;
+                            this._cursorOffset = 0;
+                            var previousDist = 0;
+                            do {
+                                if (this._cursorOffset) {
+                                    previousDist = Math.abs(absoluteCursorPosition - currentSize);
+                                }
+                                this._cursorOffset++;
+                                currentSize = context.measureText(text.substr(text.length - this._cursorOffset, this._cursorOffset)).width;
+                            } while (currentSize < absoluteCursorPosition && (text.length >= this._cursorOffset));
+                            // Find closest move
+                            if (Math.abs(absoluteCursorPosition - currentSize) > previousDist) {
+                                this._cursorOffset--;
+                            }
+                            this._blinkIsEven = false;
+                            this._clickedCoordinate = null;
+                        }
+                        // Render cursor
+                        if (!this._blinkIsEven) {
+                            var cursorOffsetText = this.text.substr(this._text.length - this._cursorOffset);
+                            var cursorOffsetWidth = context.measureText(cursorOffsetText).width;
+                            var cursorLeft = this._scrollLeft + this._textWidth - cursorOffsetWidth;
+                            if (cursorLeft < clipTextLeft) {
+                                this._scrollLeft += (clipTextLeft - cursorLeft);
+                                cursorLeft = clipTextLeft;
+                                this._markAsDirty();
+                            }
+                            else if (cursorLeft > clipTextLeft + availableWidth) {
+                                this._scrollLeft += (clipTextLeft + availableWidth - cursorLeft);
+                                cursorLeft = clipTextLeft + availableWidth;
+                                this._markAsDirty();
+                            }
+                            context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+                        }
+                        clearTimeout(this._blinkTimeout);
+                        this._blinkTimeout = setTimeout(function () {
+                            _this._blinkIsEven = !_this._blinkIsEven;
+                            _this._markAsDirty();
+                        }, 500);
+                    }
+                    context.restore();
                     // Border
                     if (this._thickness) {
                         if (this.color) {
@@ -3846,8 +4613,212 @@ var BABYLON;
                 }
                 context.restore();
             };
+            InputText.prototype._onPointerDown = function (target, coordinates, buttonIndex) {
+                if (!_super.prototype._onPointerDown.call(this, target, coordinates, buttonIndex)) {
+                    return false;
+                }
+                this._clickedCoordinate = coordinates.x;
+                if (this._host.focusedControl === this) {
+                    // Move cursor
+                    clearTimeout(this._blinkTimeout);
+                    this._markAsDirty();
+                    return true;
+                }
+                this._host.focusedControl = this;
+                return true;
+            };
+            InputText.prototype._onPointerUp = function (target, coordinates, buttonIndex) {
+                _super.prototype._onPointerUp.call(this, target, coordinates, buttonIndex);
+            };
+            InputText.prototype.dispose = function () {
+                _super.prototype.dispose.call(this);
+                this.onBlurObservable.clear();
+                this.onFocusObservable.clear();
+                this.onTextChangedObservable.clear();
+            };
             return InputText;
         }(GUI.Control));
         GUI.InputText = InputText;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
+
+/// <reference path="../../../dist/preview release/babylon.d.ts"/>
+
+var BABYLON;
+(function (BABYLON) {
+    var GUI;
+    (function (GUI) {
+        var KeyPropertySet = /** @class */ (function () {
+            function KeyPropertySet() {
+            }
+            return KeyPropertySet;
+        }());
+        GUI.KeyPropertySet = KeyPropertySet;
+        var VirtualKeyboard = /** @class */ (function (_super) {
+            __extends(VirtualKeyboard, _super);
+            function VirtualKeyboard() {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.onKeyPressObservable = new BABYLON.Observable();
+                _this.defaultButtonWidth = "40px";
+                _this.defaultButtonHeight = "40px";
+                _this.defaultButtonPaddingLeft = "2px";
+                _this.defaultButtonPaddingRight = "2px";
+                _this.defaultButtonPaddingTop = "2px";
+                _this.defaultButtonPaddingBottom = "2px";
+                _this.defaultButtonColor = "#DDD";
+                _this.defaultButtonBackground = "#070707";
+                _this.shiftButtonColor = "#7799FF";
+                _this.selectedShiftThickness = 1;
+                _this.shiftState = 0;
+                return _this;
+            }
+            VirtualKeyboard.prototype._getTypeName = function () {
+                return "VirtualKeyboard";
+            };
+            VirtualKeyboard.prototype._createKey = function (key, propertySet) {
+                var _this = this;
+                var button = GUI.Button.CreateSimpleButton(key, key);
+                button.width = propertySet && propertySet.width ? propertySet.width : this.defaultButtonWidth;
+                button.height = propertySet && propertySet.height ? propertySet.height : this.defaultButtonHeight;
+                button.color = propertySet && propertySet.color ? propertySet.color : this.defaultButtonColor;
+                button.background = propertySet && propertySet.background ? propertySet.background : this.defaultButtonBackground;
+                button.paddingLeft = propertySet && propertySet.paddingLeft ? propertySet.paddingLeft : this.defaultButtonPaddingLeft;
+                button.paddingRight = propertySet && propertySet.paddingRight ? propertySet.paddingRight : this.defaultButtonPaddingRight;
+                button.paddingTop = propertySet && propertySet.paddingTop ? propertySet.paddingTop : this.defaultButtonPaddingTop;
+                button.paddingBottom = propertySet && propertySet.paddingBottom ? propertySet.paddingBottom : this.defaultButtonPaddingBottom;
+                button.thickness = 0;
+                button.isFocusInvisible = true;
+                button.shadowColor = this.shadowColor;
+                button.shadowBlur = this.shadowBlur;
+                button.shadowOffsetX = this.shadowOffsetX;
+                button.shadowOffsetY = this.shadowOffsetY;
+                button.onPointerUpObservable.add(function () {
+                    _this.onKeyPressObservable.notifyObservers(key);
+                });
+                return button;
+            };
+            VirtualKeyboard.prototype.addKeysRow = function (keys, propertySets) {
+                var panel = new GUI.StackPanel();
+                panel.isVertical = false;
+                panel.isFocusInvisible = true;
+                for (var i = 0; i < keys.length; i++) {
+                    var properties = null;
+                    if (propertySets && propertySets.length === keys.length) {
+                        properties = propertySets[i];
+                    }
+                    panel.addControl(this._createKey(keys[i], properties));
+                }
+                this.addControl(panel);
+            };
+            VirtualKeyboard.prototype.applyShiftState = function (shiftState) {
+                if (!this.children) {
+                    return;
+                }
+                for (var i = 0; i < this.children.length; i++) {
+                    var row = this.children[i];
+                    if (!row || !row.children) {
+                        continue;
+                    }
+                    var rowContainer = row;
+                    for (var j = 0; j < rowContainer.children.length; j++) {
+                        var button = rowContainer.children[j];
+                        if (!button || !button.children[0]) {
+                            continue;
+                        }
+                        var button_tblock = button.children[0];
+                        if (button_tblock.text === "\u21E7") {
+                            button.color = (shiftState ? this.shiftButtonColor : this.defaultButtonColor);
+                            button.thickness = (shiftState > 1 ? this.selectedShiftThickness : 0);
+                        }
+                        button_tblock.text = (shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase());
+                    }
+                }
+            };
+            Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
+                get: function () {
+                    return this._connectedInputText;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            VirtualKeyboard.prototype.connect = function (input) {
+                var _this = this;
+                this.isVisible = false;
+                this._connectedInputText = input;
+                // Events hooking
+                this._onFocusObserver = input.onFocusObservable.add(function () {
+                    _this.isVisible = true;
+                });
+                this._onBlurObserver = input.onBlurObservable.add(function () {
+                    _this.isVisible = false;
+                });
+                this._onKeyPressObserver = this.onKeyPressObservable.add(function (key) {
+                    if (!_this._connectedInputText) {
+                        return;
+                    }
+                    switch (key) {
+                        case "\u21E7":
+                            _this.shiftState++;
+                            if (_this.shiftState > 2) {
+                                _this.shiftState = 0;
+                            }
+                            _this.applyShiftState(_this.shiftState);
+                            return;
+                        case "\u2190":
+                            _this._connectedInputText.processKey(8);
+                            return;
+                        case "\u21B5":
+                            _this._connectedInputText.processKey(13);
+                            return;
+                    }
+                    _this._connectedInputText.processKey(-1, (_this.shiftState ? key.toUpperCase() : key));
+                    if (_this.shiftState === 1) {
+                        _this.shiftState = 0;
+                        _this.applyShiftState(_this.shiftState);
+                    }
+                });
+            };
+            VirtualKeyboard.prototype.disconnect = function () {
+                if (!this._connectedInputText) {
+                    return;
+                }
+                this._connectedInputText.onFocusObservable.remove(this._onFocusObserver);
+                this._connectedInputText.onBlurObservable.remove(this._onBlurObserver);
+                this.onKeyPressObservable.remove(this._onKeyPressObserver);
+                this._connectedInputText = null;
+            };
+            // Statics
+            VirtualKeyboard.CreateDefaultLayout = function () {
+                var returnValue = new VirtualKeyboard();
+                returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
+                returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
+                returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\u21B5"]);
+                returnValue.addKeysRow(["\u21E7", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+                returnValue.addKeysRow([" "], [{ width: "200px" }]);
+                return returnValue;
+            };
+            return VirtualKeyboard;
+        }(GUI.StackPanel));
+        GUI.VirtualKeyboard = VirtualKeyboard;
+    })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
+})(BABYLON || (BABYLON = {}));
+
+
+(function universalModuleDefinition(root, factory) {
+                var f = factory();
+                if (root && root["BABYLON"]) {
+                    return;
+                }
+                
+    if(typeof exports === 'object' && typeof module === 'object')
+        module.exports = f;
+    else if(typeof define === 'function' && define.amd)
+        define(["GUI"], factory);
+    else if(typeof exports === 'object')
+        exports["GUI"] = f;
+    else {
+        root["BABYLON"]["GUI"] = f;
+    }
+})(this, function() {
+    return BABYLON.GUI;
+});

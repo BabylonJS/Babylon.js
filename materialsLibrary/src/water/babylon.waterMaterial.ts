@@ -6,6 +6,7 @@ module BABYLON {
         public REFLECTION = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public NORMAL = false;
@@ -21,7 +22,6 @@ module BABYLON {
         public FRESNELSEPARATE = false;
         public BUMPSUPERIMPOSE = false;
         public BUMPAFFECTSREFLECTION = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -138,12 +138,10 @@ module BABYLON {
 		/*
 		* Private members
 		*/
-        private _mesh: AbstractMesh = null;
+        private _mesh: Nullable<AbstractMesh> = null;
 
-        private _refractionRTT: RenderTargetTexture;
-        private _reflectionRTT: RenderTargetTexture;
-
-        private _material: ShaderMaterial;
+        private _refractionRTT: Nullable<RenderTargetTexture>;
+        private _reflectionRTT: Nullable<RenderTargetTexture>;
 
         private _reflectionTransform: Matrix = Matrix.Zero();
         private _lastTime: number = 0;
@@ -152,6 +150,8 @@ module BABYLON {
         private _renderId: number;
 
         private _useLogarithmicDepth: boolean;
+
+        private _waitingRenderList: Nullable<string[]>;
 
         /**
 		* Constructor
@@ -164,8 +164,8 @@ module BABYLON {
             // Create render targets
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
-                this._renderTargets.push(this._reflectionRTT);
-                this._renderTargets.push(this._refractionRTT);
+                this._renderTargets.push(<RenderTargetTexture> this._reflectionRTT);
+                this._renderTargets.push(<RenderTargetTexture> this._refractionRTT);
 
                 return this._renderTargets;
             }
@@ -183,33 +183,43 @@ module BABYLON {
         }
 
         // Get / Set
-        public get refractionTexture(): RenderTargetTexture {
+        public get refractionTexture(): Nullable<RenderTargetTexture> {
             return this._refractionRTT;
         }
 
-        public get reflectionTexture(): RenderTargetTexture {
+        public get reflectionTexture(): Nullable<RenderTargetTexture> {
             return this._reflectionRTT;
         }
 
         // Methods
         public addToRenderList(node: any): void {
-            this._refractionRTT.renderList.push(node);
-            this._reflectionRTT.renderList.push(node);
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                this._refractionRTT.renderList.push(node);
+            }
+
+            if (this._reflectionRTT && this._reflectionRTT.renderList) {
+                this._reflectionRTT.renderList.push(node);
+            }
         }
 
         public enableRenderTargets(enable: boolean): void {
             var refreshRate = enable ? 1 : 0;
 
-            this._refractionRTT.refreshRate = refreshRate;
-            this._reflectionRTT.refreshRate = refreshRate;
+            if (this._refractionRTT) {
+                this._refractionRTT.refreshRate = refreshRate;
+            }
+
+            if (this._reflectionRTT) {
+                this._reflectionRTT.refreshRate = refreshRate;
+            }
         }
 
-        public getRenderList(): AbstractMesh[] {
-            return this._refractionRTT.renderList;
+        public getRenderList(): Nullable<AbstractMesh[]> {
+            return this._refractionRTT ? this._refractionRTT.renderList : [];
         }
 
         public get renderTargetsEnabled(): boolean {
-            return !(this._refractionRTT.refreshRate === 0);
+            return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
         }
 
         public needAlphaBlending(): boolean {
@@ -220,7 +230,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -265,7 +275,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
@@ -289,7 +299,16 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
+            // Configure this
             this._mesh = mesh;
+
+            if (this._waitingRenderList) {
+                for (var i = 0; i < this._waitingRenderList.length; i++) {
+                    this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                }
+
+                this._waitingRenderList = null;
+            }
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -352,7 +371,7 @@ module BABYLON {
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms,
@@ -375,7 +394,7 @@ module BABYLON {
                     }, engine), defines);
 
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -394,6 +413,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect || !this._mesh) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -419,7 +441,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
@@ -487,8 +509,8 @@ module BABYLON {
             this._reflectionRTT.ignoreCameraViewport = true;
 
             var isVisible: boolean;
-            var clipPlane = null;
-            var savedViewMatrix;
+            var clipPlane: Nullable<Plane> = null;
+            var savedViewMatrix: Matrix;
             var mirrorMatrix = Matrix.Zero();
 
             this._refractionRTT.onBeforeRender = () => {
@@ -531,7 +553,7 @@ module BABYLON {
                 mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
                 scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = false;
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, mirrorMatrix);
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
             };
 
             this._reflectionRTT.onAfterRender = () => {
@@ -592,12 +614,12 @@ module BABYLON {
                 this.bumpTexture.dispose();
             }
 
-            var index = this.getScene().customRenderTargets.indexOf(this._refractionRTT);
+            var index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture> this._refractionRTT);
             if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
             index = -1;
-            index = this.getScene().customRenderTargets.indexOf(this._reflectionRTT);
+            index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture> this._reflectionRTT);
             if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
@@ -619,8 +641,14 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.reflectionTexture.isRenderTarget = true;
-            serializationObject.refractionTexture.isRenderTarget = true;
+            
+            serializationObject.renderList = [];
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+                    serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
+                }
+            }
+
             return serializationObject;
         }
 
@@ -630,7 +658,10 @@ module BABYLON {
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
-            return SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+            var mat = SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+            mat._waitingRenderList = source.renderList;
+
+            return mat;
         }
 
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {

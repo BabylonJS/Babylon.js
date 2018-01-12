@@ -70,26 +70,26 @@ declare module BABYLON {
         private _mesh;
         private _refractionRTT;
         private _reflectionRTT;
-        private _material;
         private _reflectionTransform;
         private _lastTime;
         private _lastDeltaTime;
         private _renderId;
         private _useLogarithmicDepth;
+        private _waitingRenderList;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
         useLogarithmicDepth: boolean;
-        readonly refractionTexture: RenderTargetTexture;
-        readonly reflectionTexture: RenderTargetTexture;
+        readonly refractionTexture: Nullable<RenderTargetTexture>;
+        readonly reflectionTexture: Nullable<RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
-        getRenderList(): AbstractMesh[];
+        getRenderList(): Nullable<AbstractMesh[]>;
         readonly renderTargetsEnabled: boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);

@@ -55,24 +55,21 @@
                 return result;
             }
         }
-    )();
+        )();
 
     export class Collider {
-        public radius = Vector3.One();
-        public retry = 0;
-        public velocity: Vector3;
-        public basePoint: Vector3;
-        public epsilon: number;
+        /** Define if a collision was found */
         public collisionFound: boolean;
-        public velocityWorldLength: number;
-        public basePointWorld = Vector3.Zero();
-        public velocityWorld = Vector3.Zero();
-        public normalizedVelocity = Vector3.Zero();
-        public initialVelocity: Vector3;
-        public initialPosition: Vector3;
-        public nearestDistance: number;
+
+        /**
+         * Define last intersection point in local space
+         */
         public intersectionPoint: Vector3;
-        public collidedMesh: AbstractMesh;
+
+        /**
+         * Define last collided mesh
+         */
+        public collidedMesh: Nullable<AbstractMesh>;
 
         private _collisionPoint = Vector3.Zero();
         private _planeIntersectionPoint = Vector3.Zero();
@@ -86,28 +83,48 @@
         private _slidePlaneNormal = Vector3.Zero();
         private _displacementVector = Vector3.Zero();
 
+        public _radius = Vector3.One();
+        public _retry = 0;
+        private _velocity: Vector3;
+        private _basePoint: Vector3;
+        private _epsilon: number;
+        public _velocityWorldLength: number;
+        public _basePointWorld = Vector3.Zero();
+        private _velocityWorld = Vector3.Zero();
+        private _normalizedVelocity = Vector3.Zero();
+        public _initialVelocity: Vector3;
+        public _initialPosition: Vector3;
+        private _nearestDistance: number;
+
         private _collisionMask = -1;
-        
+
         public get collisionMask(): number {
             return this._collisionMask;
         }
-        
+
         public set collisionMask(mask: number) {
             this._collisionMask = !isNaN(mask) ? mask : -1;
         }
 
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        public get slidePlaneNormal(): Vector3 {
+            return this._slidePlaneNormal;
+        }
+
         // Methods
         public _initialize(source: Vector3, dir: Vector3, e: number): void {
-            this.velocity = dir;
-            Vector3.NormalizeToRef(dir, this.normalizedVelocity);
-            this.basePoint = source;
+            this._velocity = dir;
+            Vector3.NormalizeToRef(dir, this._normalizedVelocity);
+            this._basePoint = source;
 
-            source.multiplyToRef(this.radius, this.basePointWorld);
-            dir.multiplyToRef(this.radius, this.velocityWorld);
+            source.multiplyToRef(this._radius, this._basePointWorld);
+            dir.multiplyToRef(this._radius, this._velocityWorld);
 
-            this.velocityWorldLength = this.velocityWorld.length();
+            this._velocityWorldLength = this._velocityWorld.length();
 
-            this.epsilon = e;
+            this._epsilon = e;
             this.collisionFound = false;
         }
 
@@ -132,15 +149,15 @@
         }
 
         public _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean {
-            var distance = Vector3.Distance(this.basePointWorld, sphereCenter);
+            var distance = Vector3.Distance(this._basePointWorld, sphereCenter);
 
-            var max = Math.max(this.radius.x, this.radius.y, this.radius.z);
+            var max = Math.max(this._radius.x, this._radius.y, this._radius.z);
 
-            if (distance > this.velocityWorldLength + max + sphereRadius) {
+            if (distance > this._velocityWorldLength + max + sphereRadius) {
                 return false;
             }
 
-            if (!intersectBoxAASphere(vecMin, vecMax, this.basePointWorld, this.velocityWorldLength + max))
+            if (!intersectBoxAASphere(vecMin, vecMax, this._basePointWorld, this._velocityWorldLength + max))
                 return false;
 
             return true;
@@ -162,11 +179,11 @@
 
             var trianglePlane = trianglePlaneArray[faceIndex];
 
-            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this.normalizedVelocity, 0))
+            if ((!hasMaterial) && !trianglePlane.isFrontFacingTo(this._normalizedVelocity, 0))
                 return;
 
-            var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this.basePoint);
-            var normalDotVelocity = Vector3.Dot(trianglePlane.normal, this.velocity);
+            var signedDistToTrianglePlane = trianglePlane.signedDistanceTo(this._basePoint);
+            var normalDotVelocity = Vector3.Dot(trianglePlane.normal, this._velocity);
 
             if (normalDotVelocity == 0) {
                 if (Math.abs(signedDistToTrianglePlane) >= 1.0)
@@ -199,8 +216,8 @@
             var t = 1.0;
 
             if (!embeddedInPlane) {
-                this.basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
-                this.velocity.scaleToRef(t0, this._tempVector);
+                this._basePoint.subtractToRef(trianglePlane.normal, this._planeIntersectionPoint);
+                this._velocity.scaleToRef(t0, this._tempVector);
                 this._planeIntersectionPoint.addInPlace(this._tempVector);
 
                 if (this._checkPointInTriangle(this._planeIntersectionPoint, p1, p2, p3, trianglePlane.normal)) {
@@ -211,12 +228,12 @@
             }
 
             if (!found) {
-                var velocitySquaredLength = this.velocity.lengthSquared();
+                var velocitySquaredLength = this._velocity.lengthSquared();
 
                 var a = velocitySquaredLength;
 
-                this.basePoint.subtractToRef(p1, this._tempVector);
-                var b = 2.0 * (Vector3.Dot(this.velocity, this._tempVector));
+                this._basePoint.subtractToRef(p1, this._tempVector);
+                var b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
                 var c = this._tempVector.lengthSquared() - 1.0;
 
                 var lowestRoot = getLowestRoot(a, b, c, t);
@@ -226,8 +243,8 @@
                     this._collisionPoint.copyFrom(p1);
                 }
 
-                this.basePoint.subtractToRef(p2, this._tempVector);
-                b = 2.0 * (Vector3.Dot(this.velocity, this._tempVector));
+                this._basePoint.subtractToRef(p2, this._tempVector);
+                b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
                 c = this._tempVector.lengthSquared() - 1.0;
 
                 lowestRoot = getLowestRoot(a, b, c, t);
@@ -237,8 +254,8 @@
                     this._collisionPoint.copyFrom(p2);
                 }
 
-                this.basePoint.subtractToRef(p3, this._tempVector);
-                b = 2.0 * (Vector3.Dot(this.velocity, this._tempVector));
+                this._basePoint.subtractToRef(p3, this._tempVector);
+                b = 2.0 * (Vector3.Dot(this._velocity, this._tempVector));
                 c = this._tempVector.lengthSquared() - 1.0;
 
                 lowestRoot = getLowestRoot(a, b, c, t);
@@ -249,13 +266,13 @@
                 }
 
                 p2.subtractToRef(p1, this._edge);
-                p1.subtractToRef(this.basePoint, this._baseToVertex);
+                p1.subtractToRef(this._basePoint, this._baseToVertex);
                 var edgeSquaredLength = this._edge.lengthSquared();
-                var edgeDotVelocity = Vector3.Dot(this._edge, this.velocity);
+                var edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
                 var edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
                 a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-                b = edgeSquaredLength * (2.0 * Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+                b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
                 c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
                 lowestRoot = getLowestRoot(a, b, c, t);
@@ -271,13 +288,13 @@
                 }
 
                 p3.subtractToRef(p2, this._edge);
-                p2.subtractToRef(this.basePoint, this._baseToVertex);
+                p2.subtractToRef(this._basePoint, this._baseToVertex);
                 edgeSquaredLength = this._edge.lengthSquared();
-                edgeDotVelocity = Vector3.Dot(this._edge, this.velocity);
+                edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
                 edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
                 a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-                b = edgeSquaredLength * (2.0 * Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+                b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
                 c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
                 lowestRoot = getLowestRoot(a, b, c, t);
                 if (lowestRoot.found) {
@@ -292,13 +309,13 @@
                 }
 
                 p1.subtractToRef(p3, this._edge);
-                p3.subtractToRef(this.basePoint, this._baseToVertex);
+                p3.subtractToRef(this._basePoint, this._baseToVertex);
                 edgeSquaredLength = this._edge.lengthSquared();
-                edgeDotVelocity = Vector3.Dot(this._edge, this.velocity);
+                edgeDotVelocity = Vector3.Dot(this._edge, this._velocity);
                 edgeDotBaseToVertex = Vector3.Dot(this._edge, this._baseToVertex);
 
                 a = edgeSquaredLength * (-velocitySquaredLength) + edgeDotVelocity * edgeDotVelocity;
-                b = edgeSquaredLength * (2.0 * Vector3.Dot(this.velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
+                b = edgeSquaredLength * (2.0 * Vector3.Dot(this._velocity, this._baseToVertex)) - 2.0 * edgeDotVelocity * edgeDotBaseToVertex;
                 c = edgeSquaredLength * (1.0 - this._baseToVertex.lengthSquared()) + edgeDotBaseToVertex * edgeDotBaseToVertex;
 
                 lowestRoot = getLowestRoot(a, b, c, t);
@@ -315,15 +332,15 @@
             }
 
             if (found) {
-                var distToCollision = t * this.velocity.length();
+                var distToCollision = t * this._velocity.length();
 
-                if (!this.collisionFound || distToCollision < this.nearestDistance) {
+                if (!this.collisionFound || distToCollision < this._nearestDistance) {
                     if (!this.intersectionPoint) {
                         this.intersectionPoint = this._collisionPoint.clone();
                     } else {
                         this.intersectionPoint.copyFrom(this._collisionPoint);
                     }
-                    this.nearestDistance = distToCollision;
+                    this._nearestDistance = distToCollision;
                     this.collisionFound = true;
                 }
             }
@@ -341,12 +358,12 @@
 
         public _getResponse(pos: Vector3, vel: Vector3): void {
             pos.addToRef(vel, this._destinationPoint);
-            vel.scaleInPlace((this.nearestDistance / vel.length()));
+            vel.scaleInPlace((this._nearestDistance / vel.length()));
 
-            this.basePoint.addToRef(vel, pos);
+            this._basePoint.addToRef(vel, pos);
             pos.subtractToRef(this.intersectionPoint, this._slidePlaneNormal);
             this._slidePlaneNormal.normalize();
-            this._slidePlaneNormal.scaleToRef(this.epsilon, this._displacementVector);
+            this._slidePlaneNormal.scaleToRef(this._epsilon, this._displacementVector);
 
             pos.addInPlace(this._displacementVector);
             this.intersectionPoint.addInPlace(this._displacementVector);

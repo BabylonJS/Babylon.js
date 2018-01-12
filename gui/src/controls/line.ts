@@ -3,14 +3,13 @@
 module BABYLON.GUI {
     export class Line extends Control {
         private _lineWidth = 1;
-        private _background: string;
         private _x1 = new ValueAndUnit(0);
         private _y1 = new ValueAndUnit(0);
         private _x2 = new ValueAndUnit(0);
         private _y2 = new ValueAndUnit(0);
         private _dash = new Array<number>();
         private _connectedControl: Control;
-        private _connectedControlDirtyObserver: Observer<Control>;
+        private _connectedControlDirtyObserver: Nullable<Observer<Control>>;
 
         public get dash(): Array<number> {
             return this._dash;
@@ -146,6 +145,13 @@ module BABYLON.GUI {
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
+
+            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
 
             this._applyStates(context);
             if (this._processMeasures(parentMeasure, context)) {

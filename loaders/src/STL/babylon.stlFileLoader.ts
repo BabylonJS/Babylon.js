@@ -18,7 +18,7 @@ module BABYLON {
             ".stl": {isBinary: true},
         };
 
-        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
+        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
             var matches;
 
             if (this.isBinary(data)) {
@@ -86,6 +86,16 @@ module BABYLON {
             return result;
         }
 
+        public loadAssets(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void):Nullable<AssetContainer>{
+            var container = new AssetContainer(scene);
+            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            if(result){
+                container.removeAllFromScene();
+                return container;
+            }
+            return null;
+        }
+
         private isBinary (data: any) {
 
             // check if file size is correct for binary stl
@@ -101,7 +111,7 @@ module BABYLON {
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
             for (var index=0; index < fileLength; index++) {
-                if (reader.getUint8( index, false ) > 127) {
+                if (reader.getUint8( index ) > 127) {
                     return true;
                 }
             }

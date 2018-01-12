@@ -1,18 +1,18 @@
 ﻿module BABYLON {
     export class MultiMaterial extends Material {
-        private _subMaterials: Material[];
-        public get subMaterials(): Material[] {
+        private _subMaterials: Nullable<Material>[];
+        public get subMaterials(): Nullable<Material>[] {
             return this._subMaterials;
         }
 
-        public set subMaterials(value: Material[]) {
+        public set subMaterials(value: Nullable<Material>[]) {
             this._subMaterials = value;
             this._hookArray(value);
         }
-        
+
         constructor(name: string, scene: Scene) {
             super(name, scene, true);
-            
+
             scene.multiMaterials.push(this);
 
             this.subMaterials = new Array<Material>();
@@ -20,9 +20,9 @@
             this.storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
         }
 
-        private _hookArray(array: Material[]): void {
+        private _hookArray(array: Nullable<Material>[]): void {
             var oldPush = array.push;
-            array.push = (...items: Material[]) => {
+            array.push = (...items: Nullable<Material>[]) => {
                 var result = oldPush.apply(array, items);
 
                 this._markAllSubMeshesAsTexturesDirty();
@@ -38,10 +38,10 @@
 
                 return deleted;
             }
-        }    
+        }
 
         // Properties
-        public getSubMaterial(index) {
+        public getSubMaterial(index: number): Nullable<Material> {
             if (index < 0 || index >= this.subMaterials.length) {
                 return this.getScene().defaultMaterial;
             }
@@ -50,7 +50,13 @@
         }
 
         public getActiveTextures(): BaseTexture[] {
-            return super.getActiveTextures().concat(...this.subMaterials.map(subMaterial => subMaterial.getActiveTextures()));
+            return super.getActiveTextures().concat(...this.subMaterials.map(subMaterial => {
+                if (subMaterial) {
+                    return subMaterial.getActiveTextures();
+                } else {
+                    return [];
+                }
+            }));
         }
 
         // Methods
@@ -62,14 +68,14 @@
             for (var index = 0; index < this.subMaterials.length; index++) {
                 var subMaterial = this.subMaterials[index];
                 if (subMaterial) {
-                    if (this.subMaterials[index].storeEffectOnSubMeshes) {
-                        if (!this.subMaterials[index].isReadyForSubMesh(mesh, subMesh, useInstances)) {
+                    if (subMaterial.storeEffectOnSubMeshes) {
+                        if (!subMaterial.isReadyForSubMesh(mesh, subMesh, useInstances)) {
                             return false;
                         }
                         continue;
                     }
 
-                    if (!this.subMaterials[index].isReady(mesh)) {
+                    if (!subMaterial.isReady(mesh)) {
                         return false;
                     }
                 }
@@ -82,9 +88,10 @@
             var newMultiMaterial = new MultiMaterial(name, this.getScene());
 
             for (var index = 0; index < this.subMaterials.length; index++) {
-                var subMaterial: Material = null;
-                if (cloneChildren) {
-                    subMaterial = this.subMaterials[index].clone(name + "-" + this.subMaterials[index].name);
+                var subMaterial: Nullable<Material> = null;
+                let current = this.subMaterials[index];
+                if (cloneChildren && current) {
+                    subMaterial = current.clone(name + "-" + current.name);
                 } else {
                     subMaterial = this.subMaterials[index];
                 }
@@ -99,8 +106,9 @@
 
             serializationObject.name = this.name;
             serializationObject.id = this.id;
-            serializationObject.tags = Tags.GetTags(this);
-
+            if (Tags) {
+                serializationObject.tags = Tags.GetTags(this);
+            }
             serializationObject.materials = [];
 
             for (var matIndex = 0; matIndex < this.subMaterials.length; matIndex++) {

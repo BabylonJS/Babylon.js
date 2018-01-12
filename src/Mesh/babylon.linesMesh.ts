@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.mesh.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class LinesMesh extends Mesh {
         public color = new Color3(1, 1, 1);
         public alpha = 1;
@@ -34,29 +32,39 @@ module BABYLON {
         private _intersectionThreshold: number;
         private _colorShader: ShaderMaterial;
 
-        constructor(name: string, scene: Scene, parent: Node = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor? : boolean) {
+        constructor(name: string, scene: Nullable<Scene> = null, parent: Nullable<Node> = null, source?: LinesMesh, doNotCloneChildren?: boolean, public useVertexColor?: boolean, public useVertexAlpha?: boolean) {
             super(name, scene, parent, source, doNotCloneChildren);
 
             if (source) {
                 this.color = source.color.clone();
                 this.alpha = source.alpha;
                 this.useVertexColor = source.useVertexColor;
+                this.useVertexAlpha = source.useVertexAlpha;
             }
 
             this._intersectionThreshold = 0.1;
-            
+
+            var defines: String[] = []; 
             var options = {
                 attributes: [VertexBuffer.PositionKind],
                 uniforms: ["world", "viewProjection"],
-                needAlphaBlending: false,
+                needAlphaBlending: true,
+                defines: defines
             };
+            
+            if (useVertexAlpha === false) {
+                options.needAlphaBlending = false;
+            }
             
             if (!useVertexColor) {
                 options.uniforms.push("color");
-                options.needAlphaBlending = true;
+            }
+            else {
+                options.defines.push("#define VERTEXCOLOR");
+                options.attributes.push(VertexBuffer.ColorKind);
             }
 
-            this._colorShader = new ShaderMaterial("colorShader", scene, "color", options);
+            this._colorShader = new ShaderMaterial("colorShader", this.getScene(), "color", options);
         }
 
         /**
@@ -64,10 +72,14 @@ module BABYLON {
          */
         public getClassName(): string {
             return "LinesMesh";
-        }      
+        }
 
         public get material(): Material {
             return this._colorShader;
+        }
+
+        public set material(value: Material) {
+            // Do nothing
         }
 
         public get checkCollisions(): boolean {
@@ -75,13 +87,15 @@ module BABYLON {
         }
 
         public createInstance(name: string): InstancedMesh {
-            Tools.Log("LinesMeshes do not support createInstance.");
-            return null;
+            throw new Error("LinesMeshes do not support createInstance.");
         }
 
         public _bind(subMesh: SubMesh, effect: Effect, fillMode: number): LinesMesh {
+            if (!this._geometry) {
+                return this;
+            }
             // VBOs
-            this._geometry._bind(this._colorShader.getEffect() );
+            this._geometry._bind(this._colorShader.getEffect());
 
             // Color
             if (!this.useVertexColor) {
@@ -98,7 +112,7 @@ module BABYLON {
             var engine = this.getScene().getEngine();
 
             // Draw order
-            engine.draw(false, subMesh.indexStart, subMesh.indexCount);
+            engine.drawElementsType(Material.LineListDrawMode, subMesh.indexStart, subMesh.indexCount);
             return this;
         }
 

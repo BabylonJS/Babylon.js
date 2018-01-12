@@ -91,6 +91,33 @@ body {
 .wrapper .gutter.gutter-horizontal {
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==");
 }
+
+.pbt-fade {
+    opacity:0.5
+}
+
+.pbt-darken {
+    opacity:1
+}
+
+.pbt-back-highlight {
+    background-color:#CDC8F9;
+}
+
+.pbt-margin-decor-on {
+    background-color: #364249; 
+    width:5px;
+} 
+
+.pbt-back-highlight-dark {
+    background-color:#364249; 
+}
+
+.pbt-margin-decor-on-dark {
+    background-color: #CDC8F9;
+    width:5px;
+}      
+
 .wrapper #jsEditor {
     padding-top:5px;
     height: calc(100% - 10px);
@@ -120,7 +147,9 @@ body {
     color:white;
     padding:5px;
     border-radius: 3px;
-    font-family: 'Montserrat'
+    font-family: 'Montserrat';
+    pointer-events: none;
+    user-select: none;
 }
 .navbar {
     height: 40px;
@@ -403,41 +432,6 @@ body {
     display: inline-block;
 }
 
-/* MONACO */
-
-.monaco-editor .container:before,
-.monaco-editor .row:before {
-    content: "";
-    display: inherit;
-}
-.monaco-editor .container:after,
-.monaco-editor .row:after {
-    clear: inherit;
-}
-.monaco-editor .container {
-    width: auto;
-    margin: inherit;
-    padding: inherit;
-}
-.monaco-editor .close {
-    float: none;
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-    color: inherit;
-    text-shadow: inherit;
-    opacity: inherit;
-    filter: inherit;
-}
-.monaco-editor .row {
-    margin: inherit;
-}
-.monaco-editor .invisible {
-    visibility: visible;
-}
-.monaco-editor .view-lines {
-    font-family: 'Inconsolata' !important;
-}
 /* Save form & co */
 
 .save-message {
@@ -541,3 +535,4 @@ body {
         column-count: 1;
     }
 }
+

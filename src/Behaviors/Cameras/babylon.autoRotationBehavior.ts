@@ -73,13 +73,17 @@ module BABYLON {
 		}
         
         // Default behavior functions
-        private _onPrePointerObservableObserver: Observer<PointerInfoPre>;
-        private _onAfterCheckInputsObserver: Observer<Camera>;
-        private _attachedCamera: ArcRotateCamera;
+        private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
+        private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
+        private _attachedCamera: Nullable<ArcRotateCamera>;
         private _isPointerDown = false;
-        private _lastFrameTime: number = null;
+        private _lastFrameTime: Nullable<number> = null;
 		private _lastInteractionTime = -Infinity;
 		private _cameraRotationSpeed: number = 0;
+
+		public init(): void {
+			// Do notihng
+		}
 
         public attach(camera: ArcRotateCamera): void {
             this._attachedCamera = camera;
@@ -111,15 +115,23 @@ module BABYLON {
 				let scale = Math.max(Math.min(timeToRotation / (this._idleRotationSpinupTime), 1), 0);
                 this._cameraRotationSpeed = this._idleRotationSpeed * scale;
     
-                // Step camera rotation by rotation speed
-                this._attachedCamera.alpha -= this._cameraRotationSpeed * (dt / 1000);
+				// Step camera rotation by rotation speed
+				if (this._attachedCamera) {
+					this._attachedCamera.alpha -= this._cameraRotationSpeed * (dt / 1000);
+				}
             });
         }
              
         public detach(): void {
+			if (!this._attachedCamera) {
+				return;
+			}
             let scene = this._attachedCamera.getScene();
-            
-            scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
+			
+			if (this._onPrePointerObservableObserver) {
+				scene.onPrePointerObservable.remove(this._onPrePointerObservableObserver);
+			}
+			
 			this._attachedCamera.onAfterCheckInputsObservable.remove(this._onAfterCheckInputsObserver);
 			this._attachedCamera = null;
 		}
@@ -129,11 +141,18 @@ module BABYLON {
 		 * @return true if user is scrolling.
 		 */
 		private _userIsZooming(): boolean {
+			if (!this._attachedCamera) {
+				return false;
+			}			
 			return this._attachedCamera.inertialRadiusOffset !== 0;
 		}   		
 		
 		private _lastFrameRadius = 0;
 		private _shouldAnimationStopForInteraction(): boolean {
+			if (!this._attachedCamera) {
+				return false;
+			}	
+
 			var zoomHasHitLimit = false;
 			if (this._lastFrameRadius === this._attachedCamera.radius && this._attachedCamera.inertialRadiusOffset !== 0) {
 				zoomHasHitLimit = true;
@@ -155,6 +174,10 @@ module BABYLON {
    
         // Tools
         private _userIsMoving(): boolean {
+			if (!this._attachedCamera) {
+				return false;
+			}	
+			
 			return this._attachedCamera.inertialAlphaOffset !== 0 ||
 				this._attachedCamera.inertialBetaOffset !== 0 ||
 				this._attachedCamera.inertialRadiusOffset !== 0 ||

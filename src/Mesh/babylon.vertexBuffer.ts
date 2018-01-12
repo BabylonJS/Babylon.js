@@ -7,7 +7,7 @@
         private _stride: number;
         private _ownsBuffer: boolean;
 
-        constructor(engine: any, data: number[] | Float32Array | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
+        constructor(engine: any, data: FloatArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
             if (!stride) {
                 // Deduce stride from kind
                 switch (kind) {
@@ -35,6 +35,7 @@
                         break;
                     case VertexBuffer.MatricesWeightsKind:
                     case VertexBuffer.MatricesWeightsExtraKind:
+                    default:
                         stride = 4;
                         break;
                 }
@@ -47,7 +48,7 @@
                 this._buffer = data;
                 this._ownsBuffer = false;
             } else {
-                this._buffer = new Buffer(engine, <number[] | Float32Array>data, updatable, stride, postponeInternalCreation, instanced);
+                this._buffer = new Buffer(engine, <FloatArray>data, updatable, stride, postponeInternalCreation, instanced);
                 this._ownsBuffer = true;
             }
 
@@ -86,14 +87,14 @@
         /**
          * Returns an array of numbers or a Float32Array containing the VertexBuffer data.  
          */
-        public getData(): number[] | Float32Array {
+        public getData(): Nullable<FloatArray> {
             return this._buffer.getData();
         }
 
         /**
          * Returns the WebGLBuffer associated to the VertexBuffer.  
          */
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer.getBuffer();
         }
 
@@ -138,7 +139,7 @@
          * Creates the underlying WebGLBuffer from the passed numeric array or Float32Array.  
          * Returns the created WebGLBuffer.   
          */
-        public create(data?: number[] | Float32Array): void {
+        public create(data?: FloatArray): void {
             return this._buffer.create(data);
         }
 
@@ -146,7 +147,7 @@
          * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
          * Returns the updated WebGLBuffer.  
          */
-        public update(data: number[] | Float32Array): void {
+        public update(data: FloatArray): void {
             return this._buffer.update(data);
         }
 

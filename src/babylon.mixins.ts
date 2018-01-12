@@ -1,18 +1,11 @@
 ﻿// Mixins
 interface Window {
-    mozIndexedDB(func: any): any;
-    webkitIndexedDB(func: any): any;
+    mozIndexedDB: IDBFactory;
+    webkitIndexedDB: IDBFactory;
     msIndexedDB: IDBFactory;
-    IDBTransaction(func: any): any;
-    webkitIDBTransaction(func: any): any;
-    msIDBTransaction(func: any): any;
-    IDBKeyRange(func: any): any;
-    webkitIDBKeyRange(func: any): any;
-    msIDBKeyRange(func: any): any;
-    webkitURL: HTMLURL;
-    webkitRequestAnimationFrame(func: any): any;
-    mozRequestAnimationFrame(func: any): any;
-    oRequestAnimationFrame(func: any): any;
+    webkitURL: typeof URL;
+    mozRequestAnimationFrame(callback: FrameRequestCallback): number;
+    oRequestAnimationFrame(callback: FrameRequestCallback): number;
     WebGLRenderingContext: WebGLRenderingContext;
     MSGesture: MSGesture;
     CANNON: any;
@@ -23,8 +16,8 @@ interface Window {
     Math: Math;
     Uint8Array: Uint8ArrayConstructor;
     Float32Array: Float32ArrayConstructor;
-    mozURL: any;
-    msURL: any;
+    mozURL: typeof URL;
+    msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
 }
 
@@ -34,7 +27,7 @@ interface WebGLRenderingContext {
     vertexAttribDivisor(index: number, divisor: number): void;
 
     createVertexArray(): any;
-    bindVertexArray(vao: WebGLVertexArrayObject): void;
+    bindVertexArray(vao?: WebGLVertexArrayObject | null): void;
     deleteVertexArray(vao: WebGLVertexArrayObject): void;
 
     blitFramebuffer(srcX0: number, srcY0: number, srcX1: number, srcY1: number, dstX0: number, dstY0: number, dstX1: number, dstY1: number, mask: number, filter: number): void;
@@ -44,12 +37,13 @@ interface WebGLRenderingContext {
     getUniformBlockIndex(program: WebGLProgram, uniformBlockName: string): number;
     uniformBlockBinding(program: WebGLProgram, uniformBlockIndex: number, uniformBlockBinding: number): void;
 
-    // Occlusion Query
+    // Queries
     createQuery(): WebGLQuery;
-    deleteQuery(query: WebGLQuery);
-    beginQuery(target: number, query: WebGLQuery);
+    deleteQuery(query: WebGLQuery): void;
+    beginQuery(target: number, query: WebGLQuery): void;
     endQuery(target: number): void;
     getQueryParameter(query: WebGLQuery, pname: number): any;
+    getQuery(target: number, pname: number): any;
 
     MAX_SAMPLES: number;
     RGBA8: number;
@@ -80,13 +74,7 @@ interface WebGLRenderingContext {
     QUERY_RESULT: number;
 }
 
-interface HTMLURL {
-    createObjectURL(param1: any, param2?: any);
-}
-
 interface Document {
-    exitFullscreen(): void;
-    webkitCancelFullScreen(): void;
     mozCancelFullScreen(): void;
     msCancelFullScreen(): void;
     mozFullScreen: boolean;
@@ -98,17 +86,12 @@ interface Document {
 }
 
 interface HTMLCanvasElement {
-    requestPointerLock(): void;
     msRequestPointerLock?(): void;
     mozRequestPointerLock?(): void;
     webkitRequestPointerLock?(): void;
 }
 
 interface CanvasRenderingContext2D {
-    imageSmoothingEnabled: boolean;
-    mozImageSmoothingEnabled: boolean;
-    oImageSmoothingEnabled: boolean;
-    webkitImageSmoothingEnabled: boolean;
     msImageSmoothingEnabled: boolean;
 }
 
@@ -116,6 +99,11 @@ interface WebGLBuffer {
     references: number;
     capacity: number;
     is32Bits: boolean;
+}
+
+interface WebGLProgram {
+    transformFeedback?: WebGLTransformFeedback | null;
+    __SPECTOR_rebuildProgram?: ((vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) => void) | null;
 }
 
 interface MouseEvent {
@@ -127,24 +115,16 @@ interface MouseEvent {
     msMovementY: number;
 }
 
-interface MSStyleCSSProperties {
-    webkitTransform: string;
-    webkitTransition: string;
-}
-
 interface Navigator {
     getVRDisplays: () => any;
     mozGetVRDevices: (any: any) => any;
-    isCocoonJS: boolean;
-    getUserMedia: any;
-    webkitGetUserMedia: any;
-    mozGetUserMedia: any;
-    msGetUserMedia: any;
+    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    msGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
 
-    getGamepads(func?: any): any;
-    webkitGetGamepads(func?: any): any
-    msGetGamepads(func?: any): any;
-    webkitGamepads(func?: any): any;    
+    webkitGetGamepads(): Gamepad[];
+    msGetGamepads(): Gamepad[];
+    webkitGamepads(): Gamepad[];
 }
 
 interface HTMLVideoElement {
@@ -154,10 +134,6 @@ interface HTMLVideoElement {
 interface Screen {
     orientation: string;
     mozOrientation: string;
-}
-
-interface HTMLMediaElement {
-    crossOrigin: string | null;
 }
 
 interface Math {
@@ -599,4 +575,19 @@ declare namespace SIMD {
         xor(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
         not(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
     }
+}
+
+interface EXT_disjoint_timer_query {
+    QUERY_COUNTER_BITS_EXT: number;
+    TIME_ELAPSED_EXT: number;
+    TIMESTAMP_EXT: number;
+    GPU_DISJOINT_EXT: number;
+    QUERY_RESULT_EXT: number;
+    QUERY_RESULT_AVAILABLE_EXT: number;
+    queryCounterEXT(query: WebGLQuery, target: number): void;
+    createQueryEXT(): WebGLQuery;
+    beginQueryEXT(target: number, query: WebGLQuery): void;
+    endQueryEXT(target: number): void;
+    getQueryObjectEXT(query: WebGLQuery, target: number): any;
+    deleteQueryEXT(query: WebGLQuery): void;
 }

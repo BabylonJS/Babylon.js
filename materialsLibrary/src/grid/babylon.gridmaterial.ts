@@ -37,6 +37,12 @@ module BABYLON {
         public gridRatio = 1.0;
 
         /**
+         * Allows setting an offset for the grid lines.
+         */
+        @serializeAsColor3()
+        public gridOffset = Vector3.Zero();
+
+        /**
          * The frequency of thicker lines.
          */
         @serialize()
@@ -80,6 +86,10 @@ module BABYLON {
             return this.opacity < 1.0;
         }
 
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+            return this.needAlphaBlending();
+        }
+
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
@@ -99,8 +109,6 @@ module BABYLON {
                     return true;
                 }
             }
-
-            var engine = scene.getEngine();
 
             if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
                 defines.TRANSPARENT = !defines.TRANSPARENT;
@@ -126,15 +134,15 @@ module BABYLON {
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect("grid",
                     attribs,
-                    ["projection", "worldView", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"],
+                    ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"],
                     [],
                     join,
-                    null,
+                    undefined,
                     this.onCompiled,
                     this.onError), defines);
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -153,6 +161,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices
@@ -165,6 +176,8 @@ module BABYLON {
             if (this._mustRebind(scene, effect)) {
                 this._activeEffect.setColor3("mainColor", this.mainColor);
                 this._activeEffect.setColor3("lineColor", this.lineColor);
+
+                this._activeEffect.setVector3("gridOffset", this.gridOffset);
 
                 this._gridControl.x = this.gridRatio;
                 this._gridControl.y = Math.round(this.majorUnitFrequency);
@@ -194,7 +207,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "GridMaterial";
-        }             
+        }
 
         public static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
             return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);

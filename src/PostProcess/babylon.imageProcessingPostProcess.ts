@@ -25,13 +25,13 @@
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the PBR Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration, doNotBuild = false): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>, doNotBuild = false): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -43,9 +43,22 @@
 
             // Pick the scene configuration if needed.
             if (!configuration) {
+                var scene = null;
+                var engine = this.getEngine();
                 var camera = this.getCamera();
-                var scene = camera ? camera.getScene() : BABYLON.Engine.LastCreatedScene;
-                this._imageProcessingConfiguration = scene.imageProcessingConfiguration;
+
+                if (camera) {
+                    scene = camera.getScene();
+                }
+                else if (engine && engine.scenes) {
+                    var scenes = engine.scenes;
+                    scene = scenes[scenes.length - 1];
+                }
+                else {
+                    scene = Engine.LastCreatedScene;
+                }
+
+                this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;
             }
             else {
                 this._imageProcessingConfiguration = configuration;
@@ -65,13 +78,13 @@
         /**
          * Gets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
-        public get colorCurves(): ColorCurves {
+        public get colorCurves(): Nullable<ColorCurves> {
             return this.imageProcessingConfiguration.colorCurves;
         }
         /**
          * Sets Color curves setup used in the effect if colorCurvesEnabled is set to true .
          */
-        public set colorCurves(value: ColorCurves) {
+        public set colorCurves(value: Nullable<ColorCurves>) {
             this.imageProcessingConfiguration.colorCurves = value;
         }
 
@@ -91,13 +104,13 @@
         /**
          * Gets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
          */
-        public get colorGradingTexture(): BaseTexture {
+        public get colorGradingTexture(): Nullable<BaseTexture> {
             return this.imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets Color grading LUT texture used in the effect if colorGradingEnabled is set to true.
          */
-        public set colorGradingTexture(value: BaseTexture) {
+        public set colorGradingTexture(value: Nullable<BaseTexture>) {
             this.imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -291,6 +304,7 @@
             CONTRAST: false,
             COLORCURVES: false,
             COLORGRADING: false,
+            COLORGRADING3D: false,
             FROMLINEARSPACE: false,
             SAMPLER3DGREENDEPTH: false,
             SAMPLER3DBGRMAP: false,
@@ -298,14 +312,23 @@
             EXPOSURE: false,
         }
 
-        constructor(name: string, options: number | PostProcessOptions, camera?: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {
             super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
-                                            null, textureType, "postprocess", null, true);
+                null, textureType, "postprocess", null, true);
 
+            // Setup the configuration as forced by the constructor. This would then not force the 
+            // scene materials output in linear space and let untouched the default forward pass.
+            if (imageProcessingConfiguration) {
+                imageProcessingConfiguration.applyByPostProcess = true;
+                this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
+                // This will cause the shader to be compiled
+                this.fromLinearSpace = false;
+            }
             // Setup the default processing configuration to the scene.
-            this._attachImageProcessingConfiguration(null, true);
-
-            this.imageProcessingConfiguration.applyByPostProcess = true;
+            else {
+                this._attachImageProcessingConfiguration(null, true);
+                this.imageProcessingConfiguration.applyByPostProcess = true;
+            }
 
             this.onApply = (effect: Effect) => {
                 this.imageProcessingConfiguration.bind(effect, this.aspectRatio);
@@ -314,14 +337,14 @@
 
         public getClassName(): string {
             return "ImageProcessingPostProcess";
-        }           
+        }
 
         protected _updateParameters(): void {
             this._defines.FROMLINEARSPACE = this._fromLinearSpace;
-            this.imageProcessingConfiguration.prepareDefines(this._defines);
+            this.imageProcessingConfiguration.prepareDefines(this._defines, true);
             var defines = "";
             for (const define in this._defines) {
-                if (this._defines[define]) {
+                if ((<any>this._defines)[define]) {
                     defines += `#define ${define};\r\n`;
                 }
             }
@@ -341,7 +364,7 @@
             if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
                 this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             }
-            
+
             this.imageProcessingConfiguration.applyByPostProcess = false;
         }
     }

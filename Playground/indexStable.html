@@ -45,6 +45,8 @@
     <script src="https://cdn.babylonjs.com/loaders/babylon.objFileLoader.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylon.stlFileLoader.js"></script>
 
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>    
+
     <script src="https://rawgit.com/BabylonJS/Extensions/master/ClonerSystem/src/babylonx.cloner.js"></script>
     <link href="css/index.css" rel="stylesheet" />
 </head>
@@ -97,6 +99,9 @@
                     <div class="option" id="fullscreenButton1600">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton1600">Editor Fullscreen</div>
                     <div class="option" id="formatButton1600">Format code</div>
+                    <div class="option" id="minimapToggle1600">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                 </div>
             </div>
 
@@ -169,7 +174,9 @@
                     </div>
                     <div class="option" id="fullscreenButton1475">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton1475">Editor Fullscreen</div>
-                    <div class="option" id="formatButton1475">Format code</div>
+                    <div class="option" id="formatButton1475">Format code</div><div class="option" id="minimapToggle1475">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                     <div class="option" id="debugButton1475">Debug layer<i class="fa fa-square-o" aria-hidden="true"></i></div>
                     <div class="option" id="metadataButton1475">Metadata</div>
                     <div class="option subSelect"><span id="currentVersion1475">Vers. : Latest</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -235,7 +242,9 @@
                     </div>
                     <div class="option" id="fullscreenButton1030">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton1030">Editor Fullscreen</div>
-                    <div class="option" id="formatButton1030">Format code</div>
+                    <div class="option" id="formatButton1030">Format code</div><div class="option" id="minimapToggle1030">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                     <div class="option" id="debugButton1030">Debug layer<i class="fa fa-square-o" aria-hidden="true"></i></div>
                     <div class="option" id="metadataButton1030">Metadata</div>
                     <div class="option subSelect"><span id="currentVersion1030">Vers. : Latest</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -298,7 +307,9 @@
                     </div>
                     <div class="option" id="fullscreenButton750">Fullscreen</div>
                     <div class="option" id="editorFullscreenButton750">Editor Fullscreen</div>
-                    <div class="option" id="formatButton750">Format code</div>
+                    <div class="option" id="formatButton750">Format code</div><div class="option" id="minimapToggle750">Minimap
+                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                    </div>
                     <div class="option" id="debugButton750">Debug layer<i class="fa fa-square-o" aria-hidden="true"></i></div>
                     <div class="option" id="metadataButton750">Metadata</div>
                     <div class="option subSelect"><span id="currentVersion750">Vers. : Latest</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -376,6 +387,7 @@
     </script>
 
     <script src="js/actions.js"></script>
+    <script src="js/pbt.js"></script>
     <script src="js/index.js"></script>
 </body>
 

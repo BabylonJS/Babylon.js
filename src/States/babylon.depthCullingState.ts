@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     export class _DepthCullingState {
         private _isDepthTestDirty = false;
         private _isDepthMaskDirty = false;
@@ -6,13 +6,15 @@
         private _isCullFaceDirty = false;
         private _isCullDirty = false;
         private _isZOffsetDirty = false;
+        private _isFrontFaceDirty = false;
 
         private _depthTest: boolean;
         private _depthMask: boolean;
-        private _depthFunc: number;
-        private _cull: boolean;
-        private _cullFace: number;
+        private _depthFunc: Nullable<number>;
+        private _cull: Nullable<boolean>;
+        private _cullFace: Nullable<number>;
         private _zOffset: number;
+        private _frontFace: Nullable<number>;
 
         /**
          * Initializes the state.
@@ -22,7 +24,7 @@
         }
 
         public get isDirty(): boolean {
-            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty;
+            return this._isDepthFuncDirty || this._isDepthTestDirty || this._isDepthMaskDirty || this._isCullFaceDirty || this._isCullDirty || this._isZOffsetDirty || this._isFrontFaceDirty;
         }
 
         public get zOffset(): number {
@@ -38,11 +40,11 @@
             this._isZOffsetDirty = true;
         }
 
-        public get cullFace(): number {
+        public get cullFace(): Nullable<number> {
             return this._cullFace;
         }
 
-        public set cullFace(value: number) {
+        public set cullFace(value: Nullable<number>) {
             if (this._cullFace === value) {
                 return;
             }
@@ -51,11 +53,11 @@
             this._isCullFaceDirty = true;
         }
 
-        public get cull() {
+        public get cull(): Nullable<boolean> {
             return this._cull;
         }
 
-        public set cull(value: boolean) {
+        public set cull(value: Nullable<boolean>) {
             if (this._cull === value) {
                 return;
             }
@@ -64,11 +66,11 @@
             this._isCullDirty = true;
         }
 
-        public get depthFunc(): number {
+        public get depthFunc(): Nullable<number> {
             return this._depthFunc;
         }
 
-        public set depthFunc(value: number) {
+        public set depthFunc(value: Nullable<number>) {
             if (this._depthFunc === value) {
                 return;
             }
@@ -103,6 +105,19 @@
             this._isDepthTestDirty = true;
         }
 
+        public get frontFace(): Nullable<number> {
+            return this._frontFace;
+        }
+
+        public set frontFace(value: Nullable<number>) {
+            if (this._frontFace === value) {
+                return;
+            }
+
+            this._frontFace = value;
+            this._isFrontFaceDirty = true;
+        }
+
         public reset() {
             this._depthMask = true;
             this._depthTest = true;
@@ -110,6 +125,7 @@
             this._cullFace = null;
             this._cull = null;
             this._zOffset = 0;
+            this._frontFace = null;
 
             this._isDepthTestDirty = true;
             this._isDepthMaskDirty = true;
@@ -117,6 +133,7 @@
             this._isCullFaceDirty = false;
             this._isCullDirty = false;
             this._isZOffsetDirty = false;
+            this._isFrontFaceDirty = false;
         }
 
         public apply(gl: WebGLRenderingContext) {
@@ -138,7 +155,7 @@
 
             // Cull face
             if (this._isCullFaceDirty) {
-                gl.cullFace(this.cullFace);
+                gl.cullFace(<number>this.cullFace);
                 this._isCullFaceDirty = false;
             }
 
@@ -160,7 +177,7 @@
 
             // Depth func
             if (this._isDepthFuncDirty) {
-                gl.depthFunc(this.depthFunc);
+                gl.depthFunc(<number>this.depthFunc);
                 this._isDepthFuncDirty = false;
             }
 
@@ -174,6 +191,12 @@
                 }
 
                 this._isZOffsetDirty = false;
+            }
+
+            // Front face
+            if (this._isFrontFaceDirty) {
+                gl.frontFace(<number>this.frontFace);
+                this._isFrontFaceDirty = false;
             }
         }
     }

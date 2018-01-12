@@ -16,7 +16,12 @@ module BABYLON {
         public updateShaderUniforms() {
             this.setFloat("size", this.getRenderSize());
 
-            var deltaTime = this.getScene().getEngine().getDeltaTime();
+            let scene = this.getScene();
+
+            if (!scene) {
+                return;
+            }
+            var deltaTime = scene.getEngine().getDeltaTime();
 
             this.time += deltaTime;
             this.setFloat("time", this.time * this.speed / 1000);

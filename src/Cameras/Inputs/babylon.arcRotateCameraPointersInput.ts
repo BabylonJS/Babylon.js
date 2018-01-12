@@ -1,6 +1,4 @@
 module BABYLON {
-    var eventPrefix = Tools.GetPointerPrefix();
-
     export class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
 
@@ -14,39 +12,63 @@ module BABYLON {
         public angularSensibilityY = 1000.0;
 
         @serialize()
-        public pinchPrecision = 6.0;
+        public pinchPrecision = 12.0;
+
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0. 
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        @serialize()
+        public pinchDeltaPercentage = 0;
 
         @serialize()
-        public panningSensibility: number = 50.0;
+        public panningSensibility: number = 1000.0;
+
+        @serialize()
+        public multiTouchPanning: boolean = true;
+
+        @serialize()
+        public multiTouchPanAndZoom: boolean = true;
 
         private _isPanClick: boolean = false;
         public pinchInwards = true;
 
         private _pointerInput: (p: PointerInfo, s: EventState) => void;
-        private _observer: Observer<PointerInfo>;
-        private _onMouseMove: (e: MouseEvent) => any;
-        private _onGestureStart: (e: PointerEvent) => void;
-        private _onGesture: (e: MSGestureEvent) => void;
-        private _MSGestureHandler: MSGesture;
-        private _onLostFocus: (e: FocusEvent) => any;
-        private _onContextMenu: (e: PointerEvent) => void;
+        private _observer: Nullable<Observer<PointerInfo>>;
+        private _onMouseMove: Nullable<(e: MouseEvent) => any>;
+        private _onGestureStart: Nullable<(e: PointerEvent) => void>;
+        private _onGesture: Nullable<(e: MSGestureEvent) => void>;
+        private _MSGestureHandler: Nullable<MSGesture>;
+        private _onLostFocus: Nullable<(e: FocusEvent) => any>;
+        private _onContextMenu: Nullable<(e: PointerEvent) => void>;
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             var engine = this.camera.getEngine();
-            var cacheSoloPointer: { x: number, y: number, pointerId: number, type: any }; // cache pointer object for better perf on camera rotation
-            var pointA: { x: number, y: number, pointerId: number, type: any }, pointB: { x: number, y: number, pointerId: number, type: any };
-            var previousPinchDistance = 0;
+            var cacheSoloPointer: Nullable<{ x: number, y: number, pointerId: number, type: any }>; // cache pointer object for better perf on camera rotation
+            var pointA: Nullable<{ x: number, y: number, pointerId: number, type: any }> = null;
+            var pointB: Nullable<{ x: number, y: number, pointerId: number, type: any }> = null;
+            var previousPinchSquaredDistance = 0;
+            var initialDistance = 0;
+            var twoFingerActivityCount = 0;
+            var previousMultiTouchPanPosition: { x: number, y: number, isPaning: boolean, isPinching: boolean } = { x: 0, y: 0, isPaning: false, isPinching: false };
 
             this._pointerInput = (p, s) => {
                 var evt = <PointerEvent>p.event;
+                let isTouch = (<any>p.event).pointerType === "touch";
+                
+                if (engine.isInVRExclusivePointerMode) {
+                    return;
+                }
 
                 if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                     return;
                 }
 
-                if (p.type === PointerEventTypes.POINTERDOWN) {
+                let srcElement = <HTMLElement>(evt.srcElement || evt.target);
+
+                if (p.type === PointerEventTypes.POINTERDOWN && srcElement) {
                     try {
-                        evt.srcElement.setPointerCapture(evt.pointerId);
+                        srcElement.setPointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error. Execution will continue.
                     }
@@ -56,35 +78,61 @@ module BABYLON {
 
                     // manage pointers
                     cacheSoloPointer = { x: evt.clientX, y: evt.clientY, pointerId: evt.pointerId, type: evt.pointerType };
-                    if (pointA === undefined) {
+                    if (pointA === null) {
                         pointA = cacheSoloPointer;
                     }
-                    else if (pointB === undefined) {
+                    else if (pointB === null) {
                         pointB = cacheSoloPointer;
                     }
                     if (!noPreventDefault) {
                         evt.preventDefault();
                         element.focus();
                     }
-                } 
+                }
                 else if (p.type === PointerEventTypes.POINTERDOUBLETAP) {
                     this.camera.restoreState();
                 }
-                else if (p.type === PointerEventTypes.POINTERUP) {
+                else if (p.type === PointerEventTypes.POINTERUP && srcElement) {
                     try {
-                        evt.srcElement.releasePointerCapture(evt.pointerId);
+                        srcElement.releasePointerCapture(evt.pointerId);
                     } catch (e) {
                         //Nothing to do with the error.
                     }
 
                     cacheSoloPointer = null;
-                    previousPinchDistance = 0;
+                    previousPinchSquaredDistance = 0;
+                    previousMultiTouchPanPosition.isPaning = false;
+                    previousMultiTouchPanPosition.isPinching = false;
+                    twoFingerActivityCount = 0;
+                    initialDistance = 0;
+
+                    if (!isTouch) {
+                        pointB = null; // Mouse and pen are mono pointer
+                    }
 
                     //would be better to use pointers.remove(evt.pointerId) for multitouch gestures, 
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    pointA = pointB = undefined;
+                    if (engine.badOS) {
+                        pointA = pointB = null;
+                    }
+                    else {
+                        //only remove the impacted pointer in case of multitouch allowing on most 
+                        //platforms switching from rotate to zoom and pan seamlessly.
+                        if (pointB && pointA && pointA.pointerId == evt.pointerId) {
+                            pointA = pointB;
+                            pointB = null;
+                            cacheSoloPointer = { x: pointA.x, y: pointA.y, pointerId: pointA.pointerId, type: evt.pointerType };
+                        }
+                        else if (pointA && pointB && pointB.pointerId == evt.pointerId) {
+                            pointB = null;
+                            cacheSoloPointer = { x: pointA.x, y: pointA.y, pointerId: pointA.pointerId, type: evt.pointerType };
+                        }
+                        else {
+                            pointA = pointB = null;
+                        }
+                    }
 
                     if (!noPreventDefault) {
                         evt.preventDefault();
@@ -95,10 +143,9 @@ module BABYLON {
                     }
 
                     // One button down
-                    if (pointA && pointB === undefined) {
+                    if (pointA && pointB === null && cacheSoloPointer) {
                         if (this.panningSensibility !== 0 &&
-                            ((evt.ctrlKey && this.camera._useCtrlForPanning) ||
-                                (!this.camera._useCtrlForPanning && this._isPanClick))) {
+                            ((evt.ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
                             this.camera.inertialPanningX += -(evt.clientX - cacheSoloPointer.x) / this.panningSensibility;
                             this.camera.inertialPanningY += (evt.clientY - cacheSoloPointer.y) / this.panningSensibility;
                         } else {
@@ -112,7 +159,7 @@ module BABYLON {
                         cacheSoloPointer.y = evt.clientY;
                     }
 
-                    // Two buttons down: pinch
+                    // Two buttons down: pinch/pan
                     else if (pointA && pointB) {
                         //if (noPreventDefault) { evt.preventDefault(); } //if pinch gesture, could be useful to force preventDefault to avoid html page scroll/zoom in some mobile browsers
                         var ed = (pointA.pointerId === evt.pointerId) ? pointA : pointB;
@@ -122,19 +169,76 @@ module BABYLON {
                         var distX = pointA.x - pointB.x;
                         var distY = pointA.y - pointB.y;
                         var pinchSquaredDistance = (distX * distX) + (distY * distY);
-                        if (previousPinchDistance === 0) {
-                            previousPinchDistance = pinchSquaredDistance;
+                        var pinchDistance = Math.sqrt(pinchSquaredDistance);
+
+                        if (previousPinchSquaredDistance === 0) {
+                            initialDistance = pinchDistance;
+                            previousPinchSquaredDistance = pinchSquaredDistance;
+                            previousMultiTouchPanPosition.x = (pointA.x + pointB.x) / 2;
+                            previousMultiTouchPanPosition.y = (pointA.y + pointB.y) / 2;
                             return;
                         }
 
-                        if (pinchSquaredDistance !== previousPinchDistance) {
-                            this.camera
-                                .inertialRadiusOffset += (pinchSquaredDistance - previousPinchDistance) /
-                                (this.pinchPrecision *
-                                    ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
-                                    direction);
-                            previousPinchDistance = pinchSquaredDistance;
+                        if (this.multiTouchPanAndZoom) {
+                            if (this.pinchDeltaPercentage) {
+                                this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * this.camera.radius * this.pinchDeltaPercentage;
+                            } else {
+                                this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                    (this.pinchPrecision *
+                                        ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                        direction);
+                            }
+
+                            if (this.panningSensibility !== 0) {
+                                var pointersCenterX = (pointA.x + pointB.x) / 2;
+                                var pointersCenterY = (pointA.y + pointB.y) / 2;
+                                var pointersCenterDistX = pointersCenterX - previousMultiTouchPanPosition.x;
+                                var pointersCenterDistY = pointersCenterY - previousMultiTouchPanPosition.y;
+
+                                previousMultiTouchPanPosition.x = pointersCenterX;
+                                previousMultiTouchPanPosition.y = pointersCenterY;
+
+                                this.camera.inertialPanningX += -(pointersCenterDistX) / (this.panningSensibility);
+                                this.camera.inertialPanningY += (pointersCenterDistY) / (this.panningSensibility);
+                            }
                         }
+                        else {
+                            twoFingerActivityCount++;
+
+                            if (previousMultiTouchPanPosition.isPinching || (twoFingerActivityCount < 20 && Math.abs(pinchDistance - initialDistance) > this.camera.pinchToPanMaxDistance)) {
+                                if (this.pinchDeltaPercentage) {
+                                    this.camera.inertialRadiusOffset += ((pinchSquaredDistance - previousPinchSquaredDistance) * 0.001) * this.camera.radius * this.pinchDeltaPercentage;
+                                } else {
+                                    this.camera.inertialRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) /
+                                        (this.pinchPrecision *
+                                            ((this.angularSensibilityX + this.angularSensibilityY) / 2) *
+                                            direction);
+                                }
+                                previousMultiTouchPanPosition.isPaning = false;
+                                previousMultiTouchPanPosition.isPinching = true;
+                            }
+                            else {
+                                if (cacheSoloPointer && cacheSoloPointer.pointerId === ed.pointerId && this.panningSensibility !== 0 && this.multiTouchPanning) {
+                                    if (!previousMultiTouchPanPosition.isPaning) {
+                                        previousMultiTouchPanPosition.isPaning = true;
+                                        previousMultiTouchPanPosition.isPinching = false;
+                                        previousMultiTouchPanPosition.x = ed.x;
+                                        previousMultiTouchPanPosition.y = ed.y;
+                                        return;
+                                    }
+
+                                    this.camera.inertialPanningX += -(ed.x - previousMultiTouchPanPosition.x) / (this.panningSensibility);
+                                    this.camera.inertialPanningY += (ed.y - previousMultiTouchPanPosition.y) / (this.panningSensibility);
+                                }
+                            }
+
+                            if (cacheSoloPointer && cacheSoloPointer.pointerId === evt.pointerId) {
+                                previousMultiTouchPanPosition.x = ed.x;
+                                previousMultiTouchPanPosition.y = ed.y;
+                            }
+                        }
+
+                        previousPinchSquaredDistance = pinchSquaredDistance;
                     }
                 }
             }
@@ -151,9 +255,13 @@ module BABYLON {
 
             this._onLostFocus = () => {
                 //this._keys = [];
-                pointA = pointB = undefined;
-                previousPinchDistance = 0;
+                pointA = pointB = null;
+                previousPinchSquaredDistance = 0;
+                previousMultiTouchPanPosition.isPaning = false;
+                previousMultiTouchPanPosition.isPinching = false;
+                twoFingerActivityCount = 0;
                 cacheSoloPointer = null;
+                initialDistance = 0;
             };
 
             this._onMouseMove = evt => {
@@ -206,19 +314,32 @@ module BABYLON {
             ]);
         }
 
-        public detachControl(element: HTMLElement) {
-            Tools.UnregisterTopRootEvents([
-                { name: "blur", handler: this._onLostFocus }
-            ]);
+        public detachControl(element: Nullable<HTMLElement>) {
+            if (this._onLostFocus) {
+                Tools.UnregisterTopRootEvents([
+                    { name: "blur", handler: this._onLostFocus }
+                ]);
+            }
 
             if (element && this._observer) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
                 this._observer = null;
 
-                element.removeEventListener("contextmenu", this._onContextMenu);
-                element.removeEventListener("mousemove", this._onMouseMove);
-                element.removeEventListener("MSPointerDown", this._onGestureStart);
-                element.removeEventListener("MSGestureChange", this._onGesture);
+                if (this._onContextMenu) {
+                    element.removeEventListener("contextmenu", this._onContextMenu);
+                }
+
+                if (this._onMouseMove) {
+                    element.removeEventListener("mousemove", this._onMouseMove);
+                }
+
+                if (this._onGestureStart) {
+                    element.removeEventListener("MSPointerDown", this._onGestureStart);
+                }
+
+                if (this._onGesture) {
+                    element.removeEventListener("MSGestureChange", this._onGesture);
+                }
 
                 this._isPanClick = false;
                 this.pinchInwards = true;
@@ -241,5 +362,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
+    (<any>CameraInputTypes)["ArcRotateCameraPointersInput"] = ArcRotateCameraPointersInput;
 }

@@ -1,31 +1,26 @@
-# 3.1.0:
+# 3.2.0
 
 ## Major updates
-- Added support for webgl context lost and restored events. (Doc here)[http://doc.babylonjs.com/tutorials/optimizing_your_scene#handling-webgl-context-lost] ([deltakosh](https://github.com/deltakosh))
-- Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
-- Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
-- Introduced behaviors. (Doc here)[http://doc.babylonjs.com/overviews/behaviors] ([deltakosh](https://github.com/deltakosh))
-- Added support for WebGL Occlusion queries. (Doc here)[http://doc.babylonjs.com/overviews/occlusionquery] ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- New behaviors for ArcRotateCamera:
- - AutoRotation ([deltakosh](https://github.com/deltakosh))
- - Framing ([deltakosh](https://github.com/deltakosh))
- - Bouncing ([deltakosh](https://github.com/deltakosh))
+- Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
+- New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
-- New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. (Doc here)[http://doc.babylonjs.com/tutorials/cameras#state] ([deltakosh](https://github.com/deltakosh))
-- POW2 textures rescale is now done by shaders (It was previously done using canvas) ([deltakosh](https://github.com/deltakosh))
-- Added `SceneLoader.CleanBoneMatrixWeights` to force the loader to normalize matrix weights when loading bones (off by default) ([deltakosh](https://github.com/deltakosh)) 
-- Added `camera.onViewMatrixChangedObservable` and `camera.onProjectionMatrixChangedObservable` ([deltakosh](https://github.com/deltakosh))
-- Added support for folders when drag'n'dropping into the sandbox ([deltakosh](https://github.com/deltakosh))
-- Better serialization support ([deltakosh](https://github.com/deltakosh))
-- Introduced `performanceMonitor` class to get better FPS analysis ([deltakosh](https://github.com/deltakosh))
-- GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
-- Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
-- Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
-- Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))  
+- New watcher configuration for VSCode. Now the task only compiles changed files ([sebavan](https://github.com/sebavan))
+- Added new draw modes to engine (points, lines, linesloop, linestrip, trianglestrip, trianglefan) ([benaadams](https://github.com/benaadams))
+- Added GUI Textblock.lineSpacing setter and getter to configure vertical space between lines in pixels or percentage values when working with text wrapping ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now has onSelectedMeshUnselected observable that will notify observers when the current selected mesh gets unselected
+  ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now has onBeforeCameraTeleport and onAfterCameraTeleport observables that will be notified before and after camera teleportation is triggered.
+  ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now has the public property teleportationEnabled to enable / disable camera teleportation. 
+   ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
+   ([carloslanderas](https://github.com/carloslanderas))
+  
+  
 
 ## Bug fixes
-- Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
-- `Gamepads` was removed in favor of `scene.gamepadManager`
+
+

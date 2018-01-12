@@ -21,7 +21,7 @@ declare module BABYLON {
          * @param text the caracter set to use in the rendering.
          * @param scene the scene that owns the texture
          */
-        constructor(name: string, font: string, text: string, scene: Scene);
+        constructor(name: string, font: string, text: string, scene?: Nullable<Scene>);
         /**
          * Gets the max char width of a font.
          * @param font the font to use, use the W3C CSS notation

@@ -4,11 +4,6 @@
         private _depthMap: RenderTargetTexture;
         private _effect: Effect;
 
-        private _viewMatrix = Matrix.Zero();
-        private _projectionMatrix = Matrix.Zero();
-        private _transformMatrix = Matrix.Zero();
-        private _worldViewProjection = Matrix.Zero();
-
         private _cachedDefines: string;
 
         constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT) {
@@ -33,9 +28,14 @@
                 var mesh = subMesh.getRenderingMesh();
                 var scene = this._scene;
                 var engine = scene.getEngine();
+                let material = subMesh.getMaterial();
 
-                // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                if (!material) {
+                    return;
+                }
+
+                // Culling and reverse (right handed system)
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -46,10 +46,9 @@
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
 
-                if (this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (this.isReady(subMesh, hardwareInstancedRendering) && scene.activeCamera) {
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
-                    var material = subMesh.getMaterial();
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
@@ -58,12 +57,15 @@
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
                         var alphaTexture = material.getAlphaTestTexture();
-                        this._effect.setTexture("diffuseSampler", alphaTexture);
-                        this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+
+                        if (alphaTexture) {
+                            this._effect.setTexture("diffuseSampler", alphaTexture);
+                            this._effect.setMatrix("diffuseMatrix", alphaTexture.getTextureMatrix());
+                        }
                     }
 
                     // Bones
-                    if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                         this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                     }
 
@@ -73,8 +75,16 @@
                 }
             };
 
-            this._depthMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>): void => {
+            this._depthMap.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
                 var index;
+
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);            
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }     
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
@@ -97,7 +107,6 @@
             var attribs = [VertexBuffer.PositionKind];
 
             var mesh = subMesh.getMesh();
-            var scene = mesh.getScene();
 
             // Alpha test
             if (material && material.needAlphaTesting()) {
@@ -121,7 +130,7 @@
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }

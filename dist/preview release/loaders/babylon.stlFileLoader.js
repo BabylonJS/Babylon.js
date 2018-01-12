@@ -1,7 +1,7 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
-    var STLFileLoader = (function () {
+    var STLFileLoader = /** @class */ (function () {
         function STLFileLoader() {
             this.solidPattern = /solid (\S*)([\S\s]*)endsolid[ ]*(\S*)/g;
             this.facetsPattern = /facet([\s\S]*?)endfacet/g;
@@ -70,6 +70,15 @@ var BABYLON;
             }
             return result;
         };
+        STLFileLoader.prototype.loadAssets = function (scene, data, rootUrl, onError) {
+            var container = new BABYLON.AssetContainer(scene);
+            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            if (result) {
+                container.removeAllFromScene();
+                return container;
+            }
+            return null;
+        };
         STLFileLoader.prototype.isBinary = function (data) {
             // check if file size is correct for binary stl
             var faceSize, nFaces, reader;
@@ -82,7 +91,7 @@ var BABYLON;
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
             for (var index = 0; index < fileLength; index++) {
-                if (reader.getUint8(index, false) > 127) {
+                if (reader.getUint8(index) > 127) {
                     return true;
                 }
             }

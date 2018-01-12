@@ -1,9 +1,9 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
-module BABYLON { 
-	
-   // old version of standard material updated every 3 months
-	 export class StandardMaterialDefines_OldVer extends MaterialDefines implements IImageProcessingConfigurationDefines {
+module BABYLON {
+
+    // old version of standard material updated every 3 months
+    export class StandardMaterialDefines_OldVer extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public DIFFUSE = false;
         public AMBIENT = false;
         public OPACITY = false;
@@ -63,7 +63,6 @@ module BABYLON {
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
-        public USERIGHTHANDEDSYSTEM = false;
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -73,6 +72,7 @@ module BABYLON {
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
@@ -85,14 +85,14 @@ module BABYLON {
 
         public setReflectionMode(modeToEnable: string) {
             var modes = [
-                            "REFLECTIONMAP_CUBIC", "REFLECTIONMAP_EXPLICIT", "REFLECTIONMAP_PLANAR",
-                            "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_SKYBOX",
-                            "REFLECTIONMAP_SPHERICAL", "REFLECTIONMAP_EQUIRECTANGULAR", "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
-                            "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED"
-                        ];
+                "REFLECTIONMAP_CUBIC", "REFLECTIONMAP_EXPLICIT", "REFLECTIONMAP_PLANAR",
+                "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_SKYBOX",
+                "REFLECTIONMAP_SPHERICAL", "REFLECTIONMAP_EQUIRECTANGULAR", "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
+                "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED"
+            ];
 
             for (var mode of modes) {
-                this[mode] = (mode === modeToEnable);
+                (<any>this)[mode] = (mode === modeToEnable);
             }
         }
     }
@@ -109,39 +109,39 @@ module BABYLON {
         public ambientTexture: BaseTexture;
 
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: BaseTexture;        
+        private _opacityTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityTexture: BaseTexture;    
+        public opacityTexture: BaseTexture;
 
         @serializeAsTexture("reflectionTexture")
         private _reflectionTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionTexture: BaseTexture;        
+        public reflectionTexture: BaseTexture;
 
         @serializeAsTexture("emissiveTexture")
         private _emissiveTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public emissiveTexture: BaseTexture;     
+        public emissiveTexture: BaseTexture;
 
         @serializeAsTexture("specularTexture")
         private _specularTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public specularTexture: BaseTexture;             
+        public specularTexture: BaseTexture;
 
         @serializeAsTexture("bumpTexture")
         private _bumpTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture: BaseTexture;         
+        public bumpTexture: BaseTexture;
 
         @serializeAsTexture("lightmapTexture")
         private _lightmapTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public lightmapTexture: BaseTexture;            
+        public lightmapTexture: BaseTexture;
 
         @serializeAsTexture("refractionTexture")
         private _refractionTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public refractionTexture: BaseTexture;   
+        public refractionTexture: BaseTexture;
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
@@ -161,27 +161,27 @@ module BABYLON {
         @serialize("useAlphaFromDiffuseTexture")
         private _useAlphaFromDiffuseTexture = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useAlphaFromDiffuseTexture: boolean;      
+        public useAlphaFromDiffuseTexture: boolean;
 
         @serialize("useEmissiveAsIllumination")
         private _useEmissiveAsIllumination = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useEmissiveAsIllumination: boolean;           
-      
+        public useEmissiveAsIllumination: boolean;
+
         @serialize("linkEmissiveWithDiffuse")
         private _linkEmissiveWithDiffuse = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public linkEmissiveWithDiffuse: boolean;                    
+        public linkEmissiveWithDiffuse: boolean;
 
         @serialize("useSpecularOverAlpha")
         private _useSpecularOverAlpha = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useSpecularOverAlpha: boolean;               
+        public useSpecularOverAlpha: boolean;
 
         @serialize("useReflectionOverAlpha")
         private _useReflectionOverAlpha = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useReflectionOverAlpha: boolean;               
+        public useReflectionOverAlpha: boolean;
 
         @serialize("disableLighting")
         private _disableLighting = false;
@@ -191,12 +191,12 @@ module BABYLON {
         @serialize("useParallax")
         private _useParallax = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useParallax: boolean;            
+        public useParallax: boolean;
 
         @serialize("useParallaxOcclusion")
         private _useParallaxOcclusion = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useParallaxOcclusion: boolean;                  
+        public useParallaxOcclusion: boolean;
 
         @serialize()
         public parallaxScaleBias = 0.05;
@@ -204,7 +204,7 @@ module BABYLON {
         @serialize("roughness")
         private _roughness = 0;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public roughness: number;            
+        public roughness: number;
 
         @serialize()
         public indexOfRefraction = 0.98;
@@ -215,49 +215,49 @@ module BABYLON {
         @serialize("useLightmapAsShadowmap")
         private _useLightmapAsShadowmap = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useLightmapAsShadowmap: boolean;             
+        public useLightmapAsShadowmap: boolean;
 
         // Fresnel
         @serializeAsFresnelParameters("diffuseFresnelParameters")
         private _diffuseFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public diffuseFresnelParameters: FresnelParameters;            
+        public diffuseFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters("opacityFresnelParameters")
         private _opacityFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public opacityFresnelParameters: FresnelParameters;            
-           
+        public opacityFresnelParameters: FresnelParameters;
+
 
         @serializeAsFresnelParameters("reflectionFresnelParameters")
         private _reflectionFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public reflectionFresnelParameters: FresnelParameters;             
+        public reflectionFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters("refractionFresnelParameters")
         private _refractionFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public refractionFresnelParameters: FresnelParameters;           
+        public refractionFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters("emissiveFresnelParameters")
         private _emissiveFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public emissiveFresnelParameters: FresnelParameters;            
+        public emissiveFresnelParameters: FresnelParameters;
 
         @serialize("useReflectionFresnelFromSpecular")
-        private _useReflectionFresnelFromSpecular = false;    
+        private _useReflectionFresnelFromSpecular = false;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public useReflectionFresnelFromSpecular: boolean;                 
+        public useReflectionFresnelFromSpecular: boolean;
 
         @serialize("useGlossinessFromSpecularMapAlpha")
         private _useGlossinessFromSpecularMapAlpha = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useGlossinessFromSpecularMapAlpha: boolean;           
-  
+        public useGlossinessFromSpecularMapAlpha: boolean;
+
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number;                   
+        public maxSimultaneousLights: number;
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
@@ -281,7 +281,7 @@ module BABYLON {
         @serialize("twoSidedLighting")
         private _twoSidedLighting = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public twoSidedLighting: boolean;     
+        public twoSidedLighting: boolean;
 
         /**
          * Default configuration related to image processing available in the standard Material.
@@ -310,13 +310,13 @@ module BABYLON {
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -395,7 +395,7 @@ module BABYLON {
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
         };
-        
+
         /**
          * Gets The camera contrast used on this material.
          */
@@ -409,17 +409,17 @@ module BABYLON {
         public set cameraContrast(value: number) {
             this._imageProcessingConfiguration.contrast = value;
         }
-        
+
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -441,11 +441,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial_OldVer.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial_OldVer.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -454,7 +454,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "StandardMaterial_OldVer";
-        }        
+        }
 
         @serialize()
         public get useLogarithmicDepth(): boolean {
@@ -486,7 +486,7 @@ module BABYLON {
         /**
          * Child classes can use it to update shaders
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {            
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -674,7 +674,7 @@ module BABYLON {
 
                 defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
 
-                defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
+                defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
             }
@@ -702,9 +702,9 @@ module BABYLON {
 
                         defines.REFLECTIONFRESNELFROMSPECULAR = this._useReflectionFresnelFromSpecular;
 
-                        defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled) ;
+                        defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled);
 
-                        defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled) ;
+                        defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled);
 
                         defines._needNormals = true;
                         defines.FRESNEL = true;
@@ -721,7 +721,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -814,16 +814,16 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-                
+
                 var shaderName = "default";
-                
+
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant", "vNormalReoderParams"
+                    "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
@@ -834,10 +834,10 @@ module BABYLON {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
@@ -857,11 +857,11 @@ module BABYLON {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
                 }, engine), defines);
-                
+
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -900,7 +900,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReoderParams", 4);            
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vSpecularColor", 4);
@@ -934,6 +934,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -943,7 +946,7 @@ module BABYLON {
             MaterialHelper.BindBonesParameters(mesh, effect);
             if (this._mustRebind(scene, effect, mesh.visibility)) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
-                
+
                 this.bindViewProjection(effect);
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
@@ -1016,10 +1019,10 @@ module BABYLON {
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
 
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             } else {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
-                            }                                                          
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
+                            }
                         }
 
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -1032,7 +1035,7 @@ module BABYLON {
                                 }
                             }
                             this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
-                        }                    
+                        }
                     }
 
                     // Point size
@@ -1048,7 +1051,7 @@ module BABYLON {
                     // Diffuse
                     this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 }
-                
+
                 // Textures     
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial_OldVer.DiffuseTextureEnabled) {
@@ -1103,7 +1106,7 @@ module BABYLON {
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
@@ -1117,7 +1120,7 @@ module BABYLON {
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
                     this.bindView(effect);
                 }
-                
+
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
 
@@ -1337,8 +1340,8 @@ module BABYLON {
 
             StandardMaterial_OldVer._ReflectionTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }        
-        
+        }
+
         static _EmissiveTextureEnabled = true;
         public static get EmissiveTextureEnabled(): boolean {
             return StandardMaterial_OldVer._EmissiveTextureEnabled;
@@ -1350,7 +1353,7 @@ module BABYLON {
 
             StandardMaterial_OldVer._EmissiveTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }       
+        }
 
         static _SpecularTextureEnabled = true;
         public static get SpecularTextureEnabled(): boolean {
@@ -1363,7 +1366,7 @@ module BABYLON {
 
             StandardMaterial_OldVer._SpecularTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }     
+        }
 
         static _BumpTextureEnabled = true;
         public static get BumpTextureEnabled(): boolean {
@@ -1376,7 +1379,7 @@ module BABYLON {
 
             StandardMaterial_OldVer._BumpTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }         
+        }
 
         static _LightmapTextureEnabled = true;
         public static get LightmapTextureEnabled(): boolean {
@@ -1389,9 +1392,9 @@ module BABYLON {
 
             StandardMaterial_OldVer._LightmapTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }           
+        }
 
-        static _RefractionTextureEnabled = true;    
+        static _RefractionTextureEnabled = true;
         public static get RefractionTextureEnabled(): boolean {
             return StandardMaterial_OldVer._RefractionTextureEnabled;
         }
@@ -1402,7 +1405,7 @@ module BABYLON {
 
             StandardMaterial_OldVer._RefractionTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }    
+        }
 
         static _ColorGradingTextureEnabled = true;
         public static get ColorGradingTextureEnabled(): boolean {
@@ -1415,7 +1418,7 @@ module BABYLON {
 
             StandardMaterial_OldVer._ColorGradingTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }           
+        }
 
         static _FresnelEnabled = true;
         public static get FresnelEnabled(): boolean {
@@ -1428,54 +1431,54 @@ module BABYLON {
 
             StandardMaterial_OldVer._FresnelEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
-        }          
+        }
     }
 
-   
-  export class CustomShaderStructure {
-      
-       public FragmentStore : string; 
-       public VertexStore : string; 
 
-       constructor(){
+    export class CustomShaderStructure {
 
-       }  
-  }
+        public FragmentStore: string;
+        public VertexStore: string;
 
-  export class  ShaderSpecialParts{
- 
-    constructor(){}
+        constructor() {
 
-    public Fragment_Begin:string;
-    public Fragment_Definitions:string;
-    public Fragment_MainBegin: string;
-    
-    // diffuseColor
-    public Fragment_Custom_Diffuse: string;
-    
-    // alpha
-    public Fragment_Custom_Alpha : string;
+        }
+    }
 
-    public Fragment_Before_FragColor: string;
+    export class ShaderSpecialParts {
 
-    public Vertex_Begin:string;
-    public Vertex_Definitions:string;
-    public Vertex_MainBegin: string;
-    
-    // positionUpdated
-    public Vertex_Before_PositionUpdated:string;
+        constructor() { }
 
-    // normalUpdated
-    public Vertex_Before_NormalUpdated : string;
-  }
+        public Fragment_Begin: string;
+        public Fragment_Definitions: string;
+        public Fragment_MainBegin: string;
 
-  export class ShaderForVer3_0 extends CustomShaderStructure {
+        // diffuseColor
+        public Fragment_Custom_Diffuse: string;
 
-       constructor() {
+        // alpha
+        public Fragment_Custom_Alpha: string;
+
+        public Fragment_Before_FragColor: string;
+
+        public Vertex_Begin: string;
+        public Vertex_Definitions: string;
+        public Vertex_MainBegin: string;
+
+        // positionUpdated
+        public Vertex_Before_PositionUpdated: string;
+
+        // normalUpdated
+        public Vertex_Before_NormalUpdated: string;
+    }
+
+    export class ShaderForVer3_0 extends CustomShaderStructure {
+
+        constructor() {
             super();
-            
+
             this.VertexStore = "";
-            
+
             this.FragmentStore = "#include<__decl__defaultFragment>\n\
 #[Fragment_Begin]\n\
 #extension GL_OES_standard_derivatives : enable\n\
@@ -1777,7 +1780,7 @@ gl_FragColor=color;\n\
 }";
 
 
-this.VertexStore = "#include<__decl__defaultVertex>\n\
+            this.VertexStore = "#include<__decl__defaultVertex>\n\
 \n\
 #[Vertex_Begin]\n\
 \n\
@@ -1971,185 +1974,185 @@ vColor=color;\n\
 }";
 
 
-       }
+        }
 
-  }
+    }
 
- 
-   export class StandardShaderVersions{
 
-        public static Ver3_0;
+    export class StandardShaderVersions {
 
-   } 
+        public static Ver3_0 = "3.0.0";
 
-    export class CustomMaterial  extends StandardMaterial_OldVer {
-         public static ShaderIndexer = 1;
-         public CustomParts :  ShaderSpecialParts;
-         public ShaderVersion : CustomShaderStructure ;
-         _isCreatedShader : boolean;
-         _createdShaderName : string;
-         _customUniform : string[];
-         _newUniforms : string[];
-         _newUniformInstances : any[];
-         _newSamplerInstances : Texture[];
+    }
 
-         public AttachAfterBind(mesh:Mesh,effect:Effect){ 
-             for(var el in this._newUniformInstances){
-                 var ea = el.toString().split('-');
-                 if(ea[0] == 'vec2') effect.setVector2(ea[1],this._newUniformInstances[el]);
-                 else if(ea[0] == 'vec3') effect.setVector3(ea[1],this._newUniformInstances[el]);
-                 else if(ea[0] == 'vec4') effect.setVector4(ea[1],this._newUniformInstances[el]);
-                 else if(ea[0] == 'mat4') effect.setMatrix(ea[1],this._newUniformInstances[el]);
-                 else if(ea[0] == 'float') effect.setFloat(ea[1],this._newUniformInstances[el]); 
-             }
+    export class CustomMaterial extends StandardMaterial_OldVer {
+        public static ShaderIndexer = 1;
+        public CustomParts: ShaderSpecialParts;
+        public ShaderVersion: CustomShaderStructure;
+        _isCreatedShader: boolean;
+        _createdShaderName: string;
+        _customUniform: string[];
+        _newUniforms: string[];
+        _newUniformInstances: any[];
+        _newSamplerInstances: Texture[];
 
-              for(var el in this._newSamplerInstances){ 
-                 var ea = el.toString().split('-'); 
-                if(ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
-                     effect.setTexture(ea[1],this._newSamplerInstances[el]); 
-              }
-         }
-
-         public ReviewUniform(name:string, arr : string[] ) : string[]{
-             if(name == "uniform")
-              {
-                  for(var ind in this._newUniforms)
-                    if(this._customUniform[ind].indexOf('sampler')== -1) 
-                        arr.push(this._newUniforms[ind]);
-              }
-
-                 if(name == "sampler")
-              {
-                   for(var ind in this._newUniforms)
-                    if(this._customUniform[ind].indexOf('sampler')!= -1) 
-                        arr.push(this._newUniforms[ind]);
-              }
-
-             return arr;
-         }
-         public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) : string {
-            
-            if(this._isCreatedShader) return this._createdShaderName;
-              this._isCreatedShader  = false;
-            
-            CustomMaterial.ShaderIndexer++;
-            var name = name+"custom_"+CustomMaterial.ShaderIndexer;
-
-            this.ReviewUniform("uniform",uniforms);
-            this.ReviewUniform("sampler",samplers);
-            
-
-            var fn_afterBind = this._afterBind;
-            this._afterBind = function(m,e){ 
-                this.AttachAfterBind(m,e);
-                try{fn_afterBind(m,e);}catch(e){};
-            } ;
-
-            BABYLON.Effect.ShadersStore[name+"VertexShader"] = this.ShaderVersion.VertexStore
-            .replace('#[Vertex_Begin]',(this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
-            .replace('#[Vertex_Definitions]',(this._customUniform? this._customUniform.join("\n"):"")+ (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
-            .replace('#[Vertex_MainBegin]',(this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
-            .replace('#[Vertex_Before_PositionUpdated]',(this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
-            .replace('#[Vertex_Before_NormalUpdated]',(this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : "")) ;
-
-            BABYLON.Effect.ShadersStore[name+"PixelShader"] = this.ShaderVersion.FragmentStore
-            .replace('#[Fragment_Begin]',(this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
-            .replace('#[Fragment_MainBegin]',(this.CustomParts.Fragment_MainBegin  ? this.CustomParts.Fragment_MainBegin : ""))
-            .replace('#[Fragment_Definitions]',(this._customUniform? this._customUniform.join("\n"):"")+(this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
-            .replace('#[Fragment_Custom_Diffuse]',(this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
-            .replace('#[Fragment_Custom_Alpha]',(this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
-            .replace('#[Fragment_Before_FragColor]',(this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : "")) ;
- 
-             this._isCreatedShader  = true;
-              this._createdShaderName = name;
-           
-             return name ;
-         }
-
-      
-
-         public SelectVersion(ver:string){
-            switch(ver){
-                case "3.0.0" : this.ShaderVersion = new ShaderForVer3_0();break;
+        public AttachAfterBind(mesh: Mesh, effect: Effect) {
+            for (var el in this._newUniformInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'vec2') effect.setVector2(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'vec3') effect.setVector3(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'vec4') effect.setVector4(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'mat4') effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'float') effect.setFloat(ea[1], this._newUniformInstances[el]);
             }
-         }
-        
-         constructor(name:string,scene:Scene ){
-            super(name,scene);
-            this.CustomParts = new ShaderSpecialParts();
-            this.customShaderNameResolve = this.Builder;  
-            this.SelectVersion("3.0.0"); 
-         } 
-         public AddUniform(name:string,kind:string,param:any):CustomMaterial{
-             if(!this._customUniform)
-              {  
-                  this._customUniform = new Array();
-                  this._newUniforms = new Array();
-                  this._newSamplerInstances = new Array();
-                  this._newUniformInstances = new Array();
-              }
-              if(param){
-              if(kind.indexOf("sampler") == -1) {
-                    this._newUniformInstances[kind+"-"+name] = param;
-              }
-              else{
-                  this._newSamplerInstances[kind+"-"+name] = param;
-              }
-             }
 
-            this._customUniform.push("uniform "+kind+" "+name+";");
+            for (var el in this._newSamplerInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+            }
+        }
+
+        public ReviewUniform(name: string, arr: string[]): string[] {
+            if (name == "uniform") {
+                for (var ind in this._newUniforms)
+                    if (this._customUniform[ind].indexOf('sampler') == -1)
+                        arr.push(this._newUniforms[ind]);
+            }
+
+            if (name == "sampler") {
+                for (var ind in this._newUniforms)
+                    if (this._customUniform[ind].indexOf('sampler') != -1)
+                        arr.push(this._newUniforms[ind]);
+            }
+
+            return arr;
+        }
+        public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer): string {
+
+            if (this._isCreatedShader) return this._createdShaderName;
+            this._isCreatedShader = false;
+
+            CustomMaterial.ShaderIndexer++;
+            var name: string = "custom_" + CustomMaterial.ShaderIndexer;
+
+            this.ReviewUniform("uniform", uniforms);
+            this.ReviewUniform("sampler", samplers);
+
+
+            var fn_afterBind = this._afterBind.bind(this);
+            this._afterBind = (m, e) => {
+                if (!e) {
+                    return;
+                }
+                this.AttachAfterBind(m, e);
+                try { fn_afterBind(m, e); } catch (e) { };
+            };
+
+            BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.ShaderVersion.VertexStore
+                .replace('#[Vertex_Begin]', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
+                .replace('#[Vertex_Definitions]', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
+                .replace('#[Vertex_MainBegin]', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
+                .replace('#[Vertex_Before_PositionUpdated]', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
+                .replace('#[Vertex_Before_NormalUpdated]', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""));
+
+            BABYLON.Effect.ShadersStore[name + "PixelShader"] = this.ShaderVersion.FragmentStore
+                .replace('#[Fragment_Begin]', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
+                .replace('#[Fragment_MainBegin]', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
+                .replace('#[Fragment_Definitions]', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
+                .replace('#[Fragment_Custom_Diffuse]', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
+                .replace('#[Fragment_Custom_Alpha]', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
+                .replace('#[Fragment_Before_FragColor]', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+
+            this._isCreatedShader = true;
+            this._createdShaderName = name;
+
+            return name;
+        }
+
+
+
+        public SelectVersion(ver: string) {
+            switch (ver) {
+                case "3.0.0": this.ShaderVersion = new ShaderForVer3_0(); break;
+            }
+        }
+
+        constructor(name: string, scene: Scene) {
+            super(name, scene);
+            this.CustomParts = new ShaderSpecialParts();
+            this.customShaderNameResolve = this.Builder;
+            this.SelectVersion("3.0.0");
+        }
+        public AddUniform(name: string, kind: string, param: any): CustomMaterial {
+            if (!this._customUniform) {
+                this._customUniform = new Array();
+                this._newUniforms = new Array();
+                this._newSamplerInstances = new Array();
+                this._newUniformInstances = new Array();
+            }
+            if (param) {
+                if (kind.indexOf("sampler") == -1) {
+                    (<any>this._newUniformInstances)[kind + "-" + name] = param;
+                }
+                else {
+                    (<any>this._newUniformInstances)[kind + "-" + name] = param;
+                }
+            }
+
+            this._customUniform.push("uniform " + kind + " " + name + ";");
             this._newUniforms.push(name);
-             
+
             return this;
-         }
-         public Fragment_Begin(shaderPart:string):CustomMaterial{            
+        }
+        public Fragment_Begin(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Begin = shaderPart;
             return this;
-         }
+        }
 
-         public Fragment_Definitions(shaderPart:string):CustomMaterial{            
+        public Fragment_Definitions(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Definitions = shaderPart;
             return this;
-         }
+        }
 
-         public Fragment_MainBegin(shaderPart:string):CustomMaterial{            
+        public Fragment_MainBegin(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_MainBegin = shaderPart;
             return this;
-         }
-         public Fragment_Custom_Diffuse(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result","diffuseColor");
+        }
+        public Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial {
+            this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
             return this;
-         }
-         public Fragment_Custom_Alpha(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result","alpha");
+        }
+        public Fragment_Custom_Alpha(shaderPart: string): CustomMaterial {
+            this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
             return this;
-         }
-         public Fragment_Before_FragColor(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result","color");
+        }
+        public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
+            this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
             return this;
-         }
-         public Vertex_Begin(shaderPart:string):CustomMaterial{            
+        }
+        public Vertex_Begin(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Begin = shaderPart;
             return this;
-         }
-         public Vertex_Definitions(shaderPart:string):CustomMaterial{            
+        }
+        public Vertex_Definitions(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Definitions = shaderPart;
             return this;
-         }
-         public Vertex_MainBegin(shaderPart:string):CustomMaterial{            
+        }
+        public Vertex_MainBegin(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_MainBegin = shaderPart;
             return this;
-         }
-         public Vertex_Before_PositionUpdated(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result","positionUpdated");
+        }
+        public Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial {
+            this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
             return this;
-         } 
-         
-          public Vertex_Before_NormalUpdated(shaderPart:string):CustomMaterial{            
-            this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result","normalUpdated");
+        }
+
+        public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
+            this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
             return this;
-         } 
-          
+        }
+
     }
 }
-     
+

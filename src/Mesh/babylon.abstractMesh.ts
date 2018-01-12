@@ -1,12 +1,5 @@
 ﻿module BABYLON {
-    export class AbstractMesh extends Node implements IDisposable, ICullable, IGetSetVerticesData {
-        // Statics
-        private static _BILLBOARDMODE_NONE = 0;
-        private static _BILLBOARDMODE_X = 1;
-        private static _BILLBOARDMODE_Y = 2;
-        private static _BILLBOARDMODE_Z = 4;
-        private static _BILLBOARDMODE_ALL = 7;
-
+    export class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
         public static OCCLUSION_TYPE_NONE = 0;
         public static OCCLUSION_TYPE_OPTIMISTIC = 1;
         public static OCCLUSION_TYPE_STRICT = 2;
@@ -14,41 +7,51 @@
         public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
 
         public static get BILLBOARDMODE_NONE(): number {
-            return AbstractMesh._BILLBOARDMODE_NONE;
+            return TransformNode.BILLBOARDMODE_NONE;
         }
 
         public static get BILLBOARDMODE_X(): number {
-            return AbstractMesh._BILLBOARDMODE_X;
+            return TransformNode.BILLBOARDMODE_X;
         }
 
         public static get BILLBOARDMODE_Y(): number {
-            return AbstractMesh._BILLBOARDMODE_Y;
+            return TransformNode.BILLBOARDMODE_Y;
         }
 
         public static get BILLBOARDMODE_Z(): number {
-            return AbstractMesh._BILLBOARDMODE_Z;
+            return TransformNode.BILLBOARDMODE_Z;
         }
 
         public static get BILLBOARDMODE_ALL(): number {
-            return AbstractMesh._BILLBOARDMODE_ALL;
+            return TransformNode.BILLBOARDMODE_ALL;
         }
 
         // facetData private properties
         private _facetPositions: Vector3[];             // facet local positions
         private _facetNormals: Vector3[];               // facet local normals
-        private _facetPartitioning: number[][];           // partitioning array of facet index arrays
+        private _facetPartitioning: number[][];         // partitioning array of facet index arrays
         private _facetNb: number = 0;                   // facet number
         private _partitioningSubdivisions: number = 10; // number of subdivisions per axis in the partioning space  
         private _partitioningBBoxRatio: number = 1.01;  // the partioning array space is by default 1% bigger than the bounding box
         private _facetDataEnabled: boolean = false;     // is the facet data feature enabled on this mesh ?
-        private _facetParameters: any = {};                  // keep a reference to the object parameters to avoid memory re-allocation
+        private _facetParameters: any = {};             // keep a reference to the object parameters to avoid memory re-allocation
         private _bbSize: Vector3 = Vector3.Zero();      // bbox size approximated for facet data
-        private _subDiv = {                         // actual number of subdivisions per axis for ComputeNormals()
+        private _subDiv = {                             // actual number of subdivisions per axis for ComputeNormals()
             max: 1,
             X: 1,
             Y: 1,
             Z: 1
         };
+
+        private _facetDepthSort: boolean = false;                           // is the facet depth sort to be computed
+        private _facetDepthSortEnabled: boolean = false;                    // is the facet depth sort initialized
+        private _depthSortedIndices: IndicesArray;                          // copy of the indices array to store them once sorted
+        private _depthSortedFacets: { ind: number, sqDistance: number }[];    // array of depth sorted facets
+        private _facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
+        private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
+        private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
+        private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
+
         /**
          * Read-only : the number of facets in the mesh
          */
@@ -75,12 +78,41 @@
             this._partitioningBBoxRatio = ratio;
         }
         /**
+         * Boolean : must the facet be depth sorted on next call to `updateFacetData()` ?  
+         * Works only for updatable meshes.  
+         * Doesn't work with multi-materials.  
+         */
+        public get mustDepthSortFacets(): boolean {
+            return this._facetDepthSort;
+        }
+        public set mustDepthSortFacets(sort: boolean) {
+            this._facetDepthSort = sort;
+        }
+        /**
+         * The location (Vector3) where the facet depth sort must be computed from.  
+         * By default, the active camera position.  
+         * Used only when facet depth sort is enabled.  
+         */
+        public get facetDepthSortFrom(): Vector3 {
+            return this._facetDepthSortFrom;
+        }
+        public set facetDepthSortFrom(location: Vector3) {
+            this._facetDepthSortFrom = location;
+        }
+        /**
          * Read-only boolean : is the feature facetData enabled ?
          */
         public get isFacetDataEnabled(): boolean {
             return this._facetDataEnabled;
         }
 
+        public _updateNonUniformScalingState(value: boolean): boolean {
+            if (!super._updateNonUniformScalingState(value)) {
+                return false;
+            }
+            this._markSubMeshesAsMiscDirty();
+            return true;
+        }
 
         // Events
 
@@ -90,7 +122,7 @@
         */
         public onCollideObservable = new Observable<AbstractMesh>();
 
-        private _onCollideObserver: Observer<AbstractMesh>;
+        private _onCollideObserver: Nullable<Observer<AbstractMesh>>;
         public set onCollide(callback: () => void) {
             if (this._onCollideObserver) {
                 this.onCollideObservable.remove(this._onCollideObserver);
@@ -104,19 +136,13 @@
         */
         public onCollisionPositionChangeObservable = new Observable<Vector3>();
 
-        private _onCollisionPositionChangeObserver: Observer<Vector3>;
+        private _onCollisionPositionChangeObserver: Nullable<Observer<Vector3>>;
         public set onCollisionPositionChange(callback: () => void) {
             if (this._onCollisionPositionChangeObserver) {
                 this.onCollisionPositionChangeObservable.remove(this._onCollisionPositionChangeObserver);
             }
             this._onCollisionPositionChangeObserver = this.onCollisionPositionChangeObservable.add(callback);
         }
-
-        /**
-        * An event triggered after the world matrix is updated
-        * @type {BABYLON.Observable}
-        */
-        public onAfterWorldMatrixUpdateObservable = new Observable<AbstractMesh>();
 
         /**
         * An event triggered when material is changed
@@ -126,7 +152,6 @@
 
         // Properties
         public definedFacingForward = true; // orientation for POV movement & rotation
-        public position = Vector3.Zero();
 
         /**
         * This property determines the type of occlusion query algorithm to run in WebGl, you can use:
@@ -178,15 +203,10 @@
             return this._isOcclusionQueryInProgress;
         }
 
-        private _occlusionQuery: WebGLQuery;
+        private _occlusionQuery: Nullable<WebGLQuery>;
 
-        private _rotation = Vector3.Zero();
-        private _rotationQuaternion: Quaternion;
-        private _scaling = Vector3.One();
-        public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
         public visibility = 1.0;
         public alphaIndex = Number.MAX_VALUE;
-        public infiniteDistance = false;
         public isVisible = true;
         public isPickable = true;
         public showBoundingBox = false;
@@ -194,11 +214,12 @@
         public isBlocker = false;
         public enablePointerMoveEvents = false;
         public renderingGroupId = 0;
-        private _material: Material
-        public get material(): Material {
+        private _material: Nullable<Material>
+
+        public get material(): Nullable<Material> {
             return this._material;
         }
-        public set material(value: Material) {
+        public set material(value: Nullable<Material>) {
             if (this._material === value) {
                 return;
             }
@@ -302,8 +323,6 @@
             this._markSubMeshesAsMiscDirty();
         }
 
-        public scalingDeterminant = 1;
-
         public useOctreeForRenderingSelection = true;
         public useOctreeForPicking = true;
         public useOctreeForCollisions = true;
@@ -332,10 +351,10 @@
          * This scene's action manager
          * @type {BABYLON.ActionManager}
         */
-        public actionManager: ActionManager;
+        public actionManager: Nullable<ActionManager> = null;
 
         // Physics
-        public physicsImpostor: BABYLON.PhysicsImpostor;
+        public physicsImpostor: Nullable<PhysicsImpostor> = null;
 
         // Collisions
         private _checkCollisions = false;
@@ -346,7 +365,6 @@
         private _collider: Collider;
         private _oldPositionForCollisions = new Vector3(0, 0, 0);
         private _diffPositionForCollisions = new Vector3(0, 0, 0);
-        private _newPositionForCollisions = new Vector3(0, 0, 0);
 
 
         public get collisionMask(): number {
@@ -365,25 +383,17 @@
             this._collisionGroup = !isNaN(mask) ? mask : -1;
         }
 
-        // Attach to bone
-        private _meshToBoneReferal: AbstractMesh;
-
         // Edges
         public edgesWidth = 1;
         public edgesColor = new Color4(1, 0, 0, 1);
-        public _edgesRenderer: EdgesRenderer;
+        public _edgesRenderer: Nullable<EdgesRenderer>;
 
         // Cache
-        private _localWorld = Matrix.Zero();
-        public _worldMatrix = Matrix.Zero();
-        private _absolutePosition = Vector3.Zero();
         private _collisionsTransformMatrix = Matrix.Zero();
         private _collisionsScalingMatrix = Matrix.Zero();
-        private _isDirty = false;
-        public _masterMesh: AbstractMesh;
+        public _masterMesh: Nullable<AbstractMesh>;
 
-        public _boundingInfo: BoundingInfo;
-        private _pivotMatrix = Matrix.Identity();
+        public _boundingInfo: Nullable<BoundingInfo>;
         public _isDisposed = false;
         public _renderId = 0;
 
@@ -391,27 +401,23 @@
         public _submeshesOctree: Octree<SubMesh>;
         public _intersectionsInProgress = new Array<AbstractMesh>();
 
-        private _isWorldMatrixFrozen = false;
-
         public _unIndexed = false;
-
-        public _poseMatrix: Matrix;
 
         public _lightSources = new Array<Light>();
 
-        public get _positions(): Vector3[] {
+        public get _positions(): Nullable<Vector3[]> {
             return null;
         }
 
         // Loading properties
         public _waitingActions: any;
-        public _waitingFreezeWorldMatrix: boolean;
+        public _waitingFreezeWorldMatrix: Nullable<boolean>;
 
         // Skeleton
-        private _skeleton: Skeleton;
-        public _bonesTransformMatrices: Float32Array;
+        private _skeleton: Nullable<Skeleton>;
+        public _bonesTransformMatrices: Nullable<Float32Array>;
 
-        public set skeleton(value: Skeleton) {
+        public set skeleton(value: Nullable<Skeleton>) {
             if (this._skeleton && this._skeleton.needInitialSkinMatrix) {
                 this._skeleton._unregisterMeshWithPoseMatrix(this);
             }
@@ -429,13 +435,13 @@
             this._markSubMeshesAsAttributesDirty();
         }
 
-        public get skeleton(): Skeleton {
+        public get skeleton(): Nullable<Skeleton> {
             return this._skeleton;
         }
 
         // Constructor
-        constructor(name: string, scene: Scene) {
-            super(name, scene);
+        constructor(name: string, scene: Nullable<Scene> = null) {
+            super(name, scene, false);
 
             this.getScene().addMesh(this);
 
@@ -484,7 +490,7 @@
             if (!this.subMeshes) {
                 return;
             }
-            
+
             for (var subMesh of this.subMeshes) {
                 subMesh._rebuild();
             }
@@ -569,26 +575,17 @@
         }
 
         /**
-         * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
-         * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
-         * Default : (0.0, 0.0, 0.0)
-         */
-        public get rotation(): Vector3 {
-            return this._rotation;
-        }
-
-        public set rotation(newRotation: Vector3) {
-            this._rotation = newRotation;
+        * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  
+        * Default : (1.0, 1.0, 1.0)
+        */
+        public get scaling(): Vector3 {
+            return this._scaling;
         }
 
         /**
          * Scaling property : a Vector3 depicting the mesh scaling along each local axis X, Y, Z.  
          * Default : (1.0, 1.0, 1.0)
          */
-        public get scaling(): Vector3 {
-            return this._scaling;
-        }
-
         public set scaling(newScaling: Vector3) {
             this._scaling = newScaling;
             if (this.physicsImpostor) {
@@ -596,49 +593,16 @@
             }
         }
 
-        /**
-         * Rotation Quaternion property : this a Quaternion object depicting the mesh rotation by using a unit quaternion. 
-         * It's null by default.  
-         * If set, only the rotationQuaternion is then used to compute the mesh rotation and its property `.rotation\ is then ignored and set to (0.0, 0.0, 0.0)
-         */
-        public get rotationQuaternion() {
-            return this._rotationQuaternion;
-        }
-
-        public set rotationQuaternion(quaternion: Quaternion) {
-            this._rotationQuaternion = quaternion;
-            //reset the rotation vector. 
-            if (quaternion && this.rotation.length()) {
-                this.rotation.copyFromFloats(0.0, 0.0, 0.0);
-            }
-        }
-
         // Methods
-        /**
-         * Copies the paramater passed Matrix into the mesh Pose matrix.  
-         * Returns the AbstractMesh.  
-         */
-        public updatePoseMatrix(matrix: Matrix): AbstractMesh {
-            this._poseMatrix.copyFrom(matrix);
-            return this;
-        }
-
-        /**
-         * Returns the mesh Pose matrix.  
-         * Returned object : Matrix
-         */
-        public getPoseMatrix(): Matrix {
-            return this._poseMatrix;
-        }
 
         /**
          * Disables the mesh edger rendering mode.  
          * Returns the AbstractMesh.  
          */
         public disableEdgesRendering(): AbstractMesh {
-            if (this._edgesRenderer !== undefined) {
+            if (this._edgesRenderer) {
                 this._edgesRenderer.dispose();
-                this._edgesRenderer = undefined;
+                this._edgesRenderer = null;
             }
             return this;
         }
@@ -681,7 +645,7 @@
          * Returns null by default, used by the class Mesh. 
          * Returned type : integer array 
          */
-        public getIndices(): IndicesArray {
+        public getIndices(): Nullable<IndicesArray> {
             return null;
         }
 
@@ -689,7 +653,7 @@
          * Returns the array of the requested vertex data kind. Used by the class Mesh. Returns null here. 
          * Returned type : float array or Float32Array 
          */
-        public getVerticesData(kind: string): number[] | Float32Array {
+        public getVerticesData(kind: string): Nullable<FloatArray> {
             return null;
         }
         /**
@@ -717,8 +681,8 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
-            return null;
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
+            return this;
         }
 
         /**
@@ -745,8 +709,8 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
-            return null;
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
+            return this;
         }
 
         /**
@@ -756,8 +720,8 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
-            return null;
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number>): AbstractMesh {
+            return this;
         }
 
         /** Returns false by default, used by the class Mesh.  
@@ -777,9 +741,31 @@
             }
 
             if (!this._boundingInfo) {
+                // this._boundingInfo is being created here
                 this._updateBoundingInfo();
             }
-            return this._boundingInfo;
+            // cannot be null.
+            return this._boundingInfo!;
+        }
+
+        /**
+         * Uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units).
+         * @param includeDescendants Take the hierarchy's bounding box instead of the mesh's bounding box.
+         */
+        public normalizeToUnitCube(includeDescendants = true): AbstractMesh {
+            let boundingVectors = this.getHierarchyBoundingVectors(includeDescendants);
+            let sizeVec = boundingVectors.max.subtract(boundingVectors.min);
+            let maxDimension = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+
+            if (maxDimension === 0) {
+                return this;
+            }
+
+            let scale = 1 / maxDimension;
+
+            this.scaling.scaleInPlace(scale);
+
+            return this;
         }
 
         /**
@@ -792,7 +778,7 @@
         }
 
         public get useBones(): boolean {
-            return this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind);
+            return (<boolean>(this.skeleton && this.getScene().skeletonsEnabled && this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind) && this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)));
         }
 
         public _preActivate(): void {
@@ -806,7 +792,7 @@
         }
 
         /**
-         * Returns the last update of the World matrix
+         * Returns the latest update of the World matrix
          * Returns a Matrix.  
          */
         public getWorldMatrix(): Matrix {
@@ -814,208 +800,18 @@
                 return this._masterMesh.getWorldMatrix();
             }
 
-            if (this._currentRenderId !== this.getScene().getRenderId() || !this.isSynchronized()) {
-                this.computeWorldMatrix();
-            }
-            return this._worldMatrix;
+            return super.getWorldMatrix();
         }
 
         /**
-         * Returns directly the last state of the mesh World matrix. 
-         * A Matrix is returned.    
+         * Returns the latest update of the World matrix determinant.
          */
-        public get worldMatrixFromCache(): Matrix {
-            return this._worldMatrix;
-        }
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
 
-        /**
-         * Returns the current mesh absolute position.
-         * Retuns a Vector3.
-         */
-        public get absolutePosition(): Vector3 {
-            return this._absolutePosition;
-        }
-        /**
-         * Prevents the World matrix to be computed any longer.
-         * Returns the AbstractMesh.  
-         */
-        public freezeWorldMatrix(): AbstractMesh {
-            this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
-            this.computeWorldMatrix(true);
-            this._isWorldMatrixFrozen = true;
-            return this;
-        }
-
-        /**
-         * Allows back the World matrix computation. 
-         * Returns the AbstractMesh.  
-         */
-        public unfreezeWorldMatrix() {
-            this._isWorldMatrixFrozen = false;
-            this.computeWorldMatrix(true);
-            return this;
-        }
-
-        /**
-         * True if the World matrix has been frozen.  
-         * Returns a boolean.  
-         */
-        public get isWorldMatrixFrozen(): boolean {
-            return this._isWorldMatrixFrozen;
-        }
-
-        private static _rotationAxisCache = new Quaternion();
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in the given space.  
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
-         * The passed axis is also normalized.  
-         * Returns the AbstractMesh.
-         */
-        public rotate(axis: Vector3, amount: number, space?: Space): AbstractMesh {
-            axis.normalize();
-            if (!this.rotationQuaternion) {
-                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation = Vector3.Zero();
-            }
-            var rotationQuaternion: Quaternion;
-            if (!space || (space as any) === Space.LOCAL) {
-                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
-                this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
-            }
-            else {
-                if (this.parent) {
-                    var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
-                    invertParentWorldMatrix.invert();
-                    axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
-                }
-                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
-                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
-            }
-            return this;
-        }
-
-        /**
-         * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.  
-         * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
-         * The passed axis is also normalized.  
-         * Returns the AbstractMesh.
-         * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
-         */
-        public rotateAround(point: Vector3, axis: Vector3, amount: number): AbstractMesh {
-            axis.normalize();
-            if (!this.rotationQuaternion) {
-                this.rotationQuaternion = Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z);
-                this.rotation.copyFromFloats(0, 0, 0);
-            }
-            point.subtractToRef(this.position, Tmp.Vector3[0]);
-            Matrix.TranslationToRef(Tmp.Vector3[0].x, Tmp.Vector3[0].y, Tmp.Vector3[0].z, Tmp.Matrix[0]);
-            Tmp.Matrix[0].invertToRef(Tmp.Matrix[2]);
-            Matrix.RotationAxisToRef(axis, amount, Tmp.Matrix[1]);
-            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[2]);
-            Tmp.Matrix[2].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[2]);
-
-            Tmp.Matrix[2].decompose(Tmp.Vector3[0], Tmp.Quaternion[0], Tmp.Vector3[1]);
-
-            this.position.addInPlace(Tmp.Vector3[1]);
-            Tmp.Quaternion[0].multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
-
-            return this;
-        }
-
-        /**
-         * Translates the mesh along the axis vector for the passed distance in the given space.  
-         * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Returns the AbstractMesh.
-         */
-        public translate(axis: Vector3, distance: number, space?: Space): AbstractMesh {
-            var displacementVector = axis.scale(distance);
-            if (!space || (space as any) === Space.LOCAL) {
-                var tempV3 = this.getPositionExpressedInLocalSpace().add(displacementVector);
-                this.setPositionWithLocalVector(tempV3);
-            }
-            else {
-                this.setAbsolutePosition(this.getAbsolutePosition().add(displacementVector));
-            }
-            return this;
-        }
-
-        /**
-         * Adds a rotation step to the mesh current rotation.  
-         * x, y, z are Euler angles expressed in radians.  
-         * This methods updates the current mesh rotation, either mesh.rotation, either mesh.rotationQuaternion if it's set.  
-         * This means this rotation is made in the mesh local space only.   
-         * It's useful to set a custom rotation order different from the BJS standard one YXZ.  
-         * Example : this rotates the mesh first around its local X axis, then around its local Z axis, finally around its local Y axis.  
-         * ```javascript
-         * mesh.addRotation(x1, 0, 0).addRotation(0, 0, z2).addRotation(0, 0, y3);
-         * ```
-         * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.  
-         * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.   
-         * Returns the AbstractMesh.  
-         */
-        public addRotation(x: number, y: number, z: number): AbstractMesh {
-            var rotationQuaternion;
-            if (this.rotationQuaternion) {
-                rotationQuaternion = this.rotationQuaternion;
-            }
-            else {
-                rotationQuaternion = Tmp.Quaternion[1];
-                Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
-            }
-            var accumulation = BABYLON.Tmp.Quaternion[0];
-            Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
-            rotationQuaternion.multiplyInPlace(accumulation);
-            if (!this.rotationQuaternion) {
-                rotationQuaternion.toEulerAnglesToRef(this.rotation);
-            }
-            return this;
-        }
-
-        /**
-         * Retuns the mesh absolute position in the World.  
-         * Returns a Vector3.
-         */
-        public getAbsolutePosition(): Vector3 {
-            this.computeWorldMatrix();
-            return this._absolutePosition;
-        }
-
-        /**
-         * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * Returns the AbstractMesh.  
-         */
-        public setAbsolutePosition(absolutePosition: Vector3): AbstractMesh {
-            if (!absolutePosition) {
-                return;
-            }
-            var absolutePositionX;
-            var absolutePositionY;
-            var absolutePositionZ;
-            if (absolutePosition.x === undefined) {
-                if (arguments.length < 3) {
-                    return;
-                }
-                absolutePositionX = arguments[0];
-                absolutePositionY = arguments[1];
-                absolutePositionZ = arguments[2];
-            }
-            else {
-                absolutePositionX = absolutePosition.x;
-                absolutePositionY = absolutePosition.y;
-                absolutePositionZ = absolutePosition.z;
-            }
-            if (this.parent) {
-                var invertParentWorldMatrix = this.parent.getWorldMatrix().clone();
-                invertParentWorldMatrix.invert();
-                var worldPosition = new Vector3(absolutePositionX, absolutePositionY, absolutePositionZ);
-                this.position = Vector3.TransformCoordinates(worldPosition, invertParentWorldMatrix);
-            } else {
-                this.position.x = absolutePositionX;
-                this.position.y = absolutePositionY;
-                this.position.z = absolutePositionZ;
-            }
-            return this;
+            return super._getWorldMatrixDeterminant();
         }
 
         // ================================== Point of View Movement =================================
@@ -1084,75 +880,52 @@
         }
 
         /**
-         * Sets a new pivot matrix to the mesh.  
-         * Returns the AbstractMesh.
+         * Return the minimum and maximum world vectors of the entire hierarchy under current mesh
+         * @param includeDescendants Include bounding info from descendants as well (true by default).
          */
-        public setPivotMatrix(matrix: Matrix): AbstractMesh {
-            this._pivotMatrix = matrix;
-            this._cache.pivotMatrixUpdated = true;
-            return this;
-        }
+        public getHierarchyBoundingVectors(includeDescendants = true): { min: Vector3, max: Vector3 } {
+            this.computeWorldMatrix(true);
 
-        /**
-         * Returns the mesh pivot matrix.
-         * Default : Identity.  
-         * A Matrix is returned.  
-         */
-        public getPivotMatrix(): Matrix {
-            return this._pivotMatrix;
-        }
+            let min: Vector3;
+            let max: Vector3;
+            let boundingInfo = this.getBoundingInfo();
 
-        public _isSynchronized(): boolean {
-            if (this._isDirty) {
-                return false;
+            if (!this.subMeshes) {
+                min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+                max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            } else {
+                min = boundingInfo.boundingBox.minimumWorld;
+                max = boundingInfo.boundingBox.maximumWorld;
             }
 
-            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
-                return false;
+            if (includeDescendants) {
+                let descendants = this.getDescendants(false);
 
-            if (this._cache.pivotMatrixUpdated) {
-                return false;
+                for (var descendant of descendants) {
+                    let childMesh = <AbstractMesh>descendant;
+
+                    childMesh.computeWorldMatrix(true);
+
+                    //make sure we have the needed params to get mix and max
+                    if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
+                        continue;
+                    }
+
+                    let childBoundingInfo = childMesh.getBoundingInfo();
+                    let boundingBox = childBoundingInfo.boundingBox;
+
+                    var minBox = boundingBox.minimumWorld;
+                    var maxBox = boundingBox.maximumWorld;
+
+                    Tools.CheckExtends(minBox, min, max);
+                    Tools.CheckExtends(maxBox, min, max);
+                }
             }
 
-            if (this.infiniteDistance) {
-                return false;
+            return {
+                min: min,
+                max: max
             }
-
-            if (!this._cache.position.equals(this.position))
-                return false;
-
-            if (this.rotationQuaternion) {
-                if (!this._cache.rotationQuaternion.equals(this.rotationQuaternion))
-                    return false;
-            }
-
-            if (!this._cache.rotation.equals(this.rotation))
-                return false;
-
-            if (!this._cache.scaling.equals(this.scaling))
-                return false;
-
-            return true;
-        }
-
-        public _initCache() {
-            super._initCache();
-
-            this._cache.localMatrixUpdated = false;
-            this._cache.position = Vector3.Zero();
-            this._cache.scaling = Vector3.Zero();
-            this._cache.rotation = Vector3.Zero();
-            this._cache.rotationQuaternion = new Quaternion(0, 0, 0, 0);
-            this._cache.billboardMode = -1;
-        }
-
-        public markAsDirty(property: string): AbstractMesh {
-            if (property === "rotation") {
-                this.rotationQuaternion = null;
-            }
-            this._currentRenderId = Number.MAX_VALUE;
-            this._isDirty = true;
-            return this;
         }
 
         /**
@@ -1172,7 +945,7 @@
          */
         public _updateSubMeshesBoundingInfo(matrix: Matrix): AbstractMesh {
             if (!this.subMeshes) {
-                return;
+                return this;
             }
             for (var subIndex = 0; subIndex < this.subMeshes.length; subIndex++) {
                 var subMesh = this.subMeshes[subIndex];
@@ -1183,251 +956,9 @@
             return this;
         }
 
-        /**
-         * Computes the mesh World matrix and returns it.  
-         * If the mesh world matrix is frozen, this computation does nothing more than returning the last frozen values.  
-         * If the parameter `force` is let to `false` (default), the current cached World matrix is returned. 
-         * If the parameter `force`is set to `true`, the actual computation is done.  
-         * Returns the mesh World Matrix.
-         */
-        public computeWorldMatrix(force?: boolean): Matrix {
-            if (this._isWorldMatrixFrozen) {
-                return this._worldMatrix;
-            }
-
-            if (!force && this.isSynchronized(true)) {
-                this._currentRenderId = this.getScene().getRenderId();
-                return this._worldMatrix;
-            }
-
-            this._cache.position.copyFrom(this.position);
-            this._cache.scaling.copyFrom(this.scaling);
-            this._cache.pivotMatrixUpdated = false;
-            this._cache.billboardMode = this.billboardMode;
-            this._currentRenderId = this.getScene().getRenderId();
-            this._isDirty = false;
-
-            // Scaling
-            Matrix.ScalingToRef(this.scaling.x * this.scalingDeterminant, this.scaling.y * this.scalingDeterminant, this.scaling.z * this.scalingDeterminant, Tmp.Matrix[1]);
-
-            // Rotation
-
-            //rotate, if quaternion is set and rotation was used
-            if (this.rotationQuaternion) {
-                var len = this.rotation.length();
-                if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
-                    this.rotation.copyFromFloats(0, 0, 0);
-                }
-            }
-
-            if (this.rotationQuaternion) {
-                this.rotationQuaternion.toRotationMatrix(Tmp.Matrix[0]);
-                this._cache.rotationQuaternion.copyFrom(this.rotationQuaternion);
-            } else {
-                Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, Tmp.Matrix[0]);
-                this._cache.rotation.copyFrom(this.rotation);
-            }
-
-            // Translation
-            if (this.infiniteDistance && !this.parent) {
-                var camera = this.getScene().activeCamera;
-                if (camera) {
-                    var cameraWorldMatrix = camera.getWorldMatrix();
-
-                    var cameraGlobalPosition = new Vector3(cameraWorldMatrix.m[12], cameraWorldMatrix.m[13], cameraWorldMatrix.m[14]);
-
-                    Matrix.TranslationToRef(this.position.x + cameraGlobalPosition.x, this.position.y + cameraGlobalPosition.y,
-                        this.position.z + cameraGlobalPosition.z, Tmp.Matrix[2]);
-                }
-            } else {
-                Matrix.TranslationToRef(this.position.x, this.position.y, this.position.z, Tmp.Matrix[2]);
-            }
-
-            // Composing transformations
-            this._pivotMatrix.multiplyToRef(Tmp.Matrix[1], Tmp.Matrix[4]);
-            Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-
-            // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && this.getScene().activeCamera) {
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
-                    // Need to decompose each rotation here
-                    var currentPosition = Tmp.Vector3[3];
-
-                    if (this.parent && this.parent.getWorldMatrix) {
-                        if (this._meshToBoneReferal) {
-                            this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
-                            Vector3.TransformCoordinatesToRef(this.position, Tmp.Matrix[6], currentPosition);
-                        } else {
-                            Vector3.TransformCoordinatesToRef(this.position, this.parent.getWorldMatrix(), currentPosition);
-                        }
-                    } else {
-                        currentPosition.copyFrom(this.position);
-                    }
-
-                    currentPosition.subtractInPlace(this.getScene().activeCamera.globalPosition);
-
-                    var finalEuler = Tmp.Vector3[4].copyFromFloats(0, 0, 0);
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X) {
-                        finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
-                    }
-
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) === AbstractMesh.BILLBOARDMODE_Y) {
-                        finalEuler.y = Math.atan2(currentPosition.x, currentPosition.z);
-                    }
-
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z) {
-                        finalEuler.z = Math.atan2(currentPosition.y, currentPosition.x);
-                    }
-
-                    Matrix.RotationYawPitchRollToRef(finalEuler.y, finalEuler.x, finalEuler.z, Tmp.Matrix[0]);
-                } else {
-                    Tmp.Matrix[1].copyFrom(this.getScene().activeCamera.getViewMatrix());
-
-                    Tmp.Matrix[1].setTranslationFromFloats(0, 0, 0);
-                    Tmp.Matrix[1].invertToRef(Tmp.Matrix[0]);
-                }
-
-                Tmp.Matrix[1].copyFrom(Tmp.Matrix[5]);
-                Tmp.Matrix[1].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
-            }
-
-            // Local world
-            Tmp.Matrix[5].multiplyToRef(Tmp.Matrix[2], this._localWorld);
-
-            // Parent
-            if (this.parent && this.parent.getWorldMatrix) {
-                if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
-                    if (this._meshToBoneReferal) {
-                        this.parent.getWorldMatrix().multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
-                        Tmp.Matrix[5].copyFrom(Tmp.Matrix[6]);
-                    } else {
-                        Tmp.Matrix[5].copyFrom(this.parent.getWorldMatrix());
-                    }
-
-                    this._localWorld.getTranslationToRef(Tmp.Vector3[5]);
-                    Vector3.TransformCoordinatesToRef(Tmp.Vector3[5], Tmp.Matrix[5], Tmp.Vector3[5]);
-                    this._worldMatrix.copyFrom(this._localWorld);
-                    this._worldMatrix.setTranslation(Tmp.Vector3[5]);
-
-                } else {
-                    if (this._meshToBoneReferal) {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), Tmp.Matrix[6]);
-                        Tmp.Matrix[6].multiplyToRef(this._meshToBoneReferal.getWorldMatrix(), this._worldMatrix);
-                    } else {
-                        this._localWorld.multiplyToRef(this.parent.getWorldMatrix(), this._worldMatrix);
-                    }
-                }
-                this._markSyncedWithParent();
-            } else {
-                this._worldMatrix.copyFrom(this._localWorld);
-            }
-
+        protected _afterComputeWorldMatrix(): void {
             // Bounding info
             this._updateBoundingInfo();
-
-            // Absolute position
-            this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
-
-            // Callbacks
-            this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
-
-            if (!this._poseMatrix) {
-                this._poseMatrix = Matrix.Invert(this._worldMatrix);
-            }
-
-            return this._worldMatrix;
-        }
-
-        /**
-        * If you'd like to be called back after the mesh position, rotation or scaling has been updated.  
-        * @param func: callback function to add
-        *
-        * Returns the AbstractMesh. 
-        */
-        public registerAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh {
-            this.onAfterWorldMatrixUpdateObservable.add(func);
-            return this;
-        }
-
-        /**
-         * Removes a registered callback function.  
-         * Returns the AbstractMesh.
-         */
-        public unregisterAfterWorldMatrixUpdate(func: (mesh: AbstractMesh) => void): AbstractMesh {
-            this.onAfterWorldMatrixUpdateObservable.removeCallback(func);
-            return this;
-        }
-
-        /**
-         * Sets the mesh position in its local space.  
-         * Returns the AbstractMesh.  
-         */
-        public setPositionWithLocalVector(vector3: Vector3): AbstractMesh {
-            this.computeWorldMatrix();
-            this.position = Vector3.TransformNormal(vector3, this._localWorld);
-            return this;
-        }
-
-        /**
-         * Returns the mesh position in the local space from the current World matrix values.
-         * Returns a new Vector3.
-         */
-        public getPositionExpressedInLocalSpace(): Vector3 {
-            this.computeWorldMatrix();
-            var invLocalWorldMatrix = this._localWorld.clone();
-            invLocalWorldMatrix.invert();
-
-            return Vector3.TransformNormal(this.position, invLocalWorldMatrix);
-        }
-
-        /**
-         * Translates the mesh along the passed Vector3 in its local space.  
-         * Returns the AbstractMesh. 
-         */
-        public locallyTranslate(vector3: Vector3): AbstractMesh {
-            this.computeWorldMatrix(true);
-            this.position = Vector3.TransformCoordinates(vector3, this._localWorld);
-            return this;
-        }
-
-        private static _lookAtVectorCache = new Vector3(0, 0, 0);
-        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): AbstractMesh {
-            /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
-            /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
-            /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
-            /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
-            /// <returns>Mesh oriented towards targetMesh</returns>
-
-            var dv = AbstractMesh._lookAtVectorCache;
-            var pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
-            targetPoint.subtractToRef(pos, dv);
-            var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
-            var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
-            var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = this.rotationQuaternion || new Quaternion();
-            Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
-            return this;
-        }
-
-        public attachToBone(bone: Bone, affectedMesh: AbstractMesh): AbstractMesh {
-            this._meshToBoneReferal = affectedMesh;
-            this.parent = bone;
-
-            if (bone.getWorldMatrix().determinant() < 0) {
-                this.scalingDeterminant *= -1;
-            }
-            return this;
-        }
-
-        public detachFromBone(): AbstractMesh {
-            if (this.parent.getWorldMatrix().determinant() < 0) {
-                this.scalingDeterminant *= -1;
-            }
-            this._meshToBoneReferal = null;
-            this.parent = null;
-            return this;
         }
 
         /**
@@ -1436,7 +967,7 @@
          * Boolean returned.  
          */
         public isInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo.isInFrustum(frustumPlanes);
+            return this._boundingInfo !== null && this._boundingInfo.isInFrustum(frustumPlanes);
         }
 
         /**
@@ -1445,20 +976,33 @@
          * Boolean returned.  
          */
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
-            return this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
+            return this._boundingInfo !== null && this._boundingInfo.isCompletelyInFrustum(frustumPlanes);;
         }
 
         /** 
          * True if the mesh intersects another mesh or a SolidParticle object.  
          * Unless the parameter `precise` is set to `true` the intersection is computed according to Axis Aligned Bounding Boxes (AABB), else according to OBB (Oriented BBoxes)
+         * includeDescendants can be set to true to test if the mesh defined in parameters intersects with the current mesh or any child meshes
          * Returns a boolean.  
          */
-        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise?: boolean): boolean {
+        public intersectsMesh(mesh: AbstractMesh | SolidParticle, precise: boolean = false, includeDescendants?: boolean): boolean {
             if (!this._boundingInfo || !mesh._boundingInfo) {
                 return false;
             }
 
-            return this._boundingInfo.intersects(mesh._boundingInfo, precise);
+            if (this._boundingInfo.intersects(mesh._boundingInfo, precise)) {
+                return true;
+            }
+
+            if (includeDescendants) {
+                for (var child of this.getChildMeshes()) {
+                    if (child.intersectsMesh(mesh, precise, true)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /**
@@ -1473,13 +1017,13 @@
             return this._boundingInfo.intersectsPoint(point);
         }
 
-        public getPhysicsImpostor(): PhysicsImpostor {
+        public getPhysicsImpostor(): Nullable<PhysicsImpostor> {
             return this.physicsImpostor;
         }
 
-        public getPositionInCameraSpace(camera?: Camera): Vector3 {
+        public getPositionInCameraSpace(camera: Nullable<Camera> = null): Vector3 {
             if (!camera) {
-                camera = this.getScene().activeCamera;
+                camera = (<Camera>this.getScene().activeCamera);
             }
 
             return Vector3.TransformCoordinates(this.absolutePosition, camera.getViewMatrix());
@@ -1489,16 +1033,16 @@
          * Returns the distance from the mesh to the active camera.  
          * Returns a float.  
          */
-        public getDistanceToCamera(camera?: Camera): number {
+        public getDistanceToCamera(camera: Nullable<Camera> = null): number {
             if (!camera) {
-                camera = this.getScene().activeCamera;
+                camera = (<Camera>this.getScene().activeCamera);
             }
             return this.absolutePosition.subtract(camera.position).length();
         }
 
         public applyImpulse(force: Vector3, contactPoint: Vector3): AbstractMesh {
             if (!this.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.applyImpulse(force, contactPoint);
             return this;
@@ -1506,7 +1050,7 @@
 
         public setPhysicsLinkWith(otherMesh: Mesh, pivot1: Vector3, pivot2: Vector3, options?: any): AbstractMesh {
             if (!this.physicsImpostor || !otherMesh.physicsImpostor) {
-                return;
+                return this;
             }
             this.physicsImpostor.createJoint(otherMesh.physicsImpostor, PhysicsJoint.HingeJoint, {
                 mainPivot: pivot1,
@@ -1533,26 +1077,32 @@
             }
         }
 
-        public moveWithCollisions(direction: Vector3): AbstractMesh {
+        /**
+         * Gets Collider object used to compute collisions (not physics)
+         */
+        public get collider(): Collider {
+            return this._collider;
+        }
+
+        public moveWithCollisions(displacement: Vector3): AbstractMesh {
             var globalPosition = this.getAbsolutePosition();
 
-            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
-            this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
+            globalPosition.addToRef(this.ellipsoidOffset, this._oldPositionForCollisions);
 
             if (!this._collider) {
                 this._collider = new Collider();
             }
 
-            this._collider.radius = this.ellipsoid;
+            this._collider._radius = this.ellipsoid;
 
-            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, direction, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
+            this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
         }
 
-        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+        private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
             //TODO move this to the collision coordinator!
             if (this.getScene().workerCollisions)
-                newPosition.multiplyInPlace(this._collider.radius);
+                newPosition.multiplyInPlace(this._collider._radius);
 
             newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
@@ -1581,8 +1131,10 @@
 
             this.computeWorldMatrix(true);
 
+            let boundingInfo = this.getBoundingInfo();
+
             // Update octree
-            var bbox = this.getBoundingInfo().boundingBox;
+            var bbox = boundingInfo.boundingBox;
             this._submeshesOctree.update(bbox.minimumWorld, bbox.maximumWorld, this.subMeshes);
 
             return this._submeshesOctree;
@@ -1591,6 +1143,11 @@
         // Collisions
         public _collideForSubMesh(subMesh: SubMesh, transformMatrix: Matrix, collider: Collider): AbstractMesh {
             this._generatePointsArray();
+
+            if (!this._positions) {
+                return this;
+            }
+
             // Transformation
             if (!subMesh._lastColliderWorldVertices || !subMesh._lastColliderTransformMatrix.equals(transformMatrix)) {
                 subMesh._lastColliderTransformMatrix = transformMatrix.clone();
@@ -1603,7 +1160,7 @@
                 }
             }
             // Collide
-            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, this.getIndices(), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
+            collider._collide(subMesh._trianglePlanes, subMesh._lastColliderWorldVertices, (<IndicesArray>this.getIndices()), subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, !!subMesh.getMaterial());
             if (collider.collisionFound) {
                 collider.collidedMesh = this;
             }
@@ -1616,8 +1173,8 @@
 
             // Octrees
             if (this._submeshesOctree && this.useOctreeForCollisions) {
-                var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
-                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
+                var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
+                var intersections = this._submeshesOctree.intersects(collider._basePointWorld, radius);
 
                 len = intersections.length;
                 subMeshes = intersections.data;
@@ -1640,11 +1197,11 @@
 
         public _checkCollision(collider: Collider): AbstractMesh {
             // Bounding box test
-            if (!this._boundingInfo._checkCollision(collider))
+            if (!this._boundingInfo || !this._boundingInfo._checkCollision(collider))
                 return this;
 
             // Transformation matrix
-            Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
+            Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
             this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
             return this;
@@ -1670,7 +1227,7 @@
                 return pickingInfo;
             }
 
-            var intersectInfo: IntersectionInfo = null;
+            var intersectInfo: Nullable<IntersectionInfo> = null;
 
             // Octrees
             var subMeshes: SubMesh[];
@@ -1694,7 +1251,7 @@
                 if (len > 1 && !subMesh.canIntersects(ray))
                     continue;
 
-                var currentIntersectInfo = subMesh.intersects(ray, this._positions, this.getIndices(), fastCheck);
+                var currentIntersectInfo = subMesh.intersects(ray, (<Vector3[]>this._positions), (<IndicesArray>this.getIndices()), fastCheck);
 
                 if (currentIntersectInfo) {
                     if (fastCheck || !intersectInfo || currentIntersectInfo.distance < intersectInfo.distance) {
@@ -1723,8 +1280,8 @@
                 pickingInfo.distance = Vector3.Distance(worldOrigin, pickedPoint);
                 pickingInfo.pickedPoint = pickedPoint;
                 pickingInfo.pickedMesh = this;
-                pickingInfo.bu = intersectInfo.bu;
-                pickingInfo.bv = intersectInfo.bv;
+                pickingInfo.bu = intersectInfo.bu || 0;
+                pickingInfo.bv = intersectInfo.bv || 0;
                 pickingInfo.faceId = intersectInfo.faceId;
                 pickingInfo.subMeshId = intersectInfo.subMeshId;
                 return pickingInfo;
@@ -1737,7 +1294,7 @@
          * Clones the mesh, used by the class Mesh.  
          * Just returns `null` for an AbstractMesh.  
          */
-        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): AbstractMesh {
+        public clone(name: string, newParent: Node, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
             return null;
         }
 
@@ -1758,24 +1315,20 @@
 
         /**
          * Disposes the AbstractMesh.  
-         * Some internal references are kept for further use.  
          * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
          * Returns nothing.  
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures: boolean = false): void {
             var index: number;
 
             // Action manager
-            if (this.actionManager) {
+            if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
                 this.actionManager = null;
             }
 
             // Skeleton
             this.skeleton = null;
-
-            // Animations
-            this.getScene().stopAnimation(this);
 
             // Physics
             if (this.physicsImpostor) {
@@ -1812,10 +1365,13 @@
                 var generator = light.getShadowGenerator();
                 if (generator) {
                     var shadowMap = generator.getShadowMap();
-                    meshIndex = shadowMap.renderList.indexOf(this);
 
-                    if (meshIndex !== -1) {
-                        shadowMap.renderList.splice(meshIndex, 1);
+                    if (shadowMap && shadowMap.renderList) {
+                        meshIndex = shadowMap.renderList.indexOf(this);
+
+                        if (meshIndex !== -1) {
+                            shadowMap.renderList.splice(meshIndex, 1);
+                        }
                     }
                 }
             });
@@ -1832,8 +1388,8 @@
             }
 
             // Octree
-            var sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree) {
+            const sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
                 var index = sceneOctree.dynamicContent.indexOf(this);
 
                 if (index !== -1) {
@@ -1855,6 +1411,12 @@
             // Remove from scene
             this.getScene().removeMesh(this);
 
+            if (disposeMaterialAndTextures) {
+                if (this.material) {
+                    this.material.dispose(false, true);
+                }
+            }
+
             if (!doNotRecurse) {
                 // Particles
                 for (index = 0; index < this.getScene().particleSystems.length; index++) {
@@ -1862,19 +1424,6 @@
                         this.getScene().particleSystems[index].dispose();
                         index--;
                     }
-                }
-
-                // Children
-                var objects = this.getDescendants(true);
-                for (index = 0; index < objects.length; index++) {
-                    objects[index].dispose();
-                }
-            } else {
-                var childMeshes = this.getChildMeshes(true);
-                for (index = 0; index < childMeshes.length; index++) {
-                    var child = childMeshes[index];
-                    child.parent = null;
-                    child.computeWorldMatrix(true);
                 }
             }
 
@@ -1889,150 +1438,7 @@
 
             this._isDisposed = true;
 
-            super.dispose();
-        }
-
-        /**
-         * Returns a new Vector3 what is the localAxis, expressed in the mesh local space, rotated like the mesh.  
-         * This Vector3 is expressed in the World space.  
-         */
-        public getDirection(localAxis: Vector3): Vector3 {
-            var result = Vector3.Zero();
-
-            this.getDirectionToRef(localAxis, result);
-
-            return result;
-        }
-
-        /**
-         * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
-         * localAxis is expressed in the mesh local space.
-         * result is computed in the Wordl space from the mesh World matrix.  
-         * Returns the AbstractMesh.  
-         */
-        public getDirectionToRef(localAxis: Vector3, result: Vector3): AbstractMesh {
-            Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
-            return this;
-        }
-
-        public setPivotPoint(point: Vector3, space: Space = Space.LOCAL): AbstractMesh {
-
-            if (this.getScene().getRenderId() == 0) {
-                this.computeWorldMatrix(true);
-            }
-
-            var wm = this.getWorldMatrix();
-
-            if (space == Space.WORLD) {
-                var tmat = Tmp.Matrix[0];
-                wm.invertToRef(tmat);
-                point = Vector3.TransformCoordinates(point, tmat);
-            }
-
-            Vector3.TransformCoordinatesToRef(point, wm, this.position);
-            this._pivotMatrix.m[12] = -point.x;
-            this._pivotMatrix.m[13] = -point.y;
-            this._pivotMatrix.m[14] = -point.z;
-            this._cache.pivotMatrixUpdated = true;
-            return this;
-        }
-
-        /**
-         * Returns a new Vector3 set with the mesh pivot point coordinates in the local space.  
-         */
-        public getPivotPoint(): Vector3 {
-            var point = Vector3.Zero();
-            this.getPivotPointToRef(point);
-            return point;
-        }
-
-        /**
-         * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.   
-         * Returns the AbstractMesh.   
-         */
-        public getPivotPointToRef(result: Vector3): AbstractMesh {
-            result.x = -this._pivotMatrix.m[12];
-            result.y = -this._pivotMatrix.m[13];
-            result.z = -this._pivotMatrix.m[14];
-            return this;
-        }
-
-        /**
-         * Returns a new Vector3 set with the mesh pivot point World coordinates.  
-         */
-        public getAbsolutePivotPoint(): Vector3 {
-            var point = Vector3.Zero();
-            this.getAbsolutePivotPointToRef(point);
-            return point;
-        }
-
-        /**
-         * Defines the passed mesh as the parent of the current mesh.  
-         * Returns the AbstractMesh.  
-         */
-        public setParent(mesh: AbstractMesh): AbstractMesh {
-
-            var child = this;
-            var parent = mesh;
-
-            if (mesh == null) {
-
-                var rotation = Tmp.Quaternion[0];
-                var position = Tmp.Vector3[0];
-                var scale = Tmp.Vector3[1];
-
-                child.getWorldMatrix().decompose(scale, rotation, position);
-
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
-                } else {
-                    rotation.toEulerAnglesToRef(child.rotation);
-                }
-
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
-
-            } else {
-
-                var rotation = Tmp.Quaternion[0];
-                var position = Tmp.Vector3[0];
-                var scale = Tmp.Vector3[1];
-                var m1 = Tmp.Matrix[0];
-                var m2 = Tmp.Matrix[1];
-
-                parent.getWorldMatrix().decompose(scale, rotation, position);
-
-                rotation.toRotationMatrix(m1);
-                m2.setTranslation(position);
-
-                m2.multiplyToRef(m1, m1);
-
-                var invParentMatrix = Matrix.Invert(m1);
-
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-
-                m.decompose(scale, rotation, position);
-
-                if (child.rotationQuaternion) {
-                    child.rotationQuaternion.copyFrom(rotation);
-                } else {
-                    rotation.toEulerAnglesToRef(child.rotation);
-                }
-
-                invParentMatrix = Matrix.Invert(parent.getWorldMatrix());
-
-                var m = child.getWorldMatrix().multiply(invParentMatrix);
-
-                m.decompose(scale, rotation, position);
-
-                child.position.x = position.x;
-                child.position.y = position.y;
-                child.position.z = position.z;
-
-            }
-            child.parent = parent;
-            return this;
+            super.dispose(doNotRecurse);
         }
 
         /**
@@ -2053,19 +1459,6 @@
             return this;
         }
 
-        /**
-         * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.  
-         * Returns the AbstractMesh.  
-         */
-        public getAbsolutePivotPointToRef(result: Vector3): AbstractMesh {
-            result.x = this._pivotMatrix.m[12];
-            result.y = this._pivotMatrix.m[13];
-            result.z = this._pivotMatrix.m[14];
-            this.getPivotPointToRef(result);
-            Vector3.TransformCoordinatesToRef(result, this.getWorldMatrix(), result);
-            return this;
-        }
-
         // Facet data
         /** 
          *  Initialize the facet data arrays : facetNormals, facetPositions and facetPartitioning.   
@@ -2081,7 +1474,7 @@
             if (!this._facetPartitioning) {
                 this._facetPartitioning = new Array<number[]>();
             }
-            this._facetNb = this.getIndices().length / 3;
+            this._facetNb = ((<IndicesArray>this.getIndices()).length / 3) | 0;
             this._partitioningSubdivisions = (this._partitioningSubdivisions) ? this._partitioningSubdivisions : 10;   // default nb of partitioning subdivisions = 10
             this._partitioningBBoxRatio = (this._partitioningBBoxRatio) ? this._partitioningBBoxRatio : 1.01;          // default ratio 1.01 = the partitioning is 1% bigger than the bounding box
             for (var f = 0; f < this._facetNb; f++) {
@@ -2106,6 +1499,47 @@
             var indices = this.getIndices();
             var normals = this.getVerticesData(VertexBuffer.NormalKind);
             var bInfo = this.getBoundingInfo();
+
+            if (this._facetDepthSort && !this._facetDepthSortEnabled) {
+                // init arrays, matrix and sort function on first call
+                this._facetDepthSortEnabled = true;
+                if (indices instanceof Uint16Array) {
+                    this._depthSortedIndices = new Uint16Array(indices!);
+                }
+                else if (indices instanceof Uint32Array) {
+                    this._depthSortedIndices = new Uint32Array(indices!);
+                }
+                else {
+                    var needs32bits = false;
+                    for (var i = 0; i < indices!.length; i++) {
+                        if (indices![i] > 65535) {
+                            needs32bits = true;
+                            break;
+                        }
+                    }
+                    if (needs32bits) {
+                        this._depthSortedIndices = new Uint32Array(indices!);
+                    }
+                    else {
+                        this._depthSortedIndices = new Uint16Array(indices!);
+                    }
+                }
+                this._facetDepthSortFunction = function (f1, f2) {
+                    return (f2.sqDistance - f1.sqDistance);
+                };
+                if (!this._facetDepthSortFrom) {
+                    var camera = this.getScene().activeCamera;
+                    this._facetDepthSortFrom = (camera) ? camera.position : Vector3.Zero();
+                }
+                this._depthSortedFacets = [];
+                for (var f = 0; f < this._facetNb; f++) {
+                    var depthSortedFacet = { ind: f * 3, sqDistance: 0.0 };
+                    this._depthSortedFacets.push(depthSortedFacet);
+                }
+                this._invertedMatrix = Matrix.Identity();
+                this._facetDepthSortOrigin = Vector3.Zero();
+            }
+
             this._bbSize.x = (bInfo.maximum.x - bInfo.minimum.x > Epsilon) ? bInfo.maximum.x - bInfo.minimum.x : Epsilon;
             this._bbSize.y = (bInfo.maximum.y - bInfo.minimum.y > Epsilon) ? bInfo.maximum.y - bInfo.minimum.y : Epsilon;
             this._bbSize.z = (bInfo.maximum.z - bInfo.minimum.z > Epsilon) ? bInfo.maximum.z - bInfo.minimum.z : Epsilon;
@@ -2126,7 +1560,28 @@
             this._facetParameters.bbSize = this._bbSize;
             this._facetParameters.subDiv = this._subDiv;
             this._facetParameters.ratio = this.partitioningBBoxRatio;
+            this._facetParameters.depthSort = this._facetDepthSort;
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
+                this.computeWorldMatrix(true);
+                this._worldMatrix.invertToRef(this._invertedMatrix);
+                Vector3.TransformCoordinatesToRef(this._facetDepthSortFrom, this._invertedMatrix, this._facetDepthSortOrigin);
+                this._facetParameters.distanceTo = this._facetDepthSortOrigin;
+            }
+            this._facetParameters.depthSortedFacets = this._depthSortedFacets;
             VertexData.ComputeNormals(positions, indices, normals, this._facetParameters);
+
+            if (this._facetDepthSort && this._facetDepthSortEnabled) {
+                this._depthSortedFacets.sort(this._facetDepthSortFunction);
+                var l = (this._depthSortedIndices.length / 3) | 0;
+                for (var f = 0; f < l; f++) {
+                    var sind = this._depthSortedFacets[f].ind;
+                    this._depthSortedIndices[f * 3] = indices![sind];
+                    this._depthSortedIndices[f * 3 + 1] = indices![sind + 1];
+                    this._depthSortedIndices[f * 3 + 2] = indices![sind + 2];
+                }
+                this.updateIndices(this._depthSortedIndices);
+            }
+
             return this;
         }
         /**
@@ -2198,8 +1653,9 @@
         /** 
          * Returns the facets (in an array) in the same partitioning block than the one the passed coordinates are located (expressed in the mesh local system).
          */
-        public getFacetsAtLocalCoordinates(x: number, y: number, z: number): number[] {
+        public getFacetsAtLocalCoordinates(x: number, y: number, z: number): Nullable<number[]> {
             var bInfo = this.getBoundingInfo();
+
             var ox = Math.floor((x - bInfo.minimum.x * this._partitioningBBoxRatio) * this._subDiv.X * this._partitioningBBoxRatio / this._bbSize.x);
             var oy = Math.floor((y - bInfo.minimum.y * this._partitioningBBoxRatio) * this._subDiv.Y * this._partitioningBBoxRatio / this._bbSize.y);
             var oz = Math.floor((z - bInfo.minimum.z * this._partitioningBBoxRatio) * this._subDiv.Z * this._partitioningBBoxRatio / this._bbSize.z);
@@ -2215,14 +1671,13 @@
          * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
          * If facing si false and checkFace is true, only the facet "turning their backs" to (x, y, z) are returned : negative dot (x, y, z) * facet position. 
          */
-        public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): number {
+        public getClosestFacetAtCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
             var world = this.getWorldMatrix();
             var invMat = Tmp.Matrix[5];
             world.invertToRef(invMat);
             var invVect = Tmp.Vector3[8];
-            var closest = null;
             Vector3.TransformCoordinatesFromFloatsToRef(x, y, z, invMat, invVect);  // transform (x,y,z) to coordinates in the mesh local space
-            closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, checkFace, facing);
+            var closest = this.getClosestFacetAtLocalCoordinates(invVect.x, invVect.y, invVect.z, projected, checkFace, facing);
             if (projected) {
                 // tranform the local computed projected vector to world coordinates
                 Vector3.TransformCoordinatesFromFloatsToRef(projected.x, projected.y, projected.z, world, projected);
@@ -2236,7 +1691,7 @@
          * If facing and checkFace are true, only the facet "facing" to (x, y, z) are returned : positive dot (x, y, z) * facet position.
          * If facing si false and checkFace is true, only the facet "turning their backs"  to (x, y, z) are returned : negative dot (x, y, z) * facet position.
          */
-        public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): number {
+        public getClosestFacetAtLocalCoordinates(x: number, y: number, z: number, projected?: Vector3, checkFace: boolean = false, facing: boolean = true): Nullable<number> {
             var closest = null;
             var tmpx = 0.0;
             var tmpy = 0.0;
@@ -2291,6 +1746,7 @@
             }
             return closest;
         }
+
         /**
          * Returns the object "parameter" set with all the expected parameters for facetData computation by ComputeNormals()  
          */
@@ -2304,14 +1760,25 @@
         public disableFacetData(): AbstractMesh {
             if (this._facetDataEnabled) {
                 this._facetDataEnabled = false;
-                this._facetPositions = null;
-                this._facetNormals = null;
-                this._facetPartitioning = null;
+                this._facetPositions = new Array<Vector3>();
+                this._facetNormals = new Array<Vector3>();
+                this._facetPartitioning = new Array<number[]>();
                 this._facetParameters = null;
+                this._depthSortedIndices = new Uint32Array(0);
             }
             return this;
         }
-
+        /**
+         * Updates the AbstractMesh indices array. Actually, used by the Mesh object.
+         * Returns the mesh.
+         */
+        public updateIndices(indices: IndicesArray): AbstractMesh {
+            return this;
+        }
+        /**
+         * The mesh Geometry. Actually used by the Mesh object.
+         * Returns a blank geometry object.
+         */
         /**
          * Creates new normals data for the mesh.
          * @param updatable.
@@ -2319,16 +1786,37 @@
         public createNormals(updatable: boolean) {
             var positions = this.getVerticesData(VertexBuffer.PositionKind);
             var indices = this.getIndices();
-            var normals: number[] | Float32Array;
+            var normals: FloatArray;
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                normals = this.getVerticesData(VertexBuffer.NormalKind);
+                normals = (<FloatArray>this.getVerticesData(VertexBuffer.NormalKind));
             } else {
                 normals = [];
             }
 
             VertexData.ComputeNormals(positions, indices, normals, { useRightHandedSystem: this.getScene().useRightHandedSystem });
             this.setVerticesData(VertexBuffer.NormalKind, normals, updatable);
+        }
+        /**
+         * Align the mesh with a normal.
+         * Returns the mesh.  
+         */
+        public alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {
+            if (!upDirection) {
+                upDirection = Axis.Y;
+            }
+
+            var axisX = Tmp.Vector3[0];
+            var axisZ = Tmp.Vector3[1];
+            Vector3.CrossToRef(upDirection, normal, axisZ);
+            Vector3.CrossToRef(normal, axisZ, axisX);
+
+            if (this.rotationQuaternion) {
+                Quaternion.RotationQuaternionFromAxisToRef(axisX, normal, axisZ, this.rotationQuaternion);
+            } else {
+                Vector3.RotationFromAxisToRef(axisX, normal, axisZ, this.rotation);
+            }
+            return this;
         }
 
         protected checkOcclusionQuery() {
@@ -2339,8 +1827,8 @@
                 return;
             }
 
-            if (this.isOcclusionQueryInProgress) {
-                
+            if (this.isOcclusionQueryInProgress && this._occlusionQuery) {
+
                 var isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
                 if (isOcclusionQueryAvailable) {
                     var occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);
@@ -2375,9 +1863,9 @@
                 this._occlusionQuery = engine.createQuery();
             }
 
-            engine.beginQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
+            engine.beginOcclusionQuery(this.occlusionQueryAlgorithmType, this._occlusionQuery);
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
-            engine.endQuery(this.occlusionQueryAlgorithmType);
+            engine.endOcclusionQuery(this.occlusionQueryAlgorithmType);
             this._isOcclusionQueryInProgress = true;
         }
 

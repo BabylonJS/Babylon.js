@@ -1,22 +1,20 @@
-#version 300 es
-
 precision highp float;
 precision highp int;
 
-#include<bones300Declaration>
-#include<instances300Declaration>
+#include<bonesDeclaration>
+#include<instancesDeclaration>
 
-in vec3 position;
-in vec3 normal;
+attribute vec3 position;
+attribute vec3 normal;
 
 #if defined(ALPHATEST) || defined(NEED_UV)
-out vec2 vUV;
+varying vec2 vUV;
 uniform mat4 diffuseMatrix;
 #ifdef UV1
-in vec2 uv;
+varying vec2 uv;
 #endif
 #ifdef UV2
-in vec2 uv2;
+varying vec2 uv2;
 #endif
 #endif
 
@@ -24,11 +22,11 @@ in vec2 uv2;
 uniform mat4 viewProjection;
 uniform mat4 view;
 
-out vec3 vNormalV;
-out vec4 vViewPos;
+varying vec3 vNormalV;
+varying vec4 vViewPos;
 
 #ifdef POSITION
-out vec3 vPosition;
+varying vec3 vPosition;
 #endif
 
 void main(void)

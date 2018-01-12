@@ -12,6 +12,7 @@ module BABYLON {
         
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public SPECULARTERM = false;
@@ -21,7 +22,6 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -84,8 +84,7 @@ module BABYLON {
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public maxSimultaneousLights: number; 
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
+        
         private _renderId: number;
 
         constructor(name: string, scene: Scene) {
@@ -100,7 +99,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -139,7 +138,7 @@ module BABYLON {
                                 if (!textures[i].isReady()) {
                                     return false;
                                 } else {
-                                    defines[textureDefines[i]] = true;
+                                    (<any>defines)[textureDefines[i]] = true;
                                 }
                             }
                         }
@@ -153,7 +152,7 @@ module BABYLON {
                                 if (!textures[i].isReady()) {
                                     return false;
                                 } else {
-                                    defines[textureDefines[i]] = true;
+                                    (<any>defines)[textureDefines[i]] = true;
                                 }
                             }
                         }
@@ -168,7 +167,7 @@ module BABYLON {
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
@@ -217,7 +216,7 @@ module BABYLON {
                     "normalSamplerX", "normalSamplerY", "normalSamplerZ"
                 ];
 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
@@ -240,7 +239,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -259,6 +258,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -298,7 +300,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);               
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);

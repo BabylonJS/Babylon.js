@@ -3,13 +3,31 @@
 module BABYLON.GUI {
     export class TextBlock extends Control {
         private _text = "";
-        private _textY: number;
         private _textWrapping = false;
         private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
 
         private _lines: any[];
-        private _totalHeight: number;
+        private _resizeToFit: boolean = false;
+        private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
+        /**
+        * An event triggered after the text is changed
+        * @type {BABYLON.Observable}
+        */
+        public onTextChangedObservable = new Observable<TextBlock>();
+
+        get resizeToFit(): boolean {
+            return this._resizeToFit;
+        }
+
+        set resizeToFit(value: boolean) {
+            this._resizeToFit = value;
+
+            if (this._resizeToFit) {
+                this._width.ignoreAdaptiveScaling = true;
+                this._height.ignoreAdaptiveScaling = true;
+            }
+        }
 
         public get textWrapping(): boolean {
             return this._textWrapping;
@@ -33,6 +51,8 @@ module BABYLON.GUI {
             }
             this._text = value;
             this._markAsDirty();
+
+            this.onTextChangedObservable.notifyObservers(this);
         }
 
         public get textHorizontalAlignment(): number {
@@ -61,6 +81,16 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        public set lineSpacing(value: string | number) {
+            if (this._lineSpacing.fromString(value)) {
+                this._markAsDirty();
+            }
+        }
+
+        public get lineSpacing(): string | number {
+            return this._lineSpacing.toString(this._host);
+        }
+
         constructor(public name?: string, text: string = "") {
             super(name);
 
@@ -86,6 +116,13 @@ module BABYLON.GUI {
                     break;
             }
 
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                context.shadowColor = this.shadowColor;
+                context.shadowBlur = this.shadowBlur;
+                context.shadowOffsetX = this.shadowOffsetX;
+                context.shadowOffsetY = this.shadowOffsetY;
+            }
+
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
@@ -105,46 +142,45 @@ module BABYLON.GUI {
             this._lines = [];
             var _lines = this.text.split("\n");
 
-            if (this._textWrapping) {
-                for(var _line of _lines) {
+            if (this._textWrapping && !this._resizeToFit) {
+                for (var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
             } else {
-                for(var _line of _lines) {
+                for (var _line of _lines) {
                     this._lines.push(this._parseLine(_line, context));
                 }
             }
         }
 
-        protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
-          return {text: line, width: context.measureText(line).width};
+        protected _parseLine(line: string = '', context: CanvasRenderingContext2D): object {
+            return { text: line, width: context.measureText(line).width };
         }
 
-        protected _parseLineWithTextWrapping(line: string='', context: CanvasRenderingContext2D): object {
-          var words = line.split(' ');
-          var width = this._currentMeasure.width;
-          var lineWidth = 0;
+        protected _parseLineWithTextWrapping(line: string = '', context: CanvasRenderingContext2D): object {
+            var words = line.split(' ');
+            var width = this._currentMeasure.width;
+            var lineWidth = 0;
 
-          for(var n = 0; n < words.length; n++) {
-              var testLine = n > 0 ? line + " " + words[n] : words[0];
-              var metrics = context.measureText(testLine);
-              var testWidth = metrics.width;
-              if (testWidth > width && n > 0) {
-                  this._lines.push({text: line, width: lineWidth});
-                  line = words[n];
-                  lineWidth = context.measureText(line).width;
-              }
-              else {
-                  lineWidth = testWidth;
-                  line = testLine;
-              }
-          }
+            for (var n = 0; n < words.length; n++) {
+                var testLine = n > 0 ? line + " " + words[n] : words[0];
+                var metrics = context.measureText(testLine);
+                var testWidth = metrics.width;
+                if (testWidth > width && n > 0) {
+                    this._lines.push({ text: line, width: lineWidth });
+                    line = words[n];
+                    lineWidth = context.measureText(line).width;
+                }
+                else {
+                    lineWidth = testWidth;
+                    line = testLine;
+                }
+            }
 
-          return {text: line, width: lineWidth};
+            return { text: line, width: lineWidth };
         }
 
         protected _renderLines(context: CanvasRenderingContext2D): void {
-            var width = this._currentMeasure.width;
             var height = this._currentMeasure.height;
 
             if (!this._fontOffset) {
@@ -165,10 +201,36 @@ module BABYLON.GUI {
 
             rootY += this._currentMeasure.top;
 
-            for (var line of this._lines) {
+            var maxLineWidth: number = 0;
+
+            for (let i = 0; i < this._lines.length; i++) {
+                const line = this._lines[i];
+
+                if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+
+                    if (this._lineSpacing.isPixel) {
+                        rootY += this._lineSpacing.getValue(this._host);
+                    } else {                        
+                        rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host,  this._cachedParentMeasure.height));
+                    }
+                }
+
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
+
+                if (line.width > maxLineWidth) maxLineWidth = line.width;
             }
+
+            if (this._resizeToFit) {
+                this.width = this.paddingLeftInPixels + this.paddingRightInPixels + maxLineWidth + 'px';
+                this.height = this.paddingTopInPixels + this.paddingBottomInPixels + this._fontOffset.height * this._lines.length + 'px';
+            }
+        }
+
+        dispose(): void {
+            super.dispose();
+
+            this.onTextChangedObservable.clear();
         }
     }
 }

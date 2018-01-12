@@ -26,7 +26,6 @@ serializers/src/**/*.js
 gui/src/**/*.js
 
 # Build results
-[Dd]ebug/
 [Rr]elease/
 x64/
 *_i.c
@@ -166,3 +165,5 @@ localDev/src/*
 /dist/preview release/babylon.custom.js
 /dist/preview release/babylon.custom.max.js
 /localDev/src/index.js
+package-lock.json
+dist/preview release/package/

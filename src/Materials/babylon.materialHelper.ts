@@ -1,7 +1,15 @@
 ﻿module BABYLON {
     export class MaterialHelper {
 
-        public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: MaterialDefines, key: string): void {
+        public static BindEyePosition(effect: Effect, scene: Scene): void {
+            if (scene._forcedViewPosition) {
+                effect.setVector3("vEyePosition", scene._forcedViewPosition);
+                return;
+            }
+            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);
+        }
+
+        public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
             defines._needUVs = true;
             defines[key] = true;
             if (texture.getTextureMatrix().isIdentity(true)) {
@@ -24,16 +32,16 @@
             }
         }
 
-        public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud, fogEnabled: boolean, defines: MaterialDefines): void {
+        public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud: boolean, fogEnabled: boolean, defines: any): void {
             if (defines._areMiscDirty) {
                 defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
                 defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
                 defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
-                defines["USERIGHTHANDEDSYSTEM"] = scene.useRightHandedSystem;
+                defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             }
         }
 
-        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: MaterialDefines, useInstances: boolean, forceAlphaTest = false): void {
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, forceAlphaTest = false): void {
             var changed = false;
 
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
@@ -46,24 +54,29 @@
                 changed = true;
             }
 
+            if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
+                defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
+                changed = true;
+            }
+
             if (defines["INSTANCES"] !== useInstances) {
                 defines["INSTANCES"] = useInstances;
                 changed = true;
             }
-            
+
             if (changed) {
                 defines.markAsUnprocessed();
             }
         }
 
-        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: MaterialDefines, useVertexColor: boolean, useBones: boolean, useMorphTargets = false): boolean {
+        public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true): boolean {
             if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
                 return false;
-            }               
+            }
 
             defines._normals = defines._needNormals;
             defines._uvs = defines._needUVs;
-            
+
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
             if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
@@ -79,25 +92,26 @@
             }
 
             if (useVertexColor) {
-                defines["VERTEXCOLOR"] = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
-                defines["VERTEXALPHA"] = mesh.hasVertexAlpha;
+                var hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(VertexBuffer.ColorKind);
+                defines["VERTEXCOLOR"] = hasVertexColors;
+                defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
             }
 
             if (useBones) {
-                if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
                     defines["BonesPerMesh"] = (mesh.skeleton.bones.length + 1);
                 } else {
                     defines["NUM_BONE_INFLUENCERS"] = 0;
                     defines["BonesPerMesh"] = 0;
-                }           
+                }
             }
 
             if (useMorphTargets) {
-                if ((<any>mesh).morphTargetManager) {
-                    var manager = (<Mesh>mesh).morphTargetManager;
+                var manager = (<Mesh>mesh).morphTargetManager;
+                if (manager) {
                     defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
-                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
+                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
                     defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
                     defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
                 } else {
@@ -111,7 +125,7 @@
             return true;
         }
 
-        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: MaterialDefines, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
+        public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: any, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
             if (!defines._areLightsDirty) {
                 return defines._needNormals;
             }
@@ -132,7 +146,7 @@
                     }
 
                     defines["LIGHT" + lightIndex] = true;
-                    
+
                     defines["SPOTLIGHT" + lightIndex] = false;
                     defines["HEMILIGHT" + lightIndex] = false;
                     defines["POINTLIGHT" + lightIndex] = false;
@@ -170,7 +184,7 @@
                         }
                     }
 
-                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
+                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
                         lightmapMode = true;
                         defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
@@ -194,7 +208,7 @@
                     defines["LIGHT" + index] = false;
                     defines["HEMILIGHT" + lightIndex] = false;
                     defines["POINTLIGHT" + lightIndex] = false;
-                    defines["DIRLIGHT" + lightIndex] = false;                    
+                    defines["DIRLIGHT" + lightIndex] = false;
                     defines["SPOTLIGHT" + lightIndex] = false;
                     defines["SHADOW" + lightIndex] = false;
                 }
@@ -206,9 +220,9 @@
                 needRebuild = true;
             }
 
-            defines["SHADOWFLOAT"] = shadowEnabled && 
-                                    ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
-                                         (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
+            defines["SHADOWFLOAT"] = shadowEnabled &&
+                ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
+                    (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
             defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
@@ -218,8 +232,9 @@
             return needNormals;
         }
 
-        public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: MaterialDefines, maxSimultaneousLights = 4): void {
-            var uniformsList: string[], uniformBuffersList: string[], samplersList: string[], defines: MaterialDefines;
+        public static PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | EffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
+            let uniformsList: string[];
+            let uniformBuffersList: Nullable<string[]> = null;
 
             if ((<EffectCreationOptions>uniformsListOrOptions).uniformsNames) {
                 var options = <EffectCreationOptions>uniformsListOrOptions;
@@ -230,6 +245,9 @@
                 maxSimultaneousLights = options.maxSimultaneousLights;
             } else {
                 uniformsList = <string[]>uniformsListOrOptions;
+                if (!samplersList) {
+                    samplersList = [];
+                }
             }
 
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
@@ -260,42 +278,43 @@
             }
         }
 
-        public static HandleFallbacksForShadows(defines: MaterialDefines, fallbacks: EffectFallbacks, maxSimultaneousLights = 4): void {
-            if (!defines["SHADOWS"]) {
-                return;
-            }
-
+        public static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights = 4, rank = 0): number {
+            let lightFallbackRank = 0;
             for (var lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
                 if (!defines["LIGHT" + lightIndex]) {
                     break;
                 }
 
                 if (lightIndex > 0) {
-                    fallbacks.addFallback(lightIndex, "LIGHT" + lightIndex);
+                    lightFallbackRank = rank + lightIndex;
+                    fallbacks.addFallback(lightFallbackRank, "LIGHT" + lightIndex);
                 }
 
-                if (defines["SHADOW" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOW" + lightIndex);
-                }
+                if (!defines["SHADOWS"]) {
+                    if (defines["SHADOW" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOW" + lightIndex);
+                    }
 
-                if (defines["SHADOWPCF" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOWPCF" + lightIndex);
-                }
+                    if (defines["SHADOWPCF" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
+                    }
 
-                if (defines["SHADOWESM" + lightIndex]) {
-                    fallbacks.addFallback(0, "SHADOWESM" + lightIndex);
+                    if (defines["SHADOWESM" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
+                    }
                 }
             }
+            return lightFallbackRank++;
         }
 
-        public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines): void {
+        public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
             var influencers = defines["NUM_MORPH_INFLUENCERS"];
 
-            if (influencers > 0) {
+            if (influencers > 0 && Engine.LastCreatedEngine) {
                 var maxAttributesCount = Engine.LastCreatedEngine.getCaps().maxVertexAttribs;
                 var manager = (<Mesh>mesh).morphTargetManager;
-                var normal = manager.supportsNormals && defines["NORMAL"];
-                var tangent = manager.supportsTangents && defines["TANGENT"];
+                var normal = manager && manager.supportsNormals && defines["NORMAL"];
+                var tangent = manager && manager.supportsTangents && defines["TANGENT"];
                 for (var index = 0; index < influencers; index++) {
                     attribs.push(VertexBuffer.PositionKind + index);
 
@@ -314,7 +333,7 @@
             }
         }
 
-        public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: MaterialDefines, fallbacks: EffectFallbacks): void {
+        public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void {
             if (defines["NUM_BONE_INFLUENCERS"] > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
 
@@ -327,7 +346,7 @@
             }
         }
 
-        public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
+        public static PrepareAttributesForInstances(attribs: string[], defines: any): void {
             if (defines["INSTANCES"]) {
                 attribs.push("world0");
                 attribs.push("world1");
@@ -350,30 +369,31 @@
             light.transferToEffect(effect, lightIndex + "");
         }
 
-        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: MaterialDefines, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
-            var lightIndex = 0;
-            for (var light of mesh._lightSources) {
-                let scaledIntensity = light.getScaledIntensity();
-                light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
+        public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
+            let len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
 
-                MaterialHelper.BindLightProperties(light, effect, lightIndex);
+            for (var i = 0; i < len; i++) {
+
+                let light = mesh._lightSources[i];
+                let iAsString = i.toString();
+
+                let scaledIntensity = light.getScaledIntensity();
+                light._uniformBuffer.bindToEffect(effect, "Light" + i);
+
+                MaterialHelper.BindLightProperties(light, effect, i);
 
                 light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, lightIndex + "");
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex + "");
+                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    this.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
+                    this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
-                lightIndex++;
-
-                if (lightIndex === maxSimultaneousLights)
-                    break;
             }
         }
 
@@ -384,27 +404,28 @@
             }
         }
 
-        public static BindBonesParameters(mesh: AbstractMesh, effect: Effect): void {
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+        public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect): void {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 var matrices = mesh.skeleton.getTransformMatrices(mesh);
 
-                if (matrices) {
+                if (matrices && effect) {
                     effect.setMatrices("mBones", matrices);
                 }
             }
         }
 
         public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
-            if (!abstractMesh || !(<Mesh>abstractMesh).morphTargetManager) {
+            let manager = (<Mesh>abstractMesh).morphTargetManager;
+            if (!abstractMesh || !manager) {
                 return;
             }
 
-            effect.setFloatArray("morphTargetInfluences", (<Mesh>abstractMesh).morphTargetManager.influences);
+            effect.setFloatArray("morphTargetInfluences", manager.influences);
         }
 
-        public static BindLogDepth(defines: MaterialDefines, effect: Effect, scene: Scene): void {
+        public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
             if (defines["LOGARITHMICDEPTH"]) {
-                effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(scene.activeCamera.maxZ + 1.0) / Math.LN2));
+                effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log((<Camera>scene.activeCamera).maxZ + 1.0) / Math.LN2));
             }
         }
 

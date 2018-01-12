@@ -26,7 +26,7 @@
          * Gets the minZ used for shadow according to both the scene and the light.
          * @param activeCamera 
          */
-         getDepthMinZ(activeCamera: Camera): number;
+        getDepthMinZ(activeCamera: Camera): number;
 
         /**
          * Gets the minZ used for shadow according to both the scene and the light.
@@ -137,8 +137,8 @@
          */
         public getRotation(): Vector3 {
             this.direction.normalize();
-            var xaxis = BABYLON.Vector3.Cross(this.direction, BABYLON.Axis.Y);
-            var yaxis = BABYLON.Vector3.Cross(xaxis, this.direction);
+            var xaxis = Vector3.Cross(this.direction, Axis.Y);
+            var yaxis = Vector3.Cross(xaxis, this.direction);
             return Vector3.RotationFromAxis(xaxis, yaxis, this.direction);
         }
 
@@ -189,7 +189,7 @@
          * @param activeCamera 
          */
         public getDepthMaxZ(activeCamera: Camera): number {
-             return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+            return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
         }
 
         /**

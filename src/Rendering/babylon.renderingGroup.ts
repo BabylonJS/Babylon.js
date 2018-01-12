@@ -4,12 +4,12 @@
         private _opaqueSubMeshes = new SmartArray<SubMesh>(256);
         private _transparentSubMeshes = new SmartArray<SubMesh>(256);
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
+        private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
         private _particleSystems = new SmartArray<IParticleSystem>(256);
         private _spriteManagers = new SmartArray<SpriteManager>(256);        
-        private _activeVertices: number;
 
-        private _opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        private _alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number;
+        private _opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        private _alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
         private _transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
         
         private _renderOpaque: (subMeshes: SmartArray<SubMesh>) => void;
@@ -24,7 +24,7 @@
          * Set the opaque sort comparison function.
          * If null the sub meshes will be render in the order they were created 
          */
-        public set opaqueSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
+        public set opaqueSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             this._opaqueSortCompareFn = value;
             if (value) {
                 this._renderOpaque = this.renderOpaqueSorted;
@@ -38,7 +38,7 @@
          * Set the alpha test sort comparison function.
          * If null the sub meshes will be render in the order they were created 
          */
-        public set alphaTestSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
+        public set alphaTestSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             this._alphaTestSortCompareFn = value;
             if (value) {
                 this._renderAlphaTest = this.renderAlphaTestSorted;
@@ -52,7 +52,7 @@
          * Set the transparent sort comparison function.
          * If null the sub meshes will be render in the order they were created 
          */
-        public set transparentSortCompareFn(value: (a: SubMesh, b: SubMesh) => number) {
+        public set transparentSortCompareFn(value: Nullable<(a: SubMesh, b: SubMesh) => number>) {
             if (value) {
                 this._transparentSortCompareFn = value;
             }
@@ -70,9 +70,9 @@
          * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
          */
         constructor(public index: number, scene: Scene,
-            opaqueSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
-            alphaTestSortCompareFn: (a: SubMesh, b: SubMesh) => number = null,
-            transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number = null) {
+            opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
+            alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null,
+            transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number> = null) {
             this._scene = scene;
 
             this.opaqueSortCompareFn = opaqueSortCompareFn;
@@ -85,13 +85,22 @@
          * @param customRenderFunction Used to override the default render behaviour of the group.
          * @returns true if rendered some submeshes.
          */
-        public render(customRenderFunction: (opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>) => void, renderSprites: boolean, renderParticles: boolean, activeMeshes: AbstractMesh[]): void {
+        public render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void {
             if (customRenderFunction) {
-                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes);
+                customRenderFunction(this._opaqueSubMeshes, this._alphaTestSubMeshes, this._transparentSubMeshes, this._depthOnlySubMeshes);
                 return;
             }
 
             var engine = this._scene.getEngine();
+
+            // Depth only
+            if (this._depthOnlySubMeshes.length !== 0) {
+                engine.setAlphaTesting(true);
+                engine.setColorWrite(false);
+                this._renderAlphaTest(this._depthOnlySubMeshes);
+                engine.setAlphaTesting(false);
+                engine.setColorWrite(true);
+            }            
             
             // Opaque
             if (this._opaqueSubMeshes.length !== 0) {
@@ -107,6 +116,7 @@
 
             var stencilState = engine.getStencilBuffer();
             engine.setStencilBuffer(false);
+
             // Sprites
             if (renderSprites) {
                 this._renderSprites();
@@ -144,7 +154,7 @@
          * @param subMeshes The submeshes to render
          */
         private renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
-            return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera.globalPosition, false);
+            return RenderingGroup.renderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
         }
 
         /**
@@ -152,7 +162,7 @@
          * @param subMeshes The submeshes to render
          */
         private renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
-            return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera.globalPosition, false);
+            return RenderingGroup.renderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
         }
 
         /**
@@ -160,7 +170,7 @@
          * @param subMeshes The submeshes to render
          */
         private renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
-            return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera.globalPosition, true);
+            return RenderingGroup.renderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
         }
 
         /**
@@ -170,9 +180,10 @@
          * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
          * @param transparent Specifies to activate blending if true
          */
-        private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: (a: SubMesh, b: SubMesh) => number, cameraPosition: Vector3, transparent: boolean): void {
+        private static renderSorted(subMeshes: SmartArray<SubMesh>, sortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>, camera: Nullable<Camera>, transparent: boolean): void {
             let subIndex = 0;
-            let subMesh;
+            let subMesh: SubMesh;
+            let cameraPosition = camera ? camera.globalPosition : Vector3.Zero();
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
@@ -180,10 +191,28 @@
             }
 
             let sortedArray = subMeshes.data.slice(0, subMeshes.length);
-            sortedArray.sort(sortCompareFn);
+
+            if (sortCompareFn) {
+                sortedArray.sort(sortCompareFn);
+            }
 
             for (subIndex = 0; subIndex < sortedArray.length; subIndex++) {
                 subMesh = sortedArray[subIndex];
+
+                if (transparent) {
+                    let material = subMesh.getMaterial();
+
+                    if (material && material.needDepthPrePass) {
+                        let engine = material.getScene().getEngine();
+                        engine.setColorWrite(false);
+                        engine.setAlphaTesting(true);
+                        engine.setAlphaMode(Engine.ALPHA_DISABLE);
+                        subMesh.render(false);
+                        engine.setAlphaTesting(false);
+                        engine.setColorWrite(true);
+                    }
+                }
+
                 subMesh.render(transparent);
             }
         }
@@ -267,6 +296,7 @@
             this._opaqueSubMeshes.reset();
             this._transparentSubMeshes.reset();
             this._alphaTestSubMeshes.reset();
+            this._depthOnlySubMeshes.reset();
             this._particleSystems.reset();
             this._spriteManagers.reset();            
             this._edgesRenderers.reset();
@@ -276,6 +306,7 @@
             this._opaqueSubMeshes.dispose();
             this._transparentSubMeshes.dispose();
             this._alphaTestSubMeshes.dispose();
+            this._depthOnlySubMeshes.dispose();
             this._particleSystems.dispose();
             this._spriteManagers.dispose();                      
             this._edgesRenderers.dispose();
@@ -284,20 +315,39 @@
         /**
          * Inserts the submesh in its correct queue depending on its material.
          * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
          */
-        public dispatch(subMesh: SubMesh): void {
-            var material = subMesh.getMaterial();
-            var mesh = subMesh.getMesh();
+        public dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void {
+            // Get mesh and materials if not provided
+            if (mesh === undefined) {
+                mesh = subMesh.getMesh();
+            }
+            if (material === undefined) {
+                material = subMesh.getMaterial();
+            }
 
-            if (material.needAlphaBlending() || mesh.visibility < 1.0 || mesh.hasVertexAlpha) { // Transparent
+            if (material === null || material === undefined) {
+                return;
+            }
+
+            if (material.needAlphaBlendingForMesh(mesh)) { // Transparent
                 this._transparentSubMeshes.push(subMesh);
             } else if (material.needAlphaTesting()) { // Alpha test
+                if (material.needDepthPrePass) {
+                    this._depthOnlySubMeshes.push(subMesh);
+                }
+                
                 this._alphaTestSubMeshes.push(subMesh);
             } else {
+                if (material.needDepthPrePass) {
+                    this._depthOnlySubMeshes.push(subMesh);
+                }
+                
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 
-            if (mesh._edgesRenderer) {
+            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }
@@ -310,18 +360,18 @@
             this._particleSystems.push(particleSystem);
         }
 
-        private _renderParticles(activeMeshes: AbstractMesh[]): void {
+        private _renderParticles(activeMeshes: Nullable<AbstractMesh[]>): void {
             if (this._particleSystems.length === 0) {
                 return;
             }
 
             // Particles
             var activeCamera = this._scene.activeCamera;
-            this._scene._particlesDuration.beginMonitoring();
+            this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
             for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
                 var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
 
-                if ((activeCamera.layerMask & particleSystem.layerMask) === 0) {
+                if ((activeCamera && activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
                 }
 
@@ -330,7 +380,8 @@
                     this._scene._activeParticles.addCount(particleSystem.render(), false);
                 }
             }
-            this._scene._particlesDuration.endMonitoring(false);
+            this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
+            
         }
 
         private _renderSprites(): void {
@@ -340,15 +391,15 @@
 
             // Sprites       
             var activeCamera = this._scene.activeCamera;
-            this._scene._spritesDuration.beginMonitoring();
+            this._scene.onBeforeSpritesRenderingObservable.notifyObservers(this._scene);
             for (var id = 0; id < this._spriteManagers.length; id++) {
                 var spriteManager = this._spriteManagers.data[id];
 
-                if (((activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
+                if (((activeCamera && activeCamera.layerMask & spriteManager.layerMask) !== 0)) {
                     spriteManager.render();
                 }
             }
-            this._scene._spritesDuration.endMonitoring(false);
+            this._scene.onAfterSpritesRenderingObservable.notifyObservers(this._scene);
         }
     }
 } 

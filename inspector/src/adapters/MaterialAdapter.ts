@@ -23,20 +23,7 @@ module INSPECTOR {
         
         /** Returns the list of properties to be displayed for this adapter */
         public getProperties() : Array<PropertyLine> {
-            let propertiesLines : Array<PropertyLine> = [];
-            let propToDisplay = [];
-            // The if is there to work with the min version of babylon
-            if (this._obj instanceof BABYLON.StandardMaterial) {
-                propToDisplay =  PROPERTIES['StandardMaterial'].properties;
-            } else if (this._obj instanceof BABYLON.PBRMaterial) {
-                propToDisplay =  PROPERTIES['PBRMaterial'].properties;
-            }
-
-            for (let dirty of propToDisplay) {
-                let infos = new Property(dirty, this._obj);
-                propertiesLines.push(new PropertyLine(infos));
-            }
-            return propertiesLines; 
+            return Helpers.GetAllLinesProperties(this._obj);
         }
         
         /** No tools for a material adapter */

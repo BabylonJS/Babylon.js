@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var FireProceduralTexture = (function (_super) {
+    var FireProceduralTexture = /** @class */ (function (_super) {
         __extends(FireProceduralTexture, _super);
         function FireProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "fireProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -35,8 +35,9 @@ var BABYLON;
             this.setFloat("alphaThreshold", this._alphaThreshold);
         };
         FireProceduralTexture.prototype.render = function (useCameraPostProcess) {
-            if (this._autoGenerateTime) {
-                this._time += this.getScene().getAnimationRatio() * 0.03;
+            var scene = this.getScene();
+            if (this._autoGenerateTime && scene) {
+                this._time += scene.getAnimationRatio() * 0.03;
                 this.updateShaderUniforms();
             }
             _super.prototype.render.call(this, useCameraPostProcess);

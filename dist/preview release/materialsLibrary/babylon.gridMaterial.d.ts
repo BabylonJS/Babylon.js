@@ -18,6 +18,10 @@ declare module BABYLON {
          */
         gridRatio: number;
         /**
+         * Allows setting an offset for the grid lines.
+         */
+        gridOffset: Vector3;
+        /**
          * The frequency of thicker lines.
          */
         majorUnitFrequency: number;
@@ -45,6 +49,7 @@ declare module BABYLON {
          * Returns wehter or not the grid requires alpha blending.
          */
         needAlphaBlending(): boolean;
+        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         dispose(forceDisposeEffect?: boolean): void;

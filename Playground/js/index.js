@@ -23,6 +23,22 @@
         });
     };
 
+    var editorOptions = {
+        value: "",
+        language: "javascript",
+        lineNumbers: true,
+        tabSize: "auto",
+        insertSpaces: "auto",
+        roundedSelection: true,
+        automaticLayout: true,
+        scrollBeyondLastLine: false,
+        readOnly: false,
+        theme: "vs",
+        contextmenu: false,
+        folding: true,
+        showFoldingControls: "always",
+        renderIndentGuides: true
+    };
 
     var fontSize = 14;
 
@@ -51,6 +67,7 @@
 
             setToMultipleID("currentScript", "innerHTML", "Custom");
             setToMultipleID("safemodeToggle", "addClass", "checked");
+            setToMultipleID("minimapToggle", "addClass", "checked");
 
             setToMultipleID('safemodeToggle', 'innerHTML', 'Safe mode <i class="fa fa-check-square" aria-hidden="true"></i>');
         }
@@ -59,7 +76,7 @@
             markDirty();
         });
 
-        var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var currentSnippetToken;
         var currentSnippetTitle = null;
         var currentSnippetDescription = null;
@@ -70,7 +87,7 @@
         var zipCode;
         BABYLON.Engine.ShadersRepository = "/src/Shaders/";
 
-        if (location.href.indexOf("Stable") !== -1) {
+        if (location.href.indexOf("indexstable") !== -1) {
             setToMultipleID("currentVersion", "innerHTML", "Version: Stable");
         } else {
             setToMultipleID("currentVersion", "innerHTML", "Version: Latest");
@@ -153,8 +170,10 @@
                                 index = parseInt(query);
                                 if (!isNaN(index)) {
                                     loadScriptFromIndex(index);
-                                } else {
+                                } else if (query.indexOf("=") === -1) {
                                     loadScript("scripts/" + query + ".js", query);
+                                } else {
+                                    loadScript("scripts/basic scene.js", "Basic scene");
                                 }
                             } else {
                                 loadScript("scripts/basic scene.js", "Basic scene");
@@ -183,6 +202,9 @@
         }
 
         var createNewScript = function () {
+            // check if checked is on
+            let iCanClear = checkSafeMode("Are you sure you want to create a new playground?");
+            if (!iCanClear) return;
             location.hash = "";
             currentSnippetToken = null;
             currentSnippetTitle = null;
@@ -196,11 +218,29 @@
         }
 
         var clear = function () {
+            // check if checked is on
+            let iCanClear = checkSafeMode("Are you sure you want to clear the playground?");
+            if (!iCanClear) return;
             location.hash = "";
             currentSnippetToken = null;
             jsEditor.setValue('');
             jsEditor.setPosition({ lineNumber: 0, column: 0 });
             jsEditor.focus();
+        }
+
+        var checkSafeMode = function (message) {
+            var safeToggle = document.getElementById("safemodeToggle1600");
+            if (safeToggle.classList.contains('checked')) {
+                let confirm = window.confirm(message);
+                if (!confirm) {
+                    return false;
+                } else {
+                    document.getElementById("safemodeToggle1600").classList.toggle('checked');
+                    return true;
+                }
+            } else {
+                return true;
+            }
         }
 
         var showError = function (errorMessage, errorEvent) {
@@ -286,15 +326,17 @@
                 var showInspector = false;
                 var showDebugLayer = false;
                 var initialTabIndex = 0;
+                showBJSPGMenu();
+                jsEditor.updateOptions({ readOnly: false });
 
-                if(document.getElementsByClassName('insp-wrapper').length > 0){                  
-                    for(var i = 0; i < engine.scenes.length; i++){
-                        if(engine.scenes[i]._debugLayer){
+                if (document.getElementsByClassName('insp-wrapper').length > 0) {
+                    for (var i = 0; i < engine.scenes.length; i++) {
+                        if (engine.scenes[i]._debugLayer) {
                             //TODO: once inspector is updated on netlify, use getActiveTabIndex instead of the following loop
                             //initialTabIndex = engine.scenes[i]._debugLayer._inspector.getActiveTabIndex();
                             var tabs = engine.scenes[i]._debugLayer._inspector._tabbar._tabs;
-                            for(var j = 0; j < tabs.length; j++){
-                                if(tabs[j].isActive()){
+                            for (var j = 0; j < tabs.length; j++) {
+                                if (tabs[j].isActive()) {
                                     initialTabIndex = j;
                                     break;
                                 }
@@ -303,7 +345,7 @@
                         }
                     }
                     showInspector = true;
-                }else if(document.getElementById('DebugLayer')){
+                } else if (document.getElementById('DebugLayer')) {
                     showDebugLayer = true;
                 }
 
@@ -313,10 +355,66 @@
                 }
 
                 var canvas = document.getElementById("renderCanvas");
-                engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
                 document.getElementById("errorZone").style.display = 'none';
                 document.getElementById("errorZone").innerHTML = "";
                 document.getElementById("statusBar").innerHTML = "Loading assets...Please wait";
+                var checkCamera = true;
+                var wrappedEval = false;
+                var createEngineFunction = "createDefaultEngine";
+                var createSceneFunction;
+
+                var code = jsEditor.getValue();
+
+                var createDefaultEngine = function () {
+                    return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+                }
+
+                var scene;
+
+                if (code.indexOf("createEngine") !== -1) {
+                    createEngineFunction = "createEngine";
+                }
+
+                if (code.indexOf("delayCreateScene") !== -1) { // createScene
+                    createSceneFunction = "delayCreateScene";
+                    checkCamera = false;
+                } else if (code.indexOf("createScene") !== -1) { // createScene
+                    createSceneFunction = "createScene";
+                } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
+                    createSceneFunction = "CreateScene";
+                } else if (code.indexOf("createscene") !== -1) { // createscene
+                    createSceneFunction = "createscene";
+                }
+
+                if (!createSceneFunction) {
+                    // just pasted code.
+                    engine = createDefaultEngine();
+                    scene = new BABYLON.Scene(engine);
+                    eval("runScript = function(scene, canvas) {" + code + "}");
+                    runScript(scene, canvas);
+
+                    zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+                } else {
+                    //execute the code
+                    eval(code);
+                    //create engine
+                    eval("engine = " + createEngineFunction + "()");
+                    if (!engine) {
+                        showError("createEngine function must return an engine.", null);
+                        return;
+                    }
+
+                    //create scene
+                    eval("scene = " + createSceneFunction + "()");
+
+                    if (!scene) {
+                        showError(createSceneFunction + " function must return a scene.", null);
+                        return;
+                    }
+
+                    // update the scene code for the zip file
+                    zipCode = code + "\r\n\r\nvar scene = " + createSceneFunction + "()";
+                }
 
                 engine.runRenderLoop(function () {
                     if (engine.scenes.length === 0) {
@@ -337,49 +435,12 @@
                     fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
                 });
 
-                var code = jsEditor.getValue();
-                var scene;
-                if (code.indexOf("createScene") !== -1) { // createScene
-                    eval(code);
-                    scene = createScene();
-                    if (!scene) {
-                        showError("createScene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = createScene();";
-                } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
-                    eval(code);
-                    scene = CreateScene();
-                    if (!scene) {
-                        showError("CreateScene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = CreateScene();";
-                } else if (code.indexOf("createscene") !== -1) { // createscene
-                    eval(code);
-                    scene = createscene();
-                    if (!scene) {
-                        showError("createscene function must return a scene.", null);
-                        return;
-                    }
-
-                    zipCode = code + "\r\n\r\nvar scene = createscene();";
-                } else { // Direct code
-                    scene = new BABYLON.Scene(engine);
-                    eval("runScript = function(scene, canvas) {" + code + "}");
-                    runScript(scene, canvas);
-
-                    zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
-                }
-
                 if (engine.scenes.length === 0) {
                     showError("You must at least create a scene.", null);
                     return;
                 }
 
-                if (engine.scenes[0].activeCamera == null) {
+                if (checkCamera && engine.scenes[0].activeCamera == null) {
                     showError("You must at least create a camera.", null);
                     return;
                 }
@@ -388,13 +449,13 @@
                     document.getElementById("statusBar").innerHTML = "";
                 });
 
-                if(scene){
-                    if(showInspector){
-                        scene.debugLayer.show({initialTab:initialTabIndex});
-                        scene.executeWhenReady(function(){
+                if (scene) {
+                    if (showInspector) {
+                        scene.debugLayer.show({ initialTab: initialTabIndex });
+                        scene.executeWhenReady(function () {
                             scene.debugLayer._inspector.refresh();
                         })
-                    }else if(showDebugLayer){
+                    } else if (showDebugLayer) {
                         scene.debugLayer.show();
                     }
                 }
@@ -588,13 +649,13 @@
         // Fonts
         setFontSize = function (size) {
             fontSize = size;
-            document.querySelector(".view-lines").style.fontSize = size + "px";
+            jsEditor.updateOptions({ fontSize: size });
             setToMultipleID("currentFontSize", "innerHTML", "Font: " + size);
         };
 
         // Fullscreen
         document.getElementById("renderCanvas").addEventListener("webkitfullscreenchange", function () {
-            if(document.webkitIsFullScreen) goFullPage();
+            if (document.webkitIsFullScreen) goFullPage();
             else exitFullPage();
         }, false);
 
@@ -617,11 +678,11 @@
         var editorGoFullscreen = function () {
             var editorDiv = document.getElementById("jsEditor");
             if (editorDiv.requestFullscreen) {
-            editorDiv.requestFullscreen();
+                editorDiv.requestFullscreen();
             } else if (editorDiv.mozRequestFullScreen) {
-            editorDiv.mozRequestFullScreen();
+                editorDiv.mozRequestFullScreen();
             } else if (editorDiv.webkitRequestFullscreen) {
-            editorDiv.webkitRequestFullscreen();
+                editorDiv.webkitRequestFullscreen();
             }
 
         }
@@ -662,19 +723,8 @@
 
             var oldCode = jsEditor.getValue();
             jsEditor.dispose();
-            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                value: "",
-                language: "javascript",
-                lineNumbers: true,
-                tabSize: "auto",
-                insertSpaces: "auto",
-                roundedSelection: true,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                readOnly: false,
-                theme: vsTheme,
-                contextmenu: false
-            });
+            editorOptions.theme = vsTheme;
+            jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
             jsEditor.setValue(oldCode);
             setFontSize(fontSize);
 
@@ -719,6 +769,18 @@
 
         var formatCode = function () {
             jsEditor.getAction('editor.action.format').run();
+        }
+
+        var toggleMinimap = function () {
+            var minimapToggle = document.getElementById("minimapToggle1600");
+            if (minimapToggle.classList.contains('checked')) {
+                jsEditor.updateOptions({ minimap: { enabled: false } });
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-square-o" aria-hidden="true"></i>');
+            } else {
+                jsEditor.updateOptions({ minimap: { enabled: true } });
+                setToMultipleID("minimapToggle", "innerHTML", 'Minimap <i class="fa fa-check-square" aria-hidden="true"></i>');
+            }
+            minimapToggle.classList.toggle('checked');
         }
 
 
@@ -930,6 +992,8 @@
         setToMultipleID("editorFullscreenButton", "click", editorGoFullscreen);
         // Format
         setToMultipleID("formatButton", "click", formatCode);
+        // Format
+        setToMultipleID("minimapToggle", "click", toggleMinimap);
         // Debug
         setToMultipleID("debugButton", "click", toggleDebug);
         // Metadata
@@ -954,20 +1018,7 @@
                 require(['vs/editor/editor.main'], function () {
                     monaco.languages.typescript.javascriptDefaults.addExtraLib(xhr.responseText, 'babylon.d.ts');
 
-                    jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
-                        value: "",
-                        language: "javascript",
-                        lineNumbers: true,
-                        tabSize: "auto",
-                        insertSpaces: "auto",
-                        roundedSelection: true,
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                        readOnly: false,
-                        theme: "vs",
-                        contextmenu: false,
-                        folding: true
-                    });
+                    jsEditor = monaco.editor.create(document.getElementById('jsEditor'), editorOptions);
 
                     run();
                 });

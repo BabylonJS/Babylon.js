@@ -1,8 +1,10 @@
 ﻿module BABYLON {
-    export class Skeleton {
+    export class Skeleton implements IAnimatable {
         public bones = new Array<Bone>();
         public dimensionsAtRest: Vector3;
         public needInitialSkinMatrix = false;
+
+        public animations: Array<Animation>;
 
         private _scene: Scene;
         private _isDirty = true;
@@ -12,7 +14,7 @@
         private _identity = Matrix.Identity();
         private _synchronizedWithMesh: AbstractMesh;
 
-        private _ranges: { [name: string]: AnimationRange; } = {};
+        private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
         private _lastAbsoluteTransformsUpdateId = -1;
 
@@ -106,18 +108,18 @@
                     this.bones[i].animations[0].deleteRange(name, deleteFrames);
                 }
             }
-            this._ranges[name] = undefined; // said much faster than 'delete this._range[name]' 
+            this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
         }
 
-        public getAnimationRange(name: string): AnimationRange {
+        public getAnimationRange(name: string): Nullable<AnimationRange> {
             return this._ranges[name];
         }
 
         /**
          *  Returns as an Array, all AnimationRanges defined on this skeleton
          */
-        public getAnimationRanges(): AnimationRange[] {
-            var animationRanges: AnimationRange[] = [];
+        public getAnimationRanges(): Nullable<AnimationRange>[] {
+            var animationRanges: Nullable<AnimationRange>[] = [];
             var name: string;
             var i: number = 0;
             for (name in this._ranges) {
@@ -138,7 +140,7 @@
             var frameOffset = this._getHighestAnimationFrame() + 1;
 
             // make a dictionary of source skeleton's bones, so exact same order or doublely nested loop is not required
-            var boneDict = {};
+            var boneDict: {[key: string]: Bone} = {};
             var sourceBones = source.bones;
             var nBones: number;
             var i: number;
@@ -165,7 +167,9 @@
             }
             // do not call createAnimationRange(), since it also is done to bones, which was already done
             var range = source.getAnimationRange(name);
-            this._ranges[name] = new AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
+            if (range) {
+                this._ranges[name] = new AnimationRange(name, range.from + frameOffset, range.to + frameOffset);
+            }
             return ret;
         }
 
@@ -188,7 +192,7 @@
             return ret;
         }
 
-        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable> {
             var range = this.getAnimationRange(name);
 
             if (!range) {
@@ -214,7 +218,7 @@
             }
         }
 
-        public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Matrix): void {
+        public _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void {
 
             this.onBeforeComputeObservable.notifyObservers(this);
 
@@ -233,7 +237,7 @@
                 }
 
                 if (bone._index !== -1) {
-                    var mappedIndex = bone._index === undefined ? index : bone._index;
+                    var mappedIndex = bone._index === null ? index : bone._index;
                     bone.getInvertedAbsoluteTransform().multiplyToArray(bone.getWorldMatrix(), targetMatrix, mappedIndex * 16);
                 }
             }
@@ -307,8 +311,9 @@
                 var source = this.bones[index];
                 var parentBone = null;
 
-                if (source.getParent()) {
-                    var parentIndex = this.bones.indexOf(source.getParent());
+                let parent = source.getParent();
+                if (parent) {
+                    var parentIndex = this.bones.indexOf(parent);
                     parentBone = result.bones[parentIndex];
                 }
 
@@ -319,7 +324,11 @@
             if (this._ranges) {
                 result._ranges = {};
                 for (var rangeName in this._ranges) {
-                    result._ranges[rangeName] = this._ranges[rangeName].clone();
+                    let range = this._ranges[rangeName];
+
+                    if (range) {
+                        result._ranges[rangeName] = range.clone();
+                    }
                 }
             }
 
@@ -360,9 +369,10 @@
 
             for (var index = 0; index < this.bones.length; index++) {
                 var bone = this.bones[index];
+                let parent = bone.getParent();
 
                 var serializedBone: any = {
-                    parentBoneIndex: bone.getParent() ? this.bones.indexOf(bone.getParent()) : -1,
+                    parentBoneIndex: parent ? this.bones.indexOf(parent) : -1,
                     name: bone.name,
                     matrix: bone.getBaseMatrix().toArray(),
                     rest: bone.getRestPose().toArray()
@@ -380,10 +390,16 @@
 
                 serializationObject.ranges = [];
                 for (var name in this._ranges) {
+                    let source = this._ranges[name];
+
+                    if (!source) {
+                        continue;
+                    }
+
                     var range: any = {};
                     range.name = name;
-                    range.from = this._ranges[name].from;
-                    range.to = this._ranges[name].to;
+                    range.from = source.from;
+                    range.to = source.to;
                     serializationObject.ranges.push(range);
                 }
             }
@@ -406,7 +422,7 @@
                 if (parsedBone.parentBoneIndex > -1) {
                     parentBone = skeleton.bones[parsedBone.parentBoneIndex];
                 }
-                var rest: Matrix = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
+                var rest: Nullable<Matrix> = parsedBone.rest ? Matrix.FromArray(parsedBone.rest) : null;
                 var bone = new Bone(parsedBone.name, skeleton, parentBone, Matrix.FromArray(parsedBone.matrix), rest);
 
                 if (parsedBone.length) {
@@ -439,16 +455,14 @@
             
         }
 
-        public getPoseMatrix(): Matrix {
-            
-            var poseMatrix: Matrix;
+        public getPoseMatrix(): Nullable<Matrix> {        
+            var poseMatrix: Nullable<Matrix> = null;
             
             if(this._meshesWithPoseMatrix.length > 0){
                 poseMatrix = this._meshesWithPoseMatrix[0].getPoseMatrix();
             }
 
             return poseMatrix;
-
         }
 
         public sortBones(): void {

@@ -19,17 +19,16 @@ module BABYLON {
         private _position: Vector3 = Vector3.Zero();
         private _localDirection: Vector3 = new Vector3(1, 0, 0);
         private _volume: number = 1;
-        private _isLoaded: boolean = false;
         private _isReadyToPlay: boolean = false;
         public isPlaying: boolean = false;
         public isPaused: boolean = false;
         private _isDirectional: boolean = false;
-        private _readyToPlayCallback: () => any;
-        private _audioBuffer: AudioBuffer;
-        private _soundSource: AudioBufferSourceNode;
+        private _readyToPlayCallback: Nullable<() => any>;
+        private _audioBuffer: Nullable<AudioBuffer>;
+        private _soundSource: Nullable<AudioBufferSourceNode>;
         private _streamingSource: MediaElementAudioSourceNode
-        private _soundPanner: PannerNode;
-        private _soundGain: GainNode;
+        private _soundPanner: Nullable<PannerNode>;
+        private _soundGain: Nullable<GainNode>;
         private _inputAudioNode: AudioNode;
         private _ouputAudioNode: AudioNode;
         // Used if you'd like to create a directional sound.
@@ -38,9 +37,9 @@ module BABYLON {
         private _coneOuterAngle: number = 360;
         private _coneOuterGain: number = 0;
         private _scene: Scene;
-        private _connectedMesh: AbstractMesh;
+        private _connectedMesh: Nullable<AbstractMesh>;
         private _customAttenuationFunction: (currentVolume: number, currentDistance: number, maxDistance: number, refDistance: number, rolloffFactor: number) => number;
-        private _registerFunc: (connectedMesh: AbstractMesh) => any;
+        private _registerFunc: Nullable<(connectedMesh: TransformNode) => void>;
         private _isOutputConnected = false;
         private _htmlAudioElement: HTMLAudioElement;
         private _urlType: string = "Unknown";
@@ -52,7 +51,7 @@ module BABYLON {
         * @param readyToPlayCallback Provide a callback function if you'd like to load your code once the sound is ready to be played
         * @param options Objects to provide with the current available options: autoplay, loop, volume, spatialSound, maxDistance, rolloffFactor, refDistance, distanceModel, panningModel, streaming
         */
-        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback?: () => void, options?) {
+        constructor(name: string, urlOrArrayBuffer: any, scene: Scene, readyToPlayCallback: Nullable<() => void> = null, options?: any) {
             this.name = name;
             this._scene = scene;
             this._readyToPlayCallback = readyToPlayCallback;
@@ -82,7 +81,7 @@ module BABYLON {
                 this._streaming = options.streaming || false;
             }
 
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
                 this._soundGain = Engine.audioEngine.audioContext.createGain();
                 this._soundGain.gain.value = this._volume;
                 this._inputAudioNode = this._soundGain;
@@ -98,9 +97,9 @@ module BABYLON {
                     if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
                     if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
 
-                    var urls:string[] = [];
+                    var urls: string[] = [];
                     var codecSupportedFound = false;
- 
+
                     switch (this._urlType) {
                         case "ArrayBuffer":
                             if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
@@ -130,14 +129,14 @@ module BABYLON {
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data); }, null, this._scene.database, true);
+                                        this._scene._loadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, true, true);
                                     }
                                     // Streaming sound using HTML5 Audio tag
                                     else {
                                         this._htmlAudioElement = new Audio(url);
                                         this._htmlAudioElement.controls = false;
                                         this._htmlAudioElement.loop = this.loop;
-                                        this._htmlAudioElement.crossOrigin = "anonymous";
+                                        Tools.SetCorsBehavior(url, this._htmlAudioElement);
                                         this._htmlAudioElement.preload = "auto";
                                         this._htmlAudioElement.addEventListener("canplaythrough", () => {
                                             this._isReadyToPlay = true;
@@ -168,7 +167,9 @@ module BABYLON {
                             // Simulating a ready to play event to avoid breaking code path
                             if (this._readyToPlayCallback) {
                                 window.setTimeout(() => {
-                                    this._readyToPlayCallback();
+                                    if (this._readyToPlayCallback) {
+                                        this._readyToPlayCallback();
+                                    }
                                 }, 1000);
                             }
                         }
@@ -185,7 +186,9 @@ module BABYLON {
                 // Simulating a ready to play event to avoid breaking code for non web audio browsers
                 if (this._readyToPlayCallback) {
                     window.setTimeout(() => {
-                        this._readyToPlayCallback();
+                        if (this._readyToPlayCallback) {
+                            this._readyToPlayCallback();
+                        }
                     }, 1000);
                 }
             }
@@ -223,7 +226,7 @@ module BABYLON {
                     document.body.removeChild(this._htmlAudioElement);
                 }
 
-                if (this._connectedMesh) {
+                if (this._connectedMesh && this._registerFunc) {
                     this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                     this._connectedMesh = null;
                 }
@@ -235,7 +238,9 @@ module BABYLON {
         }
 
         private _soundLoaded(audioData: ArrayBuffer) {
-            this._isLoaded = true;
+            if (!Engine.audioEngine.audioContext) {
+                return;
+            }
             Engine.audioEngine.audioContext.decodeAudioData(audioData, (buffer) => {
                 this._audioBuffer = buffer;
                 this._isReadyToPlay = true;
@@ -251,7 +256,7 @@ module BABYLON {
             }
         }
 
-        public updateOptions(options) {
+        public updateOptions(options: any) {
             if (options) {
                 this.loop = options.loop || this.loop;
                 this.maxDistance = options.maxDistance || this.maxDistance;
@@ -266,14 +271,16 @@ module BABYLON {
                         this._htmlAudioElement.playbackRate = this._playbackRate;
                     }
                     else {
-                        this._soundSource.playbackRate.value = this._playbackRate;
+                        if (this._soundSource) {
+                            this._soundSource.playbackRate.value = this._playbackRate;
+                        }
                     }
                 }
             }
         }
 
         private _createSpatialParameters() {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
                 if (this._scene.headphone) {
                     this._panningModel = "HRTF";
                 }
@@ -285,7 +292,7 @@ module BABYLON {
         }
 
         private _updateSpatialParameters() {
-            if (this.spatialSound) {
+            if (this.spatialSound && this._soundPanner) {
                 if (this.useCustomAttenuation) {
                     // Tricks to disable in a way embedded Web Audio attenuation 
                     this._soundPanner.distanceModel = "linear";
@@ -315,7 +322,7 @@ module BABYLON {
         }
 
         private _switchPanningModel() {
-            if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
                 this._soundPanner.panningModel = this._panningModel as any;
             }
         }
@@ -355,7 +362,7 @@ module BABYLON {
         public setPosition(newPosition: Vector3) {
             this._position = newPosition;
 
-            if (Engine.audioEngine.canUseWebAudio && this.spatialSound) {
+            if (Engine.audioEngine.canUseWebAudio && this.spatialSound && this._soundPanner) {
                 this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
             }
         }
@@ -369,6 +376,10 @@ module BABYLON {
         }
 
         private _updateDirection() {
+            if (!this._connectedMesh || !this._soundPanner) {
+                return;
+            }
+
             var mat = this._connectedMesh.getWorldMatrix();
             var direction = Vector3.TransformNormal(this._localDirection, mat);
             direction.normalize();
@@ -376,7 +387,7 @@ module BABYLON {
         }
 
         public updateDistanceFromListener() {
-            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation) {
+            if (Engine.audioEngine.canUseWebAudio && this._connectedMesh && this.useCustomAttenuation && this._soundGain && this._scene.activeCamera) {
                 var distance = this._connectedMesh.getDistanceToCamera(this._scene.activeCamera);
                 this._soundGain.gain.value = this._customAttenuationFunction(this._volume, distance, this.maxDistance, this.refDistance, this.rolloffFactor);
             }
@@ -392,7 +403,7 @@ module BABYLON {
         * @param offset (optional) Start the sound setting it at a specific time
         */
         public play(time?: number, offset?: number) {
-            if (this._isReadyToPlay && this._scene.audioEnabled) {
+            if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine.audioContext) {
                 try {
                     if (this._startOffset < 0) {
                         time = -this._startOffset;
@@ -400,7 +411,7 @@ module BABYLON {
                     }
                     var startTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     if (!this._soundSource || !this._streamingSource) {
-                        if (this.spatialSound) {
+                        if (this.spatialSound && this._soundPanner) {
                             this._soundPanner.setPosition(this._position.x, this._position.y, this._position.z);
                             if (this._isDirectional) {
                                 this._soundPanner.coneInnerAngle = this._coneInnerAngle;
@@ -432,7 +443,9 @@ module BABYLON {
                         this._soundSource.loop = this.loop;
                         this._soundSource.playbackRate.value = this._playbackRate;
                         this._soundSource.onended = () => { this._onended(); };
-                        this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : offset ? offset : 0);
+                        if (this._soundSource.buffer) {
+                            this._soundSource.start(startTime, this.isPaused ? this._startOffset % this._soundSource.buffer.duration : offset ? offset : 0);
+                        }
                     }
                     this._startTime = startTime;
                     this.isPlaying = true;
@@ -464,10 +477,10 @@ module BABYLON {
                         this._htmlAudioElement.currentTime = 0;
                     }
                 }
-                else {
+                else if (Engine.audioEngine.audioContext && this._soundSource) {
                     var stopTime = time ? Engine.audioEngine.audioContext.currentTime + time : Engine.audioEngine.audioContext.currentTime;
                     this._soundSource.stop(stopTime);
-                    this._soundSource.onended = null;
+                    this._soundSource.onended = () => { };
                     if (!this.isPaused) {
                         this._startOffset = 0;
                     }
@@ -482,7 +495,7 @@ module BABYLON {
                 if (this._streaming) {
                     this._htmlAudioElement.pause();
                 }
-                else {
+                else if (Engine.audioEngine.audioContext) {
                     this.stop(0);
                     this._startOffset += Engine.audioEngine.audioContext.currentTime - this._startTime;
                 }
@@ -490,8 +503,8 @@ module BABYLON {
         }
 
         public setVolume(newVolume: number, time?: number) {
-            if (Engine.audioEngine.canUseWebAudio) {
-                if (time) {
+            if (Engine.audioEngine.canUseWebAudio && this._soundGain) {
+                if (time && Engine.audioEngine.audioContext) {
                     this._soundGain.gain.cancelScheduledValues(Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.setValueAtTime(this._soundGain.gain.value, Engine.audioEngine.audioContext.currentTime);
                     this._soundGain.gain.linearRampToValueAtTime(newVolume, Engine.audioEngine.audioContext.currentTime + time);
@@ -509,7 +522,7 @@ module BABYLON {
                 if (this._streaming) {
                     this._htmlAudioElement.playbackRate = this._playbackRate;
                 }
-                else {
+                else if (this._soundSource) {
                     this._soundSource.playbackRate.value = this._playbackRate;
                 }
             }
@@ -520,7 +533,7 @@ module BABYLON {
         }
 
         public attachToMesh(meshToConnectTo: AbstractMesh) {
-            if (this._connectedMesh) {
+            if (this._connectedMesh && this._registerFunc) {
                 this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._registerFunc = null;
             }
@@ -534,26 +547,31 @@ module BABYLON {
                 }
             }
             this._onRegisterAfterWorldMatrixUpdate(this._connectedMesh);
-            this._registerFunc = (connectedMesh: AbstractMesh) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
+            this._registerFunc = (connectedMesh: TransformNode) => this._onRegisterAfterWorldMatrixUpdate(connectedMesh);
             meshToConnectTo.registerAfterWorldMatrixUpdate(this._registerFunc);
         }
 
         public detachFromMesh() {
-            if (this._connectedMesh) {
+            if (this._connectedMesh && this._registerFunc) {
                 this._connectedMesh.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._registerFunc = null;
                 this._connectedMesh = null;
             }
         }
 
-        private _onRegisterAfterWorldMatrixUpdate(connectedMesh: AbstractMesh) {
-            this.setPosition(connectedMesh.getBoundingInfo().boundingSphere.centerWorld);
+        private _onRegisterAfterWorldMatrixUpdate(node: TransformNode): void {
+            if (!(<any>node).getBoundingInfo) {
+                return;
+            }
+            let mesh = node as AbstractMesh;
+            let boundingInfo = mesh.getBoundingInfo();
+            this.setPosition(boundingInfo.boundingSphere.centerWorld);
             if (Engine.audioEngine.canUseWebAudio && this._isDirectional && this.isPlaying) {
                 this._updateDirection();
             }
         }
 
-        public clone(): Sound {
+        public clone(): Nullable<Sound> {
             if (!this._streaming) {
                 var setBufferAndRun = () => {
                     if (this._isReadyToPlay) {

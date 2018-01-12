@@ -1,10 +1,22 @@
 ﻿(function () {
-    var snippetUrl = "https://babylonjs-api2.azurewebsites.net/snippets";
+    var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
     var currentSnippetToken;
     var engine;
     var fpsLabel = document.getElementById("fpsLabel");
+    var refreshAnchor = document.getElementById("refresh");
+    var linkAnchor = document.getElementById("link");
     var scripts;
     var zipCode;
+
+    if (location.href.toLowerCase().indexOf("noui") > -1) {
+        fpsLabel.style.visibility = "hidden";
+        fpsLabel.style.display = "none";
+        refreshAnchor.style.visibility = "hidden";
+        refreshAnchor.style.display = "none";
+        linkAnchor.style.visibility = "hidden";
+        linkAnchor.style.display = "none";
+    }
+
     BABYLON.Engine.ShadersRepository = "/src/Shaders/";
     var loadScript = function (scriptURL, title) {
         var xhr = new XMLHttpRequest();
@@ -31,7 +43,7 @@
         xhr.send(null);
     };
 
-    var showError = function(error) {
+    var showError = function (error) {
         console.warn(error);
     };
 
@@ -49,10 +61,64 @@
             }
 
             var canvas = document.getElementById("renderCanvas");
-            engine = new BABYLON.Engine(canvas, true, {stencil: true});
-            engine.renderEvenInBackground = false;
-            BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
 
+            var checkCamera = true;
+            var wrappedEval = false;
+            var createEngineFunction = "createDefaultEngine";
+            var createSceneFunction;
+
+            var createDefaultEngine = function () {
+                return new BABYLON.Engine(canvas, true, { stencil: true });
+            }
+
+            var scene;
+
+            if (code.indexOf("createEngine") !== -1) {
+                createEngineFunction = "createEngine";
+            }
+
+            if (code.indexOf("delayCreateScene") !== -1) { // createScene
+                createSceneFunction = "delayCreateScene";
+                checkCamera = false;
+            } else if (code.indexOf("createScene") !== -1) { // createScene
+                createSceneFunction = "createScene";
+            } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
+                createSceneFunction = "CreateScene";
+            } else if (code.indexOf("createscene") !== -1) { // createscene
+                createSceneFunction = "createscene";
+            }
+
+            if (!createSceneFunction) {
+                // just pasted code.
+                engine = createDefaultEngine();
+                scene = new BABYLON.Scene(engine);
+                eval("runScript = function(scene, canvas) {" + code + "}");
+                runScript(scene, canvas);
+
+                zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
+            } else {
+                //execute the code
+                eval(code);
+                //create engine
+                eval("engine = " + createEngineFunction + "()");
+                if (!engine) {
+                    showError("createEngine function must return an engine.", null);
+                    return;
+                }
+
+                //create scene
+                eval("scene = " + createSceneFunction + "()");
+
+                if (!scene) {
+                    showError(createSceneFunction + " function must return a scene.", null);
+                    return;
+                }
+
+                // update the scene code for the zip file
+                zipCode = code + "\r\n\r\nvar scene = " + createSceneFunction + "()";
+            }
+
+            BABYLON.Camera.ForceAttachControlToAlwaysPreventDefault = true;
             engine.runRenderLoop(function () {
                 if (engine.scenes.length === 0) {
                     return;
@@ -68,44 +134,10 @@
                     scene.render();
                 }
 
-                fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                if (fpsLabel) {
+                    fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";
+                }
             });
-
-            var scene;
-            if (code.indexOf("createScene") !== -1) { // createScene
-                eval(code);
-                scene = createScene();
-                if (!scene) {
-                    showError("createScene function must return a scene.");
-                    return;
-                }
-
-                zipCode = code + "\r\n\r\nvar scene = createScene();";
-            } else if (code.indexOf("CreateScene") !== -1) { // CreateScene
-                eval(code);
-                scene = CreateScene();
-                if (!scene) {
-                    showError("CreateScene function must return a scene.");
-                    return;
-                }
-
-                zipCode = code + "\r\n\r\nvar scene = CreateScene();";
-            } else if (code.indexOf("createscene") !== -1) { // createscene
-                eval(code);
-                scene = createscene();
-                if (!scene) {
-                    showError("createscene function must return a scene.");
-                    return;
-                }
-
-                zipCode = code + "\r\n\r\nvar scene = createscene();";
-            } else { // Direct code
-                scene = new BABYLON.Scene(engine);
-                eval("runScript = function(scene, canvas) {" + code + "}");
-                runScript(scene, canvas);
-
-                zipCode = "var scene = new BABYLON.Scene(engine);\r\n\r\n" + code;
-            }
 
         } catch (e) {
             // showError(e.message);
@@ -141,21 +173,29 @@
                             var snippetCode = JSON.parse(JSON.parse(xmlHttp.responseText)[0].jsonPayload).code;
                             compileAndRun(snippetCode);
 
-                            document.getElementById("refresh").addEventListener("click", function () {
-                                compileAndRun(snippetCode);
-                            });
+                            var refresh = document.getElementById("refresh");
+
+                            if (refresh) {
+                                refresh.addEventListener("click", function () {
+                                    compileAndRun(snippetCode);
+                                });
+                            }
                         }
                     }
                 };
 
                 var hash = location.hash.substr(1);
                 currentSnippetToken = hash.split("#")[0];
-                if(!hash.split("#")[1]) hash += "#0";
+                if (!hash.split("#")[1]) hash += "#0";
 
                 xmlHttp.open("GET", snippetUrl + "/" + hash.replace("#", "/"));
                 xmlHttp.send();
 
-                document.getElementById("link").href = "//www.babylonjs-playground.com/#" + hash;
+                var link = document.getElementById("link");
+
+                if (link) {
+                    link.href = "//www.babylonjs-playground.com/#" + hash;
+                }
             } catch (e) {
 
             }

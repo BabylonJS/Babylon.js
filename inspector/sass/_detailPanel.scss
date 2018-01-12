@@ -6,14 +6,20 @@
   color:$color;
   font-family: $font;
 
+  .details {
+      padding-left: 5px;
+  }
+
   // Common defintion between header row and detail row
   .base-row {      
     display:flex;
     width:100%;
 
     .base-property {
-        word-wrap: break-word;
         padding: 2px 0 2px 0;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
     // Property name
     .prop-name {
@@ -107,6 +113,7 @@
   // The div displaying a color
   .color-element {
       @extend .element-viewer;
+      top: 2px;
   }
 
   // The div displaying a texture element

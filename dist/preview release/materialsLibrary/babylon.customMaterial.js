@@ -18,7 +18,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var BABYLON;
 (function (BABYLON) {
     // old version of standard material updated every 3 months
-    var StandardMaterialDefines_OldVer = (function (_super) {
+    var StandardMaterialDefines_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterialDefines_OldVer, _super);
         function StandardMaterialDefines_OldVer() {
             var _this = _super.call(this) || this;
@@ -81,7 +81,6 @@ var BABYLON;
             _this.MORPHTARGETS_NORMAL = false;
             _this.MORPHTARGETS_TANGENT = false;
             _this.NUM_MORPH_INFLUENCERS = 0;
-            _this.USERIGHTHANDEDSYSTEM = false;
             _this.IMAGEPROCESSING = false;
             _this.VIGNETTE = false;
             _this.VIGNETTEBLENDMODEMULTIPLY = false;
@@ -90,6 +89,7 @@ var BABYLON;
             _this.CONTRAST = false;
             _this.COLORCURVES = false;
             _this.COLORGRADING = false;
+            _this.COLORGRADING3D = false;
             _this.SAMPLER3DGREENDEPTH = false;
             _this.SAMPLER3DBGRMAP = false;
             _this.IMAGEPROCESSINGPOSTPROCESS = false;
@@ -112,7 +112,7 @@ var BABYLON;
         return StandardMaterialDefines_OldVer;
     }(BABYLON.MaterialDefines));
     BABYLON.StandardMaterialDefines_OldVer = StandardMaterialDefines_OldVer;
-    var StandardMaterial_OldVer = (function (_super) {
+    var StandardMaterial_OldVer = /** @class */ (function (_super) {
         __extends(StandardMaterial_OldVer, _super);
         function StandardMaterial_OldVer(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -564,7 +564,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -641,7 +641,7 @@ var BABYLON;
                     "mBones",
                     "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant", "vNormalReoderParams"
+                    "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
                 var uniformBuffers = ["Material", "Scene"];
@@ -671,7 +671,7 @@ var BABYLON;
                 }, engine), defines);
                 this.buildUniformLayout();
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
             defines._renderId = scene.getRenderId();
@@ -705,7 +705,7 @@ var BABYLON;
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vNormalReoderParams", 4);
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vSpecularColor", 4);
@@ -732,6 +732,9 @@ var BABYLON;
                 return;
             }
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
             // Matrices        
             this.bindOnlyWorldMatrix(world);
@@ -797,10 +800,10 @@ var BABYLON;
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
                             this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
                             if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 0 : 1.0, this.invertNormalMapX ? 1.0 : -1.0, this.invertNormalMapY ? 0 : 1.0, this.invertNormalMapY ? 1.0 : -1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
                             }
                             else {
-                                this._uniformBuffer.updateFloat4("vNormalReoderParams", this.invertNormalMapX ? 1.0 : 0, this.invertNormalMapX ? -1.0 : 1.0, this.invertNormalMapY ? 1.0 : 0, this.invertNormalMapY ? -1.0 : 1.0);
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
                             }
                         }
                         if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
@@ -870,7 +873,7 @@ var BABYLON;
                 BABYLON.MaterialHelper.BindClipPlane(effect, scene);
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
             if (this._mustRebind(scene, effect) || !this.isFrozen) {
@@ -1383,19 +1386,19 @@ var BABYLON;
         return StandardMaterial_OldVer;
     }(BABYLON.PushMaterial));
     BABYLON.StandardMaterial_OldVer = StandardMaterial_OldVer;
-    var CustomShaderStructure = (function () {
+    var CustomShaderStructure = /** @class */ (function () {
         function CustomShaderStructure() {
         }
         return CustomShaderStructure;
     }());
     BABYLON.CustomShaderStructure = CustomShaderStructure;
-    var ShaderSpecialParts = (function () {
+    var ShaderSpecialParts = /** @class */ (function () {
         function ShaderSpecialParts() {
         }
         return ShaderSpecialParts;
     }());
     BABYLON.ShaderSpecialParts = ShaderSpecialParts;
-    var ShaderForVer3_0 = (function (_super) {
+    var ShaderForVer3_0 = /** @class */ (function (_super) {
         __extends(ShaderForVer3_0, _super);
         function ShaderForVer3_0() {
             var _this = _super.call(this) || this;
@@ -1896,13 +1899,14 @@ vColor=color;\n\
         return ShaderForVer3_0;
     }(CustomShaderStructure));
     BABYLON.ShaderForVer3_0 = ShaderForVer3_0;
-    var StandardShaderVersions = (function () {
+    var StandardShaderVersions = /** @class */ (function () {
         function StandardShaderVersions() {
         }
+        StandardShaderVersions.Ver3_0 = "3.0.0";
         return StandardShaderVersions;
     }());
     BABYLON.StandardShaderVersions = StandardShaderVersions;
-    var CustomMaterial = (function (_super) {
+    var CustomMaterial = /** @class */ (function (_super) {
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
@@ -1945,16 +1949,20 @@ vColor=color;\n\
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
+            var _this = this;
             if (this._isCreatedShader)
                 return this._createdShaderName;
             this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
-            var name = name + "custom_" + CustomMaterial.ShaderIndexer;
+            var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
-            var fn_afterBind = this._afterBind;
+            var fn_afterBind = this._afterBind.bind(this);
             this._afterBind = function (m, e) {
-                this.AttachAfterBind(m, e);
+                if (!e) {
+                    return;
+                }
+                _this.AttachAfterBind(m, e);
                 try {
                     fn_afterBind(m, e);
                 }
@@ -1997,7 +2005,7 @@ vColor=color;\n\
                     this._newUniformInstances[kind + "-" + name] = param;
                 }
                 else {
-                    this._newSamplerInstances[kind + "-" + name] = param;
+                    this._newUniformInstances[kind + "-" + name] = param;
                 }
             }
             this._customUniform.push("uniform " + kind + " " + name + ";");
