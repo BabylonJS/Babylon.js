@@ -675,6 +675,7 @@ function gulpValidateTypedoc(validationBaselineFileName, namespaceName, validate
         this.push(jsFile);
 
         var action = generateBaseLine ? "baseline generation" : "validation";
+        var self = this;
         var error = function(message) {
             generateBaseLine ? warn : err;
             if (generateBaseLine) {
@@ -683,7 +684,7 @@ function gulpValidateTypedoc(validationBaselineFileName, namespaceName, validate
             else {
                 err(message);
                 var error = new PluginError(PLUGIN_NAME, message);
-                this.emit('error', error);
+                self.emit('error', error);
             }
         }
 
