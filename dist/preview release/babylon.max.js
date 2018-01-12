@@ -9566,7 +9566,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha2";
+                return "3.2.0-alpha3";
             },
             enumerable: true,
             configurable: true
@@ -76962,6 +76962,7 @@ var BABYLON;
          */
         function SceneOptimizer(scene, options, autoGeneratePriorities) {
             if (autoGeneratePriorities === void 0) { autoGeneratePriorities = true; }
+            var _this = this;
             this._isRunning = false;
             this._currentPriorityLevel = 0;
             this._targetFrameRate = 60;
@@ -76999,6 +77000,9 @@ var BABYLON;
                 }
             }
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                _this.dispose();
+            });
         }
         Object.defineProperty(SceneOptimizer.prototype, "currentPriorityLevel", {
             /**
@@ -77129,9 +77133,13 @@ var BABYLON;
          * Release all resources
          */
         SceneOptimizer.prototype.dispose = function () {
+            this.stop();
             this.onSuccessObservable.clear();
             this.onFailureObservable.clear();
             this.onNewOptimizationAppliedObservable.clear();
+            if (this._sceneDisposeObserver) {
+                this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+            }
         };
         /**
          * Helper function to create a SceneOptimizer with one single line of code

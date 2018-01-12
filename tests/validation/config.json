@@ -53,7 +53,8 @@
       "title": "Mansion",
       "sceneFolder": "/Scenes/Mansion/",
       "sceneFilename": "Mansion.babylon",
-      "referenceImage": "mansion.png"
+      "referenceImage": "mansion.png",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "SpaceDeK",
