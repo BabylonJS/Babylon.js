@@ -129,6 +129,7 @@
     },
     {
       "title": "LOD",
+      "renderCount": 10,
       "scriptToRun": "/Demos/LOD/lod.js",
       "functionToCall": "CreateLODTestScene",
       "referenceImage": "lod.png"

@@ -1896,53 +1896,8 @@
                     return false;
                 }
 
-                mesh.computeWorldMatrix();
-
-                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh";
-                if (mesh.getClassName() === "Mesh") {
-                    hardwareInstancedRendering = engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
-                }
-
-                let mat = mesh.material || this.defaultMaterial;
-                if (mat) {
-                    let currentAlphaTestingState = engine.getAlphaTesting();
-
-                    if (mat.storeEffectOnSubMeshes) {
-                        for (var subMesh of mesh.subMeshes) {
-                            let effectiveMaterial = subMesh.getMaterial();
-                            if (effectiveMaterial) {
-                                engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(mesh));
-                                if (!effectiveMaterial.isReadyForSubMesh(mesh, subMesh, hardwareInstancedRendering)) {
-                                    engine.setAlphaTesting(currentAlphaTestingState);
-                                    return false;
-                                }
-                            }
-                        }
-                    } else {
-                        engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(mesh));
-                        if (!mat.isReady(mesh, hardwareInstancedRendering)) {
-                            engine.setAlphaTesting(currentAlphaTestingState);
-                            return false;
-                        }
-                    }
-
-                    engine.setAlphaTesting(currentAlphaTestingState);
-                }
-
-                // Shadows
-                for (var light of mesh._lightSources) {
-                    let generator = light.getShadowGenerator();
-
-                    if (generator) {
-                        for (var subMesh of mesh.subMeshes) {
-                            if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
-                                return false;
-                            }
-                        }
-                    }
-                }
-
                 // Highlight layers
+                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
                 for (var layer of this.highlightLayers) {
                     if (!layer.hasMesh(mesh)) {
                         continue;
