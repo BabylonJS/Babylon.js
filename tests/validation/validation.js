@@ -124,6 +124,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
     renderImage.src = renderB64;
 
     currentScene.dispose();
+    engine.setHardwareScalingLevel(1);
 
     done(testRes, renderB64);
 }
