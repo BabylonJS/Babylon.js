@@ -3,7 +3,11 @@ module.exports = function (config) {
     config.set({
 
         basePath: '../../',
-        browserNoActivityTimeout: 1800000,
+        captureTimeout: 3e5,
+        browserNoActivityTimeout: 3e5,
+        browserDisconnectTimeout: 3e5,
+        browserDisconnectTolerance: 3,
+        concurrency: 1,
 
         urlRoot: '/karma',
 
@@ -13,6 +17,7 @@ module.exports = function (config) {
             './Tools/DevLoader/BabylonLoader.js',
             './tests/validation/index.css',
             './tests/validation/integration.js',
+            './favicon.ico',
             { pattern: 'dist/**/*', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             { pattern: 'tests/**/*', watched: false, included: false, served: true },
@@ -25,9 +30,7 @@ module.exports = function (config) {
         proxies: {
             '/': '/base/'
         },
-
-        reporters: ['progress'],
-
+        
         port: 1338,
         colors: true,
         autoWatch: false,
