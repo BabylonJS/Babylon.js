@@ -142,7 +142,7 @@
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:1338/tests/validation/index.html?Reflection%20probes",
+            "url": "http://localhost:1338/tests/validation/index.html?LOD",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
