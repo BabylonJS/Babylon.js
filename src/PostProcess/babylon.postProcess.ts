@@ -334,6 +334,10 @@
             return this.width / this.height;
         }
 
+        public isReady(): boolean {
+            return this._effect && this._effect.isReady();
+        }
+
         public apply(): Nullable<Effect> {
             // Check
             if (!this._effect || !this._effect.isReady())
