@@ -5,7 +5,7 @@ module BABYLON.GUI {
         private _value = 1;
         public ignoreAdaptiveScaling = false;
 
-        public constructor(value, public unit = ValueAndUnit.UNITMODE_PIXEL, public negativeValueAllowed = true) {
+        public constructor(value: number, public unit = ValueAndUnit.UNITMODE_PIXEL, public negativeValueAllowed = true) {
             this._value = value;
         }
 

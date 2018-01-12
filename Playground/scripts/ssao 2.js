@@ -40,19 +40,27 @@ var createScene = function () {
         scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
 
         // Manage SSAO
+        var isAttached = true;
         window.addEventListener("keydown", function (evt) {
             // draw SSAO with scene when pressed "1"
             if (evt.keyCode === 49) {
-                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+                if (!isAttached) {
+                    isAttached = true;
+                    scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+                }
                 scene.postProcessRenderPipelineManager.enableEffectInPipeline("ssao", ssao.SSAOCombineRenderEffect, camera);
             }
                 // draw without SSAO when pressed "2"
             else if (evt.keyCode === 50) {
+                isAttached = false;
                 scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline("ssao", camera);
             }
                 // draw only SSAO when pressed "2"
             else if (evt.keyCode === 51) {
-                scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+                if (!isAttached) {
+                    isAttached = true;
+                    scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline("ssao", camera);
+                }
                 scene.postProcessRenderPipelineManager.disableEffectInPipeline("ssao", ssao.SSAOCombineRenderEffect, camera);
             }
         });

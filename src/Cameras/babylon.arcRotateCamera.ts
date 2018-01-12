@@ -1,7 +1,4 @@
-﻿/// <reference path="babylon.targetCamera.ts" />
-/// <reference path="..\Tools\babylon.tools.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class ArcRotateCamera extends TargetCamera {
         @serialize()
         public alpha: number;
@@ -14,7 +11,7 @@ module BABYLON {
 
         @serializeAsVector3("target")
         protected _target: Vector3;
-        protected _targetHost: AbstractMesh;
+        protected _targetHost: Nullable<AbstractMesh>;
 
         public get target(): Vector3 {
             return this._target;
@@ -33,10 +30,10 @@ module BABYLON {
         public inertialRadiusOffset = 0;
 
         @serialize()
-        public lowerAlphaLimit = null;
+        public lowerAlphaLimit: Nullable<number> = null;
 
         @serialize()
-        public upperAlphaLimit = null;
+        public upperAlphaLimit: Nullable<number> = null;
 
         @serialize()
         public lowerBetaLimit = 0.01;
@@ -45,10 +42,10 @@ module BABYLON {
         public upperBetaLimit = Math.PI;
 
         @serialize()
-        public lowerRadiusLimit = null;
+        public lowerRadiusLimit: Nullable<number> = null;
 
         @serialize()
-        public upperRadiusLimit = null;
+        public upperRadiusLimit: Nullable<number> = null;
 
         @serialize()
         public inertialPanningX: number = 0;
@@ -57,119 +54,175 @@ module BABYLON {
         public inertialPanningY: number = 0;
 
         @serialize()
+        public pinchToPanMaxDistance: number = 20;
+
+        @serialize()
+        public panningDistanceLimit: Nullable<number> = null;
+
+        @serializeAsVector3()
+        public panningOriginTarget: Vector3 = Vector3.Zero();
+
+        @serialize()
         public panningInertia = 0.9;
 
         //-- begin properties for backward compatibility for inputs
-        public get angularSensibilityX() {
+        public get angularSensibilityX(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityX;
+
+            return 0;
         }
 
-        public set angularSensibilityX(value) {
+        public set angularSensibilityX(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.angularSensibilityX = value;
             }
         }
 
-        public get angularSensibilityY() {
+        public get angularSensibilityY(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.angularSensibilityY;
+
+            return 0;
         }
 
-        public set angularSensibilityY(value) {
+        public set angularSensibilityY(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.angularSensibilityY = value;
             }
         }
 
-        public get pinchPrecision() {
+        public get pinchPrecision(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.pinchPrecision;
+
+            return 0;
         }
 
-        public set pinchPrecision(value) {
+        public set pinchPrecision(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.pinchPrecision = value;
             }
         }
 
-        public get panningSensibility() {
+        public get pinchDeltaPercentage(): number {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers)
+                return pointers.pinchDeltaPercentage;
+
+            return 0;
+        }
+
+        public set pinchDeltaPercentage(value: number) {
+            var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
+            if (pointers) {
+                pointers.pinchDeltaPercentage = value;
+            }
+        }
+
+        public get panningSensibility(): number {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers)
                 return pointers.panningSensibility;
+
+            return 0;
         }
 
-        public set panningSensibility(value) {
+        public set panningSensibility(value: number) {
             var pointers = <ArcRotateCameraPointersInput>this.inputs.attached["pointers"];
             if (pointers) {
                 pointers.panningSensibility = value;
             }
         }
 
-        public get keysUp() {
+        public get keysUp(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysUp;
+
+            return [];
         }
 
-        public set keysUp(value) {
+        public set keysUp(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysUp = value;
         }
 
-        public get keysDown() {
+        public get keysDown(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysDown;
+
+            return [];
         }
 
-        public set keysDown(value) {
+        public set keysDown(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysDown = value;
         }
 
-        public get keysLeft() {
+        public get keysLeft(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysLeft;
+
+            return [];
         }
 
-        public set keysLeft(value) {
+        public set keysLeft(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysLeft = value;
         }
 
-        public get keysRight() {
+        public get keysRight(): number[] {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 return keyboard.keysRight;
+
+            return [];
         }
 
-        public set keysRight(value) {
+        public set keysRight(value: number[]) {
             var keyboard = <ArcRotateCameraKeyboardMoveInput>this.inputs.attached["keyboard"];
             if (keyboard)
                 keyboard.keysRight = value;
         }
 
-        public get wheelPrecision() {
+        public get wheelPrecision(): number {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 return mousewheel.wheelPrecision;
+
+            return 0;
         }
 
-        public set wheelPrecision(value) {
+        public set wheelPrecision(value: number) {
             var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
             if (mousewheel)
                 mousewheel.wheelPrecision = value;
+        }
+
+        public get wheelDeltaPercentage(): number {
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                return mousewheel.wheelDeltaPercentage;
+
+            return 0;
+        }
+
+        public set wheelDeltaPercentage(value: number) {
+            var mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
+            if (mousewheel)
+                mousewheel.wheelDeltaPercentage = value;
         }
 
         //-- end properties for backward compatibility for inputs
@@ -195,9 +248,9 @@ module BABYLON {
         protected _transformedDirection: Vector3;
 
         // Behaviors
-        private _bouncingBehavior: BouncingBehavior;
+        private _bouncingBehavior: Nullable<BouncingBehavior>;
 
-        public get bouncingBehavior(): BouncingBehavior {
+        public get bouncingBehavior(): Nullable<BouncingBehavior> {
             return this._bouncingBehavior;
         }
 
@@ -213,17 +266,17 @@ module BABYLON {
             if (value) {
                 this._bouncingBehavior = new BouncingBehavior();
                 this.addBehavior(this._bouncingBehavior);
-            } else {
+            } else if (this._bouncingBehavior) {
                 this.removeBehavior(this._bouncingBehavior);
                 this._bouncingBehavior = null;
             }
         }
 
-        private _framingBehavior: FramingBehavior;
+        private _framingBehavior: Nullable<FramingBehavior>;
 
-        public get framingBehavior(): FramingBehavior {
+        public get framingBehavior(): Nullable<FramingBehavior> {
             return this._framingBehavior;
-        }        
+        }
 
         public get useFramingBehavior(): boolean {
             return this._framingBehavior != null;
@@ -237,17 +290,17 @@ module BABYLON {
             if (value) {
                 this._framingBehavior = new FramingBehavior();
                 this.addBehavior(this._framingBehavior);
-            } else {
+            } else if (this._framingBehavior) {
                 this.removeBehavior(this._framingBehavior);
                 this._framingBehavior = null;
             }
-        }        
+        }
 
-        private _autoRotationBehavior: AutoRotationBehavior;
+        private _autoRotationBehavior: Nullable<AutoRotationBehavior>;
 
-        public get autoRotationBehavior(): AutoRotationBehavior {
+        public get autoRotationBehavior(): Nullable<AutoRotationBehavior> {
             return this._autoRotationBehavior;
-        }   
+        }
 
         public get useAutoRotationBehavior(): boolean {
             return this._autoRotationBehavior != null;
@@ -261,14 +314,14 @@ module BABYLON {
             if (value) {
                 this._autoRotationBehavior = new AutoRotationBehavior();
                 this.addBehavior(this._autoRotationBehavior);
-            } else {
+            } else if (this._autoRotationBehavior) {
                 this.removeBehavior(this._autoRotationBehavior);
                 this._autoRotationBehavior = null;
             }
-        }        
+        }
 
-        public onMeshTargetChangedObservable = new Observable<AbstractMesh>();
-        
+        public onMeshTargetChangedObservable = new Observable<Nullable<AbstractMesh>>();
+
         // Collisions
         public onCollide: (collidedMesh: AbstractMesh) => void;
         public checkCollisions = false;
@@ -283,7 +336,7 @@ module BABYLON {
         //due to async collision inspection
         protected _collisionTriggered: boolean;
 
-        protected _targetBoundingCenter: Vector3;
+        protected _targetBoundingCenter: Nullable<Vector3>;
 
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
@@ -326,7 +379,7 @@ module BABYLON {
 
         protected _getTargetPosition(): Vector3 {
             if (this._targetHost && this._targetHost.getAbsolutePosition) {
-                var pos : Vector3 = this._targetHost.getAbsolutePosition();
+                var pos: Vector3 = this._targetHost.getAbsolutePosition();
                 if (this._targetBoundingCenter) {
                     pos.addToRef(this._targetBoundingCenter, this._target);
                 } else {
@@ -343,7 +396,7 @@ module BABYLON {
             return this._target;
         }
 
-       // State
+        // State
 
         /**
          * Store current camera state (fov, position, etc..)
@@ -351,7 +404,7 @@ module BABYLON {
         private _storedAlpha: number;
         private _storedBeta: number;
         private _storedRadius: number;
-        private _storedTarget: Vector3;     
+        private _storedTarget: Vector3;
 
         public storeState(): Camera {
             this._storedAlpha = this.alpha;
@@ -365,24 +418,24 @@ module BABYLON {
         /**
          * Restored camera state. You must call storeState() first
          */
-        public restoreState(): boolean {
-            if (!super.restoreState()) {
+        public _restoreStateValues(): boolean {
+            if (!super._restoreStateValues()) {
                 return false;
             }
 
             this.alpha = this._storedAlpha;
             this.beta = this._storedBeta;
             this.radius = this._storedRadius;
-            this.setTarget(this._storedTarget);
+            this.setTarget(this._storedTarget.clone());
 
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
             this.inertialPanningX = 0;
             this.inertialPanningY = 0;
-        
+
             return true;
-        }             
+        }
 
         // Synchronized
         public _isSynchronizedViewMatrix(): boolean {
@@ -467,7 +520,16 @@ module BABYLON {
                 }
 
                 if (!this._targetHost) {
-                    this._target.addInPlace(this._transformedDirection);
+                    if (this.panningDistanceLimit) {
+                        this._transformedDirection.addInPlace(this._target);
+                        var distanceSquared = Vector3.DistanceSquared(this._transformedDirection, this.panningOriginTarget);
+                        if (distanceSquared <= (this.panningDistanceLimit * this.panningDistanceLimit)) {
+                            this._target.copyFrom(this._transformedDirection);
+                        }
+                    }
+                    else {
+                        this._target.addInPlace(this._transformedDirection);
+                    }
                 }
 
                 this.inertialPanningX *= this.panningInertia;
@@ -553,8 +615,8 @@ module BABYLON {
 
         public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false): void {
 
-            if ((<any>target).getBoundingInfo){
-                if (toBoundingCenter){
+            if ((<any>target).getBoundingInfo) {
+                if (toBoundingCenter) {
                     this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
                 } else {
                     this._targetBoundingCenter = null;
@@ -567,7 +629,7 @@ module BABYLON {
                 var newTarget = <Vector3>target;
                 var currentTarget = this._getTargetPosition();
                 if (currentTarget && !allowSamePosition && currentTarget.equals(newTarget)) {
-                   return;
+                    return;
                 }
                 this._targetHost = null;
                 this._target = newTarget;
@@ -595,7 +657,7 @@ module BABYLON {
                 if (!this._collider) {
                     this._collider = new Collider();
                 }
-                this._collider.radius = this.collisionRadius;
+                this._collider._radius = this.collisionRadius;
                 this._newPosition.subtractToRef(this.position, this._collisionVelocity);
                 this._collisionTriggered = true;
                 this.getScene().collisionCoordinator.getNewPosition(this.position, this._collisionVelocity, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
@@ -620,10 +682,10 @@ module BABYLON {
             return this._viewMatrix;
         }
 
-        protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: AbstractMesh = null) => {
+        protected _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
 
             if (this.getScene().workerCollisions && this.checkCollisions) {
-                newPosition.multiplyInPlace(this._collider.radius);
+                newPosition.multiplyInPlace(this._collider._radius);
             }
 
             if (!collidedMesh) {
@@ -674,18 +736,19 @@ module BABYLON {
             this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
         }
 
-        public focusOn(meshesOrMinMaxVectorAndDistance, doNotUpdateMaxZ = false): void {
-            var meshesOrMinMaxVector;
-            var distance;
+        public focusOn(meshesOrMinMaxVectorAndDistance: AbstractMesh[] | { min: Vector3, max: Vector3, distance: number }, doNotUpdateMaxZ = false): void {
+            var meshesOrMinMaxVector: { min: Vector3, max: Vector3 };
+            var distance: number;
 
-            if (meshesOrMinMaxVectorAndDistance.min === undefined) { // meshes
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance || this.getScene().meshes;
-                meshesOrMinMaxVector = Mesh.MinMax(meshesOrMinMaxVector);
+            if ((<any>meshesOrMinMaxVectorAndDistance).min === undefined) { // meshes
+                var meshes = (<AbstractMesh[]>meshesOrMinMaxVectorAndDistance) || this.getScene().meshes;
+                meshesOrMinMaxVector = Mesh.MinMax(meshes);
                 distance = Vector3.Distance(meshesOrMinMaxVector.min, meshesOrMinMaxVector.max);
             }
             else { //minMaxVector and distance
-                meshesOrMinMaxVector = meshesOrMinMaxVectorAndDistance;
-                distance = meshesOrMinMaxVectorAndDistance.distance;
+                var minMaxVectorAndDistance = <any>meshesOrMinMaxVectorAndDistance;
+                meshesOrMinMaxVector = minMaxVectorAndDistance;
+                distance = minMaxVectorAndDistance.distance;
             }
 
             this._target = Mesh.Center(meshesOrMinMaxVector);
@@ -700,7 +763,7 @@ module BABYLON {
          * Override Camera.createRigCamera
          */
         public createRigCamera(name: string, cameraIndex: number): Camera {
-            var alphaShift : number;
+            var alphaShift: number = 0;
             switch (this.cameraRigMode) {
                 case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
@@ -711,7 +774,7 @@ module BABYLON {
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
                     alphaShift = this._cameraRigParams.stereoHalfAngle * (cameraIndex === 0 ? -1 : 1);
                     break;
-           }
+            }
             var rigCam = new ArcRotateCamera(name, this.alpha + alphaShift, this.beta, this.radius, this._target, this.getScene());
             rigCam._cameraRigParams = {};
             return rigCam;
@@ -722,7 +785,7 @@ module BABYLON {
          * Override Camera._updateRigCameras
          */
         public _updateRigCameras() {
-            var camLeft  = <ArcRotateCamera>this._rigCameras[0];
+            var camLeft = <ArcRotateCamera>this._rigCameras[0];
             var camRight = <ArcRotateCamera>this._rigCameras[1];
 
             camLeft.beta = camRight.beta = this.beta;
@@ -733,11 +796,11 @@ module BABYLON {
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL:
                 case Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER:
                 case Camera.RIG_MODE_VR:
-                    camLeft.alpha  = this.alpha - this._cameraRigParams.stereoHalfAngle;
+                    camLeft.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     break;
                 case Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_CROSSEYED:
-                    camLeft.alpha  = this.alpha + this._cameraRigParams.stereoHalfAngle;
+                    camLeft.alpha = this.alpha + this._cameraRigParams.stereoHalfAngle;
                     camRight.alpha = this.alpha - this._cameraRigParams.stereoHalfAngle;
                     break;
             }

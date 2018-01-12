@@ -5,7 +5,7 @@
      * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
-    export class PBRMetallicRoughnessMaterial extends Internals.PBRBaseSimpleMaterial {
+    export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
         /**
          * The base color has two different interpretations depending on the value of metalness. 
@@ -16,7 +16,7 @@
         @serializeAsColor3()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public baseColor: Color3;
-        
+
         /**
          * Base texture of the metallic workflow. It contains both the baseColor information in RGB as
          * well as opacity information in the alpha channel.
@@ -60,6 +60,7 @@
             this._useRoughnessFromMetallicTextureAlpha = false;
             this._useRoughnessFromMetallicTextureGreen = true;
             this._useMetallnessFromMetallicTextureBlue = true;
+            this._forceMetallicWorkflow = true;
         }
 
         /**
@@ -97,13 +98,18 @@
 
             if (this.metallicRoughnessTexture === texture) {
                 return true;
-            }        
+            }
 
-            return false;    
-        }        
+            return false;
+        }
 
         public clone(name: string): PBRMetallicRoughnessMaterial {
-            return SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
+            var clone = SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
+
+            clone.id = name;
+            clone.name = name;
+
+            return clone;
         }
 
         /**

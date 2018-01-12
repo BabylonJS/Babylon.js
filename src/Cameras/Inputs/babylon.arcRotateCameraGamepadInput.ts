@@ -2,9 +2,9 @@ module BABYLON {
     export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
 
-        public gamepad: Gamepad;
-        private _onGamepadConnectedObserver : Observer<Gamepad>;
-        private _onGamepadDisconnectedObserver : Observer<Gamepad>;
+        public gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver : Nullable<Observer<Gamepad>>;
+        private _onGamepadDisconnectedObserver : Nullable<Observer<Gamepad>>;
 
         @serialize()
         public gamepadRotationSensibility = 80;
@@ -32,7 +32,7 @@ module BABYLON {
             this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
         }
 
-        detachControl(element: HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             this.camera.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);            
             this.camera.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
             this.gamepad = null;
@@ -79,5 +79,5 @@ module BABYLON {
         }        
     }
 
-    CameraInputTypes["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;
+    (<any>CameraInputTypes)["ArcRotateCameraGamepadInput"] = ArcRotateCameraGamepadInput;
 }

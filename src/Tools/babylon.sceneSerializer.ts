@@ -1,7 +1,7 @@
 ﻿module BABYLON {
     var serializedGeometries: Geometry[] = [];
     var serializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
-        if (serializedGeometries[geometry.id]) {
+        if ((<any>serializedGeometries)[geometry.id]) {
             return;
         }
 
@@ -9,42 +9,42 @@
             return;
         }
 
-        if (geometry instanceof Geometry.Primitives.Box) {
+        if (geometry instanceof BoxGeometry) {
             serializationGeometries.boxes.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Sphere) {
+        else if (geometry instanceof SphereGeometry) {
             serializationGeometries.spheres.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Cylinder) {
+        else if (geometry instanceof CylinderGeometry) {
             serializationGeometries.cylinders.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Torus) {
+        else if (geometry instanceof TorusGeometry) {
             serializationGeometries.toruses.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Ground) {
+        else if (geometry instanceof GroundGeometry) {
             serializationGeometries.grounds.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Plane) {
+        else if (geometry instanceof Plane) {
             serializationGeometries.planes.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.TorusKnot) {
+        else if (geometry instanceof TorusKnotGeometry) {
             serializationGeometries.torusKnots.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives._Primitive) {
+        else if (geometry instanceof _PrimitiveGeometry) {
             throw new Error("Unknown primitive type");
         }
         else {
             serializationGeometries.vertexData.push(geometry.serializeVerticeData());
         }
 
-        serializedGeometries[geometry.id] = true;
+        (<any>serializedGeometries)[geometry.id] = true;
     };
 
     var serializeMesh = (mesh: Mesh, serializationScene: any): any => {
         var serializationObject: any = {};
 
         // Geometry      
-        var geometry = mesh._geometry;      
+        var geometry = mesh._geometry;
         if (geometry) {
             if (!mesh.getScene().getGeometryByID(geometry.id)) {
                 // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
@@ -67,12 +67,12 @@
             if (mesh.material) {
                 if (mesh.material instanceof StandardMaterial) {
                     serializationObject.materials = serializationObject.materials || [];
-                    if (!serializationObject.materials.some(mat => (mat.id === mesh.material.id))) {
+                    if (!serializationObject.materials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.materials.push(mesh.material.serialize());
                     }
                 } else if (mesh.material instanceof MultiMaterial) {
                     serializationObject.multiMaterials = serializationObject.multiMaterials || [];
-                    if (!serializationObject.multiMaterials.some(mat => (mat.id === mesh.material.id))) {
+                    if (!serializationObject.multiMaterials.some((mat: Material) => (mat.id === (<Material>mesh.material).id))) {
                         serializationObject.multiMaterials.push(mesh.material.serialize());
                     }
 
@@ -138,9 +138,13 @@
 
             //Physics
             if (scene.isPhysicsEnabled()) {
-                serializationObject.physicsEnabled = true;
-                serializationObject.physicsGravity = scene.getPhysicsEngine().gravity.asArray();
-                serializationObject.physicsEngine = scene.getPhysicsEngine().getPhysicsPluginName();
+                let physicEngine = scene.getPhysicsEngine();
+
+                if (physicEngine) {
+                    serializationObject.physicsEnabled = true;
+                    serializationObject.physicsGravity = physicEngine.gravity.asArray();
+                    serializationObject.physicsEngine = physicEngine.getPhysicsPluginName();
+                }
             }
 
             // Metadata
@@ -152,11 +156,11 @@
             serializationObject.morphTargetManagers = [];
             for (var abstractMesh of scene.meshes) {
                 var manager = (<Mesh>abstractMesh).morphTargetManager;
-                
+
                 if (manager) {
                     serializationObject.morphTargetManagers.push(manager.serialize());
                 }
-            }            
+            }
 
             // Lights
             serializationObject.lights = [];
@@ -205,10 +209,21 @@
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
 
+            // Environment texture
+            if (scene.environmentTexture) {
+                serializationObject.environmentTexture = scene.environmentTexture.name;
+            }
+
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
                 serializationObject.skeletons.push(scene.skeletons[index].serialize());
+            }
+
+            // Transform nodes
+            serializationObject.transformNodes = [];
+            for (index = 0; index < scene.transformNodes.length; index++) {
+                serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
             }
 
             // Geometries
@@ -267,7 +282,7 @@
 
                 let shadowGenerator = light.getShadowGenerator();
                 if (shadowGenerator) {
-                     serializationObject.shadowGenerators.push(shadowGenerator.serialize());
+                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
                 }
             }
 
@@ -301,7 +316,7 @@
                 //deliberate for loop! not for each, appended should be processed as well.
                 for (var i = 0; i < toSerialize.length; ++i) {
                     if (withChildren) {
-                        toSerialize[i].getDescendants().forEach((node) => {
+                        toSerialize[i].getDescendants().forEach((node: Node) => {
                             if (node instanceof Mesh && (toSerialize.indexOf(node) < 0)) {
                                 toSerialize.push(node);
                             }

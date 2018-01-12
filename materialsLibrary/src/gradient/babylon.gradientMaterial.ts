@@ -5,6 +5,7 @@ module BABYLON {
         public DIFFUSE = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public LIGHT0 = false;
@@ -48,7 +49,6 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -86,8 +86,6 @@ module BABYLON {
 
         @serialize()
         public disableLighting = false;
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
         private _renderId: number;
 
@@ -103,7 +101,7 @@ module BABYLON {
             return true;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -130,7 +128,7 @@ module BABYLON {
 
             var engine = scene.getEngine();
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
@@ -192,7 +190,7 @@ module BABYLON {
                     "topColor", "bottomColor", "offset", "smoothness"
                 ];
                 var samplers = ["diffuseSampler"];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>();
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
@@ -215,7 +213,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: 4 }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -234,6 +232,10 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
+
             this._activeEffect = effect;
             
             // Matrices        
@@ -241,18 +243,18 @@ module BABYLON {
             this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, this._effect);
+            MaterialHelper.BindBonesParameters(mesh, effect);
 
             if (this._mustRebind(scene, effect)) {
                 // Clip plane
-                MaterialHelper.BindClipPlane(this._effect, scene);
+                MaterialHelper.BindClipPlane(effect, scene);
 
                 // Point size
                 if (this.pointsCloud) {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);              
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);

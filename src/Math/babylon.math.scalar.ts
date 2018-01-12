@@ -1,6 +1,12 @@
 ﻿module BABYLON {
 
     export class Scalar {
+
+        /**
+         * Two pi constants convenient for computation.
+         */
+        public static TwoPi: number = Math.PI * 2;
+
         /**
          * Boolean : true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
          */
@@ -215,6 +221,25 @@
         */
         public static PercentToRange(percent: number, min: number, max: number): number {
             return ((max - min) * percent + min);
-        }        
+        }
+
+        /**
+         * Returns the angle converted to equivalent value between -Math.PI and Math.PI radians.
+         * @param angle The angle to normalize in radian.
+         * @return The converted angle.
+         */
+        public static NormalizeRadians(angle: number): number {
+            // More precise but slower version kept for reference.
+            // angle = angle % Tools.TwoPi;
+            // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
+
+            //if (angle > Math.PI) {
+            //	angle -= Tools.TwoPi;
+            //}
+
+            angle -= (Scalar.TwoPi * Math.floor((angle + Math.PI) / Scalar.TwoPi));
+
+            return angle;
+        }
     }
 }

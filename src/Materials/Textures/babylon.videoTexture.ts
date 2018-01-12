@@ -6,6 +6,8 @@
         private _lastUpdate: number;
         private _generateMipMaps: boolean
         private _setTextureReady: () => void;
+        private _engine: Engine;
+
         /**
          * Creates a video texture.
          * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
@@ -18,23 +20,25 @@
         constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps = false, invertY = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
             super(null, scene, !generateMipMaps, invertY);
 
-            var urls: string[];
+            var urls: Nullable<string[]> = null;
             this.name = name;
 
             if (urlsOrVideo instanceof HTMLVideoElement) {
                 this.video = <any>urlsOrVideo;
             } else {
-                urls = <any>urlsOrVideo;
+                urls = urlsOrVideo;
 
                 this.video = document.createElement("video");
                 this.video.autoplay = false;
                 this.video.loop = true;
+                Tools.SetCorsBehavior(urls, this.video);
             }
 
+            this._engine = (<Scene>this.getScene()).getEngine();
             this._generateMipMaps = generateMipMaps;
             this._samplingMode = samplingMode;
 
-            if (!this.getScene().getEngine().needPOTTextures ||(Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
+            if (!this._engine.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
@@ -45,7 +49,9 @@
 
             if (urls) {
                 this.video.addEventListener("canplay", () => {
-                    this._createTexture();
+                    if (this._texture === undefined){ 
+                      this._createTexture();
+                    }
                 });
                 urls.forEach(url => {
                     var source = document.createElement("source");
@@ -60,11 +66,13 @@
         }
 
         private __setTextureReady(): void {
-            this._texture.isReady = true;
+            if (this._texture) {
+                this._texture.isReady = true;
+            }
         }
 
         private _createTexture(): void {
-            this._texture = this.getScene().getEngine().createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
+            this._texture = this._engine.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
 
             if (this._autoLaunch) {
                 this._autoLaunch = false;
@@ -74,7 +82,7 @@
             this.video.addEventListener("playing", this._setTextureReady);
         }
 
-        
+
         public _rebuild(): void {
             this.update();
         }
@@ -87,7 +95,7 @@
             }
 
             this._lastUpdate = now;
-            this.getScene().getEngine().updateVideoTexture(this._texture, this.video, this._invertY);
+            this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
             return true;
         }
 
@@ -97,25 +105,25 @@
         }
 
         public static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
-                minWidth: number,
-                maxWidth: number,
-                minHeight: number,
-                maxHeight: number,
-                deviceId: string
-            }): void {
+            minWidth: number,
+            maxWidth: number,
+            minHeight: number,
+            maxHeight: number,
+            deviceId: string
+        }): void {
             var video = document.createElement("video");
             var constraintsDeviceId;
-            if (constraints && constraints.deviceId){
+            if (constraints && constraints.deviceId) {
                 constraintsDeviceId = {
                     exact: constraints.deviceId
                 }
             }
 
-		    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-		    window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 
-		    if (navigator.getUserMedia) {
-			    navigator.getUserMedia({
+            if (navigator.getUserMedia) {
+                navigator.getUserMedia({
                     video: {
                         deviceId: constraintsDeviceId,
                         width: {
@@ -127,7 +135,7 @@
                             max: (constraints && constraints.maxHeight) || 480
                         }
                     }
-                }, (stream) => {
+                }, (stream: any) => {
 
                     if (video.mozSrcObject !== undefined) { // hack for Firefox < 19
                         video.mozSrcObject = stream;
@@ -138,9 +146,9 @@
                     video.play();
 
                     if (onReady) {
-                        onReady(new BABYLON.VideoTexture("video", video, scene, true, true));
+                        onReady(new VideoTexture("video", video, scene, true, true));
                     }
-			    }, function (e) {
+                }, function (e: MediaStreamError) {
                     Tools.Error(e.name);
                 });
             }

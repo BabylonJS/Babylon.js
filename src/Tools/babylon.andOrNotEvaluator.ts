@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     export class AndOrNotEvaluator {
         public static Eval(query: string, evaluateCallback: (val: any) => boolean): boolean {
             if (!query.match(/\([^\(\)]*\)/g)) {
@@ -23,7 +23,7 @@
             return AndOrNotEvaluator.Eval(query, evaluateCallback);
         }
 
-        private static _HandleParenthesisContent(parenthesisContent: string, evaluateCallback: (val) => boolean): string {
+        private static _HandleParenthesisContent(parenthesisContent: string, evaluateCallback: (val: string) => boolean): string {
             evaluateCallback = evaluateCallback || ((r) => {
                 return r === "true" ? true : false;
             });

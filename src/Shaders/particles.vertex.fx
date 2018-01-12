@@ -2,12 +2,12 @@
 attribute vec3 position;
 attribute vec4 color;
 attribute vec4 options;
-attribute vec4 cellInfo;
+attribute float cellIndex;
 
 // Uniforms
 uniform mat4 view;
 uniform mat4 projection;
-uniform vec2 textureInfos;
+uniform vec3 particlesInfos; // x (number of rows) y(number of columns) z(rowSize)
 
 // Output
 varying vec2 vUV;
@@ -25,8 +25,7 @@ void main(void) {
 	float size = options.y;
 	float angle = options.x;
 	vec2 offset = options.zw;
-	vec2 uvScale = textureInfos.xy;
-
+	
 	cornerPos = vec3(offset.x - 0.5, offset.y  - 0.5, 0.) * size;
 
 	// Rotate
@@ -41,11 +40,16 @@ void main(void) {
 	
 	vColor = color;
 
+	#ifdef ANIMATESHEET
+	float rowOffset = floor(cellIndex / particlesInfos.z);
+    float columnOffset = cellIndex - rowOffset * particlesInfos.z;
 
-	vec2 uvOffset = vec2(abs(offset.x), 1.0 - abs(offset.y));
-
-	vUV = (uvOffset + cellInfo.zw) * uvScale;
-	//vUV = offset;
+	vec2 uvScale = particlesInfos.xy;
+	vec2 uvOffset = vec2(offset.x , 1.0 - offset.y);
+	vUV = (uvOffset + vec2(columnOffset, rowOffset)) * uvScale;
+	#else
+	vUV = offset;
+	#endif
 
 	// Clip plane
 #ifdef CLIPPLANE

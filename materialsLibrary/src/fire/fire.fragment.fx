@@ -71,6 +71,8 @@ void main(void) {
 	if (opacityColor.r < 0.1)
 		discard;
 #endif
+
+#include<depthPrePass>
 	
 	baseColor = texture2D(diffuseSampler, perturbedBaseCoords.xy) * 2.0;
 	baseColor *= opacityColor;

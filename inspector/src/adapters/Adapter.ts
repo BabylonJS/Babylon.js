@@ -20,11 +20,6 @@ module INSPECTOR {
         /** Returns the list of properties to be displayed for this adapter */
         public abstract getProperties(): Array<PropertyLine>;
 
-        /** Returns the actual object behind this adapter */
-        public get actualObject(): any {
-            return this._obj;
-        }
-
         /** Returns true if the given object correspond to this  */
         public correspondsTo(obj: any) {
             return obj === this._obj;

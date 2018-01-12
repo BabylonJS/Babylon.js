@@ -35,7 +35,6 @@ module INSPECTOR {
         }
 
         public update(_items?: Array<TreeItem>) {
-
             let items;
             if (_items) {
                 items = _items;
@@ -78,40 +77,31 @@ module INSPECTOR {
             Helpers.CleanDiv(this._imagePanel);
             // Get the texture object
             let texture = item.adapter.object;
-
             let imgs: HTMLImageElement[] = [];
             let img = Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement;
             imgs.push(img);
-            
             //Create five other images elements
-            for(let i = 0; i<5; i++){
+            for (let i = 0; i < 5; i++) {
                 imgs.push(Helpers.CreateElement('img', 'texture-image', this._imagePanel) as HTMLImageElement);
             }
 
-            if (texture instanceof BABYLON.MapTexture) {
-                // instance of Map texture
-                texture.bindTextureForPosSize(new BABYLON.Vector2(0, 0), new BABYLON.Size(texture.getSize().width, texture.getSize().height), false);
-                BABYLON.Tools.DumpFramebuffer(texture.getSize().width, texture.getSize().height, this._inspector.scene.getEngine(), (data) => img.src = data);
-                texture.unbindTexture();
-
-            }
-            else if (texture instanceof BABYLON.RenderTargetTexture) {
+            if (texture instanceof BABYLON.RenderTargetTexture) {
                 // RenderTarget textures
                 let scene = this._inspector.scene;
                 let engine = scene.getEngine();
                 let size = texture.getSize();
-                    
+
                 // Clone the texture
                 let screenShotTexture = texture.clone();
                 screenShotTexture.activeCamera = texture.activeCamera;
                 screenShotTexture.onBeforeRender = texture.onBeforeRender;
                 screenShotTexture.onAfterRender = texture.onAfterRender;
                 screenShotTexture.onBeforeRenderObservable = texture.onBeforeRenderObservable;
-                
+
                 // To display the texture after rendering
                 screenShotTexture.onAfterRenderObservable.add((faceIndex: number) => {
-                    BABYLON.Tools.DumpFramebuffer(size.width, size.height, engine,  
-                        (data) => imgs[faceIndex].src = data, "image/png");
+                    BABYLON.Tools.DumpFramebuffer(size.width, size.height, engine,
+                        (data) => imgs[faceIndex].src = data);
                 });
 
                 // Render the texture
@@ -119,23 +109,65 @@ module INSPECTOR {
                 scene.resetCachedMaterial();
                 screenShotTexture.render();
                 screenShotTexture.dispose();
-            }else if(texture instanceof BABYLON.CubeTexture){
+            } else if (texture instanceof BABYLON.CubeTexture) {
+                // Cannot open correctly DDS File
                 // Display all textures of the CubeTexture
-                let i: number = 0;
-                for(let filename of (texture as BABYLON.CubeTexture)['_files']){
-                    imgs[i].src = filename;
-                    i++;
-                }
-            }
-             else if (texture.url) {
-                // If an url is present, the texture is an image
-                img.src = texture.url;
+                let pixels = <ArrayBufferView>texture.readPixels();
+                let canvas = document.createElement('canvas');
+                canvas.id = "MyCanvas";
 
-            } else if (texture['_canvas']) {
+                if (img.parentElement) {
+                    img.parentElement.appendChild(canvas);
+                }
+                let ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
+                let size = texture.getSize();
+
+                let tmp = pixels.buffer.slice(0, size.height * size.width * 4);
+                let u = new Uint8ClampedArray(tmp)
+
+                let colors = new ImageData(size.width * 6, size.height);
+
+                colors.data.set(u);
+                let imgData = ctx.createImageData(size.width * 6, size.height);
+
+                imgData.data.set(u);
+
+                // let data = imgData.data;
+
+                // for(let i = 0, len = size.height * size.width; i < len; i++) {
+                //     data[i] = pixels[i];
+                // }
+                ctx.putImageData(imgData, 0, 0);
+                // let i: number = 0;
+                // for(let filename of (texture as BABYLON.CubeTexture)['_files']){
+                //     imgs[i].src = filename;
+                //     i++;
+                // }
+            }
+            else if (texture['_canvas']) {
                 // Dynamic texture
                 let base64Image = texture['_canvas'].toDataURL("image/png");
                 img.src = base64Image;
-            } 
+            } else if (texture.url) {
+                let pixels = texture.readPixels();
+                let canvas = document.createElement('canvas');
+                canvas.id = "MyCanvas";
+
+                if (img.parentElement) {
+                    img.parentElement.appendChild(canvas);
+                }
+                let ctx = <CanvasRenderingContext2D>canvas.getContext('2d');
+                let size = texture.getSize();
+
+                let imgData = ctx.createImageData(size.width, size.height);
+
+                imgData.data.set(pixels);
+
+                ctx.putImageData(imgData, 0, 0);
+                // If an url is present, the texture is an image
+                // img.src = texture.url;
+
+            }
 
         }
 

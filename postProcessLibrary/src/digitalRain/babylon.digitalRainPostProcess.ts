@@ -32,8 +32,14 @@ module BABYLON {
          * @param text the caracter set to use in the rendering.
          * @param scene the scene that owns the texture
          */
-        constructor(name: string, font: string, text: string, scene: Scene) {
+        constructor(name: string, font: string, text: string, scene: Nullable<Scene> = null) {
             super(scene);
+
+            scene = this.getScene();
+            
+            if (!scene) {
+                return;
+            }                        
 
             this.name = name;
             this._text == text;
@@ -62,7 +68,7 @@ module BABYLON {
             var canvas = document.createElement("canvas");
             canvas.width = textureSize.width;
             canvas.height = textureSize.height;
-            var context = canvas.getContext("2d");
+            var context = <CanvasRenderingContext2D>canvas.getContext("2d");
             context.textBaseline = "top";
             context.font = font;
             context.fillStyle = "white";
@@ -74,7 +80,7 @@ module BABYLON {
             }        
 
             // Flush the text in the dynamic texture.
-            this.getScene().getEngine().updateDynamicTexture(this._texture, canvas, false, true);
+            scene.getEngine().updateDynamicTexture(this._texture, canvas, false, true);
         }
 
         /**
@@ -84,7 +90,7 @@ module BABYLON {
          */
         private getFontWidth(font: string): number {
             var fontDraw = document.createElement("canvas");
-            var ctx = fontDraw.getContext('2d');
+            var ctx = <CanvasRenderingContext2D>fontDraw.getContext('2d');
             ctx.fillStyle = 'white';
             ctx.font = font;
 
@@ -99,7 +105,7 @@ module BABYLON {
          */
         private getFontHeight(font: string): {height: number, offset: number} {
             var fontDraw = document.createElement("canvas");
-            var ctx = fontDraw.getContext('2d');
+            var ctx = <CanvasRenderingContext2D>fontDraw.getContext('2d');
             ctx.fillRect(0, 0, fontDraw.width, fontDraw.height);
             ctx.textBaseline = 'top';
             ctx.fillStyle = 'white';

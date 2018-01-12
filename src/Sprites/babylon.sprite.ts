@@ -19,7 +19,6 @@
         private _toIndex = 0;
         private _delay = 0;
         private _direction = 1;
-        private _frameCount = 0;
         private _manager: SpriteManager;
         private _time = 0;
         private _onAnimationEnd: () => void;
@@ -68,10 +67,11 @@
             if (this._time > this._delay) {
                 this._time = this._time % this._delay;
                 this.cellIndex += this._direction;
-                if (this.cellIndex === this._toIndex) {
+                if (this.cellIndex > this._toIndex) {
                     if (this._loopAnimation) {
                         this.cellIndex = this._fromIndex;
                     } else {
+                        this.cellIndex = this._toIndex;
                         this._animationStarted = false;
                         if (this._onAnimationEnd) {
                             this._onAnimationEnd();

@@ -1,22 +1,22 @@
 module BABYLON {
     export interface IMultiRenderTargetOptions {
-        generateMipMaps: boolean,
-        types: number[],
-        samplingModes: number[],
-        generateDepthBuffer: boolean,
-        generateStencilBuffer: boolean,
-        generateDepthTexture: boolean,
-        textureCount: number
+        generateMipMaps?: boolean,
+        types?: number[],
+        samplingModes?: number[],
+        generateDepthBuffer?: boolean,
+        generateStencilBuffer?: boolean,
+        generateDepthTexture?: boolean,
+        textureCount?: number,
+        doNotChangeAspectRatio?: boolean,
+        defaultType?: number
     };
     export class MultiRenderTarget extends RenderTargetTexture {
 
         private _internalTextures: InternalTexture[];
         private _textures: Texture[];
-        private _count: number;
 
         public get isSupported(): boolean {
-            var engine = this.getScene().getEngine();
-            return engine.webGLVersion > 1 || engine.getCaps().drawBuffersExtension;
+            return this._engine.webGLVersion > 1 || this._engine.getCaps().drawBuffersExtension;
         }
 
         private _multiRenderTargetOptions: IMultiRenderTargetOptions;
@@ -29,14 +29,30 @@ module BABYLON {
             return this._textures[this._textures.length - 1];
         }
 
-        constructor(name: string, size: any, count: number, scene: Scene, options?: any) {
-            options = options || {};
+        public set wrapU(wrap: number) {
+            if (this._textures) {
+                for (var i = 0; i < this._textures.length; i++) {
+                    this._textures[i].wrapU = wrap;
+                }
+            }
+        }
 
-            var generateMipMaps = options.generateMipMaps ? options.generateMipMaps : false;
-            var generateDepthTexture = options.generateDepthTexture ? options.generateDepthTexture : false;
-            var doNotChangeAspectRatio = options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
+        public set wrapV(wrap: number) {
+            if (this._textures) {
+                for (var i = 0; i < this._textures.length; i++) {
+                    this._textures[i].wrapV = wrap;
+                }
+            }
+        }
+
+        constructor(name: string, size: any, count: number, scene: Scene, options?: IMultiRenderTargetOptions) {
+            var generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
+            var generateDepthTexture = options && options.generateDepthTexture ? options.generateDepthTexture : false;
+            var doNotChangeAspectRatio = !options || options.doNotChangeAspectRatio === undefined ? true : options.doNotChangeAspectRatio;
 
             super(name, size, scene, generateMipMaps, doNotChangeAspectRatio);
+
+            this._engine = scene.getEngine();
 
             if (!this.isSupported) {
                 this.dispose();
@@ -47,23 +63,22 @@ module BABYLON {
             var samplingModes = [];
 
             for (var i = 0; i < count; i++) {
-                if (options.types && options.types[i]) {
+                if (options && options.types && options.types[i] !== undefined) {
                     types.push(options.types[i]);
                 } else {
-                    types.push(Engine.TEXTURETYPE_FLOAT);
+                    types.push(options && options.defaultType ? options.defaultType : Engine.TEXTURETYPE_UNSIGNED_INT);
                 }
 
-                if (options.samplingModes && options.samplingModes[i]) {
+                if (options && options.samplingModes && options.samplingModes[i] !== undefined) {
                     samplingModes.push(options.samplingModes[i]);
                 } else {
                     samplingModes.push(Texture.BILINEAR_SAMPLINGMODE);
                 }
             }
 
-            var generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-            var generateStencilBuffer = options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
+            var generateDepthBuffer = !options || options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+            var generateStencilBuffer = !options || options.generateStencilBuffer === undefined ? false : options.generateStencilBuffer;
 
-            this._count = count;
             this._size = size;
             this._multiRenderTargetOptions = {
                 samplingModes: samplingModes,
@@ -73,8 +88,8 @@ module BABYLON {
                 generateDepthTexture: generateDepthTexture,
                 types: types,
                 textureCount: count
-            };            
-            
+            };
+
             this._createInternalTextures();
             this._createTextures();
         }
@@ -93,13 +108,13 @@ module BABYLON {
         }
 
         private _createInternalTextures(): void {
-            this._internalTextures = this.getScene().getEngine().createMultipleRenderTarget(this._size , this._multiRenderTargetOptions);
+            this._internalTextures = this._engine.createMultipleRenderTarget(this._size, this._multiRenderTargetOptions);
         }
 
         private _createTextures(): void {
             this._textures = [];
             for (var i = 0; i < this._internalTextures.length; i++) {
-                var texture = new BABYLON.Texture(null, this.getScene());
+                var texture = new Texture(null, this.getScene());
                 texture._texture = this._internalTextures[i];
                 this._textures.push(texture);
             }
@@ -116,16 +131,20 @@ module BABYLON {
             if (this._samples === value) {
                 return;
             }
-            
-            for (var i = 0 ; i < this._internalTextures.length; i++) {
-                this._samples = this.getScene().getEngine().updateRenderTargetTextureSampleCount(this._internalTextures[i], value);
-            }
+
+            this._samples = this._engine.updateMultipleRenderTargetTextureSampleCount(this._internalTextures, value);
         }
 
         public resize(size: any) {
             this.releaseInternalTextures();
-            this._internalTextures = this.getScene().getEngine().createMultipleRenderTarget(size, this._multiRenderTargetOptions);
+            this._internalTextures = this._engine.createMultipleRenderTarget(size, this._multiRenderTargetOptions);
             this._createInternalTextures();
+        }
+
+        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+            engine.unBindMultiColorAttachmentFramebuffer(this._internalTextures, this.isCube, () => {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
         }
 
         public dispose(): void {

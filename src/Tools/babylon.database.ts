@@ -1,27 +1,35 @@
 module BABYLON {
     export class Database {
-        private callbackManifestChecked: (boolean) => any;
+        private callbackManifestChecked: (check: boolean) => any;
         private currentSceneUrl: string;
-        private db: IDBDatabase;
-        private enableSceneOffline: boolean;
-        private enableTexturesOffline: boolean;
+        private db: Nullable<IDBDatabase>;
+        private _enableSceneOffline: boolean;
+        private _enableTexturesOffline: boolean;
         private manifestVersionFound: number;
         private mustUpdateRessources: boolean;
         private hasReachedQuota: boolean;
         private isSupported: boolean;
 
         // Handling various flavors of prefixed version of IndexedDB
-        private idbFactory = <IDBFactory> (window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
+        private idbFactory = <IDBFactory>(window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB);
 
         static IsUASupportingBlobStorage = true;
         static IDBStorageEnabled = true;
+
+        public get enableSceneOffline(): boolean {
+            return this._enableSceneOffline;
+        }
+
+        public get enableTexturesOffline(): boolean {
+            return this._enableTexturesOffline;
+        }
 
         constructor(urlToScene: string, callbackManifestChecked: (checked: boolean) => any) {
             this.callbackManifestChecked = callbackManifestChecked;
             this.currentSceneUrl = Database.ReturnFullUrlLocation(urlToScene);
             this.db = null;
-            this.enableSceneOffline = false;
-            this.enableTexturesOffline = false;
+            this._enableSceneOffline = false;
+            this._enableTexturesOffline = false;
             this.manifestVersionFound = 0;
             this.mustUpdateRessources = false;
             this.hasReachedQuota = false;
@@ -52,16 +60,15 @@ module BABYLON {
         }
 
         public checkManifestFile() {
-            function noManifestFile() {
-                that.enableSceneOffline = false;
-                that.enableTexturesOffline = false;
-                that.callbackManifestChecked(false);
+            var noManifestFile = () => {
+                this._enableSceneOffline = false;
+                this._enableTexturesOffline = false;
+                this.callbackManifestChecked(false);
             }
 
-            var that = this;
             var timeStampUsed = false;
             var manifestURL = this.currentSceneUrl + ".manifest";
-            
+
             var xhr: XMLHttpRequest = new XMLHttpRequest();
 
             if (navigator.onLine) {
@@ -71,12 +78,12 @@ module BABYLON {
             }
             xhr.open("GET", manifestURL, true);
 
-            xhr.addEventListener("load",() => {
+            xhr.addEventListener("load", () => {
                 if (xhr.status === 200 || Tools.ValidateXHRData(xhr, 1)) {
                     try {
                         var manifestFile = JSON.parse(xhr.response);
-                        this.enableSceneOffline = manifestFile.enableSceneOffline;
-                        this.enableTexturesOffline = manifestFile.enableTexturesOffline;
+                        this._enableSceneOffline = manifestFile.enableSceneOffline;
+                        this._enableTexturesOffline = manifestFile.enableTexturesOffline;
                         if (manifestFile.version && !isNaN(parseInt(manifestFile.version))) {
                             this.manifestVersionFound = manifestFile.version;
                         }
@@ -112,18 +119,17 @@ module BABYLON {
             }
             catch (ex) {
                 Tools.Error("Error on XHR send request.");
-                that.callbackManifestChecked(false);
+                this.callbackManifestChecked(false);
             }
         }
 
-        public openAsync(successCallback, errorCallback) {
-            function handleError() {
-                that.isSupported = false;
+        public openAsync(successCallback: () => void, errorCallback: () => void) {
+            let handleError = () => {
+                this.isSupported = false;
                 if (errorCallback) errorCallback();
             }
 
-            var that = this;
-            if (!this.idbFactory || !(this.enableSceneOffline || this.enableTexturesOffline)) {
+            if (!this.idbFactory || !(this._enableSceneOffline || this._enableTexturesOffline)) {
                 // Your browser doesn't support IndexedDB
                 this.isSupported = false;
                 if (errorCallback) errorCallback();
@@ -156,14 +162,16 @@ module BABYLON {
                     // Initialization of the DB. Creating Scenes & Textures stores
                     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
                         this.db = (<any>(event.target)).result;
-                        try {
-                            var scenesStore = this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
-                            var versionsStore = this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
-                            var texturesStore = this.db.createObjectStore("textures", { keyPath: "textureUrl" });
-                        }
-                        catch (ex) {
-                            Tools.Error("Error while creating object stores. Exception: " + ex.message);
-                            handleError();
+                        if (this.db) {
+                            try {
+                                this.db.createObjectStore("scenes", { keyPath: "sceneUrl" });
+                                this.db.createObjectStore("versions", { keyPath: "sceneUrl" });
+                                this.db.createObjectStore("textures", { keyPath: "textureUrl" });
+                            }
+                            catch (ex) {
+                                Tools.Error("Error while creating object stores. Exception: " + ex.message);
+                                handleError();
+                            }
                         }
                     };
                 }
@@ -200,7 +208,7 @@ module BABYLON {
 
         private _loadImageFromDBAsync(url: string, image: HTMLImageElement, notInDBCallback: () => any) {
             if (this.isSupported && this.db !== null) {
-                var texture;
+                var texture: any;
                 var transaction: IDBTransaction = this.db.transaction(["textures"]);
 
                 transaction.onabort = event => {
@@ -208,7 +216,7 @@ module BABYLON {
                 };
 
                 transaction.oncomplete = event => {
-                    var blobTextureURL;
+                    var blobTextureURL: string;
                     if (texture) {
                         var URL = window.URL || window.webkitURL;
                         blobTextureURL = URL.createObjectURL(texture.data, { oneTimeOnly: true });
@@ -257,7 +265,9 @@ module BABYLON {
                         }
                     }
 
-                    image.src = blobTextureURL;
+                    if (blobTextureURL) {
+                        image.src = blobTextureURL;
+                    }
                 };
 
                 if (Database.IsUASupportingBlobStorage) { // Create XHR
@@ -267,8 +277,8 @@ module BABYLON {
                     xhr.open("GET", url, true);
                     xhr.responseType = "blob";
 
-                    xhr.addEventListener("load",() => {
-                        if (xhr.status === 200) {
+                    xhr.addEventListener("load", () => {
+                        if (xhr.status === 200 && this.db) {
                             // Blob as response (XHR2)
                             blob = xhr.response;
 
@@ -278,7 +288,9 @@ module BABYLON {
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
+                                    let srcElement = <any>(event.srcElement || event.target);
+                                    var error = srcElement.error;
+                                    if (error && error.name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }
@@ -331,17 +343,17 @@ module BABYLON {
             }
         }
 
-        private _checkVersionFromDB(url: string, versionLoaded) {
-            var updateVersion = event => {
+        private _checkVersionFromDB(url: string, versionLoaded: (version: number) => void) {
+            var updateVersion = () => {
                 // the version is not yet in the DB or we need to update it
                 this._saveVersionIntoDBAsync(url, versionLoaded);
             };
             this._loadVersionFromDBAsync(url, versionLoaded, updateVersion);
         }
 
-        private _loadVersionFromDBAsync(url: string, callback, updateInDBCallback) {
-            if (this.isSupported) {
-                var version;
+        private _loadVersionFromDBAsync(url: string, callback: (version: number) => void, updateInDBCallback: () => void) {
+            if (this.isSupported && this.db) {
+                var version: any;
                 try {
                     var transaction = this.db.transaction(["versions"]);
 
@@ -388,8 +400,8 @@ module BABYLON {
             }
         }
 
-        private _saveVersionIntoDBAsync(url: string, callback) {
-            if (this.isSupported && !this.hasReachedQuota) {
+        private _saveVersionIntoDBAsync(url: string, callback: (version: number) => void) {
+            if (this.isSupported && !this.hasReachedQuota && this.db) {
                 try {
                     // Open a transaction to the database
                     var transaction = this.db.transaction(["versions"], "readwrite");
@@ -397,7 +409,8 @@ module BABYLON {
                     // the transaction could abort because of a QuotaExceededError error
                     transaction.onabort = event => {
                         try {//backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                            if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
+                            var error = (<any>event.srcElement)['error'];
+                            if (error && error.name === "QuotaExceededError") {
                                 this.hasReachedQuota = true;
                             }
                         }
@@ -429,10 +442,10 @@ module BABYLON {
             }
         }
 
-        private loadFileFromDB(url: string, sceneLoaded, progressCallBack, errorCallback, useArrayBuffer?: boolean) {
+        public loadFileFromDB(url: string, sceneLoaded: (data: any) => void, progressCallBack?: (data: any) => void, errorCallback?: () => void, useArrayBuffer?: boolean) {
             var completeUrl = Database.ReturnFullUrlLocation(url);
 
-            var saveAndLoadFile = event => {
+            var saveAndLoadFile = () => {
                 // the scene is not yet in the DB, let's try to save it
                 this._saveFileIntoDBAsync(completeUrl, sceneLoaded, progressCallBack);
             };
@@ -447,13 +460,15 @@ module BABYLON {
                     }
                 }
                 else {
-                    errorCallback();
+                    if (errorCallback) {
+                        errorCallback();
+                    }
                 }
             });
         }
 
-        private _loadFileFromDBAsync(url, callback, notInDBCallback, useArrayBuffer?: boolean) {
-            if (this.isSupported) {
+        private _loadFileFromDBAsync(url: string, callback: (data?: any) => void, notInDBCallback: () => void, useArrayBuffer?: boolean) {
+            if (this.isSupported && this.db) {
                 var targetStore: string;
                 if (url.indexOf(".babylon") !== -1) {
                     targetStore = "scenes";
@@ -462,7 +477,7 @@ module BABYLON {
                     targetStore = "textures";
                 }
 
-                var file;
+                var file: any;
                 var transaction = this.db.transaction([targetStore]);
 
                 transaction.oncomplete = event => {
@@ -495,7 +510,7 @@ module BABYLON {
             }
         }
 
-        private _saveFileIntoDBAsync(url: string, callback, progressCallback, useArrayBuffer?: boolean) {
+        private _saveFileIntoDBAsync(url: string, callback: (data?: any) => void, progressCallback?: (this: XMLHttpRequestEventTarget, ev: ProgressEvent) => any, useArrayBuffer?: boolean) {
             if (this.isSupported) {
                 var targetStore: string;
                 if (url.indexOf(".babylon") !== -1) {
@@ -506,22 +521,25 @@ module BABYLON {
                 }
 
                 // Create XHR
-                var xhr = new XMLHttpRequest(), fileData;
+                var xhr = new XMLHttpRequest();
+                var fileData: any;
                 xhr.open("GET", url, true);
 
                 if (useArrayBuffer) {
                     xhr.responseType = "arraybuffer";
                 }
 
-                xhr.onprogress = progressCallback;
+                if (progressCallback) {
+                    xhr.onprogress = progressCallback;
+                }
 
-                xhr.addEventListener("load",() => {
+                xhr.addEventListener("load", () => {
                     if (xhr.status === 200 || Tools.ValidateXHRData(xhr, !useArrayBuffer ? 1 : 6)) {
                         // Blob as response (XHR2)
                         //fileData = xhr.responseText;
                         fileData = !useArrayBuffer ? xhr.responseText : xhr.response;
 
-                        if (!this.hasReachedQuota) {
+                        if (!this.hasReachedQuota && this.db) {
                             // Open a transaction to the database
                             var transaction = this.db.transaction([targetStore], "readwrite");
 
@@ -529,7 +547,8 @@ module BABYLON {
                             transaction.onabort = (event) => {
                                 try {
                                     //backwards compatibility with ts 1.0, srcElement doesn't have an "error" according to ts 1.3
-                                    if (event.srcElement['error'] && event.srcElement['error'].name === "QuotaExceededError") {
+                                    var error = (<any>event.srcElement)['error'];
+                                    if (error && error.name === "QuotaExceededError") {
                                         this.hasReachedQuota = true;
                                     }
                                 }

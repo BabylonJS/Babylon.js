@@ -1,15 +1,15 @@
 module BABYLON {
     export class RayHelper {
         
-        public ray:Ray;
+        public ray: Nullable<Ray>;
 
         private _renderPoints: Vector3[];
-        private _renderLine: LinesMesh;
-        private _renderFunction: () => void;
-        private _scene: Scene;
+        private _renderLine: Nullable<LinesMesh>;
+        private _renderFunction: Nullable<() => void>;
+        private _scene: Nullable<Scene>;
         
-        private _updateToMeshFunction: () => void;
-        private _attachedToMesh: AbstractMesh;
+        private _updateToMeshFunction: Nullable<() => void>;
+        private _attachedToMesh: Nullable<AbstractMesh>;
         private _meshSpaceDirection: Vector3;
         private _meshSpaceOrigin: Vector3;
 
@@ -27,7 +27,7 @@ module BABYLON {
 
         public show(scene:Scene, color:Color3): void{
 
-            if(!this._renderFunction){
+            if(!this._renderFunction && this.ray){
 
                 var ray = this.ray;
 
@@ -36,11 +36,12 @@ module BABYLON {
                 this._renderPoints = [ray.origin, ray.origin.add(ray.direction.scale(ray.length))];
                 this._renderLine = Mesh.CreateLines("ray", this._renderPoints, scene, true);
 
-                this._scene.registerBeforeRender(this._renderFunction);
-
+                if (this._renderFunction) {
+                    this._scene.registerBeforeRender(this._renderFunction);
+                }
             }
 
-            if (color) {
+            if (color && this._renderLine) {
                 this._renderLine.color.copyFrom(color);
             }
 
@@ -48,13 +49,16 @@ module BABYLON {
 
         public hide(): void{
 
-            if(this._renderFunction){
+            if(this._renderFunction && this._scene){
                 this._scene.unregisterBeforeRender(this._renderFunction);
                 this._scene = null;
                 this._renderFunction = null;
-                this._renderLine.dispose();
-                this._renderLine = null;
-                this._renderPoints = null;
+                if (this._renderLine) {
+                    this._renderLine.dispose();
+                    this._renderLine = null;
+                }
+
+                this._renderPoints = [];
             }
 
         }
@@ -62,6 +66,10 @@ module BABYLON {
         private _render(): void {
 
             var ray = this.ray;
+
+            if (!ray) {
+                return;
+            }
 
             var point = this._renderPoints[1];
             var len = Math.min(ray.length, 1000000);
@@ -79,6 +87,10 @@ module BABYLON {
             this._attachedToMesh = mesh;
 
             var ray = this.ray;
+
+            if (!ray) {
+                return;
+            }
 
             if(!ray.direction){
                 ray.direction = Vector3.Zero();
@@ -110,7 +122,7 @@ module BABYLON {
             }
 
             if(!this._updateToMeshFunction){
-                this._updateToMeshFunction = this._updateToMesh.bind(this);
+                this._updateToMeshFunction = (<() => void>this._updateToMesh.bind(this));
                 this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
             }
 
@@ -121,7 +133,9 @@ module BABYLON {
         public detachFromMesh(): void{
 
             if(this._attachedToMesh){
-                this._attachedToMesh.getScene().unregisterBeforeRender(this._updateToMeshFunction);
+                if (this._updateToMeshFunction) {
+                    this._attachedToMesh.getScene().unregisterBeforeRender(this._updateToMeshFunction);
+                }
                 this._attachedToMesh = null;
                 this._updateToMeshFunction = null;
             }
@@ -131,6 +145,10 @@ module BABYLON {
         private _updateToMesh(): void{
 
             var ray = this.ray;
+
+            if (!this._attachedToMesh || !ray) {
+                return;
+            }
 
             if(this._attachedToMesh._isDisposed){
                 this.detachFromMesh();

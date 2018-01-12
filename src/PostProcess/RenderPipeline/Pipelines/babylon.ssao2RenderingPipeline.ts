@@ -88,9 +88,9 @@
         private _expensiveBlur: boolean = true;
         public set expensiveBlur(b: boolean) {
             this._blurHPostProcess.updateEffect("#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
-                                                null, ["textureSampler", "depthSampler"]);
+                null, ["textureSampler", "depthSampler"]);
             this._blurVPostProcess.updateEffect("#define BILATERAL_BLUR\n#define SAMPLES 16\n#define EXPENSIVE " + (b ? "1" : "0") + "\n",
-                                                null, ["textureSampler", "depthSampler"]);
+                null, ["textureSampler", "depthSampler"]);
             this._expensiveBlur = b;
             this._firstUpdate = true;
         }
@@ -120,7 +120,10 @@
         */
         public static get IsSupported(): boolean {
             var engine = Engine.LastCreatedEngine;
-            return engine.webGLVersion > 1;
+            if (!engine) {
+                return false;
+            }
+            return engine.getCaps().drawBuffersExtension;
         }
 
         private _scene: Scene;
@@ -135,9 +138,6 @@
         private _ssaoCombinePostProcess: PostProcess;
 
         private _firstUpdate: boolean = true;
-
-        @serialize()
-        private _ratio: any;
 
         /**
          * @constructor
@@ -158,15 +158,12 @@
 
             var ssaoRatio = ratio.ssaoRatio || ratio;
             var blurRatio = ratio.blurRatio || ratio;
-            this._ratio = {
-                ssaoRatio: ssaoRatio,
-                blurRatio: blurRatio
-            };
 
             // Set up assets
+            let geometryBufferRenderer = <GeometryBufferRenderer>scene.enableGeometryBufferRenderer();
             this._createRandomTexture();
-            this._depthTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[0]; 
-            this._normalTexture = scene.enableGeometryBufferRenderer().getGBuffer().textures[1];
+            this._depthTexture = geometryBufferRenderer.getGBuffer().textures[0];
+            this._normalTexture = geometryBufferRenderer.getGBuffer().textures[1];
 
             this._originalColorPostProcess = new PassPostProcess("SSAOOriginalSceneColor", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false);
             this._createSSAOPostProcess(1.0);
@@ -215,7 +212,6 @@
 
         // Private Methods
         private _createBlurPostProcess(ssaoRatio: number, blurRatio: number): void {
-            var samples = 16;
             this._samplerOffsets = [];
             var expensive = this.expensiveBlur;
 
@@ -225,7 +221,11 @@
 
             this._blurHPostProcess = new PostProcess("BlurH", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], ssaoRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_H\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurHPostProcess.onApply = (effect: Effect) => {
-                effect.setFloat("outSize", this._ssaoCombinePostProcess.width);
+                if (!this._scene.activeCamera) {
+                    return;
+                }
+
+                effect.setFloat("outSize", this._ssaoCombinePostProcess.width > 0 ? this._ssaoCombinePostProcess.width : this._originalColorPostProcess.width);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", this.radius);
@@ -238,7 +238,11 @@
 
             this._blurVPostProcess = new PostProcess("BlurV", "ssao2", ["outSize", "samplerOffsets", "near", "far", "radius"], ["depthSampler"], blurRatio, null, Texture.TRILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, "#define BILATERAL_BLUR\n#define BILATERAL_BLUR_V\n#define SAMPLES 16\n#define EXPENSIVE " + (expensive ? "1" : "0") + "\n");
             this._blurVPostProcess.onApply = (effect: Effect) => {
-                effect.setFloat("outSize", this._ssaoCombinePostProcess.height);
+                if (!this._scene.activeCamera) {
+                    return;
+                }
+
+                effect.setFloat("outSize", this._ssaoCombinePostProcess.height > 0 ? this._ssaoCombinePostProcess.height : this._originalColorPostProcess.height);
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
                 effect.setFloat("radius", this.radius);
@@ -250,7 +254,7 @@
                 }
             };
         }
-        
+
         public _rebuild() {
             this._firstUpdate = true;
 
@@ -262,29 +266,24 @@
             var result = [];
             var vector, scale;
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 
-            var lerp = (start, end, percent) => {
-                return (start + percent*(end - start));
-            }
-
             var i = 0;
-            var normal = new BABYLON.Vector3(0, 0, 1);
             while (i < numSamples) {
-               vector = new BABYLON.Vector3(
-                   rand(-1.0, 1.0),
-                   rand(-1.0, 1.0),
-                   rand(0.30, 1.0));
-               vector.normalize();
-               scale = i / numSamples;
-               scale = lerp(0.1, 1.0, scale*scale);
-               vector.scaleInPlace(scale);
+                vector = new Vector3(
+                    rand(-1.0, 1.0),
+                    rand(-1.0, 1.0),
+                    rand(0.30, 1.0));
+                vector.normalize();
+                scale = i / numSamples;
+                scale = Scalar.Lerp(0.1, 1.0, scale * scale);
+                vector.scaleInPlace(scale);
 
 
-               result.push(vector.x, vector.y, vector.z);
-               i++;
+                result.push(vector.x, vector.y, vector.z);
+                i++;
             }
 
             return result;
@@ -296,20 +295,24 @@
             this._sampleSphere = this._generateHemisphere();
 
             this._ssaoPostProcess = new PostProcess("ssao2", "ssao2",
-                                                    [
-                                                        "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
-                                                        "base", "range", "projection", "near", "far", "texelSize",
-                                                        "xViewport", "yViewport", "maxZ", "minZAspect"
-                                                    ],
-                                                    ["randomSampler", "normalSampler"],
-                                                    ratio, null, Texture.BILINEAR_SAMPLINGMODE,
-                                                    this._scene.getEngine(), false,
-                                                    "#define SAMPLES " + numSamples + "\n#define SSAO");
+                [
+                    "sampleSphere", "samplesFactor", "randTextureTiles", "totalStrength", "radius",
+                    "base", "range", "projection", "near", "far", "texelSize",
+                    "xViewport", "yViewport", "maxZ", "minZAspect"
+                ],
+                ["randomSampler", "normalSampler"],
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE,
+                this._scene.getEngine(), false,
+                "#define SAMPLES " + numSamples + "\n#define SSAO");
 
             this._ssaoPostProcess.onApply = (effect: Effect) => {
                 if (this._firstUpdate) {
                     effect.setArray3("sampleSphere", this._sampleSphere);
                     effect.setFloat("randTextureTiles", 4.0);
+                }
+
+                if (!this._scene.activeCamera) {
+                    return;
                 }
 
                 effect.setFloat("samplesFactor", 1 / this.samples);
@@ -322,7 +325,7 @@
                 effect.setFloat("near", this._scene.activeCamera.minZ);
                 effect.setFloat("far", this._scene.activeCamera.maxZ);
                 effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
-                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2) );
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
                 effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
                 effect.setTexture("textureSampler", this._depthTexture);
@@ -333,8 +336,8 @@
 
         private _createSSAOCombinePostProcess(ratio: number): void {
             this._ssaoCombinePostProcess = new PostProcess("ssaoCombine", "ssaoCombine", [], ["originalColor"],
-                                                           ratio, null, Texture.BILINEAR_SAMPLINGMODE,
-                                                           this._scene.getEngine(), false);
+                ratio, null, Texture.BILINEAR_SAMPLINGMODE,
+                this._scene.getEngine(), false);
 
             this._ssaoCombinePostProcess.onApply = (effect: Effect) => {
                 effect.setTextureFromPostProcess("originalColor", this._originalColorPostProcess);
@@ -350,7 +353,7 @@
 
             var context = this._randomTexture.getContext();
 
-            var rand = (min, max) => {
+            var rand = (min: number, max: number) => {
                 return Math.random() * (max - min) + min;
             }
 

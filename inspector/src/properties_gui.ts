@@ -1,3 +1,5 @@
+/// <reference path="../../dist/preview release/gui/babylon.gui.d.ts"/>
+
 module INSPECTOR {
     /**
      * Function that add gui objects properties to the variable PROPERTIES
@@ -32,7 +34,7 @@ module INSPECTOR {
             },
             'Button': {
                 type: BABYLON.GUI.Button,
-                properties: [],
+                properties: new Array(),
                 format: (button: BABYLON.GUI.Button) => { return button.name }
             },
             'ColorPicker': {
@@ -110,7 +112,7 @@ module INSPECTOR {
         }
 
         for (let prop in PROPERTIES_GUI) {
-            PROPERTIES[prop] = PROPERTIES_GUI[prop];
+            (<any>PROPERTIES)[prop] = (<any>PROPERTIES_GUI)[prop];
         }
     } 
 }

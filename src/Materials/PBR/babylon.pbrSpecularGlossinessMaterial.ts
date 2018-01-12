@@ -5,7 +5,7 @@
      * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
      */
-    export class PBRSpecularGlossinessMaterial extends Internals.PBRBaseSimpleMaterial {
+    export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
 
         /**
          * Specifies the diffuse color of the material.
@@ -13,7 +13,7 @@
         @serializeAsColor3("diffuse")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public diffuseColor: Color3;
-        
+
         /**
          * Specifies the diffuse texture of the material. This can also contains the opcity value in its alpha
          * channel.
@@ -35,7 +35,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_microSurface")
         public glossiness: number;
-        
+
         /**
          * Specifies both the specular color RGB and the glossiness A of the material per pixels.
          */
@@ -89,13 +89,18 @@
 
             if (this.specularGlossinessTexture === texture) {
                 return true;
-            }        
+            }
 
-            return false;    
+            return false;
         }
 
         public clone(name: string): PBRSpecularGlossinessMaterial {
-            return SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
+            var clone = SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
+
+            clone.id = name;
+            clone.name = name;
+
+            return clone;
         }
 
         /**

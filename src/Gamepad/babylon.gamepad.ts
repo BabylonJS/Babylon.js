@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class StickValues {
-        constructor(public x, public y) {
+        constructor(public x: number, public y: number) {
         }
     }
 
@@ -18,6 +18,8 @@
         private _leftStick: StickValues;
         private _rightStick: StickValues;
 
+        public _isConnected = true;
+
         private _leftStickAxisX: number;
         private _leftStickAxisY: number;
         private _rightStickAxisX: number;
@@ -31,7 +33,13 @@
         public static XBOX = 2;
         public static POSE_ENABLED = 3;
 
-        constructor(public id: string, public index: number, public browserGamepad, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
+        protected _invertLeftStickY:boolean = false;
+
+        public get isConnected(): boolean {
+            return this._isConnected;
+        }
+
+        constructor(public id: string, public index: number, public browserGamepad: any, leftStickX: number = 0, leftStickY: number = 1, rightStickX: number = 2, rightStickY: number = 3) {
             this.type = Gamepad.GAMEPAD;
             this._leftStickAxisX = leftStickX;
             this._leftStickAxisY = leftStickY;
@@ -75,6 +83,9 @@
         public update() {
             if (this._leftStick) {
                 this.leftStick = { x: this.browserGamepad.axes[this._leftStickAxisX], y: this.browserGamepad.axes[this._leftStickAxisY] };
+                if(this._invertLeftStickY){
+                    this.leftStick.y *= -1;
+                }
             }
             if (this._rightStick) {
                 this.rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };
@@ -88,7 +99,10 @@
     export class GenericPad extends Gamepad {
         private _buttons: Array<number>;
         private _onbuttondown: (buttonPressed: number) => void;
-        private _onbuttonup: (buttonReleased: number) => void;
+        private _onbuttonup: (buttonReleased: number) => void;        
+
+        public onButtonDownObservable = new Observable<number>();
+        public onButtonUpObservable = new Observable<number>();
 
         public onbuttondown(callback: (buttonPressed: number) => void) {
             this._onbuttondown = callback;
@@ -97,7 +111,7 @@
             this._onbuttonup = callback;
         }
 
-        constructor(id: string, index: number, browserGamepad) {
+        constructor(id: string, index: number, browserGamepad: any) {
             super(id, index, browserGamepad);
             this.type = Gamepad.GENERIC;
             this._buttons = new Array(browserGamepad.buttons.length);
@@ -105,11 +119,19 @@
 
         private _setButtonValue(newValue: number, currentValue: number, buttonIndex: number): number {
             if (newValue !== currentValue) {
-                if (this._onbuttondown && newValue === 1) {
-                    this._onbuttondown(buttonIndex);
+                if (newValue === 1) {
+                    if (this._onbuttondown) {
+                        this._onbuttondown(buttonIndex);
+                    }
+
+                    this.onButtonDownObservable.notifyObservers(buttonIndex);
                 }
-                if (this._onbuttonup && newValue === 0) {
-                    this._onbuttonup(buttonIndex);
+                if (newValue === 0) {
+                    if (this._onbuttonup) {
+                        this._onbuttonup(buttonIndex);
+                    }
+
+                    this.onButtonUpObservable.notifyObservers(buttonIndex);
                 }
             }
             return newValue;
@@ -120,6 +142,12 @@
             for (var index = 0; index < this._buttons.length; index++) {
                 this._buttons[index] = this._setButtonValue(this.browserGamepad.buttons[index].value, this._buttons[index], index);
             }
+        }
+
+        public dispose(){
+            super.dispose();
+            this.onButtonDownObservable.clear();
+            this.onButtonUpObservable.clear();
         }
     }
 }

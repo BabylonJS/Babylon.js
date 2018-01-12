@@ -1,14 +1,12 @@
 ﻿module BABYLON {
     export class SoundTrack {
-        private _outputAudioNode: GainNode;
-        private _inputAudioNode: AudioNode;
-        private _trackConvolver: ConvolverNode;
+        private _outputAudioNode: Nullable<GainNode>;
         private _scene: Scene;
         public id: number = -1;
         public soundCollection: Array<Sound>;
         private _isMainTrack: boolean = false;
         private _connectedAnalyser: Analyser;
-        private _options;
+        private _options: any;
         private _isInitialized = false;
 
         constructor(scene: Scene, options?: any) {
@@ -23,7 +21,7 @@
         }
 
         private _initializeSoundTrackAudioGraph() {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && Engine.audioEngine.audioContext) {
                 this._outputAudioNode = Engine.audioEngine.audioContext.createGain();
                 this._outputAudioNode.connect(Engine.audioEngine.masterGain);
 
@@ -55,7 +53,7 @@
             if (!this._isInitialized) {
                 this._initializeSoundTrackAudioGraph();
             }
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
                 sound.connectToSoundTrackAudioNode(this._outputAudioNode);
             }
             if (sound.soundTrackId) {
@@ -79,7 +77,7 @@
         }
 
         public setVolume(newVolume: number) {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
                 this._outputAudioNode.gain.value = newVolume;
             }
         }
@@ -105,7 +103,7 @@
                 this._connectedAnalyser.stopDebugCanvas();
             }
             this._connectedAnalyser = analyser;
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine.canUseWebAudio && this._outputAudioNode) {
                 this._outputAudioNode.disconnect();
                 this._connectedAnalyser.connectAudioNodes(this._outputAudioNode, Engine.audioEngine.masterGain);
             }

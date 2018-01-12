@@ -108,6 +108,8 @@ void main(void) {
 		discard;
 #endif
 
+#include<depthPrePass>
+
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 

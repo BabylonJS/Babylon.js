@@ -1,20 +1,31 @@
 module BABYLON {
 
     export class OculusTouchController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/oculus/';
+        public static MODEL_LEFT_FILENAME: string = 'left.babylon';
+        public static MODEL_RIGHT_FILENAME: string = 'right.babylon';
 
         public onSecondaryTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
 
         public onThumbRestChangedObservable = new Observable<ExtendedGamepadButton>();
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.OCULUS;
         }
 
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
-            let meshName = this.hand === 'right' ? 'RightTouch.babylon' : 'LeftTouch.babylon';
-            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", meshName, scene, (newMeshes) => {
+            let meshName;
+
+            // Hand
+            if (this.hand === 'left') {
+                meshName = OculusTouchController.MODEL_LEFT_FILENAME;
+            }
+            else { // Right is the default if no hand is specified
+                meshName = OculusTouchController.MODEL_RIGHT_FILENAME;
+            }
+
+            SceneLoader.ImportMesh("", OculusTouchController.MODEL_BASE_URL, meshName, scene, (newMeshes) => {
                 /*
                 Parent Mesh name: oculus_touch_left
                 - body
@@ -27,10 +38,10 @@ module BABYLON {
                 */
 
                 this._defaultModel = newMeshes[1];
+                this.attachToMesh(this._defaultModel);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
-                this.attachToMesh(this._defaultModel);
             });
         }
 

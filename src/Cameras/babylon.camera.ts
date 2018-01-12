@@ -25,10 +25,19 @@
             return Camera._ORTHOGRAPHIC_CAMERA;
         }
 
+        /**
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+         *
+         */
         public static get FOVMODE_VERTICAL_FIXED(): number {
             return Camera._FOVMODE_VERTICAL_FIXED;
         }
 
+		/**
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+         *
+         */
         public static get FOVMODE_HORIZONTAL_FIXED(): number {
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
@@ -63,6 +72,8 @@
 
         public static ForceAttachControlToAlwaysPreventDefault = false;
 
+        public static UseAlternateWebVRRendering = false;
+
         // Members
         @serializeAsVector3()
         public position: Vector3;
@@ -71,17 +82,21 @@
         public upVector = Vector3.Up();
 
         @serialize()
-        public orthoLeft = null;
+        public orthoLeft: Nullable<number> = null;
 
         @serialize()
-        public orthoRight = null;
+        public orthoRight: Nullable<number> = null;
 
         @serialize()
-        public orthoBottom = null;
+        public orthoBottom: Nullable<number> = null;
 
         @serialize()
-        public orthoTop = null;
+        public orthoTop: Nullable<number> = null;
 
+        /**
+         * default : 0.8
+         * FOV is set in Radians.
+         */
         @serialize()
         public fov = 0.8;
 
@@ -100,9 +115,17 @@
 
         public viewport = new Viewport(0, 0, 1.0, 1.0);
 
+        /**
+        * Restricts the camera to viewing objects with the same layerMask.
+        * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
+        */
         @serialize()
         public layerMask: number = 0x0FFFFFFF;
 
+        /**
+        * default : FOVMODE_VERTICAL_FIXED
+        * fovMode sets the camera frustum bounds to the viewport bounds.
+        */
         @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
 
@@ -118,15 +141,18 @@
 
         public _cameraRigParams: any;
         public _rigCameras = new Array<Camera>();
-        public _rigPostProcess: PostProcess;
+        public _rigPostProcess: Nullable<PostProcess>;
         protected _webvrViewMatrix = Matrix.Identity();
+        public _skipRendering = false;
+        public _alternateCamera: Camera;
 
-        public customRenderTargets = new Array<RenderTargetTexture>();    
-        
+        public customRenderTargets = new Array<RenderTargetTexture>();
+
         // Observables
         public onViewMatrixChangedObservable = new Observable<Camera>();
         public onProjectionMatrixChangedObservable = new Observable<Camera>();
         public onAfterCheckInputsObservable = new Observable<Camera>();
+        public onRestoreStateObservable = new Observable<Camera>();
 
         // Cache
         private _computedViewMatrix = Matrix.Identity();
@@ -136,7 +162,7 @@
         public _postProcesses = new Array<PostProcess>();
         private _transformMatrix = Matrix.Zero();
 
-        public _activeMeshes = new SmartArray<Mesh>(256);
+        public _activeMeshes = new SmartArray<AbstractMesh>(256);
 
         private _globalPosition = Vector3.Zero();
         private _frustumPlanes: Plane[];
@@ -168,9 +194,9 @@
         }
 
         /**
-         * Restored camera state. You must call storeState() first
+         * Restores the camera state values if it has been stored. You must call storeState() first
          */
-        public restoreState(): boolean {
+        protected _restoreStateValues(): boolean {
             if (!this._stateStored) {
                 return false;
             }
@@ -178,6 +204,18 @@
             this.fov = this._storedFov;
 
             return true;
+        }
+
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        public restoreState(): boolean {
+            if (this._restoreStateValues()) {
+                this.onRestoreStateObservable.notifyObservers(this);
+                return true;
+            }
+
+            return false;
         }
 
         public getClassName(): string {
@@ -204,7 +242,7 @@
             return this._globalPosition;
         }
 
-        public getActiveMeshes(): SmartArray<Mesh> {
+        public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
 
@@ -240,30 +278,8 @@
                 super._updateCache();
             }
 
-            var engine = this.getEngine();
-
             this._cache.position.copyFrom(this.position);
             this._cache.upVector.copyFrom(this.upVector);
-
-            this._cache.mode = this.mode;
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
-
-            this._cache.fov = this.fov;
-            this._cache.fovMode = this.fovMode;
-            this._cache.aspectRatio = engine.getAspectRatio(this);
-
-            this._cache.orthoLeft = this.orthoLeft;
-            this._cache.orthoRight = this.orthoRight;
-            this._cache.orthoBottom = this.orthoBottom;
-            this._cache.orthoTop = this.orthoTop;
-            this._cache.renderWidth = engine.getRenderWidth();
-            this._cache.renderHeight = engine.getRenderHeight();
-        }
-
-        public _updateFromScene(): void {
-            this.updateCache();
-            this.update();
         }
 
         // Synchronized
@@ -316,10 +332,10 @@
         }
 
         public update(): void {
+            this._checkInputs();
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 this._updateRigCameras();
             }
-            this._checkInputs();
         }
 
         public _checkInputs(): void {
@@ -330,7 +346,7 @@
             return this._rigCameras;
         }
 
-        public get rigPostProcess(): PostProcess {
+        public get rigPostProcess(): Nullable<PostProcess> {
             return this._rigPostProcess;
         }
 
@@ -345,7 +361,7 @@
                 var cam = this._rigCameras[i];
                 var rigPostProcess = cam._rigPostProcess;
 
-                // for VR rig, there does not have to be a post process 
+                // for VR rig, there does not have to be a post process
                 if (rigPostProcess) {
                     var isPass = rigPostProcess instanceof PassPostProcess;
                     if (isPass) {
@@ -361,7 +377,7 @@
             }
         }
 
-        public attachPostProcess(postProcess: PostProcess, insertAt: number = null): number {
+        public attachPostProcess(postProcess: PostProcess, insertAt: Nullable<number> = null): number {
             if (!postProcess.isReusable() && this._postProcesses.indexOf(postProcess) > -1) {
                 Tools.Error("You're trying to reuse a post process not defined as reusable.");
                 return 0;
@@ -369,38 +385,19 @@
 
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-
             } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
-            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return this._postProcesses.indexOf(postProcess);
         }
 
-        public detachPostProcess(postProcess: PostProcess, atIndices: any = null): number[] {
-            var result = [];
-            var i: number;
-            var index: number;
-
-            if (!atIndices) {
-                var idx = this._postProcesses.indexOf(postProcess);
-                if (idx !== -1) {
-                    this._postProcesses.splice(idx, 1);
-                }
-            } else {
-                atIndices = (atIndices instanceof Array) ? atIndices : [atIndices];
-                // iterate descending, so can just splice as we go
-                for (i = atIndices.length - 1; i >= 0; i--) {
-                    if (this._postProcesses[atIndices[i]] !== postProcess) {
-                        result.push(i);
-                        continue;
-                    }
-                    index = atIndices[i];
-                    this._postProcesses.splice(index, 1);
-                }
+        public detachPostProcess(postProcess: PostProcess): void {
+            var idx = this._postProcesses.indexOf(postProcess);
+            if (idx !== -1) {
+                this._postProcesses.splice(idx, 1);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
-            return result;
         }
 
         public getWorldMatrix(): Matrix {
@@ -424,9 +421,10 @@
                 return this._computedViewMatrix;
             }
 
+            this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
-            
+
             this._refreshFrustumPlanes = true;
 
             if (!this.parent || !this.parent.getWorldMatrix) {
@@ -472,11 +470,21 @@
                 return this._projectionMatrix;
             }
 
+            // Cache
+            this._cache.mode = this.mode;
+            this._cache.minZ = this.minZ;
+            this._cache.maxZ = this.maxZ;
+
+            // Matrix
             this._refreshFrustumPlanes = true;
 
             var engine = this.getEngine();
             var scene = this.getScene();
             if (this.mode === Camera.PERSPECTIVE_CAMERA) {
+                this._cache.fov = this.fov;
+                this._cache.fovMode = this.fovMode;
+                this._cache.aspectRatio = engine.getAspectRatio(this);
+
                 if (this.minZ <= 0) {
                     this.minZ = 0.1;
                 }
@@ -516,6 +524,13 @@
                         this.maxZ,
                         this._projectionMatrix);
                 }
+
+                this._cache.orthoLeft = this.orthoLeft;
+                this._cache.orthoRight = this.orthoRight;
+                this._cache.orthoBottom = this.orthoBottom;
+                this._cache.orthoTop = this.orthoTop;
+                this._cache.renderWidth = engine.getRenderWidth();
+                this._cache.renderHeight = engine.getRenderHeight();
             }
 
             this.onProjectionMatrixChangedObservable.notifyObservers(this);
@@ -564,19 +579,20 @@
             if (!origin) {
                 origin = this.position;
             }
-            var forward = new BABYLON.Vector3(0, 0, 1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, transform);
+            var forward = new Vector3(0, 0, 1);
+            var forwardWorld = Vector3.TransformNormal(forward, transform);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            var direction = Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
-        } 
+        }
 
         public dispose(): void {
             // Observables
             this.onViewMatrixChangedObservable.clear();
             this.onProjectionMatrixChangedObservable.clear();
             this.onAfterCheckInputsObservable.clear();
+            this.onRestoreStateObservable.clear();
 
             // Inputs
             if (this.inputs) {
@@ -589,13 +605,26 @@
             // Remove from scene
             this.getScene().removeCamera(this);
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                let camera = this._rigCameras.pop();
+                if (camera) {
+                    camera.dispose();
+                }
             }
 
             // Postprocesses
-            var i = this._postProcesses.length;
-            while (--i >= 0) {
-                this._postProcesses[i].dispose(this);
+            if (this._rigPostProcess) {
+                this._rigPostProcess.dispose(this);
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            }
+            else if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                this._rigPostProcess = null;
+                this._postProcesses = [];
+            } else {
+                var i = this._postProcesses.length;
+                while (--i >= 0) {
+                    this._postProcesses[i].dispose(this);
+                }
             }
 
             // Render targets
@@ -612,49 +641,61 @@
         }
 
         // ---- Camera rigs section ----
-        public get leftCamera(): FreeCamera {
+        public get leftCamera(): Nullable<FreeCamera> {
             if (this._rigCameras.length < 1) {
-                return undefined;
+                return null;
             }
             return (<FreeCamera>this._rigCameras[0]);
         }
 
-        public get rightCamera(): FreeCamera {
+        public get rightCamera(): Nullable<FreeCamera> {
             if (this._rigCameras.length < 2) {
-                return undefined;
-            }            
+                return null;
+            }
             return (<FreeCamera>this._rigCameras[1]);
         }
 
-        public getLeftTarget(): Vector3 {
+        public getLeftTarget(): Nullable<Vector3> {
             if (this._rigCameras.length < 1) {
-                return undefined;
-            }             
+                return null;
+            }
             return (<TargetCamera>this._rigCameras[0]).getTarget();
         }
 
-        public getRightTarget(): Vector3 {
+        public getRightTarget(): Nullable<Vector3> {
             if (this._rigCameras.length < 2) {
-                return undefined;
-            }             
+                return null;
+            }
             return (<TargetCamera>this._rigCameras[1]).getTarget();
         }
 
         public setCameraRigMode(mode: number, rigParams: any): void {
+            if (this.cameraRigMode === mode) {
+                return;
+            }
+
             while (this._rigCameras.length > 0) {
-                this._rigCameras.pop().dispose();
+                let camera = this._rigCameras.pop();
+
+                if (camera) {
+                    camera.dispose();
+                }
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
-            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
             //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
             this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
-            this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+            this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
-                this._rigCameras.push(this.createRigCamera(this.name + "_L", 0));
-                this._rigCameras.push(this.createRigCamera(this.name + "_R", 1));
+                let leftCamera = this.createRigCamera(this.name + "_L", 0);
+                let rightCamera = this.createRigCamera(this.name + "_R", 1);
+                if (leftCamera && rightCamera) {
+                    this._rigCameras.push(leftCamera);
+                    this._rigCameras.push(rightCamera);
+                }
             }
 
             switch (this.cameraRigMode) {
@@ -689,7 +730,6 @@
                     this._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
                     this._rigCameras[1].getProjectionMatrix = this._rigCameras[1]._getVRProjectionMatrix;
 
-
                     if (metrics.compensateDistortion) {
                         this._rigCameras[0]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Left", this._rigCameras[0], false, metrics);
                         this._rigCameras[1]._rigPostProcess = new VRDistortionCorrectionPostProcess("VR_Distort_Compensation_Right", this._rigCameras[1], true, metrics);
@@ -703,6 +743,7 @@
                         //Left eye
                         this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
                         this._rigCameras[0].setCameraRigParameter("left", true);
+                        //leaving this for future reference
                         this._rigCameras[0].setCameraRigParameter("specs", rigParams.specs);
                         this._rigCameras[0].setCameraRigParameter("eyeParameters", leftEye);
                         this._rigCameras[0].setCameraRigParameter("frameData", rigParams.frameData);
@@ -722,14 +763,18 @@
                         this._rigCameras[1].getProjectionMatrix = this._getWebVRProjectionMatrix;
                         this._rigCameras[1].parent = this;
                         this._rigCameras[1]._getViewMatrix = this._getWebVRViewMatrix;
+
+                        if (Camera.UseAlternateWebVRRendering) {
+                            this._rigCameras[1]._skipRendering = true;
+                            this._rigCameras[0]._alternateCamera = this._rigCameras[1];
+                        }
                     }
                     break;
 
             }
 
             this._cascadePostProcessesToRigCams();
-            this.
-                update();
+            this.update();
         }
 
         private _getVRProjectionMatrix(): Matrix {
@@ -776,7 +821,7 @@
         /**
          * needs to be overridden by children so sub has required properties to be copied
          */
-        public createRigCamera(name: string, cameraIndex: number): Camera {
+        public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
             return null;
         }
 
@@ -881,6 +926,10 @@
                 default: // Universal Camera is the default value
                     return () => new UniversalCamera(name, Vector3.Zero(), scene);
             }
+        }
+
+        public computeWorldMatrix(): Matrix {
+            return this.getWorldMatrix();
         }
 
         public static Parse(parsedCamera: any, scene: Scene): Camera {

@@ -1,8 +1,8 @@
 ﻿module BABYLON {
     export class PostProcessManager {
         private _scene: Scene;
-        private _indexBuffer: WebGLBuffer;
-        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+        private _indexBuffer: Nullable<WebGLBuffer>;
+        private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
 
         constructor(scene: Scene) {
             this._scene = scene;
@@ -38,28 +38,35 @@
 
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
-        
+
         public _rebuild(): void {
-            if (!this._vertexBuffers[VertexBuffer.PositionKind]) {
+            let vb = this._vertexBuffers[VertexBuffer.PositionKind];
+
+            if (!vb) {
                 return;
             }
-            this._vertexBuffers[VertexBuffer.PositionKind]._rebuild();
+            vb._rebuild();
             this._buildIndexBuffer();
         }
-        
-        // Methods
-        public _prepareFrame(sourceTexture?: InternalTexture, postProcesses?: PostProcess[]): boolean {
-            var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
 
-            if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+        // Methods
+        public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
+            let camera = this._scene.activeCamera;
+            if (!camera) {
                 return false;
             }
 
-            postProcesses[0].activate(this._scene.activeCamera, sourceTexture, postProcesses !== null && postProcesses !== undefined);
+            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses);
+
+            if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+                return false;
+            }
+
+            postProcesses[0].activate(camera, sourceTexture, postProcesses !== null && postProcesses !== undefined);
             return true;
         }
 
-        public directRender(postProcesses: PostProcess[], targetTexture?: InternalTexture, forceFullscreenViewport = false): void {
+        public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false): void {
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcesses.length; index++) {
@@ -67,7 +74,7 @@
                     postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture, 0, null, null, forceFullscreenViewport);
+                        engine.bindFramebuffer(targetTexture, 0, undefined, undefined, forceFullscreenViewport);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }
@@ -84,7 +91,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
@@ -95,8 +102,14 @@
             engine.setDepthWrite(true);
         }
 
-        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: PostProcess[]): void {
-            postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: PostProcess[], forceFullscreenViewport = false): void {
+            let camera = this._scene.activeCamera;
+
+            if (!camera) {
+                return;
+            }
+
+            postProcesses = postProcesses || camera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
@@ -104,10 +117,10 @@
 
             for (var index = 0, len = postProcesses.length; index < len; index++) {
                 if (index < len - 1) {
-                    postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
+                    postProcesses[index + 1].activate(camera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture, faceIndex);
+                        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }
@@ -128,7 +141,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }

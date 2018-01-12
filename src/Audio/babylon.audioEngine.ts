@@ -1,11 +1,11 @@
 ﻿module BABYLON {
     export class AudioEngine {
-        private _audioContext: AudioContext = null;
+        private _audioContext: Nullable<AudioContext> = null;
         private _audioContextInitialized = false;
         public canUseWebAudio: boolean = false;
         public masterGain: GainNode;
 
-        private _connectedAnalyser: Analyser;
+        private _connectedAnalyser: Nullable<Analyser>;
         public WarnedWebAudioUnsupported: boolean = false;
         public unlocked: boolean = false;
         public onAudioUnlocked: () => any;
@@ -13,7 +13,7 @@
         public isMP3supported: boolean = false;
         public isOGGsupported: boolean = false;
 
-        public get audioContext(): AudioContext {
+        public get audioContext(): Nullable<AudioContext> {
             if (!this._audioContextInitialized) {
                 this._initializeAudioContext();
             }
@@ -56,6 +56,9 @@
 
         private _unlockiOSaudio() {
             var unlockaudio = () => {
+                if (!this.audioContext) {
+                    return;
+                }
                 var buffer = this.audioContext.createBuffer(1, 1, 22050);
                 var source = this.audioContext.createBufferSource();
                 source.buffer = buffer;
@@ -95,7 +98,7 @@
 
         public dispose() {
             if (this.canUseWebAudio && this._audioContextInitialized) {
-                if (this._connectedAnalyser) {
+                if (this._connectedAnalyser && this._audioContext) {
                     this._connectedAnalyser.stopDebugCanvas();
                     this._connectedAnalyser.dispose();
                     this.masterGain.disconnect();
@@ -126,7 +129,7 @@
             if (this._connectedAnalyser) {
                 this._connectedAnalyser.stopDebugCanvas();
             }
-            if (this.canUseWebAudio && this._audioContextInitialized) {
+            if (this.canUseWebAudio && this._audioContextInitialized && this._audioContext) {
                 this._connectedAnalyser = analyser;
                 this.masterGain.disconnect();
                 this._connectedAnalyser.connectAudioNodes(this.masterGain, this._audioContext.destination);

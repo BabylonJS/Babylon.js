@@ -5,8 +5,10 @@
 
         private _nextActiveAction: Action;
         private _child: Action;
-        private _condition: Condition;
+        private _condition?: Condition;
         private _triggerParameter: any;
+
+        public onBeforeExecuteObservable = new Observable<Action>();
 
         constructor(public triggerOptions: any, condition?: Condition) {
 
@@ -29,7 +31,7 @@
             return this._triggerParameter;
         }
 
-        public _executeCurrent(evt: ActionEvent): void {
+        public _executeCurrent(evt?: ActionEvent): void {
             if (this._nextActiveAction._condition) {
                 var condition = this._nextActiveAction._condition;
                 var currentRenderId = this._actionManager.getScene().getRenderId();
@@ -50,13 +52,14 @@
                     condition._currentResult = true;
                 }
             }
-
+            
+            this.onBeforeExecuteObservable.notifyObservers(this);
             this._nextActiveAction.execute(evt);
 
             this.skipToNextActiveAction();
         }
 
-        public execute(evt: ActionEvent): void {
+        public execute(evt?: ActionEvent): void {
 
         }
 

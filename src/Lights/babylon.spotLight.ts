@@ -69,6 +69,10 @@
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
 
+            if (!activeCamera) {
+                return;
+            }
+
             this._shadowAngleScale = this._shadowAngleScale || 1;
             var angle = this._shadowAngleScale * this._angle;
             

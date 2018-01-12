@@ -1,3 +1,5 @@
+declare function Split(elements: HTMLDivElement[], options: any): void;
+
 module INSPECTOR {
 
     /** 
@@ -29,8 +31,7 @@ module INSPECTOR {
 
             this._panel.appendChild(consolePanel);
             this._panel.appendChild(bjsPanel);
-            
-            
+                        
             Split([consolePanel, bjsPanel], {
                 blockDrag : this._inspector.popupMode,
                 sizes:[50, 50],
@@ -102,7 +103,7 @@ module INSPECTOR {
             
             // Get caller name if not null
             let callerFunc = this._addConsoleLog.caller as Function;
-            let caller = callerFunc==null? "Window" : "Function "+callerFunc['name'] + ": ";
+            let caller = callerFunc==null? "Window" : "Function "+ (<any>callerFunc)['name'] + ": ";
 
             for (var i = 0; i < params.length; i++) {
                 this._message('log', params[i], caller);
@@ -118,7 +119,7 @@ module INSPECTOR {
             
             // Get caller name if not null
             let callerFunc = this._addConsoleLog.caller as Function;
-            let caller = callerFunc==null? "Window" : callerFunc['name'];
+            let caller = callerFunc==null? "Window" : (<any>callerFunc)['name'];
 
             for (var i = 0; i < params.length; i++) {
                 this._message('warn', params[i], caller);
@@ -134,7 +135,7 @@ module INSPECTOR {
             
             // Get caller name if not null
             let callerFunc = this._addConsoleLog.caller as Function;
-            let caller = callerFunc==null? "Window" : callerFunc['name'];
+            let caller = callerFunc==null? "Window" : (<any>callerFunc)['name'];
 
             for (var i = 0; i < params.length; i++) {
                 this._message('error', params[i], caller);

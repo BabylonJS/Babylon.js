@@ -1,7 +1,4 @@
 ﻿module BABYLON {
-
-    declare var SIMD;
-
     export const ToGammaSpace = 1 / 2.2;
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;
@@ -41,7 +38,7 @@
          * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
          * Returns the Color3.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Color3 {
+        public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
                 index = 0;
             }
@@ -64,7 +61,7 @@
          * Returns a new array populated with 3 numeric elements : red, green and blue values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -316,7 +313,7 @@
          * Adds in place the passed Color4 values to the current Color4.  
          * Returns the updated Color4.  
          */
-        public addInPlace(right): Color4 {
+        public addInPlace(right: Color4): Color4 {
             this.r += right.r;
             this.g += right.g;
             this.b += right.b;
@@ -328,7 +325,7 @@
          * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -523,7 +520,7 @@
             convertedColor.b = Math.pow(this.b, ToGammaSpace);
             convertedColor.a = this.a;
             return this;
-        }        
+        }
 
         // Statics
         /**
@@ -627,7 +624,7 @@
          * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.  
          * Returns the Vector2.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector2 {
+        public toArray(array: FloatArray, index: number = 0): Vector2 {
             array[index] = this.x;
             array[index + 1] = this.y;
             return this;
@@ -636,7 +633,7 @@
          * Returns a new array with 2 elements : the Vector2 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
             this.toArray(result, 0);
             return result;
         }
@@ -765,6 +762,15 @@
             result.y = this.y / otherVector.y;
             return this;
         }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector2): Vector2 {
+            return this.divideToRef(otherVector, this);
+        }
+
         /**
          * Returns a new Vector2 with current Vector2 negated coordinates.  
          */
@@ -1078,7 +1084,7 @@
          * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
          * Returns the Vector3.  
          */
-        public toArray(array: number[] | Float32Array, index: number = 0): Vector3 {
+        public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
             array[index + 1] = this.y;
             array[index + 2] = this.z;
@@ -1293,6 +1299,14 @@
         }
 
         /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector3): Vector3 {
+            return this.divideToRef(otherVector, this);
+        }
+
+        /**
          * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.  
          * Returns the updated Vector3.  
          */
@@ -1314,6 +1328,28 @@
             return this;
         }
 
+        /**
+         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         */
+        public get isNonUniform(): boolean {
+            let absX = Math.abs(this.x);
+            let absY = Math.abs(this.y);
+            if (absX !== absY) {
+                return true;
+            }
+
+            let absZ = Math.abs(this.z);
+            if (absX !== absZ) {
+                return true;
+            }
+
+            if (absY !== absZ) {
+                return true;
+            }
+
+            return false;
+        }
+
         // Properties
         /**
          * Returns the length of the Vector3 (float).  
@@ -1329,10 +1365,10 @@
             return (this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
-        // Methods
         /**
          * Normalize the current Vector3.  
          * Returns the updated Vector3.  
+         * /!\ In place operation.
          */
         public normalize(): Vector3 {
             var len = this.length();
@@ -1344,6 +1380,33 @@
             this.y *= num;
             this.z *= num;
             return this;
+        }
+
+        /**
+         * Normalize the current Vector3 to a new vector.
+         * @returns the new Vector3.
+         */
+        public normalizeToNew(): Vector3 {
+            const normalized = new Vector3(0, 0, 0);
+            this.normalizeToRef(normalized);
+            return normalized;
+        }
+
+        /**
+         * Normalize the current Vector3 to the reference.
+         * @param the reference to update.
+         * @returns the updated Vector3.
+         */
+        public normalizeToRef(reference: Vector3): Vector3 {
+            var len = this.length();
+            if (len === 0 || len === 1.0) {
+                reference.set(this.x, this.y, this.z);
+                return reference;
+            }
+
+            const scale = 1.0 / len;
+            this.scaleToRef(scale, reference);
+            return reference;
         }
 
         /**
@@ -1387,7 +1450,7 @@
         /**
          * 
          */
-        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size) {
+        public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
             var d1 = Vector3.Dot(vector1, axis) - size;
 
@@ -1712,19 +1775,32 @@
         }
 
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
+            let result = Vector3.Zero();
+
+            Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
+
+            return result;
+        }
+
+        public static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
+            Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
+        }
+
+        public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix)
             matrix.multiplyToRef(projection, matrix);
             matrix.invert();
-            var screenSource = new Vector3(source.x / viewportWidth * 2 - 1, -(source.y / viewportHeight * 2 - 1), 2 * source.z - 1.0);
-            var vector = Vector3.TransformCoordinates(screenSource, matrix);
+            var screenSource = MathTmp.Vector3[0];
+            screenSource.x = sourceX / viewportWidth * 2 - 1;
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
+            screenSource.z = 2 * sourceZ - 1.0;
+            Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
 
             if (Scalar.WithinEpsilon(num, 1.0)) {
-                vector = vector.scale(1.0 / num);
+                result.scaleInPlace(1.0 / num);
             }
-
-            return vector;
         }
 
         public static Minimize(left: Vector3, right: Vector3): Vector3 {
@@ -1825,7 +1901,7 @@
          * Returns a new array populated with 4 elements : the Vector4 coordinates.  
          */
         public asArray(): number[] {
-            var result = [];
+            var result = new Array<number>();
 
             this.toArray(result, 0);
 
@@ -1836,7 +1912,7 @@
          * Populates the passed array from the passed index with the Vector4 coordinates.  
          * Returns the Vector4.  
          */
-        public toArray(array: number[] | Float32Array, index?: number): Vector4 {
+        public toArray(array: FloatArray, index?: number): Vector4 {
             if (index === undefined) {
                 index = 0;
             }
@@ -2042,6 +2118,14 @@
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
             return this;
+        }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector4): Vector4 {
+            return this.divideToRef(otherVector, this);
         }
 
         /**
@@ -2821,8 +2905,8 @@
          */
         public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
             var rotMat = MathTmp.Matrix[0];
-            BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
-            BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
+            Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+            Quaternion.FromRotationMatrixToRef(rotMat, ref);
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
@@ -2887,10 +2971,11 @@
         private static _yAxis: Vector3 = Vector3.Zero();
         private static _zAxis: Vector3 = Vector3.Zero();
         private static _updateFlagSeed = 0;
+        private static _identityReadOnly = Matrix.Identity();
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
-        public updateFlag: number;        
+        public updateFlag: number;
         public m: Float32Array = new Float32Array(16);
 
         public _markAsUpdated() {
@@ -3386,7 +3471,7 @@
         /**
          * Returns the index-th row of the current matrix as a new Vector4.  
          */
-        public getRow(index: number): Vector4 {
+        public getRow(index: number): Nullable<Vector4> {
             if (index < 0 || index > 3) {
                 return null;
             }
@@ -3413,6 +3498,24 @@
         }
 
         /**
+         * Compute the transpose of the matrix.  
+         * Returns a new Matrix.  
+         */
+        public transpose(): Matrix {
+            return Matrix.Transpose(this);
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns the current matrix.  
+         */
+        public transposeToRef(result: Matrix): Matrix {
+            Matrix.TransposeToRef(this, result);
+
+            return this;
+        }
+
+        /**
          * Sets the index-th row of the current matrix with the passed 4 x float values.
          * Returns the updated Matrix.    
          */
@@ -3429,6 +3532,15 @@
             this._markAsUpdated();
             return this;
         }
+
+        /**
+         * Static identity matrix to be used as readonly matrix
+         * Must not be updated.
+         */
+        public static get IdentityReadOnly(): Matrix {
+            return Matrix._identityReadOnly;
+        }
+
         /**
          * Returns a new Matrix set from the 16 passed floats.  
          */
@@ -3867,7 +3979,7 @@
             let c = 2.0 / (f - n);
             let d = -(f + n) / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 0.0,
@@ -3899,7 +4011,7 @@
             let i0 = (left + right) / (left - right);
             let i1 = (top + bottom) / (bottom - top);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 0.0,
@@ -3918,7 +4030,7 @@
         /**
          * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
          */
-        public static OrthoOffCenterRHToRef(left: number, right, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
+        public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
@@ -3936,7 +4048,7 @@
             let c = (f + n) / (f - n);
             let d = -2.0 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 1.0,
@@ -3967,7 +4079,7 @@
             let c = (f + n) / (f - n);
             let d = -2.0 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 1.0,
@@ -4001,7 +4113,7 @@
             let c = -(f + n) / (f - n);
             let d = -2 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, -1.0,
@@ -4012,7 +4124,7 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+        public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
             var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -4082,6 +4194,15 @@
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
 
+            Matrix.TransposeToRef(matrix, result);
+
+            return result;
+        }
+
+        /**
+         * Compute the transpose of the passed Matrix and store it in the result matrix.  
+         */
+        public static TransposeToRef(matrix: Matrix, result: Matrix): void {
             result.m[0] = matrix.m[0];
             result.m[1] = matrix.m[4];
             result.m[2] = matrix.m[8];
@@ -4101,8 +4222,6 @@
             result.m[13] = matrix.m[7];
             result.m[14] = matrix.m[11];
             result.m[15] = matrix.m[15];
-
-            return result;
         }
 
         /**
@@ -4292,7 +4411,7 @@
         /**
          * Returns the dot product (float) of the point coordinates and the plane normal.  
          */
-        public dotCoordinate(point): number {
+        public dotCoordinate(point: Vector3): number {
             return ((((this.normal.x * point.x) + (this.normal.y * point.y)) + (this.normal.z * point.z)) + this.d);
         }
 
@@ -4353,7 +4472,7 @@
         /**
          * Returns a new Plane defined by the three passed points.  
          */
-        static FromPoints(point1, point2, point3): Plane {
+        static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane {
             var result = new Plane(0.0, 0.0, 0.0, 0.0);
             result.copyFromPoints(point1, point2, point3);
             return result;
@@ -4415,51 +4534,75 @@
             return frustumPlanes;
         }
 
+        public static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] + transform.m[2];
+            frustumPlane.normal.y = transform.m[7] + transform.m[6];
+            frustumPlane.normal.z = transform.m[11] + transform.m[10];
+            frustumPlane.d = transform.m[15] + transform.m[14];
+            frustumPlane.normalize();
+        }
+
+        public static GetFarPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] - transform.m[2];
+            frustumPlane.normal.y = transform.m[7] - transform.m[6];
+            frustumPlane.normal.z = transform.m[11] - transform.m[10];
+            frustumPlane.d = transform.m[15] - transform.m[14];
+            frustumPlane.normalize();
+        }
+
+        public static GetLeftPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] + transform.m[0];
+            frustumPlane.normal.y = transform.m[7] + transform.m[4];
+            frustumPlane.normal.z = transform.m[11] + transform.m[8];
+            frustumPlane.d = transform.m[15] + transform.m[12];
+            frustumPlane.normalize();
+        }
+
+        public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] - transform.m[0];
+            frustumPlane.normal.y = transform.m[7] - transform.m[4];
+            frustumPlane.normal.z = transform.m[11] - transform.m[8];
+            frustumPlane.d = transform.m[15] - transform.m[12];
+            frustumPlane.normalize();
+        }
+
+        public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] - transform.m[1];
+            frustumPlane.normal.y = transform.m[7] - transform.m[5];
+            frustumPlane.normal.z = transform.m[11] - transform.m[9];
+            frustumPlane.d = transform.m[15] - transform.m[13];
+            frustumPlane.normalize();
+        }
+
+        public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
+            frustumPlane.normal.x = transform.m[3] + transform.m[1];
+            frustumPlane.normal.y = transform.m[7] + transform.m[5];
+            frustumPlane.normal.z = transform.m[11] + transform.m[9];
+            frustumPlane.d = transform.m[15] + transform.m[13];
+            frustumPlane.normalize();
+        }
+
         /**
          * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.  
          */
         public static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void {
             // Near
-            frustumPlanes[0].normal.x = transform.m[3] + transform.m[2];
-            frustumPlanes[0].normal.y = transform.m[7] + transform.m[6];
-            frustumPlanes[0].normal.z = transform.m[11] + transform.m[10];
-            frustumPlanes[0].d = transform.m[15] + transform.m[14];
-            frustumPlanes[0].normalize();
+            Frustum.GetNearPlaneToRef(transform, frustumPlanes[0]);
 
             // Far
-            frustumPlanes[1].normal.x = transform.m[3] - transform.m[2];
-            frustumPlanes[1].normal.y = transform.m[7] - transform.m[6];
-            frustumPlanes[1].normal.z = transform.m[11] - transform.m[10];
-            frustumPlanes[1].d = transform.m[15] - transform.m[14];
-            frustumPlanes[1].normalize();
+            Frustum.GetFarPlaneToRef(transform, frustumPlanes[1]);
 
             // Left
-            frustumPlanes[2].normal.x = transform.m[3] + transform.m[0];
-            frustumPlanes[2].normal.y = transform.m[7] + transform.m[4];
-            frustumPlanes[2].normal.z = transform.m[11] + transform.m[8];
-            frustumPlanes[2].d = transform.m[15] + transform.m[12];
-            frustumPlanes[2].normalize();
+            Frustum.GetLeftPlaneToRef(transform, frustumPlanes[2]);
 
             // Right
-            frustumPlanes[3].normal.x = transform.m[3] - transform.m[0];
-            frustumPlanes[3].normal.y = transform.m[7] - transform.m[4];
-            frustumPlanes[3].normal.z = transform.m[11] - transform.m[8];
-            frustumPlanes[3].d = transform.m[15] - transform.m[12];
-            frustumPlanes[3].normalize();
+            Frustum.GetRightPlaneToRef(transform, frustumPlanes[3]);
 
             // Top
-            frustumPlanes[4].normal.x = transform.m[3] - transform.m[1];
-            frustumPlanes[4].normal.y = transform.m[7] - transform.m[5];
-            frustumPlanes[4].normal.z = transform.m[11] - transform.m[9];
-            frustumPlanes[4].d = transform.m[15] - transform.m[13];
-            frustumPlanes[4].normalize();
+            Frustum.GetTopPlaneToRef(transform, frustumPlanes[4]);
 
             // Bottom
-            frustumPlanes[5].normal.x = transform.m[3] + transform.m[1];
-            frustumPlanes[5].normal.y = transform.m[7] + transform.m[5];
-            frustumPlanes[5].normal.z = transform.m[11] + transform.m[9];
-            frustumPlanes[5].d = transform.m[15] + transform.m[13];
-            frustumPlanes[5].normalize();
+            Frustum.GetBottomPlaneToRef(transform, frustumPlanes[5]);
         }
     }
 
@@ -4612,7 +4755,7 @@
          * Returns the updated Path2.   
          */
         public addLineTo(x: number, y: number): Path2 {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
@@ -4628,7 +4771,7 @@
          * Returns the updated Path2.  
          */
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
-            if (closed) {
+            if (this.closed) {
                 //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
@@ -4739,7 +4882,7 @@
         * normal (optional) : Vector3, the first wanted normal to the curve. Ex (0, 1, 0) for a vertical normal.
         * raw (optional, default false) : boolean, if true the returned Path3D isn't normalized. Useful to depict path acceleration or speed.
         */
-        constructor(public path: Vector3[], firstNormal?: Vector3, raw?: boolean) {
+        constructor(public path: Vector3[], firstNormal: Nullable<Vector3> = null, raw?: boolean) {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p] = path[p].clone(); // hard copy
             }
@@ -4790,7 +4933,7 @@
          * Forces the Path3D tangent, normal, binormal and distance recomputation.
          * Returns the same object updated.  
          */
-        public update(path: Vector3[], firstNormal?: Vector3): Path3D {
+        public update(path: Vector3[], firstNormal: Nullable<Vector3> = null): Path3D {
             for (var p = 0; p < path.length; p++) {
                 this._curve[p].x = path[p].x;
                 this._curve[p].y = path[p].y;
@@ -4801,7 +4944,7 @@
         }
 
         // private function compute() : computes tangents, normals and binormals
-        private _compute(firstNormal) {
+        private _compute(firstNormal: Nullable<Vector3>): void {
             var l = this._curve.length;
 
             // first and last tangents
@@ -4886,7 +5029,7 @@
         // private function normalVector(v0, vt, va) :
         // returns an arbitrary point in the plane defined by the point v0 and the vector vt orthogonal to this plane
         // if va is passed, it returns the va projection on the plane orthogonal to vt at the point v0
-        private _normalVector(v0: Vector3, vt: Vector3, va: Vector3): Vector3 {
+        private _normalVector(v0: Vector3, vt: Vector3, va: Nullable<Vector3>): Vector3 {
             var normal0: Vector3;
             var tgl = vt.length();
             if (tgl === 0.0) {
@@ -4903,6 +5046,9 @@
                 }
                 else if (!Scalar.WithinEpsilon(Math.abs(vt.z) / tgl, 1.0, Epsilon)) {
                     point = new Vector3(0.0, 0.0, 1.0);
+                }
+                else {
+                    point = Vector3.Zero();
                 }
                 normal0 = Vector3.Cross(vt, point);
             }
@@ -4989,8 +5135,9 @@
             totalPoints.push(points[points.length - 1].clone());
             var catmullRom = new Array<Vector3>();
             var step = 1.0 / nbPoints;
+            var amount = 0.0;
             for (var i = 0; i < totalPoints.length - 3; i++) {
-                var amount = 0.0;
+                amount = 0;
                 for (var c = 0; c < nbPoints; c++) {
                     catmullRom.push(Vector3.CatmullRom(totalPoints[i], totalPoints[i + 1], totalPoints[i + 2], totalPoints[i + 3], amount));
                     amount += step

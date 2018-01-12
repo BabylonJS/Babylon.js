@@ -9,7 +9,6 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -18,10 +17,6 @@ module BABYLON {
     }
 
     export class ShadowOnlyMaterial extends PushMaterial {
-        @serialize()
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3();
         private _renderId: number;
         private _activeLight: IShadowLight;
 
@@ -37,7 +32,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -91,7 +86,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
@@ -131,13 +126,13 @@ module BABYLON {
                 var shaderName = "shadowOnly";
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                                "vFogInfos", "vFogColor", "pointSize",
+                                "vFogInfos", "vFogColor", "pointSize", "alpha",
                                 "mBones",
                                 "vClipPlane"
                 ];
-                var samplers = [];
+                var samplers = new Array<string>();
                 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
                     uniformsNames: uniforms, 
@@ -160,7 +155,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: 1 }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -179,6 +174,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -197,7 +195,9 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._activeEffect.setFloat("alpha", this.alpha);
+
+                MaterialHelper.BindEyePosition(effect, scene);             
             }
 
             // Lights

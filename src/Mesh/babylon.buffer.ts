@@ -1,14 +1,14 @@
 ﻿module BABYLON {
     export class Buffer {
         private _engine: Engine;
-        private _buffer: WebGLBuffer;
-        private _data: number[] | Float32Array;
+        private _buffer: Nullable<WebGLBuffer>;
+        private _data: Nullable<FloatArray>;
         private _updatable: boolean;
         private _strideSize: number;
         private _instanced: boolean;
         private _instanceDivisor: number;
 
-        constructor(engine: any, data: number[] | Float32Array, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced?: boolean) {
+        constructor(engine: any, data: FloatArray, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced: boolean = false) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -40,11 +40,11 @@
             return this._updatable;
         }
 
-        public getData(): number[] | Float32Array {
+        public getData(): Nullable<FloatArray> {
             return this._data;
         }
 
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
         }
 
@@ -70,12 +70,16 @@
         }
 
         // Methods
-        public create(data?: number[] | Float32Array): void {
+        public create(data: Nullable<FloatArray> = null): void {
             if (!data && this._buffer) {
                 return; // nothing to do
             }
 
             data = data || this._data;
+
+            if (!data) {
+                return;
+            }
 
             if (!this._buffer) { // create buffer
                 if (this._updatable) {
@@ -95,7 +99,7 @@
             this.create(this._data);
         }
 
-        public update(data: number[] | Float32Array): void {
+        public update(data: FloatArray): void {
             this.create(data);
         }
 

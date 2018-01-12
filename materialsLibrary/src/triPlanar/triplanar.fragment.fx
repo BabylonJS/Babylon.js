@@ -108,6 +108,8 @@ void main(void) {
 		discard;
 #endif
 
+#include<depthPrePass>
+
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
 #endif

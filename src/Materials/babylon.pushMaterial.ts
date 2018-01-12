@@ -36,7 +36,7 @@
             this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
         }
 
-        protected _afterBind(mesh: Mesh, effect?: Effect): void {
+        protected _afterBind(mesh: Mesh, effect: Nullable<Effect> = null): void {
             super._afterBind(mesh);
             this.getScene()._cachedEffect = effect;
         }

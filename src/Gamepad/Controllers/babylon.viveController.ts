@@ -1,15 +1,17 @@
 module BABYLON {
 
     export class ViveController extends WebVRController {
-        private _defaultModel: BABYLON.AbstractMesh;
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/vive/';
+        public static MODEL_FILENAME: string = 'wand.babylon';
 
-        constructor(vrGamepad) {
+        constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.VIVE;
+            this._invertLeftStickY = true;
         }
 
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
-            SceneLoader.ImportMesh("", "http://yoda.blob.core.windows.net/models/", "ViveWand.babylon", scene, (newMeshes) => {
+            SceneLoader.ImportMesh("", ViveController.MODEL_BASE_URL, ViveController.MODEL_FILENAME, scene, (newMeshes) => {
                 /*
                 Parent Mesh name: ViveWand
                 - body
@@ -22,13 +24,12 @@ module BABYLON {
                 - LED
                 */
                 this._defaultModel = newMeshes[1];
+                this.attachToMesh(this._defaultModel);
                 if (meshLoaded) {
                     meshLoaded(this._defaultModel);
                 }
-                this.attachToMesh(this._defaultModel);
             });
         }
-
 
         public get onLeftButtonStateChangedObservable() {
             return this.onMainButtonStateChangedObservable;

@@ -1,5 +1,3 @@
-/// <reference path="..\Cameras\babylon.cameraInputsManager.ts" />
-
 module BABYLON {
     export class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateCamera> {
         constructor(camera: ArcRotateCamera) {

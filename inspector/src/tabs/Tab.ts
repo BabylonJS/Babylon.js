@@ -54,7 +54,7 @@ module INSPECTOR {
         public filter(str: string) { };
 
         /** Dispose properly this tab */
-        public abstract dispose();
+        public abstract dispose(): void;
 
         /** Select an item in the tree */
         public select(item: TreeItem) {
@@ -66,6 +66,9 @@ module INSPECTOR {
         */
         public getPixelWidth(): number {
             let style = Inspector.WINDOW.getComputedStyle(this._div);
+            if (!style.marginLeft || !style.marginRight) {
+                return 0;
+            }
             let left = parseFloat(style.marginLeft.substr(0, style.marginLeft.length - 2)) || 0;
             let right = parseFloat(style.marginRight.substr(0, style.marginRight.length - 2)) || 0;
             return (this._div.clientWidth || 0) + left + right;

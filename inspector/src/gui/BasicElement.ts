@@ -23,7 +23,7 @@
          */
         protected _build(){};
         
-        public abstract update(data?:any);
+        public abstract update(data?:any): void;
         
         /** Default dispose method if needed */
         public dispose() {};

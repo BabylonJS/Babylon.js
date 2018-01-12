@@ -17,14 +17,14 @@ module BABYLON {
      */
     export class PhysicsJoint {
 
-        private _physicsJoint;
+        private _physicsJoint: any;
         protected _physicsPlugin: IPhysicsEnginePlugin;
 
         constructor(public type: number, public jointData: PhysicsJointData) {
             jointData.nativeParams = jointData.nativeParams || {};
         }
 
-        public get physicsJoint() {
+        public get physicsJoint(): any {
             return this._physicsJoint;
         }
 
@@ -101,7 +101,7 @@ module BABYLON {
          * @param {number} maxForce max force for this motor.
          */
         public setMotor(force?: number, maxForce?: number) {
-            this._physicsPlugin.setMotor(this, force, maxForce);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce);
         }
         
         /**
@@ -129,7 +129,7 @@ module BABYLON {
          * @param {number} maxForce max force for this motor.
          */
         public setMotor(force?: number, maxForce?: number) {
-            this._physicsPlugin.setMotor(this, force, maxForce);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce);
         }
         
         /**
@@ -158,7 +158,7 @@ module BABYLON {
          * @param {motorIndex} the motor's index, 0 or 1.
          */
         public setMotor(force?: number, maxForce?: number, motorIndex: number = 0) {
-            this._physicsPlugin.setMotor(this, force, maxForce, motorIndex);
+            this._physicsPlugin.setMotor(this, force || 0, maxForce, motorIndex);
         }
         
         /**
@@ -175,8 +175,8 @@ module BABYLON {
 
     export interface IMotorEnabledJoint {
         physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number);
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number);
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
     }
 
     export interface DistanceJointData extends PhysicsJointData {
