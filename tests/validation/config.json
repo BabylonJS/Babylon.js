@@ -175,6 +175,7 @@
     },
     {
       "title": "Custom render target",
+      "renderCount": 20,
       "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
       "functionToCall": "CreateCustomRenderTargetTestScene",
       "referenceImage": "customRTT.png"
@@ -255,6 +256,7 @@
     },
     {
       "title": "Reflection probes",
+      "renderCount": 20,
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
       "functionToCall": "CreateReflectionProbeTestScene ",
       "referenceImage": "refprobe.png"
@@ -276,6 +278,7 @@
     },
     {
       "title": "MultiSample render targets",
+      "renderCount": 20,
       "playgroundId": "#12MKMN#0",
       "referenceImage": "MultiSample render targets.png"
     },

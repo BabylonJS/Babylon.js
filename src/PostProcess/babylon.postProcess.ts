@@ -334,6 +334,10 @@
             return this.width / this.height;
         }
 
+        /**
+         * Get a value indicating if the post-process is ready to be used
+         * @returns true if the post-process is ready (shader is compiled)
+         */
         public isReady(): boolean {
             return this._effect && this._effect.isReady();
         }

@@ -1896,7 +1896,9 @@
                     return false;
                 }
 
-                let hardwareInstancedRendering = false;
+                mesh.computeWorldMatrix();
+
+                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh";
                 if (mesh.getClassName() === "Mesh") {
                     hardwareInstancedRendering = engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
                 }
@@ -1942,6 +1944,10 @@
 
                 // Highlight layers
                 for (var layer of this.highlightLayers) {
+                    if (!layer.hasMesh(mesh)) {
+                        continue;
+                    }
+
                     for (var subMesh of mesh.subMeshes) {
                         if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
                             return false;

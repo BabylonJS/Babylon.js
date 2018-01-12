@@ -794,6 +794,19 @@
         }
 
         /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        public hasMesh(mesh: AbstractMesh): boolean {
+            if (!this._meshes) {
+                return false;
+            }
+
+            return this._meshes[mesh.uniqueId] !== undefined && this._meshes[mesh.uniqueId] !== null;
+        }
+
+        /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
          * @param mesh The mesh to highlight
          * @param color The color of the highlight
