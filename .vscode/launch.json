@@ -130,17 +130,19 @@
             "request": "launch",
             "reAttach": true,
             "url": "http://localhost:1338/localDev/index.html",
-            "pathMappings": [{
-                "url": "http://localhost:1338",
-                "path": "${workspaceFolder}"
-            }],
+            "pathMappings": [
+                {
+                    "url": "http://localhost:1338",
+                    "path": "${workspaceFolder}"
+                }
+            ],
             "preLaunchTask": "run"
         },
         {
             "name": "Launch Build Validation (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:1338/tests/validation/index.html",
+            "url": "http://localhost:1338/tests/validation/index.html?LOD",
             "webRoot": "${workspaceRoot}/",
             "sourceMaps": true,
             "preLaunchTask": "run",
