@@ -20791,57 +20791,15 @@ var BABYLON;
                 if (!mesh.isReady()) {
                     return false;
                 }
-                mesh.computeWorldMatrix();
-                var hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh";
-                if (mesh.getClassName() === "Mesh") {
-                    hardwareInstancedRendering = engine.getCaps().instancedArrays && mesh.instances.length > 0;
-                }
-                var mat = mesh.material || this.defaultMaterial;
-                if (mat) {
-                    var currentAlphaTestingState = engine.getAlphaTesting();
-                    if (mat.storeEffectOnSubMeshes) {
-                        for (var _i = 0, _a = mesh.subMeshes; _i < _a.length; _i++) {
-                            var subMesh = _a[_i];
-                            var effectiveMaterial = subMesh.getMaterial();
-                            if (effectiveMaterial) {
-                                engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(mesh));
-                                if (!effectiveMaterial.isReadyForSubMesh(mesh, subMesh, hardwareInstancedRendering)) {
-                                    engine.setAlphaTesting(currentAlphaTestingState);
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(mesh));
-                        if (!mat.isReady(mesh, hardwareInstancedRendering)) {
-                            engine.setAlphaTesting(currentAlphaTestingState);
-                            return false;
-                        }
-                    }
-                    engine.setAlphaTesting(currentAlphaTestingState);
-                }
-                // Shadows
-                for (var _b = 0, _c = mesh._lightSources; _b < _c.length; _b++) {
-                    var light = _c[_b];
-                    var generator = light.getShadowGenerator();
-                    if (generator) {
-                        for (var _d = 0, _e = mesh.subMeshes; _d < _e.length; _d++) {
-                            var subMesh = _e[_d];
-                            if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
-                                return false;
-                            }
-                        }
-                    }
-                }
                 // Highlight layers
-                for (var _f = 0, _g = this.highlightLayers; _f < _g.length; _f++) {
-                    var layer = _g[_f];
+                var hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && mesh.instances.length > 0;
+                for (var _i = 0, _a = this.highlightLayers; _i < _a.length; _i++) {
+                    var layer = _a[_i];
                     if (!layer.hasMesh(mesh)) {
                         continue;
                     }
-                    for (var _h = 0, _j = mesh.subMeshes; _h < _j.length; _h++) {
-                        var subMesh = _j[_h];
+                    for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
+                        var subMesh = _c[_b];
                         if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
                             return false;
                         }
@@ -25382,13 +25340,68 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        Mesh.prototype.isReady = function () {
+        Mesh.prototype.isReady = function (forceInstanceSupport) {
+            if (forceInstanceSupport === void 0) { forceInstanceSupport = false; }
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
-            return _super.prototype.isReady.call(this);
+            if (!_super.prototype.isReady.call(this)) {
+                return false;
+            }
+            var engine = this.getEngine();
+            var scene = this.getScene();
+            var hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+            this.computeWorldMatrix();
+            var mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                var currentAlphaTestingState = engine.getAlphaTesting();
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                        var subMesh = _a[_i];
+                        var effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                engine.setAlphaTesting(currentAlphaTestingState);
+                                return false;
+                            }
+                        }
+                    }
+                }
+                else {
+                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        engine.setAlphaTesting(currentAlphaTestingState);
+                        return false;
+                    }
+                }
+                engine.setAlphaTesting(currentAlphaTestingState);
+            }
+            // Shadows
+            for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
+                var light = _c[_b];
+                var generator = light.getShadowGenerator();
+                if (generator) {
+                    for (var _d = 0, _e = this.subMeshes; _d < _e.length; _d++) {
+                        var subMesh = _e[_d];
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // LOD
+            for (var _f = 0, _g = this._LODLevels; _f < _g.length; _f++) {
+                var lod = _g[_f];
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+            return true;
         };
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
@@ -49365,7 +49378,7 @@ var BABYLON;
             return "InstancedMesh";
         };
         Object.defineProperty(InstancedMesh.prototype, "receiveShadows", {
-            // Methods
+            // Methods      
             get: function () {
                 return this._sourceMesh.receiveShadows;
             },
@@ -49413,6 +49426,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
+        InstancedMesh.prototype.isReady = function () {
+            return this._sourceMesh.isReady(true);
+        };
         /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
          */
