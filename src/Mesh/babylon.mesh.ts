@@ -599,6 +599,7 @@
 
         /**
          * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
          * @returns true if all associated assets are ready (material, textures, shaders)
          */
         public isReady(forceInstanceSupport = false): boolean {
