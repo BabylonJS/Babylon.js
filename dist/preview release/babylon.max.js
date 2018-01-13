@@ -17089,7 +17089,7 @@ var BABYLON;
         Object.defineProperty(Light, "LIGHTMAP_SPECULAR", {
             /**
              * material.lightmapTexture as only diffuse lighting from this light
-             * adds pnly specular lighting from this light
+             * adds only specular lighting from this light
              * adds dynamic shadows
              */
             get: function () {
@@ -20758,7 +20758,11 @@ var BABYLON;
             this.onPointerObservable.clear();
             this.onPrePointerObservable.clear();
         };
-        // Ready
+        /**
+         * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
+         * Delay loaded resources are not taking in account
+         * @return true if all required resources are ready
+         */
         Scene.prototype.isReady = function () {
             if (this._isDisposed) {
                 return false;
@@ -20767,6 +20771,7 @@ var BABYLON;
                 return false;
             }
             var index;
+            var engine = this.getEngine();
             // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
@@ -20786,10 +20791,18 @@ var BABYLON;
                 if (!mesh.isReady()) {
                     return false;
                 }
-                var mat = mesh.material;
-                if (mat) {
-                    if (!mat.isReady(mesh)) {
-                        return false;
+                // Highlight layers
+                var hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && mesh.instances.length > 0;
+                for (var _i = 0, _a = this.highlightLayers; _i < _a.length; _i++) {
+                    var layer = _a[_i];
+                    if (!layer.hasMesh(mesh)) {
+                        continue;
+                    }
+                    for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
+                        var subMesh = _c[_b];
+                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -25327,13 +25340,71 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        Mesh.prototype.isReady = function () {
+        Mesh.prototype.isReady = function (forceInstanceSupport) {
+            if (forceInstanceSupport === void 0) { forceInstanceSupport = false; }
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
-            return _super.prototype.isReady.call(this);
+            if (!_super.prototype.isReady.call(this)) {
+                return false;
+            }
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+            var engine = this.getEngine();
+            var scene = this.getScene();
+            var hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+            this.computeWorldMatrix();
+            var mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                var currentAlphaTestingState = engine.getAlphaTesting();
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                        var subMesh = _a[_i];
+                        var effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                engine.setAlphaTesting(currentAlphaTestingState);
+                                return false;
+                            }
+                        }
+                    }
+                }
+                else {
+                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        engine.setAlphaTesting(currentAlphaTestingState);
+                        return false;
+                    }
+                }
+                engine.setAlphaTesting(currentAlphaTestingState);
+            }
+            // Shadows
+            for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
+                var light = _c[_b];
+                var generator = light.getShadowGenerator();
+                if (generator) {
+                    for (var _d = 0, _e = this.subMeshes; _d < _e.length; _d++) {
+                        var subMesh = _e[_d];
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // LOD
+            for (var _f = 0, _g = this._LODLevels; _f < _g.length; _f++) {
+                var lod = _g[_f];
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+            return true;
         };
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
@@ -49310,7 +49381,7 @@ var BABYLON;
             return "InstancedMesh";
         };
         Object.defineProperty(InstancedMesh.prototype, "receiveShadows", {
-            // Methods
+            // Methods      
             get: function () {
                 return this._sourceMesh.receiveShadows;
             },
@@ -49358,6 +49429,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
+        InstancedMesh.prototype.isReady = function () {
+            return this._sourceMesh.isReady(true);
+        };
         /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
          */
@@ -53646,6 +53724,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Get a value indicating if the post-process is ready to be used
+         * @returns true if the post-process is ready (shader is compiled)
+         */
+        PostProcess.prototype.isReady = function () {
+            return this._effect && this._effect.isReady();
+        };
         PostProcess.prototype.apply = function () {
             // Check
             if (!this._effect || !this._effect.isReady())
@@ -54165,9 +54250,6 @@ var BABYLON;
                 if (!_this.useBlurExponentialShadowMap && !_this.useBlurCloseExponentialShadowMap) {
                     return;
                 }
-                if (!_this._blurPostProcesses || !_this._blurPostProcesses.length) {
-                    _this._initializeBlurRTTAndPostProcesses();
-                }
                 var shadowMap = _this.getShadowMapForRendering();
                 if (shadowMap) {
                     _this._scene.postProcessManager.directRender(_this._blurPostProcesses, shadowMap.getInternalTexture(), true);
@@ -54414,7 +54496,24 @@ var BABYLON;
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"], ["diffuseSampler"], join);
             }
-            return this._effect.isReady();
+            if (!this._effect.isReady()) {
+                return false;
+            }
+            if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {
+                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
+                    this._initializeBlurRTTAndPostProcesses();
+                }
+            }
+            if (this._kernelBlurXPostprocess && !this._kernelBlurXPostprocess.isReady()) {
+                return false;
+            }
+            if (this._kernelBlurYPostprocess && !this._kernelBlurYPostprocess.isReady()) {
+                return false;
+            }
+            if (this._boxBlurPostprocess && !this._boxBlurPostprocess.isReady()) {
+                return false;
+            }
+            return true;
         };
         /**
          * This creates the defines related to the standard BJS materials.
@@ -54520,10 +54619,6 @@ var BABYLON;
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
                 this._shadowMap2 = null;
-            }
-            if (this._downSamplePostprocess) {
-                this._downSamplePostprocess.dispose();
-                this._downSamplePostprocess = null;
             }
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
@@ -62757,7 +62852,7 @@ var BABYLON;
         VolumetricLightScatteringPostProcess.prototype.getClassName = function () {
             return "VolumetricLightScatteringPostProcess";
         };
-        VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
+        VolumetricLightScatteringPostProcess.prototype._isReady = function (subMesh, useInstances) {
             var mesh = subMesh.getMesh();
             // Render this.mesh as default
             if (mesh === this.mesh && mesh.material) {
@@ -62880,7 +62975,7 @@ var BABYLON;
                     return;
                 }
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (_this._isReady(subMesh, hardwareInstancedRendering)) {
                     var effect = _this._volumetricLightScatteringPass;
                     if (mesh === _this.mesh) {
                         if (subMesh.effect) {
@@ -77001,6 +77096,7 @@ var BABYLON;
             }
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                _this._sceneDisposeObserver = null;
                 _this.dispose();
             });
         }
@@ -77837,7 +77933,7 @@ var BABYLON;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
                     emissiveTexture = material.emissiveTexture;
                 }
-                if (_this.isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
+                if (_this._isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
                     engine.enableEffect(_this._glowMapGenerationEffect);
                     mesh._bind(subMesh, _this._glowMapGenerationEffect, BABYLON.Material.TriangleFillMode);
                     _this._glowMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -77907,7 +78003,27 @@ var BABYLON;
          * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        HighlightLayer.prototype.isReady = function (subMesh, useInstances, emissiveTexture) {
+        HighlightLayer.prototype.isReady = function (subMesh, useInstances) {
+            var material = subMesh.getMaterial();
+            var mesh = subMesh.getRenderingMesh();
+            if (!material || !mesh || !this._meshes) {
+                return false;
+            }
+            var emissiveTexture = null;
+            var highlightLayerMesh = this._meshes[mesh.uniqueId];
+            if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
+                emissiveTexture = material.emissiveTexture;
+            }
+            return this._isReady(subMesh, useInstances, emissiveTexture);
+        };
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        HighlightLayer.prototype._isReady = function (subMesh, useInstances, emissiveTexture) {
             var material = subMesh.getMaterial();
             if (!material) {
                 return false;
@@ -78090,6 +78206,17 @@ var BABYLON;
                 }
             }
             this._excludedMeshes[mesh.uniqueId] = null;
+        };
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        HighlightLayer.prototype.hasMesh = function (mesh) {
+            if (!this._meshes) {
+                return false;
+            }
+            return this._meshes[mesh.uniqueId] !== undefined && this._meshes[mesh.uniqueId] !== null;
         };
         /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
