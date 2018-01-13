@@ -611,6 +611,10 @@
                 return false;
             }
 
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
             let engine = this.getEngine();
             let scene = this.getScene();
             let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
