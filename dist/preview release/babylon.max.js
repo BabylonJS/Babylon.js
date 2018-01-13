@@ -25352,6 +25352,9 @@ var BABYLON;
             if (!_super.prototype.isReady.call(this)) {
                 return false;
             }
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
             var engine = this.getEngine();
             var scene = this.getScene();
             var hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
