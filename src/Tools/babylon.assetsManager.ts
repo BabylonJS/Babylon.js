@@ -40,6 +40,12 @@ module BABYLON {
             });
         }
 
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         public runTask(scene: Scene, onSuccess: () => void, onError: (message?: string, exception?: any) => void) {
             throw new Error("runTask is not implemented");
         }
@@ -76,12 +82,18 @@ module BABYLON {
 
     }
 
+    /**
+     * Define the interface used by progress events raised during assets loading
+     */
     export interface IAssetsProgressEvent {
         remainingCount: number;
         totalCount: number;
         task: AbstractAssetTask;
     }
 
+    /**
+     * Classed used to share progress information about assets loading
+     */
     export class AssetsProgressEvent implements IAssetsProgressEvent {
         remainingCount: number;
         totalCount: number;
@@ -94,6 +106,9 @@ module BABYLON {
         }
     }
 
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load meshes
+     */
     export class MeshAssetTask extends AbstractAssetTask {
         public loadedMeshes: Array<AbstractMesh>;
         public loadedParticleSystems: Array<ParticleSystem>;
@@ -120,6 +135,9 @@ module BABYLON {
         }
     }
 
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load text content
+     */
     export class TextFileAssetTask extends AbstractAssetTask {
         public text: string;
 
@@ -142,6 +160,9 @@ module BABYLON {
         }
     }
 
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load binary data
+     */
     export class BinaryFileAssetTask extends AbstractAssetTask {
         public data: ArrayBuffer;
 
@@ -164,6 +185,9 @@ module BABYLON {
         }
     }
 
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load images
+     */
     export class ImageAssetTask extends AbstractAssetTask {
         public image: HTMLImageElement;
 
