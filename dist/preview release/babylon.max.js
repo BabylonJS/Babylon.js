@@ -77001,6 +77001,7 @@ var BABYLON;
             }
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                _this._sceneDisposeObserver = null;
                 _this.dispose();
             });
         }
@@ -78271,14 +78272,36 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Defines the list of states available for a task inside a {BABYLON.AssetsManager}
+     */
     var AssetTaskState;
     (function (AssetTaskState) {
+        /**
+         * Initialization
+         */
         AssetTaskState[AssetTaskState["INIT"] = 0] = "INIT";
+        /**
+         * Running
+         */
         AssetTaskState[AssetTaskState["RUNNING"] = 1] = "RUNNING";
+        /**
+         * Done
+         */
         AssetTaskState[AssetTaskState["DONE"] = 2] = "DONE";
+        /**
+         * Error
+         */
         AssetTaskState[AssetTaskState["ERROR"] = 3] = "ERROR";
     })(AssetTaskState = BABYLON.AssetTaskState || (BABYLON.AssetTaskState = {}));
+    /**
+     * Define an abstract asset task used with a {BABYLON.AssetsManager} class to load assets into a scene
+     */
     var AbstractAssetTask = /** @class */ (function () {
+        /**
+         * Creates a new {BABYLON.AssetsManager}
+         * @param name define the name of the task
+         */
         function AbstractAssetTask(name) {
             this.name = name;
             this.isCompleted = false;
@@ -78293,6 +78316,12 @@ var BABYLON;
                 _this.onErrorCallback(onError, msg, exception);
             });
         };
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         AbstractAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             throw new Error("runTask is not implemented");
         };
@@ -78323,6 +78352,9 @@ var BABYLON;
         return AbstractAssetTask;
     }());
     BABYLON.AbstractAssetTask = AbstractAssetTask;
+    /**
+     * Class used to share progress information about assets loading
+     */
     var AssetsProgressEvent = /** @class */ (function () {
         function AssetsProgressEvent(remainingCount, totalCount, task) {
             this.remainingCount = remainingCount;
@@ -78332,6 +78364,9 @@ var BABYLON;
         return AssetsProgressEvent;
     }());
     BABYLON.AssetsProgressEvent = AssetsProgressEvent;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load meshes
+     */
     var MeshAssetTask = /** @class */ (function (_super) {
         __extends(MeshAssetTask, _super);
         function MeshAssetTask(name, meshesNames, rootUrl, sceneFilename) {
@@ -78356,6 +78391,9 @@ var BABYLON;
         return MeshAssetTask;
     }(AbstractAssetTask));
     BABYLON.MeshAssetTask = MeshAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load text content
+     */
     var TextFileAssetTask = /** @class */ (function (_super) {
         __extends(TextFileAssetTask, _super);
         function TextFileAssetTask(name, url) {
@@ -78378,6 +78416,9 @@ var BABYLON;
         return TextFileAssetTask;
     }(AbstractAssetTask));
     BABYLON.TextFileAssetTask = TextFileAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load binary data
+     */
     var BinaryFileAssetTask = /** @class */ (function (_super) {
         __extends(BinaryFileAssetTask, _super);
         function BinaryFileAssetTask(name, url) {
@@ -78400,6 +78441,9 @@ var BABYLON;
         return BinaryFileAssetTask;
     }(AbstractAssetTask));
     BABYLON.BinaryFileAssetTask = BinaryFileAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load images
+     */
     var ImageAssetTask = /** @class */ (function (_super) {
         __extends(ImageAssetTask, _super);
         function ImageAssetTask(name, url) {
@@ -78424,6 +78468,9 @@ var BABYLON;
         return ImageAssetTask;
     }(AbstractAssetTask));
     BABYLON.ImageAssetTask = ImageAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load 2D textures
+     */
     var TextureAssetTask = /** @class */ (function (_super) {
         __extends(TextureAssetTask, _super);
         function TextureAssetTask(name, url, noMipmap, invertY, samplingMode) {
@@ -78448,6 +78495,9 @@ var BABYLON;
         return TextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.TextureAssetTask = TextureAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load cube textures
+     */
     var CubeTextureAssetTask = /** @class */ (function (_super) {
         __extends(CubeTextureAssetTask, _super);
         function CubeTextureAssetTask(name, url, extensions, noMipmap, files) {
@@ -78471,6 +78521,9 @@ var BABYLON;
         return CubeTextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load HDR cube textures
+     */
     var HDRCubeTextureAssetTask = /** @class */ (function (_super) {
         __extends(HDRCubeTextureAssetTask, _super);
         function HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
@@ -78500,66 +78553,146 @@ var BABYLON;
         return HDRCubeTextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
+    /**
+     * This class can be used to easily import assets into a scene
+     * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+     */
     var AssetsManager = /** @class */ (function () {
         function AssetsManager(scene) {
             this._isLoading = false;
             this.tasks = new Array();
             this.waitingTasksCount = 0;
+            this.totalTasksCount = 0;
             //Observables
+            /**
+             * Observable called when all tasks are processed
+             */
             this.onTaskSuccessObservable = new BABYLON.Observable();
+            /**
+             * Observable called when a task had an error
+             */
             this.onTaskErrorObservable = new BABYLON.Observable();
+            /**
+             * Observable called when a task is successful
+             */
             this.onTasksDoneObservable = new BABYLON.Observable();
+            /**
+             * Observable called when a task is done (whatever the result is)
+             */
             this.onProgressObservable = new BABYLON.Observable();
+            /**
+             * Gets or sets a boolean defining if the {BABYLON.AssetsManager} should use the default loading screen
+             * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+             */
             this.useDefaultLoadingScreen = true;
             this._scene = scene;
         }
+        /**
+         * Add a {BABYLON.MeshAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         */
         AssetsManager.prototype.addMeshTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
             var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
             this.tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.TextFileAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         */
         AssetsManager.prototype.addTextFileTask = function (taskName, url) {
             var task = new TextFileAssetTask(taskName, url);
             this.tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.BinaryFileAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         */
         AssetsManager.prototype.addBinaryFileTask = function (taskName, url) {
             var task = new BinaryFileAssetTask(taskName, url);
             this.tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.ImageAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         */
         AssetsManager.prototype.addImageTask = function (taskName, url) {
             var task = new ImageAssetTask(taskName, url);
             this.tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.TextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param invertY defines if you want to invert Y axis of the loaded texture (false by default)
+         * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
+         */
         AssetsManager.prototype.addTextureTask = function (taskName, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
             this.tasks.push(task);
             return task;
         };
-        AssetsManager.prototype.addCubeTextureTask = function (name, url, extensions, noMipmap, files) {
-            var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
+        /**
+         * Add a {BABYLON.CubeTextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param extensions defines the extension to use to load the cube map (can be null)
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param files defines the list of files to load (can be null)
+         */
+        AssetsManager.prototype.addCubeTextureTask = function (taskName, url, extensions, noMipmap, files) {
+            var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files);
             this.tasks.push(task);
             return task;
         };
-        AssetsManager.prototype.addHDRCubeTextureTask = function (name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+        /**
+         *
+         * Add a {BABYLON.HDRCubeTextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param size defines the size you want for the cubemap (can be null)
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param generateHarmonics defines if you want to automatically generate (true by default)
+         * @param useInGammaSpace defines if the texture must be considered in gamma space (false by default)
+         * @param usePMREMGenerator is a reserved parameter and must be set to false or ignored
+         */
+        AssetsManager.prototype.addHDRCubeTextureTask = function (taskName, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
             if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
-            var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
+            var task = new HDRCubeTextureAssetTask(taskName, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
             this.tasks.push(task);
             return task;
         };
         AssetsManager.prototype._decreaseWaitingTasksCount = function (task) {
+            var _this = this;
             this.waitingTasksCount--;
             try {
-                if (this.onProgress) {
-                    this.onProgress(this.waitingTasksCount, this.tasks.length, task);
+                if (task.taskState === AssetTaskState.DONE) {
+                    // Let's remove successfull tasks
+                    BABYLON.Tools.SetImmediate(function () {
+                        var index = _this.tasks.indexOf(task);
+                        if (index > -1) {
+                            _this.tasks.splice(index, 1);
+                        }
+                    });
                 }
-                this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this.waitingTasksCount, this.tasks.length, task));
+                if (this.onProgress) {
+                    this.onProgress(this.waitingTasksCount, this.totalTasksCount, task);
+                }
+                this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this.waitingTasksCount, this.totalTasksCount, task));
             }
             catch (e) {
                 BABYLON.Tools.Error("Error running progress callbacks.");
@@ -78607,23 +78740,31 @@ var BABYLON;
             };
             task.run(this._scene, done, error);
         };
+        /**
+         * Reset the {BABYLON.AssetsManager} and remove all tasks
+         * @return the current instance of the {BABYLON.AssetsManager}
+         */
         AssetsManager.prototype.reset = function () {
             this._isLoading = false;
             this.tasks = new Array();
             return this;
         };
+        /**
+         * Start the loading process
+         * @return the current instance of the {BABYLON.AssetsManager}
+         */
         AssetsManager.prototype.load = function () {
             if (this._isLoading) {
                 return this;
             }
             this._isLoading = true;
             this.waitingTasksCount = this.tasks.length;
+            this.totalTasksCount = this.tasks.length;
             if (this.waitingTasksCount === 0) {
                 if (this.onFinish) {
                     this.onFinish(this.tasks);
                 }
                 this.onTasksDoneObservable.notifyObservers(this.tasks);
-                this._isLoading = false;
                 return this;
             }
             if (this.useDefaultLoadingScreen) {
