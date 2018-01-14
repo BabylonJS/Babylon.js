@@ -1,7 +1,7 @@
 {
-  "errors": 11182,
+  "errors": 11178,
   "babylon.typedoc.json": {
-    "errors": 11182,
+    "errors": 11178,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -40891,32 +40891,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "SIMDHelper": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "IsEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "DisableSIMD": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EnableSIMD": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
