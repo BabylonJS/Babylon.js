@@ -8952,6 +8952,12 @@ var BABYLON;
             this._webGLVersion = 1.0;
             this._badOS = false;
             this._badDesktopOS = false;
+            /**
+             * Gets or sets a value indicating if we want to disable texture binding optmization.
+             * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+             * By default Babylon.js will try to let textures bound and only update the samplers to point where the texture is.
+             */
+            this.disableTextureBindingOptimization = false;
             this.onVRDisplayChangedObservable = new BABYLON.Observable();
             this.onVRRequestPresentComplete = new BABYLON.Observable();
             this.onVRRequestPresentStart = new BABYLON.Observable();
@@ -8995,6 +9001,7 @@ var BABYLON;
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
             this._nextFreeTextureSlots = new Array();
+            this._maxSimultaneousTextures = 0;
             this._activeRequests = new Array();
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
@@ -9069,6 +9076,9 @@ var BABYLON;
                                 switch (target) {
                                     case "uniformBuffer":
                                         this.disableUniformBuffers = true;
+                                        break;
+                                    case "textureBindingOptimization":
+                                        this.disableTextureBindingOptimization = true;
                                         break;
                                 }
                             }
@@ -9566,7 +9576,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha2";
+                return "3.2.0-alpha3";
             },
             enumerable: true,
             configurable: true
@@ -9850,7 +9860,8 @@ var BABYLON;
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
             // Texture maps
-            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            this._maxSimultaneousTextures = this._caps.maxCombinedTexturesImageUnits;
+            for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         };
@@ -9890,7 +9901,7 @@ var BABYLON;
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
             this._activeChannel = -1;
@@ -12743,7 +12754,7 @@ var BABYLON;
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         };
         Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
                 this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -12766,18 +12777,28 @@ var BABYLON;
                 return -1;
             }
             internalTexture._initialSlot = channel;
-            if (channel !== internalTexture._designatedSlot) {
-                if (internalTexture._designatedSlot > -1) {
-                    return internalTexture._designatedSlot;
-                }
-                else {
-                    // No slot for this texture, let's pick a new one (if we find a free slot)
-                    if (this._nextFreeTextureSlots.length) {
-                        return this._nextFreeTextureSlots[0];
+            if (this.disableTextureBindingOptimization) {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) {
+                        this._removeDesignatedSlot(internalTexture);
                     }
-                    // We need to recycle the oldest bound texture, sorry.
                     this._textureCollisions.addCount(1, false);
-                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                }
+            }
+            else {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) {
+                        return internalTexture._designatedSlot;
+                    }
+                    else {
+                        // No slot for this texture, let's pick a new one (if we find a free slot)
+                        if (this._nextFreeTextureSlots.length) {
+                            return this._nextFreeTextureSlots[0];
+                        }
+                        // We need to recycle the oldest bound texture, sorry.
+                        this._textureCollisions.addCount(1, false);
+                        return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                    }
                 }
             }
             return channel;
@@ -13551,7 +13572,8 @@ var BABYLON;
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         Engine.ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
         Engine.Instances = new Array();
         // Const statics
@@ -14466,9 +14488,6 @@ var BABYLON;
          * Returns the latest update of the World matrix determinant.
          */
         TransformNode.prototype._getWorldMatrixDeterminant = function () {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
             return this._worldMatrixDeterminant;
         };
         Object.defineProperty(TransformNode.prototype, "worldMatrixFromCache", {
@@ -17089,7 +17108,7 @@ var BABYLON;
         Object.defineProperty(Light, "LIGHTMAP_SPECULAR", {
             /**
              * material.lightmapTexture as only diffuse lighting from this light
-             * adds pnly specular lighting from this light
+             * adds only specular lighting from this light
              * adds dynamic shadows
              */
             get: function () {
@@ -20758,7 +20777,11 @@ var BABYLON;
             this.onPointerObservable.clear();
             this.onPrePointerObservable.clear();
         };
-        // Ready
+        /**
+         * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
+         * Delay loaded resources are not taking in account
+         * @return true if all required resources are ready
+         */
         Scene.prototype.isReady = function () {
             if (this._isDisposed) {
                 return false;
@@ -20767,6 +20790,7 @@ var BABYLON;
                 return false;
             }
             var index;
+            var engine = this.getEngine();
             // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
@@ -20786,10 +20810,18 @@ var BABYLON;
                 if (!mesh.isReady()) {
                     return false;
                 }
-                var mat = mesh.material;
-                if (mat) {
-                    if (!mat.isReady(mesh)) {
-                        return false;
+                // Highlight layers
+                var hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && mesh.instances.length > 0;
+                for (var _i = 0, _a = this.highlightLayers; _i < _a.length; _i++) {
+                    var layer = _a[_i];
+                    if (!layer.hasMesh(mesh)) {
+                        continue;
+                    }
+                    for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
+                        var subMesh = _c[_b];
+                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -25327,13 +25359,71 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        Mesh.prototype.isReady = function () {
+        Mesh.prototype.isReady = function (forceInstanceSupport) {
+            if (forceInstanceSupport === void 0) { forceInstanceSupport = false; }
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
-            return _super.prototype.isReady.call(this);
+            if (!_super.prototype.isReady.call(this)) {
+                return false;
+            }
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+            var engine = this.getEngine();
+            var scene = this.getScene();
+            var hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+            this.computeWorldMatrix();
+            var mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                var currentAlphaTestingState = engine.getAlphaTesting();
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                        var subMesh = _a[_i];
+                        var effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                engine.setAlphaTesting(currentAlphaTestingState);
+                                return false;
+                            }
+                        }
+                    }
+                }
+                else {
+                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        engine.setAlphaTesting(currentAlphaTestingState);
+                        return false;
+                    }
+                }
+                engine.setAlphaTesting(currentAlphaTestingState);
+            }
+            // Shadows
+            for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
+                var light = _c[_b];
+                var generator = light.getShadowGenerator();
+                if (generator) {
+                    for (var _d = 0, _e = this.subMeshes; _d < _e.length; _d++) {
+                        var subMesh = _e[_d];
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // LOD
+            for (var _f = 0, _g = this._LODLevels; _f < _g.length; _f++) {
+                var lod = _g[_f];
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+            return true;
         };
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
@@ -49310,7 +49400,7 @@ var BABYLON;
             return "InstancedMesh";
         };
         Object.defineProperty(InstancedMesh.prototype, "receiveShadows", {
-            // Methods
+            // Methods      
             get: function () {
                 return this._sourceMesh.receiveShadows;
             },
@@ -49358,6 +49448,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
+        InstancedMesh.prototype.isReady = function () {
+            return this._sourceMesh.isReady(true);
+        };
         /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
          */
@@ -53646,6 +53743,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Get a value indicating if the post-process is ready to be used
+         * @returns true if the post-process is ready (shader is compiled)
+         */
+        PostProcess.prototype.isReady = function () {
+            return this._effect && this._effect.isReady();
+        };
         PostProcess.prototype.apply = function () {
             // Check
             if (!this._effect || !this._effect.isReady())
@@ -54165,9 +54269,6 @@ var BABYLON;
                 if (!_this.useBlurExponentialShadowMap && !_this.useBlurCloseExponentialShadowMap) {
                     return;
                 }
-                if (!_this._blurPostProcesses || !_this._blurPostProcesses.length) {
-                    _this._initializeBlurRTTAndPostProcesses();
-                }
                 var shadowMap = _this.getShadowMapForRendering();
                 if (shadowMap) {
                     _this._scene.postProcessManager.directRender(_this._blurPostProcesses, shadowMap.getInternalTexture(), true);
@@ -54414,7 +54515,24 @@ var BABYLON;
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"], ["diffuseSampler"], join);
             }
-            return this._effect.isReady();
+            if (!this._effect.isReady()) {
+                return false;
+            }
+            if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {
+                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
+                    this._initializeBlurRTTAndPostProcesses();
+                }
+            }
+            if (this._kernelBlurXPostprocess && !this._kernelBlurXPostprocess.isReady()) {
+                return false;
+            }
+            if (this._kernelBlurYPostprocess && !this._kernelBlurYPostprocess.isReady()) {
+                return false;
+            }
+            if (this._boxBlurPostprocess && !this._boxBlurPostprocess.isReady()) {
+                return false;
+            }
+            return true;
         };
         /**
          * This creates the defines related to the standard BJS materials.
@@ -54520,10 +54638,6 @@ var BABYLON;
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
                 this._shadowMap2 = null;
-            }
-            if (this._downSamplePostprocess) {
-                this._downSamplePostprocess.dispose();
-                this._downSamplePostprocess = null;
             }
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
@@ -62757,7 +62871,7 @@ var BABYLON;
         VolumetricLightScatteringPostProcess.prototype.getClassName = function () {
             return "VolumetricLightScatteringPostProcess";
         };
-        VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
+        VolumetricLightScatteringPostProcess.prototype._isReady = function (subMesh, useInstances) {
             var mesh = subMesh.getMesh();
             // Render this.mesh as default
             if (mesh === this.mesh && mesh.material) {
@@ -62880,7 +62994,7 @@ var BABYLON;
                     return;
                 }
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (_this._isReady(subMesh, hardwareInstancedRendering)) {
                     var effect = _this._volumetricLightScatteringPass;
                     if (mesh === _this.mesh) {
                         if (subMesh.effect) {
@@ -72831,249 +72945,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.octreeBlock.js.map
 
-var BABYLON;
-(function (BABYLON) {
-    var SIMDVector3 = /** @class */ (function () {
-        function SIMDVector3() {
-        }
-        SIMDVector3.TransformCoordinatesToRefSIMD = function (vector, transformation, result) {
-            SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD(vector.x, vector.y, vector.z, transformation, result);
-        };
-        SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD = function (x, y, z, transformation, result) {
-            var m = transformation.m;
-            var m0 = SIMD.Float32x4.load(m, 0);
-            var m1 = SIMD.Float32x4.load(m, 4);
-            var m2 = SIMD.Float32x4.load(m, 8);
-            var m3 = SIMD.Float32x4.load(m, 12);
-            var r = SIMD.Float32x4.add(SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(x), m0), SIMD.Float32x4.mul(SIMD.Float32x4.splat(y), m1)), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(z), m2), m3));
-            r = SIMD.Float32x4.div(r, SIMD.Float32x4.swizzle(r, 3, 3, 3, 3));
-            result.x = SIMD.Float32x4.extractLane(r, 0);
-            result.y = SIMD.Float32x4.extractLane(r, 1);
-            result.z = SIMD.Float32x4.extractLane(r, 2);
-        };
-        return SIMDVector3;
-    }());
-    var SIMDMatrix = /** @class */ (function () {
-        function SIMDMatrix() {
-        }
-        SIMDMatrix.prototype.multiplyToArraySIMD = function (other, result, offset) {
-            var tm = this.m;
-            var om = other.m;
-            var m0 = SIMD.Float32x4.load(om, 0);
-            var m1 = SIMD.Float32x4.load(om, 4);
-            var m2 = SIMD.Float32x4.load(om, 8);
-            var m3 = SIMD.Float32x4.load(om, 12);
-            for (var i = 0; i < 16; i += 4) {
-                SIMD.Float32x4.store(result, i + offset, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i]), m0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i + 1]), m1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i + 2]), m2), SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i + 3]), m3)))));
-            }
-            return this;
-        };
-        SIMDMatrix.prototype.invertToRefSIMD = function (other) {
-            var src = this.m;
-            var dest = other.m;
-            // Load the 4 rows
-            var src0 = SIMD.Float32x4.load(src, 0);
-            var src1 = SIMD.Float32x4.load(src, 4);
-            var src2 = SIMD.Float32x4.load(src, 8);
-            var src3 = SIMD.Float32x4.load(src, 12);
-            // Transpose the source matrix.  Sort of.  Not a true transpose operation
-            var tmp1 = SIMD.Float32x4.shuffle(src0, src1, 0, 1, 4, 5);
-            var row1 = SIMD.Float32x4.shuffle(src2, src3, 0, 1, 4, 5);
-            var row0 = SIMD.Float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
-            row1 = SIMD.Float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
-            tmp1 = SIMD.Float32x4.shuffle(src0, src1, 2, 3, 6, 7);
-            var row3 = SIMD.Float32x4.shuffle(src2, src3, 2, 3, 6, 7);
-            var row2 = SIMD.Float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
-            row3 = SIMD.Float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
-            // This is a true transposition, but it will lead to an incorrect result
-            //tmp1 = shuffle(src0, src1, 0, 1, 4, 5);
-            //tmp2 = shuffle(src2, src3, 0, 1, 4, 5);
-            //row0  = shuffle(tmp1, tmp2, 0, 2, 4, 6);
-            //row1  = shuffle(tmp1, tmp2, 1, 3, 5, 7);
-            //tmp1 = shuffle(src0, src1, 2, 3, 6, 7);
-            //tmp2 = shuffle(src2, src3, 2, 3, 6, 7);
-            //row2  = shuffle(tmp1, tmp2, 0, 2, 4, 6);
-            //row3  = shuffle(tmp1, tmp2, 1, 3, 5, 7);
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row2, row3);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            var minor0 = SIMD.Float32x4.mul(row1, tmp1);
-            var minor1 = SIMD.Float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row1, tmp1), minor0);
-            minor1 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor1);
-            minor1 = SIMD.Float32x4.swizzle(minor1, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row1, row2);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor0);
-            var minor3 = SIMD.Float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row3, tmp1));
-            minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor3);
-            minor3 = SIMD.Float32x4.swizzle(minor3, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(row1, 2, 3, 0, 1), row3); // 0x4E = 01001110
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            row2 = SIMD.Float32x4.swizzle(row2, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor0);
-            var minor2 = SIMD.Float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row2, tmp1));
-            minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor2);
-            minor2 = SIMD.Float32x4.swizzle(minor2, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row0, row1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor2);
-            minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row2, tmp1), minor3);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row3, tmp1), minor2);
-            minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row2, tmp1));
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row0, row3);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row2, tmp1));
-            minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor2);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor1);
-            minor2 = SIMD.Float32x4.sub(minor2, SIMD.Float32x4.mul(row1, tmp1));
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row0, row2);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor1);
-            minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row1, tmp1));
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row3, tmp1));
-            minor3 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor3);
-            // Compute determinant
-            var det = SIMD.Float32x4.mul(row0, minor0);
-            det = SIMD.Float32x4.add(SIMD.Float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
-            det = SIMD.Float32x4.add(SIMD.Float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
-            tmp1 = SIMD.Float32x4.reciprocalApproximation(det);
-            det = SIMD.Float32x4.sub(SIMD.Float32x4.add(tmp1, tmp1), SIMD.Float32x4.mul(det, SIMD.Float32x4.mul(tmp1, tmp1)));
-            det = SIMD.Float32x4.swizzle(det, 0, 0, 0, 0);
-            // These shuffles aren't necessary if the faulty transposition is done
-            // up at the top of this function.
-            //minor0 =SIMD.Float32x4.swizzle(minor0, 2, 1, 0, 3);
-            //minor1 =SIMD.Float32x4.swizzle(minor1, 2, 1, 0, 3);
-            //minor2 =SIMD.Float32x4.swizzle(minor2, 2, 1, 0, 3);
-            //minor3 =SIMD.Float32x4.swizzle(minor3, 2, 1, 0, 3);
-            // Compute final values by multiplying with 1/det
-            SIMD.Float32x4.store(dest, 0, SIMD.Float32x4.mul(det, minor0));
-            SIMD.Float32x4.store(dest, 4, SIMD.Float32x4.mul(det, minor1));
-            SIMD.Float32x4.store(dest, 8, minor2 = SIMD.Float32x4.mul(det, minor2));
-            SIMD.Float32x4.store(dest, 12, SIMD.Float32x4.mul(det, minor3));
-            return this;
-        };
-        SIMDMatrix.LookAtLHToRefSIMD = function (eyeRef, targetRef, upRef, result) {
-            var out = result.m;
-            var center = SIMD.Float32x4(targetRef.x, targetRef.y, targetRef.z, 0.0);
-            var eye = SIMD.Float32x4(eyeRef.x, eyeRef.y, eyeRef.z, 0.0);
-            var up = SIMD.Float32x4(upRef.x, upRef.y, upRef.z, 0.0);
-            // cc.kmVec3Subtract(f, pCenter, pEye);
-            var f = SIMD.Float32x4.sub(center, eye);
-            // cc.kmVec3Normalize(f, f);    
-            var tmp = SIMD.Float32x4.mul(f, f);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            f = SIMD.Float32x4.mul(f, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Assign(up, pUp);
-            // cc.kmVec3Normalize(up, up);
-            tmp = SIMD.Float32x4.mul(up, up);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            up = SIMD.Float32x4.mul(up, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Cross(s, f, up);
-            var s = SIMD.Float32x4.sub(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(f, 1, 2, 0, 3), SIMD.Float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(f, 2, 0, 1, 3), SIMD.Float32x4.swizzle(up, 1, 2, 0, 3)));
-            // cc.kmVec3Normalize(s, s);
-            tmp = SIMD.Float32x4.mul(s, s);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.Float32x4.mul(s, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Cross(u, s, f);
-            var u = SIMD.Float32x4.sub(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(s, 1, 2, 0, 3), SIMD.Float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(s, 2, 0, 1, 3), SIMD.Float32x4.swizzle(f, 1, 2, 0, 3)));
-            // cc.kmVec3Normalize(s, s);
-            tmp = SIMD.Float32x4.mul(s, s);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.Float32x4.mul(s, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            var zero = SIMD.Float32x4.splat(0.0);
-            s = SIMD.Float32x4.neg(s);
-            var tmp01 = SIMD.Float32x4.shuffle(s, u, 0, 1, 4, 5);
-            var tmp23 = SIMD.Float32x4.shuffle(f, zero, 0, 1, 4, 5);
-            var a0 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
-            var a1 = SIMD.Float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-            var a2 = SIMD.Float32x4.shuffle(SIMD.Float32x4.shuffle(s, u, 2, 3, 6, 7), SIMD.Float32x4.shuffle(f, zero, 2, 3, 6, 7), 0, 2, 4, 6);
-            var a3 = SIMD.Float32x4(0.0, 0.0, 0.0, 1.0);
-            var b = SIMD.Float32x4(1.0, 0.0, 0.0, 0.0);
-            SIMD.Float32x4.store(out, 0, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-            b = SIMD.Float32x4(0.0, 1.0, 0.0, 0.0);
-            SIMD.Float32x4.store(out, 4, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-            b = SIMD.Float32x4(0.0, 0.0, 1.0, 0.0);
-            SIMD.Float32x4.store(out, 8, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-            b = SIMD.Float32x4.replaceLane(SIMD.Float32x4.neg(eye), 3, 1.0);
-            SIMD.Float32x4.store(out, 12, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-        };
-        return SIMDMatrix;
-    }());
-    var previousMultiplyToArray = BABYLON.Matrix.prototype.multiplyToArray;
-    var previousInvertToRef = BABYLON.Matrix.prototype.invertToRef;
-    var previousLookAtLHToRef = BABYLON.Matrix.LookAtLHToRef;
-    var previousTransformCoordinatesToRef = BABYLON.Vector3.TransformCoordinatesToRef;
-    var previousTransformCoordinatesFromFloatsToRef = BABYLON.Vector3.TransformCoordinatesFromFloatsToRef;
-    var SIMDHelper = /** @class */ (function () {
-        function SIMDHelper() {
-        }
-        Object.defineProperty(SIMDHelper, "IsEnabled", {
-            get: function () {
-                return SIMDHelper._isEnabled;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SIMDHelper.DisableSIMD = function () {
-            // Replace functions
-            BABYLON.Matrix.prototype.multiplyToArray = previousMultiplyToArray;
-            BABYLON.Matrix.prototype.invertToRef = previousInvertToRef;
-            BABYLON.Matrix.LookAtLHToRef = previousLookAtLHToRef;
-            BABYLON.Vector3.TransformCoordinatesToRef = previousTransformCoordinatesToRef;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef = previousTransformCoordinatesFromFloatsToRef;
-            SIMDHelper._isEnabled = false;
-        };
-        SIMDHelper.EnableSIMD = function () {
-            if (self.SIMD === undefined) {
-                return;
-            }
-            // check if polyfills needed
-            if (!self.Math.fround) {
-                self.Math.fround = (function (array) { return function (x) {
-                    return array[0] = x, array[0];
-                }; })(new Float32Array(1));
-            }
-            if (!self.Math.imul) {
-                self.Math.imul = function (a, b) {
-                    var ah = (a >>> 16) & 0xffff;
-                    var al = a & 0xffff;
-                    var bh = (b >>> 16) & 0xffff;
-                    var bl = b & 0xffff;
-                    // the shift by 0 fixes the sign on the high part
-                    // the final |0 converts the unsigned value into a signed value
-                    return ((al * bl) + (((ah * bl + al * bh) << 16) >>> 0) | 0);
-                };
-            }
-            // Replace functions
-            BABYLON.Matrix.prototype.multiplyToArray = SIMDMatrix.prototype.multiplyToArraySIMD;
-            BABYLON.Matrix.prototype.invertToRef = SIMDMatrix.prototype.invertToRefSIMD;
-            BABYLON.Matrix.LookAtLHToRef = SIMDMatrix.LookAtLHToRefSIMD;
-            BABYLON.Vector3.TransformCoordinatesToRef = SIMDVector3.TransformCoordinatesToRefSIMD;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef = SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD;
-            SIMDHelper._isEnabled = true;
-        };
-        SIMDHelper._isEnabled = false;
-        return SIMDHelper;
-    }());
-    BABYLON.SIMDHelper = SIMDHelper;
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.math.SIMD.js.map
-
 
 var BABYLON;
 (function (BABYLON) {
@@ -76962,6 +76833,7 @@ var BABYLON;
          */
         function SceneOptimizer(scene, options, autoGeneratePriorities) {
             if (autoGeneratePriorities === void 0) { autoGeneratePriorities = true; }
+            var _this = this;
             this._isRunning = false;
             this._currentPriorityLevel = 0;
             this._targetFrameRate = 60;
@@ -76999,6 +76871,10 @@ var BABYLON;
                 }
             }
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                _this._sceneDisposeObserver = null;
+                _this.dispose();
+            });
         }
         Object.defineProperty(SceneOptimizer.prototype, "currentPriorityLevel", {
             /**
@@ -77129,9 +77005,13 @@ var BABYLON;
          * Release all resources
          */
         SceneOptimizer.prototype.dispose = function () {
+            this.stop();
             this.onSuccessObservable.clear();
             this.onFailureObservable.clear();
             this.onNewOptimizationAppliedObservable.clear();
+            if (this._sceneDisposeObserver) {
+                this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+            }
         };
         /**
          * Helper function to create a SceneOptimizer with one single line of code
@@ -77829,7 +77709,7 @@ var BABYLON;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
                     emissiveTexture = material.emissiveTexture;
                 }
-                if (_this.isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
+                if (_this._isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
                     engine.enableEffect(_this._glowMapGenerationEffect);
                     mesh._bind(subMesh, _this._glowMapGenerationEffect, BABYLON.Material.TriangleFillMode);
                     _this._glowMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -77899,7 +77779,27 @@ var BABYLON;
          * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        HighlightLayer.prototype.isReady = function (subMesh, useInstances, emissiveTexture) {
+        HighlightLayer.prototype.isReady = function (subMesh, useInstances) {
+            var material = subMesh.getMaterial();
+            var mesh = subMesh.getRenderingMesh();
+            if (!material || !mesh || !this._meshes) {
+                return false;
+            }
+            var emissiveTexture = null;
+            var highlightLayerMesh = this._meshes[mesh.uniqueId];
+            if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
+                emissiveTexture = material.emissiveTexture;
+            }
+            return this._isReady(subMesh, useInstances, emissiveTexture);
+        };
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        HighlightLayer.prototype._isReady = function (subMesh, useInstances, emissiveTexture) {
             var material = subMesh.getMaterial();
             if (!material) {
                 return false;
@@ -78082,6 +77982,17 @@ var BABYLON;
                 }
             }
             this._excludedMeshes[mesh.uniqueId] = null;
+        };
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        HighlightLayer.prototype.hasMesh = function (mesh) {
+            if (!this._meshes) {
+                return false;
+            }
+            return this._meshes[mesh.uniqueId] !== undefined && this._meshes[mesh.uniqueId] !== null;
         };
         /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.

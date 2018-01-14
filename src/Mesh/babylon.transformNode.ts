@@ -118,9 +118,6 @@ module BABYLON {
          * Returns the latest update of the World matrix determinant.
          */
         protected _getWorldMatrixDeterminant(): number {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
             return this._worldMatrixDeterminant;
         }
 

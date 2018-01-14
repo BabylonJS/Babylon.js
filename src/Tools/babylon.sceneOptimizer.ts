@@ -539,6 +539,7 @@
         private _targetFrameRate = 60;
         private _trackerDuration = 2000;
         private _currentFrameRate = 0;
+        private _sceneDisposeObserver: Nullable<Observer<Scene>>;
 
         /**
          * Defines an observable called when the optimizer reaches the target frame rate
@@ -631,6 +632,10 @@
             }
 
             this._scene = scene || Engine.LastCreatedScene;
+            this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => {
+                this._sceneDisposeObserver = null;
+                this.dispose();
+            })
         }
 
         /**
@@ -713,9 +718,13 @@
          * Release all resources
          */
         public dispose(): void {
+            this.stop();
             this.onSuccessObservable.clear();
             this.onFailureObservable.clear();
             this.onNewOptimizationAppliedObservable.clear();
+            if (this._sceneDisposeObserver) {
+                this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+            }
         }
 
         /**
