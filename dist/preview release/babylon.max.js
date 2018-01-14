@@ -14466,9 +14466,6 @@ var BABYLON;
          * Returns the latest update of the World matrix determinant.
          */
         TransformNode.prototype._getWorldMatrixDeterminant = function () {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
             return this._worldMatrixDeterminant;
         };
         Object.defineProperty(TransformNode.prototype, "worldMatrixFromCache", {
