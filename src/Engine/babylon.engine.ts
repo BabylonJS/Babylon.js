@@ -650,7 +650,7 @@
         /**
          * Gets or sets a value indicating if we want to disable texture binding optmization.
          * This could be required on some buggy drivers which wants to have textures bound in a progressive order
-         * By default Babylon.js will try to let textures bound and only update the samplers to point where the texture is.
+         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is.
          */
         public disableTextureBindingOptimization = false;
 
@@ -4783,7 +4783,7 @@
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
             if (currentTextureBound !== texture) {
-                if (currentTextureBound) {
+                if (currentTextureBound && !this.disableTextureBindingOptimization) {
                     this._removeDesignatedSlot(currentTextureBound);
                 }
 
@@ -4792,7 +4792,7 @@
                 if (this._activeChannel >= 0) {
                     this._boundTexturesCache[this._activeChannel] = texture;
 
-                    if (isTextureForRendering) {
+                    if (isTextureForRendering && !this.disableTextureBindingOptimization) {
                         let slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
                         if (slotIndex > -1) {
                             this._nextFreeTextureSlots.splice(slotIndex, 1);
@@ -4858,11 +4858,7 @@
             internalTexture._initialSlot = channel;
 
             if (this.disableTextureBindingOptimization) { // We want texture sampler ID == texture channel
-                if (channel !== internalTexture._designatedSlot) {
-                    if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                        this._removeDesignatedSlot(internalTexture);
-                    }
-                
+                if (channel !== internalTexture._designatedSlot) {              
                     this._textureCollisions.addCount(1, false);
                 }
             } else {          
