@@ -69,7 +69,6 @@
             "debug",
             "morphTargets",
             "octrees",
-            "simd",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -143,7 +142,6 @@
             "debug",
             "morphTargets",
             "octrees",
-            "simd",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -984,14 +982,6 @@
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
                 "../../src/Culling/Octrees/babylon.octreeBlock.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "simd": {
-            "files": [
-                "../../src/Math/babylon.math.SIMD.js"
             ],
             "dependUpon": [
                 "core"
