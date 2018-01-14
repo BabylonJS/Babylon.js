@@ -1,16 +1,20 @@
+sudo: required
+dist: trusty
 language: node_js
 node_js:
 - '6'
-addons:
-  sauce_connect:
-    username: vandenberghe.sebastien@gmail.com
-  jwt:
-    secure: kbaJ3o6cVqpB8Gzfd0yDSgGwH+SQXukevtpjMQ8Gip+N6FOumQxihPDqsqYKxc8svvR024nDmkIhbjPjz/YguvC3WUgYW4xk3Za7P7C9cpj2fYdrFuO7pD4sd/fNdUCqvKQ8jcxlIq4eEdBuoBTOHsP9J5KH7Z1M7e58atkx0o8=
 before_script:
 - npm install -g gulp
 - cd ./Tools/Gulp
 - npm install
+- "export DISPLAY=:99.0"
+- "sh -e /etc/init.d/xvfb start"
+- sleep 3 # give xvfb some time to start
 script: gulp
 notifications:
   slack:
     secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=
+env:
+  global:
+  - secure: XVMhWPm3ByrZduLmbyBMsKU462bEbYPNRp+42HcdOuC3YOl2ODPvANrE/qZneZzGqlyiFAg6X4mDGD71Qw9ekbFt5q0PmvIxkRrX0KNJEJl9/gnFadOz3xFWEfFw4tiSHp36PUu9aT6ti9mn9gnM8C+vQZhqVpaMgkLpWzeEeXQ=
+  - secure: jaGc/NJwACWJPLfI/L1UfYvWKX6AGVjFwXA+31elOVNAmG4XRwaTUaugqP4FhjTw0g2pqTB1BlSML+Fs3dVaUGy3bpslQLL74iG06XZbFUqrtVV2/sOcJaoWxIc69ld0tcqLdPvMSrCIzGQYAWaNNllyMnBjsWBZ+0J0ghtbBDA=

@@ -130,10 +130,12 @@
             "request": "launch",
             "reAttach": true,
             "url": "http://localhost:1338/localDev/index.html",
-            "pathMappings": [{
-                "url": "http://localhost:1338",
-                "path": "${workspaceFolder}"
-            }],
+            "pathMappings": [
+                {
+                    "url": "http://localhost:1338",
+                    "path": "${workspaceFolder}"
+                }
+            ],
             "preLaunchTask": "run"
         },
         {
