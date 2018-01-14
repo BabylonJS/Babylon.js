@@ -764,6 +764,7 @@
         private _frameHandler: number;
 
         private _nextFreeTextureSlots = new Array<number>();
+        private _maxSimultaneousTextures = 0;
 
         private _activeRequests = new Array<IFileRequest>();
 
@@ -1295,7 +1296,8 @@
             this.setDepthWrite(true);
 
             // Texture maps
-            for (let slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            this._maxSimultaneousTextures = this._caps.maxTexturesImageUnits;
+            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         }
@@ -1333,7 +1335,7 @@
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
             this._activeChannel = -1;
@@ -4816,7 +4818,7 @@
         }
 
         public unbindAllTextures(): void {
-            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
                 this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
