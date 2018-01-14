@@ -281,7 +281,8 @@
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         public static ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
 
         public static Instances = new Array<Engine>();
@@ -646,8 +647,14 @@
             return this._badDesktopOS;
         }
 
-        public static audioEngine: AudioEngine;
+        /**
+         * Gets or sets a value indicating if we want to disable texture binding optmization.
+         * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+         * By default Babylon.js will try to let textures bound and only update the samplers to point where the texture is.
+         */
+        public disableTextureBindingOptimization = false;
 
+        public static audioEngine: AudioEngine;       
 
         // Focus
         private _onFocus: () => void;
@@ -886,6 +893,9 @@
                                     case "uniformBuffer":
                                         this.disableUniformBuffers = true;
                                         break;
+                                    case "textureBindingOptimization":
+                                        this.disableTextureBindingOptimization = true;    
+                                        break;    
                                 }
                             }
                             break;
@@ -4847,28 +4857,30 @@
 
             internalTexture._initialSlot = channel;
 
-            if (channel !== internalTexture._designatedSlot) {
-                if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                    this._removeDesignatedSlot(internalTexture);
-                }
+            if (this.disableTextureBindingOptimization) { // We want texture sampler ID == texture channel
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
+                        this._removeDesignatedSlot(internalTexture);
+                    }
                 
-                this._textureCollisions.addCount(1, false);
-            }
-           
-            // if (channel !== internalTexture._designatedSlot) {
-            //     if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-            //         return internalTexture._designatedSlot;
-            //     } else {
-            //         // No slot for this texture, let's pick a new one (if we find a free slot)
-            //         if (this._nextFreeTextureSlots.length) {
-            //             return this._nextFreeTextureSlots[0];
-            //         }
+                    this._textureCollisions.addCount(1, false);
+                }
+            } else {          
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
+                        return internalTexture._designatedSlot;
+                    } else {
+                        // No slot for this texture, let's pick a new one (if we find a free slot)
+                        if (this._nextFreeTextureSlots.length) {
+                            return this._nextFreeTextureSlots[0];
+                        }
 
-            //         // We need to recycle the oldest bound texture, sorry.
-            //         this._textureCollisions.addCount(1, false);
-            //         return this._removeDesignatedSlot(this._boundTexturesStack[0]);
-            //     }
-            // }
+                        // We need to recycle the oldest bound texture, sorry.
+                        this._textureCollisions.addCount(1, false);
+                        return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                    }
+                }
+            }    
 
             return channel;
         }

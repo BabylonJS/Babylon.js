@@ -8952,6 +8952,12 @@ var BABYLON;
             this._webGLVersion = 1.0;
             this._badOS = false;
             this._badDesktopOS = false;
+            /**
+             * Gets or sets a value indicating if we want to disable texture binding optmization.
+             * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+             * By default Babylon.js will try to let textures bound and only update the samplers to point where the texture is.
+             */
+            this.disableTextureBindingOptimization = false;
             this.onVRDisplayChangedObservable = new BABYLON.Observable();
             this.onVRRequestPresentComplete = new BABYLON.Observable();
             this.onVRRequestPresentStart = new BABYLON.Observable();
@@ -8995,6 +9001,7 @@ var BABYLON;
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
             this._nextFreeTextureSlots = new Array();
+            this._maxSimultaneousTextures = 0;
             this._activeRequests = new Array();
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
@@ -9069,6 +9076,9 @@ var BABYLON;
                                 switch (target) {
                                     case "uniformBuffer":
                                         this.disableUniformBuffers = true;
+                                        break;
+                                    case "textureBindingOptimization":
+                                        this.disableTextureBindingOptimization = true;
                                         break;
                                 }
                             }
@@ -9850,7 +9860,8 @@ var BABYLON;
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
             // Texture maps
-            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            this._maxSimultaneousTextures = this._caps.maxCombinedTexturesImageUnits;
+            for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         };
@@ -9890,7 +9901,7 @@ var BABYLON;
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
             this._activeChannel = -1;
@@ -12743,7 +12754,7 @@ var BABYLON;
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         };
         Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
                 this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -12766,18 +12777,28 @@ var BABYLON;
                 return -1;
             }
             internalTexture._initialSlot = channel;
-            if (channel !== internalTexture._designatedSlot) {
-                if (internalTexture._designatedSlot > -1) {
-                    return internalTexture._designatedSlot;
-                }
-                else {
-                    // No slot for this texture, let's pick a new one (if we find a free slot)
-                    if (this._nextFreeTextureSlots.length) {
-                        return this._nextFreeTextureSlots[0];
+            if (this.disableTextureBindingOptimization) {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) {
+                        this._removeDesignatedSlot(internalTexture);
                     }
-                    // We need to recycle the oldest bound texture, sorry.
                     this._textureCollisions.addCount(1, false);
-                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                }
+            }
+            else {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) {
+                        return internalTexture._designatedSlot;
+                    }
+                    else {
+                        // No slot for this texture, let's pick a new one (if we find a free slot)
+                        if (this._nextFreeTextureSlots.length) {
+                            return this._nextFreeTextureSlots[0];
+                        }
+                        // We need to recycle the oldest bound texture, sorry.
+                        this._textureCollisions.addCount(1, false);
+                        return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                    }
                 }
             }
             return channel;
@@ -13551,7 +13572,8 @@ var BABYLON;
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         Engine.ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
         Engine.Instances = new Array();
         // Const statics
