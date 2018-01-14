@@ -1296,7 +1296,7 @@
             this.setDepthWrite(true);
 
             // Texture maps
-            this._maxSimultaneousTextures = this._caps.maxTexturesImageUnits;
+            this._maxSimultaneousTextures = this._caps.maxCombinedTexturesImageUnits;
             for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
@@ -4849,18 +4849,26 @@
 
             if (channel !== internalTexture._designatedSlot) {
                 if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                    return internalTexture._designatedSlot;
-                } else {
-                    // No slot for this texture, let's pick a new one (if we find a free slot)
-                    if (this._nextFreeTextureSlots.length) {
-                        return this._nextFreeTextureSlots[0];
-                    }
-
-                    // We need to recycle the oldest bound texture, sorry.
-                    this._textureCollisions.addCount(1, false);
-                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                    this._removeDesignatedSlot(internalTexture);
                 }
+                
+                this._textureCollisions.addCount(1, false);
             }
+           
+            // if (channel !== internalTexture._designatedSlot) {
+            //     if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
+            //         return internalTexture._designatedSlot;
+            //     } else {
+            //         // No slot for this texture, let's pick a new one (if we find a free slot)
+            //         if (this._nextFreeTextureSlots.length) {
+            //             return this._nextFreeTextureSlots[0];
+            //         }
+
+            //         // We need to recycle the oldest bound texture, sorry.
+            //         this._textureCollisions.addCount(1, false);
+            //         return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+            //     }
+            // }
 
             return channel;
         }
