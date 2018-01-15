@@ -112,7 +112,8 @@ function processCore(package, version) {
         }
     ];
 
-    fs.readdirSync(basePath + '/modules/').forEach(object => {
+    // remove the modules for now
+    /*fs.readdirSync(basePath + '/modules/').forEach(object => {
         console.log(object);
         if (fs.statSync(basePath + '/modules/' + object).isDirectory) {
             files.push({
@@ -121,7 +122,7 @@ function processCore(package, version) {
                 isDir: true
             });
         }
-    })
+    })*/
 
     //copy them to the package path
     files.forEach(file => {
