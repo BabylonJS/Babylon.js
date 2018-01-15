@@ -14,7 +14,9 @@
         ],
         "outputCustomConfigurationsDirectory": "../../dist/preview release/customConfigurations",
         "srcOutputDirectory": "../../src/",
-        "currentConfig": "all"
+        "currentConfig": "all",
+        "typedocJSON": "../../.temp/babylon.typedoc.json",
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json" 
     },
     "buildConfigurations": {
         "all": [
@@ -67,7 +69,6 @@
             "debug",
             "morphTargets",
             "octrees",
-            "simd",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -141,7 +142,6 @@
             "debug",
             "morphTargets",
             "octrees",
-            "simd",
             "vr",
             "virtualJoystick",
             "optimizations",
@@ -192,6 +192,7 @@
                 "../../src/Rendering/babylon.renderingManager.js",
                 "../../src/Rendering/babylon.renderingGroup.js",
                 "../../src/babylon.scene.js",
+                "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
                 "../../src/Materials/Textures/babylon.internalTexture.js",
@@ -641,7 +642,8 @@
                 "../../src/Gamepad/Controllers/babylon.oculusTouchController.js",
                 "../../src/Gamepad/Controllers/babylon.viveController.js",
                 "../../src/Gamepad/Controllers/babylon.genericController.js",
-                "../../src/Gamepad/Controllers/babylon.windowsMotionController.js"
+                "../../src/Gamepad/Controllers/babylon.windowsMotionController.js",
+                "../../src/Gamepad/Controllers/babylon.gearVRController.js"
             ],
             "dependUpon": [
                 "core"
@@ -932,14 +934,6 @@
             "files": [
                 "../../src/Culling/Octrees/babylon.octree.js",
                 "../../src/Culling/Octrees/babylon.octreeBlock.js"
-            ],
-            "dependUpon": [
-                "core"
-            ]
-        },
-        "simd": {
-            "files": [
-                "../../src/Math/babylon.math.SIMD.js"
             ],
             "dependUpon": [
                 "core"

@@ -116,6 +116,7 @@ declare module BABYLON {
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAssetsAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (assets: AssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;

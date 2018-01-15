@@ -8952,6 +8952,12 @@ var BABYLON;
             this._webGLVersion = 1.0;
             this._badOS = false;
             this._badDesktopOS = false;
+            /**
+             * Gets or sets a value indicating if we want to disable texture binding optmization.
+             * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+             * By default Babylon.js will try to let textures bound and only update the samplers to point where the texture is.
+             */
+            this.disableTextureBindingOptimization = false;
             this.onVRDisplayChangedObservable = new BABYLON.Observable();
             this.onVRRequestPresentComplete = new BABYLON.Observable();
             this.onVRRequestPresentStart = new BABYLON.Observable();
@@ -8995,6 +9001,7 @@ var BABYLON;
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
             this._nextFreeTextureSlots = new Array();
+            this._maxSimultaneousTextures = 0;
             this._activeRequests = new Array();
             // Hardware supported Compressed Textures
             this._texturesSupported = new Array();
@@ -9069,6 +9076,9 @@ var BABYLON;
                                 switch (target) {
                                     case "uniformBuffer":
                                         this.disableUniformBuffers = true;
+                                        break;
+                                    case "textureBindingOptimization":
+                                        this.disableTextureBindingOptimization = true;
                                         break;
                                 }
                             }
@@ -9566,7 +9576,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha2";
+                return "3.2.0-alpha3";
             },
             enumerable: true,
             configurable: true
@@ -9850,7 +9860,8 @@ var BABYLON;
             this.setDepthFunctionToLessOrEqual();
             this.setDepthWrite(true);
             // Texture maps
-            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            this._maxSimultaneousTextures = this._caps.maxCombinedTexturesImageUnits;
+            for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         };
@@ -9890,7 +9901,7 @@ var BABYLON;
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (var slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
             this._activeChannel = -1;
@@ -12743,7 +12754,7 @@ var BABYLON;
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         };
         Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
                 this._activateTextureChannel(channel);
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
@@ -12766,18 +12777,28 @@ var BABYLON;
                 return -1;
             }
             internalTexture._initialSlot = channel;
-            if (channel !== internalTexture._designatedSlot) {
-                if (internalTexture._designatedSlot > -1) {
-                    return internalTexture._designatedSlot;
-                }
-                else {
-                    // No slot for this texture, let's pick a new one (if we find a free slot)
-                    if (this._nextFreeTextureSlots.length) {
-                        return this._nextFreeTextureSlots[0];
+            if (this.disableTextureBindingOptimization) {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) {
+                        this._removeDesignatedSlot(internalTexture);
                     }
-                    // We need to recycle the oldest bound texture, sorry.
                     this._textureCollisions.addCount(1, false);
-                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                }
+            }
+            else {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) {
+                        return internalTexture._designatedSlot;
+                    }
+                    else {
+                        // No slot for this texture, let's pick a new one (if we find a free slot)
+                        if (this._nextFreeTextureSlots.length) {
+                            return this._nextFreeTextureSlots[0];
+                        }
+                        // We need to recycle the oldest bound texture, sorry.
+                        this._textureCollisions.addCount(1, false);
+                        return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                    }
                 }
             }
             return channel;
@@ -13551,7 +13572,8 @@ var BABYLON;
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         Engine.ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
         Engine.Instances = new Array();
         // Const statics
@@ -14466,9 +14488,6 @@ var BABYLON;
          * Returns the latest update of the World matrix determinant.
          */
         TransformNode.prototype._getWorldMatrixDeterminant = function () {
-            if (this._currentRenderId !== this.getScene().getRenderId()) {
-                this.computeWorldMatrix();
-            }
             return this._worldMatrixDeterminant;
         };
         Object.defineProperty(TransformNode.prototype, "worldMatrixFromCache", {
@@ -17089,7 +17108,7 @@ var BABYLON;
         Object.defineProperty(Light, "LIGHTMAP_SPECULAR", {
             /**
              * material.lightmapTexture as only diffuse lighting from this light
-             * adds pnly specular lighting from this light
+             * adds only specular lighting from this light
              * adds dynamic shadows
              */
             get: function () {
@@ -20758,7 +20777,11 @@ var BABYLON;
             this.onPointerObservable.clear();
             this.onPrePointerObservable.clear();
         };
-        // Ready
+        /**
+         * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
+         * Delay loaded resources are not taking in account
+         * @return true if all required resources are ready
+         */
         Scene.prototype.isReady = function () {
             if (this._isDisposed) {
                 return false;
@@ -20767,6 +20790,7 @@ var BABYLON;
                 return false;
             }
             var index;
+            var engine = this.getEngine();
             // Geometries
             for (index = 0; index < this._geometries.length; index++) {
                 var geometry = this._geometries[index];
@@ -20786,10 +20810,18 @@ var BABYLON;
                 if (!mesh.isReady()) {
                     return false;
                 }
-                var mat = mesh.material;
-                if (mat) {
-                    if (!mat.isReady(mesh)) {
-                        return false;
+                // Highlight layers
+                var hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && mesh.instances.length > 0;
+                for (var _i = 0, _a = this.highlightLayers; _i < _a.length; _i++) {
+                    var layer = _a[_i];
+                    if (!layer.hasMesh(mesh)) {
+                        continue;
+                    }
+                    for (var _b = 0, _c = mesh.subMeshes; _b < _c.length; _b++) {
+                        var subMesh = _c[_b];
+                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -21097,6 +21129,7 @@ var BABYLON;
             if (this.collisionCoordinator) {
                 this.collisionCoordinator.onMeshAdded(newMesh);
             }
+            newMesh._resyncLightSources();
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         };
         Scene.prototype.removeMesh = function (toRemove) {
@@ -21176,6 +21209,54 @@ var BABYLON;
             this.onCameraRemovedObservable.notifyObservers(toRemove);
             return index;
         };
+        Scene.prototype.removeParticleSystem = function (toRemove) {
+            var index = this.particleSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.particleSystems.splice(index, 1);
+            }
+            return index;
+        };
+        ;
+        Scene.prototype.removeAnimation = function (toRemove) {
+            var index = this.animations.indexOf(toRemove);
+            if (index !== -1) {
+                this.animations.splice(index, 1);
+            }
+            return index;
+        };
+        ;
+        Scene.prototype.removeMultiMaterial = function (toRemove) {
+            var index = this.multiMaterials.indexOf(toRemove);
+            if (index !== -1) {
+                this.multiMaterials.splice(index, 1);
+            }
+            return index;
+        };
+        ;
+        Scene.prototype.removeMaterial = function (toRemove) {
+            var index = this.materials.indexOf(toRemove);
+            if (index !== -1) {
+                this.materials.splice(index, 1);
+            }
+            return index;
+        };
+        ;
+        Scene.prototype.removeLensFlareSystem = function (toRemove) {
+            var index = this.lensFlareSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.lensFlareSystems.splice(index, 1);
+            }
+            return index;
+        };
+        ;
+        Scene.prototype.removeActionManager = function (toRemove) {
+            var index = this._actionManagers.indexOf(toRemove);
+            if (index !== -1) {
+                this._actionManagers.splice(index, 1);
+            }
+            return index;
+        };
+        ;
         Scene.prototype.addLight = function (newLight) {
             this.lights.push(newLight);
             this.sortLightsByPriority();
@@ -21197,6 +21278,33 @@ var BABYLON;
         Scene.prototype.addCamera = function (newCamera) {
             this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        };
+        Scene.prototype.addSkeleton = function (newSkeleton) {
+            this.skeletons.push(newSkeleton);
+        };
+        Scene.prototype.addParticleSystem = function (newParticleSystem) {
+            this.particleSystems.push(newParticleSystem);
+        };
+        Scene.prototype.addAnimation = function (newAnimation) {
+            this.animations.push(newAnimation);
+        };
+        Scene.prototype.addMultiMaterial = function (newMultiMaterial) {
+            this.multiMaterials.push(newMultiMaterial);
+        };
+        Scene.prototype.addMaterial = function (newMaterial) {
+            this.materials.push(newMaterial);
+        };
+        Scene.prototype.addMorphTargetManager = function (newMorphTargetManager) {
+            this.morphTargetManagers.push(newMorphTargetManager);
+        };
+        Scene.prototype.addGeometry = function (newGeometrie) {
+            this._geometries.push(newGeometrie);
+        };
+        Scene.prototype.addLensFlareSystem = function (newLensFlareSystem) {
+            this.lensFlareSystems.push(newLensFlareSystem);
+        };
+        Scene.prototype.addActionManager = function (newActionManager) {
+            this._actionManagers.push(newActionManager);
         };
         /**
          * Switch active camera
@@ -23174,6 +23282,129 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var AssetContainer = /** @class */ (function () {
+        function AssetContainer(scene) {
+            // Objects
+            this.cameras = new Array();
+            this.lights = new Array();
+            this.meshes = new Array();
+            this.skeletons = new Array();
+            this.particleSystems = new Array();
+            this.animations = new Array();
+            this.multiMaterials = new Array();
+            this.materials = new Array();
+            this.morphTargetManagers = new Array();
+            this.geometries = new Array();
+            this.transformNodes = new Array();
+            this.lensFlareSystems = new Array();
+            this.shadowGenerators = new Array();
+            this.actionManagers = new Array();
+            this.sounds = new Array();
+            this.scene = scene;
+        }
+        AssetContainer.prototype.addAllToScene = function () {
+            var _this = this;
+            this.cameras.forEach(function (o) {
+                _this.scene.addCamera(o);
+            });
+            this.lights.forEach(function (o) {
+                _this.scene.addLight(o);
+            });
+            this.meshes.forEach(function (o) {
+                _this.scene.addMesh(o);
+            });
+            this.skeletons.forEach(function (o) {
+                _this.scene.addSkeleton(o);
+            });
+            this.particleSystems.forEach(function (o) {
+                _this.scene.addParticleSystem(o);
+            });
+            this.animations.forEach(function (o) {
+                _this.scene.addAnimation(o);
+            });
+            this.multiMaterials.forEach(function (o) {
+                _this.scene.addMultiMaterial(o);
+            });
+            this.materials.forEach(function (o) {
+                _this.scene.addMaterial(o);
+            });
+            this.morphTargetManagers.forEach(function (o) {
+                _this.scene.addMorphTargetManager(o);
+            });
+            this.geometries.forEach(function (o) {
+                _this.scene.addGeometry(o);
+            });
+            this.transformNodes.forEach(function (o) {
+                _this.scene.addTransformNode(o);
+            });
+            this.lensFlareSystems.forEach(function (o) {
+                _this.scene.addLensFlareSystem(o);
+            });
+            this.actionManagers.forEach(function (o) {
+                _this.scene.addActionManager(o);
+            });
+            this.sounds.forEach(function (o) {
+                o.play();
+                o.autoplay = true;
+                _this.scene.mainSoundTrack.AddSound(o);
+            });
+        };
+        AssetContainer.prototype.removeAllFromScene = function () {
+            var _this = this;
+            this.cameras.forEach(function (o) {
+                _this.scene.removeCamera(o);
+            });
+            this.lights.forEach(function (o) {
+                _this.scene.removeLight(o);
+            });
+            this.meshes.forEach(function (o) {
+                _this.scene.removeMesh(o);
+            });
+            this.skeletons.forEach(function (o) {
+                _this.scene.removeSkeleton(o);
+            });
+            this.particleSystems.forEach(function (o) {
+                _this.scene.removeParticleSystem(o);
+            });
+            this.animations.forEach(function (o) {
+                _this.scene.removeAnimation(o);
+            });
+            this.multiMaterials.forEach(function (o) {
+                _this.scene.removeMultiMaterial(o);
+            });
+            this.materials.forEach(function (o) {
+                _this.scene.removeMaterial(o);
+            });
+            this.morphTargetManagers.forEach(function (o) {
+                _this.scene.removeMorphTargetManager(o);
+            });
+            this.geometries.forEach(function (o) {
+                _this.scene.removeGeometry(o);
+            });
+            this.transformNodes.forEach(function (o) {
+                _this.scene.removeTransformNode(o);
+            });
+            this.lensFlareSystems.forEach(function (o) {
+                _this.scene.removeLensFlareSystem(o);
+            });
+            this.actionManagers.forEach(function (o) {
+                _this.scene.removeActionManager(o);
+            });
+            this.sounds.forEach(function (o) {
+                o.stop();
+                o.autoplay = false;
+                _this.scene.mainSoundTrack.RemoveSound(o);
+            });
+        };
+        return AssetContainer;
+    }());
+    BABYLON.AssetContainer = AssetContainer;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.assetContainer.js.map
+
+var BABYLON;
+(function (BABYLON) {
     var Buffer = /** @class */ (function () {
         function Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced) {
             if (instanced === void 0) { instanced = false; }
@@ -25128,13 +25359,71 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        Mesh.prototype.isReady = function () {
+        Mesh.prototype.isReady = function (forceInstanceSupport) {
+            if (forceInstanceSupport === void 0) { forceInstanceSupport = false; }
             if (this.delayLoadState === BABYLON.Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
-            return _super.prototype.isReady.call(this);
+            if (!_super.prototype.isReady.call(this)) {
+                return false;
+            }
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+            var engine = this.getEngine();
+            var scene = this.getScene();
+            var hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+            this.computeWorldMatrix();
+            var mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                var currentAlphaTestingState = engine.getAlphaTesting();
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
+                        var subMesh = _a[_i];
+                        var effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                engine.setAlphaTesting(currentAlphaTestingState);
+                                return false;
+                            }
+                        }
+                    }
+                }
+                else {
+                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        engine.setAlphaTesting(currentAlphaTestingState);
+                        return false;
+                    }
+                }
+                engine.setAlphaTesting(currentAlphaTestingState);
+            }
+            // Shadows
+            for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
+                var light = _c[_b];
+                var generator = light.getShadowGenerator();
+                if (generator) {
+                    for (var _d = 0, _e = this.subMeshes; _d < _e.length; _d++) {
+                        var subMesh = _e[_d];
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            // LOD
+            for (var _f = 0, _g = this._LODLevels; _f < _g.length; _f++) {
+                var lod = _g[_f];
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+            return true;
         };
         Object.defineProperty(Mesh.prototype, "areNormalsFrozen", {
             /**
@@ -41833,6 +42122,13 @@ var BABYLON;
         return PathCursor;
     }());
     BABYLON.PathCursor = PathCursor;
+    var AnimationKeyInterpolation;
+    (function (AnimationKeyInterpolation) {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored.
+         */
+        AnimationKeyInterpolation[AnimationKeyInterpolation["STEP"] = 1] = "STEP";
+    })(AnimationKeyInterpolation = BABYLON.AnimationKeyInterpolation || (BABYLON.AnimationKeyInterpolation = {}));
     var Animation = /** @class */ (function () {
         function Animation(name, targetProperty, framePerSecond, dataType, loopMode, enableBlending) {
             this.name = name;
@@ -42656,6 +42952,9 @@ var BABYLON;
                 if (endKey.frame >= currentFrame) {
                     var startKey = keys[key];
                     var startValue = this._getKeyValue(startKey.value);
+                    if (startKey.interpolation === BABYLON.AnimationKeyInterpolation.STEP) {
+                        return startValue;
+                    }
                     var endValue = this._getKeyValue(endKey.value);
                     var useTangent = startKey.outTangent !== undefined && endKey.inTangent !== undefined;
                     var frameDelta = endKey.frame - startKey.frame;
@@ -47328,7 +47627,7 @@ var BABYLON;
             this._uvs32 = new Float32Array(this._uvs);
             this._colors32 = new Float32Array(this._colors);
             if (this.recomputeNormals) {
-                BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals);
+                BABYLON.VertexData.ComputeNormals(this._positions32, this._indices32, this._normals);
             }
             this._normals32 = new Float32Array(this._normals);
             this._fixedNormal32 = new Float32Array(this._normals);
@@ -47980,7 +48279,7 @@ var BABYLON;
                     if (this._computeParticleVertex || this.mesh.isFacetDataEnabled) {
                         // recompute the normals only if the particles can be morphed, update then also the normal reference array _fixedNormal32[]
                         var params = this.mesh.isFacetDataEnabled ? this.mesh.getFacetDataParameters() : null;
-                        BABYLON.VertexData.ComputeNormals(this._positions32, this._indices, this._normals32, params);
+                        BABYLON.VertexData.ComputeNormals(this._positions32, this._indices32, this._normals32, params);
                         for (var i = 0; i < this._normals32.length; i++) {
                             this._fixedNormal32[i] = this._normals32[i];
                         }
@@ -49101,7 +49400,7 @@ var BABYLON;
             return "InstancedMesh";
         };
         Object.defineProperty(InstancedMesh.prototype, "receiveShadows", {
-            // Methods
+            // Methods      
             get: function () {
                 return this._sourceMesh.receiveShadows;
             },
@@ -49149,6 +49448,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
+        InstancedMesh.prototype.isReady = function () {
+            return this._sourceMesh.isReady(true);
+        };
         /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
          */
@@ -53437,6 +53743,13 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Get a value indicating if the post-process is ready to be used
+         * @returns true if the post-process is ready (shader is compiled)
+         */
+        PostProcess.prototype.isReady = function () {
+            return this._effect && this._effect.isReady();
+        };
         PostProcess.prototype.apply = function () {
             // Check
             if (!this._effect || !this._effect.isReady())
@@ -53956,9 +54269,6 @@ var BABYLON;
                 if (!_this.useBlurExponentialShadowMap && !_this.useBlurCloseExponentialShadowMap) {
                     return;
                 }
-                if (!_this._blurPostProcesses || !_this._blurPostProcesses.length) {
-                    _this._initializeBlurRTTAndPostProcesses();
-                }
                 var shadowMap = _this.getShadowMapForRendering();
                 if (shadowMap) {
                     _this._scene.postProcessManager.directRender(_this._blurPostProcesses, shadowMap.getInternalTexture(), true);
@@ -54205,7 +54515,24 @@ var BABYLON;
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap", attribs, ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"], ["diffuseSampler"], join);
             }
-            return this._effect.isReady();
+            if (!this._effect.isReady()) {
+                return false;
+            }
+            if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {
+                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
+                    this._initializeBlurRTTAndPostProcesses();
+                }
+            }
+            if (this._kernelBlurXPostprocess && !this._kernelBlurXPostprocess.isReady()) {
+                return false;
+            }
+            if (this._kernelBlurYPostprocess && !this._kernelBlurYPostprocess.isReady()) {
+                return false;
+            }
+            if (this._boxBlurPostprocess && !this._boxBlurPostprocess.isReady()) {
+                return false;
+            }
+            return true;
         };
         /**
          * This creates the defines related to the standard BJS materials.
@@ -54311,10 +54638,6 @@ var BABYLON;
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
                 this._shadowMap2 = null;
-            }
-            if (this._downSamplePostprocess) {
-                this._downSamplePostprocess.dispose();
-                this._downSamplePostprocess = null;
             }
             if (this._boxBlurPostprocess) {
                 this._boxBlurPostprocess.dispose();
@@ -54980,6 +55303,79 @@ var BABYLON;
                 }
             }, progressHandler, errorHandler, disposeHandler, pluginExtension);
         };
+        SceneLoader.LoadAssetContainer = function (rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension) {
+            if (onSuccess === void 0) { onSuccess = null; }
+            if (onProgress === void 0) { onProgress = null; }
+            if (onError === void 0) { onError = null; }
+            if (pluginExtension === void 0) { pluginExtension = null; }
+            if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
+                BABYLON.Tools.Error("Wrong sceneFilename parameter");
+                return null;
+            }
+            var loadingToken = {};
+            scene._addPendingData(loadingToken);
+            var disposeHandler = function () {
+                scene._removePendingData(loadingToken);
+            };
+            var errorHandler = function (message, exception) {
+                var errorMessage = "Unable to load assets from " + rootUrl + sceneFilename + (message ? ": " + message : "");
+                if (onError) {
+                    onError(scene, errorMessage, exception);
+                }
+                else {
+                    BABYLON.Tools.Error(errorMessage);
+                    // should the exception be thrown?
+                }
+                disposeHandler();
+            };
+            var progressHandler = onProgress ? function (event) {
+                try {
+                    onProgress(event);
+                }
+                catch (e) {
+                    errorHandler("Error in onProgress callback", e);
+                }
+            } : undefined;
+            var successHandler = function (assets) {
+                if (onSuccess) {
+                    try {
+                        onSuccess(assets);
+                    }
+                    catch (e) {
+                        errorHandler("Error in onSuccess callback", e);
+                    }
+                }
+                scene._removePendingData(loadingToken);
+            };
+            return SceneLoader._loadData(rootUrl, sceneFilename, scene, function (plugin, data, responseURL) {
+                if (plugin.loadAssets) {
+                    var syncedPlugin = plugin;
+                    var assetContainer = syncedPlugin.loadAssets(scene, data, rootUrl, errorHandler);
+                    if (!assetContainer) {
+                        return;
+                    }
+                    scene.loadingPluginName = plugin.name;
+                    successHandler(assetContainer);
+                }
+                else if (plugin.loadAssetsAsync) {
+                    var asyncedPlugin = plugin;
+                    asyncedPlugin.loadAssetsAsync(scene, data, rootUrl, function (assetContainer) {
+                        if (assetContainer) {
+                            scene.loadingPluginName = plugin.name;
+                            successHandler(assetContainer);
+                        }
+                    }, progressHandler, errorHandler);
+                }
+                else {
+                    errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssets or loadAssetsAsync method.");
+                }
+                if (SceneLoader.ShowLoadingScreen) {
+                    scene.executeWhenReady(function () {
+                        scene.getEngine().hideLoadingUI();
+                    });
+                }
+            }, progressHandler, errorHandler, disposeHandler, pluginExtension);
+        };
         // Flags
         SceneLoader._ForceFullSceneLoadingForIncremental = false;
         SceneLoader._ShowLoadingScreen = true;
@@ -55022,6 +55418,325 @@ var BABYLON;
     };
     var logOperation = function (operation, producer) {
         return operation + " of " + (producer ? producer.file + " from " + producer.name + " version: " + producer.version + ", exporter version: " + producer.exporter_version : "unknown");
+    };
+    var loadAssets = function (scene, data, rootUrl, onError, addToScene) {
+        if (addToScene === void 0) { addToScene = false; }
+        var container = new BABYLON.AssetContainer(scene);
+        // Entire method running in try block, so ALWAYS logs as far as it got, only actually writes details
+        // when SceneLoader.debugLogging = true (default), or exception encountered.
+        // Everything stored in var log instead of writing separate lines to support only writing in exception,
+        // and avoid problems with multiple concurrent .babylon loads.
+        var log = "importScene has failed JSON parse";
+        try {
+            var parsedData = JSON.parse(data);
+            log = "";
+            var fullDetails = BABYLON.SceneLoader.loggingLevel === BABYLON.SceneLoader.DETAILED_LOGGING;
+            var index;
+            var cache;
+            // Lights
+            if (parsedData.lights !== undefined && parsedData.lights !== null) {
+                for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
+                    var parsedLight = parsedData.lights[index];
+                    var light = BABYLON.Light.Parse(parsedLight, scene);
+                    if (light) {
+                        container.lights.push(light);
+                        log += (index === 0 ? "\n\tLights:" : "");
+                        log += "\n\t\t" + light.toString(fullDetails);
+                    }
+                }
+            }
+            // Animations
+            if (parsedData.animations !== undefined && parsedData.animations !== null) {
+                for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
+                    var parsedAnimation = parsedData.animations[index];
+                    var animation = BABYLON.Animation.Parse(parsedAnimation);
+                    scene.animations.push(animation);
+                    container.animations.push(animation);
+                    log += (index === 0 ? "\n\tAnimations:" : "");
+                    log += "\n\t\t" + animation.toString(fullDetails);
+                }
+            }
+            // Materials
+            if (parsedData.materials !== undefined && parsedData.materials !== null) {
+                for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
+                    var parsedMaterial = parsedData.materials[index];
+                    var mat = BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
+                    container.materials.push(mat);
+                    log += (index === 0 ? "\n\tMaterials:" : "");
+                    log += "\n\t\t" + mat.toString(fullDetails);
+                }
+            }
+            if (parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
+                for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
+                    var parsedMultiMaterial = parsedData.multiMaterials[index];
+                    var mmat = BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
+                    container.multiMaterials.push(mmat);
+                    log += (index === 0 ? "\n\tMultiMaterials:" : "");
+                    log += "\n\t\t" + mmat.toString(fullDetails);
+                }
+            }
+            // Morph targets
+            if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                for (var _i = 0, _a = parsedData.morphTargetManagers; _i < _a.length; _i++) {
+                    var managerData = _a[_i];
+                    container.morphTargetManagers.push(BABYLON.MorphTargetManager.Parse(managerData, scene));
+                }
+            }
+            // Skeletons
+            if (parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
+                for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
+                    var parsedSkeleton = parsedData.skeletons[index];
+                    var skeleton = BABYLON.Skeleton.Parse(parsedSkeleton, scene);
+                    container.skeletons.push(skeleton);
+                    log += (index === 0 ? "\n\tSkeletons:" : "");
+                    log += "\n\t\t" + skeleton.toString(fullDetails);
+                }
+            }
+            // Geometries
+            var geometries = parsedData.geometries;
+            if (geometries !== undefined && geometries !== null) {
+                var addedGeometry = new Array();
+                // Boxes
+                var boxes = geometries.boxes;
+                if (boxes !== undefined && boxes !== null) {
+                    for (index = 0, cache = boxes.length; index < cache; index++) {
+                        var parsedBox = boxes[index];
+                        addedGeometry.push(BABYLON.BoxGeometry.Parse(parsedBox, scene));
+                    }
+                }
+                // Spheres
+                var spheres = geometries.spheres;
+                if (spheres !== undefined && spheres !== null) {
+                    for (index = 0, cache = spheres.length; index < cache; index++) {
+                        var parsedSphere = spheres[index];
+                        addedGeometry.push(BABYLON.SphereGeometry.Parse(parsedSphere, scene));
+                    }
+                }
+                // Cylinders
+                var cylinders = geometries.cylinders;
+                if (cylinders !== undefined && cylinders !== null) {
+                    for (index = 0, cache = cylinders.length; index < cache; index++) {
+                        var parsedCylinder = cylinders[index];
+                        addedGeometry.push(BABYLON.CylinderGeometry.Parse(parsedCylinder, scene));
+                    }
+                }
+                // Toruses
+                var toruses = geometries.toruses;
+                if (toruses !== undefined && toruses !== null) {
+                    for (index = 0, cache = toruses.length; index < cache; index++) {
+                        var parsedTorus = toruses[index];
+                        addedGeometry.push(BABYLON.TorusGeometry.Parse(parsedTorus, scene));
+                    }
+                }
+                // Grounds
+                var grounds = geometries.grounds;
+                if (grounds !== undefined && grounds !== null) {
+                    for (index = 0, cache = grounds.length; index < cache; index++) {
+                        var parsedGround = grounds[index];
+                        addedGeometry.push(BABYLON.GroundGeometry.Parse(parsedGround, scene));
+                    }
+                }
+                // Planes
+                var planes = geometries.planes;
+                if (planes !== undefined && planes !== null) {
+                    for (index = 0, cache = planes.length; index < cache; index++) {
+                        var parsedPlane = planes[index];
+                        addedGeometry.push(BABYLON.PlaneGeometry.Parse(parsedPlane, scene));
+                    }
+                }
+                // TorusKnots
+                var torusKnots = geometries.torusKnots;
+                if (torusKnots !== undefined && torusKnots !== null) {
+                    for (index = 0, cache = torusKnots.length; index < cache; index++) {
+                        var parsedTorusKnot = torusKnots[index];
+                        addedGeometry.push(BABYLON.TorusKnotGeometry.Parse(parsedTorusKnot, scene));
+                    }
+                }
+                // VertexData
+                var vertexData = geometries.vertexData;
+                if (vertexData !== undefined && vertexData !== null) {
+                    for (index = 0, cache = vertexData.length; index < cache; index++) {
+                        var parsedVertexData = vertexData[index];
+                        addedGeometry.push(BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl));
+                    }
+                }
+                addedGeometry.forEach(function (g) {
+                    if (g) {
+                        container.geometries.push(g);
+                    }
+                });
+            }
+            // Transform nodes
+            if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
+                for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
+                    var parsedTransformNode = parsedData.transformNodes[index];
+                    var node = BABYLON.TransformNode.Parse(parsedTransformNode, scene, rootUrl);
+                    container.transformNodes.push(node);
+                }
+            }
+            // Meshes
+            if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
+                for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
+                    var parsedMesh = parsedData.meshes[index];
+                    var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
+                    container.meshes.push(mesh);
+                    log += (index === 0 ? "\n\tMeshes:" : "");
+                    log += "\n\t\t" + mesh.toString(fullDetails);
+                }
+            }
+            // Cameras
+            if (parsedData.cameras !== undefined && parsedData.cameras !== null) {
+                for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
+                    var parsedCamera = parsedData.cameras[index];
+                    var camera = BABYLON.Camera.Parse(parsedCamera, scene);
+                    container.cameras.push(camera);
+                    log += (index === 0 ? "\n\tCameras:" : "");
+                    log += "\n\t\t" + camera.toString(fullDetails);
+                }
+            }
+            // Browsing all the graph to connect the dots
+            for (index = 0, cache = scene.cameras.length; index < cache; index++) {
+                var camera = scene.cameras[index];
+                if (camera._waitingParentId) {
+                    camera.parent = scene.getLastEntryByID(camera._waitingParentId);
+                    camera._waitingParentId = null;
+                }
+            }
+            for (index = 0, cache = scene.lights.length; index < cache; index++) {
+                var light_1 = scene.lights[index];
+                if (light_1 && light_1._waitingParentId) {
+                    light_1.parent = scene.getLastEntryByID(light_1._waitingParentId);
+                    light_1._waitingParentId = null;
+                }
+            }
+            // Sounds
+            // TODO: add sound
+            var loadedSounds = [];
+            var loadedSound;
+            if (BABYLON.AudioEngine && parsedData.sounds !== undefined && parsedData.sounds !== null) {
+                for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
+                    var parsedSound = parsedData.sounds[index];
+                    if (BABYLON.Engine.audioEngine.canUseWebAudio) {
+                        if (!parsedSound.url)
+                            parsedSound.url = parsedSound.name;
+                        if (!loadedSounds[parsedSound.url]) {
+                            loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
+                            loadedSounds[parsedSound.url] = loadedSound;
+                            container.sounds.push(loadedSound);
+                        }
+                        else {
+                            container.sounds.push(BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]));
+                        }
+                    }
+                    else {
+                        container.sounds.push(new BABYLON.Sound(parsedSound.name, null, scene));
+                    }
+                }
+            }
+            loadedSounds = [];
+            // Connect parents & children and parse actions
+            for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
+                var transformNode = scene.transformNodes[index];
+                if (transformNode._waitingParentId) {
+                    transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
+                    transformNode._waitingParentId = null;
+                }
+            }
+            for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                var mesh = scene.meshes[index];
+                if (mesh._waitingParentId) {
+                    mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
+                    mesh._waitingParentId = null;
+                }
+                if (mesh._waitingActions) {
+                    BABYLON.ActionManager.Parse(mesh._waitingActions, mesh, scene);
+                    mesh._waitingActions = null;
+                }
+            }
+            // freeze world matrix application
+            for (index = 0, cache = scene.meshes.length; index < cache; index++) {
+                var currentMesh = scene.meshes[index];
+                if (currentMesh._waitingFreezeWorldMatrix) {
+                    currentMesh.freezeWorldMatrix();
+                    currentMesh._waitingFreezeWorldMatrix = null;
+                }
+                else {
+                    currentMesh.computeWorldMatrix(true);
+                }
+            }
+            // Particles Systems
+            if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
+                for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
+                    var parsedParticleSystem = parsedData.particleSystems[index];
+                    var ps = BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+                    container.particleSystems.push(ps);
+                }
+            }
+            // Lens flares
+            if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
+                for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
+                    var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
+                    var lf = BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
+                    container.lensFlareSystems.push(lf);
+                }
+            }
+            // Shadows
+            if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
+                for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
+                    var parsedShadowGenerator = parsedData.shadowGenerators[index];
+                    var sg = BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
+                    container.shadowGenerators.push(sg);
+                }
+            }
+            // Lights exclusions / inclusions
+            for (index = 0, cache = scene.lights.length; index < cache; index++) {
+                var light_2 = scene.lights[index];
+                // Excluded check
+                if (light_2._excludedMeshesIds.length > 0) {
+                    for (var excludedIndex = 0; excludedIndex < light_2._excludedMeshesIds.length; excludedIndex++) {
+                        var excludedMesh = scene.getMeshByID(light_2._excludedMeshesIds[excludedIndex]);
+                        if (excludedMesh) {
+                            light_2.excludedMeshes.push(excludedMesh);
+                        }
+                    }
+                    light_2._excludedMeshesIds = [];
+                }
+                // Included check
+                if (light_2._includedOnlyMeshesIds.length > 0) {
+                    for (var includedOnlyIndex = 0; includedOnlyIndex < light_2._includedOnlyMeshesIds.length; includedOnlyIndex++) {
+                        var includedOnlyMesh = scene.getMeshByID(light_2._includedOnlyMeshesIds[includedOnlyIndex]);
+                        if (includedOnlyMesh) {
+                            light_2.includedOnlyMeshes.push(includedOnlyMesh);
+                        }
+                    }
+                    light_2._includedOnlyMeshesIds = [];
+                }
+            }
+            // Actions (scene)
+            if (parsedData.actions !== undefined && parsedData.actions !== null) {
+                BABYLON.ActionManager.Parse(parsedData.actions, null, scene);
+            }
+            if (!addToScene) {
+                container.removeAllFromScene();
+            }
+            return container;
+        }
+        catch (err) {
+            var msg = logOperation("loadAssts", parsedData ? parsedData.producer : "Unknown") + log;
+            if (onError) {
+                onError(msg, err);
+            }
+            else {
+                BABYLON.Tools.Log(msg);
+                throw err;
+            }
+        }
+        finally {
+            if (log !== null && BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.NO_LOGGING) {
+                BABYLON.Tools.Log(logOperation("loadAssts", parsedData ? parsedData.producer : "Unknown") + (BABYLON.SceneLoader.loggingLevel !== BABYLON.SceneLoader.MINIMAL_LOGGING ? log : ""));
+            }
+        }
+        return null;
     };
     BABYLON.SceneLoader.RegisterPlugin({
         name: "babylon.js",
@@ -55220,7 +55935,6 @@ var BABYLON;
             try {
                 var parsedData = JSON.parse(data);
                 log = "";
-                var fullDetails = BABYLON.SceneLoader.loggingLevel === BABYLON.SceneLoader.DETAILED_LOGGING;
                 // Scene
                 if (parsedData.useDelayedTextureLoading !== undefined && parsedData.useDelayedTextureLoading !== null) {
                     scene.useDelayedTextureLoading = parsedData.useDelayedTextureLoading && !BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental;
@@ -55281,237 +55995,17 @@ var BABYLON;
                     scene.collisionsEnabled = parsedData.collisionsEnabled;
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
-                var index;
-                var cache;
-                // Lights
-                if (parsedData.lights !== undefined && parsedData.lights !== null) {
-                    for (index = 0, cache = parsedData.lights.length; index < cache; index++) {
-                        var parsedLight = parsedData.lights[index];
-                        var light = BABYLON.Light.Parse(parsedLight, scene);
-                        if (light) {
-                            log += (index === 0 ? "\n\tLights:" : "");
-                            log += "\n\t\t" + light.toString(fullDetails);
-                        }
-                    }
-                }
-                // Animations
-                if (parsedData.animations !== undefined && parsedData.animations !== null) {
-                    for (index = 0, cache = parsedData.animations.length; index < cache; index++) {
-                        var parsedAnimation = parsedData.animations[index];
-                        var animation = BABYLON.Animation.Parse(parsedAnimation);
-                        scene.animations.push(animation);
-                        log += (index === 0 ? "\n\tAnimations:" : "");
-                        log += "\n\t\t" + animation.toString(fullDetails);
-                    }
+                var container = loadAssets(scene, data, rootUrl, onerror, true);
+                if (!container) {
+                    return false;
                 }
                 if (parsedData.autoAnimate) {
                     scene.beginAnimation(scene, parsedData.autoAnimateFrom, parsedData.autoAnimateTo, parsedData.autoAnimateLoop, parsedData.autoAnimateSpeed || 1.0);
                 }
-                // Materials
-                if (parsedData.materials !== undefined && parsedData.materials !== null) {
-                    for (index = 0, cache = parsedData.materials.length; index < cache; index++) {
-                        var parsedMaterial = parsedData.materials[index];
-                        var mat = BABYLON.Material.Parse(parsedMaterial, scene, rootUrl);
-                        log += (index === 0 ? "\n\tMaterials:" : "");
-                        log += "\n\t\t" + mat.toString(fullDetails);
-                    }
-                }
-                if (parsedData.multiMaterials !== undefined && parsedData.multiMaterials !== null) {
-                    for (index = 0, cache = parsedData.multiMaterials.length; index < cache; index++) {
-                        var parsedMultiMaterial = parsedData.multiMaterials[index];
-                        var mmat = BABYLON.Material.ParseMultiMaterial(parsedMultiMaterial, scene);
-                        log += (index === 0 ? "\n\tMultiMaterials:" : "");
-                        log += "\n\t\t" + mmat.toString(fullDetails);
-                    }
-                }
-                // Morph targets
-                if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-                    for (var _i = 0, _a = parsedData.morphTargetManagers; _i < _a.length; _i++) {
-                        var managerData = _a[_i];
-                        BABYLON.MorphTargetManager.Parse(managerData, scene);
-                    }
-                }
-                // Skeletons
-                if (parsedData.skeletons !== undefined && parsedData.skeletons !== null) {
-                    for (index = 0, cache = parsedData.skeletons.length; index < cache; index++) {
-                        var parsedSkeleton = parsedData.skeletons[index];
-                        var skeleton = BABYLON.Skeleton.Parse(parsedSkeleton, scene);
-                        log += (index === 0 ? "\n\tSkeletons:" : "");
-                        log += "\n\t\t" + skeleton.toString(fullDetails);
-                    }
-                }
-                // Geometries
-                var geometries = parsedData.geometries;
-                if (geometries !== undefined && geometries !== null) {
-                    // Boxes
-                    var boxes = geometries.boxes;
-                    if (boxes !== undefined && boxes !== null) {
-                        for (index = 0, cache = boxes.length; index < cache; index++) {
-                            var parsedBox = boxes[index];
-                            BABYLON.BoxGeometry.Parse(parsedBox, scene);
-                        }
-                    }
-                    // Spheres
-                    var spheres = geometries.spheres;
-                    if (spheres !== undefined && spheres !== null) {
-                        for (index = 0, cache = spheres.length; index < cache; index++) {
-                            var parsedSphere = spheres[index];
-                            BABYLON.SphereGeometry.Parse(parsedSphere, scene);
-                        }
-                    }
-                    // Cylinders
-                    var cylinders = geometries.cylinders;
-                    if (cylinders !== undefined && cylinders !== null) {
-                        for (index = 0, cache = cylinders.length; index < cache; index++) {
-                            var parsedCylinder = cylinders[index];
-                            BABYLON.CylinderGeometry.Parse(parsedCylinder, scene);
-                        }
-                    }
-                    // Toruses
-                    var toruses = geometries.toruses;
-                    if (toruses !== undefined && toruses !== null) {
-                        for (index = 0, cache = toruses.length; index < cache; index++) {
-                            var parsedTorus = toruses[index];
-                            BABYLON.TorusGeometry.Parse(parsedTorus, scene);
-                        }
-                    }
-                    // Grounds
-                    var grounds = geometries.grounds;
-                    if (grounds !== undefined && grounds !== null) {
-                        for (index = 0, cache = grounds.length; index < cache; index++) {
-                            var parsedGround = grounds[index];
-                            BABYLON.GroundGeometry.Parse(parsedGround, scene);
-                        }
-                    }
-                    // Planes
-                    var planes = geometries.planes;
-                    if (planes !== undefined && planes !== null) {
-                        for (index = 0, cache = planes.length; index < cache; index++) {
-                            var parsedPlane = planes[index];
-                            BABYLON.PlaneGeometry.Parse(parsedPlane, scene);
-                        }
-                    }
-                    // TorusKnots
-                    var torusKnots = geometries.torusKnots;
-                    if (torusKnots !== undefined && torusKnots !== null) {
-                        for (index = 0, cache = torusKnots.length; index < cache; index++) {
-                            var parsedTorusKnot = torusKnots[index];
-                            BABYLON.TorusKnotGeometry.Parse(parsedTorusKnot, scene);
-                        }
-                    }
-                    // VertexData
-                    var vertexData = geometries.vertexData;
-                    if (vertexData !== undefined && vertexData !== null) {
-                        for (index = 0, cache = vertexData.length; index < cache; index++) {
-                            var parsedVertexData = vertexData[index];
-                            BABYLON.Geometry.Parse(parsedVertexData, scene, rootUrl);
-                        }
-                    }
-                }
-                // Transform nodes
-                if (parsedData.transformNodes !== undefined && parsedData.transformNodes !== null) {
-                    for (index = 0, cache = parsedData.transformNodes.length; index < cache; index++) {
-                        var parsedTransformNode = parsedData.transformNodes[index];
-                        BABYLON.TransformNode.Parse(parsedTransformNode, scene, rootUrl);
-                    }
-                }
-                // Meshes
-                if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
-                    for (index = 0, cache = parsedData.meshes.length; index < cache; index++) {
-                        var parsedMesh = parsedData.meshes[index];
-                        var mesh = BABYLON.Mesh.Parse(parsedMesh, scene, rootUrl);
-                        log += (index === 0 ? "\n\tMeshes:" : "");
-                        log += "\n\t\t" + mesh.toString(fullDetails);
-                    }
-                }
-                // Cameras
-                if (parsedData.cameras !== undefined && parsedData.cameras !== null) {
-                    for (index = 0, cache = parsedData.cameras.length; index < cache; index++) {
-                        var parsedCamera = parsedData.cameras[index];
-                        var camera = BABYLON.Camera.Parse(parsedCamera, scene);
-                        log += (index === 0 ? "\n\tCameras:" : "");
-                        log += "\n\t\t" + camera.toString(fullDetails);
-                    }
-                }
                 if (parsedData.activeCameraID !== undefined && parsedData.activeCameraID !== null) {
                     scene.setActiveCameraByID(parsedData.activeCameraID);
                 }
-                // Browsing all the graph to connect the dots
-                for (index = 0, cache = scene.cameras.length; index < cache; index++) {
-                    var camera = scene.cameras[index];
-                    if (camera._waitingParentId) {
-                        camera.parent = scene.getLastEntryByID(camera._waitingParentId);
-                        camera._waitingParentId = null;
-                    }
-                }
-                for (index = 0, cache = scene.lights.length; index < cache; index++) {
-                    var light_1 = scene.lights[index];
-                    if (light_1 && light_1._waitingParentId) {
-                        light_1.parent = scene.getLastEntryByID(light_1._waitingParentId);
-                        light_1._waitingParentId = null;
-                    }
-                }
-                // Sounds
-                var loadedSounds = [];
-                var loadedSound;
-                if (BABYLON.AudioEngine && parsedData.sounds !== undefined && parsedData.sounds !== null) {
-                    for (index = 0, cache = parsedData.sounds.length; index < cache; index++) {
-                        var parsedSound = parsedData.sounds[index];
-                        if (BABYLON.Engine.audioEngine.canUseWebAudio) {
-                            if (!parsedSound.url)
-                                parsedSound.url = parsedSound.name;
-                            if (!loadedSounds[parsedSound.url]) {
-                                loadedSound = BABYLON.Sound.Parse(parsedSound, scene, rootUrl);
-                                loadedSounds[parsedSound.url] = loadedSound;
-                            }
-                            else {
-                                BABYLON.Sound.Parse(parsedSound, scene, rootUrl, loadedSounds[parsedSound.url]);
-                            }
-                        }
-                        else {
-                            new BABYLON.Sound(parsedSound.name, null, scene);
-                        }
-                    }
-                }
-                loadedSounds = [];
-                // Connect parents & children and parse actions
-                for (index = 0, cache = scene.transformNodes.length; index < cache; index++) {
-                    var transformNode = scene.transformNodes[index];
-                    if (transformNode._waitingParentId) {
-                        transformNode.parent = scene.getLastEntryByID(transformNode._waitingParentId);
-                        transformNode._waitingParentId = null;
-                    }
-                }
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    var mesh = scene.meshes[index];
-                    if (mesh._waitingParentId) {
-                        mesh.parent = scene.getLastEntryByID(mesh._waitingParentId);
-                        mesh._waitingParentId = null;
-                    }
-                    if (mesh._waitingActions) {
-                        BABYLON.ActionManager.Parse(mesh._waitingActions, mesh, scene);
-                        mesh._waitingActions = null;
-                    }
-                }
-                // freeze world matrix application
-                for (index = 0, cache = scene.meshes.length; index < cache; index++) {
-                    var currentMesh = scene.meshes[index];
-                    if (currentMesh._waitingFreezeWorldMatrix) {
-                        currentMesh.freezeWorldMatrix();
-                        currentMesh._waitingFreezeWorldMatrix = null;
-                    }
-                    else {
-                        currentMesh.computeWorldMatrix(true);
-                    }
-                }
-                // Particles Systems
-                if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
-                    for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
-                        var parsedParticleSystem = parsedData.particleSystems[index];
-                        BABYLON.ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                    }
-                }
-                // Environment texture
+                // Environment texture		
                 if (parsedData.environmentTexture !== undefined && parsedData.environmentTexture !== null) {
                     scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(rootUrl + parsedData.environmentTexture, scene);
                     if (parsedData.createDefaultSkybox === true) {
@@ -55519,48 +56013,6 @@ var BABYLON;
                         var skyboxBlurLevel = parsedData.skyboxBlurLevel || 0;
                         scene.createDefaultSkybox(undefined, true, skyboxScale, skyboxBlurLevel);
                     }
-                }
-                // Lens flares
-                if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
-                    for (index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
-                        var parsedLensFlareSystem = parsedData.lensFlareSystems[index];
-                        BABYLON.LensFlareSystem.Parse(parsedLensFlareSystem, scene, rootUrl);
-                    }
-                }
-                // Shadows
-                if (parsedData.shadowGenerators !== undefined && parsedData.shadowGenerators !== null) {
-                    for (index = 0, cache = parsedData.shadowGenerators.length; index < cache; index++) {
-                        var parsedShadowGenerator = parsedData.shadowGenerators[index];
-                        BABYLON.ShadowGenerator.Parse(parsedShadowGenerator, scene);
-                    }
-                }
-                // Lights exclusions / inclusions
-                for (index = 0, cache = scene.lights.length; index < cache; index++) {
-                    var light_2 = scene.lights[index];
-                    // Excluded check
-                    if (light_2._excludedMeshesIds.length > 0) {
-                        for (var excludedIndex = 0; excludedIndex < light_2._excludedMeshesIds.length; excludedIndex++) {
-                            var excludedMesh = scene.getMeshByID(light_2._excludedMeshesIds[excludedIndex]);
-                            if (excludedMesh) {
-                                light_2.excludedMeshes.push(excludedMesh);
-                            }
-                        }
-                        light_2._excludedMeshesIds = [];
-                    }
-                    // Included check
-                    if (light_2._includedOnlyMeshesIds.length > 0) {
-                        for (var includedOnlyIndex = 0; includedOnlyIndex < light_2._includedOnlyMeshesIds.length; includedOnlyIndex++) {
-                            var includedOnlyMesh = scene.getMeshByID(light_2._includedOnlyMeshesIds[includedOnlyIndex]);
-                            if (includedOnlyMesh) {
-                                light_2.includedOnlyMeshes.push(includedOnlyMesh);
-                            }
-                        }
-                        light_2._includedOnlyMeshesIds = [];
-                    }
-                }
-                // Actions (scene)
-                if (parsedData.actions !== undefined && parsedData.actions !== null) {
-                    BABYLON.ActionManager.Parse(parsedData.actions, null, scene);
                 }
                 // Finish
                 return true;
@@ -55581,6 +56033,10 @@ var BABYLON;
                 }
             }
             return false;
+        },
+        loadAssets: function (scene, data, rootUrl, onError) {
+            var container = loadAssets(scene, data, rootUrl, onerror);
+            return container;
         }
     });
 })(BABYLON || (BABYLON = {}));
@@ -58347,7 +58803,8 @@ var BABYLON;
         PoseEnabledControllerType[PoseEnabledControllerType["VIVE"] = 0] = "VIVE";
         PoseEnabledControllerType[PoseEnabledControllerType["OCULUS"] = 1] = "OCULUS";
         PoseEnabledControllerType[PoseEnabledControllerType["WINDOWS"] = 2] = "WINDOWS";
-        PoseEnabledControllerType[PoseEnabledControllerType["GENERIC"] = 3] = "GENERIC";
+        PoseEnabledControllerType[PoseEnabledControllerType["GEAR_VR"] = 3] = "GEAR_VR";
+        PoseEnabledControllerType[PoseEnabledControllerType["GENERIC"] = 4] = "GENERIC";
     })(PoseEnabledControllerType = BABYLON.PoseEnabledControllerType || (BABYLON.PoseEnabledControllerType = {}));
     var PoseEnabledControllerHelper = /** @class */ (function () {
         function PoseEnabledControllerHelper() {
@@ -58362,6 +58819,9 @@ var BABYLON;
             }
             else if (vrGamepad.id.toLowerCase().indexOf('openvr') !== -1) {
                 return new BABYLON.ViveController(vrGamepad);
+            }
+            else if (vrGamepad.id.indexOf(BABYLON.GearVRController.GAMEPAD_ID_PREFIX) === 0) {
+                return new BABYLON.GearVRController(vrGamepad);
             }
             else {
                 return new BABYLON.GenericController(vrGamepad);
@@ -59219,6 +59679,50 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.windowsMotionController.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var GearVRController = /** @class */ (function (_super) {
+        __extends(GearVRController, _super);
+        function GearVRController(vrGamepad) {
+            var _this = _super.call(this, vrGamepad) || this;
+            _this._buttonIndexToObservableNameMap = [
+                'onTrackpadChangedObservable',
+                'onTriggerStateChangedObservable' // Trigger
+            ];
+            _this.controllerType = BABYLON.PoseEnabledControllerType.GEAR_VR;
+            return _this;
+        }
+        GearVRController.prototype.initControllerMesh = function (scene, meshLoaded) {
+            var _this = this;
+            BABYLON.SceneLoader.ImportMesh("", GearVRController.MODEL_BASE_URL, GearVRController.MODEL_FILENAME, scene, function (newMeshes) {
+                _this._defaultModel = newMeshes[1];
+                _this.attachToMesh(_this._defaultModel);
+                if (meshLoaded) {
+                    meshLoaded(_this._defaultModel);
+                }
+            });
+        };
+        GearVRController.prototype.handleButtonChange = function (buttonIdx, state, changes) {
+            if (buttonIdx < this._buttonIndexToObservableNameMap.length) {
+                var observableName = this._buttonIndexToObservableNameMap[buttonIdx];
+                // Only emit events for buttons that we know how to map from index to observable
+                var observable = this[observableName];
+                if (observable) {
+                    observable.notifyObservers(state);
+                }
+            }
+        };
+        GearVRController.MODEL_BASE_URL = 'https://controllers.babylonjs.com/generic/';
+        GearVRController.MODEL_FILENAME = 'generic.babylon';
+        GearVRController.GAMEPAD_ID_PREFIX = 'Gear VR'; // id is 'Gear VR Controller'
+        return GearVRController;
+    }(BABYLON.WebVRController));
+    BABYLON.GearVRController = GearVRController;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.gearVRController.js.map
 
 
 
@@ -62367,7 +62871,7 @@ var BABYLON;
         VolumetricLightScatteringPostProcess.prototype.getClassName = function () {
             return "VolumetricLightScatteringPostProcess";
         };
-        VolumetricLightScatteringPostProcess.prototype.isReady = function (subMesh, useInstances) {
+        VolumetricLightScatteringPostProcess.prototype._isReady = function (subMesh, useInstances) {
             var mesh = subMesh.getMesh();
             // Render this.mesh as default
             if (mesh === this.mesh && mesh.material) {
@@ -62490,7 +62994,7 @@ var BABYLON;
                     return;
                 }
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                if (_this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (_this._isReady(subMesh, hardwareInstancedRendering)) {
                     var effect = _this._volumetricLightScatteringPass;
                     if (mesh === _this.mesh) {
                         if (subMesh.effect) {
@@ -72174,16 +72678,12 @@ var BABYLON;
             this._vertexCount = 0;
             for (var _i = 0, _a = this._targets; _i < _a.length; _i++) {
                 var target = _a[_i];
-                if (target.influence > 0) {
-                    this._activeTargets.push(target);
-                    this._tempInfluences[influenceCount++] = target.influence;
+                this._activeTargets.push(target);
+                this._tempInfluences[influenceCount++] = target.influence;
+                var positions = target.getPositions();
+                if (positions) {
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
-                    var positions = target.getPositions();
-                    if (!positions) {
-                        BABYLON.Tools.Error("Invalid target. Target must positions.");
-                        return;
-                    }
                     var vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {
                         this._vertexCount = vertexCount;
@@ -72444,249 +72944,6 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.octreeBlock.js.map
-
-var BABYLON;
-(function (BABYLON) {
-    var SIMDVector3 = /** @class */ (function () {
-        function SIMDVector3() {
-        }
-        SIMDVector3.TransformCoordinatesToRefSIMD = function (vector, transformation, result) {
-            SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD(vector.x, vector.y, vector.z, transformation, result);
-        };
-        SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD = function (x, y, z, transformation, result) {
-            var m = transformation.m;
-            var m0 = SIMD.Float32x4.load(m, 0);
-            var m1 = SIMD.Float32x4.load(m, 4);
-            var m2 = SIMD.Float32x4.load(m, 8);
-            var m3 = SIMD.Float32x4.load(m, 12);
-            var r = SIMD.Float32x4.add(SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(x), m0), SIMD.Float32x4.mul(SIMD.Float32x4.splat(y), m1)), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(z), m2), m3));
-            r = SIMD.Float32x4.div(r, SIMD.Float32x4.swizzle(r, 3, 3, 3, 3));
-            result.x = SIMD.Float32x4.extractLane(r, 0);
-            result.y = SIMD.Float32x4.extractLane(r, 1);
-            result.z = SIMD.Float32x4.extractLane(r, 2);
-        };
-        return SIMDVector3;
-    }());
-    var SIMDMatrix = /** @class */ (function () {
-        function SIMDMatrix() {
-        }
-        SIMDMatrix.prototype.multiplyToArraySIMD = function (other, result, offset) {
-            var tm = this.m;
-            var om = other.m;
-            var m0 = SIMD.Float32x4.load(om, 0);
-            var m1 = SIMD.Float32x4.load(om, 4);
-            var m2 = SIMD.Float32x4.load(om, 8);
-            var m3 = SIMD.Float32x4.load(om, 12);
-            for (var i = 0; i < 16; i += 4) {
-                SIMD.Float32x4.store(result, i + offset, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i]), m0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i + 1]), m1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i + 2]), m2), SIMD.Float32x4.mul(SIMD.Float32x4.splat(tm[i + 3]), m3)))));
-            }
-            return this;
-        };
-        SIMDMatrix.prototype.invertToRefSIMD = function (other) {
-            var src = this.m;
-            var dest = other.m;
-            // Load the 4 rows
-            var src0 = SIMD.Float32x4.load(src, 0);
-            var src1 = SIMD.Float32x4.load(src, 4);
-            var src2 = SIMD.Float32x4.load(src, 8);
-            var src3 = SIMD.Float32x4.load(src, 12);
-            // Transpose the source matrix.  Sort of.  Not a true transpose operation
-            var tmp1 = SIMD.Float32x4.shuffle(src0, src1, 0, 1, 4, 5);
-            var row1 = SIMD.Float32x4.shuffle(src2, src3, 0, 1, 4, 5);
-            var row0 = SIMD.Float32x4.shuffle(tmp1, row1, 0, 2, 4, 6);
-            row1 = SIMD.Float32x4.shuffle(row1, tmp1, 1, 3, 5, 7);
-            tmp1 = SIMD.Float32x4.shuffle(src0, src1, 2, 3, 6, 7);
-            var row3 = SIMD.Float32x4.shuffle(src2, src3, 2, 3, 6, 7);
-            var row2 = SIMD.Float32x4.shuffle(tmp1, row3, 0, 2, 4, 6);
-            row3 = SIMD.Float32x4.shuffle(row3, tmp1, 1, 3, 5, 7);
-            // This is a true transposition, but it will lead to an incorrect result
-            //tmp1 = shuffle(src0, src1, 0, 1, 4, 5);
-            //tmp2 = shuffle(src2, src3, 0, 1, 4, 5);
-            //row0  = shuffle(tmp1, tmp2, 0, 2, 4, 6);
-            //row1  = shuffle(tmp1, tmp2, 1, 3, 5, 7);
-            //tmp1 = shuffle(src0, src1, 2, 3, 6, 7);
-            //tmp2 = shuffle(src2, src3, 2, 3, 6, 7);
-            //row2  = shuffle(tmp1, tmp2, 0, 2, 4, 6);
-            //row3  = shuffle(tmp1, tmp2, 1, 3, 5, 7);
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row2, row3);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            var minor0 = SIMD.Float32x4.mul(row1, tmp1);
-            var minor1 = SIMD.Float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row1, tmp1), minor0);
-            minor1 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor1);
-            minor1 = SIMD.Float32x4.swizzle(minor1, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row1, row2);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor0);
-            var minor3 = SIMD.Float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row3, tmp1));
-            minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor3);
-            minor3 = SIMD.Float32x4.swizzle(minor3, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(row1, 2, 3, 0, 1), row3); // 0x4E = 01001110
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            row2 = SIMD.Float32x4.swizzle(row2, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor0);
-            var minor2 = SIMD.Float32x4.mul(row0, tmp1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor0 = SIMD.Float32x4.sub(minor0, SIMD.Float32x4.mul(row2, tmp1));
-            minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row0, tmp1), minor2);
-            minor2 = SIMD.Float32x4.swizzle(minor2, 2, 3, 0, 1); // 0x4E = 01001110
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row0, row1);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor2);
-            minor3 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row2, tmp1), minor3);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor2 = SIMD.Float32x4.sub(SIMD.Float32x4.mul(row3, tmp1), minor2);
-            minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row2, tmp1));
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row0, row3);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row2, tmp1));
-            minor2 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor2);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row2, tmp1), minor1);
-            minor2 = SIMD.Float32x4.sub(minor2, SIMD.Float32x4.mul(row1, tmp1));
-            // ----
-            tmp1 = SIMD.Float32x4.mul(row0, row2);
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 1, 0, 3, 2); // 0xB1 = 10110001
-            minor1 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row3, tmp1), minor1);
-            minor3 = SIMD.Float32x4.sub(minor3, SIMD.Float32x4.mul(row1, tmp1));
-            tmp1 = SIMD.Float32x4.swizzle(tmp1, 2, 3, 0, 1); // 0x4E = 01001110
-            minor1 = SIMD.Float32x4.sub(minor1, SIMD.Float32x4.mul(row3, tmp1));
-            minor3 = SIMD.Float32x4.add(SIMD.Float32x4.mul(row1, tmp1), minor3);
-            // Compute determinant
-            var det = SIMD.Float32x4.mul(row0, minor0);
-            det = SIMD.Float32x4.add(SIMD.Float32x4.swizzle(det, 2, 3, 0, 1), det); // 0x4E = 01001110
-            det = SIMD.Float32x4.add(SIMD.Float32x4.swizzle(det, 1, 0, 3, 2), det); // 0xB1 = 10110001
-            tmp1 = SIMD.Float32x4.reciprocalApproximation(det);
-            det = SIMD.Float32x4.sub(SIMD.Float32x4.add(tmp1, tmp1), SIMD.Float32x4.mul(det, SIMD.Float32x4.mul(tmp1, tmp1)));
-            det = SIMD.Float32x4.swizzle(det, 0, 0, 0, 0);
-            // These shuffles aren't necessary if the faulty transposition is done
-            // up at the top of this function.
-            //minor0 =SIMD.Float32x4.swizzle(minor0, 2, 1, 0, 3);
-            //minor1 =SIMD.Float32x4.swizzle(minor1, 2, 1, 0, 3);
-            //minor2 =SIMD.Float32x4.swizzle(minor2, 2, 1, 0, 3);
-            //minor3 =SIMD.Float32x4.swizzle(minor3, 2, 1, 0, 3);
-            // Compute final values by multiplying with 1/det
-            SIMD.Float32x4.store(dest, 0, SIMD.Float32x4.mul(det, minor0));
-            SIMD.Float32x4.store(dest, 4, SIMD.Float32x4.mul(det, minor1));
-            SIMD.Float32x4.store(dest, 8, minor2 = SIMD.Float32x4.mul(det, minor2));
-            SIMD.Float32x4.store(dest, 12, SIMD.Float32x4.mul(det, minor3));
-            return this;
-        };
-        SIMDMatrix.LookAtLHToRefSIMD = function (eyeRef, targetRef, upRef, result) {
-            var out = result.m;
-            var center = SIMD.Float32x4(targetRef.x, targetRef.y, targetRef.z, 0.0);
-            var eye = SIMD.Float32x4(eyeRef.x, eyeRef.y, eyeRef.z, 0.0);
-            var up = SIMD.Float32x4(upRef.x, upRef.y, upRef.z, 0.0);
-            // cc.kmVec3Subtract(f, pCenter, pEye);
-            var f = SIMD.Float32x4.sub(center, eye);
-            // cc.kmVec3Normalize(f, f);    
-            var tmp = SIMD.Float32x4.mul(f, f);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            f = SIMD.Float32x4.mul(f, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Assign(up, pUp);
-            // cc.kmVec3Normalize(up, up);
-            tmp = SIMD.Float32x4.mul(up, up);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            up = SIMD.Float32x4.mul(up, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Cross(s, f, up);
-            var s = SIMD.Float32x4.sub(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(f, 1, 2, 0, 3), SIMD.Float32x4.swizzle(up, 2, 0, 1, 3)), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(f, 2, 0, 1, 3), SIMD.Float32x4.swizzle(up, 1, 2, 0, 3)));
-            // cc.kmVec3Normalize(s, s);
-            tmp = SIMD.Float32x4.mul(s, s);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.Float32x4.mul(s, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            // cc.kmVec3Cross(u, s, f);
-            var u = SIMD.Float32x4.sub(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(s, 1, 2, 0, 3), SIMD.Float32x4.swizzle(f, 2, 0, 1, 3)), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(s, 2, 0, 1, 3), SIMD.Float32x4.swizzle(f, 1, 2, 0, 3)));
-            // cc.kmVec3Normalize(s, s);
-            tmp = SIMD.Float32x4.mul(s, s);
-            tmp = SIMD.Float32x4.add(tmp, SIMD.Float32x4.add(SIMD.Float32x4.swizzle(tmp, 1, 2, 0, 3), SIMD.Float32x4.swizzle(tmp, 2, 0, 1, 3)));
-            s = SIMD.Float32x4.mul(s, SIMD.Float32x4.reciprocalSqrtApproximation(tmp));
-            var zero = SIMD.Float32x4.splat(0.0);
-            s = SIMD.Float32x4.neg(s);
-            var tmp01 = SIMD.Float32x4.shuffle(s, u, 0, 1, 4, 5);
-            var tmp23 = SIMD.Float32x4.shuffle(f, zero, 0, 1, 4, 5);
-            var a0 = SIMD.Float32x4.shuffle(tmp01, tmp23, 0, 2, 4, 6);
-            var a1 = SIMD.Float32x4.shuffle(tmp01, tmp23, 1, 3, 5, 7);
-            var a2 = SIMD.Float32x4.shuffle(SIMD.Float32x4.shuffle(s, u, 2, 3, 6, 7), SIMD.Float32x4.shuffle(f, zero, 2, 3, 6, 7), 0, 2, 4, 6);
-            var a3 = SIMD.Float32x4(0.0, 0.0, 0.0, 1.0);
-            var b = SIMD.Float32x4(1.0, 0.0, 0.0, 0.0);
-            SIMD.Float32x4.store(out, 0, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-            b = SIMD.Float32x4(0.0, 1.0, 0.0, 0.0);
-            SIMD.Float32x4.store(out, 4, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-            b = SIMD.Float32x4(0.0, 0.0, 1.0, 0.0);
-            SIMD.Float32x4.store(out, 8, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-            b = SIMD.Float32x4.replaceLane(SIMD.Float32x4.neg(eye), 3, 1.0);
-            SIMD.Float32x4.store(out, 12, SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 0, 0, 0, 0), a0), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 1, 1, 1, 1), a1), SIMD.Float32x4.add(SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 2, 2, 2, 2), a2), SIMD.Float32x4.mul(SIMD.Float32x4.swizzle(b, 3, 3, 3, 3), a3)))));
-        };
-        return SIMDMatrix;
-    }());
-    var previousMultiplyToArray = BABYLON.Matrix.prototype.multiplyToArray;
-    var previousInvertToRef = BABYLON.Matrix.prototype.invertToRef;
-    var previousLookAtLHToRef = BABYLON.Matrix.LookAtLHToRef;
-    var previousTransformCoordinatesToRef = BABYLON.Vector3.TransformCoordinatesToRef;
-    var previousTransformCoordinatesFromFloatsToRef = BABYLON.Vector3.TransformCoordinatesFromFloatsToRef;
-    var SIMDHelper = /** @class */ (function () {
-        function SIMDHelper() {
-        }
-        Object.defineProperty(SIMDHelper, "IsEnabled", {
-            get: function () {
-                return SIMDHelper._isEnabled;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        SIMDHelper.DisableSIMD = function () {
-            // Replace functions
-            BABYLON.Matrix.prototype.multiplyToArray = previousMultiplyToArray;
-            BABYLON.Matrix.prototype.invertToRef = previousInvertToRef;
-            BABYLON.Matrix.LookAtLHToRef = previousLookAtLHToRef;
-            BABYLON.Vector3.TransformCoordinatesToRef = previousTransformCoordinatesToRef;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef = previousTransformCoordinatesFromFloatsToRef;
-            SIMDHelper._isEnabled = false;
-        };
-        SIMDHelper.EnableSIMD = function () {
-            if (self.SIMD === undefined) {
-                return;
-            }
-            // check if polyfills needed
-            if (!self.Math.fround) {
-                self.Math.fround = (function (array) { return function (x) {
-                    return array[0] = x, array[0];
-                }; })(new Float32Array(1));
-            }
-            if (!self.Math.imul) {
-                self.Math.imul = function (a, b) {
-                    var ah = (a >>> 16) & 0xffff;
-                    var al = a & 0xffff;
-                    var bh = (b >>> 16) & 0xffff;
-                    var bl = b & 0xffff;
-                    // the shift by 0 fixes the sign on the high part
-                    // the final |0 converts the unsigned value into a signed value
-                    return ((al * bl) + (((ah * bl + al * bh) << 16) >>> 0) | 0);
-                };
-            }
-            // Replace functions
-            BABYLON.Matrix.prototype.multiplyToArray = SIMDMatrix.prototype.multiplyToArraySIMD;
-            BABYLON.Matrix.prototype.invertToRef = SIMDMatrix.prototype.invertToRefSIMD;
-            BABYLON.Matrix.LookAtLHToRef = SIMDMatrix.LookAtLHToRefSIMD;
-            BABYLON.Vector3.TransformCoordinatesToRef = SIMDVector3.TransformCoordinatesToRefSIMD;
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef = SIMDVector3.TransformCoordinatesFromFloatsToRefSIMD;
-            SIMDHelper._isEnabled = true;
-        };
-        SIMDHelper._isEnabled = false;
-        return SIMDHelper;
-    }());
-    BABYLON.SIMDHelper = SIMDHelper;
-})(BABYLON || (BABYLON = {}));
-
-//# sourceMappingURL=babylon.math.SIMD.js.map
 
 
 var BABYLON;
@@ -74895,6 +75152,12 @@ var BABYLON;
                 // The object selected is the floor, we're in a teleportation scenario
                 if (this._teleportationInitialized && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
                     // Moving the teleportation area to this targetted point
+                    //Raise onSelectedMeshUnselected observable if ray collided floor mesh/meshes and a non floor mesh was previously selected
+                    if (this._currentMeshSelected &&
+                        !this._isTeleportationFloor(this._currentMeshSelected)) {
+                        this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
+                    }
+                    this._currentMeshSelected = null;
                     this._moveTeleportationSelectorTo(hit);
                     return;
                 }
@@ -76037,131 +76300,309 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    // Standard optimizations
+    /**
+     * Defines the root class used to create scene optimization to use with SceneOptimizer
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var SceneOptimization = /** @class */ (function () {
+        /**
+         * Creates the SceneOptimization object
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param desc defines the description associated with the optimization
+         */
         function SceneOptimization(priority) {
             if (priority === void 0) { priority = 0; }
             this.priority = priority;
-            this.apply = function (scene) {
-                return true; // Return true if everything that can be done was applied
-            };
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        SceneOptimization.prototype.getDescription = function () {
+            return "";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         * @returnstrue if everything that can be done was applied
+         */
+        SceneOptimization.prototype.apply = function (scene) {
+            return true;
+        };
+        ;
         return SceneOptimization;
     }());
     BABYLON.SceneOptimization = SceneOptimization;
+    /**
+     * Defines an optimization used to reduce the size of render target textures
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var TextureOptimization = /** @class */ (function (_super) {
         __extends(TextureOptimization, _super);
-        function TextureOptimization(priority, maximumSize) {
+        /**
+         * Creates the TextureOptimization object
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumSize defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
+         * @param step defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
+         */
+        function TextureOptimization(priority, maximumSize, step) {
             if (priority === void 0) { priority = 0; }
             if (maximumSize === void 0) { maximumSize = 1024; }
+            if (step === void 0) { step = 0.5; }
             var _this = _super.call(this, priority) || this;
             _this.priority = priority;
             _this.maximumSize = maximumSize;
-            _this.apply = function (scene) {
-                var allDone = true;
-                for (var index = 0; index < scene.textures.length; index++) {
-                    var texture = scene.textures[index];
-                    if (!texture.canRescale || texture.getContext) {
-                        continue;
-                    }
-                    var currentSize = texture.getSize();
-                    var maxDimension = Math.max(currentSize.width, currentSize.height);
-                    if (maxDimension > _this.maximumSize) {
-                        texture.scale(0.5);
-                        allDone = false;
-                    }
-                }
-                return allDone;
-            };
+            _this.step = step;
             return _this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        TextureOptimization.prototype.getDescription = function () {
+            return "Reducing render target texture size to " + this.maximumSize;
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        TextureOptimization.prototype.apply = function (scene) {
+            var allDone = true;
+            for (var index = 0; index < scene.textures.length; index++) {
+                var texture = scene.textures[index];
+                if (!texture.canRescale || texture.getContext) {
+                    continue;
+                }
+                var currentSize = texture.getSize();
+                var maxDimension = Math.max(currentSize.width, currentSize.height);
+                if (maxDimension > this.maximumSize) {
+                    texture.scale(this.step);
+                    allDone = false;
+                }
+            }
+            return allDone;
+        };
         return TextureOptimization;
     }(SceneOptimization));
     BABYLON.TextureOptimization = TextureOptimization;
+    /**
+     * Defines an optimization used to increase or decrease the rendering resolution
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var HardwareScalingOptimization = /** @class */ (function (_super) {
         __extends(HardwareScalingOptimization, _super);
-        function HardwareScalingOptimization(priority, maximumScale) {
+        /**
+         * Creates the HardwareScalingOptimization object
+         * @param priority priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumScale
+         * @param step
+         */
+        function HardwareScalingOptimization(priority, maximumScale, step) {
             if (priority === void 0) { priority = 0; }
             if (maximumScale === void 0) { maximumScale = 2; }
+            if (step === void 0) { step = 0.25; }
             var _this = _super.call(this, priority) || this;
             _this.priority = priority;
             _this.maximumScale = maximumScale;
-            _this._currentScale = 1;
-            _this.apply = function (scene) {
-                _this._currentScale++;
-                scene.getEngine().setHardwareScalingLevel(_this._currentScale);
-                return _this._currentScale >= _this.maximumScale;
-            };
+            _this.step = step;
+            _this._currentScale = -1;
+            _this._directionOffset = 1;
             return _this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        HardwareScalingOptimization.prototype.getDescription = function () {
+            return "Setting hardware scaling level to " + this._currentScale;
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        HardwareScalingOptimization.prototype.apply = function (scene) {
+            if (this._currentScale === -1) {
+                this._currentScale = scene.getEngine().getHardwareScalingLevel();
+                if (this._currentScale > this.maximumScale) {
+                    this._directionOffset = -1;
+                }
+            }
+            this._currentScale += this._directionOffset * this.step;
+            scene.getEngine().setHardwareScalingLevel(this._currentScale);
+            return this._directionOffset === 1 ? this._currentScale >= this.maximumScale : this._currentScale <= this.maximumScale;
+        };
+        ;
         return HardwareScalingOptimization;
     }(SceneOptimization));
     BABYLON.HardwareScalingOptimization = HardwareScalingOptimization;
+    /**
+     * Defines an optimization used to remove shadows
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var ShadowsOptimization = /** @class */ (function (_super) {
         __extends(ShadowsOptimization, _super);
         function ShadowsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.shadowsEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        ShadowsOptimization.prototype.getDescription = function () {
+            return "Turning shadows off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        ShadowsOptimization.prototype.apply = function (scene) {
+            scene.shadowsEnabled = false;
+            return true;
+        };
+        ;
         return ShadowsOptimization;
     }(SceneOptimization));
     BABYLON.ShadowsOptimization = ShadowsOptimization;
+    /**
+     * Defines an optimization used to turn post-processes off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var PostProcessesOptimization = /** @class */ (function (_super) {
         __extends(PostProcessesOptimization, _super);
         function PostProcessesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.postProcessesEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        PostProcessesOptimization.prototype.getDescription = function () {
+            return "Turning post-processes off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        PostProcessesOptimization.prototype.apply = function (scene) {
+            scene.postProcessesEnabled = false;
+            return true;
+        };
+        ;
         return PostProcessesOptimization;
     }(SceneOptimization));
     BABYLON.PostProcessesOptimization = PostProcessesOptimization;
+    /**
+     * Defines an optimization used to turn lens flares off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var LensFlaresOptimization = /** @class */ (function (_super) {
         __extends(LensFlaresOptimization, _super);
         function LensFlaresOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.lensFlaresEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        LensFlaresOptimization.prototype.getDescription = function () {
+            return "Turning lens flares off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        LensFlaresOptimization.prototype.apply = function (scene) {
+            scene.lensFlaresEnabled = false;
+            return true;
+        };
+        ;
         return LensFlaresOptimization;
     }(SceneOptimization));
     BABYLON.LensFlaresOptimization = LensFlaresOptimization;
+    /**
+     * Defines an optimization based on user defined callback.
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
+    var CustomOptimization = /** @class */ (function (_super) {
+        __extends(CustomOptimization, _super);
+        function CustomOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        CustomOptimization.prototype.getDescription = function () {
+            if (this.onGetDescription) {
+                return this.onGetDescription();
+            }
+            return "Running user defined callback";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        CustomOptimization.prototype.apply = function (scene) {
+            if (this.onApply) {
+                return this.onApply(scene);
+            }
+            return true;
+        };
+        ;
+        return CustomOptimization;
+    }(SceneOptimization));
+    BABYLON.CustomOptimization = CustomOptimization;
+    /**
+     * Defines an optimization used to turn particles off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var ParticlesOptimization = /** @class */ (function (_super) {
         __extends(ParticlesOptimization, _super);
         function ParticlesOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.particlesEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        ParticlesOptimization.prototype.getDescription = function () {
+            return "Turning particles off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        ParticlesOptimization.prototype.apply = function (scene) {
+            scene.particlesEnabled = false;
+            return true;
+        };
+        ;
         return ParticlesOptimization;
     }(SceneOptimization));
     BABYLON.ParticlesOptimization = ParticlesOptimization;
+    /**
+     * Defines an optimization used to turn render targets off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var RenderTargetsOptimization = /** @class */ (function (_super) {
         __extends(RenderTargetsOptimization, _super);
         function RenderTargetsOptimization() {
-            var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.apply = function (scene) {
-                scene.renderTargetsEnabled = false;
-                return true;
-            };
-            return _this;
+            return _super !== null && _super.apply(this, arguments) || this;
         }
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        RenderTargetsOptimization.prototype.getDescription = function () {
+            return "Turning render targets off";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        RenderTargetsOptimization.prototype.apply = function (scene) {
+            scene.renderTargetsEnabled = false;
+            return true;
+        };
+        ;
         return RenderTargetsOptimization;
     }(SceneOptimization));
     BABYLON.RenderTargetsOptimization = RenderTargetsOptimization;
+    /**
+     * Defines an optimization used to merge meshes with compatible materials
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var MergeMeshesOptimization = /** @class */ (function (_super) {
         __extends(MergeMeshesOptimization, _super);
         function MergeMeshesOptimization() {
@@ -76185,145 +76626,351 @@ var BABYLON;
                 }
                 return true;
             };
-            _this.apply = function (scene, updateSelectionTree) {
-                var globalPool = scene.meshes.slice(0);
-                var globalLength = globalPool.length;
-                for (var index = 0; index < globalLength; index++) {
-                    var currentPool = new Array();
-                    var current = globalPool[index];
-                    // Checks
-                    if (!_this._canBeMerged(current)) {
-                        continue;
-                    }
-                    currentPool.push(current);
-                    // Find compatible meshes
-                    for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
-                        var otherMesh = globalPool[subIndex];
-                        if (!_this._canBeMerged(otherMesh)) {
-                            continue;
-                        }
-                        if (otherMesh.material !== current.material) {
-                            continue;
-                        }
-                        if (otherMesh.checkCollisions !== current.checkCollisions) {
-                            continue;
-                        }
-                        currentPool.push(otherMesh);
-                        globalLength--;
-                        globalPool.splice(subIndex, 1);
-                        subIndex--;
-                    }
-                    if (currentPool.length < 2) {
-                        continue;
-                    }
-                    // Merge meshes
-                    BABYLON.Mesh.MergeMeshes(currentPool);
-                }
-                if (updateSelectionTree != undefined) {
-                    if (updateSelectionTree) {
-                        scene.createOrUpdateSelectionOctree();
-                    }
-                }
-                else if (MergeMeshesOptimization.UpdateSelectionTree) {
-                    scene.createOrUpdateSelectionOctree();
-                }
-                return true;
-            };
             return _this;
         }
         Object.defineProperty(MergeMeshesOptimization, "UpdateSelectionTree", {
+            /**
+             * Gets or sets a boolean which defines if optimization octree has to be updated
+             */
             get: function () {
                 return MergeMeshesOptimization._UpdateSelectionTree;
             },
+            /**
+             * Gets or sets a boolean which defines if optimization octree has to be updated
+             */
             set: function (value) {
                 MergeMeshesOptimization._UpdateSelectionTree = value;
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        MergeMeshesOptimization.prototype.getDescription = function () {
+            return "Merging similar meshes together";
+        };
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        MergeMeshesOptimization.prototype.apply = function (scene, updateSelectionTree) {
+            var globalPool = scene.meshes.slice(0);
+            var globalLength = globalPool.length;
+            for (var index = 0; index < globalLength; index++) {
+                var currentPool = new Array();
+                var current = globalPool[index];
+                // Checks
+                if (!this._canBeMerged(current)) {
+                    continue;
+                }
+                currentPool.push(current);
+                // Find compatible meshes
+                for (var subIndex = index + 1; subIndex < globalLength; subIndex++) {
+                    var otherMesh = globalPool[subIndex];
+                    if (!this._canBeMerged(otherMesh)) {
+                        continue;
+                    }
+                    if (otherMesh.material !== current.material) {
+                        continue;
+                    }
+                    if (otherMesh.checkCollisions !== current.checkCollisions) {
+                        continue;
+                    }
+                    currentPool.push(otherMesh);
+                    globalLength--;
+                    globalPool.splice(subIndex, 1);
+                    subIndex--;
+                }
+                if (currentPool.length < 2) {
+                    continue;
+                }
+                // Merge meshes
+                BABYLON.Mesh.MergeMeshes(currentPool);
+            }
+            if (updateSelectionTree != undefined) {
+                if (updateSelectionTree) {
+                    scene.createOrUpdateSelectionOctree();
+                }
+            }
+            else if (MergeMeshesOptimization.UpdateSelectionTree) {
+                scene.createOrUpdateSelectionOctree();
+            }
+            return true;
+        };
+        ;
         MergeMeshesOptimization._UpdateSelectionTree = false;
         return MergeMeshesOptimization;
     }(SceneOptimization));
     BABYLON.MergeMeshesOptimization = MergeMeshesOptimization;
-    // Options
+    /**
+     * Defines a list of options used by SceneOptimizer
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var SceneOptimizerOptions = /** @class */ (function () {
+        /**
+         * Creates a new list of options used by SceneOptimizer
+         * @param targetFrameRate defines the target frame rate to reach (60 by default)
+         * @param trackerDuration defines the interval between two checkes (2000ms by default)
+         */
         function SceneOptimizerOptions(targetFrameRate, trackerDuration) {
             if (targetFrameRate === void 0) { targetFrameRate = 60; }
             if (trackerDuration === void 0) { trackerDuration = 2000; }
             this.targetFrameRate = targetFrameRate;
             this.trackerDuration = trackerDuration;
+            /**
+             * Gets the list of optimizations to apply
+             */
             this.optimizations = new Array();
         }
+        /**
+         * Add a new optimization
+         * @param optimization defines the SceneOptimization to add to the list of active optimizations
+         */
+        SceneOptimizerOptions.prototype.addOptimization = function (optimization) {
+            this.optimizations.push(optimization);
+            return this;
+        };
+        /**
+         * Add a new custom optimization
+         * @param onApply defines the callback called to apply the custom optimization.
+         * @param onGetDescription defines the callback called to get the description attached with the optimization.
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         */
+        SceneOptimizerOptions.prototype.addCustomOptimization = function (onApply, onGetDescription, priority) {
+            if (priority === void 0) { priority = 0; }
+            var optimization = new CustomOptimization(priority);
+            optimization.onApply = onApply;
+            optimization.onGetDescription = onGetDescription;
+            this.optimizations.push(optimization);
+            return this;
+        };
+        /**
+         * Creates a list of pre-defined optimizations aimed to reduce the visual impact on the scene
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         SceneOptimizerOptions.LowDegradationAllowed = function (targetFrameRate) {
             var result = new SceneOptimizerOptions(targetFrameRate);
             var priority = 0;
-            result.optimizations.push(new MergeMeshesOptimization(priority));
-            result.optimizations.push(new ShadowsOptimization(priority));
-            result.optimizations.push(new LensFlaresOptimization(priority));
+            result.addOptimization(new MergeMeshesOptimization(priority));
+            result.addOptimization(new ShadowsOptimization(priority));
+            result.addOptimization(new LensFlaresOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesOptimization(priority));
-            result.optimizations.push(new ParticlesOptimization(priority));
+            result.addOptimization(new PostProcessesOptimization(priority));
+            result.addOptimization(new ParticlesOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new TextureOptimization(priority, 1024));
+            result.addOptimization(new TextureOptimization(priority, 1024));
             return result;
         };
+        /**
+         * Creates a list of pre-defined optimizations aimed to have a moderate impact on the scene visual
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         SceneOptimizerOptions.ModerateDegradationAllowed = function (targetFrameRate) {
             var result = new SceneOptimizerOptions(targetFrameRate);
             var priority = 0;
-            result.optimizations.push(new MergeMeshesOptimization(priority));
-            result.optimizations.push(new ShadowsOptimization(priority));
-            result.optimizations.push(new LensFlaresOptimization(priority));
+            result.addOptimization(new MergeMeshesOptimization(priority));
+            result.addOptimization(new ShadowsOptimization(priority));
+            result.addOptimization(new LensFlaresOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesOptimization(priority));
-            result.optimizations.push(new ParticlesOptimization(priority));
+            result.addOptimization(new PostProcessesOptimization(priority));
+            result.addOptimization(new ParticlesOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new TextureOptimization(priority, 512));
+            result.addOptimization(new TextureOptimization(priority, 512));
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsOptimization(priority));
+            result.addOptimization(new RenderTargetsOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingOptimization(priority, 2));
+            result.addOptimization(new HardwareScalingOptimization(priority, 2));
             return result;
         };
+        /**
+         * Creates a list of pre-defined optimizations aimed to have a big impact on the scene visual
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         SceneOptimizerOptions.HighDegradationAllowed = function (targetFrameRate) {
             var result = new SceneOptimizerOptions(targetFrameRate);
             var priority = 0;
-            result.optimizations.push(new MergeMeshesOptimization(priority));
-            result.optimizations.push(new ShadowsOptimization(priority));
-            result.optimizations.push(new LensFlaresOptimization(priority));
+            result.addOptimization(new MergeMeshesOptimization(priority));
+            result.addOptimization(new ShadowsOptimization(priority));
+            result.addOptimization(new LensFlaresOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new PostProcessesOptimization(priority));
-            result.optimizations.push(new ParticlesOptimization(priority));
+            result.addOptimization(new PostProcessesOptimization(priority));
+            result.addOptimization(new ParticlesOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new TextureOptimization(priority, 256));
+            result.addOptimization(new TextureOptimization(priority, 256));
             // Next priority
             priority++;
-            result.optimizations.push(new RenderTargetsOptimization(priority));
+            result.addOptimization(new RenderTargetsOptimization(priority));
             // Next priority
             priority++;
-            result.optimizations.push(new HardwareScalingOptimization(priority, 4));
+            result.addOptimization(new HardwareScalingOptimization(priority, 4));
             return result;
         };
         return SceneOptimizerOptions;
     }());
     BABYLON.SceneOptimizerOptions = SceneOptimizerOptions;
-    // Scene optimizer tool
+    /**
+     * Class used to run optimizations in order to reach a target frame rate
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     var SceneOptimizer = /** @class */ (function () {
-        function SceneOptimizer() {
-        }
-        SceneOptimizer._CheckCurrentState = function (scene, options, currentPriorityLevel, onSuccess, onFailure) {
-            // TODO: add an epsilon
-            if (scene.getEngine().getFps() >= options.targetFrameRate) {
-                if (onSuccess) {
-                    onSuccess();
+        /**
+         * Creates a new SceneOptimizer
+         * @param scene defines the scene to work on
+         * @param options defines the options to use with the SceneOptimizer
+         * @param autoGeneratePriorities defines if priorities must be generated and not read from SceneOptimization property (true by default)
+         */
+        function SceneOptimizer(scene, options, autoGeneratePriorities) {
+            if (autoGeneratePriorities === void 0) { autoGeneratePriorities = true; }
+            var _this = this;
+            this._isRunning = false;
+            this._currentPriorityLevel = 0;
+            this._targetFrameRate = 60;
+            this._trackerDuration = 2000;
+            this._currentFrameRate = 0;
+            /**
+             * Defines an observable called when the optimizer reaches the target frame rate
+             */
+            this.onSuccessObservable = new BABYLON.Observable();
+            /**
+             * Defines an observable called when the optimizer enables an optimization
+             */
+            this.onNewOptimizationAppliedObservable = new BABYLON.Observable();
+            /**
+             * Defines an observable called when the optimizer is not able to reach the target frame rate
+             */
+            this.onFailureObservable = new BABYLON.Observable();
+            if (!options) {
+                this._options = new SceneOptimizerOptions();
+            }
+            else {
+                this._options = options;
+            }
+            if (this._options.targetFrameRate) {
+                this._targetFrameRate = this._options.targetFrameRate;
+            }
+            if (this._options.trackerDuration) {
+                this._trackerDuration = this._options.trackerDuration;
+            }
+            if (autoGeneratePriorities) {
+                var priority = 0;
+                for (var _i = 0, _a = this._options.optimizations; _i < _a.length; _i++) {
+                    var optim = _a[_i];
+                    optim.priority = priority++;
                 }
+            }
+            this._scene = scene || BABYLON.Engine.LastCreatedScene;
+            this._sceneDisposeObserver = this._scene.onDisposeObservable.add(function () {
+                _this._sceneDisposeObserver = null;
+                _this.dispose();
+            });
+        }
+        Object.defineProperty(SceneOptimizer.prototype, "currentPriorityLevel", {
+            /**
+             * Gets the current priority level (0 at start)
+             */
+            get: function () {
+                return this._currentPriorityLevel;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "currentFrameRate", {
+            /**
+             * Gets the current frame rate checked by the SceneOptimizer
+             */
+            get: function () {
+                return this._currentFrameRate;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "targetFrameRate", {
+            /**
+             * Gets or sets the current target frame rate (60 by default)
+             */
+            get: function () {
+                return this._targetFrameRate;
+            },
+            /**
+             * Gets or sets the current target frame rate (60 by default)
+             */
+            set: function (value) {
+                this._targetFrameRate = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "trackerDuration", {
+            /**
+             * Gets or sets the current interval between two checks (every 2000ms by default)
+             */
+            get: function () {
+                return this._trackerDuration;
+            },
+            /**
+             * Gets or sets the current interval between two checks (every 2000ms by default)
+             */
+            set: function (value) {
+                this._trackerDuration = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(SceneOptimizer.prototype, "optimizations", {
+            /**
+             * Gets the list of active optimizations
+             */
+            get: function () {
+                return this._options.optimizations;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Stops the current optimizer
+         */
+        SceneOptimizer.prototype.stop = function () {
+            this._isRunning = false;
+        };
+        SceneOptimizer.prototype.reset = function () {
+            this._currentPriorityLevel = 0;
+        };
+        SceneOptimizer.prototype.start = function () {
+            var _this = this;
+            if (this._isRunning) {
+                return;
+            }
+            this._isRunning = true;
+            // Let's wait for the scene to be ready before running our check
+            this._scene.executeWhenReady(function () {
+                setTimeout(function () {
+                    _this._checkCurrentState();
+                }, _this._trackerDuration);
+            });
+        };
+        SceneOptimizer.prototype._checkCurrentState = function () {
+            var _this = this;
+            if (!this._isRunning) {
+                return;
+            }
+            var scene = this._scene;
+            var options = this._options;
+            this._currentFrameRate = Math.round(scene.getEngine().getFps());
+            if (this._currentFrameRate >= this._targetFrameRate) {
+                this._isRunning = false;
+                this.onSuccessObservable.notifyObservers(this);
                 return;
             }
             // Apply current level of optimizations
@@ -76331,39 +76978,62 @@ var BABYLON;
             var noOptimizationApplied = true;
             for (var index = 0; index < options.optimizations.length; index++) {
                 var optimization = options.optimizations[index];
-                if (optimization.priority === currentPriorityLevel) {
+                if (optimization.priority === this._currentPriorityLevel) {
                     noOptimizationApplied = false;
                     allDone = allDone && optimization.apply(scene);
+                    this.onNewOptimizationAppliedObservable.notifyObservers(optimization);
                 }
             }
             // If no optimization was applied, this is a failure :(
             if (noOptimizationApplied) {
-                if (onFailure) {
-                    onFailure();
-                }
+                this._isRunning = false;
+                this.onFailureObservable.notifyObservers(this);
                 return;
             }
             // If all optimizations were done, move to next level
             if (allDone) {
-                currentPriorityLevel++;
+                this._currentPriorityLevel++;
             }
             // Let's the system running for a specific amount of time before checking FPS
             scene.executeWhenReady(function () {
                 setTimeout(function () {
-                    SceneOptimizer._CheckCurrentState(scene, options, currentPriorityLevel, onSuccess, onFailure);
-                }, options.trackerDuration);
+                    _this._checkCurrentState();
+                }, _this._trackerDuration);
             });
         };
-        SceneOptimizer.OptimizeAsync = function (scene, options, onSuccess, onFailure) {
-            if (!options) {
-                options = SceneOptimizerOptions.ModerateDegradationAllowed();
+        /**
+         * Release all resources
+         */
+        SceneOptimizer.prototype.dispose = function () {
+            this.stop();
+            this.onSuccessObservable.clear();
+            this.onFailureObservable.clear();
+            this.onNewOptimizationAppliedObservable.clear();
+            if (this._sceneDisposeObserver) {
+                this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
             }
-            // Let's the system running for a specific amount of time before checking FPS
-            scene.executeWhenReady(function () {
-                setTimeout(function () {
-                    SceneOptimizer._CheckCurrentState(scene, options, 0, onSuccess, onFailure);
-                }, options.trackerDuration);
-            });
+        };
+        /**
+         * Helper function to create a SceneOptimizer with one single line of code
+         * @param scene defines the scene to work on
+         * @param options defines the options to use with the SceneOptimizer
+         * @param onSuccess defines a callback to call on success
+         * @param onFailure defines a callback to call on failure
+         */
+        SceneOptimizer.OptimizeAsync = function (scene, options, onSuccess, onFailure) {
+            var optimizer = new SceneOptimizer(scene, options || SceneOptimizerOptions.ModerateDegradationAllowed(), false);
+            if (onSuccess) {
+                optimizer.onSuccessObservable.add(function () {
+                    onSuccess();
+                });
+            }
+            if (onFailure) {
+                optimizer.onFailureObservable.add(function () {
+                    onFailure();
+                });
+            }
+            optimizer.start();
+            return optimizer;
         };
         return SceneOptimizer;
     }());
@@ -77039,7 +77709,7 @@ var BABYLON;
                 if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
                     emissiveTexture = material.emissiveTexture;
                 }
-                if (_this.isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
+                if (_this._isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
                     engine.enableEffect(_this._glowMapGenerationEffect);
                     mesh._bind(subMesh, _this._glowMapGenerationEffect, BABYLON.Material.TriangleFillMode);
                     _this._glowMapGenerationEffect.setMatrix("viewProjection", scene.getTransformMatrix());
@@ -77109,7 +77779,27 @@ var BABYLON;
          * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        HighlightLayer.prototype.isReady = function (subMesh, useInstances, emissiveTexture) {
+        HighlightLayer.prototype.isReady = function (subMesh, useInstances) {
+            var material = subMesh.getMaterial();
+            var mesh = subMesh.getRenderingMesh();
+            if (!material || !mesh || !this._meshes) {
+                return false;
+            }
+            var emissiveTexture = null;
+            var highlightLayerMesh = this._meshes[mesh.uniqueId];
+            if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
+                emissiveTexture = material.emissiveTexture;
+            }
+            return this._isReady(subMesh, useInstances, emissiveTexture);
+        };
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        HighlightLayer.prototype._isReady = function (subMesh, useInstances, emissiveTexture) {
             var material = subMesh.getMaterial();
             if (!material) {
                 return false;
@@ -77292,6 +77982,17 @@ var BABYLON;
                 }
             }
             this._excludedMeshes[mesh.uniqueId] = null;
+        };
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        HighlightLayer.prototype.hasMesh = function (mesh) {
+            if (!this._meshes) {
+                return false;
+            }
+            return this._meshes[mesh.uniqueId] !== undefined && this._meshes[mesh.uniqueId] !== null;
         };
         /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.

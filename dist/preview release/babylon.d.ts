@@ -3,6 +3,30 @@
 declare module 'babylonjs' { 
     export = BABYLON; 
 }
+declare module BABYLON {
+    class AssetContainer {
+        scene: Scene;
+        cameras: Camera[];
+        lights: Light[];
+        meshes: AbstractMesh[];
+        skeletons: Skeleton[];
+        particleSystems: ParticleSystem[];
+        animations: Animation[];
+        multiMaterials: MultiMaterial[];
+        materials: Material[];
+        morphTargetManagers: MorphTargetManager[];
+        geometries: Geometry[];
+        transformNodes: TransformNode[];
+        lensFlareSystems: LensFlareSystem[];
+        shadowGenerators: ShadowGenerator[];
+        actionManagers: ActionManager[];
+        sounds: Sound[];
+        constructor(scene: Scene);
+        addAllToScene(): void;
+        removeAllFromScene(): void;
+    }
+}
+
 interface Window {
     mozIndexedDB: IDBFactory;
     webkitIndexedDB: IDBFactory;
@@ -13,7 +37,6 @@ interface Window {
     WebGLRenderingContext: WebGLRenderingContext;
     MSGesture: MSGesture;
     CANNON: any;
-    SIMD: any;
     AudioContext: AudioContext;
     webkitAudioContext: AudioContext;
     PointerEvent: any;
@@ -118,24 +141,6 @@ interface Math {
     fround(x: number): number;
     imul(a: number, b: number): number;
 }
-interface SIMDglobal {
-    SIMD: SIMD;
-    Math: Math;
-    Uint8Array: Uint8ArrayConstructor;
-    Float32Array: Float32ArrayConstructor;
-}
-interface SIMD {
-    Float32x4: SIMD.Float32x4Constructor;
-    Int32x4: SIMD.Int32x4Constructor;
-    Int16x8: SIMD.Int16x8Constructor;
-    Int8x16: SIMD.Int8x16Constructor;
-    Uint32x4: SIMD.Uint32x4Constructor;
-    Uint16x8: SIMD.Uint16x8Constructor;
-    Uint8x16: SIMD.Uint8x16Constructor;
-    Bool32x4: SIMD.Bool32x4Constructor;
-    Bool16x8: SIMD.Bool16x8Constructor;
-    Bool8x16: SIMD.Bool8x16Constructor;
-}
 interface GamepadPose {
     hasOrientation: boolean;
     hasPosition: boolean;
@@ -145,391 +150,6 @@ interface GamepadPose {
     orientation?: Float32Array;
     angularVelocity?: Float32Array;
     angularAcceleration?: Float32Array;
-}
-declare namespace SIMD {
-    interface Float32x4 {
-        constructor: Float32x4Constructor;
-        valueOf(): Float32x4;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Float32x4Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number): Float32x4;
-        prototype: Float32x4;
-        extractLane(simd: SIMD.Float32x4, lane: number): number;
-        swizzle(a: SIMD.Float32x4, l1: number, l2: number, l3: number, l4: number): SIMD.Float32x4;
-        shuffle(a: SIMD.Float32x4, b: SIMD.Float32x4, l1: number, l2: number, l3: number, l4: number): SIMD.Float32x4;
-        check(a: SIMD.Float32x4): SIMD.Float32x4;
-        splat(n: number): SIMD.Float32x4;
-        replaceLane(simd: SIMD.Float32x4, lane: number, value: number): SIMD.Float32x4;
-        select(selector: SIMD.Bool32x4, a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        equal(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Bool32x4;
-        notEqual(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Bool32x4;
-        lessThan(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Bool32x4;
-        lessThanOrEqual(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Bool32x4;
-        greaterThan(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Bool32x4;
-        greaterThanOrEqual(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Bool32x4;
-        add(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        sub(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        mul(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        div(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        neg(a: SIMD.Float32x4): SIMD.Float32x4;
-        abs(a: SIMD.Float32x4): SIMD.Float32x4;
-        min(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        max(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        minNum(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        maxNum(a: SIMD.Float32x4, b: SIMD.Float32x4): SIMD.Float32x4;
-        reciprocalApproximation(a: SIMD.Float32x4): SIMD.Float32x4;
-        reciprocalSqrtApproximation(a: SIMD.Float32x4): SIMD.Float32x4;
-        sqrt(a: SIMD.Float32x4): SIMD.Float32x4;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Float32x4;
-        load1(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Float32x4;
-        load2(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Float32x4;
-        load3(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Float32x4;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Float32x4): SIMD.Float32x4;
-        store1(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Float32x4): SIMD.Float32x4;
-        store2(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Float32x4): SIMD.Float32x4;
-        store3(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Float32x4): SIMD.Float32x4;
-        fromInt32x4(value: SIMD.Int32x4): SIMD.Float32x4;
-        fromUint32x4(value: SIMD.Uint32x4): SIMD.Float32x4;
-        fromInt32x4Bits(value: SIMD.Int32x4): SIMD.Float32x4;
-        fromInt16x8Bits(value: SIMD.Int16x8): SIMD.Float32x4;
-        fromInt8x16Bits(value: SIMD.Int8x16): SIMD.Float32x4;
-        fromUint32x4Bits(value: SIMD.Uint32x4): SIMD.Float32x4;
-        fromUint16x8Bits(value: SIMD.Uint16x8): SIMD.Float32x4;
-        fromUint8x16Bits(value: SIMD.Uint8x16): SIMD.Float32x4;
-    }
-    interface Int32x4 {
-        constructor: Int32x4Constructor;
-        valueOf(): Int32x4;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Int32x4Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number): Int32x4;
-        prototype: Int32x4;
-        extractLane(simd: SIMD.Int32x4, lane: number): number;
-        swizzle(a: SIMD.Int32x4, l1: number, l2: number, l3: number, l4: number): SIMD.Int32x4;
-        shuffle(a: SIMD.Int32x4, b: SIMD.Int32x4, l1: number, l2: number, l3: number, l4: number): SIMD.Int32x4;
-        check(a: SIMD.Int32x4): SIMD.Int32x4;
-        splat(n: number): SIMD.Int32x4;
-        replaceLane(simd: SIMD.Int32x4, lane: number, value: number): SIMD.Int32x4;
-        select(selector: SIMD.Bool32x4, a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        equal(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Bool32x4;
-        notEqual(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Bool32x4;
-        lessThan(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Bool32x4;
-        lessThanOrEqual(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Bool32x4;
-        greaterThan(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Bool32x4;
-        greaterThanOrEqual(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Bool32x4;
-        and(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        or(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        xor(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        not(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        add(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        sub(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        mul(a: SIMD.Int32x4, b: SIMD.Int32x4): SIMD.Int32x4;
-        neg(a: SIMD.Int32x4): SIMD.Int32x4;
-        shiftLeftByScalar(a: SIMD.Int32x4, bits: number): SIMD.Int32x4;
-        shiftRightByScalar(a: SIMD.Int32x4, bits: number): SIMD.Int32x4;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Int32x4;
-        load1(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Int32x4;
-        load2(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Int32x4;
-        load3(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Int32x4;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Int32x4): SIMD.Int32x4;
-        store1(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Int32x4): SIMD.Int32x4;
-        store2(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Int32x4): SIMD.Int32x4;
-        store3(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Int32x4): SIMD.Int32x4;
-        fromFloat32x4(value: SIMD.Float32x4): SIMD.Int32x4;
-        fromUint32x4(value: SIMD.Uint32x4): SIMD.Int32x4;
-        fromFloat32x4Bits(value: SIMD.Float32x4): SIMD.Int32x4;
-        fromInt16x8Bits(value: SIMD.Int16x8): SIMD.Int32x4;
-        fromInt8x16Bits(value: SIMD.Int8x16): SIMD.Int32x4;
-        fromUint32x4Bits(value: SIMD.Uint32x4): SIMD.Int32x4;
-        fromUint16x8Bits(value: SIMD.Uint16x8): SIMD.Int32x4;
-        fromUint8x16Bits(value: SIMD.Uint8x16): SIMD.Int32x4;
-    }
-    interface Int16x8 {
-        constructor: Int16x8Constructor;
-        valueOf(): Int16x8;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Int16x8Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number, s4?: number, s5?: number, s6?: number, s7?: number): Int16x8;
-        prototype: Int16x8;
-        extractLane(simd: SIMD.Int16x8, lane: number): number;
-        swizzle(a: SIMD.Int16x8, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number): SIMD.Int16x8;
-        shuffle(a: SIMD.Int16x8, b: SIMD.Int16x8, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number): SIMD.Int16x8;
-        check(a: SIMD.Int16x8): SIMD.Int16x8;
-        splat(n: number): SIMD.Int16x8;
-        replaceLane(simd: SIMD.Int16x8, lane: number, value: number): SIMD.Int16x8;
-        select(selector: SIMD.Bool16x8, a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        equal(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Bool16x8;
-        notEqual(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Bool16x8;
-        lessThan(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Bool16x8;
-        lessThanOrEqual(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Bool16x8;
-        greaterThan(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Bool16x8;
-        greaterThanOrEqual(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Bool16x8;
-        and(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        or(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        xor(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        not(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        add(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        sub(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        mul(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        neg(a: SIMD.Int16x8): SIMD.Int16x8;
-        shiftLeftByScalar(a: SIMD.Int16x8, bits: number): SIMD.Int16x8;
-        shiftRightByScalar(a: SIMD.Int16x8, bits: number): SIMD.Int16x8;
-        addSaturate(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        subSaturate(a: SIMD.Int16x8, b: SIMD.Int16x8): SIMD.Int16x8;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Int16x8;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Int16x8): SIMD.Int16x8;
-        fromUint16x8(value: SIMD.Uint16x8): SIMD.Int16x8;
-        fromFloat32x4Bits(value: SIMD.Float32x4): SIMD.Int16x8;
-        fromInt32x4Bits(value: SIMD.Int32x4): SIMD.Int16x8;
-        fromInt8x16Bits(value: SIMD.Int8x16): SIMD.Int16x8;
-        fromUint32x4Bits(value: SIMD.Uint32x4): SIMD.Int16x8;
-        fromUint16x8Bits(value: SIMD.Uint16x8): SIMD.Int16x8;
-        fromUint8x16Bits(value: SIMD.Uint8x16): SIMD.Int16x8;
-    }
-    interface Int8x16 {
-        constructor: Int8x16Constructor;
-        valueOf(): Int8x16;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Int8x16Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number, s4?: number, s5?: number, s6?: number, s7?: number, s8?: number, s9?: number, s10?: number, s11?: number, s12?: number, s13?: number, s14?: number, s15?: number): Int8x16;
-        prototype: Int8x16;
-        extractLane(simd: SIMD.Int8x16, lane: number): number;
-        swizzle(a: SIMD.Int8x16, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number, l9: number, l10: number, l11: number, l12: number, l13: number, l14: number, l15: number, l16: number): SIMD.Int8x16;
-        shuffle(a: SIMD.Int8x16, b: SIMD.Int8x16, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number, l9: number, l10: number, l11: number, l12: number, l13: number, l14: number, l15: number, l16: number): SIMD.Int8x16;
-        check(a: SIMD.Int8x16): SIMD.Int8x16;
-        splat(n: number): SIMD.Int8x16;
-        replaceLane(simd: SIMD.Int8x16, lane: number, value: number): SIMD.Int8x16;
-        select(selector: SIMD.Bool8x16, a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        equal(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Bool8x16;
-        notEqual(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Bool8x16;
-        lessThan(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Bool8x16;
-        lessThanOrEqual(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Bool8x16;
-        greaterThan(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Bool8x16;
-        greaterThanOrEqual(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Bool8x16;
-        and(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        or(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        xor(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        not(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        add(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        sub(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        mul(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        neg(a: SIMD.Int8x16): SIMD.Int8x16;
-        shiftLeftByScalar(a: SIMD.Int8x16, bits: number): SIMD.Int8x16;
-        shiftRightByScalar(a: SIMD.Int8x16, bits: number): SIMD.Int8x16;
-        addSaturate(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        subSaturate(a: SIMD.Int8x16, b: SIMD.Int8x16): SIMD.Int8x16;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Int8x16;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Int8x16): SIMD.Int8x16;
-        fromUint8x16(value: SIMD.Uint8x16): SIMD.Int8x16;
-        fromFloat32x4Bits(value: SIMD.Float32x4): SIMD.Int8x16;
-        fromInt32x4Bits(value: SIMD.Int32x4): SIMD.Int8x16;
-        fromInt16x8Bits(value: SIMD.Int16x8): SIMD.Int8x16;
-        fromUint32x4Bits(value: SIMD.Uint32x4): SIMD.Int8x16;
-        fromUint16x8Bits(value: SIMD.Uint16x8): SIMD.Int8x16;
-        fromUint8x16Bits(value: SIMD.Uint8x16): SIMD.Int8x16;
-    }
-    interface Uint32x4 {
-        constructor: Uint32x4Constructor;
-        valueOf(): Uint32x4;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Uint32x4Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number): Uint32x4;
-        prototype: Uint32x4;
-        extractLane(simd: SIMD.Uint32x4, lane: number): number;
-        swizzle(a: SIMD.Uint32x4, l1: number, l2: number, l3: number, l4: number): SIMD.Uint32x4;
-        shuffle(a: SIMD.Uint32x4, b: SIMD.Uint32x4, l1: number, l2: number, l3: number, l4: number): SIMD.Uint32x4;
-        check(a: SIMD.Uint32x4): SIMD.Uint32x4;
-        splat(n: number): SIMD.Uint32x4;
-        replaceLane(simd: SIMD.Uint32x4, lane: number, value: number): SIMD.Uint32x4;
-        select(selector: SIMD.Bool32x4, a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        equal(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Bool32x4;
-        notEqual(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Bool32x4;
-        lessThan(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Bool32x4;
-        lessThanOrEqual(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Bool32x4;
-        greaterThan(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Bool32x4;
-        greaterThanOrEqual(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Bool32x4;
-        and(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        or(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        xor(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        not(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        add(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        sub(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        mul(a: SIMD.Uint32x4, b: SIMD.Uint32x4): SIMD.Uint32x4;
-        shiftLeftByScalar(a: SIMD.Uint32x4, bits: number): SIMD.Uint32x4;
-        shiftRightByScalar(a: SIMD.Uint32x4, bits: number): SIMD.Uint32x4;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Uint32x4;
-        load1(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Uint32x4;
-        load2(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Uint32x4;
-        load3(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Uint32x4;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Uint32x4): SIMD.Uint32x4;
-        store1(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Uint32x4): SIMD.Uint32x4;
-        store2(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Uint32x4): SIMD.Uint32x4;
-        store3(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Uint32x4): SIMD.Uint32x4;
-        fromFloat32x4(value: SIMD.Float32x4): SIMD.Uint32x4;
-        fromInt32x4(value: SIMD.Int32x4): SIMD.Uint32x4;
-        fromFloat32x4Bits(value: SIMD.Float32x4): SIMD.Uint32x4;
-        fromInt32x4Bits(value: SIMD.Int32x4): SIMD.Uint32x4;
-        fromInt16x8Bits(value: SIMD.Int16x8): SIMD.Uint32x4;
-        fromInt8x16Bits(value: SIMD.Int8x16): SIMD.Uint32x4;
-        fromUint16x8Bits(value: SIMD.Uint16x8): SIMD.Uint32x4;
-        fromUint8x16Bits(value: SIMD.Uint8x16): SIMD.Uint32x4;
-    }
-    interface Uint16x8 {
-        constructor: Uint16x8Constructor;
-        valueOf(): Uint16x8;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Uint16x8Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number, s4?: number, s5?: number, s6?: number, s7?: number): Uint16x8;
-        prototype: Uint16x8;
-        extractLane(simd: SIMD.Uint16x8, lane: number): number;
-        swizzle(a: SIMD.Uint16x8, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number): SIMD.Uint16x8;
-        shuffle(a: SIMD.Uint16x8, b: SIMD.Uint16x8, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number): SIMD.Uint16x8;
-        check(a: SIMD.Uint16x8): SIMD.Uint16x8;
-        splat(n: number): SIMD.Uint16x8;
-        replaceLane(simd: SIMD.Uint16x8, lane: number, value: number): SIMD.Uint16x8;
-        select(selector: SIMD.Bool16x8, a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        equal(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Bool16x8;
-        notEqual(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Bool16x8;
-        lessThan(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Bool16x8;
-        lessThanOrEqual(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Bool16x8;
-        greaterThan(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Bool16x8;
-        greaterThanOrEqual(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Bool16x8;
-        and(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        or(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        xor(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        not(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        add(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        sub(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        mul(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        shiftLeftByScalar(a: SIMD.Uint16x8, bits: number): SIMD.Uint16x8;
-        shiftRightByScalar(a: SIMD.Uint16x8, bits: number): SIMD.Uint16x8;
-        addSaturate(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        subSaturate(a: SIMD.Uint16x8, b: SIMD.Uint16x8): SIMD.Uint16x8;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Uint16x8;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Uint16x8): SIMD.Uint16x8;
-        fromInt16x8(value: SIMD.Int16x8): SIMD.Uint16x8;
-        fromFloat32x4Bits(value: SIMD.Float32x4): SIMD.Uint16x8;
-        fromInt32x4Bits(value: SIMD.Int32x4): SIMD.Uint16x8;
-        fromInt16x8Bits(value: SIMD.Int16x8): SIMD.Uint16x8;
-        fromInt8x16Bits(value: SIMD.Int8x16): SIMD.Uint16x8;
-        fromUint32x4Bits(value: SIMD.Uint32x4): SIMD.Uint16x8;
-        fromUint8x16Bits(value: SIMD.Uint8x16): SIMD.Uint16x8;
-    }
-    interface Uint8x16 {
-        constructor: Uint8x16Constructor;
-        valueOf(): Uint8x16;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Uint8x16Constructor {
-        (s0?: number, s1?: number, s2?: number, s3?: number, s4?: number, s5?: number, s6?: number, s7?: number, s8?: number, s9?: number, s10?: number, s11?: number, s12?: number, s13?: number, s14?: number, s15?: number): Uint8x16;
-        prototype: Uint8x16;
-        extractLane(simd: SIMD.Uint8x16, lane: number): number;
-        swizzle(a: SIMD.Uint8x16, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number, l9: number, l10: number, l11: number, l12: number, l13: number, l14: number, l15: number, l16: number): SIMD.Uint8x16;
-        shuffle(a: SIMD.Uint8x16, b: SIMD.Uint8x16, l1: number, l2: number, l3: number, l4: number, l5: number, l6: number, l7: number, l8: number, l9: number, l10: number, l11: number, l12: number, l13: number, l14: number, l15: number, l16: number): SIMD.Uint8x16;
-        check(a: SIMD.Uint8x16): SIMD.Uint8x16;
-        splat(n: number): SIMD.Uint8x16;
-        replaceLane(simd: SIMD.Uint8x16, lane: number, value: number): SIMD.Uint8x16;
-        select(selector: SIMD.Bool8x16, a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        equal(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Bool8x16;
-        notEqual(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Bool8x16;
-        lessThan(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Bool8x16;
-        lessThanOrEqual(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Bool8x16;
-        greaterThan(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Bool8x16;
-        greaterThanOrEqual(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Bool8x16;
-        and(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        or(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        xor(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        not(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        add(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        sub(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        mul(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        shiftLeftByScalar(a: SIMD.Uint8x16, bits: number): SIMD.Uint8x16;
-        shiftRightByScalar(a: SIMD.Uint8x16, bits: number): SIMD.Uint8x16;
-        addSaturate(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        subSaturate(a: SIMD.Uint8x16, b: SIMD.Uint8x16): SIMD.Uint8x16;
-        load(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number): SIMD.Uint8x16;
-        store(tarray: Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array, index: number, value: SIMD.Uint8x16): SIMD.Uint8x16;
-        fromInt8x16(value: SIMD.Int8x16): SIMD.Uint8x16;
-        fromFloat32x4Bits(value: SIMD.Float32x4): SIMD.Uint8x16;
-        fromInt32x4Bits(value: SIMD.Int32x4): SIMD.Uint8x16;
-        fromInt16x8Bits(value: SIMD.Int16x8): SIMD.Uint8x16;
-        fromInt8x16Bits(value: SIMD.Int8x16): SIMD.Uint8x16;
-        fromUint32x4Bits(value: SIMD.Uint32x4): SIMD.Uint8x16;
-        fromUint16x8Bits(value: SIMD.Uint16x8): SIMD.Uint8x16;
-    }
-    interface Bool32x4 {
-        constructor: Bool32x4Constructor;
-        valueOf(): Bool32x4;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Bool32x4Constructor {
-        (s0?: boolean, s1?: boolean, s2?: boolean, s3?: boolean): Bool32x4;
-        prototype: Bool32x4;
-        extractLane(simd: SIMD.Bool32x4, lane: number): boolean;
-        check(a: SIMD.Bool32x4): SIMD.Bool32x4;
-        splat(n: boolean): SIMD.Bool32x4;
-        replaceLane(simd: SIMD.Bool32x4, lane: number, value: boolean): SIMD.Bool32x4;
-        allTrue(a: SIMD.Bool32x4): boolean;
-        anyTrue(a: SIMD.Bool32x4): boolean;
-        and(a: SIMD.Bool32x4, b: SIMD.Bool32x4): SIMD.Bool32x4;
-        or(a: SIMD.Bool32x4, b: SIMD.Bool32x4): SIMD.Bool32x4;
-        xor(a: SIMD.Bool32x4, b: SIMD.Bool32x4): SIMD.Bool32x4;
-        not(a: SIMD.Bool32x4, b: SIMD.Bool32x4): SIMD.Bool32x4;
-    }
-    interface Bool16x8 {
-        constructor: Bool16x8Constructor;
-        valueOf(): Bool16x8;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Bool16x8Constructor {
-        (s0?: boolean, s1?: boolean, s2?: boolean, s3?: boolean, s4?: boolean, s5?: boolean, s6?: boolean, s7?: boolean): Bool16x8;
-        prototype: Bool16x8;
-        extractLane(simd: SIMD.Bool16x8, lane: number): boolean;
-        check(a: SIMD.Bool16x8): SIMD.Bool16x8;
-        splat(n: boolean): SIMD.Bool16x8;
-        replaceLane(simd: SIMD.Bool16x8, lane: number, value: boolean): SIMD.Bool16x8;
-        allTrue(a: SIMD.Bool16x8): boolean;
-        anyTrue(a: SIMD.Bool16x8): boolean;
-        and(a: SIMD.Bool16x8, b: SIMD.Bool16x8): SIMD.Bool16x8;
-        or(a: SIMD.Bool16x8, b: SIMD.Bool16x8): SIMD.Bool16x8;
-        xor(a: SIMD.Bool16x8, b: SIMD.Bool16x8): SIMD.Bool16x8;
-        not(a: SIMD.Bool16x8, b: SIMD.Bool16x8): SIMD.Bool16x8;
-    }
-    interface Bool8x16 {
-        constructor: Bool8x16Constructor;
-        valueOf(): Bool8x16;
-        toLocaleString(): string;
-        toString(): string;
-    }
-    interface Bool8x16Constructor {
-        (s0?: boolean, s1?: boolean, s2?: boolean, s3?: boolean, s4?: boolean, s5?: boolean, s6?: boolean, s7?: boolean, s8?: boolean, s9?: boolean, s10?: boolean, s11?: boolean, s12?: boolean, s13?: boolean, s14?: boolean, s15?: boolean): Bool8x16;
-        prototype: Bool8x16;
-        extractLane(simd: SIMD.Bool8x16, lane: number): boolean;
-        check(a: SIMD.Bool8x16): SIMD.Bool8x16;
-        splat(n: boolean): SIMD.Bool8x16;
-        replaceLane(simd: SIMD.Bool8x16, lane: number, value: boolean): SIMD.Bool8x16;
-        allTrue(a: SIMD.Bool8x16): boolean;
-        anyTrue(a: SIMD.Bool8x16): boolean;
-        and(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
-        or(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
-        xor(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
-        not(a: SIMD.Bool8x16, b: SIMD.Bool8x16): SIMD.Bool8x16;
-    }
 }
 interface EXT_disjoint_timer_query {
     QUERY_COUNTER_BITS_EXT: number;
@@ -1306,6 +926,11 @@ declare module BABYLON {
         */
         attachControl(attachUp?: boolean, attachDown?: boolean, attachMove?: boolean): void;
         detachControl(): void;
+        /**
+         * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
+         * Delay loaded resources are not taking in account
+         * @return true if all required resources are ready
+         */
         isReady(): boolean;
         resetCachedMaterial(): void;
         registerBeforeRender(func: () => void): void;
@@ -1399,9 +1024,24 @@ declare module BABYLON {
         removeMorphTargetManager(toRemove: MorphTargetManager): number;
         removeLight(toRemove: Light): number;
         removeCamera(toRemove: Camera): number;
+        removeParticleSystem(toRemove: ParticleSystem): number;
+        removeAnimation(toRemove: Animation): number;
+        removeMultiMaterial(toRemove: MultiMaterial): number;
+        removeMaterial(toRemove: Material): number;
+        removeLensFlareSystem(toRemove: LensFlareSystem): number;
+        removeActionManager(toRemove: ActionManager): number;
         addLight(newLight: Light): void;
         sortLightsByPriority(): void;
         addCamera(newCamera: Camera): void;
+        addSkeleton(newSkeleton: Skeleton): void;
+        addParticleSystem(newParticleSystem: ParticleSystem): void;
+        addAnimation(newAnimation: Animation): void;
+        addMultiMaterial(newMultiMaterial: MultiMaterial): void;
+        addMaterial(newMaterial: Material): void;
+        addMorphTargetManager(newMorphTargetManager: MorphTargetManager): void;
+        addGeometry(newGeometrie: Geometry): void;
+        addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void;
+        addActionManager(newActionManager: ActionManager): void;
         /**
          * Switch active camera
          * @param {Camera} newCamera - new active camera
@@ -1738,393 +1378,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Animatable {
-        target: any;
-        fromFrame: number;
-        toFrame: number;
-        loopAnimation: boolean;
-        onAnimationEnd: (() => void) | null | undefined;
-        private _localDelayOffset;
-        private _pausedDelay;
-        private _runtimeAnimations;
-        private _paused;
-        private _scene;
-        private _speedRatio;
-        animationStarted: boolean;
-        speedRatio: number;
-        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: (() => void) | null | undefined, animations?: any);
-        getAnimations(): RuntimeAnimation[];
-        appendAnimations(target: any, animations: Animation[]): void;
-        getAnimationByTargetProperty(property: string): Nullable<Animation>;
-        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
-        reset(): void;
-        enableBlending(blendingSpeed: number): void;
-        disableBlending(): void;
-        goToFrame(frame: number): void;
-        pause(): void;
-        restart(): void;
-        stop(animationName?: string): void;
-        _animate(delay: number): boolean;
-    }
-}
-
-declare module BABYLON {
-    class AnimationRange {
-        name: string;
-        from: number;
-        to: number;
-        constructor(name: string, from: number, to: number);
-        clone(): AnimationRange;
-    }
-    /**
-     * Composed of a frame, and an action function
-     */
-    class AnimationEvent {
-        frame: number;
-        action: () => void;
-        onlyOnce: boolean | undefined;
-        isDone: boolean;
-        constructor(frame: number, action: () => void, onlyOnce?: boolean | undefined);
-    }
-    class PathCursor {
-        private path;
-        private _onchange;
-        value: number;
-        animations: Animation[];
-        constructor(path: Path2);
-        getPoint(): Vector3;
-        moveAhead(step?: number): PathCursor;
-        moveBack(step?: number): PathCursor;
-        move(step: number): PathCursor;
-        private ensureLimits();
-        private raiseOnChange();
-        onchange(f: (cursor: PathCursor) => void): PathCursor;
-    }
-    class Animation {
-        name: string;
-        targetProperty: string;
-        framePerSecond: number;
-        dataType: number;
-        loopMode: number | undefined;
-        enableBlending: boolean | undefined;
-        static AllowMatricesInterpolation: boolean;
-        private _keys;
-        private _easingFunction;
-        _runtimeAnimations: RuntimeAnimation[];
-        private _events;
-        targetPropertyPath: string[];
-        blendingSpeed: number;
-        private _ranges;
-        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation>;
-        /**
-         * Sets up an animation.
-         * @param property the property to animate
-         * @param animationType the animation type to apply
-         * @param easingFunction the easing function used in the animation
-         * @returns The created animation
-         */
-        static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation;
-        /**
-         * Create and start an animation on a node
-         * @param {string} name defines the name of the global animation that will be run on all nodes
-         * @param {BABYLON.Node} node defines the root node where the animation will take place
-         * @param {string} targetProperty defines property to animate
-         * @param {number} framePerSecond defines the number of frame per second yo use
-         * @param {number} totalFrame defines the number of frames in total
-         * @param {any} from defines the initial value
-         * @param {any} to defines the final value
-         * @param {number} loopMode defines which loop mode you want to use (off by default)
-         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
-         * @param onAnimationEnd defines the callback to call when animation end
-         * @returns the animatable created for this animation
-         */
-        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /**
-         * Create and start an animation on a node and its descendants
-         * @param {string} name defines the name of the global animation that will be run on all nodes
-         * @param {BABYLON.Node} node defines the root node where the animation will take place
-         * @param {boolean} directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
-         * @param {string} targetProperty defines property to animate
-         * @param {number} framePerSecond defines the number of frame per second yo use
-         * @param {number} totalFrame defines the number of frames in total
-         * @param {any} from defines the initial value
-         * @param {any} to defines the final value
-         * @param {number} loopMode defines which loop mode you want to use (off by default)
-         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
-         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
-         * @returns the list of animatables created for all nodes
-         * @example https://www.babylonjs-playground.com/#MH0VLI
-         */
-        static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]>;
-        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
-        /**
-         * Transition property of the Camera to the target Value.
-         * @param property The property to transition
-         * @param targetValue The target Value of the property
-         * @param host The object where the property to animate belongs
-         * @param scene Scene used to run the animation
-         * @param frameRate Framerate (in frame/s) to use
-         * @param transition The transition type we want to use
-         * @param duration The duration of the animation, in milliseconds
-         * @param onAnimationEnd Call back trigger at the end of the animation.
-         */
-        static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd?: Nullable<() => void>): Nullable<Animatable>;
-        /**
-         * Return the array of runtime animations currently using this animation
-         */
-        readonly runtimeAnimations: RuntimeAnimation[];
-        readonly hasRunningRuntimeAnimations: boolean;
-        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number | undefined, enableBlending?: boolean | undefined);
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Add an event to this animation.
-         */
-        addEvent(event: AnimationEvent): void;
-        /**
-         * Remove all events found at the given frame
-         * @param frame
-         */
-        removeEvents(frame: number): void;
-        getEvents(): AnimationEvent[];
-        createRange(name: string, from: number, to: number): void;
-        deleteRange(name: string, deleteFrames?: boolean): void;
-        getRange(name: string): Nullable<AnimationRange>;
-        getKeys(): Array<{
-            frame: number;
-            value: any;
-            inTangent?: any;
-            outTangent?: any;
-        }>;
-        getHighestFrame(): number;
-        getEasingFunction(): IEasingFunction;
-        setEasingFunction(easingFunction: EasingFunction): void;
-        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
-        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
-        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
-        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
-        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
-        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
-        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
-        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
-        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
-        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
-        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
-        clone(): Animation;
-        setKeys(values: Array<{
-            frame: number;
-            value: any;
-        }>): void;
-        serialize(): any;
-        private static _ANIMATIONTYPE_FLOAT;
-        private static _ANIMATIONTYPE_VECTOR3;
-        private static _ANIMATIONTYPE_QUATERNION;
-        private static _ANIMATIONTYPE_MATRIX;
-        private static _ANIMATIONTYPE_COLOR3;
-        private static _ANIMATIONTYPE_VECTOR2;
-        private static _ANIMATIONTYPE_SIZE;
-        private static _ANIMATIONLOOPMODE_RELATIVE;
-        private static _ANIMATIONLOOPMODE_CYCLE;
-        private static _ANIMATIONLOOPMODE_CONSTANT;
-        static readonly ANIMATIONTYPE_FLOAT: number;
-        static readonly ANIMATIONTYPE_VECTOR3: number;
-        static readonly ANIMATIONTYPE_VECTOR2: number;
-        static readonly ANIMATIONTYPE_SIZE: number;
-        static readonly ANIMATIONTYPE_QUATERNION: number;
-        static readonly ANIMATIONTYPE_MATRIX: number;
-        static readonly ANIMATIONTYPE_COLOR3: number;
-        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
-        static readonly ANIMATIONLOOPMODE_CYCLE: number;
-        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
-        static Parse(parsedAnimation: any): Animation;
-        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class defines the direct association between an animation and a target
-     */
-    class TargetedAnimation {
-        animation: Animation;
-        target: any;
-    }
-    /**
-     * Use this class to create coordinated animations on multiple targets
-     */
-    class AnimationGroup implements IDisposable {
-        name: string;
-        private _scene;
-        private _targetedAnimations;
-        private _animatables;
-        private _from;
-        private _to;
-        private _isStarted;
-        private _speedRatio;
-        onAnimationEndObservable: Observable<TargetedAnimation>;
-        /**
-         * Define if the animations are started
-         */
-        readonly isStarted: boolean;
-        /**
-         * Gets or sets the speed ratio to use for all animations
-         */
-        /**
-         * Gets or sets the speed ratio to use for all animations
-         */
-        speedRatio: number;
-        constructor(name: string, scene?: Nullable<Scene>);
-        /**
-         * Add an animation (with its target) in the group
-         * @param animation defines the animation we want to add
-         * @param target defines the target of the animation
-         * @returns the {BABYLON.TargetedAnimation} object
-         */
-        addTargetedAnimation(animation: Animation, target: any): TargetedAnimation;
-        /**
-         * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
-         * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
-         */
-        normalize(beginFrame: number, endFrame: number): AnimationGroup;
-        /**
-         * Start all animations on given targets
-         * @param loop defines if animations must loop
-         * @param speedRatio defines the ratio to apply to animation speed (1 by default)
-         */
-        start(loop?: boolean, speedRatio?: number): AnimationGroup;
-        /**
-         * Pause all animations
-         */
-        pause(): AnimationGroup;
-        /**
-         * Play all animations to initial state
-         * This function will start() the animations if they were not started or will restart() them if they were paused
-         * @param loop defines if animations must loop
-         */
-        play(loop?: boolean): AnimationGroup;
-        /**
-         * Reset all animations to initial state
-         */
-        reset(): AnimationGroup;
-        /**
-         * Restart animations from key 0
-         */
-        restart(): AnimationGroup;
-        /**
-         * Stop all animations
-         */
-        stop(): AnimationGroup;
-        /**
-         * Dispose all associated resources
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    interface IEasingFunction {
-        ease(gradient: number): number;
-    }
-    class EasingFunction implements IEasingFunction {
-        private static _EASINGMODE_EASEIN;
-        private static _EASINGMODE_EASEOUT;
-        private static _EASINGMODE_EASEINOUT;
-        static readonly EASINGMODE_EASEIN: number;
-        static readonly EASINGMODE_EASEOUT: number;
-        static readonly EASINGMODE_EASEINOUT: number;
-        private _easingMode;
-        setEasingMode(easingMode: number): void;
-        getEasingMode(): number;
-        easeInCore(gradient: number): number;
-        ease(gradient: number): number;
-    }
-    class CircleEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BackEase extends EasingFunction implements IEasingFunction {
-        amplitude: number;
-        constructor(amplitude?: number);
-        easeInCore(gradient: number): number;
-    }
-    class BounceEase extends EasingFunction implements IEasingFunction {
-        bounces: number;
-        bounciness: number;
-        constructor(bounces?: number, bounciness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class CubicEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class ElasticEase extends EasingFunction implements IEasingFunction {
-        oscillations: number;
-        springiness: number;
-        constructor(oscillations?: number, springiness?: number);
-        easeInCore(gradient: number): number;
-    }
-    class ExponentialEase extends EasingFunction implements IEasingFunction {
-        exponent: number;
-        constructor(exponent?: number);
-        easeInCore(gradient: number): number;
-    }
-    class PowerEase extends EasingFunction implements IEasingFunction {
-        power: number;
-        constructor(power?: number);
-        easeInCore(gradient: number): number;
-    }
-    class QuadraticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuarticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class QuinticEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class SineEase extends EasingFunction implements IEasingFunction {
-        easeInCore(gradient: number): number;
-    }
-    class BezierCurveEase extends EasingFunction implements IEasingFunction {
-        x1: number;
-        y1: number;
-        x2: number;
-        y2: number;
-        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
-        easeInCore(gradient: number): number;
-    }
-}
-
-declare module BABYLON {
-    class RuntimeAnimation {
-        currentFrame: number;
-        private _animation;
-        private _target;
-        private _originalBlendValue;
-        private _offsetsCache;
-        private _highLimitsCache;
-        private _stopped;
-        private _blendingFactor;
-        constructor(target: any, animation: Animation);
-        readonly animation: Animation;
-        reset(): void;
-        isStopped(): boolean;
-        dispose(): void;
-        private _getKeyValue(value);
-        private _interpolate(currentFrame, repeatCount, loopMode?, offsetValue?, highLimitValue?);
-        setValue(currentValue: any, blend?: boolean): void;
-        goToFrame(frame: number): void;
-        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
-        private _ratioOffset;
-        private _previousDelay;
-        private _previousRatio;
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
     class Action {
         triggerOptions: any;
         trigger: number;
@@ -2146,7 +1399,7 @@ declare module BABYLON {
         serialize(parent: any): any;
         protected _serialize(serializedAction: any, parent?: any): any;
         static _SerializeValueAsString: (value: any) => string;
-        static _GetTargetProperty: (target: Node | Scene) => {
+        static _GetTargetProperty: (target: Scene | Node) => {
             name: string;
             targetType: string;
             value: string;
@@ -2462,6 +1715,398 @@ declare module BABYLON {
         _prepare(): void;
         execute(): void;
         serialize(parent: any): any;
+    }
+}
+
+declare module BABYLON {
+    class Animatable {
+        target: any;
+        fromFrame: number;
+        toFrame: number;
+        loopAnimation: boolean;
+        onAnimationEnd: (() => void) | null | undefined;
+        private _localDelayOffset;
+        private _pausedDelay;
+        private _runtimeAnimations;
+        private _paused;
+        private _scene;
+        private _speedRatio;
+        animationStarted: boolean;
+        speedRatio: number;
+        constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: (() => void) | null | undefined, animations?: any);
+        getAnimations(): RuntimeAnimation[];
+        appendAnimations(target: any, animations: Animation[]): void;
+        getAnimationByTargetProperty(property: string): Nullable<Animation>;
+        getRuntimeAnimationByTargetProperty(property: string): Nullable<RuntimeAnimation>;
+        reset(): void;
+        enableBlending(blendingSpeed: number): void;
+        disableBlending(): void;
+        goToFrame(frame: number): void;
+        pause(): void;
+        restart(): void;
+        stop(animationName?: string): void;
+        _animate(delay: number): boolean;
+    }
+}
+
+declare module BABYLON {
+    class AnimationRange {
+        name: string;
+        from: number;
+        to: number;
+        constructor(name: string, from: number, to: number);
+        clone(): AnimationRange;
+    }
+    /**
+     * Composed of a frame, and an action function
+     */
+    class AnimationEvent {
+        frame: number;
+        action: () => void;
+        onlyOnce: boolean | undefined;
+        isDone: boolean;
+        constructor(frame: number, action: () => void, onlyOnce?: boolean | undefined);
+    }
+    class PathCursor {
+        private path;
+        private _onchange;
+        value: number;
+        animations: Animation[];
+        constructor(path: Path2);
+        getPoint(): Vector3;
+        moveAhead(step?: number): PathCursor;
+        moveBack(step?: number): PathCursor;
+        move(step: number): PathCursor;
+        private ensureLimits();
+        private raiseOnChange();
+        onchange(f: (cursor: PathCursor) => void): PathCursor;
+    }
+    interface IAnimationKey {
+        frame: number;
+        value: any;
+        inTangent?: any;
+        outTangent?: any;
+        interpolation?: AnimationKeyInterpolation;
+    }
+    enum AnimationKeyInterpolation {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored.
+         */
+        STEP = 1,
+    }
+    class Animation {
+        name: string;
+        targetProperty: string;
+        framePerSecond: number;
+        dataType: number;
+        loopMode: number | undefined;
+        enableBlending: boolean | undefined;
+        static AllowMatricesInterpolation: boolean;
+        private _keys;
+        private _easingFunction;
+        _runtimeAnimations: RuntimeAnimation[];
+        private _events;
+        targetPropertyPath: string[];
+        blendingSpeed: number;
+        private _ranges;
+        static _PrepareAnimation(name: string, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction): Nullable<Animation>;
+        /**
+         * Sets up an animation.
+         * @param property the property to animate
+         * @param animationType the animation type to apply
+         * @param easingFunction the easing function used in the animation
+         * @returns The created animation
+         */
+        static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation;
+        /**
+         * Create and start an animation on a node
+         * @param {string} name defines the name of the global animation that will be run on all nodes
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {string} targetProperty defines property to animate
+         * @param {number} framePerSecond defines the number of frame per second yo use
+         * @param {number} totalFrame defines the number of frames in total
+         * @param {any} from defines the initial value
+         * @param {any} to defines the final value
+         * @param {number} loopMode defines which loop mode you want to use (off by default)
+         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when animation end
+         * @returns the animatable created for this animation
+         */
+        static CreateAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Create and start an animation on a node and its descendants
+         * @param {string} name defines the name of the global animation that will be run on all nodes
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {boolean} directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+         * @param {string} targetProperty defines property to animate
+         * @param {number} framePerSecond defines the number of frame per second yo use
+         * @param {number} totalFrame defines the number of frames in total
+         * @param {any} from defines the initial value
+         * @param {any} to defines the final value
+         * @param {number} loopMode defines which loop mode you want to use (off by default)
+         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
+         * @example https://www.babylonjs-playground.com/#MH0VLI
+         */
+        static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]>;
+        static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string, framePerSecond: number, totalFrame: number, from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable>;
+        /**
+         * Transition property of the Camera to the target Value.
+         * @param property The property to transition
+         * @param targetValue The target Value of the property
+         * @param host The object where the property to animate belongs
+         * @param scene Scene used to run the animation
+         * @param frameRate Framerate (in frame/s) to use
+         * @param transition The transition type we want to use
+         * @param duration The duration of the animation, in milliseconds
+         * @param onAnimationEnd Call back trigger at the end of the animation.
+         */
+        static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd?: Nullable<() => void>): Nullable<Animatable>;
+        /**
+         * Return the array of runtime animations currently using this animation
+         */
+        readonly runtimeAnimations: RuntimeAnimation[];
+        readonly hasRunningRuntimeAnimations: boolean;
+        constructor(name: string, targetProperty: string, framePerSecond: number, dataType: number, loopMode?: number | undefined, enableBlending?: boolean | undefined);
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Add an event to this animation.
+         */
+        addEvent(event: AnimationEvent): void;
+        /**
+         * Remove all events found at the given frame
+         * @param frame
+         */
+        removeEvents(frame: number): void;
+        getEvents(): AnimationEvent[];
+        createRange(name: string, from: number, to: number): void;
+        deleteRange(name: string, deleteFrames?: boolean): void;
+        getRange(name: string): Nullable<AnimationRange>;
+        getKeys(): Array<IAnimationKey>;
+        getHighestFrame(): number;
+        getEasingFunction(): IEasingFunction;
+        setEasingFunction(easingFunction: EasingFunction): void;
+        floatInterpolateFunction(startValue: number, endValue: number, gradient: number): number;
+        floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number;
+        quaternionInterpolateFunction(startValue: Quaternion, endValue: Quaternion, gradient: number): Quaternion;
+        quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion;
+        vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
+        vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
+        vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
+        vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
+        sizeInterpolateFunction(startValue: Size, endValue: Size, gradient: number): Size;
+        color3InterpolateFunction(startValue: Color3, endValue: Color3, gradient: number): Color3;
+        matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
+        clone(): Animation;
+        setKeys(values: Array<IAnimationKey>): void;
+        serialize(): any;
+        private static _ANIMATIONTYPE_FLOAT;
+        private static _ANIMATIONTYPE_VECTOR3;
+        private static _ANIMATIONTYPE_QUATERNION;
+        private static _ANIMATIONTYPE_MATRIX;
+        private static _ANIMATIONTYPE_COLOR3;
+        private static _ANIMATIONTYPE_VECTOR2;
+        private static _ANIMATIONTYPE_SIZE;
+        private static _ANIMATIONLOOPMODE_RELATIVE;
+        private static _ANIMATIONLOOPMODE_CYCLE;
+        private static _ANIMATIONLOOPMODE_CONSTANT;
+        static readonly ANIMATIONTYPE_FLOAT: number;
+        static readonly ANIMATIONTYPE_VECTOR3: number;
+        static readonly ANIMATIONTYPE_VECTOR2: number;
+        static readonly ANIMATIONTYPE_SIZE: number;
+        static readonly ANIMATIONTYPE_QUATERNION: number;
+        static readonly ANIMATIONTYPE_MATRIX: number;
+        static readonly ANIMATIONTYPE_COLOR3: number;
+        static readonly ANIMATIONLOOPMODE_RELATIVE: number;
+        static readonly ANIMATIONLOOPMODE_CYCLE: number;
+        static readonly ANIMATIONLOOPMODE_CONSTANT: number;
+        static Parse(parsedAnimation: any): Animation;
+        static AppendSerializedAnimations(source: IAnimatable, destination: any): any;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class defines the direct association between an animation and a target
+     */
+    class TargetedAnimation {
+        animation: Animation;
+        target: any;
+    }
+    /**
+     * Use this class to create coordinated animations on multiple targets
+     */
+    class AnimationGroup implements IDisposable {
+        name: string;
+        private _scene;
+        private _targetedAnimations;
+        private _animatables;
+        private _from;
+        private _to;
+        private _isStarted;
+        private _speedRatio;
+        onAnimationEndObservable: Observable<TargetedAnimation>;
+        /**
+         * Define if the animations are started
+         */
+        readonly isStarted: boolean;
+        /**
+         * Gets or sets the speed ratio to use for all animations
+         */
+        /**
+         * Gets or sets the speed ratio to use for all animations
+         */
+        speedRatio: number;
+        constructor(name: string, scene?: Nullable<Scene>);
+        /**
+         * Add an animation (with its target) in the group
+         * @param animation defines the animation we want to add
+         * @param target defines the target of the animation
+         * @returns the {BABYLON.TargetedAnimation} object
+         */
+        addTargetedAnimation(animation: Animation, target: any): TargetedAnimation;
+        /**
+         * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
+         * It can add constant keys at begin or end
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
+         */
+        normalize(beginFrame: number, endFrame: number): AnimationGroup;
+        /**
+         * Start all animations on given targets
+         * @param loop defines if animations must loop
+         * @param speedRatio defines the ratio to apply to animation speed (1 by default)
+         */
+        start(loop?: boolean, speedRatio?: number): AnimationGroup;
+        /**
+         * Pause all animations
+         */
+        pause(): AnimationGroup;
+        /**
+         * Play all animations to initial state
+         * This function will start() the animations if they were not started or will restart() them if they were paused
+         * @param loop defines if animations must loop
+         */
+        play(loop?: boolean): AnimationGroup;
+        /**
+         * Reset all animations to initial state
+         */
+        reset(): AnimationGroup;
+        /**
+         * Restart animations from key 0
+         */
+        restart(): AnimationGroup;
+        /**
+         * Stop all animations
+         */
+        stop(): AnimationGroup;
+        /**
+         * Dispose all associated resources
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    interface IEasingFunction {
+        ease(gradient: number): number;
+    }
+    class EasingFunction implements IEasingFunction {
+        private static _EASINGMODE_EASEIN;
+        private static _EASINGMODE_EASEOUT;
+        private static _EASINGMODE_EASEINOUT;
+        static readonly EASINGMODE_EASEIN: number;
+        static readonly EASINGMODE_EASEOUT: number;
+        static readonly EASINGMODE_EASEINOUT: number;
+        private _easingMode;
+        setEasingMode(easingMode: number): void;
+        getEasingMode(): number;
+        easeInCore(gradient: number): number;
+        ease(gradient: number): number;
+    }
+    class CircleEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BackEase extends EasingFunction implements IEasingFunction {
+        amplitude: number;
+        constructor(amplitude?: number);
+        easeInCore(gradient: number): number;
+    }
+    class BounceEase extends EasingFunction implements IEasingFunction {
+        bounces: number;
+        bounciness: number;
+        constructor(bounces?: number, bounciness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class CubicEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class ElasticEase extends EasingFunction implements IEasingFunction {
+        oscillations: number;
+        springiness: number;
+        constructor(oscillations?: number, springiness?: number);
+        easeInCore(gradient: number): number;
+    }
+    class ExponentialEase extends EasingFunction implements IEasingFunction {
+        exponent: number;
+        constructor(exponent?: number);
+        easeInCore(gradient: number): number;
+    }
+    class PowerEase extends EasingFunction implements IEasingFunction {
+        power: number;
+        constructor(power?: number);
+        easeInCore(gradient: number): number;
+    }
+    class QuadraticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuarticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class QuinticEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class SineEase extends EasingFunction implements IEasingFunction {
+        easeInCore(gradient: number): number;
+    }
+    class BezierCurveEase extends EasingFunction implements IEasingFunction {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+        constructor(x1?: number, y1?: number, x2?: number, y2?: number);
+        easeInCore(gradient: number): number;
+    }
+}
+
+declare module BABYLON {
+    class RuntimeAnimation {
+        currentFrame: number;
+        private _animation;
+        private _target;
+        private _originalBlendValue;
+        private _offsetsCache;
+        private _highLimitsCache;
+        private _stopped;
+        private _blendingFactor;
+        constructor(target: any, animation: Animation);
+        readonly animation: Animation;
+        reset(): void;
+        isStopped(): boolean;
+        dispose(): void;
+        private _getKeyValue(value);
+        private _interpolate(currentFrame, repeatCount, loopMode?, offsetValue?, highLimitValue?);
+        setValue(currentValue: any, blend?: boolean): void;
+        goToFrame(frame: number): void;
+        _prepareForSpeedRatioChange(newSpeedRatio: number): void;
+        private _ratioOffset;
+        private _previousDelay;
+        private _previousRatio;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
     }
 }
 
@@ -3136,6 +2781,260 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _radius: Vector3;
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        _velocityWorldLength: number;
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        _initialVelocity: Vector3;
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    interface SerializedGeometry {
+        id: string;
+        positions: Float32Array;
+        indices: Uint32Array;
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Nullable<Vector3>;
+        pickedMesh: Nullable<AbstractMesh>;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Nullable<Sprite>;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        getTextureCoordinates(): Nullable<Vector2>;
+    }
+}
+
+declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -3689,385 +3588,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _radius: Vector3;
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        _velocityWorldLength: number;
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        _initialVelocity: Vector3;
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    interface SerializedGeometry {
-        id: string;
-        positions: Float32Array;
-        indices: Uint32Array;
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Nullable<Vector3>;
-        pickedMesh: Nullable<AbstractMesh>;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Nullable<Sprite>;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON {
     class DebugLayer {
         private _scene;
         static InspectorURL: string;
@@ -4195,6 +3715,131 @@ declare module BABYLON {
         detachFromMesh(): void;
         private _updateToMesh();
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+    }
+}
+
+declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
     }
 }
 
@@ -4463,6 +4108,12 @@ declare module BABYLON {
         readonly badOS: boolean;
         private _badDesktopOS;
         readonly badDesktopOS: boolean;
+        /**
+         * Gets or sets a value indicating if we want to disable texture binding optmization.
+         * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+         * By default Babylon.js will try to let textures bound and only update the samplers to point where the texture is.
+         */
+        disableTextureBindingOptimization: boolean;
         static audioEngine: AudioEngine;
         private _onFocus;
         private _onBlur;
@@ -4550,6 +4201,7 @@ declare module BABYLON {
         private _emptyTexture3D;
         private _frameHandler;
         private _nextFreeTextureSlots;
+        private _maxSimultaneousTextures;
         private _activeRequests;
         private _texturesSupported;
         private _textureFormatInUse;
@@ -5084,6 +4736,225 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue(newValue, currentValue, buttonIndex);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad(gamepad);
+        private _startMonitoringGamepads();
+        private _stopMonitoringGamepads();
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects();
+    }
+}
+
+declare module BABYLON {
+    enum Xbox360Button {
+        A = 0,
+        B = 1,
+        X = 2,
+        Y = 3,
+        Start = 4,
+        Back = 5,
+        LB = 6,
+        RB = 7,
+        LeftStick = 8,
+        RightStick = 9,
+    }
+    enum Xbox360Dpad {
+        Up = 0,
+        Down = 1,
+        Left = 2,
+        Right = 3,
+    }
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        onButtonDownObservable: Observable<Xbox360Button>;
+        onButtonUpObservable: Observable<Xbox360Button>;
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        leftTrigger: number;
+        rightTrigger: number;
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue(newValue, currentValue, buttonType);
+        private _setDPadValue(newValue, currentValue, buttonType);
+        buttonA: number;
+        buttonB: number;
+        buttonX: number;
+        buttonY: number;
+        buttonStart: number;
+        buttonBack: number;
+        buttonLB: number;
+        buttonRB: number;
+        buttonLeftStick: number;
+        buttonRightStick: number;
+        dPadUp: number;
+        dPadDown: number;
+        dPadLeft: number;
+        dPadRight: number;
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -5374,225 +5245,6 @@ declare module BABYLON {
         /**
          * Dispose all the elements created by the Helper.
          */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
-    }
-}
-
-declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
-    }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
-        type: number;
-        private _leftStick;
-        private _rightStick;
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue(newValue, currentValue, buttonIndex);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
-        private _scene;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad(gamepad);
-        private _startMonitoringGamepads();
-        private _stopMonitoringGamepads();
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects();
-    }
-}
-
-declare module BABYLON {
-    enum Xbox360Button {
-        A = 0,
-        B = 1,
-        X = 2,
-        Y = 3,
-        Start = 4,
-        Back = 5,
-        LB = 6,
-        RB = 7,
-        LeftStick = 8,
-        RightStick = 9,
-    }
-    enum Xbox360Dpad {
-        Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
-    }
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        onButtonDownObservable: Observable<Xbox360Button>;
-        onButtonUpObservable: Observable<Xbox360Button>;
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        leftTrigger: number;
-        rightTrigger: number;
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue(newValue, currentValue, buttonType);
-        private _setDPadValue(newValue, currentValue, buttonType);
-        buttonA: number;
-        buttonB: number;
-        buttonX: number;
-        buttonY: number;
-        buttonStart: number;
-        buttonBack: number;
-        buttonLB: number;
-        buttonRB: number;
-        buttonLeftStick: number;
-        buttonRightStick: number;
-        dPadUp: number;
-        dPadDown: number;
-        dPadLeft: number;
-        dPadRight: number;
-        update(): void;
         dispose(): void;
     }
 }
@@ -5963,7 +5615,15 @@ declare module BABYLON {
          * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        private isReady(subMesh, useInstances, emissiveTexture);
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        private _isReady(subMesh, useInstances, emissiveTexture);
         /**
          * Renders the glowing part of the scene by blending the blurred glowing meshes on top of the rendered scene.
          */
@@ -5978,6 +5638,12 @@ declare module BABYLON {
           * @param mesh The mesh to highlight
           */
         removeExcludedMesh(mesh: Mesh): void;
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        hasMesh(mesh: AbstractMesh): boolean;
         /**
          * Add a mesh in the highlight layer in order to make it glow with the chosen color.
          * @param mesh The mesh to highlight
@@ -6106,6 +5772,123 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    class SceneLoaderProgressEvent {
+        readonly lengthComputable: boolean;
+        readonly loaded: number;
+        readonly total: number;
+        constructor(lengthComputable: boolean, loaded: number, total: number);
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPluginFactory {
+        name: string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPlugin {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => Nullable<AssetContainer>;
+    }
+    interface ISceneLoaderPluginAsync {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: Nullable<AssetContainer>) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+    }
+}
+
+declare module BABYLON {
     class DirectionalLight extends ShadowLight {
         private _shadowFrustumSize;
         /**
@@ -6227,7 +6010,7 @@ declare module BABYLON {
         static readonly LIGHTMAP_DEFAULT: number;
         /**
          * material.lightmapTexture as only diffuse lighting from this light
-         * adds pnly specular lighting from this light
+         * adds only specular lighting from this light
          * adds dynamic shadows
          */
         static readonly LIGHTMAP_SPECULAR: number;
@@ -6635,120 +6418,6 @@ declare module BABYLON {
          * Return the SpotLight.
          */
         transferToEffect(effect: Effect, lightIndex: string): SpotLight;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    class SceneLoaderProgressEvent {
-        readonly lengthComputable: boolean;
-        readonly loaded: number;
-        readonly total: number;
-        constructor(lengthComputable: boolean, loaded: number, total: number);
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPluginFactory {
-        name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-    }
-    interface ISceneLoaderPluginAsync {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     }
 }
 
@@ -8302,15 +7971,6 @@ declare module BABYLON {
          * @return The converted angle.
          */
         static NormalizeRadians(angle: number): number;
-    }
-}
-
-declare module BABYLON {
-    class SIMDHelper {
-        private static _isEnabled;
-        static readonly IsEnabled: boolean;
-        static DisableSIMD(): void;
-        static EnableSIMD(): void;
     }
 }
 
@@ -10410,6 +10070,70 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasPositions: boolean;
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Nullable<FloatArray>): void;
+        getPositions(): Nullable<FloatArray>;
+        setNormals(data: Nullable<FloatArray>): void;
+        getNormals(): Nullable<FloatArray>;
+        setTangents(data: Nullable<FloatArray>): void;
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Nullable<Scene>);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
+    }
+}
+
+declare module BABYLON {
     class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
         static OCCLUSION_TYPE_NONE: number;
         static OCCLUSION_TYPE_OPTIMISTIC: number;
@@ -11372,6 +11096,11 @@ declare module BABYLON {
         getTotalVertices(): number;
         readonly sourceMesh: Mesh;
         /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
+        isReady(): boolean;
+        /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.
          */
         getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray>;
@@ -11768,9 +11497,11 @@ declare module BABYLON {
         getIndices(copyWhenShared?: boolean): Nullable<IndicesArray>;
         readonly isBlocked: boolean;
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        isReady(): boolean;
+        isReady(forceInstanceSupport?: boolean): boolean;
         /**
          * Boolean : true if the normals aren't to be recomputed on next mesh `positions` array update.
          * This property is pertinent only for updatable parametric shapes.
@@ -14017,70 +13748,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
-    }
-}
-
-declare module BABYLON {
     class BoxParticleEmitter implements IParticleEmitterType {
         private _particleSystem;
         direction1: Vector3;
@@ -15707,6 +15374,11 @@ declare module BABYLON {
         activate(camera: Nullable<Camera>, sourceTexture?: Nullable<InternalTexture>, forceDepthStencil?: boolean): void;
         readonly isSupported: boolean;
         readonly aspectRatio: number;
+        /**
+         * Get a value indicating if the post-process is ready to be used
+         * @returns true if the post-process is ready (shader is compiled)
+         */
+        isReady(): boolean;
         apply(): Nullable<Effect>;
         private _disposeTextures();
         dispose(camera?: Camera): void;
@@ -15835,7 +15507,7 @@ declare module BABYLON {
          */
         constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples?: number, samplingMode?: number, engine?: Engine, reusable?: boolean, scene?: Scene);
         getClassName(): string;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        private _isReady(subMesh, useInstances);
         /**
          * Sets the new light position for light scattering effect
          * @param {BABYLON.Vector3} The new custom light position
@@ -16875,57 +16547,330 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * Defines the root class used to create scene optimization to use with SceneOptimizer
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class SceneOptimization {
         priority: number;
-        apply: (scene: Scene) => boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         * @returnstrue if everything that can be done was applied
+         */
+        apply(scene: Scene): boolean;
+        /**
+         * Creates the SceneOptimization object
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param desc defines the description associated with the optimization
+         */
         constructor(priority?: number);
     }
+    /**
+     * Defines an optimization used to reduce the size of render target textures
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class TextureOptimization extends SceneOptimization {
         priority: number;
         maximumSize: number;
-        constructor(priority?: number, maximumSize?: number);
-        apply: (scene: Scene) => boolean;
+        step: number;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * Creates the TextureOptimization object
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumSize defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
+         * @param step defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
+         */
+        constructor(priority?: number, maximumSize?: number, step?: number);
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization used to increase or decrease the rendering resolution
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class HardwareScalingOptimization extends SceneOptimization {
         priority: number;
         maximumScale: number;
+        step: number;
         private _currentScale;
-        constructor(priority?: number, maximumScale?: number);
-        apply: (scene: Scene) => boolean;
+        private _directionOffset;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * Creates the HardwareScalingOptimization object
+         * @param priority priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumScale
+         * @param step
+         */
+        constructor(priority?: number, maximumScale?: number, step?: number);
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization used to remove shadows
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class ShadowsOptimization extends SceneOptimization {
-        apply: (scene: Scene) => boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization used to turn post-processes off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class PostProcessesOptimization extends SceneOptimization {
-        apply: (scene: Scene) => boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization used to turn lens flares off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class LensFlaresOptimization extends SceneOptimization {
-        apply: (scene: Scene) => boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization based on user defined callback.
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
+    class CustomOptimization extends SceneOptimization {
+        /**
+         * Callback called to apply the custom optimization.
+         * @param scene defines the scene to apply the optimization to
+         * @returns a boolean defining if all the optimization was applied or if more options are available (for the next turn)
+         */
+        onApply: (scene: Scene) => boolean;
+        /**
+         * Callback called to get custom description
+         */
+        onGetDescription: () => string;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
+    }
+    /**
+     * Defines an optimization used to turn particles off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class ParticlesOptimization extends SceneOptimization {
-        apply: (scene: Scene) => boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization used to turn render targets off
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class RenderTargetsOptimization extends SceneOptimization {
-        apply: (scene: Scene) => boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene): boolean;
     }
+    /**
+     * Defines an optimization used to merge meshes with compatible materials
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class MergeMeshesOptimization extends SceneOptimization {
         static _UpdateSelectionTree: boolean;
+        /**
+         * Gets or sets a boolean which defines if optimization octree has to be updated
+         */
+        /**
+         * Gets or sets a boolean which defines if optimization octree has to be updated
+         */
         static UpdateSelectionTree: boolean;
+        /**
+         * Gets a string describing the action executed by the current optimization
+         */
+        getDescription(): string;
         private _canBeMerged;
-        apply: (scene: Scene, updateSelectionTree?: boolean | undefined) => boolean;
+        /**
+         * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
+         * @param scene defines the current scene where to apply this optimization
+         */
+        apply(scene: Scene, updateSelectionTree?: boolean): boolean;
     }
+    /**
+     * Defines a list of options used by SceneOptimizer
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
     class SceneOptimizerOptions {
         targetFrameRate: number;
         trackerDuration: number;
+        /**
+         * Gets the list of optimizations to apply
+         */
         optimizations: SceneOptimization[];
+        /**
+         * Creates a new list of options used by SceneOptimizer
+         * @param targetFrameRate defines the target frame rate to reach (60 by default)
+         * @param trackerDuration defines the interval between two checkes (2000ms by default)
+         */
         constructor(targetFrameRate?: number, trackerDuration?: number);
+        /**
+         * Add a new optimization
+         * @param optimization defines the SceneOptimization to add to the list of active optimizations
+         */
+        addOptimization(optimization: SceneOptimization): SceneOptimizerOptions;
+        /**
+         * Add a new custom optimization
+         * @param onApply defines the callback called to apply the custom optimization.
+         * @param onGetDescription defines the callback called to get the description attached with the optimization.
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         */
+        addCustomOptimization(onApply: (scene: Scene) => boolean, onGetDescription: () => string, priority?: number): SceneOptimizerOptions;
+        /**
+         * Creates a list of pre-defined optimizations aimed to reduce the visual impact on the scene
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         static LowDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions;
+        /**
+         * Creates a list of pre-defined optimizations aimed to have a moderate impact on the scene visual
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         static ModerateDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions;
+        /**
+         * Creates a list of pre-defined optimizations aimed to have a big impact on the scene visual
+         * @param targetFrameRate defines the target frame rate (60 by default)
+         * @returns a SceneOptimizerOptions object
+         */
         static HighDegradationAllowed(targetFrameRate?: number): SceneOptimizerOptions;
     }
-    class SceneOptimizer {
-        static _CheckCurrentState(scene: Scene, options: SceneOptimizerOptions, currentPriorityLevel: number, onSuccess?: () => void, onFailure?: () => void): void;
-        static OptimizeAsync(scene: Scene, options?: SceneOptimizerOptions, onSuccess?: () => void, onFailure?: () => void): void;
+    /**
+     * Class used to run optimizations in order to reach a target frame rate
+     * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
+     */
+    class SceneOptimizer implements IDisposable {
+        private _isRunning;
+        private _options;
+        private _scene;
+        private _currentPriorityLevel;
+        private _targetFrameRate;
+        private _trackerDuration;
+        private _currentFrameRate;
+        private _sceneDisposeObserver;
+        /**
+         * Defines an observable called when the optimizer reaches the target frame rate
+         */
+        onSuccessObservable: Observable<SceneOptimizer>;
+        /**
+         * Defines an observable called when the optimizer enables an optimization
+         */
+        onNewOptimizationAppliedObservable: Observable<SceneOptimization>;
+        /**
+         * Defines an observable called when the optimizer is not able to reach the target frame rate
+         */
+        onFailureObservable: Observable<SceneOptimizer>;
+        /**
+         * Gets the current priority level (0 at start)
+         */
+        readonly currentPriorityLevel: number;
+        /**
+         * Gets the current frame rate checked by the SceneOptimizer
+         */
+        readonly currentFrameRate: number;
+        /**
+         * Gets or sets the current target frame rate (60 by default)
+         */
+        /**
+         * Gets or sets the current target frame rate (60 by default)
+         */
+        targetFrameRate: number;
+        /**
+         * Gets or sets the current interval between two checks (every 2000ms by default)
+         */
+        /**
+         * Gets or sets the current interval between two checks (every 2000ms by default)
+         */
+        trackerDuration: number;
+        /**
+         * Gets the list of active optimizations
+         */
+        readonly optimizations: SceneOptimization[];
+        /**
+         * Creates a new SceneOptimizer
+         * @param scene defines the scene to work on
+         * @param options defines the options to use with the SceneOptimizer
+         * @param autoGeneratePriorities defines if priorities must be generated and not read from SceneOptimization property (true by default)
+         */
+        constructor(scene: Scene, options?: SceneOptimizerOptions, autoGeneratePriorities?: boolean);
+        /**
+         * Stops the current optimizer
+         */
+        stop(): void;
+        reset(): void;
+        start(): void;
+        private _checkCurrentState();
+        /**
+         * Release all resources
+         */
+        dispose(): void;
+        /**
+         * Helper function to create a SceneOptimizer with one single line of code
+         * @param scene defines the scene to work on
+         * @param options defines the options to use with the SceneOptimizer
+         * @param onSuccess defines a callback to call on success
+         * @param onFailure defines a callback to call on failure
+         */
+        static OptimizeAsync(scene: Scene, options?: SceneOptimizerOptions, onSuccess?: () => void, onFailure?: () => void): SceneOptimizer;
     }
 }
 
@@ -17784,49 +17729,228 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadRotationSensibility: number;
+        gamepadMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
     }
 }
 
 declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _keys;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        keysReset: number[];
+        panningSensibility: number;
+        zoomingSensibility: number;
+        useAltToZoom: boolean;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _wheel;
+        private _observer;
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        buttons: number[];
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        multiTouchPanning: boolean;
+        multiTouchPanAndZoom: boolean;
+        private _isPanClick;
+        pinchInwards: boolean;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        alphaCorrection: number;
+        betaCorrection: number;
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        constructor();
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        checkInputs(): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        constructor();
+        camera: FreeCamera;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        _onLostFocus(e: FocusEvent): void;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        touchEnabled: boolean;
+        camera: FreeCamera;
+        buttons: number[];
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        constructor(touchEnabled?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
     }
 }
 
@@ -18173,228 +18297,61 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadRotationSensibility: number;
-        gamepadMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
     }
 }
 
 declare module BABYLON {
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        keysReset: number[];
-        panningSensibility: number;
-        zoomingSensibility: number;
-        useAltToZoom: boolean;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
     }
 }
 
 declare module BABYLON {
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _wheel;
-        private _observer;
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        buttons: number[];
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        multiTouchPanning: boolean;
-        multiTouchPanAndZoom: boolean;
-        private _isPanClick;
-        pinchInwards: boolean;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        alphaCorrection: number;
-        betaCorrection: number;
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        constructor();
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        checkInputs(): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        constructor();
-        camera: FreeCamera;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        _onLostFocus(e: FocusEvent): void;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        touchEnabled: boolean;
-        camera: FreeCamera;
-        buttons: number[];
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        constructor(touchEnabled?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
+    class GearVRController extends WebVRController {
+        static MODEL_BASE_URL: string;
+        static MODEL_FILENAME: string;
+        static readonly GAMEPAD_ID_PREFIX: string;
+        private readonly _buttonIndexToObservableNameMap;
+        constructor(vrGamepad: any);
+        initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
+        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
     }
 }
 
@@ -18430,7 +18387,8 @@ declare module BABYLON {
         VIVE = 0,
         OCULUS = 1,
         WINDOWS = 2,
-        GENERIC = 3,
+        GEAR_VR = 3,
+        GENERIC = 4,
     }
     interface MutableGamepadButton {
         value: number;
@@ -18443,7 +18401,7 @@ declare module BABYLON {
         readonly value: number;
     }
     class PoseEnabledControllerHelper {
-        static InitiateController(vrGamepad: any): OculusTouchController | WindowsMotionController | ViveController | GenericController;
+        static InitiateController(vrGamepad: any): OculusTouchController | WindowsMotionController | ViveController | GearVRController | GenericController;
     }
     class PoseEnabledController extends Gamepad implements PoseControlled {
         private _deviceRoomPosition;
@@ -18685,7 +18643,6 @@ declare module BABYLON {
         private _cachedDirection;
         private _cachedDefines;
         private _currentRenderID;
-        private _downSamplePostprocess;
         private _boxBlurPostprocess;
         private _kernelBlurXPostprocess;
         private _kernelBlurYPostprocess;
@@ -19881,210 +19838,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class PostProcessRenderEffect {
-        private _postProcesses;
-        private _getPostProcess;
-        private _singleInstance;
-        private _cameras;
-        private _indicesForCamera;
-        private _renderPasses;
-        private _renderEffectAsPasses;
-        _name: string;
-        applyParameters: (postProcess: PostProcess) => void;
-        constructor(engine: Engine, name: string, getPostProcess: () => Nullable<PostProcess>, singleInstance?: boolean);
-        readonly isSupported: boolean;
-        _update(): void;
-        addPass(renderPass: PostProcessRenderPass): void;
-        removePass(renderPass: PostProcessRenderPass): void;
-        addRenderEffectAsPass(renderEffect: PostProcessRenderEffect): void;
-        getPass(passName: string): Nullable<PostProcessRenderPass>;
-        emptyPasses(): void;
-        _attachCameras(cameras: Camera): void;
-        _attachCameras(cameras: Camera[]): void;
-        _detachCameras(cameras: Camera): void;
-        _detachCameras(cameras: Camera[]): void;
-        _enable(cameras: Camera): void;
-        _enable(cameras: Nullable<Camera[]>): void;
-        _disable(cameras: Camera): void;
-        _disable(cameras: Nullable<Camera[]>): void;
-        getPostProcess(camera?: Camera): Nullable<PostProcess>;
-        private _linkParameters();
-        private _linkTextures(effect);
-    }
-}
-
-declare module BABYLON {
-    class PostProcessRenderPass {
-        private _renderList;
-        private _renderTexture;
-        private _scene;
-        private _refCount;
-        _name: string;
-        constructor(scene: Scene, name: string, size: number, renderList: Mesh[], beforeRender: () => void, afterRender: () => void);
-        _incRefCount(): number;
-        _decRefCount(): number;
-        _update(): void;
-        setRenderList(renderList: Mesh[]): void;
-        getRenderTexture(): RenderTargetTexture;
-    }
-}
-
-declare module BABYLON {
-    class PostProcessRenderPipeline {
-        private _engine;
-        private _renderEffects;
-        private _renderEffectsForIsolatedPass;
-        protected _cameras: Camera[];
-        _name: string;
-        private static PASS_EFFECT_NAME;
-        private static PASS_SAMPLER_NAME;
-        constructor(engine: Engine, name: string);
-        getClassName(): string;
-        readonly isSupported: boolean;
-        addEffect(renderEffect: PostProcessRenderEffect): void;
-        _rebuild(): void;
-        _enableEffect(renderEffectName: string, cameras: Camera): void;
-        _enableEffect(renderEffectName: string, cameras: Camera[]): void;
-        _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
-        _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
-        _attachCameras(cameras: Camera, unique: boolean): void;
-        _attachCameras(cameras: Camera[], unique: boolean): void;
-        _detachCameras(cameras: Camera): void;
-        _detachCameras(cameras: Nullable<Camera[]>): void;
-        _enableDisplayOnlyPass(passName: string, cameras: Camera): void;
-        _enableDisplayOnlyPass(passName: string, cameras: Nullable<Camera[]>): void;
-        _disableDisplayOnlyPass(cameras: Camera): void;
-        _disableDisplayOnlyPass(cameras: Camera[]): void;
-        _update(): void;
-        _reset(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class PostProcessRenderPipelineManager {
-        private _renderPipelines;
-        constructor();
-        addPipeline(renderPipeline: PostProcessRenderPipeline): void;
-        attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera, unique?: boolean): void;
-        attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[], unique?: boolean): void;
-        detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera): void;
-        detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera[]): void;
-        enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera): void;
-        enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]): void;
-        disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera): void;
-        disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]): void;
-        enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera): void;
-        enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera[]): void;
-        disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera): void;
-        disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[]): void;
-        update(): void;
-        _rebuild(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _useDeltaForWorldStep;
-        world: any;
-        name: string;
-        private _physicsMaterials;
-        private _fixedTimeStep;
-        BJSCANNON: any;
-        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _processChildMeshes(mainImpostor);
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        private _addMaterial(name, friction, restitution);
-        private _checkWithEpsilon(value);
-        private _createShape(impostor);
-        private _createHeightmap(object, pointDepth?);
-        private _minus90X;
-        private _plus90X;
-        private _tmpPosition;
-        private _tmpDeltaPosition;
-        private _tmpUnityRotation;
-        private _updatePhysicsBodyTransformation(impostor);
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        isSupported(): boolean;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-        private _extendNamespace();
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        BJSOIMO: any;
-        constructor(iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        private _tmpImpostorsArray;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _tmpPositionVector;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        private _getLastShape(body);
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class BaseTexture {
         static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
         name: string;
@@ -20777,6 +20530,210 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        world: any;
+        name: string;
+        private _physicsMaterials;
+        private _fixedTimeStep;
+        BJSCANNON: any;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _processChildMeshes(mainImpostor);
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMaterial(name, friction, restitution);
+        private _checkWithEpsilon(value);
+        private _createShape(impostor);
+        private _createHeightmap(object, pointDepth?);
+        private _minus90X;
+        private _plus90X;
+        private _tmpPosition;
+        private _tmpDeltaPosition;
+        private _tmpUnityRotation;
+        private _updatePhysicsBodyTransformation(impostor);
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        isSupported(): boolean;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+        private _extendNamespace();
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        BJSOIMO: any;
+        constructor(iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        private _tmpImpostorsArray;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _tmpPositionVector;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        private _getLastShape(body);
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class PostProcessRenderEffect {
+        private _postProcesses;
+        private _getPostProcess;
+        private _singleInstance;
+        private _cameras;
+        private _indicesForCamera;
+        private _renderPasses;
+        private _renderEffectAsPasses;
+        _name: string;
+        applyParameters: (postProcess: PostProcess) => void;
+        constructor(engine: Engine, name: string, getPostProcess: () => Nullable<PostProcess>, singleInstance?: boolean);
+        readonly isSupported: boolean;
+        _update(): void;
+        addPass(renderPass: PostProcessRenderPass): void;
+        removePass(renderPass: PostProcessRenderPass): void;
+        addRenderEffectAsPass(renderEffect: PostProcessRenderEffect): void;
+        getPass(passName: string): Nullable<PostProcessRenderPass>;
+        emptyPasses(): void;
+        _attachCameras(cameras: Camera): void;
+        _attachCameras(cameras: Camera[]): void;
+        _detachCameras(cameras: Camera): void;
+        _detachCameras(cameras: Camera[]): void;
+        _enable(cameras: Camera): void;
+        _enable(cameras: Nullable<Camera[]>): void;
+        _disable(cameras: Camera): void;
+        _disable(cameras: Nullable<Camera[]>): void;
+        getPostProcess(camera?: Camera): Nullable<PostProcess>;
+        private _linkParameters();
+        private _linkTextures(effect);
+    }
+}
+
+declare module BABYLON {
+    class PostProcessRenderPass {
+        private _renderList;
+        private _renderTexture;
+        private _scene;
+        private _refCount;
+        _name: string;
+        constructor(scene: Scene, name: string, size: number, renderList: Mesh[], beforeRender: () => void, afterRender: () => void);
+        _incRefCount(): number;
+        _decRefCount(): number;
+        _update(): void;
+        setRenderList(renderList: Mesh[]): void;
+        getRenderTexture(): RenderTargetTexture;
+    }
+}
+
+declare module BABYLON {
+    class PostProcessRenderPipeline {
+        private _engine;
+        private _renderEffects;
+        private _renderEffectsForIsolatedPass;
+        protected _cameras: Camera[];
+        _name: string;
+        private static PASS_EFFECT_NAME;
+        private static PASS_SAMPLER_NAME;
+        constructor(engine: Engine, name: string);
+        getClassName(): string;
+        readonly isSupported: boolean;
+        addEffect(renderEffect: PostProcessRenderEffect): void;
+        _rebuild(): void;
+        _enableEffect(renderEffectName: string, cameras: Camera): void;
+        _enableEffect(renderEffectName: string, cameras: Camera[]): void;
+        _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
+        _disableEffect(renderEffectName: string, cameras: Nullable<Camera[]>): void;
+        _attachCameras(cameras: Camera, unique: boolean): void;
+        _attachCameras(cameras: Camera[], unique: boolean): void;
+        _detachCameras(cameras: Camera): void;
+        _detachCameras(cameras: Nullable<Camera[]>): void;
+        _enableDisplayOnlyPass(passName: string, cameras: Camera): void;
+        _enableDisplayOnlyPass(passName: string, cameras: Nullable<Camera[]>): void;
+        _disableDisplayOnlyPass(cameras: Camera): void;
+        _disableDisplayOnlyPass(cameras: Camera[]): void;
+        _update(): void;
+        _reset(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class PostProcessRenderPipelineManager {
+        private _renderPipelines;
+        constructor();
+        addPipeline(renderPipeline: PostProcessRenderPipeline): void;
+        attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera, unique?: boolean): void;
+        attachCamerasToRenderPipeline(renderPipelineName: string, cameras: Camera[], unique?: boolean): void;
+        detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera): void;
+        detachCamerasFromRenderPipeline(renderPipelineName: string, cameras: Camera[]): void;
+        enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera): void;
+        enableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]): void;
+        disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera): void;
+        disableEffectInPipeline(renderPipelineName: string, renderEffectName: string, cameras: Camera[]): void;
+        enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera): void;
+        enableDisplayOnlyPassInPipeline(renderPipelineName: string, passName: string, cameras: Camera[]): void;
+        disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera): void;
+        disableDisplayOnlyPassInPipeline(renderPipelineName: string, cameras: Camera[]): void;
+        update(): void;
+        _rebuild(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * Helper class dealing with the extraction of spherical polynomial dataArray
      * from a cube map.
@@ -20944,6 +20901,76 @@ declare module BABYLON {
         static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number): CubeMapInfo;
         private static CreateCubemapTexture(texSize, faceData, float32Array, inputWidth, inputHeight);
         private static CalcProjectionSpherical(vDir, float32Array, inputWidth, inputHeight);
+    }
+}
+
+declare module BABYLON {
+    class CustomProceduralTexture extends ProceduralTexture {
+        private _animate;
+        private _time;
+        private _config;
+        private _texturePath;
+        constructor(name: string, texturePath: any, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
+        private loadJson(jsonUrl);
+        isReady(): boolean;
+        render(useCameraPostProcess?: boolean): void;
+        updateTextures(): void;
+        updateShaderUniforms(): void;
+        animate: boolean;
+    }
+}
+
+declare module BABYLON {
+    class ProceduralTexture extends Texture {
+        isCube: boolean;
+        private _size;
+        _generateMipMaps: boolean;
+        isEnabled: boolean;
+        private _currentRefreshId;
+        private _refreshRate;
+        onGenerated: () => void;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _uniforms;
+        private _samplers;
+        private _fragment;
+        _textures: {
+            [key: string]: Texture;
+        };
+        private _floats;
+        private _floatsArrays;
+        private _colors3;
+        private _colors4;
+        private _vectors2;
+        private _vectors3;
+        private _matrices;
+        private _fallbackTexture;
+        private _fallbackTextureUsed;
+        private _engine;
+        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
+        private _createIndexBuffer();
+        _rebuild(): void;
+        reset(): void;
+        isReady(): boolean;
+        resetRefreshCounter(): void;
+        setFragment(fragment: any): void;
+        refreshRate: number;
+        _shouldRender(): boolean;
+        getRenderSize(): number;
+        resize(size: number, generateMipMaps: boolean): void;
+        private _checkUniform(uniformName);
+        setTexture(name: string, texture: Texture): ProceduralTexture;
+        setFloat(name: string, value: number): ProceduralTexture;
+        setFloats(name: string, value: number[]): ProceduralTexture;
+        setColor3(name: string, value: Color3): ProceduralTexture;
+        setColor4(name: string, value: Color4): ProceduralTexture;
+        setVector2(name: string, value: Vector2): ProceduralTexture;
+        setVector3(name: string, value: Vector3): ProceduralTexture;
+        setMatrix(name: string, value: Matrix): ProceduralTexture;
+        render(useCameraPostProcess?: boolean): void;
+        clone(): ProceduralTexture;
+        dispose(): void;
     }
 }
 
@@ -21399,75 +21426,5 @@ declare module BABYLON {
          */
         static Parse(source: any, scene: Scene, rootUrl: string): StandardRenderingPipeline;
         static LuminanceSteps: number;
-    }
-}
-
-declare module BABYLON {
-    class CustomProceduralTexture extends ProceduralTexture {
-        private _animate;
-        private _time;
-        private _config;
-        private _texturePath;
-        constructor(name: string, texturePath: any, size: number, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean);
-        private loadJson(jsonUrl);
-        isReady(): boolean;
-        render(useCameraPostProcess?: boolean): void;
-        updateTextures(): void;
-        updateShaderUniforms(): void;
-        animate: boolean;
-    }
-}
-
-declare module BABYLON {
-    class ProceduralTexture extends Texture {
-        isCube: boolean;
-        private _size;
-        _generateMipMaps: boolean;
-        isEnabled: boolean;
-        private _currentRefreshId;
-        private _refreshRate;
-        onGenerated: () => void;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _uniforms;
-        private _samplers;
-        private _fragment;
-        _textures: {
-            [key: string]: Texture;
-        };
-        private _floats;
-        private _floatsArrays;
-        private _colors3;
-        private _colors4;
-        private _vectors2;
-        private _vectors3;
-        private _matrices;
-        private _fallbackTexture;
-        private _fallbackTextureUsed;
-        private _engine;
-        constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture?: Nullable<Texture>, generateMipMaps?: boolean, isCube?: boolean);
-        private _createIndexBuffer();
-        _rebuild(): void;
-        reset(): void;
-        isReady(): boolean;
-        resetRefreshCounter(): void;
-        setFragment(fragment: any): void;
-        refreshRate: number;
-        _shouldRender(): boolean;
-        getRenderSize(): number;
-        resize(size: number, generateMipMaps: boolean): void;
-        private _checkUniform(uniformName);
-        setTexture(name: string, texture: Texture): ProceduralTexture;
-        setFloat(name: string, value: number): ProceduralTexture;
-        setFloats(name: string, value: number[]): ProceduralTexture;
-        setColor3(name: string, value: Color3): ProceduralTexture;
-        setColor4(name: string, value: Color4): ProceduralTexture;
-        setVector2(name: string, value: Vector2): ProceduralTexture;
-        setVector3(name: string, value: Vector3): ProceduralTexture;
-        setMatrix(name: string, value: Matrix): ProceduralTexture;
-        render(useCameraPostProcess?: boolean): void;
-        clone(): ProceduralTexture;
-        dispose(): void;
     }
 }

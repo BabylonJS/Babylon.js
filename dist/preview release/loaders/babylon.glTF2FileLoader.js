@@ -194,6 +194,28 @@ var BABYLON;
                 }
             }
         };
+        GLTFFileLoader.prototype.loadAssetsAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
+            try {
+                var loaderData = this._parse(data);
+                this._loader = this._getLoader(loaderData);
+                this._loader.importMeshAsync(null, scene, loaderData, rootUrl, function (meshes, particleSystems, skeletons) {
+                    var container = new BABYLON.AssetContainer(scene);
+                    Array.prototype.push.apply(container.meshes, meshes);
+                    Array.prototype.push.apply(container.particleSystems, particleSystems);
+                    Array.prototype.push.apply(container.skeletons, skeletons);
+                    container.removeAllFromScene();
+                    onSuccess(container);
+                }, onProgress, onError);
+            }
+            catch (e) {
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
+            }
+        };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
@@ -1375,6 +1397,14 @@ var BABYLON;
                     sampler.interpolation = sampler.interpolation || "LINEAR";
                     var getNextKey;
                     switch (sampler.interpolation) {
+                        case "STEP": {
+                            getNextKey = function (frameIndex) { return ({
+                                frame: inputData[frameIndex],
+                                value: getNextOutputValue(),
+                                interpolation: BABYLON.AnimationKeyInterpolation.STEP
+                            }); };
+                            break;
+                        }
                         case "LINEAR": {
                             getNextKey = function (frameIndex) { return ({
                                 frame: inputData[frameIndex],

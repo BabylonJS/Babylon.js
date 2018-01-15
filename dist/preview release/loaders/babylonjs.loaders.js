@@ -89,6 +89,15 @@ var BABYLON;
             }
             return result;
         };
+        STLFileLoader.prototype.loadAssets = function (scene, data, rootUrl, onError) {
+            var container = new BABYLON.AssetContainer(scene);
+            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            if (result) {
+                container.removeAllFromScene();
+                return container;
+            }
+            return null;
+        };
         STLFileLoader.prototype.isBinary = function (data) {
             // check if file size is correct for binary stl
             var faceSize, nFaces, reader;
@@ -443,6 +452,15 @@ var BABYLON;
         OBJFileLoader.prototype.load = function (scene, data, rootUrl) {
             //Get the 3D model
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
+        };
+        OBJFileLoader.prototype.loadAssets = function (scene, data, rootUrl, onError) {
+            var container = new BABYLON.AssetContainer(scene);
+            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            if (result) {
+                container.removeAllFromScene();
+                return container;
+            }
+            return null;
         };
         /**
          * Read the OBJ file and create an Array of meshes.
@@ -1158,6 +1176,28 @@ var BABYLON;
                 var loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
                 this._loader.loadAsync(scene, loaderData, rootUrl, onSuccess, onProgress, onError);
+            }
+            catch (e) {
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
+            }
+        };
+        GLTFFileLoader.prototype.loadAssetsAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
+            try {
+                var loaderData = this._parse(data);
+                this._loader = this._getLoader(loaderData);
+                this._loader.importMeshAsync(null, scene, loaderData, rootUrl, function (meshes, particleSystems, skeletons) {
+                    var container = new BABYLON.AssetContainer(scene);
+                    Array.prototype.push.apply(container.meshes, meshes);
+                    Array.prototype.push.apply(container.particleSystems, particleSystems);
+                    Array.prototype.push.apply(container.skeletons, skeletons);
+                    container.removeAllFromScene();
+                    onSuccess(container);
+                }, onProgress, onError);
             }
             catch (e) {
                 if (onError) {
@@ -4497,6 +4537,14 @@ var BABYLON;
                     sampler.interpolation = sampler.interpolation || "LINEAR";
                     var getNextKey;
                     switch (sampler.interpolation) {
+                        case "STEP": {
+                            getNextKey = function (frameIndex) { return ({
+                                frame: inputData[frameIndex],
+                                value: getNextOutputValue(),
+                                interpolation: BABYLON.AnimationKeyInterpolation.STEP
+                            }); };
+                            break;
+                        }
                         case "LINEAR": {
                             getNextKey = function (frameIndex) { return ({
                                 frame: inputData[frameIndex],
