@@ -7,13 +7,14 @@ module.exports = function (moduleName, perFile, declared, depTree) {
         let basename = (path.basename(file.path, ".ts"));
         depTree[basename] = depTree[basename] || [];
         // detect dependencies
-        let depReg1 = /[:,][ ]{0,1}([_A-Za-z]\w*)/g;
+        let depReg1 = /[:,][ ]{0,1}([A-Z]\w*)/g;
         let depReg2 = /<([A-Z]\w*)(\[\]){0,1}>/g;
         let depReg3 = /[\s(]([A-Z]\w*)\./g;
-        let depReg4 = /[new|extends|implements] ([A-Z]\w*)/g;
+        let depReg4 = /[extends|implements] ([A-Z]\w*)/g;
+        let depReg5 = /new ([A-Z]\w*)/g;
 
         let dependencies = [];
-        fileContent = file.contents.toString();
+        fileContent = file.contents.toString().replace(/(\/\*([\s\S]*?)\*\/)|(\/\/(.*)$)/gm, "");
         function findWhereDeclared(objectName) {
             let fileLocator;
             Object.keys(perFile).some((filename => {
@@ -28,11 +29,14 @@ module.exports = function (moduleName, perFile, declared, depTree) {
         }
 
         //if (basename === "babylon.webVRCamera") {
-        [depReg1, depReg2, depReg3, depReg4].forEach(reg => {
+        [depReg4, depReg1, depReg5, depReg3, depReg2].forEach((reg, idx) => {
             var match = reg.exec(fileContent);
             while (match != null) {
                 if (match[1]) {
                     let dep = match[1];
+                    if (basename === "babylon.poseEnabledController") {
+                        console.log(dep, idx);
+                    }
                     //find if it is declared internally
                     if (perFile[basename].declarations.indexOf(dep) === -1) {
                         // not internally? maybe it is in core?
@@ -43,10 +47,15 @@ module.exports = function (moduleName, perFile, declared, depTree) {
                             let whereDeclared = (findWhereDeclared(dep));
                             if (whereDeclared) {
                                 perFile[basename].dependencies.push(dep);
+                                if (basename === "babylon.poseEnabledController") {
+                                    console.log("adding ", dep, idx === 2);
+                                }
                                 depTree[basename].push({
                                     name: dep,
                                     file: whereDeclared,
-                                    module: perFile[whereDeclared].module
+                                    module: perFile[whereDeclared].module,
+                                    main: idx === 0, // is it a main import
+                                    newDec: idx === 2 // is it "new"
                                 });
                             }
                         }
