@@ -14,11 +14,15 @@
         private _currentFrameCounter = 0;
         public cellIndex: number = 0;
 
-        constructor(private particleSystem: ParticleSystem) {
+        constructor(public particleSystem: ParticleSystem, public generation = 0) {
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
 
+            this.setCellInfoFromSystem();
+        }
+
+        public setCellInfoFromSystem(): void {
             this.cellIndex = this.particleSystem.startSpriteCellID;
 
             if (this.particleSystem.spriteCellChangeSpeed == 0) {

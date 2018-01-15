@@ -108,6 +108,7 @@
         private _currentRenderId = -1;
 
         private _alive: boolean;
+
         private _started = false;
         private _stopped = false;
         private _actualFrame = 0;
@@ -127,6 +128,20 @@
             return this._isAnimationSheetEnabled;
         }
         // end of sheet animation
+
+        // sub emitters
+        public subEmitters: ParticleSystem[];
+
+        // TODO need to lazy loaded
+        public createdSubSystems = new Array<SubParticleSystem>();
+        public stockSubSystems = new StringDictionary<Array<SubParticleSystem>>();
+
+        private _isEmitting = false;
+        // to be overriden by subSystems
+        public stoppedEmitting(): void {
+
+        }
+        //end of sub emitter
 
         constructor(public name: string, capacity: number, scene: Scene, customEffect: Nullable<Effect> = null, private _isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
             this.id = name;
@@ -173,6 +188,7 @@
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
                         this.recycleParticle(particle);
                         index--;
+                        this.emitFromParticle(particle);
                         continue;
                     }
                     else {
@@ -215,11 +231,15 @@
         }
 
         public recycleParticle(particle: Particle): void {
-            var lastParticle = <Particle>this.particles.pop();
+            ParticleSystem.recycleParticle(this, this, particle);
+        }
+
+        public static recycleParticle(rootSystem: ParticleSystem, currentSystem: ParticleSystem, particle: Particle) {
+            var lastParticle = <Particle>currentSystem.particles.pop();
 
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
-                this._stockParticles.push(lastParticle);
+                rootSystem._stockParticles.push(lastParticle);
             }
         }
 
@@ -244,6 +264,40 @@
         public stop(): void {
             this._stopped = true;
         }
+
+        public stopSubEmitters(): void {
+            if (this.createdSubSystems.length === 0)
+                return;
+
+            this.createdSubSystems.forEach(subSystem => {
+                subSystem.stop();
+            });
+        }
+
+        public static emitFromGeneration(system: ParticleSystem, particle: Particle, generation: number): void {
+            if (!system.subEmitters || system.subEmitters.length === 0 || generation >= system.subEmitters.length) {
+                return;
+            }
+
+            var generationString = generation.toString();
+
+            if (!system.stockSubSystems.contains(generationString) || (system.stockSubSystems.get(generationString) as (Array<SubParticleSystem>)).length === 0) {
+                var subSystem = system.subEmitters[generation].cloneToSubSystem(system.name, particle.position, generation, system);
+                system.createdSubSystems.push(subSystem);
+                subSystem.start();
+            }
+            else {
+                var stockSubSystem = (system.stockSubSystems.get(generationString) as (Array<SubParticleSystem>)).pop() as SubParticleSystem;
+                stockSubSystem.emitter = particle.position;
+                if (system.subEmitters[generation].manualEmitCount != -1)
+                    stockSubSystem.manualEmitCount = system.subEmitters[generation].manualEmitCount;
+            }
+        }
+        // sub emitter
+        public emitFromParticle(particle: Particle): void {
+            ParticleSystem.emitFromGeneration(this, particle, 0);
+        }
+        // end of sub emitter
 
         // animation sheet
 
@@ -289,9 +343,38 @@
             this._vertexData[offset + 11] = particle.cellIndex;
         }
 
+        public static createParticle(rootSystem: ParticleSystem, currentSystem: ParticleSystem): Particle {
+            let particle: Particle;
+            if (rootSystem._stockParticles.length !== 0) {
+                particle = <Particle>rootSystem._stockParticles.pop();
+                particle.age = 0;
+                particle.cellIndex = currentSystem.startSpriteCellID;
+                if (currentSystem !== particle.particleSystem) {
+                    particle.particleSystem = currentSystem;
+                    particle.setCellInfoFromSystem();
+                }
+            } else {
+                particle = new Particle(currentSystem);
+            }
+            return particle;
+        }
+
+        public createParticle(): Particle {
+            return ParticleSystem.createParticle(this, this);
+        }
+
         private _update(newParticles: number): void {
             // Update current
             this._alive = this.particles.length > 0;
+
+            if (this._alive) {
+                this._isEmitting = true;
+            }
+
+            if (!this._alive && this._isEmitting) {
+                this._isEmitting = false;
+                this.stoppedEmitting();
+            }
 
             this.updateFunction(this.particles);
 
@@ -312,13 +395,7 @@
                     break;
                 }
 
-                if (this._stockParticles.length !== 0) {
-                    particle = <Particle>this._stockParticles.pop();
-                    particle.age = 0;
-                    particle.cellIndex = this.startSpriteCellID;
-                } else {
-                    particle = new Particle(this);
-                }
+                particle = this.createParticle();
 
                 this.particles.push(particle);
 
@@ -578,6 +655,12 @@
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
+
+            if (this.subEmitters) {
+                this.subEmitters.forEach(emitter => {
+                    emitter.dispose();
+                });
+            }
         }
 
         public createSphereEmitter(radius = 1): SphereParticleEmitter {
@@ -619,6 +702,29 @@
             return ((random * (max - min)) + min);
         }
 
+        public cloneToSubSystem(name: string, newEmitter: Vector3, generation: number, root: ParticleSystem): SubParticleSystem {
+            var custom: Nullable<Effect> = null;
+            var program: any = null;
+            if (this.customShader != null) {
+                program = this.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var result = new SubParticleSystem(name, this._capacity, this._scene, generation, root, custom);
+            result.customShader = program;
+            Tools.DeepCopy(this, result, ["customShader"]);
+            result.name = name + "Child" + root.count++;
+            result.id = result.name;
+            result.emitter = newEmitter;
+            result.particleEmitterType = this.particleEmitterType;
+            if (this.particleTexture) {
+                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+            }
+
+            return result;
+        }
+
+        private count = 0;
 
         // Clone
         public clone(name: string, newEmitter: any): ParticleSystem {
