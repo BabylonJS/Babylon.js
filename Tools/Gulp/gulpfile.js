@@ -25,6 +25,8 @@ var webserver = require("gulp-webserver");
 var path = require("path");
 var sass = require("gulp-sass");
 var webpack = require("webpack-stream");
+var typedoc = require("gulp-typedoc");
+var validateTypedoc = require("./gulp-validateTypedoc");
 
 var config = require("./config.json");
 
@@ -435,8 +437,8 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    // runSequence("typescript-all", "intellisense", "tests-browserStack", cb);
-    runSequence("typescript-all", "intellisense", cb);
+    runSequence("typescript-all", "intellisense", "typedoc-all", "tests-validation-virtualscreen", "tests-validation-browserstack", cb);
+    // runSequence("typescript-all", "intellisense", "typedoc-all", "tests-validation-virtualscreen", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -575,32 +577,9 @@ gulp.task("webserver", function () {
 gulp.task("run", ["watch", "webserver"], function () {
 });
 
-
-gulp.task("tests-integration", function (done) {
-    var kamaServerOptions = {
-        configFile: __dirname + "/../../tests/validation/karma.conf.js",
-        singleRun: false
-    };
-
-    var server = new karmaServer(kamaServerOptions, done);
-    server.start();
-});
-
-gulp.task("tests-browserStack", function (done) {
-    if (!process.env.TRAVIS) {
-        done();
-        return;
-    }
-
-    var kamaServerOptions = {
-        configFile: __dirname + "/../../tests/validation/karma.conf.browserstack.js",
-        singleRun: true
-    };
-
-    var server = new karmaServer(kamaServerOptions, done);
-    server.start();
-});
-
+/**
+ * Cleans map and js files from the src folder.
+ */
 gulp.task("clean-JS-MAP", function () {
     return del([
         "../../src/**/*.js.map", "../../src/**/*.js"
@@ -809,3 +788,105 @@ gulp.task("modules", ["prepare-dependency-tree"], function () {
     // run da tasks man!
     return merge2(tasks);
 })
+
+/**
+ * Generate the TypeDoc JSON output in order to create code metadata.
+ */
+gulp.task("typedoc-generate", function () {
+    return gulp
+        .src(["../../dist/preview release/babylon.d.ts"])
+        .pipe(typedoc({
+            // TypeScript options (see typescript docs)
+            mode: "modules",
+            module: "commonjs",
+            target: "es5",
+            includeDeclarations: true,
+ 
+            // Output options (see typedoc docs)
+            json: config.build.typedocJSON,
+ 
+            // TypeDoc options (see typedoc docs)
+            ignoreCompilerErrors: true,
+
+            readme: "none",
+
+            excludeExternals: true,
+            excludePrivate: true,
+            excludeProtected: true,
+
+            entryPoint: ["\"babylon.d\"", "BABYLON"]
+        }));
+});
+
+/**
+ * Validate the TypeDoc JSON output against the current baselin to ensure our code is correctly documented.
+ * (in the newly introduced areas)
+ */
+gulp.task("typedoc-validate", function () {
+    return gulp.src(config.build.typedocJSON)
+        .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, false));
+});
+
+/**
+ * Generate the validation reference to ensure our code is correctly documented.
+ */
+gulp.task("typedoc-generateValidationBaseline", function () {
+    return gulp.src(config.build.typedocJSON)
+    .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, true));
+});
+
+/**
+ * Validate the code comments and style case convention through typedoc and
+ * generate the new baseline.
+ */
+gulp.task("typedoc-all", function (cb) {
+    runSequence("typedoc-generate", "typedoc-validate", "typedoc-generateValidationBaseline", cb);
+});
+
+/**
+ * Launches the KARMA validation tests in chrome in order to debug them.
+ * (Can only be launch locally.)
+ */
+gulp.task("tests-validation-karma", function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.js",
+        singleRun: false
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-validation-virtualscreen", function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.js",
+        singleRun: true,
+        browsers: ['Firefox']
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA validation tests in browser stack for remote and cross devices validation tests.
+ * (Can only be launch from secure branches.)
+ */
+gulp.task("tests-validation-browserstack", function (done) {
+    if (!process.env.BROWSER_STACK_USERNAME) {
+        done();
+        return;
+    }
+
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.browserstack.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
