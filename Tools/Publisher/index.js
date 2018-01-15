@@ -87,6 +87,10 @@ function processCore(package, version) {
             objectName: "babylon.d.ts"
         },
         {
+            path: basePath + "/es6.js",
+            objectName: "es6.js"
+        },
+        {
             path: basePath + "/babylon.js",
             objectName: "babylon.js"
         },
