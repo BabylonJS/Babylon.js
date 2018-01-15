@@ -6,7 +6,7 @@ module BABYLON {
 
         startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             // measure the direction Vector from the emitter to the particle.
-            var direction = particle.position.subtract(worldMatrix.getTranslation());
+            var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
             Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
         }
 
