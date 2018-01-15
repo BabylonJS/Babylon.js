@@ -6,6 +6,7 @@ var srcToVariable = require("gulp-content-to-variable");
 var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
+var addES6Exports = require("./gulp-addES6Exports");
 var babylonModuleExports = require("./gulp-babylonModule");
 var babylonES6ModuleExports = require("./gulp-es6ModuleExports");
 var dtsModuleSupport = require("./gulp-dtsModuleSupport");
@@ -210,23 +211,33 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
 gulp.task("build", ["shaders"], function () {
     var filesToProcess = determineFilesToProcess("files");
     var directFilesToProcess = determineFilesToProcess("directFiles");
-    return merge2(
+    let mergedStreams = merge2(
         gulp.src(filesToProcess).
             pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
         includeShadersStream,
         gulp.src(directFilesToProcess)
     )
-        .pipe(concat(config.build.filename))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addModuleExports("BABYLON"))
-        .pipe(gulp.dest(config.build.outputDirectory))
-        .pipe(rename(config.build.minFilename))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(config.build.outputDirectory));
+    return merge2(
+        mergedStreams
+            .pipe(concat(config.build.filename))
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(replace(decorateSearchRegex, ""))
+            .pipe(addModuleExports("BABYLON"))
+            .pipe(gulp.dest(config.build.outputDirectory))
+            .pipe(rename(config.build.minFilename))
+            .pipe(uglify())
+            .pipe(optimisejs())
+            .pipe(gulp.dest(config.build.outputDirectory)),
+        mergedStreams
+            .pipe(concat("es6.js"))
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(replace(decorateSearchRegex, ""))
+            .pipe(addES6Exports("BABYLON"))
+            .pipe(gulp.dest(config.build.outputDirectory))
+    );
 });
 
 /*
