@@ -191,10 +191,10 @@
                 // Metadata
                 if (source.metadata && source.metadata.clone) {
                     this.metadata = source.metadata.clone();
-                 } else {
+                } else {
                     this.metadata = source.metadata;
-                 }                
-                
+                }
+
                 // Tags
                 if (Tags && Tags.HasTags(source)) {
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
@@ -598,14 +598,76 @@
         }
 
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        public isReady(): boolean {
+        public isReady(forceInstanceSupport = false): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            return super.isReady();
+            if (!super.isReady()) {
+                return false;
+            }
+
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
+            let engine = this.getEngine();
+            let scene = this.getScene();
+            let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+
+            this.computeWorldMatrix();
+
+            let mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                let currentAlphaTestingState = engine.getAlphaTesting();
+
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var subMesh of this.subMeshes) {
+                        let effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                engine.setAlphaTesting(currentAlphaTestingState);
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        engine.setAlphaTesting(currentAlphaTestingState);
+                        return false;
+                    }
+                }
+
+                engine.setAlphaTesting(currentAlphaTestingState);
+            }
+
+            // Shadows
+            for (var light of this._lightSources) {
+                let generator = light.getShadowGenerator();
+
+                if (generator) {
+                    for (var subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // LOD
+            for (var lod of this._LODLevels) {
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /**

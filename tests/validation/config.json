@@ -15,9 +15,8 @@
     },
     {
       "title": "Espilit",
-      "renderCount": 10,
       "sceneFolder": "/Scenes/Espilit/",
-      "sceneFilename": "Espilit.binary.babylon",
+      "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
     },
     {
@@ -65,7 +64,6 @@
     },
     {
       "title": "Flat2009",
-      "renderCount": 20,
       "sceneFolder": "/Scenes/Flat2009/",
       "sceneFilename": "Flat2009.babylon",
       "referenceImage": "Flat2009.png"
@@ -97,7 +95,6 @@
     },
     {
       "title": "Soft Shadows",
-      "renderCount": 5,
       "scriptToRun": "/Demos/SoftShadows/softShadows.js",
       "functionToCall": "CreateSoftShadowsTestScene",
       "referenceImage": "softShadows.png"
@@ -110,7 +107,6 @@
     },
     {
       "title": "Highlights",
-      "renderCount": 10,
       "scriptToRun": "/Demos/Highlights/highlights.js",
       "functionToCall": "CreateHighlightsScene",
       "referenceImage": "highlights.png",
@@ -148,14 +144,12 @@
     },
     {
       "title": "Self shadowing",
-      "renderCount": 10,
       "scriptToRun": "/Demos/SelfShadowing/shadows.js",
       "functionToCall": "CreateShadowsTestScene",
       "referenceImage": "selfShadowing.png"
     },
     {
       "title": "Advanced shadows",
-      "renderCount": 10,
       "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
       "functionToCall": "CreateAdvancedShadowsTestScene",
       "referenceImage": "advancedShadows.png",
@@ -163,7 +157,6 @@
     },
     {
       "title": "point light shadows",
-      "renderCount": 10,
       "scriptToRun": "/Demos/PointLightShadowMap/pointLightShadows.js",
       "functionToCall": "CreatePointLightShadowScene",
       "referenceImage": "pointLightShadows.png",
@@ -183,56 +176,49 @@
     },
     {
       "title": "Custom render target",
+      "renderCount": 20,
       "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
-      "renderCount": 10,
       "functionToCall": "CreateCustomRenderTargetTestScene",
       "referenceImage": "customRTT.png"
     },
     {
       "title": "GLTF Normals",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFNormals/index.js",
       "functionToCall": "createScene",
       "referenceImage": "gltfnormals.png"
     },
     {
       "title": "GLTF Material",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createMaterialScene",
       "referenceImage": "gltfMaterial.png"
     },
     {
       "title": "GLTF Material Alpha",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createMaterialAlphaScene",
       "referenceImage": "gltfMaterialAlpha.png"
     },
     {
       "title": "GLTF Primitive Attribute",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createPrimitiveAttributeScene",
       "referenceImage": "gltfPrimitiveAttribute.png"
     },
     {
       "title": "GLTF Metallic Roughness",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createMaterialMetallicRoughnessScene",
       "referenceImage": "gltfMaterialMetallicRoughness.png"
     },
     {
       "title": "GLTF Specular Glossiness",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createMaterialSpecularGlossinessScene",
       "referenceImage": "gltfMaterialSpecularGlossiness.png"
     },
     {
       "title": "GLTF Texture Sampler",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createTextureSamplerScene",
       "referenceImage": "gltfTextureSampler.png"
@@ -248,19 +234,16 @@
     {
       "title": "Asset Containers",
       "playgroundId": "#P3U079#19",
-      "renderCount": 20,
       "referenceImage": "assetContainer.png"
     },
     {
       "title": "GLTF Mesh Primitive Attribute Test",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GLTFMeshPrimitiveAttributeTest/index.js",
       "functionToCall": "createScene",
       "referenceImage": "gltfMeshPrimAttribTest.png"
     },
     {
       "title": "PBR glossy",
-      "renderCount": 20,
       "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
       "scriptToRun": "/Demos/PBRGlossy/index.js",
       "functionToCall": "CreatePBRGlossyScene",
@@ -268,14 +251,13 @@
     },
     {
       "title": "PBR rough",
-      "renderCount": 20,
       "scriptToRun": "/Demos/PBRRough/index.js",
       "functionToCall": "CreatePBRRoughScene",
       "referenceImage": "pbrrough.png"
     },
     {
       "title": "Reflection probes",
-      "renderCount": 10,
+      "renderCount": 20,
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
       "functionToCall": "CreateReflectionProbeTestScene ",
       "referenceImage": "refprobe.png"
@@ -297,44 +279,38 @@
     },
     {
       "title": "MultiSample render targets",
-      "renderCount": 10,
+      "renderCount": 20,
       "playgroundId": "#12MKMN#0",
       "referenceImage": "MultiSample render targets.png"
     },
     {
       "title": "Default rendering pipeline",
-      "renderCount": 20,
       "playgroundId": "#5XB8YT#2",
       "referenceImage": "DefaultRenderingPipeline.png"
     },
     {
       "title": "Billboard",
-      "renderCount": 20,
       "playgroundId": "#UJEIL#13",
       "referenceImage": "Billboard.png"
     },
     {
       "title": "setParent",
-      "renderCount": 20,
       "playgroundId": "#JD49CT#2",
       "referenceImage": "setParent.png"
     },
     {
       "title": "GUI",
-      "renderCount": 20,
       "scriptToRun": "/Demos/GUI/gui.js",
       "functionToCall": "createScene",
       "referenceImage": "GUI.png"
     },
     {
       "title": "Up Vector",
-      "renderCount": 20,
       "playgroundId": "#2FNBTG#27",
       "referenceImage": "upVector.png"
     },
     {
       "title": "Procedural textures",
-      "renderCount": 10,
       "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
       "functionToCall": "CreateProceduralTextureTestScene",
       "referenceImage": "procedural.png",
@@ -343,7 +319,6 @@
     },
     {
       "title": "Instances",
-      "renderCount": 10,
       "scriptToRun": "/Demos/Instances/instances.js",
       "functionToCall": "CreateInstancesTestScene",
       "referenceImage": "instances.png",
@@ -352,7 +327,6 @@
     },
     {
       "title": "Instanced Bones",
-      "renderCount": 10,
       "scriptToRun": "/Demos/InstancedBones/bones2.js",
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",

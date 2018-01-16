@@ -87,6 +87,10 @@ function processCore(package, version) {
             objectName: "babylon.d.ts"
         },
         {
+            path: basePath + "/es6.js",
+            objectName: "es6.js"
+        },
+        {
             path: basePath + "/babylon.js",
             objectName: "babylon.js"
         },
@@ -108,7 +112,8 @@ function processCore(package, version) {
         }
     ];
 
-    fs.readdirSync(basePath + '/modules/').forEach(object => {
+    // remove the modules for now
+    /*fs.readdirSync(basePath + '/modules/').forEach(object => {
         console.log(object);
         if (fs.statSync(basePath + '/modules/' + object).isDirectory) {
             files.push({
@@ -117,7 +122,7 @@ function processCore(package, version) {
                 isDir: true
             });
         }
-    })
+    })*/
 
     //copy them to the package path
     files.forEach(file => {
@@ -148,7 +153,7 @@ function processCore(package, version) {
     shelljs.exec('npm publish \"' + basePath + '/package/' + "\"");
 
     // remove package directory
-    //fs.removeSync(basePath + '/package/');
+    fs.removeSync(basePath + '/package/');
 
     // now update the main package.json
     packageJson.files = packageJson.files.map(file => {
