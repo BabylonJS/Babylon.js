@@ -247,7 +247,7 @@
             }
 
             // Alpha test
-            if (engine.getAlphaTesting()) {
+            if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
                 defines.push("#define ALPHATEST");
             }
 

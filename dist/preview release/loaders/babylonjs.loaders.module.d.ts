@@ -883,7 +883,7 @@ declare module BABYLON.GLTF2 {
         channels: IGLTFAnimationChannel[];
         samplers: IGLTFAnimationSampler[];
         index: number;
-        targets: any[];
+        babylonAnimationGroup: AnimationGroup;
     }
     interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;

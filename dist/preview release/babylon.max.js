@@ -7483,6 +7483,26 @@ var BABYLON;
             }
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
+        /**
+         * Generates an image screenshot from the specified camera.
+         *
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution.
+         * @param successCallback The callback receives a single parameter which contains the
+         * screenshot as a string of base64-encoded characters. This string can be assigned to the
+         * src parameter of an <img> to display it.
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types.
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @constructor
+         */
         Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples, antialiasing, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             if (samples === void 0) { samples = 1; }
@@ -8885,9 +8905,10 @@ var BABYLON;
     var Engine = /** @class */ (function () {
         /**
          * @constructor
-         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
-         * @param {boolean} [antialias] - enable antialias
-         * @param options - further options to be sent to the getContext function
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param antialias defines enable antialiasing (default: false)
+         * @param options defines further options to be sent to the getContext() function
+         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         function Engine(canvasOrContext, antialias, options, adaptToDeviceRatio) {
             if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
@@ -8989,6 +9010,8 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
+            this._activeChannel = 0;
+            this._currentTextureChannel = -1;
             this._boundTexturesCache = {};
             this._boundTexturesStack = new Array();
             this._compiledEffects = {};
@@ -9904,7 +9927,7 @@ var BABYLON;
             for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
-            this._activeChannel = -1;
+            this._currentTextureChannel = -1;
         };
         Engine.prototype.isDeterministicLockStep = function () {
             return this._deterministicLockstep;
@@ -11294,12 +11317,6 @@ var BABYLON;
         Engine.prototype.getAlphaMode = function () {
             return this._alphaMode;
         };
-        Engine.prototype.setAlphaTesting = function (enable) {
-            this._alphaTest = enable;
-        };
-        Engine.prototype.getAlphaTesting = function () {
-            return !!this._alphaTest;
-        };
         // Textures
         Engine.prototype.wipeCaches = function (bruteForce) {
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
@@ -12687,90 +12704,12 @@ var BABYLON;
             }
             this._currentEffect = null;
         };
-        Engine.prototype._activateTextureChannel = function (channel) {
-            if (this._activeChannel !== channel && channel > -1) {
-                this._gl.activeTexture(this._gl.TEXTURE0 + channel);
-                this._activeChannel = channel;
-            }
-        };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
             var index = this._boundTexturesStack.indexOf(internalTexture);
             if (index > -1 && index !== this._boundTexturesStack.length - 1) {
                 this._boundTexturesStack.splice(index, 1);
                 this._boundTexturesStack.push(internalTexture);
             }
-        };
-        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
-            var currentSlot = internalTexture._designatedSlot;
-            internalTexture._designatedSlot = -1;
-            var index = this._boundTexturesStack.indexOf(internalTexture);
-            if (index > -1) {
-                this._boundTexturesStack.splice(index, 1);
-                if (currentSlot > -1) {
-                    this._boundTexturesCache[currentSlot] = null;
-                    this._nextFreeTextureSlots.push(currentSlot);
-                }
-            }
-            return currentSlot;
-        };
-        Engine.prototype._bindTextureDirectly = function (target, texture, doNotBindUniformToTextureChannel) {
-            if (doNotBindUniformToTextureChannel === void 0) { doNotBindUniformToTextureChannel = false; }
-            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
-            var isTextureForRendering = texture && texture._initialSlot > -1;
-            if (currentTextureBound !== texture) {
-                if (currentTextureBound && !this.disableTextureBindingOptimization) {
-                    this._removeDesignatedSlot(currentTextureBound);
-                }
-                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                if (this._activeChannel >= 0) {
-                    this._boundTexturesCache[this._activeChannel] = texture;
-                    if (isTextureForRendering && !this.disableTextureBindingOptimization) {
-                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
-                        if (slotIndex > -1) {
-                            this._nextFreeTextureSlots.splice(slotIndex, 1);
-                        }
-                        this._boundTexturesStack.push(texture);
-                    }
-                }
-            }
-            if (isTextureForRendering && this._activeChannel > -1) {
-                texture._designatedSlot = this._activeChannel;
-                if (!doNotBindUniformToTextureChannel) {
-                    this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
-                }
-            }
-        };
-        Engine.prototype._bindTexture = function (channel, texture) {
-            if (channel < 0) {
-                return;
-            }
-            if (texture) {
-                channel = this._getCorrectTextureChannel(channel, texture);
-            }
-            this._activateTextureChannel(channel);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
-        };
-        Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
-            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
-        };
-        Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
-                this._activateTextureChannel(channel);
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-                if (this.webGLVersion > 1) {
-                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-                }
-            }
-        };
-        Engine.prototype.setTexture = function (channel, uniform, texture) {
-            if (channel < 0) {
-                return;
-            }
-            if (uniform) {
-                this._boundUniforms[channel] = uniform;
-            }
-            this._setTexture(channel, texture);
         };
         Engine.prototype._getCorrectTextureChannel = function (channel, internalTexture) {
             if (!internalTexture) {
@@ -12800,16 +12739,103 @@ var BABYLON;
             }
             return channel;
         };
+        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
+            var currentSlot = internalTexture._designatedSlot;
+            internalTexture._designatedSlot = -1;
+            var index = this._boundTexturesStack.indexOf(internalTexture);
+            if (index > -1) {
+                this._boundTexturesStack.splice(index, 1);
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
+            }
+            return currentSlot;
+        };
+        Engine.prototype._activateCurrentTexture = function () {
+            if (this._currentTextureChannel !== this._activeChannel) {
+                this._gl.activeTexture(this._gl.TEXTURE0 + this._activeChannel);
+                this._currentTextureChannel = this._activeChannel;
+            }
+        };
+        Engine.prototype._bindTextureDirectly = function (target, texture, forTextureDataUpdate) {
+            if (forTextureDataUpdate === void 0) { forTextureDataUpdate = false; }
+            if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
+                this._activeChannel = texture._designatedSlot;
+            }
+            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
+            var isTextureForRendering = texture && texture._initialSlot > -1;
+            if (currentTextureBound !== texture) {
+                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                    this._removeDesignatedSlot(currentTextureBound);
+                }
+                this._activateCurrentTexture();
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+                this._boundTexturesCache[this._activeChannel] = texture;
+                if (texture) {
+                    if (!this.disableTextureBindingOptimization) {
+                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
+                        this._boundTexturesStack.push(texture);
+                    }
+                    texture._designatedSlot = this._activeChannel;
+                }
+            }
+            else if (forTextureDataUpdate) {
+                this._activateCurrentTexture();
+            }
+            if (isTextureForRendering && !forTextureDataUpdate) {
+                this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
+            }
+        };
+        Engine.prototype._bindTexture = function (channel, texture) {
+            if (channel < 0) {
+                return;
+            }
+            if (texture) {
+                channel = this._getCorrectTextureChannel(channel, texture);
+            }
+            this._activeChannel = channel;
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+        };
+        Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
+            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+        };
+        Engine.prototype.unbindAllTextures = function () {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
+                this._activeChannel = channel;
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+                if (this.webGLVersion > 1) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                }
+            }
+        };
+        Engine.prototype.setTexture = function (channel, uniform, texture) {
+            if (channel < 0) {
+                return;
+            }
+            if (uniform) {
+                this._boundUniforms[channel] = uniform;
+            }
+            this._setTexture(channel, texture);
+        };
         Engine.prototype._bindSamplerUniformToChannel = function (sourceSlot, destination) {
             var uniform = this._boundUniforms[sourceSlot];
+            if (uniform._currentState === destination) {
+                return;
+            }
             this._gl.uniform1i(uniform, destination);
+            uniform._currentState = destination;
         };
         Engine.prototype._setTexture = function (channel, texture, isPartOfTextureArray) {
             if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
-                    this._activateTextureChannel(channel);
+                    this._activeChannel = channel;
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
@@ -12819,10 +12845,8 @@ var BABYLON;
                 return false;
             }
             // Video
-            var alreadyActivated = false;
             if (texture.video) {
-                this._activateTextureChannel(channel);
-                alreadyActivated = true;
+                this._activeChannel = channel;
                 texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
@@ -12852,9 +12876,7 @@ var BABYLON;
                 }
                 return false;
             }
-            if (!alreadyActivated) {
-                this._activateTextureChannel(channel);
-            }
+            this._activeChannel = channel;
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
@@ -13132,7 +13154,7 @@ var BABYLON;
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
             if (index >= 0) {
-                Engine.Instances.splice(index, 1);
+                delete Engine.Instances[index];
             }
             this._workingCanvas = null;
             this._workingContext = null;
@@ -13527,7 +13549,7 @@ var BABYLON;
             var request = BABYLON.Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add(function (request) {
-                _this._activeRequests.splice(_this._activeRequests.indexOf(request), 1);
+                delete _this._activeRequests[_this._activeRequests.indexOf(request)];
             });
             return request;
         };
@@ -18891,10 +18913,8 @@ var BABYLON;
             var engine = this._scene.getEngine();
             // Depth only
             if (this._depthOnlySubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 engine.setColorWrite(false);
                 this._renderAlphaTest(this._depthOnlySubMeshes);
-                engine.setAlphaTesting(false);
                 engine.setColorWrite(true);
             }
             // Opaque
@@ -18903,9 +18923,7 @@ var BABYLON;
             }
             // Alpha test
             if (this._alphaTestSubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 this._renderAlphaTest(this._alphaTestSubMeshes);
-                engine.setAlphaTesting(false);
             }
             var stencilState = engine.getStencilBuffer();
             engine.setStencilBuffer(false);
@@ -18982,10 +19000,8 @@ var BABYLON;
                     if (material && material.needDepthPrePass) {
                         var engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
-                        engine.setAlphaTesting(true);
                         engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
                         subMesh.render(false);
-                        engine.setAlphaTesting(false);
                         engine.setColorWrite(true);
                     }
                 }
@@ -25377,28 +25393,22 @@ var BABYLON;
             this.computeWorldMatrix();
             var mat = this.material || scene.defaultMaterial;
             if (mat) {
-                var currentAlphaTestingState = engine.getAlphaTesting();
                 if (mat.storeEffectOnSubMeshes) {
                     for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
                         var subMesh = _a[_i];
                         var effectiveMaterial = subMesh.getMaterial();
                         if (effectiveMaterial) {
-                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
                             if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
-                                engine.setAlphaTesting(currentAlphaTestingState);
                                 return false;
                             }
                         }
                     }
                 }
                 else {
-                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
                     if (!mat.isReady(this, hardwareInstancedRendering)) {
-                        engine.setAlphaTesting(currentAlphaTestingState);
                         return false;
                     }
                 }
-                engine.setAlphaTesting(currentAlphaTestingState);
             }
             // Shadows
             for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
@@ -28670,6 +28680,9 @@ var BABYLON;
                 this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         };
+        Material.prototype._shouldTurnAlphaTestOn = function (mesh) {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        };
         Material.prototype._afterBind = function (mesh) {
             this._scene._cachedMaterial = this;
             if (mesh) {
@@ -28718,10 +28731,9 @@ var BABYLON;
          */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
-            var localOptions = __assign({ alphaTest: null, clipPlane: false }, options);
+            var localOptions = __assign({ clipPlane: false }, options);
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
-            var engine = scene.getEngine();
             var checkReady = function () {
                 if (!_this._scene || !_this._scene.getEngine()) {
                     return;
@@ -28729,9 +28741,7 @@ var BABYLON;
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
-                var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
-                engine.setAlphaTesting(localOptions.alphaTest || (!_this.needAlphaBlendingForMesh(mesh) && _this.needAlphaTesting()));
                 if (localOptions.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
@@ -28755,7 +28765,6 @@ var BABYLON;
                         setTimeout(checkReady, 16);
                     }
                 }
-                engine.setAlphaTesting(alphaTestState);
                 if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
@@ -34757,14 +34766,21 @@ var BABYLON;
                 defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             }
         };
-        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances, forceAlphaTest) {
-            if (forceAlphaTest === void 0) { forceAlphaTest = false; }
+        /**
+         * Helper used to prepare the list of defines for shader compilation
+         * @param scene defines the current scene
+         * @param engine defines the current engine
+         * @param defines specifies the list of active defines
+         * @param useInstances defines if instances have to be turned on
+         * @param alphaTest defines if alpha testing has to be turned on
+         */
+        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances, alphaTest) {
             var changed = false;
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
                 defines["CLIPPLANE"] = !defines["CLIPPLANE"];
                 changed = true;
             }
-            if (defines["ALPHATEST"] !== (engine.getAlphaTesting() || forceAlphaTest)) {
+            if (defines["ALPHATEST"] !== alphaTest) {
                 defines["ALPHATEST"] = !defines["ALPHATEST"];
                 changed = true;
             }
@@ -35747,7 +35763,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -37342,7 +37358,7 @@ var BABYLON;
             // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest);
             // Attribs
             if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE) && mesh) {
                 var bufferMesh = null;
@@ -42677,7 +42693,7 @@ var BABYLON;
             this._targetedAnimations = new Array();
             this._animatables = new Array();
             this._from = Number.MAX_VALUE;
-            this._to = Number.MIN_VALUE;
+            this._to = -Number.MAX_VALUE;
             this._speedRatio = 1;
             this.onAnimationEndObservable = new BABYLON.Observable();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
@@ -42716,6 +42732,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AnimationGroup.prototype, "targetedAnimations", {
+            /**
+             * Gets the targeted animations for this animation group
+             */
+            get: function () {
+                return this._targetedAnimations;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
@@ -42740,11 +42766,13 @@ var BABYLON;
         /**
          * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
          * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smallest begin frame of all animations
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than the largest end frame of all animations
          */
         AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
-            beginFrame = Math.min(beginFrame, this._from);
+            if (beginFrame === void 0) { beginFrame = -Number.MAX_VALUE; }
+            if (endFrame === void 0) { endFrame = Number.MAX_VALUE; }
+            beginFrame = Math.max(beginFrame, this._from);
             endFrame = Math.min(endFrame, this._to);
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 var targetedAnimation = this._targetedAnimations[index];
@@ -42756,7 +42784,8 @@ var BABYLON;
                         frame: beginFrame,
                         value: startKey.value,
                         inTangent: startKey.inTangent,
-                        outTangent: startKey.outTangent
+                        outTangent: startKey.outTangent,
+                        interpolation: startKey.interpolation
                     };
                     keys.splice(0, 0, newKey);
                 }
@@ -42764,8 +42793,9 @@ var BABYLON;
                     var newKey = {
                         frame: endFrame,
                         value: endKey.value,
-                        inTangent: startKey.outTangent,
-                        outTangent: startKey.outTangent
+                        inTangent: endKey.outTangent,
+                        outTangent: endKey.outTangent,
+                        interpolation: endKey.interpolation
                     };
                     keys.push(newKey);
                 }
@@ -48770,7 +48800,7 @@ var BABYLON;
                 }
             }
             // Alpha test
-            if (engine.getAlphaTesting()) {
+            if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
                 defines.push("#define ALPHATEST");
             }
             var previousEffect = this._effect;
@@ -63048,11 +63078,9 @@ var BABYLON;
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
@@ -81964,7 +81992,7 @@ var BABYLON;
             // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, false);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
             // Attribs
             if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
                 if (mesh) {
