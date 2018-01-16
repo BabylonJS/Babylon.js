@@ -1,7 +1,7 @@
 {
-  "errors": 10955,
+  "errors": 10946,
   "babylon.typedoc.json": {
-    "errors": 10955,
+    "errors": 10946,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -15730,11 +15730,6 @@
             "MissingText": true
           }
         },
-        "getAlphaTesting": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "getAspectRatio": {
           "Comments": {
             "MissingText": true
@@ -16139,18 +16134,6 @@
               }
             },
             "noDepthWriteChange": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setAlphaTesting": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "enable": {
               "Comments": {
                 "MissingText": true
               }
@@ -24270,38 +24253,6 @@
               }
             },
             "useVertexAlpha": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "PrepareDefinesForFrameBoundValues": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "defines": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useInstances": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "forceAlphaTest": {
               "Comments": {
                 "MissingText": true
               }

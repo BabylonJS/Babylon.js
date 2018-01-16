@@ -11317,12 +11317,6 @@ var BABYLON;
         Engine.prototype.getAlphaMode = function () {
             return this._alphaMode;
         };
-        Engine.prototype.setAlphaTesting = function (enable) {
-            this._alphaTest = enable;
-        };
-        Engine.prototype.getAlphaTesting = function () {
-            return !!this._alphaTest;
-        };
         // Textures
         Engine.prototype.wipeCaches = function (bruteForce) {
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
@@ -18919,10 +18913,8 @@ var BABYLON;
             var engine = this._scene.getEngine();
             // Depth only
             if (this._depthOnlySubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 engine.setColorWrite(false);
                 this._renderAlphaTest(this._depthOnlySubMeshes);
-                engine.setAlphaTesting(false);
                 engine.setColorWrite(true);
             }
             // Opaque
@@ -18931,9 +18923,7 @@ var BABYLON;
             }
             // Alpha test
             if (this._alphaTestSubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 this._renderAlphaTest(this._alphaTestSubMeshes);
-                engine.setAlphaTesting(false);
             }
             var stencilState = engine.getStencilBuffer();
             engine.setStencilBuffer(false);
@@ -19010,10 +19000,8 @@ var BABYLON;
                     if (material && material.needDepthPrePass) {
                         var engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
-                        engine.setAlphaTesting(true);
                         engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
                         subMesh.render(false);
-                        engine.setAlphaTesting(false);
                         engine.setColorWrite(true);
                     }
                 }
@@ -25405,28 +25393,22 @@ var BABYLON;
             this.computeWorldMatrix();
             var mat = this.material || scene.defaultMaterial;
             if (mat) {
-                var currentAlphaTestingState = engine.getAlphaTesting();
                 if (mat.storeEffectOnSubMeshes) {
                     for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
                         var subMesh = _a[_i];
                         var effectiveMaterial = subMesh.getMaterial();
                         if (effectiveMaterial) {
-                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
                             if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
-                                engine.setAlphaTesting(currentAlphaTestingState);
                                 return false;
                             }
                         }
                     }
                 }
                 else {
-                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
                     if (!mat.isReady(this, hardwareInstancedRendering)) {
-                        engine.setAlphaTesting(currentAlphaTestingState);
                         return false;
                     }
                 }
-                engine.setAlphaTesting(currentAlphaTestingState);
             }
             // Shadows
             for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
@@ -28698,6 +28680,9 @@ var BABYLON;
                 this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         };
+        Material.prototype._shouldTurnAlphaTestOn = function (mesh) {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        };
         Material.prototype._afterBind = function (mesh) {
             this._scene._cachedMaterial = this;
             if (mesh) {
@@ -28746,10 +28731,9 @@ var BABYLON;
          */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
-            var localOptions = __assign({ alphaTest: null, clipPlane: false }, options);
+            var localOptions = __assign({ clipPlane: false }, options);
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
-            var engine = scene.getEngine();
             var checkReady = function () {
                 if (!_this._scene || !_this._scene.getEngine()) {
                     return;
@@ -28757,9 +28741,7 @@ var BABYLON;
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
-                var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
-                engine.setAlphaTesting(localOptions.alphaTest || (!_this.needAlphaBlendingForMesh(mesh) && _this.needAlphaTesting()));
                 if (localOptions.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
@@ -28783,7 +28765,6 @@ var BABYLON;
                         setTimeout(checkReady, 16);
                     }
                 }
-                engine.setAlphaTesting(alphaTestState);
                 if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
@@ -34785,14 +34766,21 @@ var BABYLON;
                 defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             }
         };
-        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances, forceAlphaTest) {
-            if (forceAlphaTest === void 0) { forceAlphaTest = false; }
+        /**
+         * Helper used to prepare the list of defines for shader compilation
+         * @param scene defines the current scene
+         * @param engine defines the current engine
+         * @param defines specifies the list of active defines
+         * @param useInstances defines if instances have to be turned on
+         * @param alphaTest defines if alpha testing has to be turned on
+         */
+        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances, alphaTest) {
             var changed = false;
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
                 defines["CLIPPLANE"] = !defines["CLIPPLANE"];
                 changed = true;
             }
-            if (defines["ALPHATEST"] !== (engine.getAlphaTesting() || forceAlphaTest)) {
+            if (defines["ALPHATEST"] !== alphaTest) {
                 defines["ALPHATEST"] = !defines["ALPHATEST"];
                 changed = true;
             }
@@ -35775,7 +35763,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -37370,7 +37358,7 @@ var BABYLON;
             // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest);
             // Attribs
             if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE) && mesh) {
                 var bufferMesh = null;
@@ -48812,7 +48800,7 @@ var BABYLON;
                 }
             }
             // Alpha test
-            if (engine.getAlphaTesting()) {
+            if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
                 defines.push("#define ALPHATEST");
             }
             var previousEffect = this._effect;
@@ -63090,11 +63078,9 @@ var BABYLON;
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
@@ -82006,7 +81992,7 @@ var BABYLON;
             // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, false);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
             // Attribs
             if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
                 if (mesh) {
