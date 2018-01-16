@@ -1,8 +1,6 @@
 module.exports = function (config) {
-    'use strict';
-    config.set({
-
-        basePath: '../../',
+  config.set({
+    basePath: '../../',
         captureTimeout: 3e5,
         browserNoActivityTimeout: 3e5,
         browserDisconnectTimeout: 3e5,
@@ -15,9 +13,7 @@ module.exports = function (config) {
 
         files: [
             './Tools/DevLoader/BabylonLoader.js',
-            './tests/validation/index.css',
-            './tests/validation/integration.js',
-            './favicon.ico',
+            './tests/unit/**/*.js',
             { pattern: 'dist/**/*', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             { pattern: 'tests/**/*', watched: false, included: false, served: true },
@@ -40,7 +36,6 @@ module.exports = function (config) {
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
 
-        browsers: ['Chrome']
-
-    });
-};
+        browsers: ['PhantomJS']
+  })
+}

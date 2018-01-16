@@ -35,9 +35,9 @@
          */
         public getClassName(): string {
             return "InstancedMesh";
-        }          
+        }
 
-        // Methods
+        // Methods      
         public get receiveShadows(): boolean {
             return this._sourceMesh.receiveShadows;
         }
@@ -67,6 +67,14 @@
 
         public get sourceMesh(): Mesh {
             return this._sourceMesh;
+        }
+
+        /**
+         * Is this node ready to be used/rendered
+         * @return {boolean} is it ready
+         */
+        public isReady(): boolean {
+            return this._sourceMesh.isReady(true);
         }
 
         /**
@@ -103,7 +111,7 @@
          */
         public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh {
             if (this.sourceMesh) {
-               this.sourceMesh.setVerticesData(kind, data, updatable, stride);
+                this.sourceMesh.setVerticesData(kind, data, updatable, stride);
             }
             return this.sourceMesh;
         }
@@ -134,7 +142,7 @@
          */
         public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (this.sourceMesh) {
-               this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
+                this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
             }
             return this.sourceMesh;
         }
@@ -148,7 +156,7 @@
          */
         public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
             if (this.sourceMesh) {
-               this.sourceMesh.setIndices(indices, totalVertices);
+                this.sourceMesh.setIndices(indices, totalVertices);
             }
             return this.sourceMesh;
         }

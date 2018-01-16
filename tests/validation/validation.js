@@ -211,17 +211,15 @@ function runTest(index, done) {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
-                if (xmlHttp.status === 200) {
-                    var snippet = JSON.parse(xmlHttp.responseText)[0];
-                    var code = JSON.parse(snippet.jsonPayload).code.toString();
-                    code = code.replace(/\/textures\//g, pgRoot + "/textures/");
-                    code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
-                    code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
-                    code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
+                var snippet = JSON.parse(xmlHttp.responseText)[0];
+                var code = JSON.parse(snippet.jsonPayload).code.toString();
+                code = code.replace(/\/textures\//g, pgRoot + "/textures/");
+                code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
+                code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
+                code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
 
-                    currentScene = eval(code + "\r\ncreateScene(engine)");
-                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
-                }
+                currentScene = eval(code + "\r\ncreateScene(engine)");
+                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
             }
         }
 
