@@ -17,6 +17,11 @@ export let defaultConfiguration: ViewerConfiguration = {
         },
         viewer: {
             html: require("../../../assets/templates/default/defaultViewer.html"),
+            events: {
+                pointerout: true,
+                pointerdown: true,
+                pointerup: true
+            }
         },
         navBar: {
             html: require("../../../assets/templates/default/navbar.html"),
@@ -34,7 +39,8 @@ export let defaultConfiguration: ViewerConfiguration = {
                 visibilityTimeout: 2000
             },
             events: {
-                pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ }
+                pointerdown: { 'fullscreen-button': true/*, '#help-button': true*/ },
+                pointerover: true
             }
         },
         overlay: {
