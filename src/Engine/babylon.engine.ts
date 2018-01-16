@@ -680,7 +680,6 @@
         private _hardwareScalingLevel: number;
         protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
-        private _alphaTest: boolean;
         private _isStencilEnable: boolean;
         private _colorWrite = true;
 
@@ -3026,14 +3025,6 @@
 
         public getAlphaMode(): number {
             return this._alphaMode;
-        }
-
-        public setAlphaTesting(enable: boolean): void {
-            this._alphaTest = enable;
-        }
-
-        public getAlphaTesting(): boolean {
-            return !!this._alphaTest;
         }
 
         // Textures
