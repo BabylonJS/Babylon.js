@@ -896,9 +896,8 @@ gulp.task("tests-validation-browserstack", function (done) {
 gulp.task("tests-unit-transpile", function (done) {
     var tsProject = typescript.createProject('../../tests/unit/tsconfig.json');
 
-    var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" }) // or tsProject.src()
+    var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" })
         .pipe(tsProject());
-    //var tsResult = tsProject.src().pipe(tsProject());
  
     return tsResult.js.pipe(gulp.dest("../../"));
 });
