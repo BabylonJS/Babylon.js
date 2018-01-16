@@ -437,8 +437,7 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    runSequence("typescript-all", "intellisense", "typedoc-all", "tests-validation-virtualscreen", "tests-validation-browserstack", cb);
-    // runSequence("typescript-all", "intellisense", "typedoc-all", "tests-validation-virtualscreen", cb);
+    runSequence("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-validation-virtualscreen", "tests-validation-browserstack", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -884,6 +883,48 @@ gulp.task("tests-validation-browserstack", function (done) {
 
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/validation/karma.conf.browserstack.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Transpiles typescript unit tests. 
+ */
+gulp.task("tests-unit-transpile", function (done) {
+    var tsProject = typescript.createProject('../../tests/unit/tsconfig.json');
+
+    var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" }) // or tsProject.src()
+        .pipe(tsProject());
+    //var tsResult = tsProject.src().pipe(tsProject());
+ 
+    return tsResult.js.pipe(gulp.dest("../../"));
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-unit-debug", ["tests-unit-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/unit/karma.conf.js",
+        singleRun: false,
+        browsers: ['Chrome']
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/unit/karma.conf.js",
         singleRun: true
     };
 
