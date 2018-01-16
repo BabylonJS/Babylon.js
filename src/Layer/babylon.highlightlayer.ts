@@ -4,9 +4,19 @@
      * It enforces keeping the most luminous color in the color channel.
      */
     class GlowBlurPostProcess extends PostProcess {
-        constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
-            super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
-
+        constructor(
+            name: string,
+            public direction: Vector2,
+            public kernel: number,
+            options: number | PostProcessOptions,
+            camera: Nullable<Camera>,
+            samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
+            engine?: Engine,
+            reusable?: boolean,
+            stroke?: boolean,
+        ) {
+            super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable, stroke ? "#define STROKE \n" : undefined);
+            
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -60,7 +70,7 @@
         /**
          * Threshold for cutting glow.
          */
-        threshold?: number;
+        stroke?: boolean;
     }
 
     /**
@@ -144,7 +154,6 @@
         private _cachedDefines: string;
         private _glowMapGenerationEffect: Effect;
         private _glowMapMergeEffect: Effect;
-        private _thresholdPostProcess: PostProcess;
         private _blurTexture: RenderTargetTexture;
         private _mainTexture: RenderTargetTexture;
         private _mainTextureDesiredSize: ISize = { width: 0, height: 0 };
@@ -381,13 +390,13 @@
 
             if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
                 this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
-                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, this._options.stroke);
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
                 this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
-                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, this._options.stroke);
                 this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
@@ -406,18 +415,6 @@
                 });
             }
 
-            const postProcesses = [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess];
-
-            if (this._options.threshold) {
-                const threshold = this._options.threshold;
-                this._thresholdPostProcess = new BABYLON.PostProcess("threshold", "highlightLayerThreshold", ["screenSize", "threshold"], null, 0.25, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine());
-                this._thresholdPostProcess.onApplyObservable.add(function (effect) {
-                    effect.setFloat("threshold", threshold);
-                    effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
-                });
-                postProcesses.push(this._thresholdPostProcess);
-            }
-
             this._mainTexture.onAfterUnbindObservable.add(() => {
                 this.onBeforeBlurObservable.notifyObservers(this);
 
@@ -425,7 +422,7 @@
 
                 if (internalTexture) {
                     this._scene.postProcessManager.directRender(
-                        postProcesses,
+                        [this._downSamplePostprocess, this._horizontalBlurPostprocess, this._verticalBlurPostprocess],
                         internalTexture, true);
                 }
 
@@ -897,9 +894,6 @@
             this._downSamplePostprocess.dispose();
             this._horizontalBlurPostprocess.dispose();
             this._verticalBlurPostprocess.dispose();
-            if (this._thresholdPostProcess) {
-                this._thresholdPostProcess.dispose();
-            }
         }
 
         /**
