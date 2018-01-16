@@ -818,11 +818,12 @@
 
         /**
          * @constructor
-         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
-         * @param {boolean} [antialias] - enable antialias
-         * @param options - further options to be sent to the getContext function
+         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or WebGL context to use for rendering
+         * @param {boolean} [antialias] - enable antialiasing (default: false)
+         * @param {EngineOptions} [options] - further options to be sent to the getContext() function
+         * @param {boolean} [adaptToDeviceRatio] - whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio:boolean = false) {
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 
