@@ -153,7 +153,7 @@ function processCore(package, version) {
     shelljs.exec('npm publish \"' + basePath + '/package/' + "\"");
 
     // remove package directory
-    //fs.removeSync(basePath + '/package/');
+    fs.removeSync(basePath + '/package/');
 
     // now update the main package.json
     packageJson.files = packageJson.files.map(file => {
