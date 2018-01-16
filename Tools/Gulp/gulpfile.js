@@ -800,10 +800,10 @@ gulp.task("typedoc-generate", function () {
             module: "commonjs",
             target: "es5",
             includeDeclarations: true,
- 
+
             // Output options (see typedoc docs)
             json: config.build.typedocJSON,
- 
+
             // TypeDoc options (see typedoc docs)
             ignoreCompilerErrors: true,
 
@@ -831,7 +831,7 @@ gulp.task("typedoc-validate", function () {
  */
 gulp.task("typedoc-generateValidationBaseline", function () {
     return gulp.src(config.build.typedocJSON)
-    .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, true));
+        .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, true));
 });
 
 /**
@@ -840,6 +840,14 @@ gulp.task("typedoc-generateValidationBaseline", function () {
  */
 gulp.task("typedoc-all", function (cb) {
     runSequence("typedoc-generate", "typedoc-validate", "typedoc-generateValidationBaseline", cb);
+});
+
+
+/**
+ * Validate compile the code and check the comments and style case convention through typedoc
+ */
+gulp.task("typedoc-check", function (cb) {
+    runSequence("typescript-compile", "typedoc-generate", "typedoc-validate", cb);
 });
 
 /**
