@@ -745,7 +745,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
 
             // Get correct effect      
             if (defines.isDirty) {

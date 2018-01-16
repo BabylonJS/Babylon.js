@@ -210,11 +210,11 @@ function runTest(index, done) {
             currentScene = newScene;
             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
         },
-        null,
-        function (loadedScene, msg) {
-            console.error(msg);
-            done(false);
-        });
+            null,
+            function (loadedScene, msg) {
+                console.error(msg);
+                done(false);
+            });
     }
     else if (test.playgroundId) {
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
@@ -223,7 +223,7 @@ function runTest(index, done) {
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
                 try {
-                    request.onreadystatechange = null;
+                    xmlHttp.onreadystatechange = null;
                     var snippet = JSON.parse(xmlHttp.responseText)[0];
                     var code = JSON.parse(snippet.jsonPayload).code.toString();
                     code = code.replace(/\/textures\//g, pgRoot + "/textures/");
@@ -239,7 +239,7 @@ function runTest(index, done) {
                 }
             }
         }
-        xmlHttp.onerror = function() {
+        xmlHttp.onerror = function () {
             console.error("Network error during test load.");
             done(false);
         }
@@ -292,7 +292,7 @@ function runTest(index, done) {
                 }
             }
         };
-        request.onerror = function() {
+        request.onerror = function () {
             console.error("Network error during test load.");
             done(false);
         }
