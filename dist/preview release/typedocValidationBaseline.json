@@ -1,7 +1,7 @@
 {
-  "errors": 10973,
+  "errors": 10955,
   "babylon.typedoc.json": {
-    "errors": 10973,
+    "errors": 10955,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -13792,18 +13792,6 @@
           "Comments": {
             "MissingText": true,
             "MissingReturn": true
-          },
-          "Parameter": {
-            "antialias": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "adaptToDeviceRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       },
@@ -14244,28 +14232,6 @@
               }
             },
             "texture": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_bindTextureDirectly": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "texture": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "doNotBindUniformToTextureChannel": {
               "Comments": {
                 "MissingText": true
               }
@@ -29853,23 +29819,6 @@
           },
           "Parameter": {
             "channel": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "texture": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_bindTextureDirectly": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
               "Comments": {
                 "MissingText": true
               }
@@ -50549,53 +50498,6 @@
               }
             },
             "mimeType": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "CreateScreenshotUsingRenderTarget": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "size": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "successCallback": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "mimeType": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "samples": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "antialiasing": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "fileName": {
               "Comments": {
                 "MissingText": true
               }

@@ -7469,6 +7469,26 @@ var BABYLON;
             }
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
+        /**
+         * Generates an image screenshot from the specified camera.
+         *
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution.
+         * @param successCallback The callback receives a single parameter which contains the
+         * screenshot as a string of base64-encoded characters. This string can be assigned to the
+         * src parameter of an <img> to display it.
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types.
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @constructor
+         */
         Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples, antialiasing, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             if (samples === void 0) { samples = 1; }
@@ -8871,9 +8891,10 @@ var BABYLON;
     var Engine = /** @class */ (function () {
         /**
          * @constructor
-         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
-         * @param {boolean} [antialias] - enable antialias
-         * @param options - further options to be sent to the getContext function
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param antialias defines enable antialiasing (default: false)
+         * @param options defines further options to be sent to the getContext() function
+         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         function Engine(canvasOrContext, antialias, options, adaptToDeviceRatio) {
             if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
@@ -8975,6 +8996,8 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
+            this._activeChannel = 0;
+            this._currentTextureChannel = -1;
             this._boundTexturesCache = {};
             this._boundTexturesStack = new Array();
             this._compiledEffects = {};
@@ -9890,7 +9913,7 @@ var BABYLON;
             for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
-            this._activeChannel = -1;
+            this._currentTextureChannel = -1;
         };
         Engine.prototype.isDeterministicLockStep = function () {
             return this._deterministicLockstep;
@@ -12673,90 +12696,12 @@ var BABYLON;
             }
             this._currentEffect = null;
         };
-        Engine.prototype._activateTextureChannel = function (channel) {
-            if (this._activeChannel !== channel && channel > -1) {
-                this._gl.activeTexture(this._gl.TEXTURE0 + channel);
-                this._activeChannel = channel;
-            }
-        };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
             var index = this._boundTexturesStack.indexOf(internalTexture);
             if (index > -1 && index !== this._boundTexturesStack.length - 1) {
                 this._boundTexturesStack.splice(index, 1);
                 this._boundTexturesStack.push(internalTexture);
             }
-        };
-        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
-            var currentSlot = internalTexture._designatedSlot;
-            internalTexture._designatedSlot = -1;
-            var index = this._boundTexturesStack.indexOf(internalTexture);
-            if (index > -1) {
-                this._boundTexturesStack.splice(index, 1);
-                if (currentSlot > -1) {
-                    this._boundTexturesCache[currentSlot] = null;
-                    this._nextFreeTextureSlots.push(currentSlot);
-                }
-            }
-            return currentSlot;
-        };
-        Engine.prototype._bindTextureDirectly = function (target, texture, doNotBindUniformToTextureChannel) {
-            if (doNotBindUniformToTextureChannel === void 0) { doNotBindUniformToTextureChannel = false; }
-            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
-            var isTextureForRendering = texture && texture._initialSlot > -1;
-            if (currentTextureBound !== texture) {
-                if (currentTextureBound && !this.disableTextureBindingOptimization) {
-                    this._removeDesignatedSlot(currentTextureBound);
-                }
-                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                if (this._activeChannel >= 0) {
-                    this._boundTexturesCache[this._activeChannel] = texture;
-                    if (isTextureForRendering && !this.disableTextureBindingOptimization) {
-                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
-                        if (slotIndex > -1) {
-                            this._nextFreeTextureSlots.splice(slotIndex, 1);
-                        }
-                        this._boundTexturesStack.push(texture);
-                    }
-                }
-            }
-            if (isTextureForRendering && this._activeChannel > -1) {
-                texture._designatedSlot = this._activeChannel;
-                if (!doNotBindUniformToTextureChannel) {
-                    this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
-                }
-            }
-        };
-        Engine.prototype._bindTexture = function (channel, texture) {
-            if (channel < 0) {
-                return;
-            }
-            if (texture) {
-                channel = this._getCorrectTextureChannel(channel, texture);
-            }
-            this._activateTextureChannel(channel);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
-        };
-        Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
-            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
-        };
-        Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
-                this._activateTextureChannel(channel);
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-                if (this.webGLVersion > 1) {
-                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-                }
-            }
-        };
-        Engine.prototype.setTexture = function (channel, uniform, texture) {
-            if (channel < 0) {
-                return;
-            }
-            if (uniform) {
-                this._boundUniforms[channel] = uniform;
-            }
-            this._setTexture(channel, texture);
         };
         Engine.prototype._getCorrectTextureChannel = function (channel, internalTexture) {
             if (!internalTexture) {
@@ -12786,16 +12731,103 @@ var BABYLON;
             }
             return channel;
         };
+        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
+            var currentSlot = internalTexture._designatedSlot;
+            internalTexture._designatedSlot = -1;
+            var index = this._boundTexturesStack.indexOf(internalTexture);
+            if (index > -1) {
+                this._boundTexturesStack.splice(index, 1);
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
+            }
+            return currentSlot;
+        };
+        Engine.prototype._activateCurrentTexture = function () {
+            if (this._currentTextureChannel !== this._activeChannel) {
+                this._gl.activeTexture(this._gl.TEXTURE0 + this._activeChannel);
+                this._currentTextureChannel = this._activeChannel;
+            }
+        };
+        Engine.prototype._bindTextureDirectly = function (target, texture, forTextureDataUpdate) {
+            if (forTextureDataUpdate === void 0) { forTextureDataUpdate = false; }
+            if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
+                this._activeChannel = texture._designatedSlot;
+            }
+            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
+            var isTextureForRendering = texture && texture._initialSlot > -1;
+            if (currentTextureBound !== texture) {
+                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                    this._removeDesignatedSlot(currentTextureBound);
+                }
+                this._activateCurrentTexture();
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+                this._boundTexturesCache[this._activeChannel] = texture;
+                if (texture) {
+                    if (!this.disableTextureBindingOptimization) {
+                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
+                        this._boundTexturesStack.push(texture);
+                    }
+                    texture._designatedSlot = this._activeChannel;
+                }
+            }
+            else if (forTextureDataUpdate) {
+                this._activateCurrentTexture();
+            }
+            if (isTextureForRendering && !forTextureDataUpdate) {
+                this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
+            }
+        };
+        Engine.prototype._bindTexture = function (channel, texture) {
+            if (channel < 0) {
+                return;
+            }
+            if (texture) {
+                channel = this._getCorrectTextureChannel(channel, texture);
+            }
+            this._activeChannel = channel;
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+        };
+        Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
+            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+        };
+        Engine.prototype.unbindAllTextures = function () {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
+                this._activeChannel = channel;
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+                if (this.webGLVersion > 1) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                }
+            }
+        };
+        Engine.prototype.setTexture = function (channel, uniform, texture) {
+            if (channel < 0) {
+                return;
+            }
+            if (uniform) {
+                this._boundUniforms[channel] = uniform;
+            }
+            this._setTexture(channel, texture);
+        };
         Engine.prototype._bindSamplerUniformToChannel = function (sourceSlot, destination) {
             var uniform = this._boundUniforms[sourceSlot];
+            if (uniform._currentState === destination) {
+                return;
+            }
             this._gl.uniform1i(uniform, destination);
+            uniform._currentState = destination;
         };
         Engine.prototype._setTexture = function (channel, texture, isPartOfTextureArray) {
             if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
-                    this._activateTextureChannel(channel);
+                    this._activeChannel = channel;
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
@@ -12805,10 +12837,8 @@ var BABYLON;
                 return false;
             }
             // Video
-            var alreadyActivated = false;
             if (texture.video) {
-                this._activateTextureChannel(channel);
-                alreadyActivated = true;
+                this._activeChannel = channel;
                 texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
@@ -12838,9 +12868,7 @@ var BABYLON;
                 }
                 return false;
             }
-            if (!alreadyActivated) {
-                this._activateTextureChannel(channel);
-            }
+            this._activeChannel = channel;
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
@@ -13118,7 +13146,7 @@ var BABYLON;
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
             if (index >= 0) {
-                Engine.Instances.splice(index, 1);
+                delete Engine.Instances[index];
             }
             this._workingCanvas = null;
             this._workingContext = null;
@@ -13513,7 +13541,7 @@ var BABYLON;
             var request = BABYLON.Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add(function (request) {
-                _this._activeRequests.splice(_this._activeRequests.indexOf(request), 1);
+                delete _this._activeRequests[_this._activeRequests.indexOf(request)];
             });
             return request;
         };
@@ -42663,7 +42691,7 @@ var BABYLON;
             this._targetedAnimations = new Array();
             this._animatables = new Array();
             this._from = Number.MAX_VALUE;
-            this._to = Number.MIN_VALUE;
+            this._to = -Number.MAX_VALUE;
             this._speedRatio = 1;
             this.onAnimationEndObservable = new BABYLON.Observable();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
@@ -42702,6 +42730,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AnimationGroup.prototype, "targetedAnimations", {
+            /**
+             * Gets the targeted animations for this animation group
+             */
+            get: function () {
+                return this._targetedAnimations;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
@@ -42726,11 +42764,13 @@ var BABYLON;
         /**
          * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
          * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smallest begin frame of all animations
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than the largest end frame of all animations
          */
         AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
-            beginFrame = Math.min(beginFrame, this._from);
+            if (beginFrame === void 0) { beginFrame = -Number.MAX_VALUE; }
+            if (endFrame === void 0) { endFrame = Number.MAX_VALUE; }
+            beginFrame = Math.max(beginFrame, this._from);
             endFrame = Math.min(endFrame, this._to);
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 var targetedAnimation = this._targetedAnimations[index];
@@ -42742,7 +42782,8 @@ var BABYLON;
                         frame: beginFrame,
                         value: startKey.value,
                         inTangent: startKey.inTangent,
-                        outTangent: startKey.outTangent
+                        outTangent: startKey.outTangent,
+                        interpolation: startKey.interpolation
                     };
                     keys.splice(0, 0, newKey);
                 }
@@ -42750,8 +42791,9 @@ var BABYLON;
                     var newKey = {
                         frame: endFrame,
                         value: endKey.value,
-                        inTangent: startKey.outTangent,
-                        outTangent: startKey.outTangent
+                        inTangent: endKey.outTangent,
+                        outTangent: endKey.outTangent,
+                        interpolation: endKey.interpolation
                     };
                     keys.push(newKey);
                 }
