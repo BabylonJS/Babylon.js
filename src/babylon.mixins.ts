@@ -165,3 +165,7 @@ interface EXT_disjoint_timer_query {
     getQueryObjectEXT(query: WebGLQuery, target: number): any;
     deleteQueryEXT(query: WebGLQuery): void;
 }
+
+interface WebGLUniformLocation {
+    _currentState: any;
+}

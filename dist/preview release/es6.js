@@ -7469,6 +7469,26 @@ var BABYLON;
             }
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         };
+        /**
+         * Generates an image screenshot from the specified camera.
+         *
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution.
+         * @param successCallback The callback receives a single parameter which contains the
+         * screenshot as a string of base64-encoded characters. This string can be assigned to the
+         * src parameter of an <img> to display it.
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types.
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @constructor
+         */
         Tools.CreateScreenshotUsingRenderTarget = function (engine, camera, size, successCallback, mimeType, samples, antialiasing, fileName) {
             if (mimeType === void 0) { mimeType = "image/png"; }
             if (samples === void 0) { samples = 1; }
@@ -8871,9 +8891,10 @@ var BABYLON;
     var Engine = /** @class */ (function () {
         /**
          * @constructor
-         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
-         * @param {boolean} [antialias] - enable antialias
-         * @param options - further options to be sent to the getContext function
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param antialias defines enable antialiasing (default: false)
+         * @param options defines further options to be sent to the getContext() function
+         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         function Engine(canvasOrContext, antialias, options, adaptToDeviceRatio) {
             if (adaptToDeviceRatio === void 0) { adaptToDeviceRatio = false; }
@@ -8975,6 +8996,8 @@ var BABYLON;
             this._alphaMode = Engine.ALPHA_DISABLE;
             // Cache
             this._internalTexturesCache = new Array();
+            this._activeChannel = 0;
+            this._currentTextureChannel = -1;
             this._boundTexturesCache = {};
             this._boundTexturesStack = new Array();
             this._compiledEffects = {};
@@ -9890,7 +9913,7 @@ var BABYLON;
             for (var slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
-            this._activeChannel = -1;
+            this._currentTextureChannel = -1;
         };
         Engine.prototype.isDeterministicLockStep = function () {
             return this._deterministicLockstep;
@@ -11280,12 +11303,6 @@ var BABYLON;
         Engine.prototype.getAlphaMode = function () {
             return this._alphaMode;
         };
-        Engine.prototype.setAlphaTesting = function (enable) {
-            this._alphaTest = enable;
-        };
-        Engine.prototype.getAlphaTesting = function () {
-            return !!this._alphaTest;
-        };
         // Textures
         Engine.prototype.wipeCaches = function (bruteForce) {
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
@@ -12673,90 +12690,12 @@ var BABYLON;
             }
             this._currentEffect = null;
         };
-        Engine.prototype._activateTextureChannel = function (channel) {
-            if (this._activeChannel !== channel && channel > -1) {
-                this._gl.activeTexture(this._gl.TEXTURE0 + channel);
-                this._activeChannel = channel;
-            }
-        };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
             var index = this._boundTexturesStack.indexOf(internalTexture);
             if (index > -1 && index !== this._boundTexturesStack.length - 1) {
                 this._boundTexturesStack.splice(index, 1);
                 this._boundTexturesStack.push(internalTexture);
             }
-        };
-        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
-            var currentSlot = internalTexture._designatedSlot;
-            internalTexture._designatedSlot = -1;
-            var index = this._boundTexturesStack.indexOf(internalTexture);
-            if (index > -1) {
-                this._boundTexturesStack.splice(index, 1);
-                if (currentSlot > -1) {
-                    this._boundTexturesCache[currentSlot] = null;
-                    this._nextFreeTextureSlots.push(currentSlot);
-                }
-            }
-            return currentSlot;
-        };
-        Engine.prototype._bindTextureDirectly = function (target, texture, doNotBindUniformToTextureChannel) {
-            if (doNotBindUniformToTextureChannel === void 0) { doNotBindUniformToTextureChannel = false; }
-            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
-            var isTextureForRendering = texture && texture._initialSlot > -1;
-            if (currentTextureBound !== texture) {
-                if (currentTextureBound && !this.disableTextureBindingOptimization) {
-                    this._removeDesignatedSlot(currentTextureBound);
-                }
-                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-                if (this._activeChannel >= 0) {
-                    this._boundTexturesCache[this._activeChannel] = texture;
-                    if (isTextureForRendering && !this.disableTextureBindingOptimization) {
-                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
-                        if (slotIndex > -1) {
-                            this._nextFreeTextureSlots.splice(slotIndex, 1);
-                        }
-                        this._boundTexturesStack.push(texture);
-                    }
-                }
-            }
-            if (isTextureForRendering && this._activeChannel > -1) {
-                texture._designatedSlot = this._activeChannel;
-                if (!doNotBindUniformToTextureChannel) {
-                    this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
-                }
-            }
-        };
-        Engine.prototype._bindTexture = function (channel, texture) {
-            if (channel < 0) {
-                return;
-            }
-            if (texture) {
-                channel = this._getCorrectTextureChannel(channel, texture);
-            }
-            this._activateTextureChannel(channel);
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
-        };
-        Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
-            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
-        };
-        Engine.prototype.unbindAllTextures = function () {
-            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
-                this._activateTextureChannel(channel);
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-                if (this.webGLVersion > 1) {
-                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
-                }
-            }
-        };
-        Engine.prototype.setTexture = function (channel, uniform, texture) {
-            if (channel < 0) {
-                return;
-            }
-            if (uniform) {
-                this._boundUniforms[channel] = uniform;
-            }
-            this._setTexture(channel, texture);
         };
         Engine.prototype._getCorrectTextureChannel = function (channel, internalTexture) {
             if (!internalTexture) {
@@ -12786,16 +12725,103 @@ var BABYLON;
             }
             return channel;
         };
+        Engine.prototype._removeDesignatedSlot = function (internalTexture) {
+            var currentSlot = internalTexture._designatedSlot;
+            internalTexture._designatedSlot = -1;
+            var index = this._boundTexturesStack.indexOf(internalTexture);
+            if (index > -1) {
+                this._boundTexturesStack.splice(index, 1);
+                if (currentSlot > -1) {
+                    this._boundTexturesCache[currentSlot] = null;
+                    this._nextFreeTextureSlots.push(currentSlot);
+                }
+            }
+            return currentSlot;
+        };
+        Engine.prototype._activateCurrentTexture = function () {
+            if (this._currentTextureChannel !== this._activeChannel) {
+                this._gl.activeTexture(this._gl.TEXTURE0 + this._activeChannel);
+                this._currentTextureChannel = this._activeChannel;
+            }
+        };
+        Engine.prototype._bindTextureDirectly = function (target, texture, forTextureDataUpdate) {
+            if (forTextureDataUpdate === void 0) { forTextureDataUpdate = false; }
+            if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
+                this._activeChannel = texture._designatedSlot;
+            }
+            var currentTextureBound = this._boundTexturesCache[this._activeChannel];
+            var isTextureForRendering = texture && texture._initialSlot > -1;
+            if (currentTextureBound !== texture) {
+                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                    this._removeDesignatedSlot(currentTextureBound);
+                }
+                this._activateCurrentTexture();
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+                this._boundTexturesCache[this._activeChannel] = texture;
+                if (texture) {
+                    if (!this.disableTextureBindingOptimization) {
+                        var slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
+                        this._boundTexturesStack.push(texture);
+                    }
+                    texture._designatedSlot = this._activeChannel;
+                }
+            }
+            else if (forTextureDataUpdate) {
+                this._activateCurrentTexture();
+            }
+            if (isTextureForRendering && !forTextureDataUpdate) {
+                this._bindSamplerUniformToChannel(texture._initialSlot, this._activeChannel);
+            }
+        };
+        Engine.prototype._bindTexture = function (channel, texture) {
+            if (channel < 0) {
+                return;
+            }
+            if (texture) {
+                channel = this._getCorrectTextureChannel(channel, texture);
+            }
+            this._activeChannel = channel;
+            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
+        };
+        Engine.prototype.setTextureFromPostProcess = function (channel, postProcess) {
+            this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+        };
+        Engine.prototype.unbindAllTextures = function () {
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
+                this._activeChannel = channel;
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+                if (this.webGLVersion > 1) {
+                    this._bindTextureDirectly(this._gl.TEXTURE_3D, null);
+                }
+            }
+        };
+        Engine.prototype.setTexture = function (channel, uniform, texture) {
+            if (channel < 0) {
+                return;
+            }
+            if (uniform) {
+                this._boundUniforms[channel] = uniform;
+            }
+            this._setTexture(channel, texture);
+        };
         Engine.prototype._bindSamplerUniformToChannel = function (sourceSlot, destination) {
             var uniform = this._boundUniforms[sourceSlot];
+            if (uniform._currentState === destination) {
+                return;
+            }
             this._gl.uniform1i(uniform, destination);
+            uniform._currentState = destination;
         };
         Engine.prototype._setTexture = function (channel, texture, isPartOfTextureArray) {
             if (isPartOfTextureArray === void 0) { isPartOfTextureArray = false; }
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
-                    this._activateTextureChannel(channel);
+                    this._activeChannel = channel;
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
@@ -12805,10 +12831,8 @@ var BABYLON;
                 return false;
             }
             // Video
-            var alreadyActivated = false;
             if (texture.video) {
-                this._activateTextureChannel(channel);
-                alreadyActivated = true;
+                this._activeChannel = channel;
                 texture.update();
             }
             else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
@@ -12838,9 +12862,7 @@ var BABYLON;
                 }
                 return false;
             }
-            if (!alreadyActivated) {
-                this._activateTextureChannel(channel);
-            }
+            this._activeChannel = channel;
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);
                 if (internalTexture && internalTexture._cachedWrapU !== texture.wrapU) {
@@ -13118,7 +13140,7 @@ var BABYLON;
             // Remove from Instances
             var index = Engine.Instances.indexOf(this);
             if (index >= 0) {
-                Engine.Instances.splice(index, 1);
+                delete Engine.Instances[index];
             }
             this._workingCanvas = null;
             this._workingContext = null;
@@ -13513,7 +13535,7 @@ var BABYLON;
             var request = BABYLON.Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add(function (request) {
-                _this._activeRequests.splice(_this._activeRequests.indexOf(request), 1);
+                delete _this._activeRequests[_this._activeRequests.indexOf(request)];
             });
             return request;
         };
@@ -18877,10 +18899,8 @@ var BABYLON;
             var engine = this._scene.getEngine();
             // Depth only
             if (this._depthOnlySubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 engine.setColorWrite(false);
                 this._renderAlphaTest(this._depthOnlySubMeshes);
-                engine.setAlphaTesting(false);
                 engine.setColorWrite(true);
             }
             // Opaque
@@ -18889,9 +18909,7 @@ var BABYLON;
             }
             // Alpha test
             if (this._alphaTestSubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 this._renderAlphaTest(this._alphaTestSubMeshes);
-                engine.setAlphaTesting(false);
             }
             var stencilState = engine.getStencilBuffer();
             engine.setStencilBuffer(false);
@@ -18968,10 +18986,8 @@ var BABYLON;
                     if (material && material.needDepthPrePass) {
                         var engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
-                        engine.setAlphaTesting(true);
                         engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
                         subMesh.render(false);
-                        engine.setAlphaTesting(false);
                         engine.setColorWrite(true);
                     }
                 }
@@ -25363,28 +25379,22 @@ var BABYLON;
             this.computeWorldMatrix();
             var mat = this.material || scene.defaultMaterial;
             if (mat) {
-                var currentAlphaTestingState = engine.getAlphaTesting();
                 if (mat.storeEffectOnSubMeshes) {
                     for (var _i = 0, _a = this.subMeshes; _i < _a.length; _i++) {
                         var subMesh = _a[_i];
                         var effectiveMaterial = subMesh.getMaterial();
                         if (effectiveMaterial) {
-                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
                             if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
-                                engine.setAlphaTesting(currentAlphaTestingState);
                                 return false;
                             }
                         }
                     }
                 }
                 else {
-                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
                     if (!mat.isReady(this, hardwareInstancedRendering)) {
-                        engine.setAlphaTesting(currentAlphaTestingState);
                         return false;
                     }
                 }
-                engine.setAlphaTesting(currentAlphaTestingState);
             }
             // Shadows
             for (var _b = 0, _c = this._lightSources; _b < _c.length; _b++) {
@@ -28656,6 +28666,9 @@ var BABYLON;
                 this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
             }
         };
+        Material.prototype._shouldTurnAlphaTestOn = function (mesh) {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        };
         Material.prototype._afterBind = function (mesh) {
             this._scene._cachedMaterial = this;
             if (mesh) {
@@ -28704,10 +28717,9 @@ var BABYLON;
          */
         Material.prototype.forceCompilation = function (mesh, onCompiled, options) {
             var _this = this;
-            var localOptions = __assign({ alphaTest: null, clipPlane: false }, options);
+            var localOptions = __assign({ clipPlane: false }, options);
             var subMesh = new BABYLON.BaseSubMesh();
             var scene = this.getScene();
-            var engine = scene.getEngine();
             var checkReady = function () {
                 if (!_this._scene || !_this._scene.getEngine()) {
                     return;
@@ -28715,9 +28727,7 @@ var BABYLON;
                 if (subMesh._materialDefines) {
                     subMesh._materialDefines._renderId = -1;
                 }
-                var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
-                engine.setAlphaTesting(localOptions.alphaTest || (!_this.needAlphaBlendingForMesh(mesh) && _this.needAlphaTesting()));
                 if (localOptions.clipPlane) {
                     scene.clipPlane = new BABYLON.Plane(0, 0, 0, 1);
                 }
@@ -28741,7 +28751,6 @@ var BABYLON;
                         setTimeout(checkReady, 16);
                     }
                 }
-                engine.setAlphaTesting(alphaTestState);
                 if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
@@ -34743,14 +34752,21 @@ var BABYLON;
                 defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
             }
         };
-        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances, forceAlphaTest) {
-            if (forceAlphaTest === void 0) { forceAlphaTest = false; }
+        /**
+         * Helper used to prepare the list of defines for shader compilation
+         * @param scene defines the current scene
+         * @param engine defines the current engine
+         * @param defines specifies the list of active defines
+         * @param useInstances defines if instances have to be turned on
+         * @param alphaTest defines if alpha testing has to be turned on
+         */
+        MaterialHelper.PrepareDefinesForFrameBoundValues = function (scene, engine, defines, useInstances, alphaTest) {
             var changed = false;
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
                 defines["CLIPPLANE"] = !defines["CLIPPLANE"];
                 changed = true;
             }
-            if (defines["ALPHATEST"] !== (engine.getAlphaTesting() || forceAlphaTest)) {
+            if (defines["ALPHATEST"] !== alphaTest) {
                 defines["ALPHATEST"] = !defines["ALPHATEST"];
                 changed = true;
             }
@@ -35733,7 +35749,7 @@ var BABYLON;
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -37328,7 +37344,7 @@ var BABYLON;
             // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._forceAlphaTest);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest);
             // Attribs
             if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE) && mesh) {
                 var bufferMesh = null;
@@ -42663,7 +42679,7 @@ var BABYLON;
             this._targetedAnimations = new Array();
             this._animatables = new Array();
             this._from = Number.MAX_VALUE;
-            this._to = Number.MIN_VALUE;
+            this._to = -Number.MAX_VALUE;
             this._speedRatio = 1;
             this.onAnimationEndObservable = new BABYLON.Observable();
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
@@ -42702,6 +42718,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(AnimationGroup.prototype, "targetedAnimations", {
+            /**
+             * Gets the targeted animations for this animation group
+             */
+            get: function () {
+                return this._targetedAnimations;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
          * Add an animation (with its target) in the group
          * @param animation defines the animation we want to add
@@ -42726,11 +42752,13 @@ var BABYLON;
         /**
          * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
          * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smallest begin frame of all animations
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than the largest end frame of all animations
          */
         AnimationGroup.prototype.normalize = function (beginFrame, endFrame) {
-            beginFrame = Math.min(beginFrame, this._from);
+            if (beginFrame === void 0) { beginFrame = -Number.MAX_VALUE; }
+            if (endFrame === void 0) { endFrame = Number.MAX_VALUE; }
+            beginFrame = Math.max(beginFrame, this._from);
             endFrame = Math.min(endFrame, this._to);
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 var targetedAnimation = this._targetedAnimations[index];
@@ -42742,7 +42770,8 @@ var BABYLON;
                         frame: beginFrame,
                         value: startKey.value,
                         inTangent: startKey.inTangent,
-                        outTangent: startKey.outTangent
+                        outTangent: startKey.outTangent,
+                        interpolation: startKey.interpolation
                     };
                     keys.splice(0, 0, newKey);
                 }
@@ -42750,8 +42779,9 @@ var BABYLON;
                     var newKey = {
                         frame: endFrame,
                         value: endKey.value,
-                        inTangent: startKey.outTangent,
-                        outTangent: startKey.outTangent
+                        inTangent: endKey.outTangent,
+                        outTangent: endKey.outTangent,
+                        interpolation: endKey.interpolation
                     };
                     keys.push(newKey);
                 }
@@ -48756,7 +48786,7 @@ var BABYLON;
                 }
             }
             // Alpha test
-            if (engine.getAlphaTesting()) {
+            if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
                 defines.push("#define ALPHATEST");
             }
             var previousEffect = this._effect;
@@ -63034,11 +63064,9 @@ var BABYLON;
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
@@ -66457,9 +66485,9 @@ var BABYLON;
          * @param scene The scene the texture will be used in
          * @param size The cubemap desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
          * @param noMipmap Forces to not generate the mipmap if true
-         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
+         * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
          * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
-         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
+         * @param usePMREMGenerator Specifies whether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
          */
         function HDRCubeTexture(url, scene, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator, onLoad, onError) {
             if (noMipmap === void 0) { noMipmap = false; }
@@ -78157,34 +78185,114 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Defines the list of states available for a task inside a {BABYLON.AssetsManager}
+     */
     var AssetTaskState;
     (function (AssetTaskState) {
+        /**
+         * Initialization
+         */
         AssetTaskState[AssetTaskState["INIT"] = 0] = "INIT";
+        /**
+         * Running
+         */
         AssetTaskState[AssetTaskState["RUNNING"] = 1] = "RUNNING";
+        /**
+         * Done
+         */
         AssetTaskState[AssetTaskState["DONE"] = 2] = "DONE";
+        /**
+         * Error
+         */
         AssetTaskState[AssetTaskState["ERROR"] = 3] = "ERROR";
     })(AssetTaskState = BABYLON.AssetTaskState || (BABYLON.AssetTaskState = {}));
+    /**
+     * Define an abstract asset task used with a {BABYLON.AssetsManager} class to load assets into a scene
+     */
     var AbstractAssetTask = /** @class */ (function () {
-        function AbstractAssetTask(name) {
+        /**
+         * Creates a new {BABYLON.AssetsManager}
+         * @param name defines the name of the task
+         */
+        function AbstractAssetTask(
+            /**
+             * Task name
+             */ name) {
             this.name = name;
-            this.isCompleted = false;
-            this.taskState = AssetTaskState.INIT;
+            this._isCompleted = false;
+            this._taskState = AssetTaskState.INIT;
         }
+        Object.defineProperty(AbstractAssetTask.prototype, "isCompleted", {
+            /**
+             * Get if the task is completed
+             */
+            get: function () {
+                return this._isCompleted;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractAssetTask.prototype, "taskState", {
+            /**
+             * Gets the current state of the task
+             */
+            get: function () {
+                return this._taskState;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(AbstractAssetTask.prototype, "errorObject", {
+            /**
+             * Gets the current error object (if task is in error)
+             */
+            get: function () {
+                return this._errorObject;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Internal only
+         * @ignore
+         */
+        AbstractAssetTask.prototype._setErrorObject = function (message, exception) {
+            if (this._errorObject) {
+                return;
+            }
+            this._errorObject = {
+                message: message,
+                exception: exception
+            };
+        };
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         AbstractAssetTask.prototype.run = function (scene, onSuccess, onError) {
             var _this = this;
-            this.taskState = AssetTaskState.RUNNING;
+            this._taskState = AssetTaskState.RUNNING;
             this.runTask(scene, function () {
                 _this.onDoneCallback(onSuccess, onError);
             }, function (msg, exception) {
                 _this.onErrorCallback(onError, msg, exception);
             });
         };
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         AbstractAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             throw new Error("runTask is not implemented");
         };
         AbstractAssetTask.prototype.onErrorCallback = function (onError, message, exception) {
-            this.taskState = AssetTaskState.ERROR;
-            this.errorObject = {
+            this._taskState = AssetTaskState.ERROR;
+            this._errorObject = {
                 message: message,
                 exception: exception
             };
@@ -78195,8 +78303,8 @@ var BABYLON;
         };
         AbstractAssetTask.prototype.onDoneCallback = function (onSuccess, onError) {
             try {
-                this.taskState = AssetTaskState.DONE;
-                this.isCompleted = true;
+                this._taskState = AssetTaskState.DONE;
+                this._isCompleted = true;
                 if (this.onSuccess) {
                     this.onSuccess(this);
                 }
@@ -78209,7 +78317,16 @@ var BABYLON;
         return AbstractAssetTask;
     }());
     BABYLON.AbstractAssetTask = AbstractAssetTask;
+    /**
+     * Class used to share progress information about assets loading
+     */
     var AssetsProgressEvent = /** @class */ (function () {
+        /**
+         * Creates a {BABYLON.AssetsProgressEvent}
+         * @param remainingCount defines the number of remaining tasks to process
+         * @param totalCount defines the total number of tasks
+         * @param task defines the task that was just processed
+         */
         function AssetsProgressEvent(remainingCount, totalCount, task) {
             this.remainingCount = remainingCount;
             this.totalCount = totalCount;
@@ -78218,9 +78335,35 @@ var BABYLON;
         return AssetsProgressEvent;
     }());
     BABYLON.AssetsProgressEvent = AssetsProgressEvent;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load meshes
+     */
     var MeshAssetTask = /** @class */ (function (_super) {
         __extends(MeshAssetTask, _super);
-        function MeshAssetTask(name, meshesNames, rootUrl, sceneFilename) {
+        /**
+         * Creates a new {BABYLON.MeshAssetTask}
+         * @param name defines the name of the task
+         * @param meshesNames defines the list of mesh's names you want to load
+         * @param rootUrl defines the root url to use as a base to load your meshes and associated resources
+         * @param sceneFilename defines the filename of the scene to load from
+         */
+        function MeshAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the list of mesh's names you want to load
+             */
+            meshesNames, 
+            /**
+             * Defines the root url to use as a base to load your meshes and associated resources
+             */
+            rootUrl, 
+            /**
+             * Defines the filename of the scene to load from
+             */
+            sceneFilename) {
             var _this = _super.call(this, name) || this;
             _this.name = name;
             _this.meshesNames = meshesNames;
@@ -78228,6 +78371,12 @@ var BABYLON;
             _this.sceneFilename = sceneFilename;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         MeshAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             BABYLON.SceneLoader.ImportMesh(this.meshesNames, this.rootUrl, this.sceneFilename, scene, function (meshes, particleSystems, skeletons) {
@@ -78242,14 +78391,36 @@ var BABYLON;
         return MeshAssetTask;
     }(AbstractAssetTask));
     BABYLON.MeshAssetTask = MeshAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load text content
+     */
     var TextFileAssetTask = /** @class */ (function (_super) {
         __extends(TextFileAssetTask, _super);
-        function TextFileAssetTask(name, url) {
+        /**
+         * Creates a new TextFileAssetTask object
+         * @param name defines the name of the task
+         * @param url defines the location of the file to load
+         */
+        function TextFileAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the location of the file to load
+             */
+            url) {
             var _this = _super.call(this, name) || this;
             _this.name = name;
             _this.url = url;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         TextFileAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             scene._loadFile(this.url, function (data) {
@@ -78264,14 +78435,36 @@ var BABYLON;
         return TextFileAssetTask;
     }(AbstractAssetTask));
     BABYLON.TextFileAssetTask = TextFileAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load binary data
+     */
     var BinaryFileAssetTask = /** @class */ (function (_super) {
         __extends(BinaryFileAssetTask, _super);
-        function BinaryFileAssetTask(name, url) {
+        /**
+         * Creates a new BinaryFileAssetTask object
+         * @param name defines the name of the new task
+         * @param url defines the location of the file to load
+         */
+        function BinaryFileAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the location of the file to load
+             */
+            url) {
             var _this = _super.call(this, name) || this;
             _this.name = name;
             _this.url = url;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         BinaryFileAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             scene._loadFile(this.url, function (data) {
@@ -78286,14 +78479,36 @@ var BABYLON;
         return BinaryFileAssetTask;
     }(AbstractAssetTask));
     BABYLON.BinaryFileAssetTask = BinaryFileAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load images
+     */
     var ImageAssetTask = /** @class */ (function (_super) {
         __extends(ImageAssetTask, _super);
-        function ImageAssetTask(name, url) {
+        /**
+         * Creates a new ImageAssetTask
+         * @param name defines the name of the task
+         * @param url defines the location of the image to load
+         */
+        function ImageAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the location of the image to load
+             */
+            url) {
             var _this = _super.call(this, name) || this;
             _this.name = name;
             _this.url = url;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         ImageAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var _this = this;
             var img = new Image();
@@ -78310,9 +78525,40 @@ var BABYLON;
         return ImageAssetTask;
     }(AbstractAssetTask));
     BABYLON.ImageAssetTask = ImageAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load 2D textures
+     */
     var TextureAssetTask = /** @class */ (function (_super) {
         __extends(TextureAssetTask, _super);
-        function TextureAssetTask(name, url, noMipmap, invertY, samplingMode) {
+        /**
+         * Creates a new TextureAssetTask object
+         * @param name defines the name of the task
+         * @param url defines the location of the file to load
+         * @param noMipmap defines if mipmap should not be generated (default is false)
+         * @param invertY defines if texture must be inverted on Y axis (default is false)
+         * @param samplingMode defines the sampling mode to use (default is BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         */
+        function TextureAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the location of the file to load
+             */
+            url, 
+            /**
+             * Defines if mipmap should not be generated (default is false)
+             */
+            noMipmap, 
+            /**
+             * Defines if texture must be inverted on Y axis (default is false)
+             */
+            invertY, 
+            /**
+             * Defines the sampling mode to use (default is BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+             */
+            samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var _this = _super.call(this, name) || this;
             _this.name = name;
@@ -78322,6 +78568,12 @@ var BABYLON;
             _this.samplingMode = samplingMode;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         TextureAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var onload = function () {
                 onSuccess();
@@ -78334,9 +78586,40 @@ var BABYLON;
         return TextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.TextureAssetTask = TextureAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load cube textures
+     */
     var CubeTextureAssetTask = /** @class */ (function (_super) {
         __extends(CubeTextureAssetTask, _super);
-        function CubeTextureAssetTask(name, url, extensions, noMipmap, files) {
+        /**
+         * Creates a new CubeTextureAssetTask
+         * @param name defines the name of the task
+         * @param url defines the location of the files to load (You have to specify the folder where the files are + filename with no extension)
+         * @param extensions defines the extensions to use to load files (["_px", "_py", "_pz", "_nx", "_ny", "_nz"] by default)
+         * @param noMipmap defines if mipmaps should not be generated (default is false)
+         * @param files defines the explicit list of files (undefined by default)
+         */
+        function CubeTextureAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the location of the files to load (You have to specify the folder where the files are + filename with no extension)
+             */
+            url, 
+            /**
+             * Defines the extensions to use to load files (["_px", "_py", "_pz", "_nx", "_ny", "_nz"] by default)
+             */
+            extensions, 
+            /**
+             * Defines if mipmaps should not be generated (default is false)
+             */
+            noMipmap, 
+            /**
+             * Defines the explicit list of files (undefined by default)
+             */
+            files) {
             var _this = _super.call(this, name) || this;
             _this.name = name;
             _this.url = url;
@@ -78345,6 +78628,12 @@ var BABYLON;
             _this.files = files;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         CubeTextureAssetTask.prototype.runTask = function (scene, onSuccess, onError) {
             var onload = function () {
                 onSuccess();
@@ -78357,9 +78646,50 @@ var BABYLON;
         return CubeTextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.CubeTextureAssetTask = CubeTextureAssetTask;
+    /**
+     * Define a task used by {BABYLON.AssetsManager} to load HDR cube textures
+     */
     var HDRCubeTextureAssetTask = /** @class */ (function (_super) {
         __extends(HDRCubeTextureAssetTask, _super);
-        function HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+        /**
+         * Creates a new HDRCubeTextureAssetTask object
+         * @param name defines the name of the task
+         * @param url defines the location of the file to load
+         * @param size defines the desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
+         * @param noMipmap defines if mipmaps should not be generated (default is false)
+         * @param generateHarmonics specifies whether you want to extract the polynomial harmonics during the generation process (default is true)
+         * @param useInGammaSpace specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space) (default is false)
+         * @param usePMREMGenerator specifies whether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time (default is false)
+         */
+        function HDRCubeTextureAssetTask(
+            /**
+             * Defines the name of the task
+             */
+            name, 
+            /**
+             * Defines the location of the file to load
+             */
+            url, 
+            /**
+             * Defines the desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
+             */
+            size, 
+            /**
+             * Defines if mipmaps should not be generated (default is false)
+             */
+            noMipmap, 
+            /**
+             * Specifies whether you want to extract the polynomial harmonics during the generation process (default is true)
+             */
+            generateHarmonics, 
+            /**
+             * Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space) (default is false)
+             */
+            useInGammaSpace, 
+            /**
+             * Specifies whether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time (default is false)
+             */
+            usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
@@ -78374,6 +78704,12 @@ var BABYLON;
             _this.usePMREMGenerator = usePMREMGenerator;
             return _this;
         }
+        /**
+         * Execute the current task
+         * @param scene defines the scene where you want your assets to be loaded
+         * @param onSuccess is a callback called when the task is successfully executed
+         * @param onError is a callback called if an error occurs
+         */
         HDRCubeTextureAssetTask.prototype.run = function (scene, onSuccess, onError) {
             var onload = function () {
                 onSuccess();
@@ -78386,77 +78722,167 @@ var BABYLON;
         return HDRCubeTextureAssetTask;
     }(AbstractAssetTask));
     BABYLON.HDRCubeTextureAssetTask = HDRCubeTextureAssetTask;
+    /**
+     * This class can be used to easily import assets into a scene
+     * @see http://doc.babylonjs.com/how_to/how_to_use_assetsmanager
+     */
     var AssetsManager = /** @class */ (function () {
+        /**
+         * Creates a new AssetsManager
+         * @param scene defines the scene to work on
+         */
         function AssetsManager(scene) {
             this._isLoading = false;
-            this.tasks = new Array();
-            this.waitingTasksCount = 0;
-            //Observables
+            this._tasks = new Array();
+            this._waitingTasksCount = 0;
+            this._totalTasksCount = 0;
+            /**
+             * Observable called when all tasks are processed
+             */
             this.onTaskSuccessObservable = new BABYLON.Observable();
+            /**
+             * Observable called when a task had an error
+             */
             this.onTaskErrorObservable = new BABYLON.Observable();
+            /**
+             * Observable called when a task is successful
+             */
             this.onTasksDoneObservable = new BABYLON.Observable();
+            /**
+             * Observable called when a task is done (whatever the result is)
+             */
             this.onProgressObservable = new BABYLON.Observable();
+            /**
+             * Gets or sets a boolean defining if the {BABYLON.AssetsManager} should use the default loading screen
+             * @see http://doc.babylonjs.com/how_to/creating_a_custom_loading_screen
+             */
             this.useDefaultLoadingScreen = true;
             this._scene = scene;
         }
+        /**
+         * Add a {BABYLON.MeshAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param meshesNames defines the name of meshes to load
+         * @param rootUrl defines the root url to use to locate files
+         * @param sceneFilename defines the filename of the scene file
+         * @returns a new {BABYLON.MeshAssetTask} object
+         */
         AssetsManager.prototype.addMeshTask = function (taskName, meshesNames, rootUrl, sceneFilename) {
             var task = new MeshAssetTask(taskName, meshesNames, rootUrl, sceneFilename);
-            this.tasks.push(task);
+            this._tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.TextFileAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new {BABYLON.TextFileAssetTask} object
+         */
         AssetsManager.prototype.addTextFileTask = function (taskName, url) {
             var task = new TextFileAssetTask(taskName, url);
-            this.tasks.push(task);
+            this._tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.BinaryFileAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new {BABYLON.BinaryFileAssetTask} object
+         */
         AssetsManager.prototype.addBinaryFileTask = function (taskName, url) {
             var task = new BinaryFileAssetTask(taskName, url);
-            this.tasks.push(task);
+            this._tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.ImageAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @returns a new {BABYLON.ImageAssetTask} object
+         */
         AssetsManager.prototype.addImageTask = function (taskName, url) {
             var task = new ImageAssetTask(taskName, url);
-            this.tasks.push(task);
+            this._tasks.push(task);
             return task;
         };
+        /**
+         * Add a {BABYLON.TextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param invertY defines if you want to invert Y axis of the loaded texture (false by default)
+         * @param samplingMode defines the sampling mode to use (BABYLON.Texture.TRILINEAR_SAMPLINGMODE by default)
+         * @returns a new {BABYLON.TextureAssetTask} object
+         */
         AssetsManager.prototype.addTextureTask = function (taskName, url, noMipmap, invertY, samplingMode) {
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
             var task = new TextureAssetTask(taskName, url, noMipmap, invertY, samplingMode);
-            this.tasks.push(task);
+            this._tasks.push(task);
             return task;
         };
-        AssetsManager.prototype.addCubeTextureTask = function (name, url, extensions, noMipmap, files) {
-            var task = new CubeTextureAssetTask(name, url, extensions, noMipmap, files);
-            this.tasks.push(task);
+        /**
+         * Add a {BABYLON.CubeTextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param extensions defines the extension to use to load the cube map (can be null)
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param files defines the list of files to load (can be null)
+         * @returns a new {BABYLON.CubeTextureAssetTask} object
+         */
+        AssetsManager.prototype.addCubeTextureTask = function (taskName, url, extensions, noMipmap, files) {
+            var task = new CubeTextureAssetTask(taskName, url, extensions, noMipmap, files);
+            this._tasks.push(task);
             return task;
         };
-        AssetsManager.prototype.addHDRCubeTextureTask = function (name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
+        /**
+         *
+         * Add a {BABYLON.HDRCubeTextureAssetTask} to the list of active tasks
+         * @param taskName defines the name of the new task
+         * @param url defines the url of the file to load
+         * @param size defines the size you want for the cubemap (can be null)
+         * @param noMipmap defines if the texture must not receive mipmaps (false by default)
+         * @param generateHarmonics defines if you want to automatically generate (true by default)
+         * @param useInGammaSpace defines if the texture must be considered in gamma space (false by default)
+         * @param usePMREMGenerator is a reserved parameter and must be set to false or ignored
+         * @returns a new {BABYLON.HDRCubeTextureAssetTask} object
+         */
+        AssetsManager.prototype.addHDRCubeTextureTask = function (taskName, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator) {
             if (noMipmap === void 0) { noMipmap = false; }
             if (generateHarmonics === void 0) { generateHarmonics = true; }
             if (useInGammaSpace === void 0) { useInGammaSpace = false; }
             if (usePMREMGenerator === void 0) { usePMREMGenerator = false; }
-            var task = new HDRCubeTextureAssetTask(name, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
-            this.tasks.push(task);
+            var task = new HDRCubeTextureAssetTask(taskName, url, size, noMipmap, generateHarmonics, useInGammaSpace, usePMREMGenerator);
+            this._tasks.push(task);
             return task;
         };
         AssetsManager.prototype._decreaseWaitingTasksCount = function (task) {
-            this.waitingTasksCount--;
+            var _this = this;
+            this._waitingTasksCount--;
             try {
-                if (this.onProgress) {
-                    this.onProgress(this.waitingTasksCount, this.tasks.length, task);
+                if (task.taskState === AssetTaskState.DONE) {
+                    // Let's remove successfull tasks
+                    BABYLON.Tools.SetImmediate(function () {
+                        var index = _this._tasks.indexOf(task);
+                        if (index > -1) {
+                            _this._tasks.splice(index, 1);
+                        }
+                    });
                 }
-                this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this.waitingTasksCount, this.tasks.length, task));
+                if (this.onProgress) {
+                    this.onProgress(this._waitingTasksCount, this._totalTasksCount, task);
+                }
+                this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this._waitingTasksCount, this._totalTasksCount, task));
             }
             catch (e) {
                 BABYLON.Tools.Error("Error running progress callbacks.");
                 console.log(e);
             }
-            if (this.waitingTasksCount === 0) {
+            if (this._waitingTasksCount === 0) {
                 try {
                     if (this.onFinish) {
-                        this.onFinish(this.tasks);
+                        this.onFinish(this._tasks);
                     }
-                    this.onTasksDoneObservable.notifyObservers(this.tasks);
+                    this.onTasksDoneObservable.notifyObservers(this._tasks);
                 }
                 catch (e) {
                     BABYLON.Tools.Error("Error running tasks-done callbacks.");
@@ -78481,10 +78907,7 @@ var BABYLON;
                 }
             };
             var error = function (message, exception) {
-                task.errorObject = task.errorObject || {
-                    message: message,
-                    exception: exception
-                };
+                task._setErrorObject(message, exception);
                 if (_this.onTaskError) {
                     _this.onTaskError(task);
                 }
@@ -78493,30 +78916,38 @@ var BABYLON;
             };
             task.run(this._scene, done, error);
         };
+        /**
+         * Reset the {BABYLON.AssetsManager} and remove all tasks
+         * @return the current instance of the {BABYLON.AssetsManager}
+         */
         AssetsManager.prototype.reset = function () {
             this._isLoading = false;
-            this.tasks = new Array();
+            this._tasks = new Array();
             return this;
         };
+        /**
+         * Start the loading process
+         * @return the current instance of the {BABYLON.AssetsManager}
+         */
         AssetsManager.prototype.load = function () {
             if (this._isLoading) {
                 return this;
             }
             this._isLoading = true;
-            this.waitingTasksCount = this.tasks.length;
-            if (this.waitingTasksCount === 0) {
+            this._waitingTasksCount = this._tasks.length;
+            this._totalTasksCount = this._tasks.length;
+            if (this._waitingTasksCount === 0) {
                 if (this.onFinish) {
-                    this.onFinish(this.tasks);
+                    this.onFinish(this._tasks);
                 }
-                this.onTasksDoneObservable.notifyObservers(this.tasks);
-                this._isLoading = false;
+                this.onTasksDoneObservable.notifyObservers(this._tasks);
                 return this;
             }
             if (this.useDefaultLoadingScreen) {
                 this._scene.getEngine().displayLoadingUI();
             }
-            for (var index = 0; index < this.tasks.length; index++) {
-                var task = this.tasks[index];
+            for (var index = 0; index < this._tasks.length; index++) {
+                var task = this._tasks[index];
                 this._runTask(task);
             }
             return this;
@@ -81547,7 +81978,7 @@ var BABYLON;
             // Misc.
             BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
             // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, false);
+            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
             // Attribs
             if (BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
                 if (mesh) {

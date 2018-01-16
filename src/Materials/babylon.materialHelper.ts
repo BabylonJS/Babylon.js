@@ -41,7 +41,15 @@
             }
         }
 
-        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, forceAlphaTest = false): void {
+        /**
+         * Helper used to prepare the list of defines for shader compilation
+         * @param scene defines the current scene
+         * @param engine defines the current engine
+         * @param defines specifies the list of active defines
+         * @param useInstances defines if instances have to be turned on
+         * @param alphaTest defines if alpha testing has to be turned on
+         */
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, alphaTest: boolean): void {
             var changed = false;
 
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
@@ -49,7 +57,7 @@
                 changed = true;
             }
 
-            if (defines["ALPHATEST"] !== (engine.getAlphaTesting() || forceAlphaTest)) {
+            if (defines["ALPHATEST"] !== alphaTest) {
                 defines["ALPHATEST"] = !defines["ALPHATEST"];
                 changed = true;
             }
