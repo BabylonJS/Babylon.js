@@ -82,7 +82,8 @@
             "nullEngine",
             "instrumentation",
             "backgroundMaterial",
-            "environmentHelper"
+            "environmentHelper",
+            "videoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -1065,6 +1066,16 @@
             "dependUpon": [
                 "core",
                 "backgroundMaterial",
+                "additionalTextures"
+            ]
+        },
+        "videoDome": {
+            "files": [
+                "../../src/Helpers/babylon.videoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
                 "additionalTextures"
             ]
         }
