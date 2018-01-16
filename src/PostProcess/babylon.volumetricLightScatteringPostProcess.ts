@@ -358,11 +358,9 @@
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
 
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
 
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes
