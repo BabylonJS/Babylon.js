@@ -623,28 +623,20 @@
 
             let mat = this.material || scene.defaultMaterial;
             if (mat) {
-                let currentAlphaTestingState = engine.getAlphaTesting();
-
                 if (mat.storeEffectOnSubMeshes) {
                     for (var subMesh of this.subMeshes) {
                         let effectiveMaterial = subMesh.getMaterial();
                         if (effectiveMaterial) {
-                            engine.setAlphaTesting(effectiveMaterial.needAlphaTesting() && !effectiveMaterial.needAlphaBlendingForMesh(this));
                             if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
-                                engine.setAlphaTesting(currentAlphaTestingState);
                                 return false;
                             }
                         }
                     }
                 } else {
-                    engine.setAlphaTesting(mat.needAlphaTesting() && !mat.needAlphaBlendingForMesh(this));
                     if (!mat.isReady(this, hardwareInstancedRendering)) {
-                        engine.setAlphaTesting(currentAlphaTestingState);
                         return false;
                     }
                 }
-
-                engine.setAlphaTesting(currentAlphaTestingState);
             }
 
             // Shadows

@@ -10,7 +10,6 @@ module INSPECTOR {
 
         constructor(mesh: BABYLON.Node) {
             super(mesh);
-            new BABYLON.Debug.AxesViewer(mesh.getScene());
         }
 
         /** Returns the name displayed in the tree */
