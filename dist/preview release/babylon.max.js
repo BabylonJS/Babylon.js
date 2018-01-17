@@ -46494,20 +46494,58 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * A particle represents one of the element emitted by a particle system.
+     * This is mainly define by its coordinates, direction, velocity and age.
+     */
     var Particle = /** @class */ (function () {
+        /**
+         * Creates a new instance of @see Particle
+         * @param particleSystem the particle system the particle belongs to
+         */
         function Particle(particleSystem) {
             this.particleSystem = particleSystem;
+            /**
+             * The world position of the particle in the scene.
+             */
             this.position = BABYLON.Vector3.Zero();
+            /**
+             * The world direction of the particle in the scene.
+             */
             this.direction = BABYLON.Vector3.Zero();
+            /**
+             * The color of the particle.
+             */
             this.color = new BABYLON.Color4(0, 0, 0, 0);
+            /**
+             * The color change of the particle per step.
+             */
             this.colorStep = new BABYLON.Color4(0, 0, 0, 0);
+            /**
+             * Defines how long will the life of the particle be.
+             */
             this.lifeTime = 1.0;
+            /**
+             * The current age of the particle.
+             */
             this.age = 0;
+            /**
+             * The current size of the particle.
+             */
             this.size = 0;
+            /**
+             * The current angle of the particle.
+             */
             this.angle = 0;
+            /**
+             * Defines how fast is the angle changing.
+             */
             this.angularSpeed = 0;
-            this._currentFrameCounter = 0;
+            /**
+             * Defines the cell index used by the particle to be rendered from a sprite.
+             */
             this.cellIndex = 0;
+            this._currentFrameCounter = 0;
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
@@ -46548,6 +46586,10 @@ var BABYLON;
                 this._currentFrameCounter++;
             }
         };
+        /**
+         * Copy the properties of particle to another one.
+         * @param other the particle to copy the information to.
+         */
         Particle.prototype.copyTo = function (other) {
             other.position.copyFrom(this.position);
             other.direction.copyFrom(this.direction);
@@ -46570,53 +46612,184 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This represents a particle system in Babylon.
+     * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+     * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
+     * @example https://doc.babylonjs.com/babylon101/particles
+     */
     var ParticleSystem = /** @class */ (function () {
-        // end of sheet animation
-        function ParticleSystem(name, capacity, scene, customEffect, _isAnimationSheetEnabled, epsilon) {
+        /**
+         * Instantiates a particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+         * @param epsilon Offset used to render the particles
+         */
+        function ParticleSystem(name, capacity, scene, customEffect, isAnimationSheetEnabled, epsilon) {
             if (customEffect === void 0) { customEffect = null; }
-            if (_isAnimationSheetEnabled === void 0) { _isAnimationSheetEnabled = false; }
+            if (isAnimationSheetEnabled === void 0) { isAnimationSheetEnabled = false; }
             if (epsilon === void 0) { epsilon = 0.01; }
             var _this = this;
-            this.name = name;
-            this._isAnimationSheetEnabled = _isAnimationSheetEnabled;
-            // Members
+            /**
+             * List of animations used by the particle system.
+             */
             this.animations = [];
+            /**
+             * The rendering group used by the Particle system to chose when to render.
+             */
             this.renderingGroupId = 0;
+            /**
+             * The emitter represents the Mesh or position we are attaching the particle system to.
+             */
             this.emitter = null;
+            /**
+             * The density of particles, the rate of particle flow
+             */
             this.emitRate = 10;
+            /**
+             * If you want to launch only a few particles at once, that can be done, as well.
+             */
             this.manualEmitCount = -1;
+            /**
+             * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+             */
             this.updateSpeed = 0.01;
+            /**
+             * The amount of time the particle system is running (depends of the overall speed above).
+             */
             this.targetStopDuration = 0;
+            /**
+             * Specifies whether the particle system will be disposed once it reaches the end of the animation.
+             */
             this.disposeOnStop = false;
+            /**
+             * Minimum power of emitting particles.
+             */
             this.minEmitPower = 1;
+            /**
+             * Maximum power of emitting particles.
+             */
             this.maxEmitPower = 1;
+            /**
+             * Minimum life time of emitting particles.
+             */
             this.minLifeTime = 1;
+            /**
+             * Maximum life time of emitting particles.
+             */
             this.maxLifeTime = 1;
+            /**
+             * Minimum Size of emitting particles.
+             */
             this.minSize = 1;
+            /**
+             * Maximum Size of emitting particles.
+             */
             this.maxSize = 1;
+            /**
+             * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+             */
             this.minAngularSpeed = 0;
+            /**
+             * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+             */
             this.maxAngularSpeed = 0;
+            /**
+             * The layer mask we are rendering the particles through.
+             */
             this.layerMask = 0x0FFFFFFF;
+            /**
+             * This can help using your own shader to render the particle system.
+             * The according effect will be created
+             */
             this.customShader = null;
+            /**
+             * By default particle system starts as soon as they are created. This prevents the
+             * automatic start to happen and let you decide when to start emitting particles.
+             */
             this.preventAutoStart = false;
             /**
+             * Callback triggered when the particle animation is ending.
+             */
+            this.onAnimationEnd = null;
+            /**
+             * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+             */
+            this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
+            /**
+             * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+             * to override the particles.
+             */
+            this.forceDepthWrite = false;
+            /**
+             * You can use gravity if you want to give an orientation to your particles.
+             */
+            this.gravity = BABYLON.Vector3.Zero();
+            /**
+             * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+             */
+            this.direction1 = new BABYLON.Vector3(0, 1.0, 0);
+            /**
+             * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+             */
+            this.direction2 = new BABYLON.Vector3(0, 1.0, 0);
+            /**
+             * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+             */
+            this.minEmitBox = new BABYLON.Vector3(-0.5, -0.5, -0.5);
+            /**
+             * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+             */
+            this.maxEmitBox = new BABYLON.Vector3(0.5, 0.5, 0.5);
+            /**
+             * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+             */
+            this.color1 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            /**
+             * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+             */
+            this.color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            /**
+             * Color the particle will have at the end of its lifetime.
+             */
+            this.colorDead = new BABYLON.Color4(0, 0, 0, 1.0);
+            /**
+             * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel.
+             */
+            this.textureMask = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            /**
+             * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not.
+             */
+            this.spriteCellLoop = true;
+            /**
+             * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop.
+             */
+            this.spriteCellChangeSpeed = 0;
+            /**
+             * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display.
+             */
+            this.startSpriteCellID = 0;
+            /**
+             * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display.
+             */
+            this.endSpriteCellID = 0;
+            /**
+             * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use.
+             */
+            this.spriteCellWidth = 0;
+            /**
+             * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use.
+             */
+            this.spriteCellHeight = 0;
+            /**
             * An event triggered when the system is disposed.
-            * @type {BABYLON.Observable}
             */
             this.onDisposeObservable = new BABYLON.Observable();
-            this.onAnimationEnd = null;
-            this.blendMode = ParticleSystem.BLENDMODE_ONEONE;
-            this.forceDepthWrite = false;
-            this.gravity = BABYLON.Vector3.Zero();
-            this.direction1 = new BABYLON.Vector3(0, 1.0, 0);
-            this.direction2 = new BABYLON.Vector3(0, 1.0, 0);
-            this.minEmitBox = new BABYLON.Vector3(-0.5, -0.5, -0.5);
-            this.maxEmitBox = new BABYLON.Vector3(0.5, 0.5, 0.5);
-            this.color1 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-            this.color2 = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-            this.colorDead = new BABYLON.Color4(0, 0, 0, 1.0);
-            this.textureMask = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
-            this.particles = new Array();
+            this._particles = new Array();
             this._stockParticles = new Array();
             this._newPartsExcess = 0;
             this._vertexBuffers = {};
@@ -46628,19 +46801,14 @@ var BABYLON;
             this._started = false;
             this._stopped = false;
             this._actualFrame = 0;
-            // sheet animation
-            this.startSpriteCellID = 0;
-            this.endSpriteCellID = 0;
-            this.spriteCellLoop = true;
-            this.spriteCellChangeSpeed = 0;
-            this.spriteCellWidth = 0;
-            this.spriteCellHeight = 0;
             this._vertexBufferSize = 11;
-            this.appendParticleVertexes = null;
+            this._appendParticleVertexes = null;
             this.id = name;
+            this.name = name;
             this._capacity = capacity;
             this._epsilon = epsilon;
-            if (_isAnimationSheetEnabled) {
+            this._isAnimationSheetEnabled = isAnimationSheetEnabled;
+            if (isAnimationSheetEnabled) {
                 this._vertexBufferSize = 12;
             }
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
@@ -46689,6 +46857,9 @@ var BABYLON;
             };
         }
         Object.defineProperty(ParticleSystem.prototype, "onDispose", {
+            /**
+             * Sets a callback that will be triggered when the system is disposed.
+             */
             set: function (callback) {
                 if (this._onDisposeObserver) {
                     this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -46699,6 +46870,9 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(ParticleSystem.prototype, "isAnimationSheetEnabled", {
+            /**
+             * Gets wether an animation sprite sheet is enabled or not on the particle system.
+             */
             get: function () {
                 return this._isAnimationSheetEnabled;
             },
@@ -46719,31 +46893,56 @@ var BABYLON;
             }
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         };
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         * @param particle The particle to recycle
+         */
         ParticleSystem.prototype.recycleParticle = function (particle) {
-            var lastParticle = this.particles.pop();
+            var lastParticle = this._particles.pop();
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
                 this._stockParticles.push(lastParticle);
             }
         };
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
         ParticleSystem.prototype.getCapacity = function () {
             return this._capacity;
         };
+        /**
+         * Gets Wether there are still active particles in the system.
+         * @returns True if it is alive, otherwise false.
+         */
         ParticleSystem.prototype.isAlive = function () {
             return this._alive;
         };
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
         ParticleSystem.prototype.isStarted = function () {
             return this._started;
         };
+        /**
+         * Starts the particle system and begins to emit.
+         */
         ParticleSystem.prototype.start = function () {
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
         };
+        /**
+         * Stops the particle system.
+         */
         ParticleSystem.prototype.stop = function () {
             this._stopped = true;
         };
-        // animation sheet
+        /**
+         * @ignore (for internal use only)
+         */
         ParticleSystem.prototype._appendParticleVertex = function (index, particle, offsetX, offsetY) {
             var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
@@ -46758,6 +46957,9 @@ var BABYLON;
             this._vertexData[offset + 9] = offsetX;
             this._vertexData[offset + 10] = offsetY;
         };
+        /**
+         * @ignore (for internal use only)
+         */
         ParticleSystem.prototype._appendParticleVertexWithAnimation = function (index, particle, offsetX, offsetY) {
             if (offsetX === 0)
                 offsetX = this._epsilon;
@@ -46783,8 +46985,8 @@ var BABYLON;
         };
         ParticleSystem.prototype._update = function (newParticles) {
             // Update current
-            this._alive = this.particles.length > 0;
-            this.updateFunction(this.particles);
+            this._alive = this._particles.length > 0;
+            this.updateFunction(this._particles);
             // Add new ones
             var worldMatrix;
             if (this.emitter.position) {
@@ -46797,7 +46999,7 @@ var BABYLON;
             }
             var particle;
             for (var index = 0; index < newParticles; index++) {
-                if (this.particles.length === this._capacity) {
+                if (this._particles.length === this._capacity) {
                     break;
                 }
                 if (this._stockParticles.length !== 0) {
@@ -46808,24 +47010,24 @@ var BABYLON;
                 else {
                     particle = new BABYLON.Particle(this);
                 }
-                this.particles.push(particle);
-                var emitPower = ParticleSystem.randomNumber(this.minEmitPower, this.maxEmitPower);
-                if (this.startDirectionFunction) {
-                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
-                }
-                else {
-                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
-                }
+                this._particles.push(particle);
+                var emitPower = BABYLON.Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
                 if (this.startPositionFunction) {
                     this.startPositionFunction(worldMatrix, particle.position, particle);
                 }
                 else {
                     this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
                 }
-                particle.lifeTime = ParticleSystem.randomNumber(this.minLifeTime, this.maxLifeTime);
-                particle.size = ParticleSystem.randomNumber(this.minSize, this.maxSize);
-                particle.angularSpeed = ParticleSystem.randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
-                var step = ParticleSystem.randomNumber(0, 1.0);
+                if (this.startDirectionFunction) {
+                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                else {
+                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                particle.lifeTime = BABYLON.Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+                particle.size = BABYLON.Scalar.RandomRange(this.minSize, this.maxSize);
+                particle.angularSpeed = BABYLON.Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
+                var step = BABYLON.Scalar.RandomRange(0, 1.0);
                 BABYLON.Color4.LerpToRef(this.color1, this.color2, step, particle.color);
                 this.colorDead.subtractToRef(particle.color, this._colorDiff);
                 this._colorDiff.scaleToRef(1.0 / particle.lifeTime, particle.colorStep);
@@ -46861,6 +47063,9 @@ var BABYLON;
             }
             return this._effect;
         };
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
         ParticleSystem.prototype.animate = function () {
             if (!this._started)
                 return;
@@ -46912,44 +47117,51 @@ var BABYLON;
             }
             // Animation sheet
             if (this._isAnimationSheetEnabled) {
-                this.appendParticleVertexes = this.appenedParticleVertexesWithSheet;
+                this._appendParticleVertexes = this._appenedParticleVertexesWithSheet;
             }
             else {
-                this.appendParticleVertexes = this.appenedParticleVertexesNoSheet;
+                this._appendParticleVertexes = this._appenedParticleVertexesNoSheet;
             }
             // Update VBO
             var offset = 0;
-            for (var index = 0; index < this.particles.length; index++) {
-                var particle = this.particles[index];
-                this.appendParticleVertexes(offset, particle);
+            for (var index = 0; index < this._particles.length; index++) {
+                var particle = this._particles[index];
+                this._appendParticleVertexes(offset, particle);
                 offset += 4;
             }
             if (this._vertexBuffer) {
                 this._vertexBuffer.update(this._vertexData);
             }
         };
-        ParticleSystem.prototype.appenedParticleVertexesWithSheet = function (offset, particle) {
+        ParticleSystem.prototype._appenedParticleVertexesWithSheet = function (offset, particle) {
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 0);
             this._appendParticleVertexWithAnimation(offset++, particle, 1, 0);
             this._appendParticleVertexWithAnimation(offset++, particle, 1, 1);
             this._appendParticleVertexWithAnimation(offset++, particle, 0, 1);
         };
-        ParticleSystem.prototype.appenedParticleVertexesNoSheet = function (offset, particle) {
+        ParticleSystem.prototype._appenedParticleVertexesNoSheet = function (offset, particle) {
             this._appendParticleVertex(offset++, particle, 0, 0);
             this._appendParticleVertex(offset++, particle, 1, 0);
             this._appendParticleVertex(offset++, particle, 1, 1);
             this._appendParticleVertex(offset++, particle, 0, 1);
         };
+        /**
+         * Rebuilds the particle system.
+         */
         ParticleSystem.prototype.rebuild = function () {
             this._createIndexBuffer();
             if (this._vertexBuffer) {
                 this._vertexBuffer._rebuild();
             }
         };
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles.
+         */
         ParticleSystem.prototype.render = function () {
             var effect = this._getEffect();
             // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this.particles.length)
+            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length)
                 return 0;
             var engine = this._scene.getEngine();
             // Render
@@ -46983,10 +47195,13 @@ var BABYLON;
             if (this.forceDepthWrite) {
                 engine.setDepthWrite(true);
             }
-            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, this.particles.length * 6);
+            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, this._particles.length * 6);
             engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
-            return this.particles.length;
+            return this._particles.length;
         };
+        /**
+         * Disposes the particle system and free the associated resources.
+         */
         ParticleSystem.prototype.dispose = function () {
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
@@ -47009,12 +47224,24 @@ var BABYLON;
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         };
+        /**
+         * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
+         * @param radius The radius of the sphere to emit from
+         * @returns the emitter
+         */
         ParticleSystem.prototype.createSphereEmitter = function (radius) {
             if (radius === void 0) { radius = 1; }
             var particleEmitter = new BABYLON.SphereParticleEmitter(radius);
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         };
+        /**
+         * Creates a Directed Sphere Emitter for the particle system. (emits between direction1 and direction2)
+         * @param radius The radius of the sphere to emit from
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @returns the emitter
+         */
         ParticleSystem.prototype.createDirectedSphereEmitter = function (radius, direction1, direction2) {
             if (radius === void 0) { radius = 1; }
             if (direction1 === void 0) { direction1 = new BABYLON.Vector3(0, 1.0, 0); }
@@ -47023,6 +47250,12 @@ var BABYLON;
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         };
+        /**
+         * Creates a Cone Emitter for the particle system. (emits from the cone to the particle position)
+         * @param radius The radius of the cone to emit from
+         * @param angle The base angle of the cone
+         * @returns the emitter
+         */
         ParticleSystem.prototype.createConeEmitter = function (radius, angle) {
             if (radius === void 0) { radius = 1; }
             if (angle === void 0) { angle = Math.PI / 4; }
@@ -47031,6 +47264,14 @@ var BABYLON;
             return particleEmitter;
         };
         // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        /**
+         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @returns the emitter
+         */
         ParticleSystem.prototype.createBoxEmitter = function (direction1, direction2, minEmitBox, maxEmitBox) {
             var particleEmitter = new BABYLON.BoxParticleEmitter(this);
             this.direction1 = direction1;
@@ -47040,14 +47281,12 @@ var BABYLON;
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         };
-        ParticleSystem.randomNumber = function (min, max) {
-            if (min === max) {
-                return (min);
-            }
-            var random = Math.random();
-            return ((random * (max - min)) + min);
-        };
-        // Clone
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
         ParticleSystem.prototype.clone = function (name, newEmitter) {
             var custom = null;
             var program = null;
@@ -47071,6 +47310,10 @@ var BABYLON;
             }
             return result;
         };
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
         ParticleSystem.prototype.serialize = function () {
             var serializationObject = {};
             serializationObject.name = this.name;
@@ -47123,6 +47366,13 @@ var BABYLON;
             serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
             return serializationObject;
         };
+        /**
+         * Parses a JSON object to create a particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the Parsed particle system
+         */
         ParticleSystem.Parse = function (parsedParticleSystem, scene, rootUrl) {
             var name = parsedParticleSystem.name;
             var custom = null;
@@ -47196,8 +47446,13 @@ var BABYLON;
             }
             return particleSystem;
         };
-        // Statics
+        /**
+         * Source color is added to the destination color without alpha affecting the result.
+         */
         ParticleSystem.BLENDMODE_ONEONE = 0;
+        /**
+         * Blend current color and particle color using particle’s alpha.
+         */
         ParticleSystem.BLENDMODE_STANDARD = 1;
         return ParticleSystem;
     }());
@@ -47208,16 +47463,30 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Particle emitter emitting particles from the inside of a box.
+     * It emits the particles randomly between 2 given directions.
+     */
     var BoxParticleEmitter = /** @class */ (function () {
         // to be updated like the rest of emitters when breaking changes.
         // all property should be come public variables and passed through constructor.
+        /**
+         * Creates a new instance of @see BoxParticleEmitter
+         * @param _particleSystem the particle system associated with the emitter
+         */
         function BoxParticleEmitter(_particleSystem) {
             this._particleSystem = _particleSystem;
         }
         Object.defineProperty(BoxParticleEmitter.prototype, "direction1", {
+            /**
+             * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+             */
             get: function () {
                 return this._particleSystem.direction1;
             },
+            /**
+             * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+             */
             set: function (value) {
                 this._particleSystem.direction1 = value;
             },
@@ -47225,9 +47494,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(BoxParticleEmitter.prototype, "direction2", {
+            /**
+             * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+             */
             get: function () {
                 return this._particleSystem.direction2;
             },
+            /**
+             * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+             */
             set: function (value) {
                 this._particleSystem.direction2 = value;
             },
@@ -47235,9 +47510,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(BoxParticleEmitter.prototype, "minEmitBox", {
+            /**
+             * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+             */
             get: function () {
                 return this._particleSystem.minEmitBox;
             },
+            /**
+             * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+             */
             set: function (value) {
                 this._particleSystem.minEmitBox = value;
             },
@@ -47245,25 +47526,44 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(BoxParticleEmitter.prototype, "maxEmitBox", {
+            /**
+             * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+             */
             get: function () {
                 return this._particleSystem.maxEmitBox;
             },
+            /**
+             * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+             */
             set: function (value) {
                 this._particleSystem.maxEmitBox = value;
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param emitPower is the power of the particle (speed)
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
         BoxParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
-            var randX = BABYLON.ParticleSystem.randomNumber(this.direction1.x, this.direction2.x);
-            var randY = BABYLON.ParticleSystem.randomNumber(this.direction1.y, this.direction2.y);
-            var randZ = BABYLON.ParticleSystem.randomNumber(this.direction1.z, this.direction2.z);
+            var randX = BABYLON.Scalar.RandomRange(this.direction1.x, this.direction2.x);
+            var randY = BABYLON.Scalar.RandomRange(this.direction1.y, this.direction2.y);
+            var randZ = BABYLON.Scalar.RandomRange(this.direction1.z, this.direction2.z);
             BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
         };
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
         BoxParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
-            var randX = BABYLON.ParticleSystem.randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-            var randY = BABYLON.ParticleSystem.randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-            var randZ = BABYLON.ParticleSystem.randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
+            var randX = BABYLON.Scalar.RandomRange(this.minEmitBox.x, this.maxEmitBox.x);
+            var randY = BABYLON.Scalar.RandomRange(this.minEmitBox.y, this.maxEmitBox.y);
+            var randZ = BABYLON.Scalar.RandomRange(this.minEmitBox.z, this.maxEmitBox.z);
             BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         };
         return BoxParticleEmitter;
@@ -47275,30 +47575,95 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Particle emitter emitting particles from the inside of a cone.
+     * It emits the particles alongside the cone volume from the base to the particle.
+     * The emission direction might be randomized.
+     */
     var ConeParticleEmitter = /** @class */ (function () {
-        function ConeParticleEmitter(radius, angle) {
-            this.radius = radius;
+        /**
+         * Creates a new instance of @see ConeParticleEmitter
+         * @param radius the radius of the emission cone
+         * @param angles the cone base angle
+         * @param directionRandomizer defines how much to randomize the particle direction [0-1]
+         */
+        function ConeParticleEmitter(radius, 
+            /**
+             * The radius of the emission cone.
+             */
+            angle, 
+            /**
+             * The cone base angle.
+             */
+            directionRandomizer) {
+            if (directionRandomizer === void 0) { directionRandomizer = 0; }
             this.angle = angle;
+            this.directionRandomizer = directionRandomizer;
+            this.radius = radius;
         }
+        Object.defineProperty(ConeParticleEmitter.prototype, "radius", {
+            /**
+             * Gets the radius of the emission cone.
+             */
+            get: function () {
+                return this._radius;
+            },
+            /**
+             * Sets the radius of the emission cone.
+             */
+            set: function (value) {
+                this._radius = value;
+                if (this.angle !== 0) {
+                    this._height = value / Math.tan(this.angle / 2);
+                }
+                else {
+                    this._height = 1;
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param emitPower is the power of the particle (speed)
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
         ConeParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
             if (this.angle === 0) {
                 BABYLON.Vector3.TransformNormalFromFloatsToRef(0, emitPower, 0, worldMatrix, directionToUpdate);
             }
             else {
-                var phi = BABYLON.ParticleSystem.randomNumber(0, 2 * Math.PI);
-                var theta = BABYLON.ParticleSystem.randomNumber(0, this.angle);
-                var randX = Math.cos(phi) * Math.sin(theta);
-                var randY = Math.cos(theta);
-                var randZ = Math.sin(phi) * Math.sin(theta);
-                BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
+                // measure the direction Vector from the emitter to the particle.
+                var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
+                var randX = BABYLON.Scalar.RandomRange(0, this.directionRandomizer);
+                var randY = BABYLON.Scalar.RandomRange(0, this.directionRandomizer);
+                var randZ = BABYLON.Scalar.RandomRange(0, this.directionRandomizer);
+                direction.x += randX;
+                direction.y += randY;
+                direction.z += randZ;
+                direction.normalize();
+                BABYLON.Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
             }
         };
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
         ConeParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
-            var s = BABYLON.ParticleSystem.randomNumber(0, Math.PI * 2);
-            var radius = BABYLON.ParticleSystem.randomNumber(0, this.radius);
+            var s = BABYLON.Scalar.RandomRange(0, Math.PI * 2);
+            var h = BABYLON.Scalar.RandomRange(0, 1);
+            // Better distribution in a cone at normal angles.
+            h = 1 - h * h;
+            var radius = BABYLON.Scalar.RandomRange(0, this._radius);
+            radius = radius * h / this._height;
             var randX = radius * Math.sin(s);
             var randZ = radius * Math.cos(s);
-            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, 0, randZ, worldMatrix, positionToUpdate);
+            var randY = h;
+            BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         };
         return ConeParticleEmitter;
     }());
@@ -47310,18 +47675,56 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Particle emitter emitting particles from the inside of a sphere.
+     * It emits the particles alongside the sphere radius. The emission direction might be randomized.
+     */
     var SphereParticleEmitter = /** @class */ (function () {
-        function SphereParticleEmitter(radius) {
+        /**
+         * Creates a new instance of @see SphereParticleEmitter
+         * @param radius the radius of the emission sphere
+         * @param directionRandomizer defines how much to randomize the particle direction [0-1]
+         */
+        function SphereParticleEmitter(
+            /**
+             * The radius of the emission sphere.
+             */
+            radius, 
+            /**
+             * How much to randomize the particle direction [0-1].
+             */
+            directionRandomizer) {
+            if (directionRandomizer === void 0) { directionRandomizer = 0; }
             this.radius = radius;
+            this.directionRandomizer = directionRandomizer;
         }
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param emitPower is the power of the particle (speed)
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
         SphereParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
-            // measure the direction Vector from the emitter to the particle.
-            var direction = particle.position.subtract(worldMatrix.getTranslation());
+            var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
+            var randX = BABYLON.Scalar.RandomRange(0, this.directionRandomizer);
+            var randY = BABYLON.Scalar.RandomRange(0, this.directionRandomizer);
+            var randZ = BABYLON.Scalar.RandomRange(0, this.directionRandomizer);
+            direction.x += randX;
+            direction.y += randY;
+            direction.z += randZ;
+            direction.normalize();
             BABYLON.Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
         };
+        /**
+         * Called by the particle System when the position is computed for the created particle.
+         * @param worldMatrix is the world matrix of the particle system
+         * @param positionToUpdate is the position vector to update with the result
+         * @param particle is the particle we are computed the position for
+         */
         SphereParticleEmitter.prototype.startPositionFunction = function (worldMatrix, positionToUpdate, particle) {
-            var phi = BABYLON.ParticleSystem.randomNumber(0, 2 * Math.PI);
-            var theta = BABYLON.ParticleSystem.randomNumber(0, Math.PI);
+            var phi = BABYLON.Scalar.RandomRange(0, 2 * Math.PI);
+            var theta = BABYLON.Scalar.RandomRange(0, Math.PI);
             var randX = this.radius * Math.cos(phi) * Math.sin(theta);
             var randY = this.radius * Math.cos(theta);
             var randZ = this.radius * Math.sin(phi) * Math.sin(theta);
@@ -47330,18 +47733,43 @@ var BABYLON;
         return SphereParticleEmitter;
     }());
     BABYLON.SphereParticleEmitter = SphereParticleEmitter;
+    /**
+     * Particle emitter emitting particles from the inside of a sphere.
+     * It emits the particles randomly between two vectors.
+     */
     var SphereDirectedParticleEmitter = /** @class */ (function (_super) {
         __extends(SphereDirectedParticleEmitter, _super);
-        function SphereDirectedParticleEmitter(radius, direction1, direction2) {
+        /**
+         * Creates a new instance of @see SphereDirectedParticleEmitter
+         * @param radius the radius of the emission sphere
+         * @param direction1 the min limit of the emission direction
+         * @param direction2 the max limit of the emission direction
+         */
+        function SphereDirectedParticleEmitter(radius, 
+            /**
+             * The min limit of the emission direction.
+             */
+            direction1, 
+            /**
+             * The max limit of the emission direction.
+             */
+            direction2) {
             var _this = _super.call(this, radius) || this;
             _this.direction1 = direction1;
             _this.direction2 = direction2;
             return _this;
         }
+        /**
+         * Called by the particle System when the direction is computed for the created particle.
+         * @param emitPower is the power of the particle (speed)
+         * @param worldMatrix is the world matrix of the particle system
+         * @param directionToUpdate is the direction vector to update with the result
+         * @param particle is the particle we are computed the direction for
+         */
         SphereDirectedParticleEmitter.prototype.startDirectionFunction = function (emitPower, worldMatrix, directionToUpdate, particle) {
-            var randX = BABYLON.ParticleSystem.randomNumber(this.direction1.x, this.direction2.x);
-            var randY = BABYLON.ParticleSystem.randomNumber(this.direction1.y, this.direction2.y);
-            var randZ = BABYLON.ParticleSystem.randomNumber(this.direction1.z, this.direction2.z);
+            var randX = BABYLON.Scalar.RandomRange(this.direction1.x, this.direction2.x);
+            var randY = BABYLON.Scalar.RandomRange(this.direction1.y, this.direction2.y);
+            var randZ = BABYLON.Scalar.RandomRange(this.direction1.z, this.direction2.z);
             BABYLON.Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
         };
         return SphereDirectedParticleEmitter;
@@ -47357,11 +47785,30 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This represents a GPU particle system in Babylon.
+     * This os the fastest particle system in Babylon as it uses the GPU to update the individual particle data.
+     */
     var GPUParticleSystem = /** @class */ (function () {
+        /**
+         * Instantiates a GPU particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         */
         function GPUParticleSystem(name, capacity, scene) {
-            this.name = name;
+            /**
+             * The emitter represents the Mesh or position we are attaching the particle system to.
+             */
             this.emitter = null;
+            /**
+             * The rendering group used by the Particle system to chose when to render.
+             */
             this.renderingGroupId = 0;
+            /**
+             * The layer mask we are rendering the particles through.
+             */
             this.layerMask = 0x0FFFFFFF; // TODO
             this._updateVertexBuffers = {};
             this._renderVertexBuffers = {};
@@ -47369,10 +47816,10 @@ var BABYLON;
             this._started = true;
             /**
             * An event triggered when the system is disposed.
-            * @type {BABYLON.Observable}
             */
             this.onDisposeObservable = new BABYLON.Observable();
             this.id = name;
+            this.name = name;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._capacity = capacity;
             this._engine = this._scene.getEngine();
@@ -47393,15 +47840,28 @@ var BABYLON;
             };
             this._updateEffect = new BABYLON.Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());
         }
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
         GPUParticleSystem.prototype.isStarted = function () {
             return this._started;
         };
+        /**
+         * Starts the particle system and begins to emit.
+         */
         GPUParticleSystem.prototype.start = function () {
             this._started = true;
         };
+        /**
+         * Stops the particle system.
+         */
         GPUParticleSystem.prototype.stop = function () {
             this._started = false;
         };
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
         GPUParticleSystem.prototype.animate = function () {
             // Do nothing
         };
@@ -47445,6 +47905,10 @@ var BABYLON;
             this._sourceBuffer = this._updateBuffer;
             this._targetBuffer = this._renderBuffer;
         };
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles.
+         */
         GPUParticleSystem.prototype.render = function () {
             if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady()) {
                 return 0;
@@ -47484,8 +47948,14 @@ var BABYLON;
             this._targetBuffer = tmpBuffer;
             return 0;
         };
+        /**
+         * Rebuilds the particle system
+         */
         GPUParticleSystem.prototype.rebuild = function () {
         };
+        /**
+         * Disposes the particle system and free the associated resources.
+         */
         GPUParticleSystem.prototype.dispose = function () {
             var index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {
@@ -47497,9 +47967,19 @@ var BABYLON;
             this.onDisposeObservable.clear();
         };
         //TODO: Clone / Parse / serialize
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
         GPUParticleSystem.prototype.clone = function (name, newEmitter) {
             return null;
         };
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
         GPUParticleSystem.prototype.serialize = function () {
         };
         return GPUParticleSystem;
@@ -47511,35 +47991,84 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Represents one particle of a solid particle system.
+     * @see SolidParticleSystem
+     */
     var SolidParticle = /** @class */ (function () {
         /**
          * Creates a Solid Particle object.
          * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
-         * `particleIndex` (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
-         * `positionIndex` (integer) is the starting index of the particle vertices in the SPS "positions" array.
-         * `indiceIndex` (integer) is the starting index of the particle indices in the SPS "indices" array.
-         * `model` (ModelShape) is a reference to the model shape on what the particle is designed.
-         * `shapeId` (integer) is the model shape identifier in the SPS.
-         * `idxInShape` (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
-         * `modelBoundingInfo` is the reference to the model BoundingInfo used for intersection computations.
+         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
+         * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
+         * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
+         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
+         * @param shapeId (integer) is the model shape identifier in the SPS.
+         * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
+         * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
          */
         function SolidParticle(particleIndex, positionIndex, indiceIndex, model, shapeId, idxInShape, sps, modelBoundingInfo) {
             if (modelBoundingInfo === void 0) { modelBoundingInfo = null; }
-            this.idx = 0; // particle global index
-            this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0); // color
-            this.position = BABYLON.Vector3.Zero(); // position
-            this.rotation = BABYLON.Vector3.Zero(); // rotation
-            this.scaling = BABYLON.Vector3.One(); // scaling
-            this.uvs = new BABYLON.Vector4(0.0, 0.0, 1.0, 1.0); // uvs
-            this.velocity = BABYLON.Vector3.Zero(); // velocity
-            this.pivot = BABYLON.Vector3.Zero(); // pivot point in the particle local space
-            this.alive = true; // alive
-            this.isVisible = true; // visibility
-            this._pos = 0; // index of this particle in the global "positions" array
-            this._ind = 0; // index of this particle in the global "indices" array
-            this.shapeId = 0; // model shape id
-            this.idxInShape = 0; // index of the particle in its shape id
-            this._stillInvisible = false; // still set as invisible in order to skip useless computations
+            /**
+             * particle global index
+             */
+            this.idx = 0;
+            /**
+             * The color of the particle
+             */
+            this.color = new BABYLON.Color4(1.0, 1.0, 1.0, 1.0);
+            /**
+             * The world space position of the particle.
+             */
+            this.position = BABYLON.Vector3.Zero();
+            /**
+             * The world space rotation of the particle. (Not use if rotationQuaternion is set)
+             */
+            this.rotation = BABYLON.Vector3.Zero();
+            /**
+             * The scaling of the particle.
+             */
+            this.scaling = BABYLON.Vector3.One();
+            /**
+             * The uvs of the particle.
+             */
+            this.uvs = new BABYLON.Vector4(0.0, 0.0, 1.0, 1.0);
+            /**
+             * The current speed of the particle.
+             */
+            this.velocity = BABYLON.Vector3.Zero();
+            /**
+             * The pivot point in the particle local space.
+             */
+            this.pivot = BABYLON.Vector3.Zero();
+            /**
+             * Is the particle active or not ?
+             */
+            this.alive = true;
+            /**
+             * Is the particle visible or not ?
+             */
+            this.isVisible = true;
+            /**
+             * Index of this particle in the global "positions" array (Internal use)
+             */
+            this._pos = 0;
+            /**
+             * Index of this particle in the global "indices" array (Internal use)
+             */
+            this._ind = 0;
+            /**
+             * ModelShape id of this particle
+             */
+            this.shapeId = 0;
+            /**
+             * Index of the particle in its shape id (Internal use)
+             */
+            this.idxInShape = 0;
+            /**
+             * Still set as invisible in order to skip useless computations (Internal use)
+             */
+            this._stillInvisible = false;
             this.idx = particleIndex;
             this._pos = positionIndex;
             this._ind = indiceIndex;
@@ -47554,11 +48083,14 @@ var BABYLON;
         }
         Object.defineProperty(SolidParticle.prototype, "scale", {
             /**
-             * legacy support, changed scale to scaling
+             * Legacy support, changed scale to scaling
              */
             get: function () {
                 return this.scaling;
             },
+            /**
+             * Legacy support, changed scale to scaling
+             */
             set: function (scale) {
                 this.scaling = scale;
             },
@@ -47567,11 +48099,14 @@ var BABYLON;
         });
         Object.defineProperty(SolidParticle.prototype, "quaternion", {
             /**
-             * legacy support, changed quaternion to rotationQuaternion
+             * Legacy support, changed quaternion to rotationQuaternion
              */
             get: function () {
                 return this.rotationQuaternion;
             },
+            /**
+             * Legacy support, changed quaternion to rotationQuaternion
+             */
             set: function (q) {
                 this.rotationQuaternion = q;
             },
@@ -47581,7 +48116,8 @@ var BABYLON;
         /**
          * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
          * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
-         * `target` is the object (solid particle or mesh) what the intersection is computed against.
+         * @param target is the object (solid particle or mesh) what the intersection is computed against.
+         * @returns true if it intersects
          */
         SolidParticle.prototype.intersectsMesh = function (target) {
             if (!this._boundingInfo || !target._boundingInfo) {
@@ -47595,13 +48131,22 @@ var BABYLON;
         return SolidParticle;
     }());
     BABYLON.SolidParticle = SolidParticle;
+    /**
+     * Represents the shape of the model used by one particle of a solid particle system.
+     * SPS internal tool, don't use it manually.
+     * @see SolidParticleSystem
+     */
     var ModelShape = /** @class */ (function () {
         /**
          * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
          * SPS internal tool, don't use it manually.
+         * @ignore
          */
         function ModelShape(id, shape, indicesLength, shapeUV, posFunction, vtxFunction) {
-            this._indicesLength = 0; // length of the shape in the model indices array
+            /**
+             * length of the shape in the model indices array (internal use)
+             */
+            this._indicesLength = 0;
             this.shapeID = id;
             this._shape = shape;
             this._indicesLength = indicesLength;
@@ -47612,11 +48157,24 @@ var BABYLON;
         return ModelShape;
     }());
     BABYLON.ModelShape = ModelShape;
+    /**
+     * Represents a Depth Sorted Particle in the solid particle system.
+     * @see SolidParticleSystem
+     */
     var DepthSortedParticle = /** @class */ (function () {
         function DepthSortedParticle() {
-            this.ind = 0; // index of the particle in the "indices" array
-            this.indicesLength = 0; // length of the particle shape in the "indices" array
-            this.sqDistance = 0.0; // squared distance from the particle to the camera
+            /**
+             * Index of the particle in the "indices" array
+             */
+            this.ind = 0;
+            /**
+             * Length of the particle shape in the "indices" array
+             */
+            this.indicesLength = 0;
+            /**
+             * Squared distance from the particle to the camera
+             */
+            this.sqDistance = 0.0;
         }
         return DepthSortedParticle;
     }());
@@ -47628,49 +48186,62 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     /**
-    * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
-    */
+     * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
+     *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
+
+     * The SPS is also a particle system. It provides some methods to manage the particles.
+     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
+     *
+     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+     */
     var SolidParticleSystem = /** @class */ (function () {
         /**
-        * Creates a SPS (Solid Particle System) object.
-        * `name` (String) is the SPS name, this will be the underlying mesh name.
-        * `scene` (Scene) is the scene in which the SPS is added.
-        * `updatable` (optional boolean, default true) : if the SPS must be updatable or immutable.
-        * `isPickable` (optional boolean, default false) : if the solid particles must be pickable.
-        * `enableDepthSort` (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-        * `particleIntersection` (optional boolean, default false) : if the solid particle intersections must be computed.
-        * `boundingSphereOnly` (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-        * `bSphereRadiusFactor` (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
-        *  Example : bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
-        */
+         * Creates a SPS (Solid Particle System) object.
+         * @param name (String) is the SPS name, this will be the underlying mesh name.
+         * @param scene (Scene) is the scene in which the SPS is added.
+         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
+         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
+         * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
+         */
         function SolidParticleSystem(name, scene, options) {
-            // public members
             /**
-            *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
-            *  Example : var p = SPS.particles[i];
-            */
+             *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
+             *  Example : var p = SPS.particles[i];
+             */
             this.particles = new Array();
             /**
-            * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
-            */
+             * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
+             */
             this.nbParticles = 0;
             /**
-            * If the particles must ever face the camera (default false). Useful for planar particles.
-            */
+             * If the particles must ever face the camera (default false). Useful for planar particles.
+             */
             this.billboard = false;
             /**
              * Recompute normals when adding a shape
              */
             this.recomputeNormals = true;
             /**
-            * This a counter ofr your own usage. It's not set by any SPS functions.
-            */
+             * This a counter ofr your own usage. It's not set by any SPS functions.
+             */
             this.counter = 0;
             /**
-            * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-            * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
-            */
+             * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
+             * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+             */
             this.vars = {};
+            /**
+             * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
+             */
+            this._bSphereOnly = false;
+            /**
+             * A number to multiply the boundind sphere radius by in order to reduce it for instance. (Internal use only)
+             */
+            this._bSphereRadiusFactor = 1.0;
             this._positions = new Array();
             this._indices = new Array();
             this._normals = new Array();
@@ -47725,8 +48296,6 @@ var BABYLON;
                 return (p2.sqDistance - p1.sqDistance);
             };
             this._needs32Bits = false;
-            this._bSphereOnly = false;
-            this._bSphereRadiusFactor = 1.0;
             this.name = name;
             this._scene = scene || BABYLON.Engine.LastCreatedScene;
             this._camera = scene.activeCamera;
@@ -47749,9 +48318,10 @@ var BABYLON;
             }
         }
         /**
-        * Builds the SPS underlying mesh. Returns a standard Mesh.
-        * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
-        */
+         * Builds the SPS underlying mesh. Returns a standard Mesh.
+         * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
+         * @returns the created mesh
+         */
         SolidParticleSystem.prototype.buildMesh = function () {
             if (this.nbParticles === 0) {
                 var triangle = BABYLON.MeshBuilder.CreateDisc("", { radius: 1, tessellation: 3 }, this._scene);
@@ -47799,14 +48369,15 @@ var BABYLON;
             return mesh;
         };
         /**
-        * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
-        * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
-        * Thus the particles generated from `digest()` have their property `position` set yet.
-        * `mesh` ( Mesh ) is the mesh to be digested
-        * `facetNb` (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
-        * `delta` (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
-        * `number` (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
-        */
+         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
+         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
+         * Thus the particles generated from `digest()` have their property `position` set yet.
+         * @param mesh ( Mesh ) is the mesh to be digested
+         * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
+         * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
+         * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
+         * @returns the current SPS
+         */
         SolidParticleSystem.prototype.digest = function (mesh, options) {
             var size = (options && options.facetNb) || 1;
             var number = (options && options.number) || 0;
@@ -48046,13 +48617,14 @@ var BABYLON;
             return sp;
         };
         /**
-        * Adds some particles to the SPS from the model shape. Returns the shape id.
-        * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
-        * `mesh` is any Mesh object that will be used as a model for the solid particles.
-        * `nb` (positive integer) the number of particles to be created from this model
-        * `positionFunction` is an optional javascript function to called for each particle on SPS creation.
-        * `vertexFunction` is an optional javascript function to called for each vertex of each particle on SPS creation
-        */
+         * Adds some particles to the SPS from the model shape. Returns the shape id.
+         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+         * @param mesh is any Mesh object that will be used as a model for the solid particles.
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
+         * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
+         * @returns the number of shapes in the system
+         */
         SolidParticleSystem.prototype.addShape = function (mesh, nb, options) {
             var meshPos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             var meshInd = mesh.getIndices();
@@ -48143,9 +48715,9 @@ var BABYLON;
             particle.scaling.z = 1.0;
         };
         /**
-        * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
-        * Returns the SPS.
-        */
+         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+         * @returns the SPS.
+         */
         SolidParticleSystem.prototype.rebuildMesh = function () {
             for (var p = 0; p < this.particles.length; p++) {
                 this._rebuildParticle(this.particles[p]);
@@ -48154,14 +48726,14 @@ var BABYLON;
             return this;
         };
         /**
-        *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
-        *  This method calls `updateParticle()` for each particle of the SPS.
-        *  For an animated SPS, it is usually called within the render loop.
-        * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
-        * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-        * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
-        * Returns the SPS.
-        */
+         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+         *  This method calls `updateParticle()` for each particle of the SPS.
+         *  For an animated SPS, it is usually called within the render loop.
+         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+         * @returns the SPS.
+         */
         SolidParticleSystem.prototype.setParticles = function (start, end, update) {
             if (start === void 0) { start = 0; }
             if (end === void 0) { end = this.nbParticles - 1; }
@@ -48484,7 +49056,6 @@ var BABYLON;
         };
         /**
         * Disposes the SPS.
-        * Returns nothing.
         */
         SolidParticleSystem.prototype.dispose = function () {
             this.mesh.dispose();
@@ -48504,10 +49075,10 @@ var BABYLON;
             this.pickedParticles = null;
         };
         /**
-        * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        * Returns the SPS.
-        */
+         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * @returns the SPS.
+         */
         SolidParticleSystem.prototype.refreshVisibleSize = function () {
             if (!this._isVisibilityBoxLocked) {
                 this.mesh.refreshBoundingInfo();
@@ -48515,24 +49086,27 @@ var BABYLON;
             return this;
         };
         /**
-        * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
-        * @param size the size (float) of the visibility box
-        * note : this doesn't lock the SPS mesh bounding box.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-        */
+         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+         * @param size the size (float) of the visibility box
+         * note : this doesn't lock the SPS mesh bounding box.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
         SolidParticleSystem.prototype.setVisibilityBox = function (size) {
             var vis = size / 2;
             this.mesh._boundingInfo = new BABYLON.BoundingInfo(new BABYLON.Vector3(-vis, -vis, -vis), new BABYLON.Vector3(vis, vis, vis));
         };
         Object.defineProperty(SolidParticleSystem.prototype, "isAlwaysVisible", {
-            // getter and setter
+            /**
+             * Gets whether the SPS as always visible or not
+             * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+             */
             get: function () {
                 return this._alwaysVisible;
             },
             /**
-            * Sets the SPS as always visible or not
-            * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-            */
+             * Sets the SPS as always visible or not
+             * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+             */
             set: function (val) {
                 this._alwaysVisible = val;
                 this.mesh.alwaysSelectAsActiveMesh = val;
@@ -48541,13 +49115,17 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "isVisibilityBoxLocked", {
+            /**
+             * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+             * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+             */
             get: function () {
                 return this._isVisibilityBoxLocked;
             },
             /**
-            * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-            * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-            */
+             * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+             * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+             */
             set: function (val) {
                 this._isVisibilityBoxLocked = val;
                 var boundingInfo = this.mesh.getBoundingInfo();
@@ -48557,16 +49135,19 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "computeParticleRotation", {
-            // getters
+            /**
+             * Gets if `setParticles()` computes the particle rotations or not.
+             * Default value : true. The SPS is faster when it's set to false.
+             * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+             */
             get: function () {
                 return this._computeParticleRotation;
             },
-            // Optimizer setters
             /**
-            * Tells to `setParticles()` to compute the particle rotations or not.
-            * Default value : true. The SPS is faster when it's set to false.
-            * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
-            */
+             * Tells to `setParticles()` to compute the particle rotations or not.
+             * Default value : true. The SPS is faster when it's set to false.
+             * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+             */
             set: function (val) {
                 this._computeParticleRotation = val;
             },
@@ -48574,14 +49155,19 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "computeParticleColor", {
+            /**
+             * Gets if `setParticles()` computes the particle colors or not.
+             * Default value : true. The SPS is faster when it's set to false.
+             * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+             */
             get: function () {
                 return this._computeParticleColor;
             },
             /**
-            * Tells to `setParticles()` to compute the particle colors or not.
-            * Default value : true. The SPS is faster when it's set to false.
-            * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
-            */
+             * Tells to `setParticles()` to compute the particle colors or not.
+             * Default value : true. The SPS is faster when it's set to false.
+             * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+             */
             set: function (val) {
                 this._computeParticleColor = val;
             },
@@ -48589,14 +49175,14 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "computeParticleTexture", {
+            /**
+             * Gets if `setParticles()` computes the particle textures or not.
+             * Default value : true. The SPS is faster when it's set to false.
+             * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
+             */
             get: function () {
                 return this._computeParticleTexture;
             },
-            /**
-            * Tells to `setParticles()` to compute the particle textures or not.
-            * Default value : true. The SPS is faster when it's set to false.
-            * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
-            */
             set: function (val) {
                 this._computeParticleTexture = val;
             },
@@ -48604,14 +49190,19 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "computeParticleVertex", {
+            /**
+             * Gets if `setParticles()` calls the vertex function for each vertex of each particle, or not.
+             * Default value : false. The SPS is faster when it's set to false.
+             * Note : the particle custom vertex positions aren't stored values.
+             */
             get: function () {
                 return this._computeParticleVertex;
             },
             /**
-            * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
-            * Default value : false. The SPS is faster when it's set to false.
-            * Note : the particle custom vertex positions aren't stored values.
-            */
+             * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
+             * Default value : false. The SPS is faster when it's set to false.
+             * Note : the particle custom vertex positions aren't stored values.
+             */
             set: function (val) {
                 this._computeParticleVertex = val;
             },
@@ -48619,12 +49210,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "computeBoundingBox", {
+            /**
+             * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
+             */
             get: function () {
                 return this._computeBoundingBox;
             },
             /**
-            * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
-            */
+             * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+             */
             set: function (val) {
                 this._computeBoundingBox = val;
             },
@@ -48632,14 +49226,19 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(SolidParticleSystem.prototype, "depthSortParticles", {
+            /**
+             * Gets if `setParticles()` sorts or not the distance between each particle and the camera.
+             * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+             * Default : `true`
+             */
             get: function () {
                 return this._depthSortParticles;
             },
             /**
-            * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
-            * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-            * Default : `true`
-            */
+             * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
+             * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+             * Default : `true`
+             */
             set: function (val) {
                 this._depthSortParticles = val;
             },
@@ -48648,60 +49247,65 @@ var BABYLON;
         });
         // =======================================================================
         // Particle behavior logic
-        // these following methods may be overwritten by the user to fit his needs
+        // these following methods may be overwritten by the user to fit his needs    
         /**
-        * This function does nothing. It may be overwritten to set all the particle first values.
-        * The SPS doesn't call this function, you may have to call it by your own.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-        */
+         * This function does nothing. It may be overwritten to set all the particle first values.
+         * The SPS doesn't call this function, you may have to call it by your own.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         */
         SolidParticleSystem.prototype.initParticles = function () {
         };
         /**
-        * This function does nothing. It may be overwritten to recycle a particle.
-        * The SPS doesn't call this function, you may have to call it by your own.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-        */
+         * This function does nothing. It may be overwritten to recycle a particle.
+         * The SPS doesn't call this function, you may have to call it by your own.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * @param particle The particle to recycle
+         * @returns the recycled particle
+         */
         SolidParticleSystem.prototype.recycleParticle = function (particle) {
             return particle;
         };
         /**
-        * Updates a particle : this function should  be overwritten by the user.
-        * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-        * ex : just set a particle position or velocity and recycle conditions
-        */
+         * Updates a particle : this function should  be overwritten by the user.
+         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * @example : just set a particle position or velocity and recycle conditions
+         * @param particle The particle to update
+         * @returns the updated particle
+         */
         SolidParticleSystem.prototype.updateParticle = function (particle) {
             return particle;
         };
         /**
-        * Updates a vertex of a particle : it can be overwritten by the user.
-        * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
-        * @param particle the current particle
-        * @param vertex the current index of the current particle
-        * @param pt the index of the current vertex in the particle shape
-        * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
-        * ex : just set a vertex particle position
-        */
+         * Updates a vertex of a particle : it can be overwritten by the user.
+         * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
+         * @param particle the current particle
+         * @param vertex the current index of the current particle
+         * @param pt the index of the current vertex in the particle shape
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+         * @example : just set a vertex particle position
+         * @returns the updated vertex
+         */
         SolidParticleSystem.prototype.updateParticleVertex = function (particle, vertex, pt) {
             return vertex;
         };
         /**
-        * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
-        * This does nothing and may be overwritten by the user.
-        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param update the boolean update value actually passed to setParticles()
-        */
+         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
         SolidParticleSystem.prototype.beforeUpdateParticles = function (start, stop, update) {
         };
         /**
-        * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
-        * This will be passed three parameters.
-        * This does nothing and may be overwritten by the user.
-        * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-        * @param update the boolean update value actually passed to setParticles()
-        */
+         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
+         * This will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
         SolidParticleSystem.prototype.afterUpdateParticles = function (start, stop, update) {
         };
         return SolidParticleSystem;
@@ -73802,17 +74406,35 @@ var BABYLON;
 var BABYLON;
 (function (BABYLON) {
     // We're mainly based on the logic defined into the FreeCamera code
+    /**
+     * This is a camera specifically designed to react to device orientation events such as a modern mobile device
+     * being tilted forward or back and left or right.
+     */
     var DeviceOrientationCamera = /** @class */ (function (_super) {
         __extends(DeviceOrientationCamera, _super);
+        /**
+         * Creates a new device orientation camera. @see DeviceOrientationCamera
+         * @param name The name of the camera
+         * @param position The starts position camera
+         * @param scene The scene the camera belongs to
+         */
         function DeviceOrientationCamera(name, position, scene) {
             var _this = _super.call(this, name, position, scene) || this;
             _this._quaternionCache = new BABYLON.Quaternion();
             _this.inputs.addDeviceOrientation();
             return _this;
         }
+        /**
+         * Gets the current instance class name ("DeviceOrientationCamera").
+         * This helps avoiding instanceof at run time.
+         * @returns the class name
+         */
         DeviceOrientationCamera.prototype.getClassName = function () {
             return "DeviceOrientationCamera";
         };
+        /**
+         * Checks and applies the current values of the inputs to the camera. (Internal use only)
+         */
         DeviceOrientationCamera.prototype._checkInputs = function () {
             _super.prototype._checkInputs.call(this);
             this._quaternionCache.copyFrom(this.rotationQuaternion);
@@ -73820,6 +74442,10 @@ var BABYLON;
                 this._initialQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
         };
+        /**
+         * Reset the camera to its default orientation on the specified axis only.
+         * @param axis The axis to reset
+         */
         DeviceOrientationCamera.prototype.resetToCurrentRotation = function (axis) {
             var _this = this;
             if (axis === void 0) { axis = BABYLON.Axis.Y; }
