@@ -1,10 +1,34 @@
 ﻿module BABYLON {
+    /**
+     * This represents a GPU particle system in Babylon.
+     * This os the fastest particle system in Babylon as it uses the GPU to update the individual particle data.
+     */
     export class GPUParticleSystem implements IDisposable, IParticleSystem {
-        // Members
+        /**
+         * The id of the Particle system.
+         */
         public id: string;
-        public emitter: Nullable<AbstractMesh | Vector3> = null;       
-        public renderingGroupId = 0;        
+
+        /**
+         * The friendluname of the Particle system.
+         */
+        public name: string;
+
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        public emitter: Nullable<AbstractMesh | Vector3> = null;
+
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
+        public renderingGroupId = 0;
+
+        /**
+         * The layer mask we are rendering the particles through.
+         */
         public layerMask: number = 0x0FFFFFFF; // TODO
+
         private _capacity: number;
         private _renderEffect: Effect;
         private _updateEffect: Effect;
@@ -29,24 +53,41 @@
 
         /**
         * An event triggered when the system is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<GPUParticleSystem>();
 
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
         public isStarted(): boolean {
             return this._started;
-        }     
+        }
 
+        /**
+         * Starts the particle system and begins to emit.
+         */
         public start(): void {
             this._started = true;
         }
 
+        /**
+         * Stops the particle system.
+         */
         public stop(): void {
             this._started = false;
-        }        
+        }
 
-        constructor(public name: string, capacity: number, scene: Scene) {
+        /**
+         * Instantiates a GPU particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         */
+        constructor(name: string, capacity: number, scene: Scene) {
             this.id = name;
+            this.name = name;
             this._scene = scene || Engine.LastCreatedScene;
             this._capacity = capacity;
             this._engine = this._scene.getEngine();
@@ -72,6 +113,9 @@
             this._updateEffect = new Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());   
         }
 
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
         public animate(): void {
             // Do nothing
         }
@@ -126,6 +170,10 @@
             this._targetBuffer = this._renderBuffer;
         }
 
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles.
+         */
         public render(): number {
             if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
                 return 0;
@@ -178,10 +226,16 @@
             return 0;
         }
 
+        /**
+         * Rebuilds the particle system
+         */
         public rebuild(): void {
             
         }
 
+        /**
+         * Disposes the particle system and free the associated resources.
+         */
         public dispose(): void {
             var index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {
@@ -196,10 +250,21 @@
         }
 
         //TODO: Clone / Parse / serialize
+
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
         public clone(name: string, newEmitter: any): Nullable<GPUParticleSystem> {
             return null;
         }
 
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
         public serialize(): any {
         }
     }
