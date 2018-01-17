@@ -24,6 +24,7 @@ module BABYLON {
         /**
          * Gets the current instance class name ("DeviceOrientationCamera").
          * This helps avoiding instanceof at run time.
+         * @returns the class name
          */
         public getClassName(): string {
             return "DeviceOrientationCamera";
