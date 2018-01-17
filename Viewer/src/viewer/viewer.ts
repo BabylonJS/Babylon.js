@@ -145,6 +145,7 @@ export abstract class AbstractViewer {
     }
 
     public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
+        this.configuration.model = model;
         let modelUrl = (typeof model === 'string') ? model : model.url;
         let parts = modelUrl.split('/');
         let filename = parts.pop();
