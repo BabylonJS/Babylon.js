@@ -10,5 +10,11 @@ void main(void) {
 
 	baseColor.a = abs(offset - baseColor.a);
 
+	#ifdef STROKE
+        float alpha = smoothstep(.0, .1, baseColor.a);
+        baseColor.a = alpha;
+        baseColor.rgb = baseColor.rgb * alpha;
+    #endif
+
 	gl_FragColor = baseColor;
 }
