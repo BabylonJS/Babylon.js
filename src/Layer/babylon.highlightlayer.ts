@@ -13,9 +13,8 @@
             samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
             engine?: Engine,
             reusable?: boolean,
-            stroke?: boolean,
         ) {
-            super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable, stroke ? "#define STROKE \n" : undefined);
+            super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
             
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
@@ -304,7 +303,8 @@
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
-                ["textureSampler"], "");
+                ["textureSampler"],
+                this._options.stroke ? "#define STROKE \n" : undefined);
 
             // Render target
             this.setMainTextureSize();
@@ -390,13 +390,13 @@
 
             if (this._options.alphaBlendingMode === Engine.ALPHA_COMBINE) {
                 this._horizontalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerHBP", new BABYLON.Vector2(1.0, 0), this._options.blurHorizontalSize, 1,
-                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, this._options.stroke);
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
                 this._horizontalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
 
                 this._verticalBlurPostprocess = new GlowBlurPostProcess("HighlightLayerVBP", new BABYLON.Vector2(0, 1.0), this._options.blurVerticalSize, 1,
-                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, this._options.stroke);
+                    null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false);
                 this._verticalBlurPostprocess.onApplyObservable.add(effect => {
                     effect.setFloat2("screenSize", blurTextureWidth, blurTextureHeight);
                 });
