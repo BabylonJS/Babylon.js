@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    var PerlinNoiseProceduralTexture = (function (_super) {
+    var PerlinNoiseProceduralTexture = /** @class */ (function (_super) {
         __extends(PerlinNoiseProceduralTexture, _super);
         function PerlinNoiseProceduralTexture(name, size, scene, fallbackTexture, generateMipMaps) {
             var _this = _super.call(this, name, size, "perlinNoiseProceduralTexture", scene, fallbackTexture, generateMipMaps) || this;
@@ -24,7 +24,11 @@ var BABYLON;
         }
         PerlinNoiseProceduralTexture.prototype.updateShaderUniforms = function () {
             this.setFloat("size", this.getRenderSize());
-            var deltaTime = this.getScene().getEngine().getDeltaTime();
+            var scene = this.getScene();
+            if (!scene) {
+                return;
+            }
+            var deltaTime = scene.getEngine().getDeltaTime();
             this.time += deltaTime;
             this.setFloat("time", this.time * this.speed / 1000);
             this._currentTranslation += deltaTime * this.translationSpeed / 1000.0;

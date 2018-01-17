@@ -142,7 +142,7 @@
             return ActionManager._OnKeyUpTrigger;
         }
 
-        public static Triggers: { [key: string]: number} = {};
+        public static Triggers: { [key: string]: number } = {};
 
         // Members
         public actions = new Array<Action>();
@@ -416,7 +416,7 @@
         }
 
         public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene) {
-            var actionManager = new BABYLON.ActionManager(scene);
+            var actionManager = new ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;
             else
@@ -424,6 +424,7 @@
 
             // instanciate a new object
             var instanciate = (name: string, params: Array<any>): any => {
+                // TODO: We will need to find a solution for the next line when using commonjs / es6 .
                 var newInstance: Object = Object.create(Tools.Instantiate("BABYLON." + name).prototype);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;

@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     export class _AlphaState {
         private _isAlphaBlendDirty = false;
         private _isBlendFunctionParametersDirty = false;
@@ -49,7 +49,7 @@
             this._blendConstants[3] = a;
 
             this._isBlendConstantsDirty = true;
-        }        
+        }
 
         public setAlphaBlendFunctionParameters(value0: number, value1: number, value2: number, value3: number): void {
             if (
@@ -81,7 +81,7 @@
             this._blendEquationParameters[1] = alpha;
 
             this._isBlendEquationParametersDirty = true;
-        }        
+        }
 
         public reset() {
             this._alphaBlend = false;
@@ -91,12 +91,12 @@
             this._blendFunctionParameters[3] = null;
 
             this._blendEquationParameters[0] = null;
-            this._blendEquationParameters[1] = null; 
+            this._blendEquationParameters[1] = null;
 
             this._blendConstants[0] = null;
             this._blendConstants[1] = null;
             this._blendConstants[2] = null;
-            this._blendConstants[3] = null;                       
+            this._blendConstants[3] = null;
 
             this._isAlphaBlendDirty = true;
             this._isBlendFunctionParametersDirty = false;
@@ -131,13 +131,13 @@
             if (this._isBlendEquationParametersDirty) {
                 gl.blendEquationSeparate((<any>this._isBlendEquationParametersDirty)[0], (<any>this._isBlendEquationParametersDirty)[1]);
                 this._isBlendEquationParametersDirty = false;
-            }        
+            }
 
             // Constants
             if (this._isBlendConstantsDirty) {
                 gl.blendColor(<number>this._blendConstants[0], <number>this._blendConstants[1], <number>this._blendConstants[2], <number>this._blendConstants[3]);
                 this._isBlendConstantsDirty = false;
-            }                    
+            }
         }
     }
 }

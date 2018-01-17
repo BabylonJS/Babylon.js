@@ -15,7 +15,7 @@ declare module BABYLON {
          * @param data
          * @param rootUrl
          */
-        parseMTL: (scene: Scene, data: string, rootUrl: string) => void;
+        parseMTL(scene: BABYLON.Scene, data: string, rootUrl: string): void;
         /**
          * Gets the texture for the material.
          *
@@ -30,6 +30,7 @@ declare module BABYLON {
     }
     class OBJFileLoader implements ISceneLoaderPlugin {
         static OPTIMIZE_WITH_UV: boolean;
+        name: string;
         extensions: string;
         obj: RegExp;
         group: RegExp;
@@ -55,7 +56,7 @@ declare module BABYLON {
          * @private
          */
         private _loadMTL(url, rootUrl, onSuccess);
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean;
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
         load(scene: Scene, data: string, rootUrl: string): boolean;
         /**
          * Read the OBJ file and create an Array of meshes.

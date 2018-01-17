@@ -108,6 +108,14 @@ module BABYLON {
             return this._multiRenderTarget;
         }
 
+        public get samples(): number {
+            return this._multiRenderTarget.samples;
+        }
+
+        public set samples(value: number) {
+            this._multiRenderTarget.samples = value;
+        }
+
         // Methods
         public dispose(): void {
             this.getGBuffer().dispose();
@@ -117,7 +125,9 @@ module BABYLON {
             var engine = this._scene.getEngine();
             var count = this._enablePosition ? 3 : 2;
 
-            this._multiRenderTarget = new MultiRenderTarget("gBuffer", { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene, { generateMipMaps : false, generateDepthTexture: true });
+            this._multiRenderTarget = new MultiRenderTarget("gBuffer",
+                { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio }, count, this._scene,
+                { generateMipMaps: false, generateDepthTexture: true, defaultType: Engine.TEXTURETYPE_FLOAT });
             if (!this.isSupported) {
                 return;
             }
@@ -126,7 +136,7 @@ module BABYLON {
             this._multiRenderTarget.refreshRate = 1;
             this._multiRenderTarget.renderParticles = false;
             this._multiRenderTarget.renderList = null;
-            
+
             // set default depth value to 1.0 (far away)
             this._multiRenderTarget.onClearObservable.add((engine: Engine) => {
                 engine.clear(new Color4(0.0, 0.0, 0.0, 1.0), true, true, true);
@@ -144,7 +154,7 @@ module BABYLON {
                 }
 
                 // Culling
-                engine.setState(material.backFaceCulling);
+                engine.setState(material.backFaceCulling, 0, false, scene.useRightHandedSystem);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -158,7 +168,7 @@ module BABYLON {
                 if (this.isReady(subMesh, hardwareInstancedRendering)) {
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
-                    
+
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     this._effect.setMatrix("view", scene.getViewMatrix());
@@ -188,12 +198,12 @@ module BABYLON {
                 var index;
 
                 if (depthOnlySubMeshes.length) {
-                    engine.setColorWrite(false);            
+                    engine.setColorWrite(false);
                     for (index = 0; index < depthOnlySubMeshes.length; index++) {
                         renderSubMesh(depthOnlySubMeshes.data[index]);
                     }
                     engine.setColorWrite(true);
-                }                  
+                }
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);

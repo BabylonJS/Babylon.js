@@ -2622,6 +2622,7 @@ var BABYLON;
                 _this._borderColor = "white";
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 _this._isThumbCircle = false;
+                _this._isThumbClamped = false;
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -2760,6 +2761,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "isThumbClamped", {
+                get: function () {
+                    return this._isThumbClamped;
+                },
+                set: function (value) {
+                    if (this._isThumbClamped === value) {
+                        return;
+                    }
+                    this._isThumbClamped = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Slider.prototype._getTypeName = function () {
                 return "Slider";
             };
@@ -2770,12 +2785,6 @@ var BABYLON;
                     // Main bar
                     var effectiveThumbWidth;
                     var effectiveBarOffset;
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowColor = this.shadowColor;
-                        context.shadowBlur = this.shadowBlur;
-                        context.shadowOffsetX = this.shadowOffsetX;
-                        context.shadowOffsetY = this.shadowOffsetY;
-                    }
                     if (this._thumbWidth.isPixel) {
                         effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
@@ -2788,29 +2797,43 @@ var BABYLON;
                     else {
                         effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
                     }
-                    var left = this._currentMeasure.left + effectiveThumbWidth / 2;
-                    var width = this._currentMeasure.width - effectiveThumbWidth;
-                    var thumbPosition = (this._value - this._minimum) / (this._maximum - this._minimum) * width;
-                    // Bar
-                    context.fillStyle = this._background;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowBlur = 0;
-                        context.shadowOffsetX = 0;
-                        context.shadowOffsetY = 0;
-                    }
-                    context.fillStyle = this.color;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowColor = this.shadowColor;
                         context.shadowBlur = this.shadowBlur;
                         context.shadowOffsetX = this.shadowOffsetX;
                         context.shadowOffsetY = this.shadowOffsetY;
                     }
-                    // Thumb
+                    var left = this._currentMeasure.left;
+                    var width = this._currentMeasure.width - effectiveThumbWidth;
+                    var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
+                    context.fillStyle = this._background;
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
+                    context.fillStyle = this.color;
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     if (this._isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
                         context.fill();
                         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                             context.shadowBlur = 0;
@@ -2821,14 +2844,14 @@ var BABYLON;
                         context.stroke();
                     }
                     else {
-                        context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                             context.shadowBlur = 0;
                             context.shadowOffsetX = 0;
                             context.shadowOffsetY = 0;
                         }
                         context.strokeStyle = this._borderColor;
-                        context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                     }
                 }
                 context.restore();
@@ -3160,6 +3183,7 @@ var BABYLON;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
+                _this._lineSpacing = new GUI.ValueAndUnit(0);
                 /**
                 * An event triggered after the text is changed
                 * @type {BABYLON.Observable}
@@ -3235,6 +3259,18 @@ var BABYLON;
                     }
                     this._textVerticalAlignment = value;
                     this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "lineSpacing", {
+                get: function () {
+                    return this._lineSpacing.toString(this._host);
+                },
+                set: function (value) {
+                    if (this._lineSpacing.fromString(value)) {
+                        this._markAsDirty();
+                    }
                 },
                 enumerable: true,
                 configurable: true
@@ -3333,8 +3369,16 @@ var BABYLON;
                 }
                 rootY += this._currentMeasure.top;
                 var maxLineWidth = 0;
-                for (var _i = 0, _a = this._lines; _i < _a.length; _i++) {
-                    var line = _a[_i];
+                for (var i = 0; i < this._lines.length; i++) {
+                    var line = this._lines[i];
+                    if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+                        if (this._lineSpacing.isPixel) {
+                            rootY += this._lineSpacing.getValue(this._host);
+                        }
+                        else {
+                            rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        }
+                    }
                     this._drawText(line.text, line.width, rootY, context);
                     rootY += this._fontOffset.height;
                     if (line.width > maxLineWidth)
@@ -4623,6 +4667,9 @@ var BABYLON;
                 _this.defaultButtonPaddingBottom = "2px";
                 _this.defaultButtonColor = "#DDD";
                 _this.defaultButtonBackground = "#070707";
+                _this.shiftButtonColor = "#7799FF";
+                _this.selectedShiftThickness = 1;
+                _this.shiftState = 0;
                 return _this;
             }
             VirtualKeyboard.prototype._getTypeName = function () {
@@ -4663,6 +4710,30 @@ var BABYLON;
                 }
                 this.addControl(panel);
             };
+            VirtualKeyboard.prototype.applyShiftState = function (shiftState) {
+                if (!this.children) {
+                    return;
+                }
+                for (var i = 0; i < this.children.length; i++) {
+                    var row = this.children[i];
+                    if (!row || !row.children) {
+                        continue;
+                    }
+                    var rowContainer = row;
+                    for (var j = 0; j < rowContainer.children.length; j++) {
+                        var button = rowContainer.children[j];
+                        if (!button || !button.children[0]) {
+                            continue;
+                        }
+                        var button_tblock = button.children[0];
+                        if (button_tblock.text === "\u21E7") {
+                            button.color = (shiftState ? this.shiftButtonColor : this.defaultButtonColor);
+                            button.thickness = (shiftState > 1 ? this.selectedShiftThickness : 0);
+                        }
+                        button_tblock.text = (shiftState > 0 ? button_tblock.text.toUpperCase() : button_tblock.text.toLowerCase());
+                    }
+                }
+            };
             Object.defineProperty(VirtualKeyboard.prototype, "connectedInputText", {
                 get: function () {
                     return this._connectedInputText;
@@ -4686,6 +4757,13 @@ var BABYLON;
                         return;
                     }
                     switch (key) {
+                        case "\u21E7":
+                            _this.shiftState++;
+                            if (_this.shiftState > 2) {
+                                _this.shiftState = 0;
+                            }
+                            _this.applyShiftState(_this.shiftState);
+                            return;
                         case "\u2190":
                             _this._connectedInputText.processKey(8);
                             return;
@@ -4693,7 +4771,11 @@ var BABYLON;
                             _this._connectedInputText.processKey(13);
                             return;
                     }
-                    _this._connectedInputText.processKey(-1, key);
+                    _this._connectedInputText.processKey(-1, (_this.shiftState ? key.toUpperCase() : key));
+                    if (_this.shiftState === 1) {
+                        _this.shiftState = 0;
+                        _this.applyShiftState(_this.shiftState);
+                    }
                 });
             };
             VirtualKeyboard.prototype.disconnect = function () {
@@ -4711,7 +4793,7 @@ var BABYLON;
                 returnValue.addKeysRow(["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "\u2190"]);
                 returnValue.addKeysRow(["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"]);
                 returnValue.addKeysRow(["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "\u21B5"]);
-                returnValue.addKeysRow(["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
+                returnValue.addKeysRow(["\u21E7", "z", "x", "c", "v", "b", "n", "m", ",", ".", "/"]);
                 returnValue.addKeysRow([" "], [{ width: "200px" }]);
                 return returnValue;
             };

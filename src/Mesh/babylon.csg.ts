@@ -33,7 +33,7 @@
             return new Vertex(Vector3.Lerp(this.pos, other.pos, t),
                 Vector3.Lerp(this.normal, other.normal, t),
                 Vector2.Lerp(this.uv, other.uv, t)
-                );
+            );
         }
     }
 
@@ -287,20 +287,20 @@
                 polygon: Polygon,
                 polygons = new Array<Polygon>(),
                 vertices;
-			var matrix : Matrix, 
-				meshPosition : Vector3,
-				meshRotation : Vector3,
-				meshRotationQuaternion: Nullable<Quaternion> = null,
-				meshScaling: Vector3;
-				
+            var matrix: Matrix,
+                meshPosition: Vector3,
+                meshRotation: Vector3,
+                meshRotationQuaternion: Nullable<Quaternion> = null,
+                meshScaling: Vector3;
+
             if (mesh instanceof Mesh) {
                 mesh.computeWorldMatrix(true);
                 matrix = mesh.getWorldMatrix();
                 meshPosition = mesh.position.clone();
                 meshRotation = mesh.rotation.clone();
-				if(mesh.rotationQuaternion) {
-					meshRotationQuaternion = mesh.rotationQuaternion.clone();
-				}
+                if (mesh.rotationQuaternion) {
+                    meshRotationQuaternion = mesh.rotationQuaternion.clone();
+                }
                 meshScaling = mesh.scaling.clone();
             } else {
                 throw 'BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh';
@@ -587,16 +587,16 @@
         }
 
         // Build Mesh from CSG taking material and transforms into account
-        public toMesh(name: string, material: Material, scene: Scene, keepSubMeshes: boolean): Mesh {
+        public toMesh(name: string, material: Nullable<Material>, scene: Scene, keepSubMeshes: boolean): Mesh {
             var mesh = this.buildMeshGeometry(name, scene, keepSubMeshes);
 
             mesh.material = material;
 
             mesh.position.copyFrom(this.position);
             mesh.rotation.copyFrom(this.rotation);
-			if(this.rotationQuaternion) {
-				mesh.rotationQuaternion = this.rotationQuaternion.clone();
-			}
+            if (this.rotationQuaternion) {
+                mesh.rotationQuaternion = this.rotationQuaternion.clone();
+            }
             mesh.scaling.copyFrom(this.scaling);
             mesh.computeWorldMatrix(true);
 

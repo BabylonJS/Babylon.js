@@ -3,10 +3,10 @@
 
         public static BindEyePosition(effect: Effect, scene: Scene): void {
             if (scene._forcedViewPosition) {
-                effect.setVector3("vEyePosition", scene._forcedViewPosition);            
+                effect.setVector3("vEyePosition", scene._forcedViewPosition);
                 return;
             }
-            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);            
+            effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera!.globalPosition);
         }
 
         public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
@@ -41,7 +41,15 @@
             }
         }
 
-        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, forceAlphaTest = false): void {
+        /**
+         * Helper used to prepare the list of defines for shader compilation
+         * @param scene defines the current scene
+         * @param engine defines the current engine
+         * @param defines specifies the list of active defines
+         * @param useInstances defines if instances have to be turned on
+         * @param alphaTest defines if alpha testing has to be turned on
+         */
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, alphaTest: boolean): void {
             var changed = false;
 
             if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
@@ -49,7 +57,7 @@
                 changed = true;
             }
 
-            if (defines["ALPHATEST"] !== (engine.getAlphaTesting() || forceAlphaTest)) {
+            if (defines["ALPHATEST"] !== alphaTest) {
                 defines["ALPHATEST"] = !defines["ALPHATEST"];
                 changed = true;
             }
@@ -57,13 +65,13 @@
             if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
                 defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
                 changed = true;
-            }            
+            }
 
             if (defines["INSTANCES"] !== useInstances) {
                 defines["INSTANCES"] = useInstances;
                 changed = true;
             }
-            
+
             if (changed) {
                 defines.markAsUnprocessed();
             }
@@ -76,7 +84,7 @@
 
             defines._normals = defines._needNormals;
             defines._uvs = defines._needUVs;
-            
+
             defines["NORMAL"] = (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
 
             if (defines._needNormals && mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
@@ -111,7 +119,7 @@
                 var manager = (<Mesh>mesh).morphTargetManager;
                 if (manager) {
                     defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
-                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"] ;
+                    defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
                     defines["MORPHTARGETS"] = (manager.numInfluencers > 0);
                     defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
                 } else {
@@ -146,7 +154,7 @@
                     }
 
                     defines["LIGHT" + lightIndex] = true;
-                    
+
                     defines["SPOTLIGHT" + lightIndex] = false;
                     defines["HEMILIGHT" + lightIndex] = false;
                     defines["POINTLIGHT" + lightIndex] = false;
@@ -184,7 +192,7 @@
                         }
                     }
 
-                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT ) {
+                    if (light.lightmapMode != Light.LIGHTMAP_DEFAULT) {
                         lightmapMode = true;
                         defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = (light.lightmapMode == Light.LIGHTMAP_SHADOWSONLY);
@@ -208,7 +216,7 @@
                     defines["LIGHT" + index] = false;
                     defines["HEMILIGHT" + lightIndex] = false;
                     defines["POINTLIGHT" + lightIndex] = false;
-                    defines["DIRLIGHT" + lightIndex] = false;                    
+                    defines["DIRLIGHT" + lightIndex] = false;
                     defines["SPOTLIGHT" + lightIndex] = false;
                     defines["SHADOW" + lightIndex] = false;
                 }
@@ -220,9 +228,9 @@
                 needRebuild = true;
             }
 
-            defines["SHADOWFLOAT"] = shadowEnabled && 
-                                    ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
-                                         (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
+            defines["SHADOWFLOAT"] = shadowEnabled &&
+                ((caps.textureFloatRender && caps.textureFloatLinearFiltering) ||
+                    (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
             defines["LIGHTMAPEXCLUDED"] = lightmapMode;
 
             if (needRebuild) {
@@ -370,29 +378,30 @@
         }
 
         public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, usePhysicalLightFalloff = false) {
-            var lightIndex = 0;
-            for (var light of mesh._lightSources) {
-                let scaledIntensity = light.getScaledIntensity();
-                light._uniformBuffer.bindToEffect(effect, "Light" + lightIndex);
+            let len = Math.min(mesh._lightSources.length, maxSimultaneousLights);
 
-                MaterialHelper.BindLightProperties(light, effect, lightIndex);
+            for (var i = 0; i < len; i++) {
+
+                let light = mesh._lightSources[i];
+                let iAsString = i.toString();
+
+                let scaledIntensity = light.getScaledIntensity();
+                light._uniformBuffer.bindToEffect(effect, "Light" + i);
+
+                MaterialHelper.BindLightProperties(light, effect, i);
 
                 light.diffuse.scaleToRef(scaledIntensity, Tmp.Color3[0]);
-                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, lightIndex + "");
+                light._uniformBuffer.updateColor4("vLightDiffuse", Tmp.Color3[0], usePhysicalLightFalloff ? light.radius : light.range, iAsString);
                 if (defines["SPECULARTERM"]) {
                     light.specular.scaleToRef(scaledIntensity, Tmp.Color3[1]);
-                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], lightIndex + "");
+                    light._uniformBuffer.updateColor3("vLightSpecular", Tmp.Color3[1], iAsString);
                 }
 
                 // Shadows
                 if (scene.shadowsEnabled) {
-                    this.BindLightShadow(light, scene, mesh, lightIndex + "", effect);
+                    this.BindLightShadow(light, scene, mesh, iAsString, effect);
                 }
                 light._uniformBuffer.update();
-                lightIndex++;
-
-                if (lightIndex === maxSimultaneousLights)
-                    break;
             }
         }
 

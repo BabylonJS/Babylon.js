@@ -86,6 +86,13 @@ module INSPECTOR {
                     updateFct: () => { return this._sceneInstrumentation!.drawCallsCounter.current.toString() }
                 });
 
+                this._createStatLabel("Texture collisions", this._panel);
+                elemValue = Helpers.CreateDiv('stat-value', this._panel);
+                this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: () => { return this._sceneInstrumentation!.textureCollisionsCounter.current.toString() }
+                });
+
                 this._createStatLabel("Total lights", this._panel);
                 elemValue = Helpers.CreateDiv('stat-value', this._panel);
                 this._updatableProperties.push({
