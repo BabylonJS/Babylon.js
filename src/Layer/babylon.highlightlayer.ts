@@ -67,9 +67,9 @@
         camera: Nullable<Camera>;
 
         /**
-         * Threshold for cutting glow.
+         * Should we display highlight as a solid stroke?
          */
-        stroke?: boolean;
+        isStroke?: boolean;
     }
 
     /**
@@ -304,7 +304,7 @@
                 [VertexBuffer.PositionKind],
                 ["offset"],
                 ["textureSampler"],
-                this._options.stroke ? "#define STROKE \n" : undefined);
+                this._options.isStroke ? "#define STROKE \n" : undefined);
 
             // Render target
             this.setMainTextureSize();
