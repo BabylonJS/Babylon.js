@@ -40,6 +40,9 @@ export class TemplateManager {
     public onLoaded: Observable<Template>;
     public onStateChange: Observable<Template>;
     public onAllLoaded: Observable<TemplateManager>;
+    public onEventTriggered: Observable<EventCallback>;
+
+    public eventManager: EventManager;
 
     private templates: { [name: string]: Template };
 
@@ -50,6 +53,9 @@ export class TemplateManager {
         this.onLoaded = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
         this.onAllLoaded = new Observable<TemplateManager>();
+        this.onEventTriggered = new Observable<EventCallback>();
+
+        this.eventManager = new EventManager(this);
     }
 
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
@@ -101,6 +107,8 @@ export class TemplateManager {
     private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
         let promises = Object.keys(templates).map(name => {
             let template = new Template(name, templates[name]);
+            // make sure the global onEventTriggered is called as well
+            template.onEventTriggered.add(eventData => this.onEventTriggered.notifyObservers(eventData));
             this.templates[name] = template;
             return template.initPromise;
         });
@@ -144,6 +152,8 @@ export class TemplateManager {
 
 
 import * as Handlebars from '../assets/handlebars.min.js';
+import { PromiseObservable } from './util/promiseObservable';
+import { EventManager } from './eventManager';
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper('eachInMap', function (map, block) {
     var out = '';
@@ -168,6 +178,11 @@ export class Template {
     public onEventTriggered: Observable<EventCallback>;
 
     public isLoaded: boolean;
+    /**
+     * This is meant to be used to track the show and hide functions.
+     * This is NOT (!!) a flag to check if the element is actually visible to the user.
+     */
+    public isShown: boolean;
 
     public parent: HTMLElement;
 
@@ -183,6 +198,7 @@ export class Template {
         this.onEventTriggered = new Observable<EventCallback>();
 
         this.isLoaded = false;
+        this.isShown = false;
         /*
         if (configuration.id) {
             this.parent.id = configuration.id;
@@ -199,6 +215,7 @@ export class Template {
                 let rawHtml = compiledTemplate(config);
                 this.fragment = document.createRange().createContextualFragment(rawHtml);
                 this.isLoaded = true;
+                this.isShown = true;
                 this.onLoaded.notifyObservers(this);
             }
             return this;
@@ -243,30 +260,44 @@ export class Template {
     }
 
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (visibilityFunction) {
-            return visibilityFunction(this).then(() => {
-                this.onStateChange.notifyObservers(this);
+        return Promise.resolve().then(() => {
+            if (visibilityFunction) {
+                return visibilityFunction(this);
+            } else {
+                // flex? box? should this be configurable easier than the visibilityFunction?
+                this.parent.style.display = 'flex';
                 return this;
-            });
-        } else {
-            // flex? box? should this be configurable easier than the visibilityFunction?
-            this.parent.style.display = 'flex';
+            }
+        }).then(() => {
+            this.isShown = true;
             this.onStateChange.notifyObservers(this);
-            return Promise.resolve(this);
-        }
+            return this;
+        });
     }
 
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (visibilityFunction) {
-            return visibilityFunction(this).then(() => {
-                this.onStateChange.notifyObservers(this);
+        return Promise.resolve().then(() => {
+            if (visibilityFunction) {
+                return visibilityFunction(this);
+            } else {
+                // flex? box? should this be configurable easier than the visibilityFunction?
+                this.parent.style.display = 'hide';
                 return this;
-            });
-        } else {
-            this.parent.style.display = 'none';
+            }
+        }).then(() => {
+            this.isShown = false;
             this.onStateChange.notifyObservers(this);
-            return Promise.resolve(this);
-        }
+            return this;
+        });
+    }
+
+    public dispose() {
+        this.onAppended.clear();
+        this.onEventTriggered.clear();
+        this.onInit.clear();
+        this.onLoaded.clear();
+        this.onStateChange.clear();
+        this.isLoaded = false;
     }
 
     // TODO - Should events be removed as well? when are templates disposed?
@@ -286,7 +317,7 @@ export class Template {
                         // strict null checl is working incorrectly, must override:
                         let event = this._configuration.events[eventName] || {};
                         selectorsArray.filter(selector => event[selector]).forEach(selector => {
-                            if (selector.indexOf('#') !== 0) {
+                            if (selector && selector.indexOf('#') !== 0) {
                                 selector = '#' + selector;
                             }
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
