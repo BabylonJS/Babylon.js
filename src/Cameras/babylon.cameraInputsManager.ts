@@ -28,10 +28,10 @@ module BABYLON {
             this.checkInputs = () => { };
         }
 
-		/**
-		 * Add an input method to a camera
-		 * @param input
-		 */
+        /**
+         * Add an input method to a camera
+         * @param input
+         */
         public add(input: ICameraInput<TCamera>) {
             var type = input.getSimpleName();
             if (this.attached[type]) {
@@ -53,10 +53,10 @@ module BABYLON {
                 input.attachControl(this.attachedElement);
             }
         }
-		/**
-		 * Remove a specific input method from a camera
-		 * @param inputToRemove
-		 */
+        /**
+         * Remove a specific input method from a camera
+         * @param inputToRemove
+         */
         public remove(inputToRemove: ICameraInput<TCamera>) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
@@ -136,9 +136,9 @@ module BABYLON {
             }
         }
 
-		/**
-		 * Remove all attached input methods from a camera
-		 */
+        /**
+         * Remove all attached input methods from a camera
+         */
         public clear() {
             if (this.attachedElement) {
                 this.detachElement(this.attachedElement, true);
