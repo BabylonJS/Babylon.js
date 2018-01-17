@@ -9013,7 +9013,6 @@ var BABYLON;
             this._activeChannel = 0;
             this._currentTextureChannel = -1;
             this._boundTexturesCache = {};
-            this._boundTexturesStack = new Array();
             this._compiledEffects = {};
             this._vertexAttribArraysEnabled = [];
             this._uintIndicesCurrentlySet = false;
@@ -9021,6 +9020,8 @@ var BABYLON;
             this._currentBufferPointers = new Array();
             this._currentInstanceLocations = new Array();
             this._currentInstanceBuffers = new Array();
+            this._firstBoundInternalTextureTracker = new BABYLON.DummyInternalTextureTracker();
+            this._lastBoundInternalTextureTracker = new BABYLON.DummyInternalTextureTracker();
             this._vaoRecordInProgress = false;
             this._mustWipeVertexAttributes = false;
             this._nextFreeTextureSlots = new Array();
@@ -9264,6 +9265,7 @@ var BABYLON;
             for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this._currentBufferPointers[i] = new BufferPointer();
             }
+            this._linkTrackers(this._firstBoundInternalTextureTracker, this._lastBoundInternalTextureTracker);
             // Load WebVR Devices
             if (options.autoEnableWebVR) {
                 this.initWebVR();
@@ -9599,7 +9601,7 @@ var BABYLON;
         });
         Object.defineProperty(Engine, "Version", {
             get: function () {
-                return "3.2.0-alpha4";
+                return "3.2.0-alpha5";
             },
             enumerable: true,
             configurable: true
@@ -12705,11 +12707,15 @@ var BABYLON;
             this._currentEffect = null;
         };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
-            var index = this._boundTexturesStack.indexOf(internalTexture);
-            if (index > -1 && index !== this._boundTexturesStack.length - 1) {
-                this._boundTexturesStack.splice(index, 1);
-                this._boundTexturesStack.push(internalTexture);
+            if (this._lastBoundInternalTextureTracker.previous === internalTexture) {
+                return;
             }
+            // Remove
+            this._linkTrackers(internalTexture.previous, internalTexture.next);
+            // Bind last to it
+            this._linkTrackers(this._lastBoundInternalTextureTracker.previous, internalTexture);
+            // Bind to dummy
+            this._linkTrackers(internalTexture, this._lastBoundInternalTextureTracker);
         };
         Engine.prototype._getCorrectTextureChannel = function (channel, internalTexture) {
             if (!internalTexture) {
@@ -12733,23 +12739,27 @@ var BABYLON;
                         }
                         // We need to recycle the oldest bound texture, sorry.
                         this._textureCollisions.addCount(1, false);
-                        return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                        return this._removeDesignatedSlot(this._firstBoundInternalTextureTracker.next);
                     }
                 }
             }
             return channel;
         };
+        Engine.prototype._linkTrackers = function (previous, next) {
+            previous.next = next;
+            next.previous = previous;
+        };
         Engine.prototype._removeDesignatedSlot = function (internalTexture) {
             var currentSlot = internalTexture._designatedSlot;
-            internalTexture._designatedSlot = -1;
-            var index = this._boundTexturesStack.indexOf(internalTexture);
-            if (index > -1) {
-                this._boundTexturesStack.splice(index, 1);
-                if (currentSlot > -1) {
-                    this._boundTexturesCache[currentSlot] = null;
-                    this._nextFreeTextureSlots.push(currentSlot);
-                }
+            if (currentSlot === -1) {
+                return -1;
             }
+            internalTexture._designatedSlot = -1;
+            // Remove from bound list
+            this._linkTrackers(internalTexture.previous, internalTexture.next);
+            // Free the slot
+            this._boundTexturesCache[currentSlot] = null;
+            this._nextFreeTextureSlots.push(currentSlot);
             return currentSlot;
         };
         Engine.prototype._activateCurrentTexture = function () {
@@ -12778,7 +12788,8 @@ var BABYLON;
                         if (slotIndex > -1) {
                             this._nextFreeTextureSlots.splice(slotIndex, 1);
                         }
-                        this._boundTexturesStack.push(texture);
+                        this._linkTrackers(this._lastBoundInternalTextureTracker.previous, texture);
+                        this._linkTrackers(texture, this._lastBoundInternalTextureTracker);
                     }
                     texture._designatedSlot = this._activeChannel;
                 }
@@ -23792,28 +23803,87 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Internal class used by the engine to get list of {BABYLON.InternalTexture} already bound to the GL context
+     */
+    var DummyInternalTextureTracker = /** @class */ (function () {
+        function DummyInternalTextureTracker() {
+            /**
+             * Gets or set the previous tracker in the list
+             */
+            this.previous = null;
+            /**
+             * Gets or set the next tracker in the list
+             */
+            this.next = null;
+        }
+        return DummyInternalTextureTracker;
+    }());
+    BABYLON.DummyInternalTextureTracker = DummyInternalTextureTracker;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.internalTextureTracker.js.map
+
+var BABYLON;
+(function (BABYLON) {
+    /**
+     * Class used to store data associated with WebGL texture data for the engine
+     * This class should not be used directly
+     */
     var InternalTexture = /** @class */ (function () {
+        /**
+         * Creates a new InternalTexture
+         * @param engine defines the engine to use
+         * @param dataSource defines the type of data that will be used
+         */
         function InternalTexture(engine, dataSource) {
+            /**
+             * Observable called when the texture is loaded
+             */
             this.onLoadedObservable = new BABYLON.Observable();
+            /**
+             * Gets or set the previous tracker in the list
+             */
+            this.previous = null;
+            /**
+             * Gets or set the next tracker in the list
+             */
+            this.next = null;
             // Private
+            /** @ignore */
             this._initialSlot = -1;
+            /** @ignore */
             this._designatedSlot = -1;
+            /** @ignore */
             this._dataSource = InternalTexture.DATASOURCE_UNKNOWN;
+            /** @ignore */
             this._references = 1;
             this._engine = engine;
             this._dataSource = dataSource;
             this._webGLTexture = engine._createTexture();
         }
         Object.defineProperty(InternalTexture.prototype, "dataSource", {
+            /**
+             * Gets the data source type of the texture (can be one of the BABYLON.InternalTexture.DATASOURCE_XXXX)
+             */
             get: function () {
                 return this._dataSource;
             },
             enumerable: true,
             configurable: true
         });
+        /**
+         * Increments the number of references (ie. the number of {BABYLON.Texture} that point to it)
+         */
         InternalTexture.prototype.incrementReferences = function () {
             this._references++;
         };
+        /**
+         * Change the size of the texture (not the size of the content)
+         * @param width defines the new width
+         * @param height defines the new height
+         * @param depth defines the new depth (1 by default)
+         */
         InternalTexture.prototype.updateSize = function (width, height, depth) {
             if (depth === void 0) { depth = 1; }
             this.width = width;
@@ -23824,6 +23894,7 @@ var BABYLON;
             this.baseDepth = depth;
             this._size = width * height * depth;
         };
+        /** @ignore */
         InternalTexture.prototype._rebuild = function () {
             var _this = this;
             var proxy;
@@ -23929,6 +24000,9 @@ var BABYLON;
                 cache.splice(index, 1);
             }
         };
+        /**
+         * Dispose the current allocated resources
+         */
         InternalTexture.prototype.dispose = function () {
             if (!this._webGLTexture) {
                 return;
@@ -23939,16 +24013,49 @@ var BABYLON;
                 this._webGLTexture = null;
             }
         };
+        /**
+         * The source of the texture data is unknown
+         */
         InternalTexture.DATASOURCE_UNKNOWN = 0;
+        /**
+         * Texture data comes from an URL
+         */
         InternalTexture.DATASOURCE_URL = 1;
+        /**
+         * Texture data is only used for temporary storage
+         */
         InternalTexture.DATASOURCE_TEMP = 2;
+        /**
+         * Texture data comes from raw data (ArrayBuffer)
+         */
         InternalTexture.DATASOURCE_RAW = 3;
+        /**
+         * Texture content is dynamic (video or dynamic texture)
+         */
         InternalTexture.DATASOURCE_DYNAMIC = 4;
+        /**
+         * Texture content is generated by rendering to it
+         */
         InternalTexture.DATASOURCE_RENDERTARGET = 5;
+        /**
+         * Texture content is part of a multi render target process
+         */
         InternalTexture.DATASOURCE_MULTIRENDERTARGET = 6;
+        /**
+         * Texture data comes from a cube data file
+         */
         InternalTexture.DATASOURCE_CUBE = 7;
+        /**
+         * Texture data comes from a raw cube data
+         */
         InternalTexture.DATASOURCE_CUBERAW = 8;
+        /**
+         * Texture data come from a prefiltered cube data file
+         */
         InternalTexture.DATASOURCE_CUBEPREFILTERED = 9;
+        /**
+         * Texture content is raw 3D data
+         */
         InternalTexture.DATASOURCE_RAW3D = 10;
         return InternalTexture;
     }());
