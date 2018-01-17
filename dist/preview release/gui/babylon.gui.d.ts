@@ -441,6 +441,7 @@ declare module BABYLON.GUI {
         private _borderColor;
         private _barOffset;
         private _isThumbCircle;
+        private _isThumbClamped;
         onValueChangedObservable: Observable<number>;
         borderColor: string;
         background: string;
@@ -452,6 +453,7 @@ declare module BABYLON.GUI {
         maximum: number;
         value: number;
         isThumbCircle: boolean;
+        isThumbClamped: boolean;
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
@@ -514,6 +516,7 @@ declare module BABYLON.GUI {
         private _textVerticalAlignment;
         private _lines;
         private _resizeToFit;
+        private _lineSpacing;
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
@@ -524,6 +527,7 @@ declare module BABYLON.GUI {
         text: string;
         textHorizontalAlignment: number;
         textVerticalAlignment: number;
+        lineSpacing: string | number;
         constructor(name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
@@ -714,9 +718,13 @@ declare module BABYLON.GUI {
         defaultButtonPaddingBottom: string;
         defaultButtonColor: string;
         defaultButtonBackground: string;
+        shiftButtonColor: string;
+        selectedShiftThickness: number;
+        shiftState: number;
         protected _getTypeName(): string;
         private _createKey(key, propertySet);
         addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
+        applyShiftState(shiftState: number): void;
         private _connectedInputText;
         private _onFocusObserver;
         private _onBlurObserver;

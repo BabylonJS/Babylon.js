@@ -61,39 +61,39 @@ module BABYLON {
         private _diffuseTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public noiseTexture: BaseTexture;
-        
+
         @serializeAsColor3()
         public fogColor: Color3;
-        
-        @serialize()
-        public speed : number = 1;
-        
-        @serialize()
-        public movingSpeed : number = 1;
-        
-        @serialize()
-        public lowFrequencySpeed : number = 1;
-        
-        @serialize()
-        public fogDensity : number = 0.15;
 
-        private _lastTime : number = 0;
+        @serialize()
+        public speed: number = 1;
+
+        @serialize()
+        public movingSpeed: number = 1;
+
+        @serialize()
+        public lowFrequencySpeed: number = 1;
+
+        @serialize()
+        public fogDensity: number = 0.15;
+
+        private _lastTime: number = 0;
 
         @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
-        
+
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public disableLighting: boolean;   
+        public disableLighting: boolean;
 
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number; 
+        public maxSimultaneousLights: number;
 
         private _scaledDiffuse = new Color3();
         private _renderId: number;
@@ -115,7 +115,7 @@ module BABYLON {
         }
 
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -148,19 +148,19 @@ module BABYLON {
                             defines._needUVs = true;
                             defines.DIFFUSE = true;
                         }
-                    }                
+                    }
                 }
             }
 
-               // Misc.
+            // Misc.
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh));
+
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
@@ -212,8 +212,8 @@ module BABYLON {
                     "vDiffuseInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix",
-                    "time", "speed","movingSpeed",
-                    "fogColor","fogDensity", "lowFrequencySpeed"
+                    "time", "speed", "movingSpeed",
+                    "fogColor", "fogDensity", "lowFrequencySpeed"
                 ];
 
                 var samplers = ["diffuseSampler",
@@ -222,10 +222,10 @@ module BABYLON {
                 var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
 
@@ -248,7 +248,7 @@ module BABYLON {
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-            
+
             return true;
         }
 
@@ -316,7 +316,7 @@ module BABYLON {
             this._lastTime += scene.getEngine().getDeltaTime();
             this._activeEffect.setFloat("time", this._lastTime * this.speed / 1000);
 
-            if (! this.fogColor) {
+            if (!this.fogColor) {
                 this.fogColor = Color3.Black();
             }
             this._activeEffect.setColor3("fogColor", this.fogColor);
@@ -360,9 +360,9 @@ module BABYLON {
             if (this.diffuseTexture === texture) {
                 return true;
             }
-            
-            return false;    
-        }        
+
+            return false;
+        }
 
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.diffuseTexture) {

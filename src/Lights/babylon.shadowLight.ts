@@ -26,7 +26,7 @@
          * Gets the minZ used for shadow according to both the scene and the light.
          * @param activeCamera 
          */
-         getDepthMinZ(activeCamera: Camera): number;
+        getDepthMinZ(activeCamera: Camera): number;
 
         /**
          * Gets the minZ used for shadow according to both the scene and the light.
@@ -117,15 +117,15 @@
         }
 
         /**
-         * Returns the DirectionalLight absolute position in the World.
+         * Returns the ShadowLight absolute position in the World.
          */
         public getAbsolutePosition(): Vector3 {
             return this.transformedPosition ? this.transformedPosition : this.position;
         }
 
         /**
-         * Sets the DirectionalLight direction toward the passed target (Vector3).
-         * Returns the updated DirectionalLight direction (Vector3).
+         * Sets the ShadowLight direction toward the passed target (Vector3).
+         * Returns the updated ShadowLight direction (Vector3).
          */
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = Vector3.Normalize(target.subtract(this.position));
@@ -137,8 +137,8 @@
          */
         public getRotation(): Vector3 {
             this.direction.normalize();
-            var xaxis = BABYLON.Vector3.Cross(this.direction, BABYLON.Axis.Y);
-            var yaxis = BABYLON.Vector3.Cross(xaxis, this.direction);
+            var xaxis = Vector3.Cross(this.direction, Axis.Y);
+            var yaxis = Vector3.Cross(xaxis, this.direction);
             return Vector3.RotationFromAxis(xaxis, yaxis, this.direction);
         }
 
@@ -189,7 +189,7 @@
          * @param activeCamera 
          */
         public getDepthMaxZ(activeCamera: Camera): number {
-             return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
+            return this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
         }
 
         /**

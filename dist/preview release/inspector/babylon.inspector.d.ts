@@ -301,7 +301,7 @@ declare module INSPECTOR {
     class PhysicsImpostorAdapter extends Adapter implements IToolVisible {
         private _viewer;
         private _isVisible;
-        constructor(obj: BABYLON.PhysicsImpostor, viewer: BABYLON.Debug.PhysicsViewer);
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: any);
         /** Returns the name displayed in the tree */
         id(): string;
         /** Returns the type of this object - displayed in the tree */
@@ -780,6 +780,7 @@ declare module INSPECTOR {
         static REFRESH_TIME: number;
         /** The list of data to update */
         private _updatableProperties;
+        private interval;
         constructor();
         static getInstance(): Scheduler;
         /** Add a property line to be updated every X ms */
@@ -787,6 +788,7 @@ declare module INSPECTOR {
         /** Removes the given property from the list of properties to update */
         remove(prop: PropertyLine): void;
         private _update();
+        dispose(): void;
     }
 }
 
@@ -868,7 +870,7 @@ declare module INSPECTOR {
 
 declare module INSPECTOR {
     class PhysicsTab extends PropertyTab {
-        viewer: BABYLON.Debug.PhysicsViewer;
+        viewer: any;
         constructor(tabbar: TabBar, inspector: Inspector);
         protected _getTree(): Array<TreeItem>;
     }

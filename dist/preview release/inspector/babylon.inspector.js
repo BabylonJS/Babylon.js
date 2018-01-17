@@ -289,6 +289,7 @@ var INSPECTOR;
                     }
                 }
             }
+            INSPECTOR.Scheduler.getInstance().dispose();
         };
         /** Open the inspector in a new popup
          * Set 'firstTime' to true if there is no inspector created beforehands
@@ -2431,7 +2432,7 @@ var INSPECTOR;
             this.pause = false;
             /** The list of data to update */
             this._updatableProperties = [];
-            setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+            this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
         Scheduler.getInstance = function () {
             if (!Scheduler._instance) {
@@ -2458,6 +2459,9 @@ var INSPECTOR;
                     prop.update();
                 }
             }
+        };
+        Scheduler.prototype.dispose = function () {
+            window.clearInterval(this.interval);
         };
         /** All properties are refreshed every 250ms */
         Scheduler.REFRESH_TIME = 250;
@@ -3566,6 +3570,12 @@ var INSPECTOR;
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
+                });
+                _this._createStatLabel("Texture collisions", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._sceneInstrumentation.textureCollisionsCounter.current.toString(); }
                 });
                 _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);

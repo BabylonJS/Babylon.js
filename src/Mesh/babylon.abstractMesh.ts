@@ -351,10 +351,10 @@
          * This scene's action manager
          * @type {BABYLON.ActionManager}
         */
-        public actionManager: Nullable<ActionManager>;
+        public actionManager: Nullable<ActionManager> = null;
 
         // Physics
-        public physicsImpostor: Nullable<PhysicsImpostor>;
+        public physicsImpostor: Nullable<PhysicsImpostor> = null;
 
         // Collisions
         private _checkCollisions = false;
@@ -803,6 +803,17 @@
             return super.getWorldMatrix();
         }
 
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
+
+            return super._getWorldMatrixDeterminant();
+        }
+
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
@@ -894,11 +905,13 @@
                     let childMesh = <AbstractMesh>descendant;
 
                     childMesh.computeWorldMatrix(true);
-                    let childBoundingInfo = childMesh.getBoundingInfo();
 
-                    if (childMesh.getTotalVertices() === 0) {
+                    //make sure we have the needed params to get mix and max
+                    if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
+
+                    let childBoundingInfo = childMesh.getBoundingInfo();
                     let boundingBox = childBoundingInfo.boundingBox;
 
                     var minBox = boundingBox.minimumWorld;
@@ -1309,7 +1322,7 @@
             var index: number;
 
             // Action manager
-            if (this.actionManager) {
+            if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
                 this.actionManager = null;
             }
@@ -1375,8 +1388,8 @@
             }
 
             // Octree
-            var sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree) {
+            const sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
                 var index = sceneOctree.dynamicContent.indexOf(this);
 
                 if (index !== -1) {
@@ -1788,9 +1801,9 @@
          * Align the mesh with a normal.
          * Returns the mesh.  
          */
-        public alignWithNormal(normal: BABYLON.Vector3, upDirection?: BABYLON.Vector3): AbstractMesh {
+        public alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {
             if (!upDirection) {
-                upDirection = BABYLON.Axis.Y;
+                upDirection = Axis.Y;
             }
 
             var axisX = Tmp.Vector3[0];

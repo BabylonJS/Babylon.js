@@ -66,7 +66,7 @@
             }
 
             var tags = tagsString.split(" ");
-            tags.forEach( function(tag, index, array) {
+            tags.forEach(function (tag, index, array) {
                 Tags._AddTagTo(obj, tag);
             });
         }
@@ -109,7 +109,7 @@
                 return Tags.HasTags(obj);
             }
 
-            return Internals.AndOrNotEvaluator.Eval(tagsQuery, r => Tags.HasTags(obj) && obj._tags[r]);
+            return AndOrNotEvaluator.Eval(tagsQuery, r => Tags.HasTags(obj) && obj._tags[r]);
         }
     }
 }

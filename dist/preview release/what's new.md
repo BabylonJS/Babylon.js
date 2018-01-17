@@ -1,85 +1,27 @@
-# 3.1.0
+# 3.2.0
 
 ## Major updates
-
-- Added VRExperienceHelper to create WebVR experience with 2 lines of code. [Documentation](http://doc.babylonjs.com/how_to/webvr_helper) ([davrous](https://github.com/davrous), [TrevorDev](https://github.com/TrevorDev))
-- Added BackgroundMaterial. [Documentation](https://doc.babylonjs.com/how_to/backgroundmaterial) ([sebavan](https://github.com/sebavan))
-- Added EnvironmentHelper. [Documentation](https://doc.babylonjs.com/babylon101/environment#skybox-and-ground) ([sebavan](https://github.com/sebavan))
-- Added support for webgl context lost and restored events. [Documentation](http://doc.babylonjs.com/tutorials/optimizing_your_scene#handling-webgl-context-lost) ([deltakosh](https://github.com/deltakosh))
-- Added support for non-pow2 textures when in WebGL2 mode ([deltakosh](https://github.com/deltakosh))
-- Engine can now be initialized with an existing webgl context ([deltakosh](https://github.com/deltakosh))
-- Introduced behaviors. [Documentation](http://doc.babylonjs.com/overviews/behaviors) ([deltakosh](https://github.com/deltakosh))
-- Added support for WebGL Occlusion queries. [Documentation](http://doc.babylonjs.com/overviews/occlusionquery) ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- New behaviors for ArcRotateCamera. [Documentation](http://doc.babylonjs.com/overviews/behaviors) 
-  - AutoRotation ([deltakosh](https://github.com/deltakosh))
-  - Framing ([deltakosh](https://github.com/deltakosh))
-  - Bouncing ([deltakosh](https://github.com/deltakosh))
-- New InputText for Babylon.GUI. [Documentation](http://doc.babylonjs.com/overviews/gui#inputtext) ([deltakosh](https://github.com/deltakosh))
-- New VirtualKeyboard for Babylon.GUI. [Documentation](http://doc.babylonjs.com/overviews/gui#virtualkeyboard) ([deltakosh](https://github.com/deltakosh) / [adam](https://github.com/abow))
-- Added support for depth pre-pass rendering. [Documentation](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#depth-pre-pass-meshes) ([deltakosh](https://github.com/deltakosh))
-- Added support for `material.separateCullingPass`. [Documentation](http://doc.babylonjs.com/tutorials/transparency_and_how_meshes_are_rendered#things-to-do-and-not-to-do) ([sebavan](https://github.com/sebavan))
-- Added support for Windows Motion Controllers ([Lewis Weaver](https://github.com/leweaver))
-- Added support for Particle animation in ParticleSystem. [Documentation](http://doc.babylonjs.com/tutorials/particles#particle-animation) ([Ibraheem Osama](https://github.com/IbraheemOsama))
-- More robust TypeScript code with *strictNullChecks*, *noImplicitAny*, *noImplicitThis* and *noImplicitReturns* compiler options ([deltakosh](https://github.com/deltakosh) and [RaananW](https://github.com/RaananW))
-- Introduced `NullEngine` which can be used to use Babylon.js in headless mode. [Documentation](http://doc.babylonjs.com/generals/nullengine) ([deltakosh](https://github.com/deltakosh))
-- New instrumentations tools. [Documentation](http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation) ([deltakosh](https://github.com/deltakosh))
-- Complete rework of Unity3D exporter. [Documentation](http://doc.babylonjs.com/resources/intro) ([MackeyK24](https://github.com/MackeyK24))
-- Introducing the BabylonJS viewer, an HTML-based 3D/model viewer, with Babylon at its core. [Documentation](http://doc.babylonjs.com/extensions/the_babylon_viewer) ([RaananW](https://github.com/RaananW))
-- Full NPM support for BabylonJS and its modules, based on UMD and including Typings. [BabylonJS on npm](https://www.npmjs.com/~babylonjs) ([RaananW](https://github.com/RaananW))
+- Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
+- New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
-
-- Introduced `TransformNode` class as a parent of `AbstractMesh`. This class was extensively asked by the community to hold only tranformation for a node ([deltakosh](https://github.com/deltakosh))
-- Collider object is now exposed on meshes. It can be used to get precise information about mesh to mesh collisions (used with mesh.moveWithCollisions function) ([deltakosh](https://github.com/deltakosh))
-- Added `boundingInfo.centerOn` to recreate the bounding info to be centered around a specific point given a specific extend ([deltakosh](https://github.com/deltakosh))
-- Added `mesh.normalizeToUnitCube` to uniformly scales the mesh to fit inside of a unit cube (1 X 1 X 1 units) ([deltakosh](https://github.com/deltakosh))
-- Added `scene.onDataLoadedObservable` which is raised when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed ([deltakosh](https://github.com/deltakosh))
-- Support for adaptiveKernelBlur on MirrorTexture ([deltakosh](https://github.com/deltakosh))
-- Support for non uniform scaling. Normals are now correctly computed ([deltakosh](https://github.com/deltakosh))
-- Added `MultiObserver`. [Documentation](http://doc.babylonjs.com/overviews/observables#multiobserver) ([deltakosh](https://github.com/deltakosh))
-- Added `shadowGenerator.addShadowCaster` and `shadowGenerator.removeShadowCaster` helper functions ([deltakosh](https://github.com/deltakosh))
-- Several inspector improvements ([temechon](https://github.com/temechon))
-- New observables for actions: `onBeforeExecuteObservable` for all actions and `onInterpolationDoneObservable` for `InterpolateValueAction` ([deltakosh](https://github.com/deltakosh))
-- New observables for gamepads: `onButtonDownObservable`, `onButtonUpObservable`, `onPadDownObservable`, `onPadUpObservable` ([deltakosh](https://github.com/deltakosh))
-- New `camera.storeState()` and `camera.restoreState()` functions to store / restore cameras position / rotation / fov. [Documentation](http://doc.babylonjs.com/tutorials/cameras#state) ([deltakosh](https://github.com/deltakosh))
-- POW2 textures rescale is now done by shaders (It was previously done using canvas) ([deltakosh](https://github.com/deltakosh))
-- Added `SceneLoader.CleanBoneMatrixWeights` to force the loader to normalize matrix weights when loading bones (off by default) ([deltakosh](https://github.com/deltakosh)) 
-- Added `camera.onViewMatrixChangedObservable` and `camera.onProjectionMatrixChangedObservable` ([deltakosh](https://github.com/deltakosh))
-- Added support for folders when drag'n'dropping into the sandbox ([deltakosh](https://github.com/deltakosh))
-- Better serialization support ([deltakosh](https://github.com/deltakosh))
-- Introduced `performanceMonitor` class to get better FPS analysis ([deltakosh](https://github.com/deltakosh))
-- GUI: Added support for pointer move events on projected UI ([deltakosh](https://github.com/deltakosh))
-- Normals are generated automatically by StandardMaterial if meshes do not have normals ([deltakosh](https://github.com/deltakosh))
-- Added `mesh.onMaterialChangedObservable` to notify when a new material is set ([deltakosh](https://github.com/deltakosh))
-- Improved the SPS perfs for dead or invisible solid particles ([jerome](https://github.com/jbousquie))
-- Added `enableDepthSort` parameter to the SPS in order to sort the particles from the camera position ([jerome](https://github.com/jbousquie))
-- Added `pivot` property to the SPS solid particles ([jerome](https://github.com/jbousquie))
-- Added the mesh facet depth sort to FacetData  ([jerome](https://github.com/jbousquie))
-- Added `LineSystem` and `LineMesh` per point colors ([jerome](https://github.com/jbousquie))
-- Added `AdvancedDynamicTexture.renderScale` to allow users to render at higher DPI ([deltakosh](https://github.com/deltakosh))
-- WaterMaterial works on VR ([RaananW](https://github.com/RaananW))
-- Playground has an optional createEngine function to replace the default engine. [Example](https://www.babylonjs-playground.com/#5CAP01#5) ([RaananW](https://github.com/RaananW))
-- Error handling in the Assets Manager was revamped and now also includes a message and an exception (if provided). [Documentation](http://doc.babylonjs.com/how_to/how_to_use_assetsmanager#task-state-and-error-handling) ([RaananW](https://github.com/RaananW))
-- Asset Task has a state (INIT, RUNNING, DONE and ERROR). [Documentation](http://doc.babylonjs.com/how_to/how_to_use_assetsmanager#task-state-and-error-handling) ([RaananW](https://github.com/RaananW))
-- Added new options to the physics impostor constructor - ignoreParent and diableBidirectionalTransformation. [Documentation](http://doc.babylonjs.com/how_to/using_the_physics_engine#impostors) ([RaananW](https://github.com/RaananW))
-- It is now possible to define which loader to use when loading assets using the SceneLoader. [Commit](https://github.com/BabylonJS/Babylon.js/commit/91bffeaafc668980be0f9cf83df69b8eb2e2ba5f) ([RaananW](https://github.com/RaananW))
+- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adapatability ([deltakosh](https://github.com/deltakosh))
+- Improved `scene.isReady()` function which now takes in account shadows and LOD ([deltakosh](https://github.com/deltakosh))
+- New watcher configuration for VSCode. Now the task only compiles changed files ([sebavan](https://github.com/sebavan))
+- Added new draw modes to engine (points, lines, linesloop, linestrip, trianglestrip, trianglefan) ([benaadams](https://github.com/benaadams))
+- Added GUI Textblock.lineSpacing setter and getter to configure vertical space between lines in pixels or percentage values when working with text wrapping ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now has onSelectedMeshUnselected observable that will notify observers when the current selected mesh gets unselected
+  ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now has onBeforeCameraTeleport and onAfterCameraTeleport observables that will be notified before and after camera teleportation is triggered.
+  ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now has the public property teleportationEnabled to enable / disable camera teleportation. 
+   ([carloslanderas](https://github.com/carloslanderas))
+- VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
+   ([carloslanderas](https://github.com/carloslanderas))
+- `AssetsManager` will now clear its `tasks` lsit from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
 
 ## Bug fixes
 
-- Fixed a bug with ellipsoid offset not being taking in account on cameras ([deltakosh](https://github.com/deltakosh))
-- Fixed a bug with ellipsoid offset badly taking in account on meshes ([deltakosh](https://github.com/deltakosh))
-- Fixed a bug with PBR on iOS ([sebavan](https://github.com/sebavan))
-- MTLLoader didn't parse values correctly ([RaananW](https://github.com/RaananW))
-- Fixed an error with child positions of parents in the physics engine ([RaananW](https://github.com/RaananW))
-- Fixed a bug with error while executing onSuccess callbacks in the Assets manager. ([RaananW](https://github.com/RaananW))
-- Fixed a bug with the Heightmap impostor when the heightmap is scaled or rotated. [Commit](https://github.com/BabylonJS/Babylon.js/commit/e898c4f26512a5466b5b594aecf4711f1dfd50e0) ([RaananW](https://github.com/RaananW))
-- Fixed an error with deterministic step. ([RaananW](https://github.com/RaananW))
-- Fixed a bug with controller jitter when in VR. ([RaananW](https://github.com/RaananW))
-- Fixed a bug with impostor jitter when in VR. ([RaananW](https://github.com/RaananW))
-
 ## Breaking changes
 
-- `Gamepads` was removed in favor of `scene.gamepadManager`
-- `DynamicFloatArray`, `MapTexture` and `RectPakingMap` were removed because there were not used anymore
-- `IAssetTask` was removed in favor of `AbstractAssetTask` class
-- WebVR 1.0 support removed.
+

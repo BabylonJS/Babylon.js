@@ -9,6 +9,7 @@
   "author": "Raanan Weber",
   "license": "ISC",
   "dependencies": {
+    "fs-extra": "^5.0.0",
     "prompt": "^1.0.0",
     "shelljs": "^0.7.8"
   }

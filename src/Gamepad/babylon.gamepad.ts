@@ -33,6 +33,8 @@
         public static XBOX = 2;
         public static POSE_ENABLED = 3;
 
+        protected _invertLeftStickY:boolean = false;
+
         public get isConnected(): boolean {
             return this._isConnected;
         }
@@ -81,6 +83,9 @@
         public update() {
             if (this._leftStick) {
                 this.leftStick = { x: this.browserGamepad.axes[this._leftStickAxisX], y: this.browserGamepad.axes[this._leftStickAxisY] };
+                if(this._invertLeftStickY){
+                    this.leftStick.y *= -1;
+                }
             }
             if (this._rightStick) {
                 this.rightStick = { x: this.browserGamepad.axes[this._rightStickAxisX], y: this.browserGamepad.axes[this._rightStickAxisY] };

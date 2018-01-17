@@ -42,7 +42,7 @@
         @serializeAsMeshReference()
         public mesh: Mesh;
 
-        
+
         public get useDiffuseColor(): boolean {
             Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
             return false;
@@ -133,9 +133,9 @@
 
         public getClassName(): string {
             return "VolumetricLightScatteringPostProcess";
-        }          
+        }
 
-        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        private _isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
 
             // Render this.mesh as default
@@ -170,9 +170,9 @@
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
                 defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
             } else {
-                defines.push("#define NUM_BONE_INFLUENCERS 0"); 
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
-            
+
 
             // Instances
             if (useInstances) {
@@ -221,7 +221,7 @@
             if (rttIndex !== -1) {
                 camera.getScene().customRenderTargets.splice(rttIndex, 1);
             }
-                
+
             this._volumetricLightScatteringRTT.dispose();
             super.dispose(camera);
         }
@@ -265,7 +265,7 @@
                 if (this._meshExcluded(mesh)) {
                     return;
                 }
-                
+
                 let material = subMesh.getMaterial();
 
                 if (!material) {
@@ -286,8 +286,8 @@
                 }
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                
-                if (this.isReady(subMesh, hardwareInstancedRendering)) {
+
+                if (this._isReady(subMesh, hardwareInstancedRendering)) {
                     var effect: Effect = this._volumetricLightScatteringPass;
                     if (mesh === this.mesh) {
                         if (subMesh.effect) {
@@ -309,7 +309,7 @@
                         // Alpha test
                         if (material && material.needAlphaTesting()) {
                             var alphaTexture = material.getAlphaTestTexture();
-                            
+
                             this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
 
                             if (alphaTexture) {
@@ -341,28 +341,26 @@
             this._volumetricLightScatteringRTT.onAfterRenderObservable.add((): void => {
                 scene.clearColor = savedSceneClearColor;
             });
-            
+
             this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
                 var engine = scene.getEngine();
                 var index: number;
-                
+
                 if (depthOnlySubMeshes.length) {
-                    engine.setColorWrite(false);            
+                    engine.setColorWrite(false);
                     for (index = 0; index < depthOnlySubMeshes.length; index++) {
                         renderSubMesh(depthOnlySubMeshes.data[index]);
                     }
                     engine.setColorWrite(true);
-                }                   
+                }
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
 
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
 
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes
@@ -398,11 +396,11 @@
                     });
 
                     // Render sub meshes
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
                     for (index = 0; index < sortedArray.length; index++) {
                         renderSubMesh(sortedArray[index]);
                     }
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+                    engine.setAlphaMode(Engine.ALPHA_DISABLE);
                 }
             };
         }
