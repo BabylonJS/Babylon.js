@@ -4,16 +4,7 @@
      * It enforces keeping the most luminous color in the color channel.
      */
     class GlowBlurPostProcess extends PostProcess {
-        constructor(
-            name: string,
-            public direction: Vector2,
-            public kernel: number,
-            options: number | PostProcessOptions,
-            camera: Nullable<Camera>,
-            samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
-            engine?: Engine,
-            reusable?: boolean,
-        ) {
+        constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
             
             this.onApplyObservable.add((effect: Effect) => {
