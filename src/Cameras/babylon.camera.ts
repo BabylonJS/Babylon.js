@@ -34,7 +34,7 @@
             return Camera._FOVMODE_VERTICAL_FIXED;
         }
 
-		/**
+	/**
          * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
          *
          */
@@ -78,10 +78,10 @@
         @serializeAsVector3()
         public position: Vector3;
 
-		/**
-		 * default : Vector3(0.0, 0.1, 0.0) Y+ is up.
-		 *
-		 */
+        /**
+         * default : Vector3(0.0, 0.1, 0.0) Y+ is up.
+         *
+         */
         @serializeAsVector3()
         public upVector = Vector3.Up();
 
@@ -120,16 +120,16 @@
         public viewport = new Viewport(0, 0, 1.0, 1.0);
 
         /**
-        * Restricts the camera to viewing objects with the same layerMask.
-        * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
-        */
+         * Restricts the camera to viewing objects with the same layerMask.
+         * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
+         */
         @serialize()
         public layerMask: number = 0x0FFFFFFF;
 
         /**
-        * default : FOVMODE_VERTICAL_FIXED
-        * fovMode sets the camera frustum bounds to the viewport bounds.
-        */
+         * default : FOVMODE_VERTICAL_FIXED
+         * fovMode sets the camera frustum bounds to the viewport bounds.
+         */
         @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
 
