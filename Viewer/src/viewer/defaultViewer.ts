@@ -74,10 +74,10 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
 
-            this.templateManager.actionManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerout');
-            this.templateManager.actionManager.registerCallback('viewer', triggerNavbar.bind(this, true), 'pointerdown');
-            this.templateManager.actionManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
-            this.templateManager.actionManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerout');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, true), 'pointerdown');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
+            this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
 
             // other events
             let viewerTemplate = this.templateManager.getTemplate('viewer');
@@ -96,7 +96,7 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
 
-            this.templateManager.actionManager.registerCallback('navBar', triggerFullscren, 'pointerdown', '#fullscreen-button');
+            this.templateManager.eventManager.registerCallback('navBar', triggerFullscren, 'pointerdown', '#fullscreen-button');
         }
     }
 
