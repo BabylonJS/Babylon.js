@@ -5,6 +5,9 @@
         public renderHeight = 256;
 
         public textureSize = 512;
+
+        public deterministicLockstep = false;
+        public lockstepMaxSteps = 4;
     }
 
     /**
@@ -14,8 +17,24 @@
     export class NullEngine extends Engine {
         private _options: NullEngineOptions;
 
+        public isDeterministicLockStep(): boolean {
+            return this._options.deterministicLockstep;
+        }
+
+        public getLockstepMaxSteps(): number {
+            return this._options.lockstepMaxSteps;
+        }
+
         public constructor(options: NullEngineOptions = new NullEngineOptions()) {
             super(null);
+
+            if (options.deterministicLockstep === undefined) {
+                options.deterministicLockstep = false;
+            }
+
+            if (options.lockstepMaxSteps === undefined) {
+                options.lockstepMaxSteps = 4;
+            }
 
             this._options = options;
 
@@ -258,6 +277,12 @@
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
         }
 
+        public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
+        }
+
+        public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        }
+
         public _createTexture(): WebGLTexture {
             return {};
         }
@@ -367,9 +392,9 @@
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
         }
 
-        public _bindTextureDirectly(target: number, texture: InternalTexture): void {
-            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
-                this._boundTexturesCache[this._activeTextureChannel] = texture;
+        protected _bindTextureDirectly(target: number, texture: InternalTexture): void {
+            if (this._boundTexturesCache[this._activeChannel] !== texture) {
+                this._boundTexturesCache[this._activeChannel] = texture;
             }
         }
 

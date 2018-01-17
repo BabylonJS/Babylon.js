@@ -24,9 +24,10 @@ postProcessLibrary/src/**/*.js
 inspector/src/**/*.js
 serializers/src/**/*.js
 gui/src/**/*.js
+tests/unit/**/*.js
+!tests/unit/karma.conf.js
 
 # Build results
-[Dd]ebug/
 [Rr]elease/
 x64/
 *_i.c
@@ -167,3 +168,4 @@ localDev/src/*
 /dist/preview release/babylon.custom.max.js
 /localDev/src/index.js
 package-lock.json
+dist/preview release/package/

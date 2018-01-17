@@ -29,7 +29,7 @@
         public set adaptiveBlurKernel(value: number) {
             this._adaptiveBlurKernel = value;
             this._autoComputeBlurKernel();
-        }        
+        }
 
         public set blurKernel(value: number) {
             this.blurKernelX = value;
@@ -84,7 +84,7 @@
             }
         }
 
-        constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
@@ -121,7 +121,7 @@
 
                 var textureType = engine.getCaps().textureFloatRender ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_HALF_FLOAT;
 
-                this._blurX = new BABYLON.BlurPostProcess("horizontal blur", new BABYLON.Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), this._blurKernelX, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurX.autoClear = false;
 
                 if (this._blurRatio === 1 && this.samples < 2 && this._texture) {
@@ -130,14 +130,14 @@
                     this._blurX.alwaysForcePOT = true;
                 }
 
-                this._blurY = new BABYLON.BlurPostProcess("vertical blur", new BABYLON.Vector2(0, 1.0), this._blurKernelY, this._blurRatio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
+                this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), this._blurKernelY, this._blurRatio, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, textureType);
                 this._blurY.autoClear = false;
                 this._blurY.alwaysForcePOT = this._blurRatio !== 1;
 
                 this.addPostProcess(this._blurX);
                 this.addPostProcess(this._blurY);
             }
-            else { 
+            else {
                 if (this._blurY) {
                     this.removePostProcess(this._blurY);
                     this._blurY.dispose();

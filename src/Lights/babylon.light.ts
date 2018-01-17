@@ -18,7 +18,7 @@
 
         /**
          * material.lightmapTexture as only diffuse lighting from this light
-         * adds pnly specular lighting from this light
+         * adds only specular lighting from this light
          * adds dynamic shadows
          */
         public static get LIGHTMAP_SPECULAR(): number {
@@ -396,11 +396,6 @@
 
             // Animations
             this.getScene().stopAnimation(this);
-
-            // Remove from meshes
-            for (var mesh of this.getScene().meshes) {
-                mesh._removeLightSource(this);
-            }
 
             this._uniformBuffer.dispose();
 

@@ -42,10 +42,10 @@ module BABYLON {
 
         public set activeLight(light: IShadowLight) {
             this._activeLight = light;
-        }        
+        }
 
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -86,7 +86,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh));
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
 
@@ -102,13 +102,13 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
                 MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, 1);
-                
+
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -126,22 +126,22 @@ module BABYLON {
                 var shaderName = "shadowOnly";
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                                "vFogInfos", "vFogColor", "pointSize", "alpha",
-                                "mBones",
-                                "vClipPlane"
+                    "vFogInfos", "vFogColor", "pointSize", "alpha",
+                    "mBones",
+                    "vClipPlane"
                 ];
                 var samplers = new Array<string>();
-                
+
                 var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: 1
                 });
-                
+
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     <EffectCreationOptions>{
                         attributes: attribs,
@@ -197,12 +197,12 @@ module BABYLON {
 
                 this._activeEffect.setFloat("alpha", this.alpha);
 
-                MaterialHelper.BindEyePosition(effect, scene);             
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             // Lights
             if (scene.lightsEnabled) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);          
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);
             }
 
             // View
@@ -219,7 +219,7 @@ module BABYLON {
         public clone(name: string): ShadowOnlyMaterial {
             return SerializationHelper.Clone<ShadowOnlyMaterial>(() => new ShadowOnlyMaterial(name, this.getScene()), this);
         }
-        
+
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.ShadowOnlyMaterial";
@@ -228,12 +228,12 @@ module BABYLON {
 
         public getClassName(): string {
             return "ShadowOnlyMaterial";
-        }               
+        }
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): ShadowOnlyMaterial {
             return SerializationHelper.Parse(() => new ShadowOnlyMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
+}
 
