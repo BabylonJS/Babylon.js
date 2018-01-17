@@ -1,7 +1,7 @@
 import { EventCallback, TemplateManager } from "./templateManager";
 
 
-export class ActionManager {
+export class EventManager {
 
     private callbacksContainer: { [key: string]: Array<{ eventType?: string, selector?: string, callback: (eventData: EventCallback) => void }> }
 

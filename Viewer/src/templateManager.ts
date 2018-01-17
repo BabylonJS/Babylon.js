@@ -42,7 +42,7 @@ export class TemplateManager {
     public onAllLoaded: Observable<TemplateManager>;
     public onEventTriggered: Observable<EventCallback>;
 
-    public actionManager: ActionManager;
+    public eventManager: EventManager;
 
     private templates: { [name: string]: Template };
 
@@ -55,7 +55,7 @@ export class TemplateManager {
         this.onAllLoaded = new Observable<TemplateManager>();
         this.onEventTriggered = new Observable<EventCallback>();
 
-        this.actionManager = new ActionManager(this);
+        this.eventManager = new EventManager(this);
     }
 
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
@@ -153,7 +153,7 @@ export class TemplateManager {
 
 import * as Handlebars from '../assets/handlebars.min.js';
 import { PromiseObservable } from './util/promiseObservable';
-import { ActionManager } from './actionManager';
+import { EventManager } from './eventManager';
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper('eachInMap', function (map, block) {
     var out = '';
