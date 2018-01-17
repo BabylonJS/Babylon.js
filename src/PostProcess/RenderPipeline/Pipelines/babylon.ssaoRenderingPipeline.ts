@@ -148,8 +148,8 @@
         private _createBlurPostProcess(ratio: number): void {
             var size = 16;
 
-            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._blurHPostProcess = new BlurPostProcess("BlurH", new Vector2(1, 0), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
+            this._blurVPostProcess = new BlurPostProcess("BlurV", new Vector2(0, 1), size, ratio, null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_UNSIGNED_INT);
 
             this._blurHPostProcess.onActivateObservable.add(() => {
                 let dw = this._blurHPostProcess.width / this._scene.getEngine().getRenderWidth();

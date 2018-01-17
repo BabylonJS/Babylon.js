@@ -44,17 +44,20 @@
                 return;
             }
 
-            if (this._parentNode) {
+            // Remove self from list of children of parent
+            if (this._parentNode && this._parentNode._children !== undefined && this._parentNode._children !== null) {
                 var index = this._parentNode._children.indexOf(this);
                 if (index !== -1) {
                     this._parentNode._children.splice(index, 1);
                 }
             }
 
+            // Store new parent
             this._parentNode = parent;
 
+            // Add as child to new parent
             if (this._parentNode) {
-                if (!this._parentNode._children) {
+                if (this._parentNode._children === undefined || this._parentNode._children === null) {
                     this._parentNode._children = new Array<Node>();
                 }
                 this._parentNode._children.push(this);
@@ -241,17 +244,22 @@
 
         /**
          * Is this node enabled. 
-         * If the node has a parent and is enabled, the parent will be inspected as well.
+         * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true.
+         * @param {boolean} [checkAncestors=true] - Indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors.
          * @return {boolean} whether this node (and its parent) is enabled.
          * @see setEnabled
          */
-        public isEnabled(): boolean {
-            if (!this._isEnabled) {
+        public isEnabled(checkAncestors: boolean = true): boolean {
+            if (checkAncestors === false) {
+                return this._isEnabled;
+            }
+
+            if (this._isEnabled === false) {
                 return false;
             }
 
-            if (this.parent) {
-                return this.parent.isEnabled();
+            if (this.parent !== undefined && this.parent !== null) {
+                return this.parent.isEnabled(checkAncestors);
             }
 
             return true;

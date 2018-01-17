@@ -520,7 +520,7 @@
             convertedColor.b = Math.pow(this.b, ToGammaSpace);
             convertedColor.a = this.a;
             return this;
-        }        
+        }
 
         // Statics
         /**
@@ -762,6 +762,15 @@
             result.y = this.y / otherVector.y;
             return this;
         }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector2): Vector2 {
+            return this.divideToRef(otherVector, this);
+        }
+
         /**
          * Returns a new Vector2 with current Vector2 negated coordinates.  
          */
@@ -1290,6 +1299,14 @@
         }
 
         /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector3): Vector3 {
+            return this.divideToRef(otherVector, this);
+        }
+
+        /**
          * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.  
          * Returns the updated Vector3.  
          */
@@ -1776,7 +1793,7 @@
             matrix.invert();
             var screenSource = MathTmp.Vector3[0];
             screenSource.x = sourceX / viewportWidth * 2 - 1;
-            screenSource.y = -(sourceY/ viewportHeight * 2 - 1);
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
@@ -2101,6 +2118,14 @@
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
             return this;
+        }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector4): Vector4 {
+            return this.divideToRef(otherVector, this);
         }
 
         /**
@@ -2880,8 +2905,8 @@
          */
         public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
             var rotMat = MathTmp.Matrix[0];
-            BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
-            BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
+            Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+            Quaternion.FromRotationMatrixToRef(rotMat, ref);
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
@@ -2950,7 +2975,7 @@
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
-        public updateFlag: number;        
+        public updateFlag: number;
         public m: Float32Array = new Float32Array(16);
 
         public _markAsUpdated() {
@@ -3475,7 +3500,7 @@
         /**
          * Compute the transpose of the matrix.  
          * Returns a new Matrix.  
-         */        
+         */
         public transpose(): Matrix {
             return Matrix.Transpose(this);
         }
@@ -3483,7 +3508,7 @@
         /**
          * Compute the transpose of the matrix.  
          * Returns the current matrix.  
-         */        
+         */
         public transposeToRef(result: Matrix): Matrix {
             Matrix.TransposeToRef(this, result);
 
@@ -3954,7 +3979,7 @@
             let c = 2.0 / (f - n);
             let d = -(f + n) / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 0.0,
@@ -3986,7 +4011,7 @@
             let i0 = (left + right) / (left - right);
             let i1 = (top + bottom) / (bottom - top);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 0.0,
@@ -4023,7 +4048,7 @@
             let c = (f + n) / (f - n);
             let d = -2.0 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 1.0,
@@ -4054,7 +4079,7 @@
             let c = (f + n) / (f - n);
             let d = -2.0 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 1.0,
@@ -4088,7 +4113,7 @@
             let c = -(f + n) / (f - n);
             let d = -2 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, -1.0,
@@ -4099,7 +4124,7 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov: {upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number}, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+        public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
             var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -4531,31 +4556,31 @@
             frustumPlane.normal.z = transform.m[11] + transform.m[8];
             frustumPlane.d = transform.m[15] + transform.m[12];
             frustumPlane.normalize();
-        }       
-        
+        }
+
         public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[0];
             frustumPlane.normal.y = transform.m[7] - transform.m[4];
             frustumPlane.normal.z = transform.m[11] - transform.m[8];
             frustumPlane.d = transform.m[15] - transform.m[12];
             frustumPlane.normalize();
-        }     
-        
+        }
+
         public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[1];
             frustumPlane.normal.y = transform.m[7] - transform.m[5];
             frustumPlane.normal.z = transform.m[11] - transform.m[9];
             frustumPlane.d = transform.m[15] - transform.m[13];
             frustumPlane.normalize();
-        }      
-        
+        }
+
         public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] + transform.m[1];
             frustumPlane.normal.y = transform.m[7] + transform.m[5];
             frustumPlane.normal.z = transform.m[11] + transform.m[9];
             frustumPlane.d = transform.m[15] + transform.m[13];
             frustumPlane.normalize();
-        }           
+        }
 
         /**
          * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.  

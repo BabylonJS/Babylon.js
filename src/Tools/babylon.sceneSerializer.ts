@@ -9,28 +9,28 @@
             return;
         }
 
-        if (geometry instanceof Geometry.Primitives.Box) {
+        if (geometry instanceof BoxGeometry) {
             serializationGeometries.boxes.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Sphere) {
+        else if (geometry instanceof SphereGeometry) {
             serializationGeometries.spheres.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Cylinder) {
+        else if (geometry instanceof CylinderGeometry) {
             serializationGeometries.cylinders.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Torus) {
+        else if (geometry instanceof TorusGeometry) {
             serializationGeometries.toruses.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Ground) {
+        else if (geometry instanceof GroundGeometry) {
             serializationGeometries.grounds.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.Plane) {
+        else if (geometry instanceof Plane) {
             serializationGeometries.planes.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives.TorusKnot) {
+        else if (geometry instanceof TorusKnotGeometry) {
             serializationGeometries.torusKnots.push(geometry.serialize());
         }
-        else if (geometry instanceof Geometry.Primitives._Primitive) {
+        else if (geometry instanceof _PrimitiveGeometry) {
             throw new Error("Unknown primitive type");
         }
         else {
@@ -44,7 +44,7 @@
         var serializationObject: any = {};
 
         // Geometry      
-        var geometry = mesh._geometry;      
+        var geometry = mesh._geometry;
         if (geometry) {
             if (!mesh.getScene().getGeometryByID(geometry.id)) {
                 // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
@@ -156,11 +156,11 @@
             serializationObject.morphTargetManagers = [];
             for (var abstractMesh of scene.meshes) {
                 var manager = (<Mesh>abstractMesh).morphTargetManager;
-                
+
                 if (manager) {
                     serializationObject.morphTargetManagers.push(manager.serialize());
                 }
-            }            
+            }
 
             // Lights
             serializationObject.lights = [];
@@ -209,6 +209,11 @@
                 serializationObject.multiMaterials.push(multiMaterial.serialize());
             }
 
+            // Environment texture
+            if (scene.environmentTexture) {
+                serializationObject.environmentTexture = scene.environmentTexture.name;
+            }
+
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
@@ -219,7 +224,7 @@
             serializationObject.transformNodes = [];
             for (index = 0; index < scene.transformNodes.length; index++) {
                 serializationObject.transformNodes.push(scene.transformNodes[index].serialize());
-            }            
+            }
 
             // Geometries
             serializationObject.geometries = {};
@@ -277,7 +282,7 @@
 
                 let shadowGenerator = light.getShadowGenerator();
                 if (shadowGenerator) {
-                     serializationObject.shadowGenerators.push(shadowGenerator.serialize());
+                    serializationObject.shadowGenerators.push(shadowGenerator.serialize());
                 }
             }
 
