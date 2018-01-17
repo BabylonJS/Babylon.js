@@ -1,7 +1,7 @@
 {
-  "errors": 10873,
+  "errors": 10835,
   "babylon.typedoc.json": {
-    "errors": 10873,
+    "errors": 10835,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -10951,27 +10951,6 @@
         }
       }
     },
-    "CustomOptimization": {
-      "Property": {
-        "onApply": {
-          "Tags": {
-            "param,returns": true
-          }
-        }
-      },
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "CustomProceduralTexture": {
       "Class": {
         "Comments": {
@@ -20571,37 +20550,6 @@
         }
       }
     },
-    "HardwareScalingOptimization": {
-      "Property": {
-        "maximumScale": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "priority": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "step": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "HemisphericLight": {
       "Class": {
         "Comments": {
@@ -22094,20 +22042,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "LensFlaresOptimization": {
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
@@ -25642,34 +25576,6 @@
           }
         },
         "Zero": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
-    "MergeMeshesOptimization": {
-      "Property": {
-        "_UpdateSelectionTree": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "updateSelectionTree": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getDescription": {
           "Comments": {
             "MissingReturn": true
           }
@@ -32689,20 +32595,6 @@
         }
       }
     },
-    "ParticlesOptimization": {
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "PassPostProcess": {
       "Class": {
         "Comments": {
@@ -36210,20 +36102,6 @@
         }
       }
     },
-    "PostProcessesOptimization": {
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "PowerEase": {
       "Class": {
         "Comments": {
@@ -38982,20 +38860,6 @@
         "unbindFrameBuffer": {
           "Naming": {
             "NotUnderscoreCamelCase": true
-          }
-        }
-      }
-    },
-    "RenderTargetsOptimization": {
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
@@ -42396,75 +42260,6 @@
         }
       }
     },
-    "SceneOptimization": {
-      "Property": {
-        "priority": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "apply": {
-          "Tags": {
-            "returnstrue": true
-          },
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
-    "SceneOptimizer": {
-      "Method": {
-        "reset": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "start": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "OptimizeAsync": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
-    "SceneOptimizerOptions": {
-      "Property": {
-        "targetFrameRate": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "trackerDuration": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "addCustomOptimization": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "addOptimization": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "SceneSerializer": {
       "Class": {
         "Comments": {
@@ -43637,20 +43432,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "ShadowsOptimization": {
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
@@ -49585,37 +49366,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "TextureOptimization": {
-      "Property": {
-        "maximumSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "priority": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "step": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "apply": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "getDescription": {
-          "Comments": {
-            "MissingReturn": true
           }
         }
       }
