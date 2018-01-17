@@ -5269,7 +5269,7 @@
             var index = Engine.Instances.indexOf(this);
 
             if (index >= 0) {
-                delete Engine.Instances[index];
+                Engine.Instances.splice(index, 1);
             }
 
             this._workingCanvas = null;
@@ -5730,7 +5730,7 @@
             let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add(request => {
-                delete this._activeRequests[this._activeRequests.indexOf(request)];
+                this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
         }
