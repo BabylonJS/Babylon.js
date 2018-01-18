@@ -16,7 +16,7 @@ module BABYLON {
         private _targetedAnimations = new Array<TargetedAnimation>();
         private _animatables = new Array<Animatable>();
         private _from = Number.MAX_VALUE;
-        private _to = Number.MIN_VALUE;
+        private _to = -Number.MAX_VALUE;
         private _isStarted: boolean;
         private _speedRatio = 1;
 
@@ -50,6 +50,13 @@ module BABYLON {
                 let animatable = this._animatables[index];
                 animatable.speedRatio = this._speedRatio;
             }
+        }
+
+        /**
+         * Gets the targeted animations for this animation group
+         */
+        public get targetedAnimations(): Array<TargetedAnimation> {
+            return this._targetedAnimations;
         }
 
         public constructor(public name: string, scene: Nullable<Scene> = null) {
@@ -87,11 +94,11 @@ module BABYLON {
         /**
          * This function will normalize every animation in the group to make sure they all go from beginFrame to endFrame
          * It can add constant keys at begin or end
-         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smaller begin frame of all animations
-         * @param endFrame defines the new end frame for all animations. It can't be smaller than the larger end frame of all animations
+         * @param beginFrame defines the new begin frame for all animations. It can't be bigger than the smallest begin frame of all animations
+         * @param endFrame defines the new end frame for all animations. It can't be smaller than the largest end frame of all animations
          */
-        public normalize(beginFrame: number, endFrame: number): AnimationGroup {
-            beginFrame = Math.min(beginFrame, this._from);
+        public normalize(beginFrame = -Number.MAX_VALUE, endFrame = Number.MAX_VALUE): AnimationGroup {
+            beginFrame = Math.max(beginFrame, this._from);
             endFrame = Math.min(endFrame, this._to);
 
             for (var index = 0; index < this._targetedAnimations.length; index++) {
@@ -101,21 +108,23 @@ module BABYLON {
                 let endKey = keys[keys.length - 1];
 
                 if (startKey.frame > beginFrame) {
-                    let newKey = {
+                    let newKey: IAnimationKey = {
                         frame: beginFrame,
                         value: startKey.value,
                         inTangent: startKey.inTangent,
-                        outTangent: startKey.outTangent
+                        outTangent: startKey.outTangent,
+                        interpolation: startKey.interpolation
                     }
                     keys.splice(0, 0, newKey);
                 }
 
                 if (endKey.frame < endFrame) {
-                    let newKey = {
+                    let newKey: IAnimationKey = {
                         frame: endFrame,
                         value: endKey.value,
-                        inTangent: startKey.outTangent,
-                        outTangent: startKey.outTangent
+                        inTangent: endKey.outTangent,
+                        outTangent: endKey.outTangent,
+                        interpolation: endKey.interpolation
                     }
                     keys.push(newKey);
                 }
