@@ -931,6 +931,21 @@
         private _depthRenderer: Nullable<DepthRenderer>;
         private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
+        /**
+         * Gets the current geometry buffer associated to the scene.
+         */
+        public get geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+            return this._geometryBufferRenderer;
+        }
+        /**
+         * Sets the current geometry buffer for the scene.
+         */
+        public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
+            if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = geometryBufferRenderer;
+            }
+        }
+
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
         private _pickedDownSprite: Nullable<Sprite>;
@@ -1855,7 +1870,11 @@
             this.onPrePointerObservable.clear();
         }
 
-        // Ready
+        /**
+         * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
+         * Delay loaded resources are not taking in account
+         * @return true if all required resources are ready
+         */
         public isReady(): boolean {
             if (this._isDisposed) {
                 return false;
@@ -1864,7 +1883,8 @@
             if (this._pendingData.length > 0) {
                 return false;
             }
-            var index: number;
+            let index: number;
+            let engine = this.getEngine();
 
             // Geometries
             for (index = 0; index < this._geometries.length; index++) {
@@ -1891,10 +1911,17 @@
                     return false;
                 }
 
-                var mat = mesh.material;
-                if (mat) {
-                    if (!mat.isReady(mesh)) {
-                        return false;
+                // Highlight layers
+                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
+                for (var layer of this.highlightLayers) {
+                    if (!layer.hasMesh(mesh)) {
+                        continue;
+                    }
+
+                    for (var subMesh of mesh.subMeshes) {
+                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -2343,7 +2370,7 @@
             return index;
         }
 
-        
+
         public removeParticleSystem(toRemove: ParticleSystem): number {
             var index = this.particleSystems.indexOf(toRemove);
             if (index !== -1) {
@@ -2372,14 +2399,14 @@
             }
             return index;
         };
-        public removeLensFlareSystem(toRemove:LensFlareSystem){
+        public removeLensFlareSystem(toRemove: LensFlareSystem) {
             var index = this.lensFlareSystems.indexOf(toRemove);
             if (index !== -1) {
                 this.lensFlareSystems.splice(index, 1);
             }
             return index;
         };
-        public removeActionManager(toRemove:ActionManager){
+        public removeActionManager(toRemove: ActionManager) {
             var index = this._actionManagers.indexOf(toRemove);
             if (index !== -1) {
                 this._actionManagers.splice(index, 1);
@@ -2413,39 +2440,39 @@
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
 
-        public addSkeleton(newSkeleton:Skeleton){
+        public addSkeleton(newSkeleton: Skeleton) {
             this.skeletons.push(newSkeleton)
         }
 
-        public addParticleSystem(newParticleSystem:ParticleSystem){
+        public addParticleSystem(newParticleSystem: ParticleSystem) {
             this.particleSystems.push(newParticleSystem)
         }
 
-        public addAnimation(newAnimation:Animation){
+        public addAnimation(newAnimation: Animation) {
             this.animations.push(newAnimation)
         }
 
-        public addMultiMaterial(newMultiMaterial:MultiMaterial){
+        public addMultiMaterial(newMultiMaterial: MultiMaterial) {
             this.multiMaterials.push(newMultiMaterial)
         }
 
-        public addMaterial(newMaterial:Material){
+        public addMaterial(newMaterial: Material) {
             this.materials.push(newMaterial)
         }
 
-        public addMorphTargetManager(newMorphTargetManager:MorphTargetManager){
+        public addMorphTargetManager(newMorphTargetManager: MorphTargetManager) {
             this.morphTargetManagers.push(newMorphTargetManager)
         }
 
-        public addGeometry(newGeometrie:Geometry){
+        public addGeometry(newGeometrie: Geometry) {
             this._geometries.push(newGeometrie)
         }
 
-        public addLensFlareSystem(newLensFlareSystem:LensFlareSystem){
+        public addLensFlareSystem(newLensFlareSystem: LensFlareSystem) {
             this.lensFlareSystems.push(newLensFlareSystem)
         }
 
-        public addActionManager(newActionManager:ActionManager){
+        public addActionManager(newActionManager: ActionManager) {
             this._actionManagers.push(newActionManager)
         }
 

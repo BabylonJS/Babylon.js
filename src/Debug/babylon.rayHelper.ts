@@ -1,19 +1,19 @@
 module BABYLON {
     export class RayHelper {
-        
+
         public ray: Nullable<Ray>;
 
         private _renderPoints: Vector3[];
         private _renderLine: Nullable<LinesMesh>;
         private _renderFunction: Nullable<() => void>;
         private _scene: Nullable<Scene>;
-        
+
         private _updateToMeshFunction: Nullable<() => void>;
         private _attachedToMesh: Nullable<AbstractMesh>;
         private _meshSpaceDirection: Vector3;
         private _meshSpaceOrigin: Vector3;
 
-        public static CreateAndShow(ray: Ray, scene: Scene, color:Color3): RayHelper {
+        public static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper {
             var helper = new RayHelper(ray);
 
             helper.show(scene, color);
@@ -21,13 +21,13 @@ module BABYLON {
             return helper;
         }
 
-        constructor(ray:Ray) {
+        constructor(ray: Ray) {
             this.ray = ray;
         }
 
-        public show(scene:Scene, color:Color3): void{
+        public show(scene: Scene, color: Color3): void {
 
-            if(!this._renderFunction && this.ray){
+            if (!this._renderFunction && this.ray) {
 
                 var ray = this.ray;
 
@@ -47,9 +47,9 @@ module BABYLON {
 
         }
 
-        public hide(): void{
+        public hide(): void {
 
-            if(this._renderFunction && this._scene){
+            if (this._renderFunction && this._scene) {
                 this._scene.unregisterBeforeRender(this._renderFunction);
                 this._scene = null;
                 this._renderFunction = null;
@@ -73,7 +73,7 @@ module BABYLON {
 
             var point = this._renderPoints[1];
             var len = Math.min(ray.length, 1000000);
-            
+
             point.copyFrom(ray.direction);
             point.scaleInPlace(len);
             point.addInPlace(ray.origin);
@@ -82,7 +82,7 @@ module BABYLON {
 
         }
 
-        public attachToMesh(mesh:AbstractMesh, meshSpaceDirection?:Vector3, meshSpaceOrigin?:Vector3, length?:number): void{
+        public attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void {
 
             this._attachedToMesh = mesh;
 
@@ -92,36 +92,36 @@ module BABYLON {
                 return;
             }
 
-            if(!ray.direction){
+            if (!ray.direction) {
                 ray.direction = Vector3.Zero();
             }
 
-            if(!ray.origin){
+            if (!ray.origin) {
                 ray.origin = Vector3.Zero();
             }
 
-            if(length){
+            if (length) {
                 ray.length = length;
             }
 
-            if(!meshSpaceOrigin){
+            if (!meshSpaceOrigin) {
                 meshSpaceOrigin = Vector3.Zero();
             }
 
-            if(!meshSpaceDirection){
+            if (!meshSpaceDirection) {
                 // -1 so that this will work with Mesh.lookAt
                 meshSpaceDirection = new Vector3(0, 0, -1);
             }
 
-            if(!this._meshSpaceDirection){
+            if (!this._meshSpaceDirection) {
                 this._meshSpaceDirection = meshSpaceDirection.clone();
                 this._meshSpaceOrigin = meshSpaceOrigin.clone();
-            }else{
+            } else {
                 this._meshSpaceDirection.copyFrom(meshSpaceDirection);
                 this._meshSpaceOrigin.copyFrom(meshSpaceOrigin);
             }
 
-            if(!this._updateToMeshFunction){
+            if (!this._updateToMeshFunction) {
                 this._updateToMeshFunction = (<() => void>this._updateToMesh.bind(this));
                 this._attachedToMesh.getScene().registerBeforeRender(this._updateToMeshFunction);
             }
@@ -130,9 +130,9 @@ module BABYLON {
 
         }
 
-        public detachFromMesh(): void{
+        public detachFromMesh(): void {
 
-            if(this._attachedToMesh){
+            if (this._attachedToMesh) {
                 if (this._updateToMeshFunction) {
                     this._attachedToMesh.getScene().unregisterBeforeRender(this._updateToMeshFunction);
                 }
@@ -142,7 +142,7 @@ module BABYLON {
 
         }
 
-        private _updateToMesh(): void{
+        private _updateToMesh(): void {
 
             var ray = this.ray;
 
@@ -150,7 +150,7 @@ module BABYLON {
                 return;
             }
 
-            if(this._attachedToMesh._isDisposed){
+            if (this._attachedToMesh._isDisposed) {
                 this.detachFromMesh();
                 return;
             }
@@ -160,7 +160,7 @@ module BABYLON {
 
         }
 
-        public dispose(): void{
+        public dispose(): void {
 
             this.hide();
             this.detachFromMesh();

@@ -539,6 +539,10 @@
             }
         }
 
+        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        }
+
         protected _afterBind(mesh?: Mesh): void {
             this._scene._cachedMaterial = this;
             if (mesh) {
@@ -597,16 +601,14 @@
         /**
          * Force shader compilation including textures ready check
          */
-        public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ alphaTest: Nullable<boolean>, clipPlane: boolean }>): void {
+        public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<{ clipPlane: boolean }>): void {
             let localOptions = {
-                alphaTest: null,
                 clipPlane: false,
                 ...options
             };
 
             var subMesh = new BaseSubMesh();
             var scene = this.getScene();
-            var engine = scene.getEngine();
 
             var checkReady = () => {
                 if (!this._scene || !this._scene.getEngine()) {
@@ -617,10 +619,7 @@
                     subMesh._materialDefines._renderId = -1;
                 }
 
-                var alphaTestState = engine.getAlphaTesting();
                 var clipPlaneState = scene.clipPlane;
-
-                engine.setAlphaTesting(localOptions.alphaTest || (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting()));
 
                 if (localOptions.clipPlane) {
                     scene.clipPlane = new Plane(0, 0, 0, 1);
@@ -645,8 +644,6 @@
                         setTimeout(checkReady, 16);
                     }
                 }
-
-                engine.setAlphaTesting(alphaTestState);
 
                 if (options && options.clipPlane) {
                     scene.clipPlane = clipPlaneState;
