@@ -2,7 +2,7 @@
 
 module BABYLON.GLTF2.Extensions {
     interface IGLTFLight {
-        type: "directional" | "point" | "spot" | "hemisphere";
+        type: "directional" | "point" | "spot";
         color: [number, number, number];
         intensity: number;
         // Runtime values
@@ -42,22 +42,18 @@ module BABYLON.GLTF2.Extensions {
             return this._loadExtension<IGLTFLightReference>(context, scene, (context, extension, onComplete) => {
                 if (extension.light >= 0 && loader._gltf.extensions) {
                     const lightInfo = loader._gltf.extensions.KHR_lights.lights[extension.light];
-                    if (lightInfo.type !== 'ambient' && lightInfo.type !== 'hemisphere') {
+                    if (lightInfo.type !== 'ambient') {
                         return;
                     }
 
+                    // Use monochromatic hemispheric light to simulate ambient light.
                     const direction = new Vector3(0, 1, 0);
                     extension.babylonLight = new BABYLON.HemisphericLight("light", direction, loader._babylonScene);
 
                     this.applyCommonProperties(extension.babylonLight, lightInfo);
-                    
-                    if (lightInfo.type == 'hemisphere') {
-                        const groundColor = lightInfo.hemisphere && lightInfo.hemisphere.groundColor ? lightInfo.hemisphere.groundColor : [1, 1, 1];
-                        (extension.babylonLight as HemisphericLight).groundColor.copyFromFloats(groundColor[0], groundColor[1], groundColor[2]);
-                    } else {
-                        const groundColor = lightInfo.color ? lightInfo.color : [1, 1, 1];
-                        (extension.babylonLight as HemisphericLight).groundColor.copyFromFloats(groundColor[0], groundColor[1], groundColor[2]);
-                    }
+
+                    const groundColor = lightInfo.color ? lightInfo.color : [1, 1, 1];
+                    (extension.babylonLight as HemisphericLight).groundColor.copyFromFloats(groundColor[0], groundColor[1], groundColor[2]);
                 }
                 
                 onComplete();
