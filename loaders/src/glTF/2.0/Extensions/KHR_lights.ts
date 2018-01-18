@@ -7,20 +7,15 @@ module BABYLON.GLTF2.Extensions {
         intensity: number;
         // Runtime values
         index: number;
-        babylonLight: Light;
     }
 
     interface IKHRLights {
         lights: IGLTFLight[];
-        // diffuseFactor: number[];
-        // diffuseTexture: IGLTFTextureInfo;
-        // specularFactor: number[];
-        // glossinessFactor: number;
-        // specularGlossinessTexture: IGLTFTextureInfo;
     }
 
     interface IGLTFLightReference {
         light: number;
+        // Runtime values
         babylonLight: Light;
     }
 
@@ -115,8 +110,6 @@ module BABYLON.GLTF2.Extensions {
                             loader._loadNode("#/nodes/" + index, childNode);
                         }
                     }
-        
-                    // this.onMeshLoadedObservable.notifyObservers(node.babylonMesh);
                 }
                 onComplete();
             });
@@ -124,36 +117,12 @@ module BABYLON.GLTF2.Extensions {
 
         protected _loadRoot(loader: GLTFLoader, context: string, root: IGLTF): boolean {
             return this._loadExtension<IKHRLights>(context, root, (context, extension, onComplete) => {
-                // GLTFLoader._AssignIndices(loader._gltf.accessors);
-                // for (const light of extension.lights) {
-                //     this._loadLight(context, light);
-                // }
                 extension.lights.forEach((light: IGLTFLight, idx: number) => {
                     light.index = idx;
                 });
                 onComplete();
             });
         }
-
-        // protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean {
-        //     return super._loadExtension(context, property, action);
-        // }
-        
-        // protected _loadNode(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-        //     return this._loadExtension<IKHRLights>(context, material, (context, extension, onComplete) => {
-        //         loader._createPbrMaterial(material);
-        //         loader._loadMaterialBaseProperties(context, material);
-        //         // this._loadSpecularGlossinessProperties(loader, context, material, extension);
-        //         assign(material.babylonMaterial, true);
-        //         onComplete();
-        //     });
-        // }
-
-        // private _loadLight(context: string, light: IGLTFLight) {
-        //     // Create appropriate Babylon.js light
-        //     light.babylonLight = undefined;//new DirectionalLight("stuff", new Vector3(0, 1, 0), null);
-        // }
-
     }
 
     GLTFLoader.RegisterExtension(new KHRLights());
