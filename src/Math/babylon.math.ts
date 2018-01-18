@@ -1461,10 +1461,10 @@
 
         /**
          * Get angle between two vectors.
-         * @param vector0 {BABYLON.Vector3}
-         * @param vector1 {BABYLON.Vector3}
-         * @param normal  {BABYLON.Vector3}  direction of the normal.
-         * @return {number} the angle between vector0 and vector1.
+         * @param vector0 angle between vector0 and vector1
+         * @param vector1 angle between vector0 and vector1
+         * @param normal direction of the normal.
+         * @return the angle between vector0 and vector1.
          */
         public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
             var v0:Vector3 = vector0.clone().normalize();

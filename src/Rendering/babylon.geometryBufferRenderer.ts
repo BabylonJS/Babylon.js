@@ -1,4 +1,7 @@
 module BABYLON {
+    /**
+     * This renderer is helpfull to fill one of the render target with a geometry buffer.
+     */
     export class GeometryBufferRenderer {
         private _scene: Scene;
         private _multiRenderTarget: MultiRenderTarget;
@@ -8,32 +11,58 @@ module BABYLON {
         protected _effect: Effect;
         protected _cachedDefines: string;
 
+        /**
+         * Set the render list (meshes to be rendered) used in the G buffer.
+         */
         public set renderList(meshes: Mesh[]) {
             this._multiRenderTarget.renderList = meshes;
         }
 
+        /**
+         * Gets wether or not G buffer are supported by the running hardware.
+         * This requires draw buffer supports
+         */
         public get isSupported(): boolean {
             return this._multiRenderTarget.isSupported;
         }
 
+        /**
+         * Gets wether or not position are enabled for the G buffer.
+         */
         public get enablePosition(): boolean {
             return this._enablePosition;
         }
 
+        /**
+         * Sets wether or not position are enabled for the G buffer.
+         */
         public set enablePosition(enable: boolean) {
             this._enablePosition = enable;
             this.dispose();
             this._createRenderTargets();
         }
 
+        /**
+         * Gets the scene associated with the buffer.
+         */
         public get scene(): Scene {
             return this._scene;
         }
 
+        /**
+         * Gets the ratio used by the buffer during its creation.
+         * How big is the buffer related to the main canvas.
+         */
         public get ratio(): number {
             return this._ratio
         }
 
+
+        /**
+         * Creates a new G Buffer for the scene. @see GeometryBufferRenderer
+         * @param scene The scene the buffer belongs to
+         * @param ratio How big is the buffer related to the main canvas.
+         */
         constructor(scene: Scene, ratio: number = 1) {
             this._scene = scene;
             this._ratio = ratio;
@@ -42,6 +71,12 @@ module BABYLON {
             this._createRenderTargets();
         }
 
+        /**
+         * Checks wether everything is ready to render a submesh to the G buffer.
+         * @param subMesh the submesh to check readiness for
+         * @param useInstances is the mesh drawn using instance or not
+         * @returns true if ready otherwise false
+         */
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var material: any = subMesh.getMaterial();
 
@@ -111,19 +146,31 @@ module BABYLON {
             return this._effect.isReady();
         }
 
+        /**
+         * Gets the current underlying G Buffer.
+         * @returns the buffer
+         */
         public getGBuffer(): MultiRenderTarget {
             return this._multiRenderTarget;
         }
 
+        /**
+         * Gets the number of samples used to render the buffer (anti aliasing).
+         */
         public get samples(): number {
             return this._multiRenderTarget.samples;
         }
 
+        /**
+         * Sets the number of samples used to render the buffer (anti aliasing).
+         */
         public set samples(value: number) {
             this._multiRenderTarget.samples = value;
         }
 
-        // Methods
+        /**
+         * Disposes the renderer and frees up associated resources.
+         */
         public dispose(): void {
             this.getGBuffer().dispose();
         }
