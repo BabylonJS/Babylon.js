@@ -1,5 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+    "editor.tabSize": 4,
     // Configure glob patterns for excluding files and folders.
     "files.exclude": {
         "**/.git": true,
@@ -29,6 +30,10 @@
     "files.associations": {
         "*.fx": "glsl"
     },
+    "prettier.tabWidth": 4,
+    "prettier.printWidth": 120,
+    "prettier.semi": true,
+    "prettier.singleQuote": false,
     "search.exclude": {
         "**/node_modules": true,
         "**/bower_components": true,

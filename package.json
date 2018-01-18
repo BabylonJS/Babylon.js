@@ -36,6 +36,12 @@
     "dependencies": {
         "cannon": "0.6.2"
     },
+    "devDependencies": {
+        "prettier": "^1.10.2"
+    },
+    "scripts": {
+        "prettier": "prettier --write 'src/**/*.{ts,js,json,css}'"
+    },
     "engines": {
         "node": "*"
     },
