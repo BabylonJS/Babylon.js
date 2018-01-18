@@ -1,4 +1,11 @@
 ﻿module BABYLON {
+    /**
+     * Settings for finer control over video usage
+     * @typedef {Object} VideoTextureSettings
+     * @property {boolean} [autoPlay] Applies `autoplay` to video, if specified
+     * @property {boolean} [loop] - Applies `loop` to video, if specified
+     * @property {boolean} autoUpdateTexture - Automatically updates internal texture from video at every frame in the render loop
+     */
     export interface VideoTextureSettings {
         autoPlay?: boolean;
         loop?: boolean;
@@ -130,10 +137,16 @@
             this._texture = null;
         };
 
+        /**
+         * Internal method to initiate `update`.
+         */
         public _rebuild(): void {
             this.update();
         }
 
+        /**
+         * Update Texture in the `auto` mode. Does not do anything if `settings.autoUpdateTexture` is false.
+         */
         public update(): void {
             if (!this.autoUpdateTexture) {
                 // Expecting user to call `updateTexture` manually
@@ -143,6 +156,10 @@
             this.updateTexture(true);
         }
 
+        /**
+         * Update Texture in `manual` mode. Does not do anything if not visible or paused.
+         * @param isVisible Visibility state, detected by user using `scene.getActiveMeshes()` or othervise.
+         */
         public updateTexture(isVisible: boolean): void {
             if (!isVisible) {
                 return;
@@ -164,6 +181,10 @@
             this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
         };
 
+        /**
+         * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
+         * @param url New url.
+         */
         public updateURL(url: string): void {
             this.video.src = url;
         }
