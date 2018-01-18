@@ -30,7 +30,7 @@
         /**
          * Sets the input sensibility for a mouse input. (default is 2000.0)
          * Higher values reduce sensitivity.
-		 * @param value sensibility factor
+         * @param {number} value sensibility factor
          */
         public set angularSensibility(value: number) {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
