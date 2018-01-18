@@ -1,15 +1,36 @@
-﻿module BABYLON {
-    export class FxaaPostProcess extends PostProcess {
-        public texelWidth: number;
-        public texelHeight: number;
+﻿namespace BABYLON {
+  export class FxaaPostProcess extends PostProcess {
+    public texelWidth: number;
+    public texelHeight: number;
 
-        constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa");
+    constructor(
+      name: string,
+      options: number | PostProcessOptions,
+      camera: Nullable<Camera> = null,
+      samplingMode?: number,
+      engine?: Engine,
+      reusable?: boolean,
+      textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT
+    ) {
+      super(
+        name,
+        "fxaa",
+        ["texelSize"],
+        null,
+        options,
+        camera,
+        samplingMode || Texture.BILINEAR_SAMPLINGMODE,
+        engine,
+        reusable,
+        null,
+        textureType,
+        "fxaa"
+      );
 
-            this.onApplyObservable.add((effect: Effect) => {
-                var texelSize = this.texelSize;
-                effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-            });
-        }
+      this.onApplyObservable.add((effect: Effect) => {
+        var texelSize = this.texelSize;
+        effect.setFloat2("texelSize", texelSize.x, texelSize.y);
+      });
     }
+  }
 }
