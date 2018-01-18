@@ -15924,6 +15924,7 @@ var BABYLON;
                 return;
             }
             this._lightSources.splice(index, 1);
+            this._markSubMeshesAsLightDirty();
         };
         AbstractMesh.prototype._markSubMeshesAsDirty = function (func) {
             if (!this.subMeshes) {

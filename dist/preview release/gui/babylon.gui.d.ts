@@ -520,6 +520,9 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     class TextBlock extends Control {
+        /**
+         * Defines the name of the control
+         */
         name: string | undefined;
         private _text;
         private _textWrapping;
@@ -533,15 +536,70 @@ declare module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         onTextChangedObservable: Observable<TextBlock>;
+        /**
+        * An event triggered after the text was broken up into lines
+        * @type {BABYLON.Observable}
+        */
+        onLinesReadyObservable: Observable<TextBlock>;
+        /**
+         * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
+         */
+        readonly lines: any[];
+        /**
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
+        /**
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
         resizeToFit: boolean;
+        /**
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
+        /**
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
         textWrapping: boolean;
+        /**
+         * Gets or sets text to display
+         */
+        /**
+         * Gets or sets text to display
+         */
         text: string;
+        /**
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
+        /**
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
         textHorizontalAlignment: number;
+        /**
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */
+        /**
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */
         textVerticalAlignment: number;
+        /**
+         * Gets or sets line spacing value
+         */
+        /**
+         * Gets or sets line spacing value
+         */
         lineSpacing: string | number;
-        constructor(name?: string | undefined, text?: string);
+        /**
+         * Creates a new TextBlock object
+         * @param name defines the name of the control
+         * @param text defines the text to display (emptry string by default)
+         */
+        constructor(
+            /**
+             * Defines the name of the control
+             */
+            name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
+        /** @ignore */
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
