@@ -126,6 +126,21 @@
         }
 
         /**
+         * Clamps the rgb values by the min and max values and stores the result into "result".
+         * Returns the unmodified current Color3.
+         * @param min - minimum clamping value.  Defaults to 0
+         * @param max - maximum clamping value.  Defaults to 1
+         * @param result - color to store the result into.
+         * @returns - the original Color3
+         */
+        public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            return this;
+        }
+
+        /**
          * Returns a new Color3 set with the added values of the current Color3 and of the passed one.  
          */
         public add(otherColor: Color3): Color3 {
@@ -385,6 +400,22 @@
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+            return this;
+        }
+
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result".
+         * Returns the unmodified current Color4.
+         * @param min - minimum clamping value.  Defaults to 0
+         * @param max - maximum clamping value.  Defaults to 1
+         * @param result - color to store the result into.
+         * @returns - the original Color4
+         */
+        public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            result.a = BABYLON.Scalar.Clamp(this.a, min, max);
             return this;
         }
 

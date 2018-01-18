@@ -1459,7 +1459,8 @@
                 "files": [
                     "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFData.ts"
+                    "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts"
                 ],
                 "output": "babylon.glTF2Serializer.js"
             }
