@@ -10,7 +10,7 @@
         public id: string;
 
         /**
-         * The friendluname of the Particle system.
+         * The friendly name of the Particle system.
          */
         public name: string;
 
