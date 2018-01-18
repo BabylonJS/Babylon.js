@@ -137,6 +137,7 @@
         public stockSubSystems = new StringDictionary<Array<SubParticleSystem>>();
 
         private _isEmitting = false;
+        private _isUsed = false;
         // to be overriden by subSystems
         public stoppedEmitting(): void {
 
@@ -373,6 +374,7 @@
 
             if (!this._alive && this._isEmitting) {
                 this._isEmitting = false;
+                this._isUsed = false;
                 this.stoppedEmitting();
             }
 
