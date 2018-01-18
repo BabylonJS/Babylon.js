@@ -112,6 +112,7 @@
 
             var engine = this._scene.getEngine();
             engine.setDepthWrite(false);
+            engine.setColorWrite(false);
             this._colorShader._preBind();
 
             var boundingBox = mesh._boundingInfo.boundingBox;
@@ -127,17 +128,6 @@
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
-
-            // Back
-            //engine.setDepthFunctionToGreaterOrEqual();
-            this._scene.resetCachedMaterial();
-            this._colorShader.setColor4("color", this.backColor.toColor4());
-            this._colorShader.bind(worldMatrix);
-
-            // Draw order
-            engine.drawElementsType(Material.LineListDrawMode, 0, 24);
-
-
             // Front
             engine.setDepthFunctionToLess();
             this._scene.resetCachedMaterial();
@@ -150,6 +140,7 @@
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
+            engine.setColorWrite(true);
         }
 
         public dispose(): void {
