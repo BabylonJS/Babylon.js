@@ -31,13 +31,13 @@ module BABYLON {
          */
         startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
-            // var randX = Scalar.RandomRange(0, this.directionRandomizer);
-            // var randY = Scalar.RandomRange(0, this.directionRandomizer);
-            // var randZ = Scalar.RandomRange(0, this.directionRandomizer);
-            // direction.x += randX;
-            // direction.y += randY;
-            // direction.z += randZ;
-            // direction.normalize();
+            var randX = Scalar.RandomRange(0, this.directionRandomizer);
+            var randY = Scalar.RandomRange(0, this.directionRandomizer);
+            var randZ = Scalar.RandomRange(0, this.directionRandomizer);
+            direction.x += randX;
+            direction.y += randY;
+            direction.z += randZ;
+            direction.normalize();
 
             Vector3.TransformNormalFromFloatsToRef(direction.x * emitPower, direction.y * emitPower, direction.z * emitPower, worldMatrix, directionToUpdate);
         }
