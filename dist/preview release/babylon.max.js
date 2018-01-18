@@ -1117,6 +1117,22 @@ var BABYLON;
             return this;
         };
         /**
+         * Clamps the rgb values by the min and max values and stores the result into "result".
+         * Returns the unmodified current Color3.
+         * @param min - minimum clamping value.  Defaults to 0
+         * @param max - maximum clamping value.  Defaults to 1
+         * @param result - color to store the result into.
+         * @returns - the original Color3
+         */
+        Color3.prototype.clampToRef = function (min, max, result) {
+            if (min === void 0) { min = 0; }
+            if (max === void 0) { max = 1; }
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            return this;
+        };
+        /**
          * Returns a new Color3 set with the added values of the current Color3 and of the passed one.
          */
         Color3.prototype.add = function (otherColor) {
@@ -1362,6 +1378,23 @@ var BABYLON;
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+            return this;
+        };
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result".
+         * Returns the unmodified current Color4.
+         * @param min - minimum clamping value.  Defaults to 0
+         * @param max - maximum clamping value.  Defaults to 1
+         * @param result - color to store the result into.
+         * @returns - the original Color4
+         */
+        Color4.prototype.clampToRef = function (min, max, result) {
+            if (min === void 0) { min = 0; }
+            if (max === void 0) { max = 1; }
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            result.a = BABYLON.Scalar.Clamp(this.a, min, max);
             return this;
         };
         /**
@@ -2355,6 +2388,23 @@ var BABYLON;
             var d1 = Vector3.Dot(vector1, axis) - size;
             var s = d0 / (d0 - d1);
             return s;
+        };
+        /**
+         * Get angle between two vectors.
+         * @param vector0 angle between vector0 and vector1
+         * @param vector1 angle between vector0 and vector1
+         * @param normal direction of the normal.
+         * @return the angle between vector0 and vector1.
+         */
+        Vector3.GetAngleBetweenVectors = function (vector0, vector1, normal) {
+            var v0 = vector0.clone().normalize();
+            var v1 = vector1.clone().normalize();
+            var dot = Vector3.Dot(v0, v1);
+            var n = Vector3.Cross(v0, v1);
+            if (Vector3.Dot(n, normal) > 0) {
+                return Math.acos(dot);
+            }
+            return -Math.acos(dot);
         };
         /**
          * Returns a new Vector3 set from the index "offset" of the passed array.
@@ -19984,6 +20034,24 @@ var BABYLON;
         Object.defineProperty(Scene.prototype, "frustumPlanes", {
             get: function () {
                 return this._frustumPlanes;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
+            /**
+             * Gets the current geometry buffer associated to the scene.
+             */
+            get: function () {
+                return this._geometryBufferRenderer;
+            },
+            /**
+             * Sets the current geometry buffer for the scene.
+             */
+            set: function (geometryBufferRenderer) {
+                if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
+                    this._geometryBufferRenderer = geometryBufferRenderer;
+                }
             },
             enumerable: true,
             configurable: true
@@ -44482,6 +44550,24 @@ var BABYLON;
             return action;
         };
         /**
+         * Unregisters an action to this action manager
+         * @param action The action to be unregistered
+         * @return whether the action has been unregistered
+         */
+        ActionManager.prototype.unregisterAction = function (action) {
+            var index = this.actions.indexOf(action);
+            if (index !== -1) {
+                this.actions.splice(index, 1);
+                ActionManager.Triggers[action.trigger] -= 1;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger];
+                }
+                delete action._actionManager;
+                return true;
+            }
+            return false;
+        };
+        /**
          * Process a specific trigger
          * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
@@ -46503,8 +46589,10 @@ var BABYLON;
          * Creates a new instance of @see Particle
          * @param particleSystem the particle system the particle belongs to
          */
-        function Particle(particleSystem) {
+        function Particle(particleSystem, generation) {
+            if (generation === void 0) { generation = 0; }
             this.particleSystem = particleSystem;
+            this.generation = generation;
             /**
              * The world position of the particle in the scene.
              */
@@ -46549,6 +46637,9 @@ var BABYLON;
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
+            this.setCellInfoFromSystem();
+        }
+        Particle.prototype.setCellInfoFromSystem = function () {
             this.cellIndex = this.particleSystem.startSpriteCellID;
             if (this.particleSystem.spriteCellChangeSpeed == 0) {
                 this.updateCellIndex = this.updateCellIndexWithSpeedCalculated;
@@ -46556,7 +46647,7 @@ var BABYLON;
             else {
                 this.updateCellIndex = this.updateCellIndexWithCustomSpeed;
             }
-        }
+        };
         Particle.prototype.updateCellIndexWithSpeedCalculated = function (scaledUpdateSpeed) {
             //   (ageOffset / scaledUpdateSpeed) / available cells
             var numberOfScaledUpdatesPerCell = ((this.lifeTime - this.age) / scaledUpdateSpeed) / (this.particleSystem.endSpriteCellID + 1 - this.cellIndex);
@@ -46619,6 +46710,7 @@ var BABYLON;
      * @example https://doc.babylonjs.com/babylon101/particles
      */
     var ParticleSystem = /** @class */ (function () {
+        //end of sub emitter
         /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
@@ -46802,7 +46894,9 @@ var BABYLON;
             this._stopped = false;
             this._actualFrame = 0;
             this._vertexBufferSize = 11;
+            this._isEmitting = false;
             this._appendParticleVertexes = null;
+            this.count = 0;
             this.id = name;
             this.name = name;
             this._capacity = capacity;
@@ -46837,6 +46931,7 @@ var BABYLON;
                     if (particle.age >= particle.lifeTime) {
                         _this.recycleParticle(particle);
                         index--;
+                        _this.emitFromParticle(particle);
                         continue;
                     }
                     else {
@@ -46899,11 +46994,7 @@ var BABYLON;
          * @param particle The particle to recycle
          */
         ParticleSystem.prototype.recycleParticle = function (particle) {
-            var lastParticle = this._particles.pop();
-            if (lastParticle !== particle) {
-                lastParticle.copyTo(particle);
-                this._stockParticles.push(lastParticle);
-            }
+            ParticleSystem.recycleParticle(this, this, particle);
         };
         /**
          * Gets the maximum number of particles active at the same time.
@@ -46933,6 +47024,10 @@ var BABYLON;
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
+            if (this.subEmitters && this.subEmitters.length != 0) {
+                this.activeSubSystems = new BABYLON.StringDictionary();
+                this.stockSubSystems = new BABYLON.StringDictionary();
+            }
         };
         /**
          * Stops the particle system.
@@ -46940,6 +47035,45 @@ var BABYLON;
         ParticleSystem.prototype.stop = function () {
             this._stopped = true;
         };
+        ParticleSystem.prototype.stopSubEmitters = function () {
+            var _this = this;
+            if (this.activeSubSystems.count === 0)
+                return;
+            this.stockSubSystems.forEach(function (generation) {
+                _this.stockSubSystems.get(generation).forEach(function (subSystem) {
+                    subSystem.stop();
+                });
+            });
+            this.activeSubSystems.forEach(function (subSystemName) {
+                var subSystem = _this.activeSubSystems.get(subSystemName);
+                subSystem.stop();
+                subSystem.stoppedEmitting(true);
+            });
+            this.activeSubSystems = new BABYLON.StringDictionary();
+        };
+        ParticleSystem.emitFromGeneration = function (system, particle, generation) {
+            if (!system.subEmitters || system.subEmitters.length === 0 || generation >= system.subEmitters.length) {
+                return;
+            }
+            var generationString = generation.toString();
+            if (!system.stockSubSystems.contains(generationString) || system.stockSubSystems.get(generationString).length === 0) {
+                // get the current generation template and clone it to subSystem
+                var subSystem = system.subEmitters[generation].cloneToSubSystem(system.name, particle.position, generation, system);
+                system.activeSubSystems.add(subSystem.name, subSystem);
+                subSystem.start();
+            }
+            else {
+                var stockSubSystem = (system.stockSubSystems.get(generationString)).pop();
+                stockSubSystem.emitter = particle.position;
+                system.activeSubSystems.add(stockSubSystem.name, stockSubSystem);
+                // reset the manual emit count
+                if (system.subEmitters[generation].manualEmitCount != -1)
+                    stockSubSystem.manualEmitCount = system.subEmitters[generation].manualEmitCount;
+                stockSubSystem.start();
+            }
+        };
+        // end of sub emitter
+        // animation sheet
         /**
          * @ignore (for internal use only)
          */
@@ -46983,9 +47117,50 @@ var BABYLON;
             this._vertexData[offset + 10] = offsetY;
             this._vertexData[offset + 11] = particle.cellIndex;
         };
+        ParticleSystem.createParticle = function (rootSystem, currentSystem) {
+            var particle;
+            if (rootSystem._stockParticles.length !== 0) {
+                particle = rootSystem._stockParticles.pop();
+                particle.age = 0;
+                particle.cellIndex = currentSystem.startSpriteCellID;
+                if (currentSystem !== particle.particleSystem) {
+                    particle.particleSystem = currentSystem;
+                    particle.setCellInfoFromSystem();
+                }
+            }
+            else {
+                particle = new BABYLON.Particle(currentSystem);
+            }
+            return particle;
+        };
+        // end of sub system methods
+        ParticleSystem.prototype.createParticle = function () {
+            return ParticleSystem.createParticle(this, this);
+        };
+        // to be overriden by subSystems
+        ParticleSystem.prototype.stoppedEmitting = function () {
+        };
+        ParticleSystem.prototype.emitFromParticle = function (particle) {
+            ParticleSystem.emitFromGeneration(this, particle, 0);
+        };
+        ParticleSystem.recycleParticle = function (rootSystem, currentSystem, particle) {
+            var lastParticle = currentSystem._particles.pop();
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
+                rootSystem._stockParticles.push(lastParticle);
+            }
+        };
+        // end of sub system methods
         ParticleSystem.prototype._update = function (newParticles) {
             // Update current
             this._alive = this._particles.length > 0;
+            if (this._alive) {
+                this._isEmitting = true;
+            }
+            if (!this._alive && this._isEmitting) {
+                this._isEmitting = false;
+                this.stoppedEmitting();
+            }
             this.updateFunction(this._particles);
             // Add new ones
             var worldMatrix;
@@ -47002,14 +47177,7 @@ var BABYLON;
                 if (this._particles.length === this._capacity) {
                     break;
                 }
-                if (this._stockParticles.length !== 0) {
-                    particle = this._stockParticles.pop();
-                    particle.age = 0;
-                    particle.cellIndex = this.startSpriteCellID;
-                }
-                else {
-                    particle = new BABYLON.Particle(this);
-                }
+                particle = this.createParticle();
                 this._particles.push(particle);
                 var emitPower = BABYLON.Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
                 if (this.startPositionFunction) {
@@ -47203,6 +47371,7 @@ var BABYLON;
          * Disposes the particle system and free the associated resources.
          */
         ParticleSystem.prototype.dispose = function () {
+            var _this = this;
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
@@ -47223,6 +47392,23 @@ var BABYLON;
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
+            if (this.subEmitters) {
+                this.subEmitters.forEach(function (emitter) {
+                    emitter.dispose();
+                });
+            }
+            if (this.stockSubSystems) {
+                this.stockSubSystems.forEach(function (generation) {
+                    _this.stockSubSystems.get(generation).forEach(function (subSystem) {
+                        subSystem.dispose();
+                    });
+                });
+            }
+            if (this.activeSubSystems) {
+                this.activeSubSystems.forEach(function (subSystemName) {
+                    _this.activeSubSystems.get(subSystemName).dispose();
+                });
+            }
         };
         /**
          * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
@@ -47281,6 +47467,27 @@ var BABYLON;
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
         };
+        ParticleSystem.prototype.cloneToSubSystem = function (name, newEmitter, generation, root) {
+            var custom = null;
+            var program = null;
+            if (this.customShader != null) {
+                program = this.customShader;
+                var defines = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var result = new BABYLON.SubParticleSystem(name, this._capacity, this._scene, generation, root, custom);
+            result.customShader = program;
+            BABYLON.Tools.DeepCopy(this, result, ["customShader"]);
+            result.name = name + "_Child_" + root.count++ + "_" + generation;
+            result.id = result.name;
+            result.emitter = newEmitter;
+            result.particleEmitterType = this.particleEmitterType;
+            if (this.particleTexture) {
+                result.particleTexture = new BABYLON.Texture(this.particleTexture.url, this._scene);
+            }
+            return result;
+        };
+        // Clone
         /**
          * Clones the particle system.
          * @param name The name of the cloned object
@@ -47460,6 +47667,50 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.particleSystem.js.map
+
+
+var BABYLON;
+(function (BABYLON) {
+    var SubParticleSystem = /** @class */ (function (_super) {
+        __extends(SubParticleSystem, _super);
+        function SubParticleSystem(name, capacity, scene, _generation, _rootParticleSystem, customEffect, _isAnimationSheetEnabled, epsilon) {
+            if (customEffect === void 0) { customEffect = null; }
+            if (_isAnimationSheetEnabled === void 0) { _isAnimationSheetEnabled = false; }
+            if (epsilon === void 0) { epsilon = 0.01; }
+            var _this = _super.call(this, name, capacity, scene, customEffect, _isAnimationSheetEnabled, epsilon) || this;
+            _this._generation = _generation;
+            _this._rootParticleSystem = _rootParticleSystem;
+            _this.generationString = _this._generation.toString();
+            return _this;
+        }
+        SubParticleSystem.prototype.stoppedEmitting = function (overrideRemove) {
+            if (overrideRemove === void 0) { overrideRemove = false; }
+            if (overrideRemove)
+                this._rootParticleSystem.activeSubSystems.remove(this.name);
+            if (this._rootParticleSystem.stockSubSystems.contains(this.generationString)) {
+                (this._rootParticleSystem.stockSubSystems.get(this.generationString)).push(this);
+            }
+            else {
+                var subSysArray = new Array();
+                subSysArray.push(this);
+                this._rootParticleSystem.stockSubSystems.add(this.generationString, subSysArray);
+            }
+        };
+        SubParticleSystem.prototype.emitFromParticle = function (particle) {
+            BABYLON.ParticleSystem.emitFromGeneration(this._rootParticleSystem, particle, this._generation + 1);
+        };
+        SubParticleSystem.prototype.recycleParticle = function (particle) {
+            BABYLON.ParticleSystem.recycleParticle(this._rootParticleSystem, this, particle);
+        };
+        SubParticleSystem.prototype.createParticle = function () {
+            return BABYLON.ParticleSystem.createParticle(this._rootParticleSystem, this);
+        };
+        return SubParticleSystem;
+    }(BABYLON.ParticleSystem));
+    BABYLON.SubParticleSystem = SubParticleSystem;
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=babylon.subParticleSystem.js.map
 
 var BABYLON;
 (function (BABYLON) {
@@ -63217,7 +63468,15 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * This renderer is helpfull to fill one of the render target with a geometry buffer.
+     */
     var GeometryBufferRenderer = /** @class */ (function () {
+        /**
+         * Creates a new G Buffer for the scene. @see GeometryBufferRenderer
+         * @param scene The scene the buffer belongs to
+         * @param ratio How big is the buffer related to the main canvas.
+         */
         function GeometryBufferRenderer(scene, ratio) {
             if (ratio === void 0) { ratio = 1; }
             this._enablePosition = false;
@@ -63227,6 +63486,9 @@ var BABYLON;
             this._createRenderTargets();
         }
         Object.defineProperty(GeometryBufferRenderer.prototype, "renderList", {
+            /**
+             * Set the render list (meshes to be rendered) used in the G buffer.
+             */
             set: function (meshes) {
                 this._multiRenderTarget.renderList = meshes;
             },
@@ -63234,6 +63496,10 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(GeometryBufferRenderer.prototype, "isSupported", {
+            /**
+             * Gets wether or not G buffer are supported by the running hardware.
+             * This requires draw buffer supports
+             */
             get: function () {
                 return this._multiRenderTarget.isSupported;
             },
@@ -63241,9 +63507,15 @@ var BABYLON;
             configurable: true
         });
         Object.defineProperty(GeometryBufferRenderer.prototype, "enablePosition", {
+            /**
+             * Gets wether or not position are enabled for the G buffer.
+             */
             get: function () {
                 return this._enablePosition;
             },
+            /**
+             * Sets wether or not position are enabled for the G buffer.
+             */
             set: function (enable) {
                 this._enablePosition = enable;
                 this.dispose();
@@ -63252,6 +63524,33 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GeometryBufferRenderer.prototype, "scene", {
+            /**
+             * Gets the scene associated with the buffer.
+             */
+            get: function () {
+                return this._scene;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(GeometryBufferRenderer.prototype, "ratio", {
+            /**
+             * Gets the ratio used by the buffer during its creation.
+             * How big is the buffer related to the main canvas.
+             */
+            get: function () {
+                return this._ratio;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        /**
+         * Checks wether everything is ready to render a submesh to the G buffer.
+         * @param subMesh the submesh to check readiness for
+         * @param useInstances is the mesh drawn using instance or not
+         * @returns true if ready otherwise false
+         */
         GeometryBufferRenderer.prototype.isReady = function (subMesh, useInstances) {
             var material = subMesh.getMaterial();
             if (material && material.disableDepthWrite) {
@@ -63306,20 +63605,32 @@ var BABYLON;
             }
             return this._effect.isReady();
         };
+        /**
+         * Gets the current underlying G Buffer.
+         * @returns the buffer
+         */
         GeometryBufferRenderer.prototype.getGBuffer = function () {
             return this._multiRenderTarget;
         };
         Object.defineProperty(GeometryBufferRenderer.prototype, "samples", {
+            /**
+             * Gets the number of samples used to render the buffer (anti aliasing).
+             */
             get: function () {
                 return this._multiRenderTarget.samples;
             },
+            /**
+             * Sets the number of samples used to render the buffer (anti aliasing).
+             */
             set: function (value) {
                 this._multiRenderTarget.samples = value;
             },
             enumerable: true,
             configurable: true
         });
-        // Methods
+        /**
+         * Disposes the renderer and frees up associated resources.
+         */
         GeometryBufferRenderer.prototype.dispose = function () {
             this.getGBuffer().dispose();
         };
@@ -73147,7 +73458,7 @@ var BABYLON;
             engine.setDepthFunctionToLess();
             this._scene.resetCachedMaterial();
             this._colorShader.bind(worldMatrix);
-            engine.drawElementsType(BABYLON.Material.TriangleFillMode, 0, 24);
+            engine.drawElementsType(BABYLON.Material.LineListDrawMode, 0, 24);
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
