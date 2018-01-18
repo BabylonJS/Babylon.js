@@ -125,16 +125,13 @@
                 .multiply(Matrix.Translation(median.x, median.y, median.z))
                 .multiply(boundingBox.getWorldMatrix());
 
-            // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
             // Front
             engine.setDepthFunctionToLess();
             this._scene.resetCachedMaterial();
-            this._colorShader.setColor4("color", this.frontColor.toColor4());
             this._colorShader.bind(worldMatrix);
 
-            // Draw order
             engine.drawElementsType(Material.LineListDrawMode, 0, 24);
 
             this._colorShader.unbind();
