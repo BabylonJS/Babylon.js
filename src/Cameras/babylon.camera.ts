@@ -34,7 +34,7 @@
             return Camera._FOVMODE_VERTICAL_FIXED;
         }
 
-	/**
+        /**
          * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
          *
          */
@@ -79,7 +79,7 @@
         public position: Vector3;
 
         /**
-         * default : Vector3(0.0, 0.1, 0.0) Y+ is up.
+         * default : Vector3(0, 1, 0) Y+ is up.
          *
          */
         @serializeAsVector3()

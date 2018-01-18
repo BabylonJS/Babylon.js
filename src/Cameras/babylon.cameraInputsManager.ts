@@ -29,7 +29,9 @@ module BABYLON {
         }
 
         /**
-         * Add an input method to a camera
+         * Add an input method to a camera.
+         * builtin inputs example: camera.inputs.addGamepad();
+         * custom inputs example: camera.inputs.add(new BABYLON.FreeCameraGamepadInput());
          * @param input
          */
         public add(input: ICameraInput<TCamera>) {
@@ -55,7 +57,7 @@ module BABYLON {
         }
         /**
          * Remove a specific input method from a camera
-         * @param inputToRemove
+         * @param inputToRemove example: camera.inputs.remove(camera.inputs.attached.mouse);
          */
         public remove(inputToRemove: ICameraInput<TCamera>) {
             for (var cam in this.attached) {
