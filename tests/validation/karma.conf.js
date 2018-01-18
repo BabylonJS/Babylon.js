@@ -24,14 +24,14 @@ module.exports = function (config) {
             { pattern: 'Playground/scenes/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/textures/**/*', watched: false, included: false, served: true },
             { pattern: 'Playground/sounds/**/*', watched: false, included: false, served: true },
-            { pattern: 'Tools/DevLoader/**/*', watched: false, included: false, served: true },            
+            { pattern: 'Tools/DevLoader/**/*', watched: false, included: false, served: true },
             { pattern: 'Tools/Gulp/config.json', watched: false, included: false, served: true },
         ],
         proxies: {
             '/': '/base/'
         },
-        
-        port: 1338,
+
+        port: 3000,
         colors: true,
         autoWatch: false,
         singleRun: false,
