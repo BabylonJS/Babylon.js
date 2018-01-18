@@ -10,7 +10,12 @@ before_script:
 - "export DISPLAY=:99.0"
 - "sh -e /etc/init.d/xvfb start"
 - sleep 3 # give xvfb some time to start
-script: gulp
+script: 
+- gulp typescript-all
+- gulp typedoc-all
+- gulp tests-unit
+- travis_retry gulp tests-validation-virtualscreen
+- travis_retry gulp tests-validation-browserstack
 notifications:
   slack:
     secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=
