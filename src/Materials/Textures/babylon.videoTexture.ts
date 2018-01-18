@@ -82,17 +82,17 @@
                 this.video.loop = settings.loop;
             }
 
-            this.video.addEventListener("canplay", this.createInternalTexture);
+            this.video.addEventListener("canplay", this._createInternalTexture);
             this.video.addEventListener("paused", this.updateInternalTexture);
             this.video.addEventListener("seeked", this.updateInternalTexture);
             this.video.addEventListener("emptied", this.reset);
 
             if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
-                this.createInternalTexture();
+                this._createInternalTexture();
             }
         }
 
-        private createInternalTexture = (): void => {
+        private _createInternalTexture = (): void => {
             if (this._texture != null) {
                 return;
             }
@@ -170,7 +170,7 @@
 
         public dispose(): void {
             super.dispose();
-            this.video.removeEventListener("canplay", this.createInternalTexture);
+            this.video.removeEventListener("canplay", this._createInternalTexture);
             this.video.removeEventListener("paused", this.updateInternalTexture);
             this.video.removeEventListener("seeked", this.updateInternalTexture);
             this.video.removeEventListener("emptied", this.reset);
