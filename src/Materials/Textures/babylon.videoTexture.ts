@@ -1,14 +1,21 @@
 ﻿module BABYLON {
     /**
      * Settings for finer control over video usage
-     * @typedef {Object} VideoTextureSettings
-     * @property {boolean} [autoPlay] Applies `autoplay` to video, if specified
-     * @property {boolean} [loop] - Applies `loop` to video, if specified
-     * @property {boolean} autoUpdateTexture - Automatically updates internal texture from video at every frame in the render loop
      */
     export interface VideoTextureSettings {
+        /**
+         * Applies `autoplay` to video, if specified
+         */
         autoPlay?: boolean;
+
+        /**
+         * Applies `loop` to video, if specified
+         */
         loop?: boolean;
+
+        /**
+         * Automatically updates internal texture from video at every frame in the render loop
+         */
         autoUpdateTexture: boolean;
     }
 
