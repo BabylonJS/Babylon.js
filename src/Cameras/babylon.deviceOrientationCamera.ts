@@ -1,7 +1,7 @@
 module BABYLON {
     // We're mainly based on the logic defined into the FreeCamera code
     /**
-     * This is a camera specifically designed to react to device orientation events such as a modern mobile device 
+     * This is a camera specifically designed to react to device orientation events such as a modern mobile device
      * being tilted forward or back and left or right.
      */
     export class DeviceOrientationCamera extends FreeCamera {
@@ -12,7 +12,7 @@ module BABYLON {
         /**
          * Creates a new device orientation camera. @see DeviceOrientationCamera
          * @param name The name of the camera
-         * @param position The starts position camera
+         * @param position The start position camera
          * @param scene The scene the camera belongs to
          */
         constructor(name: string, position: Vector3, scene: Scene) {

@@ -79,8 +79,8 @@
         public position: Vector3;
 
         /**
-         * default : Vector3(0, 1, 0) Y+ is up.
-         *
+         * The vector the camera should consider as up.
+         * (default is Vector3(0, 1, 0) aka Vector3.Up())
          */
         @serializeAsVector3()
         public upVector = Vector3.Up();
@@ -98,8 +98,7 @@
         public orthoTop: Nullable<number> = null;
 
         /**
-         * default : 0.8
-         * FOV is set in Radians.
+         * FOV is set in Radians. (default is 0.8)
          */
         @serialize()
         public fov = 0.8;
@@ -121,14 +120,13 @@
 
         /**
          * Restricts the camera to viewing objects with the same layerMask.
-         * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
+         * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
          */
         @serialize()
         public layerMask: number = 0x0FFFFFFF;
 
         /**
-         * default : FOVMODE_VERTICAL_FIXED
-         * fovMode sets the camera frustum bounds to the viewport bounds.
+         * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
          */
         @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;

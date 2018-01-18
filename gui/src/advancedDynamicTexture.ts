@@ -534,6 +534,11 @@ module BABYLON.GUI {
          * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
          * When the GUI is not Created as FullscreenUI it does not respect the layerMask.
          * layerMask is set through advancedTexture.layer.layerMask
+		 * @param name name for the Texture
+		 * @param foreground render in foreground (default is true)
+		 * @param scene scene to be rendered in
+		 * @param sampling method for scaling to fit screen
+		 * @returns AdvancedDynamicTexture
          */
         public static CreateFullscreenUI(name: string, foreground: boolean = true, scene: Nullable<Scene> = null, sampling = Texture.BILINEAR_SAMPLINGMODE): AdvancedDynamicTexture {
             var result = new AdvancedDynamicTexture(name, 0, 0, scene, false, sampling);
