@@ -1,25 +1,38 @@
 module BABYLON {
-	// We're mainly based on the logic defined into the FreeCamera code
-
+    // We're mainly based on the logic defined into the FreeCamera code
     /**
-     * This camera responds to input from the deviceorientation event.
-     * camera.angularSensibility and camera.moveSensibility do not affect input from the deviceorientation event.
+     * This is a camera specifically designed to react to device orientation events such as a modern mobile device 
+     * being tilted forward or back and left or right.
      */
     export class DeviceOrientationCamera extends FreeCamera {
 
         private _initialQuaternion: Quaternion;
         private _quaternionCache: Quaternion;
 
+        /**
+         * Creates a new device orientation camera. @see DeviceOrientationCamera
+         * @param name The name of the camera
+         * @param position The starts position camera
+         * @param scene The scene the camera belongs to
+         */
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, position, scene);
             this._quaternionCache = new Quaternion();
             this.inputs.addDeviceOrientation();
         }
 
+        /**
+         * Gets the current instance class name ("DeviceOrientationCamera").
+         * This helps avoiding instanceof at run time.
+         * @returns the class name
+         */
         public getClassName(): string {
             return "DeviceOrientationCamera";
         }
 
+        /**
+         * Checks and applies the current values of the inputs to the camera. (Internal use only)
+         */
         public _checkInputs(): void {
             super._checkInputs();
             this._quaternionCache.copyFrom(this.rotationQuaternion);
@@ -29,9 +42,11 @@ module BABYLON {
         }
 
         /**
-         * Rotates the camera to 0Deg around the axis passed. If Axis.Y is passed, the camera will be moved around Y to face z+.
+         * Reset the camera to its default orientation on the specified axis only.
+         * @param axis The axis to reset
          */
-        public resetToCurrentRotation(axis: Axis = Axis.Y) {
+        public resetToCurrentRotation(axis: Axis = Axis.Y): void {
+
             //can only work if this camera has a rotation quaternion already.
             if (!this.rotationQuaternion) return;
 

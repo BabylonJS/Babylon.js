@@ -194,6 +194,28 @@ var BABYLON;
                 }
             }
         };
+        GLTFFileLoader.prototype.loadAssetsAsync = function (scene, data, rootUrl, onSuccess, onProgress, onError) {
+            try {
+                var loaderData = this._parse(data);
+                this._loader = this._getLoader(loaderData);
+                this._loader.importMeshAsync(null, scene, loaderData, rootUrl, function (meshes, particleSystems, skeletons) {
+                    var container = new BABYLON.AssetContainer(scene);
+                    Array.prototype.push.apply(container.meshes, meshes);
+                    Array.prototype.push.apply(container.particleSystems, particleSystems);
+                    Array.prototype.push.apply(container.skeletons, skeletons);
+                    container.removeAllFromScene();
+                    onSuccess(container);
+                }, onProgress, onError);
+            }
+            catch (e) {
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    BABYLON.Tools.Error(e.message);
+                }
+            }
+        };
         GLTFFileLoader.prototype.canDirectLoad = function (data) {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         };
@@ -2817,6 +2839,10 @@ var BABYLON;
                 if (!animations) {
                     return;
                 }
+                for (var _i = 0, animations_1 = animations; _i < animations_1.length; _i++) {
+                    var animation = animations_1[_i];
+                    animation.babylonAnimationGroup.normalize();
+                }
                 switch (this.animationStartMode) {
                     case BABYLON.GLTFLoaderAnimationStartMode.NONE: {
                         // do nothing
@@ -2824,19 +2850,13 @@ var BABYLON;
                     }
                     case BABYLON.GLTFLoaderAnimationStartMode.FIRST: {
                         var animation = animations[0];
-                        for (var _i = 0, _a = animation.targets; _i < _a.length; _i++) {
-                            var target = _a[_i];
-                            this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
-                        }
+                        animation.babylonAnimationGroup.start(true);
                         break;
                     }
                     case BABYLON.GLTFLoaderAnimationStartMode.ALL: {
-                        for (var _b = 0, animations_1 = animations; _b < animations_1.length; _b++) {
-                            var animation = animations_1[_b];
-                            for (var _c = 0, _d = animation.targets; _c < _d.length; _c++) {
-                                var target = _d[_c];
-                                this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
-                            }
+                        for (var _a = 0, animations_2 = animations; _a < animations_2.length; _a++) {
+                            var animation = animations_2[_a];
+                            animation.babylonAnimationGroup.start(true);
                         }
                         break;
                     }
@@ -3448,7 +3468,7 @@ var BABYLON;
                 }
             };
             GLTFLoader.prototype._loadAnimation = function (context, animation) {
-                animation.targets = [];
+                animation.babylonAnimationGroup = new BABYLON.AnimationGroup(animation.name || "animation" + animation.index, this._babylonScene);
                 for (var index = 0; index < animation.channels.length; index++) {
                     var channel = GLTFLoader._GetProperty(animation.channels, index);
                     if (!channel) {
@@ -3588,7 +3608,7 @@ var BABYLON;
                         var morphTargetManager = targetNode.babylonMesh.morphTargetManager;
                         var _loop_7 = function (targetIndex) {
                             var morphTarget = morphTargetManager.getTarget(targetIndex);
-                            var animationName = (animation.name || "anim" + animation.index) + "_" + targetIndex;
+                            var animationName = animation.babylonAnimationGroup.name + "_channel" + animation.babylonAnimationGroup.targetedAnimations.length;
                             var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                             babylonAnimation.setKeys(keys.map(function (key) { return ({
                                 frame: key.frame,
@@ -3596,22 +3616,20 @@ var BABYLON;
                                 value: key.value[targetIndex],
                                 outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                             }); }));
-                            morphTarget.animations.push(babylonAnimation);
-                            animation.targets.push(morphTarget);
+                            animation.babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
                         };
                         for (var targetIndex = 0; targetIndex < morphTargetManager.numTargets; targetIndex++) {
                             _loop_7(targetIndex);
                         }
                     }
                     else {
-                        var animationName = animation.name || "anim" + animation.index;
+                        var animationName = animation.babylonAnimationGroup.name + "_channel" + animation.babylonAnimationGroup.targetedAnimations.length;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
                         if (targetNode.babylonAnimationTargets) {
                             for (var _i = 0, _a = targetNode.babylonAnimationTargets; _i < _a.length; _i++) {
                                 var target = _a[_i];
-                                target.animations.push(babylonAnimation.clone());
-                                animation.targets.push(target);
+                                animation.babylonAnimationGroup.addTargetedAnimation(babylonAnimation, target);
                             }
                         }
                     }
