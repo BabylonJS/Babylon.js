@@ -67,7 +67,7 @@
         ) {
             super(null, scene, !generateMipMaps, invertY);
 
-            this._engine = (<Scene>this.getScene()).getEngine();
+            this._engine = this.getScene()!.getEngine();
             this._generateMipMaps = generateMipMaps;
             this._samplingMode = samplingMode;
             this.autoUpdateTexture = settings.autoUpdateTexture;
