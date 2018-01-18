@@ -1,28 +1,65 @@
 
 declare module BABYLON {
+    interface IGLTFExporterOptions {
+        /**
+         * Interface function which indicates whether a babylon mesh should be exported or not.
+         * @param mesh
+         * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
+         */
+        shouldExportMesh?(mesh: AbstractMesh): boolean;
+    }
     class GLTF2Export {
         /**
          * Exports the geometry of a Mesh array in .gltf file format.
-         * If glb is set to true, exports as .glb.
          * @param meshes
          * @param materials
+         * @param options
          *
-         * @returns {[fileName: string]: string | Blob} Returns an object with a .gltf, .glb and associates textures
+         * @returns - Returns an object with a .gltf, .glb and associates textures
          * as keys and their data and paths as values.
          */
-        static GLTF(scene: BABYLON.Scene, filename: string): _GLTFData;
+        static GLTF(scene: Scene, filename: string, options?: IGLTFExporterOptions): _GLTFData;
         /**
          *
          * @param meshes
          * @param filename
          *
-         * @returns {[fileName: string]: string | Blob} Returns an object with a .glb filename as key and data as value
+         * @returns - Returns an object with a .glb filename as key and data as value
          */
-        static GLB(scene: BABYLON.Scene, filename: string): _GLTFData;
+        static GLB(scene: Scene, filename: string, options?: IGLTFExporterOptions): _GLTFData;
     }
 }
 
 declare module BABYLON {
+    /**
+     * glTF Alpha Mode Enum
+     */
+    enum _EGLTFAlphaModeEnum {
+        OPAQUE = "OPAQUE",
+        MASK = "MASK",
+        BLEND = "BLEND",
+    }
+    /**
+     * Babylon Specular Glossiness interface
+     */
+    interface _IBabylonSpecularGlossiness {
+        diffuse: Color3;
+        opacity: number;
+        specular: Color3;
+        glossiness: number;
+    }
+    /**
+     * Babylon Metallic Roughness interface
+     */
+    interface _IBabylonMetallicRoughness {
+        baseColor: Color3;
+        opacity: number;
+        metallic: number;
+        roughness: number;
+    }
+    /**
+     * Converts Babylon Scene into glTF 2.0
+     */
     class _GLTF2Exporter {
         private bufferViews;
         private accessors;
@@ -30,18 +67,22 @@ declare module BABYLON {
         private asset;
         private scenes;
         private meshes;
+        private materials;
+        private textures;
+        private images;
         private totalByteLength;
         private babylonScene;
-        constructor(babylonScene: BABYLON.Scene);
+        private options?;
+        private imageData;
+        constructor(babylonScene: Scene, options?: IGLTFExporterOptions);
         /**
          * Creates a buffer view based on teh supplied arguments
-         * @param bufferIndex
-         * @param byteOffset
-         * @param byteLength
-         *
-         * @returns {_IGLTFBufferView}
+         * @param {number} bufferIndex - index value of the specified buffer
+         * @param {number} byteOffset - byte offset value
+         * @param {number} byteLength - byte length of the bufferView
+         * @returns - bufferView for glTF
          */
-        private createBufferView(bufferIndex, byteOffset, byteLength);
+        private createBufferView(bufferIndex, byteOffset, byteLength, name?);
         /**
          * Creates an accessor based on the supplied arguments
          * @param bufferviewIndex
@@ -51,8 +92,7 @@ declare module BABYLON {
          * @param count
          * @param min
          * @param max
-         *
-         * @returns {_IGLTFAccessor}
+         * @returns - accessor for glTF
          */
         private createAccessor(bufferviewIndex, name, type, componentType, count, min?, max?);
         /**
@@ -62,8 +102,7 @@ declare module BABYLON {
          * @param vertexCount
          * @param arrayOffset
          * @param stride
-         *
-         * @returns {min: number[], max: number[]} min number array and max number array
+         * @returns - min number array and max number array
          */
         private calculateMinMax(buff, vertexStart, vertexCount, arrayOffset, stride);
         /**
@@ -76,8 +115,7 @@ declare module BABYLON {
          * @param byteOffset
          * @param dataBuffer
          * @param useRightHandedSystem
-         *
-         * @returns {number} byte length
+         * @returns - byte length
          */
         private writeAttributeData(vertexBufferType, submesh, meshAttributeArray, strideSize, byteOffset, dataBuffer, useRightHandedSystem);
         /**
@@ -85,32 +123,34 @@ declare module BABYLON {
          * @param glb
          * @param glTFPrefix
          * @param prettyPrint
-         *
-         * @returns {string} json data as string
+         * @returns - json data as string
          */
         private generateJSON(glb, glTFPrefix?, prettyPrint?);
         /**
          * Generates data for .gltf and .bin files based on the glTF prefix string
          * @param glTFPrefix
-         *
-         * @returns {[x: string]: string | Blob} object with glTF json tex filename
+         * @returns - object with glTF json tex filename
          * and binary file name as keys and their data as values
          */
         _generateGLTF(glTFPrefix: string): _GLTFData;
         /**
          * Creates a binary buffer for glTF
-         *
-         * @returns {ArrayBuffer}
+         * @returns - array buffer for binary data
          */
         private generateBinary();
+        /**
+         * Pads the number to a power of 4
+         * @param num - number to pad
+         * @returns - padded number
+         */
+        private _getPadding(num);
         /**
          * Generates a glb file from the json and binary data.
          * Returns an object with the glb file name as the key and data as the value.
          * @param jsonText
          * @param binaryBuffer
          * @param glTFPrefix
-         *
-         * @returns {[glbFileName: string]: Blob} object with glb filename as key and data as value
+         * @returns - object with glb filename as key and data as value
          */
         _generateGLB(glTFPrefix: string): _GLTFData;
         /**
@@ -121,14 +161,19 @@ declare module BABYLON {
          */
         private setNodeTransformation(node, babylonMesh, useRightHandedSystem);
         /**
+         *
+         * @param babylonTexture
+         * @return - glTF texture, or null if the texture format is not supported
+         */
+        private exportTexture(babylonTexture, mimeType?);
+        /**
          * Sets data for the primitive attributes of each submesh
          * @param mesh
          * @param babylonMesh
          * @param byteOffset
          * @param useRightHandedSystem
          * @param dataBuffer
-         *
-         * @returns {number} bytelength of the primitive attributes plus the passed in byteOffset
+         * @returns - bytelength of the primitive attributes plus the passed in byteOffset
          */
         private setPrimitiveAttributes(mesh, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer?);
         /**
@@ -138,8 +183,7 @@ declare module BABYLON {
          * @param byteOffset
          * @param buffer
          * @param dataBuffer
-         *
-         * @returns {number} bytelength + byteoffset
+         * @returns bytelength + byteoffset
          */
         private createScene(babylonScene, byteOffset, dataBuffer?);
     }
@@ -150,7 +194,7 @@ declare module BABYLON {
      * Class for holding and downloading glTF file data
      */
     class _GLTFData {
-        _glTFFiles: {
+        glTFFiles: {
             [fileName: string]: string | Blob;
         };
         constructor();
@@ -158,5 +202,41 @@ declare module BABYLON {
          * Downloads glTF data.
          */
         downloadFiles(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Utility methods for working with glTF material conversion properties
+     */
+    class _GLTFMaterial {
+        private static dielectricSpecular;
+        private static epsilon;
+        /**
+         * Converts Specular Glossiness to Metallic Roughness
+         * @param  babylonSpecularGlossiness - Babylon specular glossiness parameters
+         * @returns - Babylon metallic roughness values
+         */
+        static ConvertToMetallicRoughness(babylonSpecularGlossiness: _IBabylonSpecularGlossiness): _IBabylonMetallicRoughness;
+        /**
+         * Returns the perceived brightness value based on the provided color
+         * @param color - color used in calculating the perceived brightness
+         * @returns - perceived brightness value
+         */
+        private static PerceivedBrightness(color);
+        /**
+         * Computes the metallic factor
+         * @param diffuse - diffused value
+         * @param specular - specular value
+         * @param oneMinusSpecularStrength - one minus the specular strength
+         * @returns - metallic value
+         */
+        static SolveMetallic(diffuse: number, specular: number, oneMinusSpecularStrength: number): number;
+        /**
+         * Gets the glTF alpha mode from the Babylon Material
+         * @param babylonMaterial - Babylon Material
+         * @returns - The Babylon alpha mode value
+         */
+        static GetAlphaMode(babylonMaterial: Material): string;
     }
 }
