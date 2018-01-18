@@ -1,44 +1,106 @@
 ﻿module BABYLON {
-    export class VideoTexture extends Texture {
-        public video: HTMLVideoElement;
+    export interface VideoTextureSettings {
+        autoPlay?: boolean;
+        loop?: boolean;
+        autoUpdateTexture: boolean;
+    }
 
-        private _autoLaunch = true;
-        private _lastUpdate: number;
-        private _generateMipMaps: boolean
-        private _setTextureReady: () => void;
+    const getName = (src: string | string[] | HTMLVideoElement): string => {
+        if (src instanceof HTMLVideoElement) {
+            return src.currentSrc;
+        }
+
+        if (typeof src === "object") {
+            return src.toString();
+        }
+
+        return src;
+    };
+
+    const getVideo = (src: string | string[] | HTMLVideoElement): HTMLVideoElement => {
+        if (src instanceof HTMLVideoElement) {
+            return src;
+        }
+        const video: HTMLVideoElement = document.createElement("video");
+        if (typeof src === "string") {
+            video.src = src;
+        } else {
+            src.forEach(url => {
+                const source = document.createElement("source");
+                source.src = url;
+                video.appendChild(source);
+            });
+        }
+        return video;
+    };
+
+    export class VideoTexture extends Texture {
+        readonly autoUpdateTexture: boolean;
+        readonly video: HTMLVideoElement;
+
+        private _generateMipMaps: boolean;
         private _engine: Engine;
 
         /**
          * Creates a video texture.
-         * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
-         * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+         * Sample : https://doc.babylonjs.com/how_to/video_texture
+         * @param {string | null} name optional name, will detect from video source, if not defined
+         * @param {(string | string[] | HTMLVideoElement)} src can be used to provide an url, array of urls or an already setup HTML video element.
          * @param {BABYLON.Scene} scene is obviously the current scene.
          * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
          * @param {boolean} invertY is false by default but can be used to invert video on Y axis
          * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+         * @param {VideoTextureSettings} [settings] allows finer control over video usage
          */
-        constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, scene: Scene, generateMipMaps = false, invertY = false, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE) {
-            super(null, scene, !generateMipMaps, invertY);
-
-            var urls: Nullable<string[]> = null;
-            this.name = name;
-
-            if (urlsOrVideo instanceof HTMLVideoElement) {
-                this.video = <any>urlsOrVideo;
-            } else {
-                urls = urlsOrVideo;
-
-                this.video = document.createElement("video");
-                this.video.autoplay = false;
-                this.video.loop = true;
-                Tools.SetCorsBehavior(urls, this.video);
+        constructor(
+            name: Nullable<string>,
+            src: string | string[] | HTMLVideoElement,
+            scene: Nullable<Scene>,
+            generateMipMaps = false,
+            invertY = false,
+            samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+            settings: VideoTextureSettings = {
+                autoPlay: true,
+                loop: true,
+                autoUpdateTexture: true,
             }
+        ) {
+            super(null, scene, !generateMipMaps, invertY);
 
             this._engine = (<Scene>this.getScene()).getEngine();
             this._generateMipMaps = generateMipMaps;
             this._samplingMode = samplingMode;
+            this.autoUpdateTexture = settings.autoUpdateTexture;
 
-            if (!this._engine.needPOTTextures || (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))) {
+            this.name = name || getName(src);
+            this.video = getVideo(src);
+
+            if (settings.autoPlay !== undefined) {
+                this.video.autoplay = settings.autoPlay;
+            }
+            if (settings.loop !== undefined) {
+                this.video.loop = settings.loop;
+            }
+
+            this.video.addEventListener("canplay", this.createInternalTexture);
+            this.video.addEventListener("paused", this.updateInternalTexture);
+            this.video.addEventListener("seeked", this.updateInternalTexture);
+            this.video.addEventListener("emptied", this.reset);
+
+            if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
+                this.createInternalTexture();
+            }
+        }
+
+        private createInternalTexture = (): void => {
+            if (this._texture != null) {
+                return;
+            }
+
+            if (
+                !this._engine.needPOTTextures ||
+                (Tools.IsExponentOfTwo(this.video.videoWidth) && Tools.IsExponentOfTwo(this.video.videoHeight))
+            ) {
                 this.wrapU = Texture.WRAP_ADDRESSMODE;
                 this.wrapV = Texture.WRAP_ADDRESSMODE;
             } else {
@@ -47,61 +109,71 @@
                 this._generateMipMaps = false;
             }
 
-            if (urls) {
-                this.video.addEventListener("canplay", () => {
-                    if (this._texture === undefined){ 
-                      this._createTexture();
-                    }
-                });
-                urls.forEach(url => {
-                    var source = document.createElement("source");
-                    source.src = url;
-                    this.video.appendChild(source);
-                });
-            } else {
-                this._createTexture();
+            this._texture = this._engine.createDynamicTexture(
+                this.video.videoWidth,
+                this.video.videoHeight,
+                this._generateMipMaps,
+                this._samplingMode
+            );
+            this._texture.width;
+
+            this.updateInternalTexture();
+
+            this._texture.isReady = true;
+        };
+
+        private reset = (): void => {
+            if (this._texture == null) {
+                return;
             }
-
-            this._lastUpdate = Tools.Now;
-        }
-
-        private __setTextureReady(): void {
-            if (this._texture) {
-                this._texture.isReady = true;
-            }
-        }
-
-        private _createTexture(): void {
-            this._texture = this._engine.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
-
-            if (this._autoLaunch) {
-                this._autoLaunch = false;
-                this.video.play();
-            }
-            this._setTextureReady = this.__setTextureReady.bind(this);
-            this.video.addEventListener("playing", this._setTextureReady);
-        }
-
+            this._texture.dispose();
+            this._texture = null;
+        };
 
         public _rebuild(): void {
             this.update();
         }
 
-        public update(): boolean {
-            var now = Tools.Now;
-
-            if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
-                return false;
+        public update(): void {
+            if (!this.autoUpdateTexture) {
+                // Expecting user to call `updateTexture` manually
+                return;
             }
 
-            this._lastUpdate = now;
+            this.updateTexture(true);
+        }
+
+        public updateTexture(isVisible: boolean): void {
+            if (!isVisible) {
+                return;
+            }
+            if (this.video.paused) {
+                return;
+            }
+            this.updateInternalTexture();
+        }
+
+        protected updateInternalTexture = (e?: Event): void => {
+            if (this._texture == null || !this._texture.isReady) {
+                return;
+            }
+            if (this.video.readyState < this.video.HAVE_CURRENT_DATA) {
+                return;
+            }
+
             this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
-            return true;
+        };
+
+        public updateURL(url: string): void {
+            this.video.src = url;
         }
 
         public dispose(): void {
             super.dispose();
-            this.video.removeEventListener("playing", this._setTextureReady);
+            this.video.removeEventListener("canplay", this.createInternalTexture);
+            this.video.removeEventListener("paused", this.updateInternalTexture);
+            this.video.removeEventListener("seeked", this.updateInternalTexture);
+            this.video.removeEventListener("emptied", this.reset);
         }
 
         public static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
