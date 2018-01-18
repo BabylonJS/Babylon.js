@@ -72,9 +72,6 @@
          * @param {boolean} invertY is false by default but can be used to invert video on Y axis
          * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
          * @param {VideoTextureSettings} [settings] allows finer control over video usage
-         * @param {boolean} [settings.autoPlay] Applies `autoplay` to video, if specified
-         * @param {boolean} [settings.loop] - Applies `loop` to video, if specified
-         * @param {boolean} settings.autoUpdateTexture - Automatically updates internal texture from video at every frame in the render loop
          */
         constructor(
             name: Nullable<string>,
