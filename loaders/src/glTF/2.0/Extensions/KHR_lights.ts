@@ -74,36 +74,31 @@ module BABYLON.GLTF2.Extensions {
                 if (extension.light >= 0 && loader._gltf.extensions) {
                     const lightInfo = loader._gltf.extensions.KHR_lights.lights[extension.light];
                     const name = node.name || 'Light';
-                    let position: Vector3 = Vector3.Zero();
-                    let rotation: Quaternion = Quaternion.Identity();
-                    let scaling: Vector3 = Vector3.One();
-
-                    let matrix;
+                    let matrix: Matrix;
                     if (node.matrix) {
                         matrix = Matrix.FromArray(node.matrix);
-                        matrix.decompose(scaling, rotation, position);
                     } else {
                         matrix = Matrix.Identity();
                     }
 
-                    let direction = new Vector3(1, 0, 0);
+                    const direction = new Vector3(0, 0, 1);
                     if (lightInfo.type == 'directional' || lightInfo.type == 'spot') {
-                        const rotationMatrix = new Matrix();
-                        rotation.toRotationMatrix(rotationMatrix);
-                        direction = Vector3.TransformCoordinates(direction, rotationMatrix);
+                        const rotationMatrix = matrix.getRotationMatrix();
+                        Vector3.TransformCoordinatesToRef(direction, rotationMatrix, direction);
                     }
 
                     let light: Light;
                     if (lightInfo.type == 'directional') {
                         light = new DirectionalLight(name, direction, loader._babylonScene);
-                    } else if (lightInfo.type == 'spot') {
-                        // TODO - translate glTF values for spotlight
-                        const angle = 90;
-                        const exponent = 1;
-                        light = new SpotLight(name, position, direction, angle, exponent, loader._babylonScene);
                     } else {
-                        light = new PointLight(name, position, loader._babylonScene);
-                    }
+                        const position = matrix.getTranslation();
+                        if (lightInfo.type == 'spot') {
+                            const angle = lightInfo.spot && lightInfo.spot.outerConeAngle ? lightInfo.spot.outerConeAngle : Math.PI / 2;
+                            light = new SpotLight(name, position, direction, angle, 2, loader._babylonScene);
+                        } else {
+                            light = new PointLight(name, position, loader._babylonScene);
+                        }
+                    } 
 
                     this.applyCommonProperties(light, lightInfo);
                     
