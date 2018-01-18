@@ -42,8 +42,15 @@
     };
 
     export class VideoTexture extends Texture {
-        readonly autoUpdateTexture: boolean;
-        readonly video: HTMLVideoElement;
+        /**
+         * Tells whether textures will be updated automatically or user is required to call `updateTexture` manually
+         */
+        public readonly autoUpdateTexture: boolean;
+
+        /**
+         * The video instance used by the texture internally
+         */
+        public readonly video: HTMLVideoElement;
 
         private _generateMipMaps: boolean;
         private _engine: Engine;
