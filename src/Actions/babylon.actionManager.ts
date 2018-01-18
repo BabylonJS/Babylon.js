@@ -319,6 +319,25 @@
         }
 
         /**
+         * Unregisters an action to this action manager
+         * @param action The action to be unregistered
+         * @return whether the action has been unregistered
+         */
+        public unregisterAction(action: Action): Boolean {
+            var index = this.actions.indexOf(action);
+            if (index !== -1) {
+                this.actions.splice(index, 1);
+                ActionManager.Triggers[action.trigger] -= 1;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger]
+                }
+                delete action._actionManager;
+                return true;
+            }
+            return false;
+        }
+
+        /**
          * Process a specific trigger
          * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
