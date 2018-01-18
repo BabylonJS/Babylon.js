@@ -176,53 +176,65 @@
             this.video.removeEventListener("emptied", this.reset);
         }
 
-        public static CreateFromWebCam(scene: Scene, onReady: (videoTexture: VideoTexture) => void, constraints: {
-            minWidth: number,
-            maxWidth: number,
-            minHeight: number,
-            maxHeight: number,
-            deviceId: string
-        }): void {
+        public static CreateFromWebCam(
+            scene: Scene,
+            onReady: (videoTexture: VideoTexture) => void,
+            constraints: {
+                minWidth: number;
+                maxWidth: number;
+                minHeight: number;
+                maxHeight: number;
+                deviceId: string;
+            }
+        ): void {
             var video = document.createElement("video");
             var constraintsDeviceId;
             if (constraints && constraints.deviceId) {
                 constraintsDeviceId = {
-                    exact: constraints.deviceId
-                }
+                    exact: constraints.deviceId,
+                };
             }
 
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            navigator.getUserMedia =
+                navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia;
             window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
 
             if (navigator.getUserMedia) {
-                navigator.getUserMedia({
-                    video: {
-                        deviceId: constraintsDeviceId,
-                        width: {
-                            min: (constraints && constraints.minWidth) || 256,
-                            max: (constraints && constraints.maxWidth) || 640
+                navigator.getUserMedia(
+                    {
+                        video: {
+                            deviceId: constraintsDeviceId,
+                            width: {
+                                min: (constraints && constraints.minWidth) || 256,
+                                max: (constraints && constraints.maxWidth) || 640,
+                            },
+                            height: {
+                                min: (constraints && constraints.minHeight) || 256,
+                                max: (constraints && constraints.maxHeight) || 480,
+                            },
                         },
-                        height: {
-                            min: (constraints && constraints.minHeight) || 256,
-                            max: (constraints && constraints.maxHeight) || 480
+                    },
+                    (stream: any) => {
+                        if (video.mozSrcObject !== undefined) {
+                            // hack for Firefox < 19
+                            video.mozSrcObject = stream;
+                        } else {
+                            video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
                         }
-                    }
-                }, (stream: any) => {
 
-                    if (video.mozSrcObject !== undefined) { // hack for Firefox < 19
-                        video.mozSrcObject = stream;
-                    } else {
-                        video.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
-                    }
+                        video.play();
 
-                    video.play();
-
-                    if (onReady) {
-                        onReady(new VideoTexture("video", video, scene, true, true));
+                        if (onReady) {
+                            onReady(new VideoTexture("video", video, scene, true, true));
+                        }
+                    },
+                    function(e: MediaStreamError) {
+                        Tools.Error(e.name);
                     }
-                }, function (e: MediaStreamError) {
-                    Tools.Error(e.name);
-                });
+                );
             }
         }
     }
