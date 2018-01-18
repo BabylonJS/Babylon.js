@@ -112,7 +112,6 @@
 
             var engine = this._scene.getEngine();
             engine.setDepthWrite(false);
-            engine.setColorWrite(false);
             this._colorShader._preBind();
 
             var boundingBox = mesh._boundingInfo.boundingBox;
@@ -125,18 +124,32 @@
                 .multiply(Matrix.Translation(median.x, median.y, median.z))
                 .multiply(boundingBox.getWorldMatrix());
 
+            // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
-            engine.setDepthFunctionToLess();
+
+            // Back
+            //engine.setDepthFunctionToGreaterOrEqual();
             this._scene.resetCachedMaterial();
+            this._colorShader.setColor4("color", this.backColor.toColor4());
             this._colorShader.bind(worldMatrix);
 
-            engine.drawElementsType(Material.TriangleFillMode, 0, 24);
+            // Draw order
+            engine.drawElementsType(Material.LineListDrawMode, 0, 24);
+
+
+            // Front
+            engine.setDepthFunctionToLess();
+            this._scene.resetCachedMaterial();
+            this._colorShader.setColor4("color", this.frontColor.toColor4());
+            this._colorShader.bind(worldMatrix);
+
+            // Draw order
+            engine.drawElementsType(Material.LineListDrawMode, 0, 24);
 
             this._colorShader.unbind();
             engine.setDepthFunctionToLessOrEqual();
             engine.setDepthWrite(true);
-            engine.setColorWrite(true);
         }
 
         public dispose(): void {
