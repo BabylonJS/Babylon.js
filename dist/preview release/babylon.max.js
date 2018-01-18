@@ -12757,7 +12757,7 @@ var BABYLON;
             this._currentEffect = null;
         };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
-            if (this._lastBoundInternalTextureTracker.previous === internalTexture) {
+            if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
                 return;
             }
             // Remove
@@ -15924,6 +15924,7 @@ var BABYLON;
                 return;
             }
             this._lightSources.splice(index, 1);
+            this._markSubMeshesAsLightDirty();
         };
         AbstractMesh.prototype._markSubMeshesAsDirty = function (func) {
             if (!this.subMeshes) {
@@ -77325,9 +77326,10 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        SceneOptimization.prototype.apply = function (scene) {
+        SceneOptimization.prototype.apply = function (scene, optimizer) {
             return true;
         };
         ;
@@ -77378,9 +77380,10 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        TextureOptimization.prototype.apply = function (scene) {
+        TextureOptimization.prototype.apply = function (scene, optimizer) {
             var allDone = true;
             for (var index = 0; index < scene.textures.length; index++) {
                 var texture = scene.textures[index];
@@ -77445,9 +77448,10 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        HardwareScalingOptimization.prototype.apply = function (scene) {
+        HardwareScalingOptimization.prototype.apply = function (scene, optimizer) {
             if (this._currentScale === -1) {
                 this._currentScale = scene.getEngine().getHardwareScalingLevel();
                 if (this._currentScale > this.maximumScale) {
@@ -77468,26 +77472,8 @@ var BABYLON;
      */
     var ShadowsOptimization = /** @class */ (function (_super) {
         __extends(ShadowsOptimization, _super);
-        /**
-         * Creates the ShadowsOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.shadowsEnabled property to (false by default)
-         */
-        function ShadowsOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.shadowsEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function ShadowsOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77499,10 +77485,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        ShadowsOptimization.prototype.apply = function (scene) {
-            scene.shadowsEnabled = this.target;
+        ShadowsOptimization.prototype.apply = function (scene, optimizer) {
+            scene.shadowsEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77515,26 +77502,8 @@ var BABYLON;
      */
     var PostProcessesOptimization = /** @class */ (function (_super) {
         __extends(PostProcessesOptimization, _super);
-        /**
-         * Creates the PostProcessesOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.postProcessesEnabled property to (false by default)
-         */
-        function PostProcessesOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.postProcessesEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function PostProcessesOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77546,10 +77515,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        PostProcessesOptimization.prototype.apply = function (scene) {
-            scene.postProcessesEnabled = this.target;
+        PostProcessesOptimization.prototype.apply = function (scene, optimizer) {
+            scene.postProcessesEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77562,26 +77532,8 @@ var BABYLON;
      */
     var LensFlaresOptimization = /** @class */ (function (_super) {
         __extends(LensFlaresOptimization, _super);
-        /**
-         * Creates the LensFlaresOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.lensFlaresEnabled property to (false by default)
-         */
-        function LensFlaresOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.lensFlaresEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function LensFlaresOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77593,10 +77545,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        LensFlaresOptimization.prototype.apply = function (scene) {
-            scene.lensFlaresEnabled = this.target;
+        LensFlaresOptimization.prototype.apply = function (scene, optimizer) {
+            scene.lensFlaresEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77625,11 +77578,12 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        CustomOptimization.prototype.apply = function (scene) {
+        CustomOptimization.prototype.apply = function (scene, optimizer) {
             if (this.onApply) {
-                return this.onApply(scene);
+                return this.onApply(scene, optimizer);
             }
             return true;
         };
@@ -77643,26 +77597,8 @@ var BABYLON;
      */
     var ParticlesOptimization = /** @class */ (function (_super) {
         __extends(ParticlesOptimization, _super);
-        /**
-         * Creates the ParticlesOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.particlesEnabled property to (false by default)
-         */
-        function ParticlesOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.particlesEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function ParticlesOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77674,10 +77610,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        ParticlesOptimization.prototype.apply = function (scene) {
-            scene.particlesEnabled = this.target;
+        ParticlesOptimization.prototype.apply = function (scene, optimizer) {
+            scene.particlesEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77703,10 +77640,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        RenderTargetsOptimization.prototype.apply = function (scene) {
-            scene.renderTargetsEnabled = false;
+        RenderTargetsOptimization.prototype.apply = function (scene, optimizer) {
+            scene.renderTargetsEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77768,10 +77706,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @param updateSelectionTree defines that the selection octree has to be updated (false by default)
          * @returns true if everything that can be done was applied
          */
-        MergeMeshesOptimization.prototype.apply = function (scene, updateSelectionTree) {
+        MergeMeshesOptimization.prototype.apply = function (scene, optimizer, updateSelectionTree) {
             var globalPool = scene.meshes.slice(0);
             var globalLength = globalPool.length;
             for (var index = 0; index < globalLength; index++) {
@@ -77859,7 +77798,7 @@ var BABYLON;
         };
         /**
          * Add a new custom optimization
-         * @param onApply defines the callback called to apply the custom optimization.
+         * @param onApply defines the callback called to apply the custom optimization (true if everything that can be done was applied)
          * @param onGetDescription defines the callback called to get the description attached with the optimization.
          * @param priority defines the priority of this optimization (0 by default which means first in the list)
          * @returns the current SceneOptimizerOptions
@@ -78007,6 +77946,16 @@ var BABYLON;
                 _this.dispose();
             });
         }
+        Object.defineProperty(SceneOptimizer.prototype, "isInImprovementMode", {
+            /**
+             * Gets a boolean indicating if the optimizer is in improvement mode
+             */
+            get: function () {
+                return this._improvementMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SceneOptimizer.prototype, "currentPriorityLevel", {
             /**
              * Gets the current priority level (0 at start)
@@ -78119,7 +78068,7 @@ var BABYLON;
                 var optimization = options.optimizations[index];
                 if (optimization.priority === this._currentPriorityLevel) {
                     noOptimizationApplied = false;
-                    allDone = allDone && optimization.apply(scene);
+                    allDone = allDone && optimization.apply(scene, this);
                     this.onNewOptimizationAppliedObservable.notifyObservers(optimization);
                 }
             }

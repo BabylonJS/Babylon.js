@@ -3185,7 +3185,16 @@ var BABYLON;
     (function (GUI) {
         var TextBlock = /** @class */ (function (_super) {
             __extends(TextBlock, _super);
-            function TextBlock(name, text) {
+            /**
+             * Creates a new TextBlock object
+             * @param name defines the name of the control
+             * @param text defines the text to display (emptry string by default)
+             */
+            function TextBlock(
+                /**
+                 * Defines the name of the control
+                 */
+                name, text) {
                 if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3200,13 +3209,34 @@ var BABYLON;
                 * @type {BABYLON.Observable}
                 */
                 _this.onTextChangedObservable = new BABYLON.Observable();
+                /**
+                * An event triggered after the text was broken up into lines
+                * @type {BABYLON.Observable}
+                */
+                _this.onLinesReadyObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
+            Object.defineProperty(TextBlock.prototype, "lines", {
+                /**
+                 * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
+                 */
+                get: function () {
+                    return this._lines;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(TextBlock.prototype, "resizeToFit", {
+                /**
+                 * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+                 */
                 get: function () {
                     return this._resizeToFit;
                 },
+                /**
+                 * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+                 */
                 set: function (value) {
                     this._resizeToFit = value;
                     if (this._resizeToFit) {
@@ -3218,9 +3248,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "textWrapping", {
+                /**
+                 * Gets or sets a boolean indicating if text must be wrapped
+                 */
                 get: function () {
                     return this._textWrapping;
                 },
+                /**
+                 * Gets or sets a boolean indicating if text must be wrapped
+                 */
                 set: function (value) {
                     if (this._textWrapping === value) {
                         return;
@@ -3232,9 +3268,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "text", {
+                /**
+                 * Gets or sets text to display
+                 */
                 get: function () {
                     return this._text;
                 },
+                /**
+                 * Gets or sets text to display
+                 */
                 set: function (value) {
                     if (this._text === value) {
                         return;
@@ -3247,9 +3289,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "textHorizontalAlignment", {
+                /**
+                 * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+                 */
                 get: function () {
                     return this._textHorizontalAlignment;
                 },
+                /**
+                 * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+                 */
                 set: function (value) {
                     if (this._textHorizontalAlignment === value) {
                         return;
@@ -3261,9 +3309,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "textVerticalAlignment", {
+                /**
+                 * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+                 */
                 get: function () {
                     return this._textVerticalAlignment;
                 },
+                /**
+                 * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+                 */
                 set: function (value) {
                     if (this._textVerticalAlignment === value) {
                         return;
@@ -3275,9 +3329,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "lineSpacing", {
+                /**
+                 * Gets or sets line spacing value
+                 */
                 get: function () {
                     return this._lineSpacing.toString(this._host);
                 },
+                /**
+                 * Gets or sets line spacing value
+                 */
                 set: function (value) {
                     if (this._lineSpacing.fromString(value)) {
                         this._markAsDirty();
@@ -3311,6 +3371,7 @@ var BABYLON;
                 }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
+            /** @ignore */
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -3335,6 +3396,7 @@ var BABYLON;
                         this._lines.push(this._parseLine(_line, context));
                     }
                 }
+                this.onLinesReadyObservable.notifyObservers(this);
             };
             TextBlock.prototype._parseLine = function (line, context) {
                 if (line === void 0) { line = ''; }
