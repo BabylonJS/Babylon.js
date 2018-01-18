@@ -127,7 +127,6 @@
 
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, <Effect>this._colorShader.getEffect());
 
-            // Front
             engine.setDepthFunctionToLess();
             this._scene.resetCachedMaterial();
             this._colorShader.bind(worldMatrix);
