@@ -90,8 +90,8 @@
             }
 
             this.video.addEventListener("canplay", this._createInternalTexture);
-            this.video.addEventListener("paused", this.updateInternalTexture);
-            this.video.addEventListener("seeked", this.updateInternalTexture);
+            this.video.addEventListener("paused", this._updateInternalTexture);
+            this.video.addEventListener("seeked", this._updateInternalTexture);
             this.video.addEventListener("emptied", this.reset);
 
             if (this.video.readyState >= this.video.HAVE_CURRENT_DATA) {
@@ -124,7 +124,7 @@
             );
             this._texture.width;
 
-            this.updateInternalTexture();
+            this._updateInternalTexture();
 
             this._texture.isReady = true;
         };
@@ -167,10 +167,10 @@
             if (this.video.paused) {
                 return;
             }
-            this.updateInternalTexture();
+            this._updateInternalTexture();
         }
 
-        protected updateInternalTexture = (e?: Event): void => {
+        protected _updateInternalTexture = (e?: Event): void => {
             if (this._texture == null || !this._texture.isReady) {
                 return;
             }
@@ -192,8 +192,8 @@
         public dispose(): void {
             super.dispose();
             this.video.removeEventListener("canplay", this._createInternalTexture);
-            this.video.removeEventListener("paused", this.updateInternalTexture);
-            this.video.removeEventListener("seeked", this.updateInternalTexture);
+            this.video.removeEventListener("paused", this._updateInternalTexture);
+            this.video.removeEventListener("seeked", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this.reset);
         }
 
