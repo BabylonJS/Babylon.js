@@ -75,7 +75,7 @@ module BABYLON {
 
         private _lightOnControllers: HemisphericLight;
 
-        private _defaultHeight = 0;
+        private _defaultHeight?: number = undefined;
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
             this._cache.position = Vector3.Zero();
@@ -165,13 +165,13 @@ module BABYLON {
         }
 
         public deviceDistanceToRoomGround = () => {
-            if (this._standingMatrix) {
+            if (this._standingMatrix && this._defaultHeight === undefined) {
                 // Add standing matrix offset to get real offset from ground in room
                 this._standingMatrix.getTranslationToRef(this._workingVector);
                 return this._deviceRoomPosition.y + this._workingVector.y
-            } else {
-                return this._defaultHeight;
             }
+            //If VRDisplay does not inform stage parameters and no default height is set we fallback to zero.
+            return this._defaultHeight || 0;            
         }
 
         public useStandingMatrix = (callback = (bool: boolean) => { }) => {
