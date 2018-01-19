@@ -776,6 +776,13 @@
                 }
             }
 
+            if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                serializationObject.tangets = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
+                if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
+                    serializationObject.tangets._updatable = true;
+                }
+            }            
+
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
                 if (this.isVertexBufferUpdatable(VertexBuffer.UVKind)) {
@@ -890,6 +897,11 @@
                     mesh.setVerticesData(VertexBuffer.NormalKind, normalsData, false);
                 }
 
+                if (binaryInfo.tangetsAttrDesc && binaryInfo.tangetsAttrDesc.count > 0) {
+                    var tangentsData = new Float32Array(parsedGeometry, binaryInfo.tangetsAttrDesc.offset, binaryInfo.tangetsAttrDesc.count);
+                    mesh.setVerticesData(VertexBuffer.TangentKind, tangentsData, false);
+                }                
+
                 if (binaryInfo.uvsAttrDesc && binaryInfo.uvsAttrDesc.count > 0) {
                     var uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
                     mesh.setVerticesData(VertexBuffer.UVKind, uvsData, false);
@@ -958,6 +970,10 @@
                 mesh.setVerticesData(VertexBuffer.PositionKind, parsedGeometry.positions, parsedGeometry.positions._updatable);
 
                 mesh.setVerticesData(VertexBuffer.NormalKind, parsedGeometry.normals, parsedGeometry.normals._updatable);
+
+                if (parsedGeometry.tangents) {
+                    mesh.setVerticesData(VertexBuffer.TangentKind, parsedGeometry.tangents, parsedGeometry.tangents._updatable);
+                }                
 
                 if (parsedGeometry.uvs) {
                     mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, parsedGeometry.uvs._updatable);
