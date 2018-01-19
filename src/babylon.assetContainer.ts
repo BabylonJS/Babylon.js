@@ -1,34 +1,108 @@
 module BABYLON {
+    /**
+     * Set of assets to keep when moving a scene into an asset container.
+     */
     export class KeepAssets {
+        /**
+         * Cameras to keep.
+         */
         cameras: BABYLON.Camera[] = [];
+        /**
+         * Meshes to keep.
+         */
         meshes: BABYLON.Mesh[] = [];
+        /**
+         * Geometries to keep.
+         */
         geometries: BABYLON.Geometry[] = [];
+        /**
+         * Materials to keep.
+         */
         materials: BABYLON.Material[] = [];
     }
+
+    /**
+     * Container with a set of assets that can be added or removed from a scene.
+     */
     export class AssetContainer {
+        /**
+         * The scene the AssetContainer belongs to.
+         */
         public scene: Scene;
 
         // Objects
+        /**
+         * Cameras populated in the container.
+         */
         public cameras = new Array<Camera>();
+        /**
+         * Lights populated in the container.
+         */
         public lights = new Array<Light>();
+        /**
+         * Meshes populated in the container.
+         */
         public meshes = new Array<AbstractMesh>();
+        /**
+         * Skeletons populated in the container.
+         */
         public skeletons = new Array<Skeleton>();
+        /**
+         * ParticleSystems populated in the container.
+         */
         public particleSystems = new Array<ParticleSystem>();
+        /**
+         * Animations populated in the container.
+         */
         public animations = new Array<Animation>();
+        /**
+         * MultiMaterials populated in the container.
+         */
         public multiMaterials = new Array<MultiMaterial>();
+        /**
+         * Materials populated in the container.
+         */
         public materials = new Array<Material>();
+        /**
+         * MorphTargetManagers populated in the container.
+         */
         public morphTargetManagers = new Array<MorphTargetManager>();
+        /**
+         * Geometries populated in the container.
+         */
         public geometries = new Array<Geometry>();
+        /**
+         * TransformNodes populated in the container.
+         */
         public transformNodes = new Array<TransformNode>();
+        /**
+         * LensFlareSystems populated in the container.
+         */
         public lensFlareSystems = new Array<LensFlareSystem>();
+        /**
+         * ShadowGenerators populated in the container.
+         */
         public shadowGenerators = new Array<ShadowGenerator>();
+        /**
+         * ActionManagers populated in the container.
+         */
         public actionManagers = new Array<ActionManager>();
+        /**
+         * Sounds populated in the container.
+         */
         public sounds = new Array<Sound>();
         
+        /**
+         * Instantiates an AssetContainer.
+         * @param scene The scene the AssetContainer belongs to.
+         */
         constructor(scene:Scene){
             this.scene = scene;
         }
         
+        /**
+         * Adds all the assets from the container to the scene.
+         */
         addAllToScene(){
             this.cameras.forEach((o)=>{
                 this.scene.addCamera(o);
@@ -75,6 +149,10 @@ module BABYLON {
                 this.scene.mainSoundTrack.AddSound(o);
             })
         }
+
+        /**
+         * Removes all the assets in the container from the scene
+         */
         removeAllFromScene(){
             this.cameras.forEach((o)=>{
                 this.scene.removeCamera(o);
@@ -138,6 +216,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Removes all the assets contained in the scene and adds them to the container.
+         * @param keepAssets Set of assets keep in the scene. (default: empty)
+         */
         moveAllFromScene(keepAssets?: KeepAssets): void {
 
             if (keepAssets === undefined) {
