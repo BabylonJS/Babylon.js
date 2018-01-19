@@ -5,7 +5,9 @@ node_js:
 - '6'
 cache:
   directories:
-    - node_modules
+    - Tools/Gulp/node_modules
+    - Playground/node_modules
+    - tests/unit/node_modules
 git:
   depth: 3
 before_script:
