@@ -116,10 +116,27 @@ module BABYLON {
             })
         }
         
-        moveAllFromScene(): void {
+        moveAllFromScene(keepCameras?: BABYLON.Camera[]): void {
             Array.prototype.push.apply(this.actionManagers, this.scene._actionManagers);
             Array.prototype.push.apply(this.animations, this.scene.animations);
-            Array.prototype.push.apply(this.cameras, this.scene.cameras);
+
+            if (keepCameras === undefined) {
+                keepCameras = [];
+            }
+            for (let camera of this.scene.cameras) {
+                let moveCamera = true;
+                for (let keepCamera of keepCameras) {
+                    if (camera === keepCamera) {
+                        moveCamera = false;
+                        break;
+                    }
+                }
+
+                if (moveCamera) {
+                    this.cameras.push(camera);
+                }
+            }
+
             Array.prototype.push.apply(this.geometries, this.scene.getGeometries());
             Array.prototype.push.apply(this.lensFlareSystems, this.scene.lensFlareSystems);
             Array.prototype.push.apply(this.lights, this.scene.lights);
@@ -131,6 +148,7 @@ module BABYLON {
             Array.prototype.push.apply(this.particleSystems, this.scene.particleSystems);
             Array.prototype.push.apply(this.sounds, this.scene.mainSoundTrack.soundCollection);
             Array.prototype.push.apply(this.transformNodes, this.scene.transformNodes);
+
             this.removeAllFromScene();
         }
     }
