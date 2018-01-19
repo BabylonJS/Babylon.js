@@ -4743,7 +4743,7 @@
         }
 
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-            if (this._lastBoundInternalTextureTracker.previous === internalTexture) {
+            if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
                 return;
             }
 

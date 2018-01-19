@@ -1620,9 +1620,6 @@ module BABYLON.GLTF2 {
             }) as IGLTFLoaderFileRequest;
 
             this._requests.push(request);
-            request.onCompleteObservable.add(() => {
-                this._requests.splice(this._requests.indexOf(request), 1);
-            });
         }
 
         public _tryCatchOnError(handler: () => void): void {
