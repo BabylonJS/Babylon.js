@@ -344,12 +344,25 @@
         // end of sheet animation
 
         // sub emitters
+        /**
+         * this is the sub emitters templates that will be used to generate particle systems when the particle dies, this property is used at the root ParticleSystem only.
+         */
         public subEmitters: ParticleSystem[];
+        /**
+        * The current active Sub systems, this property is used at the root ParticleSystem only.
+        */
+        public activeSubSystems: StringDictionary<ParticleSystem>;
 
-        // TODO need to lazy loaded
-        public activeSubSystems: StringDictionary<SubParticleSystem>;
-        public stockSubSystems: StringDictionary<Array<SubParticleSystem>>;
+        /**
+        * This property is used to set the max number of sub emits. if this property is used the particle system everytime will pick a random template from the subEmitters property.
+        If this value is not set the ParticleSystem will pick the next emitter template based on order, this property is used at the root ParticleSystem only.
+        */
+        public maxNumberOfSubEmits = 0;
 
+        private stockSubSystems: StringDictionary<Array<ParticleSystem>>;
+        private _generationString: string;
+        private _generation: number;
+        private _rootParticleSystem: ParticleSystem;
         private _isEmitting = false;
         //end of sub emitter
 
@@ -411,7 +424,7 @@
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
                         this.recycleParticle(particle);
                         index--;
-                        this.emitFromParticle(particle);
+                        this._emitFromParticle(particle);
                         continue;
                     }
                     else {
@@ -454,15 +467,6 @@
         }
 
         /**
-         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
-         * Its lifetime will start back at 0.
-         * @param particle The particle to recycle
-         */
-        public recycleParticle(particle: Particle): void {
-            ParticleSystem.recycleParticle(this, this, particle);
-        }
-
-        /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
          */
@@ -494,62 +498,19 @@
             this._stopped = false;
             this._actualFrame = 0;
             if (this.subEmitters && this.subEmitters.length != 0) {
-                this.activeSubSystems = new StringDictionary<SubParticleSystem>();
-                this.stockSubSystems = new StringDictionary<Array<SubParticleSystem>>();
+                this.activeSubSystems = new StringDictionary<ParticleSystem>();
+                this.stockSubSystems = new StringDictionary<Array<ParticleSystem>>();
             }
         }
 
         /**
          * Stops the particle system.
          */
-        public stop(): void {
+        public stop(stopSubEmitters = true): void {
             this._stopped = true;
+
+            this._stopSubEmitters();
         }
-
-        public stopSubEmitters(): void {
-            if (this.activeSubSystems.count === 0)
-                return;
-
-            this.stockSubSystems.forEach(generation => {
-                this.stockSubSystems.get(generation)!.forEach(subSystem => {
-                    subSystem.stop();
-                });
-            });
-
-            this.activeSubSystems.forEach(subSystemName => {
-                var subSystem = this.activeSubSystems.get(subSystemName)!;
-                subSystem.stop();
-                subSystem.stoppedEmitting(true);
-            });
-            this.activeSubSystems = new StringDictionary<SubParticleSystem>();
-        }
-
-        public static emitFromGeneration(system: ParticleSystem, particle: Particle, generation: number): void {
-            if (!system.subEmitters || system.subEmitters.length === 0 || generation >= system.subEmitters.length) {
-                return;
-            }
-
-            var generationString = generation.toString();
-
-            if (!system.stockSubSystems.contains(generationString) || (system.stockSubSystems.get(generationString) as (Array<SubParticleSystem>)).length === 0) {
-
-                // get the current generation template and clone it to subSystem
-                var subSystem = system.subEmitters[generation].cloneToSubSystem(system.name, particle.position, generation, system);
-                system.activeSubSystems.add(subSystem.name, subSystem);
-                subSystem.start();
-            }
-            else {
-                var stockSubSystem = (system.stockSubSystems.get(generationString)!).pop()!;
-                stockSubSystem.emitter = particle.position;
-                system.activeSubSystems.add(stockSubSystem.name, stockSubSystem);
-                // reset the manual emit count
-                if (system.subEmitters[generation].manualEmitCount != -1)
-                    stockSubSystem.manualEmitCount = system.subEmitters[generation].manualEmitCount;
-
-                stockSubSystem.start();
-            }
-        }
-        // end of sub emitter
 
         // animation sheet
 
@@ -600,7 +561,106 @@
             this._vertexData[offset + 11] = particle.cellIndex;
         }
 
-        public static createParticle(rootSystem: ParticleSystem, currentSystem: ParticleSystem): Particle {
+        // start of sub system methods
+
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         * @param particle The particle to recycle
+         */
+        public recycleParticle: (particle: Particle) => void = (particle) => {
+            ParticleSystem.recycleParticle(this, this, particle);
+        };
+
+        private _stopSubEmitters(): void {
+            this.stockSubSystems.forEach(generation => {
+                this.stockSubSystems.get(generation)!.forEach(subSystem => {
+                    subSystem.stop();
+                });
+            });
+
+            this.activeSubSystems.forEach(subSystemName => {
+                var subSystem = this.activeSubSystems.get(subSystemName)!;
+                subSystem.stop();
+                subSystem._stoppedEmitting(true);
+            });
+            this.activeSubSystems = new StringDictionary<ParticleSystem>();
+        }
+
+        private static emitFromGeneration(rootSystem: ParticleSystem, particle: Particle, generation: number): void {
+            if (!rootSystem.subEmitters || rootSystem.subEmitters.length === 0 || (generation >= rootSystem.subEmitters.length && rootSystem.maxNumberOfSubEmits === 0) || (rootSystem.maxNumberOfSubEmits <= generation && rootSystem.maxNumberOfSubEmits !== 0)) {
+                return;
+            }
+
+            var generationString = generation.toString();
+
+            if (!rootSystem.stockSubSystems.contains(generationString) || (rootSystem.stockSubSystems.get(generationString) as (Array<ParticleSystem>)).length === 0) {
+
+                // get the current generation template and clone it to subSystem
+                var templateIndex = rootSystem.maxNumberOfSubEmits === 0 ? generation : Math.floor(Math.random() * rootSystem.subEmitters.length);
+                var subSystem = rootSystem.subEmitters[templateIndex].cloneToSubSystem(rootSystem.name, particle.position, generation, rootSystem);
+                rootSystem.activeSubSystems.add(subSystem.name, subSystem);
+                subSystem.start();
+            }
+            else {
+                var stockSubSystem = (rootSystem.stockSubSystems.get(generationString)!).pop()!;
+                stockSubSystem.emitter = particle.position;
+                rootSystem.activeSubSystems.add(stockSubSystem.name, stockSubSystem);
+                // reset the manual emit count
+                if (rootSystem.subEmitters[generation].manualEmitCount != -1)
+                    stockSubSystem.manualEmitCount = rootSystem.subEmitters[generation].manualEmitCount;
+
+                stockSubSystem.start();
+            }
+        }
+
+        private _createParticle: () => Particle = () => {
+            return ParticleSystem.createParticle(this, this);
+        }
+
+        // to be overriden by subSystems
+        private _stoppedEmitting: (overrideRemove: boolean) => void = () => {
+
+        }
+
+        private _emitFromParticle: (particle: Particle) => void = (particle) => {
+            ParticleSystem.emitFromGeneration(this, particle, 0);
+        }
+
+        private _initSubSystem(rootParticleSystem: ParticleSystem, generation: number): void {
+            this._rootParticleSystem = rootParticleSystem;
+            this._generation = generation;
+            this._generationString = this._generation.toString();
+
+            this._stoppedEmitting = (overrideRemove = false) => {
+
+                if (overrideRemove)
+                    this._rootParticleSystem.activeSubSystems.remove(this.name);
+
+                if (this._rootParticleSystem.stockSubSystems.contains(this._generationString)) {
+                    (this._rootParticleSystem.stockSubSystems.get(this._generationString)!).push(this);
+                }
+                else {
+                    var subSysArray = new Array<ParticleSystem>();
+                    subSysArray.push(this);
+                    this._rootParticleSystem.stockSubSystems.add(this._generationString, subSysArray);
+                }
+            }
+
+            this._emitFromParticle = (particle: Particle) => {
+                ParticleSystem.emitFromGeneration(this._rootParticleSystem, particle, this._generation + 1);
+            }
+
+            this.recycleParticle = (particle: Particle) => {
+                ParticleSystem.recycleParticle(this._rootParticleSystem, this, particle);
+            }
+
+            this._createParticle = () => {
+                return ParticleSystem.createParticle(this._rootParticleSystem, this);
+            }
+        }
+
+        private static createParticle(rootSystem: ParticleSystem, currentSystem: ParticleSystem): Particle {
             let particle: Particle;
             if (rootSystem._stockParticles.length !== 0) {
                 particle = <Particle>rootSystem._stockParticles.pop();
@@ -616,21 +676,7 @@
             return particle;
         }
 
-        // end of sub system methods
-        protected createParticle(): Particle {
-            return ParticleSystem.createParticle(this, this);
-        }
-
-        // to be overriden by subSystems
-        protected stoppedEmitting(): void {
-
-        }
-
-        protected emitFromParticle(particle: Particle): void {
-            ParticleSystem.emitFromGeneration(this, particle, 0);
-        }
-
-        public static recycleParticle(rootSystem: ParticleSystem, currentSystem: ParticleSystem, particle: Particle) {
+        private static recycleParticle(rootSystem: ParticleSystem, currentSystem: ParticleSystem, particle: Particle) {
             var lastParticle = <Particle>currentSystem._particles.pop();
 
             if (lastParticle !== particle) {
@@ -650,7 +696,7 @@
 
             if (!this._alive && this._isEmitting) {
                 this._isEmitting = false;
-                this.stoppedEmitting();
+                this._stoppedEmitting(false);
             }
 
             this.updateFunction(this._particles);
@@ -672,7 +718,7 @@
                     break;
                 }
 
-                particle = this.createParticle();
+                particle = this._createParticle();
 
                 this._particles.push(particle);
 
@@ -1022,7 +1068,7 @@
             return particleEmitter;
         }
 
-        public cloneToSubSystem(name: string, newEmitter: Vector3, generation: number, root: ParticleSystem): SubParticleSystem {
+        public cloneToSubSystem(name: string, newEmitter: Vector3, generation: number, root: ParticleSystem): ParticleSystem {
             var custom: Nullable<Effect> = null;
             var program: any = null;
             if (this.customShader != null) {
@@ -1030,13 +1076,14 @@
                 var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
             }
-            var result = new SubParticleSystem(name, this._capacity, this._scene, generation, root, custom);
+            var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
             Tools.DeepCopy(this, result, ["customShader"]);
             result.name = name + "_Child_" + root.count++ + "_" + generation;
             result.id = result.name;
             result.emitter = newEmitter;
             result.particleEmitterType = this.particleEmitterType;
+            result._initSubSystem(root, generation);
             if (this.particleTexture) {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }

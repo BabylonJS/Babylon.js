@@ -61,7 +61,7 @@
          * Creates a new instance of @see Particle
          * @param particleSystem the particle system the particle belongs to
          */
-        constructor(public particleSystem: ParticleSystem, public generation = 0) {
+        constructor(public particleSystem: ParticleSystem) {
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
