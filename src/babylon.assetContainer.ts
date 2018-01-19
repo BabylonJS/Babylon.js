@@ -115,5 +115,23 @@ module BABYLON {
                 this.scene.mainSoundTrack.RemoveSound(o);
             })
         }
+        
+        moveAllFromScene(): void {
+            Array.prototype.push.apply(this.actionManagers, this.scene._actionManagers);
+            Array.prototype.push.apply(this.animations, this.scene.animations);
+            Array.prototype.push.apply(this.cameras, this.scene.cameras);
+            Array.prototype.push.apply(this.geometries, this.scene.getGeometries());
+            Array.prototype.push.apply(this.lensFlareSystems, this.scene.lensFlareSystems);
+            Array.prototype.push.apply(this.lights, this.scene.lights);
+            Array.prototype.push.apply(this.materials, this.scene.materials);
+            Array.prototype.push.apply(this.meshes, this.scene.meshes);
+            Array.prototype.push.apply(this.morphTargetManagers, this.scene.morphTargetManagers);
+            Array.prototype.push.apply(this.multiMaterials, this.scene.multiMaterials);
+            Array.prototype.push.apply(this.skeletons, this.scene.skeletons);
+            Array.prototype.push.apply(this.particleSystems, this.scene.particleSystems);
+            Array.prototype.push.apply(this.sounds, this.scene.mainSoundTrack.soundCollection);
+            Array.prototype.push.apply(this.transformNodes, this.scene.transformNodes);
+            this.removeAllFromScene();
+        }
     }
 }
