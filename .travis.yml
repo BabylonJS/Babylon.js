@@ -3,6 +3,13 @@ dist: trusty
 language: node_js
 node_js:
 - '6'
+cache:
+  directories:
+    - Tools/Gulp/node_modules
+    - Playground/node_modules
+    - tests/unit/node_modules
+git:
+  depth: 3
 before_script:
 - travis_retry npm install -g gulp
 - cd ./Tools/Gulp
@@ -10,7 +17,13 @@ before_script:
 - "export DISPLAY=:99.0"
 - "sh -e /etc/init.d/xvfb start"
 - sleep 3 # give xvfb some time to start
-script: gulp
+script: 
+- set -e
+- gulp typescript-all
+- gulp typedoc-all
+- gulp tests-unit
+- travis_retry gulp tests-validation-virtualscreen
+- travis_retry gulp tests-validation-browserstack
 notifications:
   slack:
     secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=

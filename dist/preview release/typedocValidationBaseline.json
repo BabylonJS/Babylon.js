@@ -1,7 +1,7 @@
 {
-  "errors": 10550,
+  "errors": 10526,
   "babylon.typedoc.json": {
-    "errors": 10550,
+    "errors": 10526,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -7449,11 +7449,6 @@
             "MissingText": true
           }
         },
-        "upVector": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "viewport": {
           "Comments": {
             "MissingText": true
@@ -7977,18 +7972,6 @@
         }
       },
       "Method": {
-        "add": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "input": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "attachElement": {
           "Comments": {
             "MissingText": true
@@ -8016,11 +7999,6 @@
                 "MissingText": true
               }
             }
-          }
-        },
-        "clear": {
-          "Comments": {
-            "MissingText": true
           }
         },
         "detachElement": {
@@ -8055,18 +8033,6 @@
         "rebuildInputCheck": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "remove": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "inputToRemove": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "removeByType": {
@@ -17760,11 +17726,6 @@
             "MissingText": true
           }
         },
-        "angularSensibility": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "applyGravity": {
           "Comments": {
             "MissingText": true
@@ -17891,11 +17852,6 @@
       }
     },
     "FreeCameraDeviceOrientationInput": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Constructor": {
         "new FreeCameraDeviceOrientationInput": {
           "Comments": {
@@ -54262,25 +54218,8 @@
           "MissingText": true
         }
       },
-      "Property": {
-        "video": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
       "Method": {
-        "_rebuild": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "update": {
           "Comments": {
             "MissingText": true
           }

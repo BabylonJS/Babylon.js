@@ -12757,7 +12757,7 @@ var BABYLON;
             this._currentEffect = null;
         };
         Engine.prototype._moveBoundTextureOnTop = function (internalTexture) {
-            if (this._lastBoundInternalTextureTracker.previous === internalTexture) {
+            if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
                 return;
             }
             // Remove
@@ -15924,6 +15924,7 @@ var BABYLON;
                 return;
             }
             this._lightSources.splice(index, 1);
+            this._markSubMeshesAsLightDirty();
         };
         AbstractMesh.prototype._markSubMeshesAsDirty = function (func) {
             if (!this.subMeshes) {
@@ -17819,14 +17820,17 @@ var BABYLON;
         __extends(Camera, _super);
         function Camera(name, position, scene) {
             var _this = _super.call(this, name, scene) || this;
+            /**
+             * The vector the camera should consider as up.
+             * (default is Vector3(0, 1, 0) aka Vector3.Up())
+             */
             _this.upVector = BABYLON.Vector3.Up();
             _this.orthoLeft = null;
             _this.orthoRight = null;
             _this.orthoBottom = null;
             _this.orthoTop = null;
             /**
-             * default : 0.8
-             * FOV is set in Radians.
+             * FOV is set in Radians. (default is 0.8)
              */
             _this.fov = 0.8;
             _this.minZ = 1;
@@ -17836,14 +17840,13 @@ var BABYLON;
             _this.isIntermediate = false;
             _this.viewport = new BABYLON.Viewport(0, 0, 1.0, 1.0);
             /**
-            * Restricts the camera to viewing objects with the same layerMask.
-            * A camera with a layerMask of 1 will render meshes with no layerMask and meshes with a layerMask of 1.
-            */
+             * Restricts the camera to viewing objects with the same layerMask.
+             * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
+             */
             _this.layerMask = 0x0FFFFFFF;
             /**
-            * default : FOVMODE_VERTICAL_FIXED
-            * fovMode sets the camera frustum bounds to the viewport bounds.
-            */
+             * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
+             */
             _this.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
             // Camera rig members
             _this.cameraRigMode = Camera.RIG_MODE_NONE;
@@ -39193,6 +39196,12 @@ var BABYLON;
             this.camera = camera;
             this.checkInputs = function () { };
         }
+        /**
+         * Add an input method to a camera.
+         * builtin inputs example: camera.inputs.addGamepad();
+         * custom inputs example: camera.inputs.add(new BABYLON.FreeCameraGamepadInput());
+         * @param input camera input method
+         */
         CameraInputsManager.prototype.add = function (input) {
             var type = input.getSimpleName();
             if (this.attached[type]) {
@@ -39210,6 +39219,11 @@ var BABYLON;
                 input.attachControl(this.attachedElement);
             }
         };
+        /**
+         * Remove a specific input method from a camera
+         * example: camera.inputs.remove(camera.inputs.attached.mouse);
+         * @param inputToRemove camera input method
+         */
         CameraInputsManager.prototype.remove = function (inputToRemove) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
@@ -39278,6 +39292,9 @@ var BABYLON;
                 }
             }
         };
+        /**
+         * Remove all attached input methods from a camera
+         */
         CameraInputsManager.prototype.clear = function () {
             if (this.attachedElement) {
                 this.detachElement(this.attachedElement, true);
@@ -39982,12 +39999,20 @@ var BABYLON;
         }
         Object.defineProperty(FreeCamera.prototype, "angularSensibility", {
             //-- begin properties for backward compatibility for inputs
+            /**
+             * Gets the input sensibility for a mouse input. (default is 2000.0)
+             * Higher values reduce sensitivity.
+             */
             get: function () {
                 var mouse = this.inputs.attached["mouse"];
                 if (mouse)
                     return mouse.angularSensibility;
                 return 0;
             },
+            /**
+             * Sets the input sensibility for a mouse input. (default is 2000.0)
+             * Higher values reduce sensitivity.
+             */
             set: function (value) {
                 var mouse = this.inputs.attached["mouse"];
                 if (mouse)
@@ -54249,104 +54274,167 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    var getName = function (src) {
+        if (src instanceof HTMLVideoElement) {
+            return src.currentSrc;
+        }
+        if (typeof src === "object") {
+            return src.toString();
+        }
+        return src;
+    };
+    var getVideo = function (src) {
+        if (src instanceof HTMLVideoElement) {
+            return src;
+        }
+        var video = document.createElement("video");
+        if (typeof src === "string") {
+            video.src = src;
+        }
+        else {
+            src.forEach(function (url) {
+                var source = document.createElement("source");
+                source.src = url;
+                video.appendChild(source);
+            });
+        }
+        return video;
+    };
     var VideoTexture = /** @class */ (function (_super) {
         __extends(VideoTexture, _super);
         /**
          * Creates a video texture.
-         * Sample : https://doc.babylonjs.com/tutorials/01._Advanced_Texturing
-         * @param {Array} urlsOrVideo can be used to provide an array of urls or an already setup HTML video element.
+         * Sample : https://doc.babylonjs.com/how_to/video_texture
+         * @param {string | null} name optional name, will detect from video source, if not defined
+         * @param {(string | string[] | HTMLVideoElement)} src can be used to provide an url, array of urls or an already setup HTML video element.
          * @param {BABYLON.Scene} scene is obviously the current scene.
          * @param {boolean} generateMipMaps can be used to turn on mipmaps (Can be expensive for videoTextures because they are often updated).
          * @param {boolean} invertY is false by default but can be used to invert video on Y axis
          * @param {number} samplingMode controls the sampling method and is set to TRILINEAR_SAMPLINGMODE by default
+         * @param {VideoTextureSettings} [settings] allows finer control over video usage
          */
-        function VideoTexture(name, urlsOrVideo, scene, generateMipMaps, invertY, samplingMode) {
+        function VideoTexture(name, src, scene, generateMipMaps, invertY, samplingMode, settings) {
             if (generateMipMaps === void 0) { generateMipMaps = false; }
             if (invertY === void 0) { invertY = false; }
             if (samplingMode === void 0) { samplingMode = BABYLON.Texture.TRILINEAR_SAMPLINGMODE; }
+            if (settings === void 0) { settings = {
+                autoPlay: true,
+                loop: true,
+                autoUpdateTexture: true,
+            }; }
             var _this = _super.call(this, null, scene, !generateMipMaps, invertY) || this;
-            _this._autoLaunch = true;
-            var urls = null;
-            _this.name = name;
-            if (urlsOrVideo instanceof HTMLVideoElement) {
-                _this.video = urlsOrVideo;
-            }
-            else {
-                urls = urlsOrVideo;
-                _this.video = document.createElement("video");
-                _this.video.autoplay = false;
-                _this.video.loop = true;
-                BABYLON.Tools.SetCorsBehavior(urls, _this.video);
-            }
+            _this._createInternalTexture = function () {
+                if (_this._texture != null) {
+                    return;
+                }
+                if (!_this._engine.needPOTTextures ||
+                    (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight))) {
+                    _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+                    _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+                }
+                else {
+                    _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+                    _this._generateMipMaps = false;
+                }
+                _this._texture = _this._engine.createDynamicTexture(_this.video.videoWidth, _this.video.videoHeight, _this._generateMipMaps, _this._samplingMode);
+                _this._texture.width;
+                _this._updateInternalTexture();
+                _this._texture.isReady = true;
+            };
+            _this.reset = function () {
+                if (_this._texture == null) {
+                    return;
+                }
+                _this._texture.dispose();
+                _this._texture = null;
+            };
+            _this._updateInternalTexture = function (e) {
+                if (_this._texture == null || !_this._texture.isReady) {
+                    return;
+                }
+                if (_this.video.readyState < _this.video.HAVE_CURRENT_DATA) {
+                    return;
+                }
+                _this._engine.updateVideoTexture(_this._texture, _this.video, _this._invertY);
+            };
             _this._engine = _this.getScene().getEngine();
             _this._generateMipMaps = generateMipMaps;
             _this._samplingMode = samplingMode;
-            if (!_this._engine.needPOTTextures || (BABYLON.Tools.IsExponentOfTwo(_this.video.videoWidth) && BABYLON.Tools.IsExponentOfTwo(_this.video.videoHeight))) {
-                _this.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-                _this.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+            _this.autoUpdateTexture = settings.autoUpdateTexture;
+            _this.name = name || getName(src);
+            _this.video = getVideo(src);
+            if (settings.autoPlay !== undefined) {
+                _this.video.autoplay = settings.autoPlay;
             }
-            else {
-                _this.wrapU = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                _this.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
-                _this._generateMipMaps = false;
+            if (settings.loop !== undefined) {
+                _this.video.loop = settings.loop;
             }
-            if (urls) {
-                _this.video.addEventListener("canplay", function () {
-                    if (_this._texture === undefined) {
-                        _this._createTexture();
-                    }
-                });
-                urls.forEach(function (url) {
-                    var source = document.createElement("source");
-                    source.src = url;
-                    _this.video.appendChild(source);
-                });
+            _this.video.addEventListener("canplay", _this._createInternalTexture);
+            _this.video.addEventListener("paused", _this._updateInternalTexture);
+            _this.video.addEventListener("seeked", _this._updateInternalTexture);
+            _this.video.addEventListener("emptied", _this.reset);
+            if (_this.video.readyState >= _this.video.HAVE_CURRENT_DATA) {
+                _this._createInternalTexture();
             }
-            else {
-                _this._createTexture();
-            }
-            _this._lastUpdate = BABYLON.Tools.Now;
             return _this;
         }
-        VideoTexture.prototype.__setTextureReady = function () {
-            if (this._texture) {
-                this._texture.isReady = true;
-            }
-        };
-        VideoTexture.prototype._createTexture = function () {
-            this._texture = this._engine.createDynamicTexture(this.video.videoWidth, this.video.videoHeight, this._generateMipMaps, this._samplingMode);
-            if (this._autoLaunch) {
-                this._autoLaunch = false;
-                this.video.play();
-            }
-            this._setTextureReady = this.__setTextureReady.bind(this);
-            this.video.addEventListener("playing", this._setTextureReady);
-        };
+        /**
+         * Internal method to initiate `update`.
+         */
         VideoTexture.prototype._rebuild = function () {
             this.update();
         };
+        /**
+         * Update Texture in the `auto` mode. Does not do anything if `settings.autoUpdateTexture` is false.
+         */
         VideoTexture.prototype.update = function () {
-            var now = BABYLON.Tools.Now;
-            if (now - this._lastUpdate < 15 || this.video.readyState !== this.video.HAVE_ENOUGH_DATA) {
-                return false;
+            if (!this.autoUpdateTexture) {
+                // Expecting user to call `updateTexture` manually
+                return;
             }
-            this._lastUpdate = now;
-            this._engine.updateVideoTexture(this._texture, this.video, this._invertY);
-            return true;
+            this.updateTexture(true);
+        };
+        /**
+         * Update Texture in `manual` mode. Does not do anything if not visible or paused.
+         * @param isVisible Visibility state, detected by user using `scene.getActiveMeshes()` or othervise.
+         */
+        VideoTexture.prototype.updateTexture = function (isVisible) {
+            if (!isVisible) {
+                return;
+            }
+            if (this.video.paused) {
+                return;
+            }
+            this._updateInternalTexture();
+        };
+        /**
+         * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
+         * @param url New url.
+         */
+        VideoTexture.prototype.updateURL = function (url) {
+            this.video.src = url;
         };
         VideoTexture.prototype.dispose = function () {
             _super.prototype.dispose.call(this);
-            this.video.removeEventListener("playing", this._setTextureReady);
+            this.video.removeEventListener("canplay", this._createInternalTexture);
+            this.video.removeEventListener("paused", this._updateInternalTexture);
+            this.video.removeEventListener("seeked", this._updateInternalTexture);
+            this.video.removeEventListener("emptied", this.reset);
         };
         VideoTexture.CreateFromWebCam = function (scene, onReady, constraints) {
             var video = document.createElement("video");
             var constraintsDeviceId;
             if (constraints && constraints.deviceId) {
                 constraintsDeviceId = {
-                    exact: constraints.deviceId
+                    exact: constraints.deviceId,
                 };
             }
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            navigator.getUserMedia =
+                navigator.getUserMedia ||
+                    navigator.webkitGetUserMedia ||
+                    navigator.mozGetUserMedia ||
+                    navigator.msGetUserMedia;
             window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
             if (navigator.getUserMedia) {
                 navigator.getUserMedia({
@@ -54354,15 +54442,16 @@ var BABYLON;
                         deviceId: constraintsDeviceId,
                         width: {
                             min: (constraints && constraints.minWidth) || 256,
-                            max: (constraints && constraints.maxWidth) || 640
+                            max: (constraints && constraints.maxWidth) || 640,
                         },
                         height: {
                             min: (constraints && constraints.minHeight) || 256,
-                            max: (constraints && constraints.maxHeight) || 480
-                        }
-                    }
+                            max: (constraints && constraints.maxHeight) || 480,
+                        },
+                    },
                 }, function (stream) {
                     if (video.mozSrcObject !== undefined) {
+                        // hack for Firefox < 19
                         video.mozSrcObject = stream;
                     }
                     else {
@@ -74079,6 +74168,10 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
     var FreeCameraDeviceOrientationInput = /** @class */ (function () {
         function FreeCameraDeviceOrientationInput() {
             var _this = this;
@@ -74305,16 +74398,15 @@ var BABYLON;
             _this.onControllersAttachedObservable = new BABYLON.Observable();
             _this.onControllerMeshLoadedObservable = new BABYLON.Observable();
             _this.rigParenting = true; // should the rig cameras be used as parent instead of this camera.
-            _this._defaultHeight = 0;
+            _this._defaultHeight = undefined;
             _this.deviceDistanceToRoomGround = function () {
-                if (_this._standingMatrix) {
+                if (_this._standingMatrix && _this._defaultHeight === undefined) {
                     // Add standing matrix offset to get real offset from ground in room
                     _this._standingMatrix.getTranslationToRef(_this._workingVector);
                     return _this._deviceRoomPosition.y + _this._workingVector.y;
                 }
-                else {
-                    return _this._defaultHeight;
-                }
+                //If VRDisplay does not inform stage parameters and no default height is set we fallback to zero.
+                return _this._defaultHeight || 0;
             };
             _this.useStandingMatrix = function (callback) {
                 if (callback === void 0) { callback = function (bool) { }; }
@@ -74726,7 +74818,7 @@ var BABYLON;
         /**
          * Creates a new device orientation camera. @see DeviceOrientationCamera
          * @param name The name of the camera
-         * @param position The starts position camera
+         * @param position The start position camera
          * @param scene The scene the camera belongs to
          */
         function DeviceOrientationCamera(name, position, scene) {
@@ -77399,9 +77491,10 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        SceneOptimization.prototype.apply = function (scene) {
+        SceneOptimization.prototype.apply = function (scene, optimizer) {
             return true;
         };
         ;
@@ -77452,9 +77545,10 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        TextureOptimization.prototype.apply = function (scene) {
+        TextureOptimization.prototype.apply = function (scene, optimizer) {
             var allDone = true;
             for (var index = 0; index < scene.textures.length; index++) {
                 var texture = scene.textures[index];
@@ -77519,9 +77613,10 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        HardwareScalingOptimization.prototype.apply = function (scene) {
+        HardwareScalingOptimization.prototype.apply = function (scene, optimizer) {
             if (this._currentScale === -1) {
                 this._currentScale = scene.getEngine().getHardwareScalingLevel();
                 if (this._currentScale > this.maximumScale) {
@@ -77542,26 +77637,8 @@ var BABYLON;
      */
     var ShadowsOptimization = /** @class */ (function (_super) {
         __extends(ShadowsOptimization, _super);
-        /**
-         * Creates the ShadowsOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.shadowsEnabled property to (false by default)
-         */
-        function ShadowsOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.shadowsEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function ShadowsOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77573,10 +77650,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        ShadowsOptimization.prototype.apply = function (scene) {
-            scene.shadowsEnabled = this.target;
+        ShadowsOptimization.prototype.apply = function (scene, optimizer) {
+            scene.shadowsEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77589,26 +77667,8 @@ var BABYLON;
      */
     var PostProcessesOptimization = /** @class */ (function (_super) {
         __extends(PostProcessesOptimization, _super);
-        /**
-         * Creates the PostProcessesOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.postProcessesEnabled property to (false by default)
-         */
-        function PostProcessesOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.postProcessesEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function PostProcessesOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77620,10 +77680,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        PostProcessesOptimization.prototype.apply = function (scene) {
-            scene.postProcessesEnabled = this.target;
+        PostProcessesOptimization.prototype.apply = function (scene, optimizer) {
+            scene.postProcessesEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77636,26 +77697,8 @@ var BABYLON;
      */
     var LensFlaresOptimization = /** @class */ (function (_super) {
         __extends(LensFlaresOptimization, _super);
-        /**
-         * Creates the LensFlaresOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.lensFlaresEnabled property to (false by default)
-         */
-        function LensFlaresOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.lensFlaresEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function LensFlaresOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77667,10 +77710,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        LensFlaresOptimization.prototype.apply = function (scene) {
-            scene.lensFlaresEnabled = this.target;
+        LensFlaresOptimization.prototype.apply = function (scene, optimizer) {
+            scene.lensFlaresEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77699,11 +77743,12 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        CustomOptimization.prototype.apply = function (scene) {
+        CustomOptimization.prototype.apply = function (scene, optimizer) {
             if (this.onApply) {
-                return this.onApply(scene);
+                return this.onApply(scene, optimizer);
             }
             return true;
         };
@@ -77717,26 +77762,8 @@ var BABYLON;
      */
     var ParticlesOptimization = /** @class */ (function (_super) {
         __extends(ParticlesOptimization, _super);
-        /**
-         * Creates the ParticlesOptimization object
-         * @param priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param target defines the value to set the scene.particlesEnabled property to (false by default)
-         */
-        function ParticlesOptimization(
-            /**
-             * Defines the priority of this optimization (0 by default which means first in the list)
-             */
-            priority, 
-            /**
-             * Defines the value to set the scene.particlesEnabled property to (false by default)
-             */
-            target) {
-            if (priority === void 0) { priority = 0; }
-            if (target === void 0) { target = false; }
-            var _this = _super.call(this, priority) || this;
-            _this.priority = priority;
-            _this.target = target;
-            return _this;
+        function ParticlesOptimization() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         /**
          * Gets a string describing the action executed by the current optimization
@@ -77748,10 +77775,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        ParticlesOptimization.prototype.apply = function (scene) {
-            scene.particlesEnabled = this.target;
+        ParticlesOptimization.prototype.apply = function (scene, optimizer) {
+            scene.particlesEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77777,10 +77805,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @returns true if everything that can be done was applied
          */
-        RenderTargetsOptimization.prototype.apply = function (scene) {
-            scene.renderTargetsEnabled = false;
+        RenderTargetsOptimization.prototype.apply = function (scene, optimizer) {
+            scene.renderTargetsEnabled = optimizer.isInImprovementMode;
             return true;
         };
         ;
@@ -77842,10 +77871,11 @@ var BABYLON;
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
          * @param updateSelectionTree defines that the selection octree has to be updated (false by default)
          * @returns true if everything that can be done was applied
          */
-        MergeMeshesOptimization.prototype.apply = function (scene, updateSelectionTree) {
+        MergeMeshesOptimization.prototype.apply = function (scene, optimizer, updateSelectionTree) {
             var globalPool = scene.meshes.slice(0);
             var globalLength = globalPool.length;
             for (var index = 0; index < globalLength; index++) {
@@ -77933,7 +77963,7 @@ var BABYLON;
         };
         /**
          * Add a new custom optimization
-         * @param onApply defines the callback called to apply the custom optimization.
+         * @param onApply defines the callback called to apply the custom optimization (true if everything that can be done was applied)
          * @param onGetDescription defines the callback called to get the description attached with the optimization.
          * @param priority defines the priority of this optimization (0 by default which means first in the list)
          * @returns the current SceneOptimizerOptions
@@ -78081,6 +78111,16 @@ var BABYLON;
                 _this.dispose();
             });
         }
+        Object.defineProperty(SceneOptimizer.prototype, "isInImprovementMode", {
+            /**
+             * Gets a boolean indicating if the optimizer is in improvement mode
+             */
+            get: function () {
+                return this._improvementMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(SceneOptimizer.prototype, "currentPriorityLevel", {
             /**
              * Gets the current priority level (0 at start)
@@ -78193,7 +78233,7 @@ var BABYLON;
                 var optimization = options.optimizations[index];
                 if (optimization.priority === this._currentPriorityLevel) {
                     noOptimizationApplied = false;
-                    allDone = allDone && optimization.apply(scene);
+                    allDone = allDone && optimization.apply(scene, this);
                     this.onNewOptimizationAppliedObservable.notifyObservers(optimization);
                 }
             }
