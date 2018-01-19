@@ -4,6 +4,19 @@ uniform vec2 delta;
 
 // Varying
 varying vec2 sampleCenter;
+
+#ifdef DOF
+	uniform sampler2D depthSampler;
+
+	uniform float near;
+	uniform float far;
+
+	float sampleDistance(const in vec2 offset) {
+		float depth = texture2D(depthSampler, offset).r; // depth value from DepthRenderer: 0 to 1 
+		return near + (far - near)*depth; // actual distance from the lens 
+	}
+#endif
+
 #include<kernelBlurVaryingDeclaration>[0..varyingCount]
 
 #ifdef PACKEDFLOAT
@@ -27,11 +40,20 @@ varying vec2 sampleCenter;
 
 void main(void)
 {
-#ifdef PACKEDFLOAT	
-	float blend = 0.;
-#else
-	vec4 blend = vec4(0.);
-#endif
+	#ifdef DOF
+		float sumOfWeights = 0.0; // Since not all values are blended, keep track of sum to devide result by at the end to get an average
+		float sampleDepth = 0.0;
+    	float factor = 0.0;
+		float centerSampleDepth = sampleDistance(sampleCenter);
+	#endif
+
+	float computedWeight = 0.0;
+
+	#ifdef PACKEDFLOAT	
+		float blend = 0.;
+	#else
+		vec4 blend = vec4(0.);
+	#endif
 
 	#include<kernelBlurFragment>[0..varyingCount]
 	#include<kernelBlurFragment2>[0..depCount]
@@ -40,5 +62,9 @@ void main(void)
 		gl_FragColor = pack(blend);
 	#else
 		gl_FragColor = blend;
+	#endif
+
+	#ifdef DOF
+		gl_FragColor /= sumOfWeights;
 	#endif
 }

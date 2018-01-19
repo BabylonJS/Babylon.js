@@ -58,6 +58,8 @@
             "additionalPostProcesses",
             "additionalPostProcess_blur",
             "additionalPostProcess_fxaa",
+            "additionalPostProcess_circleOfConfusion",
+            "additionalPostProcess_depthOfFieldMerge",
             "additionalPostProcess_imageProcessing",
             "bones",
             "hdr",
@@ -721,6 +723,28 @@
                 "kernelBlurVertex"
             ]
         },
+        "additionalPostProcess_circleOfConfusion": {
+            "files": [
+                "../../src/PostProcess/babylon.circleOfConfusionPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "circleOfConfusion.fragment"
+            ]
+        },
+        "additionalPostProcess_depthOfFieldMerge": {
+            "files": [
+                "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "depthOfFieldMerge.fragment"
+            ]
+        },
         "additionalPostProcess_fxaa": {
             "files": [
                 "../../src/PostProcess/babylon.fxaaPostProcess.js"
@@ -826,7 +850,9 @@
             ],
             "dependUpon": [
                 "renderingPipeline",
-                "additionalPostProcess_fxaa"
+                "additionalPostProcess_fxaa",
+                "additionalPostProcess_circleOfConfusion",
+                "additionalPostProcess_depthOfFieldMerge"
             ]
         },
         "bones": {

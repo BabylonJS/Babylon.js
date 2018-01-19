@@ -1,9 +1,14 @@
 ﻿module BABYLON {
+	export class DepthOfFieldBlurOptions {		
+		constructor(public depthMap: BaseTexture, public original: Nullable<PostProcess> = null){
+
+		}
+	}
     export class BlurPostProcess extends PostProcess {
 		protected _kernel: number;
 		protected _idealKernel: number;
 		protected _packedFloat: boolean	= false;
-
+		protected depthOfFieldBlurOptions:any;
 		/**
 		 * Sets the length in pixels of the blur sample region
 		 */
@@ -43,11 +48,31 @@
 			return this._packedFloat;
 		}
 
-        constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "kernelBlur", ["delta", "direction"], null, options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
-            this.onApplyObservable.add((effect: Effect) => {
-                effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
-            });
+        constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, depthOfFieldBlurOptions?:DepthOfFieldBlurOptions) {
+            super(name, "kernelBlur", ["delta", "direction", "near", "far"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
+			
+			if(depthOfFieldBlurOptions){
+				this.depthOfFieldBlurOptions = depthOfFieldBlurOptions;
+			}
+			
+			this.onApplyObservable.add((effect: Effect) => {
+				if(this.depthOfFieldBlurOptions){
+					// TODO: setTextureFromPostProcess seems to be setting the input texture instead of output of the post process passed in 
+					if(this.depthOfFieldBlurOptions.original != null){
+						effect.setTextureFromPostProcess("textureSampler", this.depthOfFieldBlurOptions.original)
+					}
+					effect.setTexture("depthSampler", this.depthOfFieldBlurOptions.depthMap)
+				}
+				
+				effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
+			
+				// TODO: is there a better way to get camera?
+                var camera = this.getEngine().scenes[0].activeCamera;
+                if(camera){
+                    effect.setFloat('near', camera.minZ);
+                    effect.setFloat('far', camera.maxZ);
+                }
+			});
 
             this.kernel = kernel;
         }
@@ -135,6 +160,10 @@
 
 			if (this.packedFloat) {
 				defines += `#define PACKEDFLOAT 1`;
+			}
+
+			if(this.depthOfFieldBlurOptions){
+				defines += `#define DOF 1`;
 			}
 
             this.updateEffect(defines, null, null, {

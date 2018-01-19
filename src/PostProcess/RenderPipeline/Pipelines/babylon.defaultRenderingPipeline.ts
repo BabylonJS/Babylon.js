@@ -8,6 +8,11 @@
         readonly BlurYPostProcessId: string = "BlurYPostProcessEffect";
         readonly CopyBackPostProcessId: string = "CopyBackPostProcessEffect";
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
+        readonly DepthOfFieldPassPostProcessId: string = "DepthOfFieldPassPostProcessId";
+        readonly CircleOfConfusionPostProcessId: string = "CircleOfConfusionPostProcessEffect"; 
+        readonly DepthOfFieldBlurXPostProcessId: string = "DepthOfFieldBlurXPostProcessEffect";
+        readonly DepthOfFieldBlurYPostProcessId: string = "DepthOfFieldBlurYPostProcessEffect";
+        readonly DepthOfFieldMergePostProcessId: string = "DepthOfFieldMergePostProcessEffect";
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
         readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
 
@@ -17,6 +22,11 @@
         public blurX: BlurPostProcess;
         public blurY: BlurPostProcess;
         public copyBack: PassPostProcess;
+        public depthOfFieldPass: PassPostProcess;
+        public circleOfConfusion: CircleOfConfusionPostProcess;
+        public depthOfFieldBlurX: BlurPostProcess;
+        public depthOfFieldBlurY: BlurPostProcess;
+        public depthOfFieldMerge: DepthOfFieldMergePostProcess;
         public fxaa: FxaaPostProcess;
         public imageProcessing: ImageProcessingPostProcess;
         public finalMerge: PassPostProcess;
@@ -26,6 +36,7 @@
 
         // Values       
         private _bloomEnabled: boolean = false;
+        private _depthOfFieldEnabled: boolean = false;
         private _fxaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
@@ -90,6 +101,20 @@
         @serialize()
         public get bloomEnabled(): boolean {
             return this._bloomEnabled;
+        }
+
+        @serialize()
+        public get depthOfFieldEnabled(): boolean {
+            return this._depthOfFieldEnabled;
+        }   
+        
+        public set depthOfFieldEnabled(enabled: boolean) {
+            if (this._depthOfFieldEnabled === enabled) {
+                return;
+            }
+            this._depthOfFieldEnabled = enabled;
+            
+            this._buildPipeline();
         }
 
         public set fxaaEnabled(enabled: boolean) {
@@ -217,6 +242,30 @@
                     this.copyBack.alphaMode = Engine.ALPHA_SCREENMODE;
                 }
                 this.copyBack.autoClear = false;
+            }
+
+            if(this.depthOfFieldEnabled){
+                // Enable and get current depth map
+                var depthMap = this._scene.enableDepthRenderer().getDepthMap();
+                
+                // Circle of confusion value for each pixel is used to determine how much to blur that pixel
+                this.circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthMap, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, true, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.CircleOfConfusionPostProcessId, () => { return this.circleOfConfusion; }, true));  
+            
+                // Capture circle of confusion texture
+                this.depthOfFieldPass = new PassPostProcess("depthOfFieldPass", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldPassPostProcessId, () => { return this.depthOfFieldPass; }, true));
+                
+                // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts 
+                // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
+                this.depthOfFieldBlurY = new BlurPostProcess("verticle blur", new Vector2(0, 1.0), 15, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, new DepthOfFieldBlurOptions(depthMap, this.circleOfConfusion));
+                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldBlurYPostProcessId, () => { return this.depthOfFieldBlurY; }, true));
+                this.depthOfFieldBlurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 15, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, new DepthOfFieldBlurOptions(depthMap));
+                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldBlurXPostProcessId, () => { return this.depthOfFieldBlurX; }, true));
+                
+                // Merge blurred images with original image based on circleOfConfusion
+                this.depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this.circleOfConfusion, this.depthOfFieldPass, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, true, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldMergePostProcessId, () => { return this.depthOfFieldMerge; }, true));
             }
 
             if (this._imageProcessingEnabled) {
