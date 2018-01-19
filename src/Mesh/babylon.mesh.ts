@@ -2492,14 +2492,14 @@
                     mesh._delayInfo.push(VertexBuffer.MatricesWeightsKind);
                 }
 
-                mesh._delayLoadingFunction = Geometry.ImportGeometry;
+                mesh._delayLoadingFunction = Geometry._ImportGeometry;
 
                 if (SceneLoader.ForceFullSceneLoadingForIncremental) {
                     mesh._checkDelayState();
                 }
 
             } else {
-                Geometry.ImportGeometry(parsedMesh, mesh);
+                Geometry._ImportGeometry(parsedMesh, mesh);
             }
 
             // Material
