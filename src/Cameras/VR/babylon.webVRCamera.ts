@@ -57,6 +57,9 @@ module BABYLON {
         private _deviceRoomRotationQuaternion = Quaternion.Identity();
 
         private _standingMatrix: Nullable<Matrix> = null;
+        private _useStandingMatrix: boolean = false;
+
+        private _useStandingMatrixCallback: Function;
 
         // Represents device position and rotation in babylon space
         public devicePosition = Vector3.Zero();
@@ -125,6 +128,22 @@ module BABYLON {
                 if (this._attached) {
                     this.getEngine().enableVR();
                 }
+                if(this._useStandingMatrix){
+                    if (!this._vrDevice.stageParameters.sittingToStandingTransform) {
+                        this._useStandingMatrixCallback(false);
+                    }else{
+                        this._standingMatrix = new Matrix();
+                        Matrix.FromFloat32ArrayToRefScaled(this._vrDevice.stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                        if (!this.getScene().useRightHandedSystem) {
+                            [2, 6, 8, 9, 14].forEach((num) => {
+                                if (this._standingMatrix) {
+                                    this._standingMatrix.m[num] *= -1;
+                                }
+                            });
+                        }
+                        this._useStandingMatrixCallback(true)
+                    }
+                }
             });
 
             if (typeof (VRFrameData) !== "undefined")
@@ -175,26 +194,10 @@ module BABYLON {
         }
 
         public useStandingMatrix = (callback = (bool: boolean) => { }) => {
-            // Use standing matrix if availible
-            if (!navigator || !navigator.getVRDisplays) {
-                callback(false);
-            } else {
-                navigator.getVRDisplays().then((displays: any) => {
-                    if (!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform) {
-                        callback(false);
-                    } else {
-                        this._standingMatrix = new Matrix();
-                        Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
-                        if (!this.getScene().useRightHandedSystem) {
-                            [2, 6, 8, 9, 14].forEach((num) => {
-                                if (this._standingMatrix) {
-                                    this._standingMatrix.m[num] *= -1;
-                                }
-                            });
-                        }
-                        callback(true)
-                    }
-                })
+            this._useStandingMatrix = true;
+            this._useStandingMatrixCallback = callback;
+            if (!this._vrDevice) {
+                this.getEngine().enableVR();
             }
         }
 
