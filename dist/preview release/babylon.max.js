@@ -54109,32 +54109,6 @@ var BABYLON;
 
 var BABYLON;
 (function (BABYLON) {
-    var getName = function (src) {
-        if (src instanceof HTMLVideoElement) {
-            return src.currentSrc;
-        }
-        if (typeof src === "object") {
-            return src.toString();
-        }
-        return src;
-    };
-    var getVideo = function (src) {
-        if (src instanceof HTMLVideoElement) {
-            return src;
-        }
-        var video = document.createElement("video");
-        if (typeof src === "string") {
-            video.src = src;
-        }
-        else {
-            src.forEach(function (url) {
-                var source = document.createElement("source");
-                source.src = url;
-                video.appendChild(source);
-            });
-        }
-        return video;
-    };
     var VideoTexture = /** @class */ (function (_super) {
         __extends(VideoTexture, _super);
         /**
@@ -54197,8 +54171,8 @@ var BABYLON;
             _this._generateMipMaps = generateMipMaps;
             _this._samplingMode = samplingMode;
             _this.autoUpdateTexture = settings.autoUpdateTexture;
-            _this.name = name || getName(src);
-            _this.video = getVideo(src);
+            _this.name = name || _this._getName(src);
+            _this.video = _this._getVideo(src);
             if (settings.autoPlay !== undefined) {
                 _this.video.autoplay = settings.autoPlay;
             }
@@ -54214,6 +54188,34 @@ var BABYLON;
             }
             return _this;
         }
+        VideoTexture.prototype._getName = function (src) {
+            if (src instanceof HTMLVideoElement) {
+                return src.currentSrc;
+            }
+            if (typeof src === "object") {
+                return src.toString();
+            }
+            return src;
+        };
+        ;
+        VideoTexture.prototype._getVideo = function (src) {
+            if (src instanceof HTMLVideoElement) {
+                return src;
+            }
+            var video = document.createElement("video");
+            if (typeof src === "string") {
+                video.src = src;
+            }
+            else {
+                src.forEach(function (url) {
+                    var source = document.createElement("source");
+                    source.src = url;
+                    video.appendChild(source);
+                });
+            }
+            return video;
+        };
+        ;
         /**
          * Internal method to initiate `update`.
          */
@@ -72205,10 +72207,10 @@ var BABYLON;
     var off_pfFlags = 20;
     var off_pfFourCC = 21;
     var off_RGBbpp = 22;
-    // var off_RMask = 23;
-    // var off_GMask = 24;
-    // var off_BMask = 25;
-    // var off_AMask = 26;
+    var off_RMask = 23;
+    var off_GMask = 24;
+    var off_BMask = 25;
+    var off_AMask = 26;
     // var off_caps1 = 27;
     var off_caps2 = 28;
     // var off_caps3 = 29;
@@ -72402,32 +72404,38 @@ var BABYLON;
             }
             return destArray;
         };
-        DDSTools._GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+        DDSTools._GetRGBAArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset, aOffset) {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = (x + y * width) * 4;
-                    byteArray[index] = srcData[srcPos + 2];
-                    byteArray[index + 1] = srcData[srcPos + 1];
-                    byteArray[index + 2] = srcData[srcPos];
-                    byteArray[index + 3] = srcData[srcPos + 3];
+                    byteArray[index] = srcData[srcPos + rOffset];
+                    byteArray[index + 1] = srcData[srcPos + gOffset];
+                    byteArray[index + 2] = srcData[srcPos + bOffset];
+                    byteArray[index + 3] = srcData[srcPos + aOffset];
                     index += 4;
                 }
             }
             return byteArray;
         };
-        DDSTools._GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer) {
+        DDSTools._ExtractLongWordOrder = function (value) {
+            if (value === 255 || value === -16777216) {
+                return 0;
+            }
+            return 1 + DDSTools._ExtractLongWordOrder(value >> 8);
+        };
+        DDSTools._GetRGBArrayBuffer = function (width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset) {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = (x + y * width) * 3;
-                    byteArray[index] = srcData[srcPos + 2];
-                    byteArray[index + 1] = srcData[srcPos + 1];
-                    byteArray[index + 2] = srcData[srcPos];
+                    byteArray[index] = srcData[srcPos + rOffset];
+                    byteArray[index + 1] = srcData[srcPos + gOffset];
+                    byteArray[index + 2] = srcData[srcPos + bOffset];
                     index += 3;
                 }
             }
@@ -72515,6 +72523,10 @@ var BABYLON;
                         return;
                 }
             }
+            var rOffset = DDSTools._ExtractLongWordOrder(header[off_RMask]);
+            var gOffset = DDSTools._ExtractLongWordOrder(header[off_GMask]);
+            var bOffset = DDSTools._ExtractLongWordOrder(header[off_BMask]);
+            var aOffset = DDSTools._ExtractLongWordOrder(header[off_AMask]);
             if (computeFormats) {
                 format = engine._getWebGLTextureType(info.textureType);
                 internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
@@ -72566,12 +72578,12 @@ var BABYLON;
                         else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;
-                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset);
                                 engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                             }
                             else {
                                 dataLength = width * height * 4;
-                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset, aOffset);
                                 engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                             }
                         }
