@@ -3,6 +3,11 @@ dist: trusty
 language: node_js
 node_js:
 - '6'
+cache:
+  directories:
+    - node_modules
+git:
+  depth: 3
 before_script:
 - travis_retry npm install -g gulp
 - cd ./Tools/Gulp
@@ -11,6 +16,7 @@ before_script:
 - "sh -e /etc/init.d/xvfb start"
 - sleep 3 # give xvfb some time to start
 script: 
+- set -e
 - gulp typescript-all
 - gulp typedoc-all
 - gulp tests-unit
