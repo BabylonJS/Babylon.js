@@ -6,7 +6,11 @@ import * as deepmerge from '../../assets/deepmerge.min.js';
 
 export class ConfigurationLoader {
 
-    private configurationCache: { (url: string): any };
+    private configurationCache: { [url: string]: any };
+
+    constructor() {
+        this.configurationCache = {};
+    }
 
     public loadConfiguration(initConfig: ViewerConfiguration = {}): Promise<ViewerConfiguration> {
 
@@ -62,10 +66,10 @@ export class ConfigurationLoader {
                     if (xhr.status === OK) {
                         cacheReference[url] = xhr.responseText;
                         resolve(xhr.responseText); // 'This is the returned text.'
+                    } else {
+                        console.log('Error: ' + xhr.status, url);
+                        reject('Error: ' + xhr.status); // An error occurred during the request.
                     }
-                } else {
-                    console.log('Error: ' + xhr.status, url);
-                    reject('Error: ' + xhr.status); // An error occurred during the request.
                 }
             }
         });

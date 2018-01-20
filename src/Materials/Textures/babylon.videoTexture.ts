@@ -19,35 +19,6 @@
         autoUpdateTexture: boolean;
     }
 
-    const getName = (src: string | string[] | HTMLVideoElement): string => {
-        if (src instanceof HTMLVideoElement) {
-            return src.currentSrc;
-        }
-
-        if (typeof src === "object") {
-            return src.toString();
-        }
-
-        return src;
-    };
-
-    const getVideo = (src: string | string[] | HTMLVideoElement): HTMLVideoElement => {
-        if (src instanceof HTMLVideoElement) {
-            return src;
-        }
-        const video: HTMLVideoElement = document.createElement("video");
-        if (typeof src === "string") {
-            video.src = src;
-        } else {
-            src.forEach(url => {
-                const source = document.createElement("source");
-                source.src = url;
-                video.appendChild(source);
-            });
-        }
-        return video;
-    };
-
     export class VideoTexture extends Texture {
         /**
          * Tells whether textures will be updated automatically or user is required to call `updateTexture` manually
@@ -93,8 +64,8 @@
             this._samplingMode = samplingMode;
             this.autoUpdateTexture = settings.autoUpdateTexture;
 
-            this.name = name || getName(src);
-            this.video = getVideo(src);
+            this.name = name || this._getName(src);
+            this.video = this._getVideo(src);
 
             if (settings.autoPlay !== undefined) {
                 this.video.autoplay = settings.autoPlay;
@@ -112,6 +83,35 @@
                 this._createInternalTexture();
             }
         }
+
+        private _getName(src: string | string[] | HTMLVideoElement): string {
+            if (src instanceof HTMLVideoElement) {
+                return src.currentSrc;
+            }
+    
+            if (typeof src === "object") {
+                return src.toString();
+            }
+    
+            return src;
+        };
+    
+        private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
+            if (src instanceof HTMLVideoElement) {
+                return src;
+            }
+            const video: HTMLVideoElement = document.createElement("video");
+            if (typeof src === "string") {
+                video.src = src;
+            } else {
+                src.forEach(url => {
+                    const source = document.createElement("source");
+                    source.src = url;
+                    video.appendChild(source);
+                });
+            }
+            return video;
+        };
 
         private _createInternalTexture = (): void => {
             if (this._texture != null) {

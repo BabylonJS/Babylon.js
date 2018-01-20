@@ -76,10 +76,10 @@
     var off_pfFlags = 20;
     var off_pfFourCC = 21;
     var off_RGBbpp = 22;
-    // var off_RMask = 23;
-    // var off_GMask = 24;
-    // var off_BMask = 25;
-    // var off_AMask = 26;
+    var off_RMask = 23;
+    var off_GMask = 24;
+    var off_BMask = 25;
+    var off_AMask = 26;
     // var off_caps1 = 27;
     var off_caps2 = 28;
     // var off_caps3 = 29;
@@ -311,17 +311,18 @@
             return destArray;
         }
 
-        private static _GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
+        private static _GetRGBAArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, rOffset: number, gOffset: number, bOffset: number, aOffset: number): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = (x + y * width) * 4;
-                    byteArray[index] = srcData[srcPos + 2];
-                    byteArray[index + 1] = srcData[srcPos + 1];
-                    byteArray[index + 2] = srcData[srcPos];
-                    byteArray[index + 3] = srcData[srcPos + 3];
+
+                    byteArray[index] = srcData[srcPos + rOffset];
+                    byteArray[index + 1] = srcData[srcPos + gOffset];
+                    byteArray[index + 2] = srcData[srcPos + bOffset];
+                    byteArray[index + 3] = srcData[srcPos + aOffset];
                     index += 4;
                 }
             }
@@ -329,16 +330,25 @@
             return byteArray;
         }
 
-        private static _GetRGBArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer): Uint8Array {
+        private static _ExtractLongWordOrder(value: number): number {
+            if (value === 255 || value === -16777216) {
+                return 0;
+            }
+
+            return 1 + DDSTools._ExtractLongWordOrder(value >> 8);
+        }
+
+        private static _GetRGBArrayBuffer(width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, rOffset: number, gOffset: number, bOffset: number): Uint8Array {
             var byteArray = new Uint8Array(dataLength);
             var srcData = new Uint8Array(arrayBuffer, dataOffset);
             var index = 0;
             for (var y = 0; y < height; y++) {
                 for (var x = 0; x < width; x++) {
                     var srcPos = (x + y * width) * 3;
-                    byteArray[index] = srcData[srcPos + 2];
-                    byteArray[index + 1] = srcData[srcPos + 1];
-                    byteArray[index + 2] = srcData[srcPos];
+
+                    byteArray[index] = srcData[srcPos + rOffset];
+                    byteArray[index + 1] = srcData[srcPos + gOffset];
+                    byteArray[index + 2] = srcData[srcPos + bOffset];
                     index += 3;
                 }
             }
@@ -439,6 +449,11 @@
                 }
             }
 
+            let rOffset = DDSTools._ExtractLongWordOrder(header[off_RMask]);
+            let gOffset = DDSTools._ExtractLongWordOrder(header[off_GMask]);
+            let bOffset = DDSTools._ExtractLongWordOrder(header[off_BMask]);
+            let aOffset = DDSTools._ExtractLongWordOrder(header[off_AMask]);            
+
             if (computeFormats) {
                 format = engine._getWebGLTextureType(info.textureType);
                 internalFormat = engine._getRGBABufferInternalSizedFormat(info.textureType);
@@ -496,11 +511,11 @@
                         } else if (info.isRGB) {
                             if (bpp === 24) {
                                 dataLength = width * height * 3;
-                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset);
                                 engine._uploadDataToTexture(sampler, i, gl.RGB, width, height, gl.RGB, gl.UNSIGNED_BYTE, byteArray);
                             } else { // 32
                                 dataLength = width * height * 4;
-                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer);
+                                byteArray = DDSTools._GetRGBAArrayBuffer(width, height, dataOffset, dataLength, arrayBuffer, rOffset, gOffset, bOffset, aOffset);
                                 engine._uploadDataToTexture(sampler, i, gl.RGBA, width, height, gl.RGBA, gl.UNSIGNED_BYTE, byteArray);
                             }
                         } else if (info.isLuminance) {
