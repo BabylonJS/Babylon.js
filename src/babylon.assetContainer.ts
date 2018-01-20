@@ -6,19 +6,63 @@ module BABYLON {
         /**
          * Cameras to keep.
          */
-        cameras: BABYLON.Camera[] = [];
+        public cameras = new Array<Camera>();
+        /**
+         * Lights to keep.
+         */
+        public lights = new Array<Light>();
         /**
          * Meshes to keep.
          */
-        meshes: BABYLON.Mesh[] = [];
+        public meshes = new Array<AbstractMesh>();
         /**
-         * Geometries to keep.
+         * Skeletons to keep.
          */
-        geometries: BABYLON.Geometry[] = [];
+        public skeletons = new Array<Skeleton>();
+        /**
+         * ParticleSystems to keep.
+         */
+        public particleSystems = new Array<ParticleSystem>();
+        /**
+         * Animations to keep.
+         */
+        public animations = new Array<Animation>();
+        /**
+         * MultiMaterials to keep.
+         */
+        public multiMaterials = new Array<MultiMaterial>();
         /**
          * Materials to keep.
          */
-        materials: BABYLON.Material[] = [];
+        public materials = new Array<Material>();
+        /**
+         * MorphTargetManagers to keep.
+         */
+        public morphTargetManagers = new Array<MorphTargetManager>();
+        /**
+         * Geometries to keep.
+         */
+        public geometries = new Array<Geometry>();
+        /**
+         * TransformNodes to keep.
+         */
+        public transformNodes = new Array<TransformNode>();
+        /**
+         * LensFlareSystems to keep.
+         */
+        public lensFlareSystems = new Array<LensFlareSystem>();
+        /**
+         * ShadowGenerators to keep.
+         */
+        public shadowGenerators = new Array<ShadowGenerator>();
+        /**
+         * ActionManagers to keep.
+         */
+        public actionManagers = new Array<ActionManager>();
+        /**
+         * Sounds to keep.
+         */
+        public sounds = new Array<Sound>();
     }
 
     /**
@@ -218,7 +262,7 @@ module BABYLON {
 
         /**
          * Removes all the assets contained in the scene and adds them to the container.
-         * @param keepAssets Set of assets keep in the scene. (default: empty)
+         * @param keepAssets Set of assets to keep in the scene. (default: empty)
          */
         public moveAllFromScene(keepAssets?: KeepAssets): void {
 
