@@ -445,6 +445,12 @@ Validate.prototype.validateComment = function(node) {
         return true;
     }
 
+    // Return true for overwrited properties
+    if (node.overwrites) {
+        return true;
+    }
+    
+
     if (node.comment) {
 
         if (node.comment.text || node.comment.shortText) {
