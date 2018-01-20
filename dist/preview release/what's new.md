@@ -1,7 +1,7 @@
 # 3.2.0
 
 ## Major updates
-- Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments are now mandatory ([sebavan](https://github.com/sebavan))
+- Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments and what's new updates are now mandatory ([sebavan](https://github.com/sebavan))
 - Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
 - `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
