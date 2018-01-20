@@ -103,7 +103,7 @@ module BABYLON {
         /**
          * Adds all the assets from the container to the scene.
          */
-        addAllToScene(){
+        public addAllToScene(){
             this.cameras.forEach((o)=>{
                 this.scene.addCamera(o);
             });
@@ -153,7 +153,7 @@ module BABYLON {
         /**
          * Removes all the assets in the container from the scene
          */
-        removeAllFromScene(){
+        public removeAllFromScene(){
             this.cameras.forEach((o)=>{
                 this.scene.removeCamera(o);
             });
@@ -200,7 +200,7 @@ module BABYLON {
             })
         }
         
-        private moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
+        private _moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
             for (let asset of sourceAssets) {
                 let move = true;
                 for (let keepAsset of keepAssets) {
@@ -220,16 +220,16 @@ module BABYLON {
          * Removes all the assets contained in the scene and adds them to the container.
          * @param keepAssets Set of assets keep in the scene. (default: empty)
          */
-        moveAllFromScene(keepAssets?: KeepAssets): void {
+        public moveAllFromScene(keepAssets?: KeepAssets): void {
 
             if (keepAssets === undefined) {
                 keepAssets = new KeepAssets();
             }
     
-            this.moveAssets(this.scene.cameras, this.cameras, keepAssets.cameras);
-            this.moveAssets(this.scene.meshes, this.meshes, keepAssets.meshes);
-            this.moveAssets(this.scene.getGeometries(), this.geometries, keepAssets.geometries);
-            this.moveAssets(this.scene.materials, this.materials, keepAssets.materials);
+            this._moveAssets(this.scene.cameras, this.cameras, keepAssets.cameras);
+            this._moveAssets(this.scene.meshes, this.meshes, keepAssets.meshes);
+            this._moveAssets(this.scene.getGeometries(), this.geometries, keepAssets.geometries);
+            this._moveAssets(this.scene.materials, this.materials, keepAssets.materials);
     
             Array.prototype.push.apply(this.actionManagers, this.scene._actionManagers);
             Array.prototype.push.apply(this.animations, this.scene.animations);
