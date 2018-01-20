@@ -61,15 +61,22 @@
          * Creates a new instance of @see Particle
          * @param particleSystem the particle system the particle belongs to
          */
-        constructor(public particleSystem: ParticleSystem) {
+        constructor(
+            /**
+             * particleSystem the particle system the particle belongs to.
+             */
+            public particleSystem: ParticleSystem) {
             if (!this.particleSystem.isAnimationSheetEnabled) {
                 return;
             }
 
-            this.setCellInfoFromSystem();
+            this.updateCellInfoFromSystem();
         }
 
-        public setCellInfoFromSystem(): void {
+        /**
+         * This method update the current particle cell info from the particle system.
+         */
+        public updateCellInfoFromSystem(): void {
             this.cellIndex = this.particleSystem.startSpriteCellID;
 
             if (this.particleSystem.spriteCellChangeSpeed == 0) {
