@@ -1,5 +1,8 @@
 declare module BABYLON.GLTF2 {
-    enum AccessorType {
+    /**
+     * Specifies if the attribute is a scalar, vector, or matrix.
+     */
+    const enum AccessorType {
         SCALAR = "SCALAR",
         VEC2 = "VEC2",
         VEC3 = "VEC3",
@@ -8,22 +11,22 @@ declare module BABYLON.GLTF2 {
         MAT3 = "MAT3",
         MAT4 = "MAT4",
     }
-    enum MaterialAlphaMode {
+    const enum MaterialAlphaMode {
         OPAQUE = "OPAQUE",
         MASK = "MASK",
         BLEND = "BLEND",
     }
-    enum AnimationChannelTargetPath {
+    const enum AnimationChannelTargetPath {
         TRANSLATION = "translation",
         ROTATION = "rotation",
         SCALE = "scale",
         WEIGHTS = "weights",
     }
-    enum CameraType {
+    const enum CameraType {
         PERSPECTIVE = "perspective",
         ORTHOGRAPHIC = "orthographic",
     }
-    enum AccessorComponentType {
+    const enum AccessorComponentType {
         BYTE = 5120,
         UNSIGNED_BYTE = 5121,
         SHORT = 5122,
@@ -31,12 +34,12 @@ declare module BABYLON.GLTF2 {
         UNSIGNED_INT = 5125,
         FLOAT = 5126,
     }
-    enum AnimationInterpolation {
+    const enum AnimationInterpolation {
         LINEAR = "LINEAR",
         STEP = "STEP",
         CUBICSPLINE = "CUBICSPLINE",
     }
-    enum MeshPrimitiveMode {
+    const enum MeshPrimitiveMode {
         POINTS = 0,
         LINES = 1,
         LINE_LOOP = 2,
@@ -45,15 +48,15 @@ declare module BABYLON.GLTF2 {
         TRIANGLE_STRIP = 5,
         TRIANGLE_FAN = 6,
     }
-    enum ImageMimeType {
+    const enum ImageMimeType {
         JPEG = "image/jpeg",
         PNG = "image/png",
     }
-    enum TextureMagFilter {
+    const enum TextureMagFilter {
         NEAREST = 9728,
         LINEAR = 9729,
     }
-    enum TextureMinFilter {
+    const enum TextureMinFilter {
         NEAREST = 9728,
         LINEAR = 9729,
         NEAREST_MIPMAP_NEAREST = 9984,
@@ -61,7 +64,7 @@ declare module BABYLON.GLTF2 {
         NEAREST_MIPMAP_LINEAR = 9986,
         LINEAR_MIPMAP_LINEAR = 9987,
     }
-    enum TextureWrapMode {
+    const enum TextureWrapMode {
         CLAMP_TO_EDGE = 33071,
         MIRRORED_REPEAT = 33648,
         REPEAT = 10497,
@@ -96,8 +99,8 @@ declare module BABYLON.GLTF2 {
         normalized?: boolean;
         count: number;
         type: AccessorType;
-        max: number[];
-        min: number[];
+        max?: number[];
+        min?: number[];
         sparse?: IAccessorSparse;
     }
     interface IAnimationChannel extends IProperty {
@@ -156,17 +159,17 @@ declare module BABYLON.GLTF2 {
         bufferView?: number;
     }
     interface IMaterialNormalTextureInfo extends ITextureInfo {
-        scale: number;
+        scale?: number;
     }
     interface IMaterialOcclusionTextureInfo extends ITextureInfo {
-        strength: number;
+        strength?: number;
     }
     interface IMaterialPbrMetallicRoughness {
-        baseColorFactor: number[];
-        baseColorTexture: ITextureInfo;
-        metallicFactor: number;
-        roughnessFactor: number;
-        metallicRoughnessTexture: ITextureInfo;
+        baseColorFactor?: number[];
+        baseColorTexture?: ITextureInfo;
+        metallicFactor?: number;
+        roughnessFactor?: number;
+        metallicRoughnessTexture?: ITextureInfo;
     }
     interface IMaterial extends IChildRootProperty {
         pbrMetallicRoughness?: IMaterialPbrMetallicRoughness;

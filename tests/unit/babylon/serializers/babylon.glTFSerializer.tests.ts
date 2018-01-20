@@ -40,53 +40,50 @@ describe('Babylon glTF Serializer', () => {
             const babylonMaterial = new BABYLON.PBRMetallicRoughnessMaterial("metallicroughness", scene);
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
             
-            alphaMode = BABYLON._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('OPAQUE');
             
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
-            alphaMode = BABYLON._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
 
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
-            alphaMode = BABYLON._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
 
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
-            alphaMode = BABYLON._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('MASK'); 
         });
+
         it('should convert Babylon standard material to metallic roughness', () => {
             const scene = new BABYLON.Scene(subject);
             const babylonStandardMaterial = new BABYLON.StandardMaterial("specGloss", scene);
             babylonStandardMaterial.diffuseColor = BABYLON.Color3.White();
             babylonStandardMaterial.specularColor = BABYLON.Color3.Black();
+            babylonStandardMaterial.specularPower = 64;
+            babylonStandardMaterial.alpha = 1;
 
-            const specGloss: BABYLON._IBabylonSpecularGlossiness = {
-                diffuse: BABYLON.Color3.White(),
-                specular: BABYLON.Color3.Black(),
-                glossiness: 0.25,
-                opacity: 1.0
-            };
-            const metalRough = BABYLON._GLTFMaterial.ConvertToMetallicRoughness(specGloss);
+            const metalRough = BABYLON.GLTF2._GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
-            metalRough.baseColor.equals(new BABYLON.Color3(1, 1, 1)).should.be.equal(true);
+            metalRough.baseColorFactor.should.deep.equal([1,1,1,1]);
 
-            metalRough.metallic.should.be.equal(0);
+            metalRough.metallicFactor.should.be.equal(0);
             
-            metalRough.roughness.should.be.equal(0.75);
-            
-            metalRough.opacity.should.be.equal(1);
+            metalRough.roughnessFactor.should.be.equal(0.75);
         });
+
         it('should solve for metallic', () => {
-            BABYLON._GLTFMaterial.SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
-            BABYLON._GLTFMaterial.SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
+            BABYLON.GLTF2._GLTFMaterial.SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
+            BABYLON.GLTF2._GLTFMaterial.SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
         });
+
         it('should serialize empty Babylon scene to glTF with only asset property', (done) => {
             mocha.timeout(10000);
 
             const scene = new BABYLON.Scene(subject);
             scene.executeWhenReady(function () {
-                const glTFExporter = new BABYLON._GLTF2Exporter(scene);
+                const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
                 const glTFData = glTFExporter._generateGLTF('test');
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
@@ -98,13 +95,14 @@ describe('Babylon glTF Serializer', () => {
                 done();
             });
         });
+
         it('should serialize sphere geometry in scene to glTF', (done) => {
             mocha.timeout(10000);
             const scene = new BABYLON.Scene(subject);
             BABYLON.Mesh.CreateSphere('sphere', 16, 2, scene);
 
             scene.executeWhenReady(function () {
-                const glTFExporter = new BABYLON._GLTF2Exporter(scene);
+                const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
                 const glTFData = glTFExporter._generateGLTF('test');
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
@@ -134,6 +132,7 @@ describe('Babylon glTF Serializer', () => {
                 done();
             });
         });
+        
         it('should serialize alpha mode and cutoff', (done) => {
             mocha.timeout(10000);
             const scene = new BABYLON.Scene(subject);
@@ -147,7 +146,7 @@ describe('Babylon glTF Serializer', () => {
             plane.material = babylonPBRMetalRoughMaterial;
 
             scene.executeWhenReady(function () {
-                const glTFExporter = new BABYLON._GLTF2Exporter(scene);
+                const glTFExporter = new BABYLON.GLTF2._Exporter(scene);
                 const glTFData = glTFExporter._generateGLTF('test');
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
