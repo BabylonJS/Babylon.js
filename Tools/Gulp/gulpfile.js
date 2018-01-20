@@ -27,12 +27,13 @@ var sass = require("gulp-sass");
 var webpack = require("webpack-stream");
 var typedoc = require("gulp-typedoc");
 var validateTypedoc = require("./gulp-validateTypedoc");
+var request = require('request');
+var fs = require("fs");
+var karmaServer = require('karma').Server;
 
 var config = require("./config.json");
 
 var del = require("del");
-
-var karmaServer = require('karma').Server;
 
 var debug = require("gulp-debug");
 var includeShadersStream;
@@ -938,4 +939,46 @@ gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
 
     var server = new karmaServer(kamaServerOptions, done);
     server.start();
+});
+
+gulp.task("tests-whatsnew", function(done) {
+    // Only checks on Travis
+    if (!process.env.TRAVIS) {
+        done();
+        return;
+    }
+
+    // Only checks on Pull Requests
+    if (process.env.TRAVIS_PULL_REQUEST == "false") {
+        done();
+        return;
+    }
+
+    // Do not check deploy
+    if (process.env.TRAVIS_BRANCH == "preview") {
+        done();
+        return;
+    }
+
+    // Compare what's new with the current one in the preview release folder.
+    const https = require("https");
+    const url = "https://rawgit.com/BabylonJS/Babylon.js/master/dist/preview%20release/what's%20new.md";
+    https.get(url, res => {
+        res.setEncoding("utf8");
+        let oldData = "";
+        res.on("data", data => {
+            oldData += data;
+        });
+        res.on("end", () => {
+            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function(err, newData) {
+                if (err || oldData != newData) {
+                    done();
+                    return;
+                }
+                
+                console.error("What's new file did not change.");
+                process.exit(1);
+            });
+        });
+    });
 });
