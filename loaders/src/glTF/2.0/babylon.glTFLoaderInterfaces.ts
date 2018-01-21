@@ -109,7 +109,7 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
-        targets: any[];
+        babylonAnimationGroup: AnimationGroup;
     }
 
     export interface IGLTFAsset extends IGLTFChildRootProperty {
@@ -284,7 +284,7 @@ module BABYLON.GLTF2 {
         texCoord?: number;
     }
 
-    export interface IGLTF extends IGLTFProperty {
+    export interface _IGLTF extends IGLTFProperty {
         accessors?: IGLTFAccessor[];
         animations?: IGLTFAnimation[];
         asset: IGLTFAsset;

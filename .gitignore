@@ -24,6 +24,8 @@ postProcessLibrary/src/**/*.js
 inspector/src/**/*.js
 serializers/src/**/*.js
 gui/src/**/*.js
+tests/unit/**/*.js
+!tests/unit/karma.conf.js
 
 # Build results
 [Rr]elease/

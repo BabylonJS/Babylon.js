@@ -124,6 +124,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
     renderImage.src = renderB64;
 
     currentScene.dispose();
+    engine.setHardwareScalingLevel(1);
 
     done(testRes, renderB64);
 }
@@ -134,12 +135,18 @@ function processCurrentScene(test, resultCanvas, result, renderImage, index, wai
 
         currentScene.useConstantAnimationDeltaTime = true;
         engine.runRenderLoop(function () {
-            currentScene.render();
-            renderCount--;
+            try {
+                currentScene.render();
+                renderCount--;
 
-            if (renderCount === 0) {
-                engine.stopRenderLoop();
-                evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                if (renderCount === 0) {
+                    engine.stopRenderLoop();
+                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                }
+            }
+            catch (e) {
+                console.error(e);
+                done(false);
             }
         });
 
@@ -202,7 +209,12 @@ function runTest(index, done) {
         BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function (newScene) {
             currentScene = newScene;
             processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
-        });
+        },
+            null,
+            function (loadedScene, msg) {
+                console.error(msg);
+                done(false);
+            });
     }
     else if (test.playgroundId) {
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
@@ -210,18 +222,26 @@ function runTest(index, done) {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState === 4) {
-                if (xmlHttp.status === 200) {
+                try {
+                    xmlHttp.onreadystatechange = null;
                     var snippet = JSON.parse(xmlHttp.responseText)[0];
                     var code = JSON.parse(snippet.jsonPayload).code.toString();
                     code = code.replace(/\/textures\//g, pgRoot + "/textures/");
                     code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
                     code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
                     code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
-
                     currentScene = eval(code + "\r\ncreateScene(engine)");
                     processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
                 }
+                catch (e) {
+                    console.error(e);
+                    done(false);
+                }
             }
+        }
+        xmlHttp.onerror = function () {
+            console.error("Network error during test load.");
+            done(false);
         }
 
         xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
@@ -237,35 +257,45 @@ function runTest(index, done) {
 
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                request.onreadystatechange = null;
+                try {
+                    request.onreadystatechange = null;
 
-                var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
-                scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
-                scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
-                scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
+                    var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
+                    scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                    scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
+                    scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
 
-                if (test.replace) {
-                    var split = test.replace.split(",");
-                    for (var i = 0; i < split.length; i += 2) {
-                        var source = split[i].trim();
-                        var destination = split[i + 1].trim();
-                        scriptToRun = scriptToRun.replace(source, destination);
+                    if (test.replace) {
+                        var split = test.replace.split(",");
+                        for (var i = 0; i < split.length; i += 2) {
+                            var source = split[i].trim();
+                            var destination = split[i + 1].trim();
+                            scriptToRun = scriptToRun.replace(source, destination);
+                        }
                     }
-                }
 
-                if (test.replaceUrl) {
-                    var split = test.replaceUrl.split(",");
-                    for (var i = 0; i < split.length; i++) {
-                        var source = split[i].trim();
-                        var regex = new RegExp(source, "g");
-                        scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
+                    if (test.replaceUrl) {
+                        var split = test.replaceUrl.split(",");
+                        for (var i = 0; i < split.length; i++) {
+                            var source = split[i].trim();
+                            var regex = new RegExp(source, "g");
+                            scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
+                        }
                     }
-                }
 
-                currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
-                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                    currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
+                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                }
+                catch (e) {
+                    console.error(e);
+                    done(false);
+                }
             }
         };
+        request.onerror = function () {
+            console.error("Network error during test load.");
+            done(false);
+        }
 
         request.send(null);
 

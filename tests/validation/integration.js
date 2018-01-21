@@ -34,24 +34,30 @@ xhr.addEventListener("load", function () {
                 }
 
                 it(test.title, function (done) {
-                    this.timeout(240000);
+                    this.timeout(180000);
+
+                    var deferredDone = function() {
+                        setTimeout(function() {
+                            done();
+                        }, 3000);
+                    }
 
                     try {
                         runTest(index, function(result, screenshot) {
                             try {
                                 expect(result).to.be.true; 
-                                done();
+                                deferredDone();
                             }
                             catch (e) {
                                 if (screenshot) {
                                     console.error(screenshot);
                                 }
-                                done(e);
+                                deferredDone(e);
                             }
                         });
                     }
                     catch (e) {
-                        done(e);
+                        deferredDone(e);
                     }
                 });
             };
