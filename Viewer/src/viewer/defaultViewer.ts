@@ -1,7 +1,7 @@
 
 
 import { ViewerConfiguration } from './../configuration/configuration';
-import { Template } from './../templateManager';
+import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
 import { MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
@@ -27,9 +27,22 @@ export class DefaultViewer extends AbstractViewer {
         this.showLoadingScreen();
 
         // navbar
-        let viewerElement = this.templateManager.getTemplate('viewer');
+        this.initNavbar();
+
+        // close overlay button
+        let closeButton = document.getElementById('close-button');
+        if (closeButton) {
+            closeButton.addEventListener('pointerdown', () => {
+                this.hideOverlayScreen();
+            })
+        }
+
+        return super.onTemplatesLoaded();
+    }
+
+    private initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
-        if (viewerElement && navbar) {
+        if (navbar) {
             let navbarHeight = navbar.parent.clientHeight + 'px';
 
             let navbarShown: boolean = true;
@@ -61,64 +74,30 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
 
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerout');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, true), 'pointerdown');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
+            this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
 
-
-            viewerElement.parent.addEventListener('pointerout', triggerNavbar.bind(this, false));
-            viewerElement.parent.addEventListener('pointerdown', triggerNavbar.bind(this, true));
-            viewerElement.parent.addEventListener('pointerup', triggerNavbar.bind(this, false));
-            navbar.parent.addEventListener('pointerover', triggerNavbar.bind(this, true))
-            // triggerNavbar(false);
-
-            // events registration
-            this.registerNavbarButtons();
-        }
-
-        // close overlay button
-        let closeButton = document.getElementById('close-button');
-        if (closeButton) {
-            closeButton.addEventListener('pointerdown', () => {
-                this.hideOverlayScreen();
-            })
-        }
-
-        return super.onTemplatesLoaded();
-    }
-
-    private registerNavbarButtons() {
-        let isFullscreen = false;
-
-        let navbar = this.templateManager.getTemplate('navBar');
-        let viewerTemplate = this.templateManager.getTemplate('viewer');
-        if (!navbar || !viewerTemplate) return;
-
-        let viewerElement = viewerTemplate.parent;
-
-
-        navbar.onEventTriggered.add((data) => {
-            switch (data.event.type) {
-                case 'pointerdown':
-                    let event: PointerEvent = <PointerEvent>data.event;
-                    if (event.button === 0) {
-                        switch (data.selector) {
-                            case '#fullscreen-button':
-                                if (!isFullscreen) {
-                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
-                                    requestFullScreen.call(viewerElement);
-                                } else {
-                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
-                                    exitFullscreen.call(document);
-                                }
-
-                                isFullscreen = !isFullscreen;
-                                break;
-                            case '#help-button':
-                                this.showOverlayScreen('help');
-                                break;
-                        }
+            // other events
+            let viewerTemplate = this.templateManager.getTemplate('viewer');
+            let viewerElement = viewerTemplate && viewerTemplate.parent;
+            // full screen
+            let triggerFullscren = (eventData: EventCallback) => {
+                if (viewerElement) {
+                    let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+                    if (!fullscreenElement) {
+                        let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
+                        requestFullScreen.call(viewerElement);
+                    } else {
+                        let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
+                        exitFullscreen.call(document);
                     }
-                    break;
+                }
             }
-        });
+
+            this.templateManager.eventManager.registerCallback('navBar', triggerFullscren, 'pointerdown', '#fullscreen-button');
+        }
     }
 
     protected prepareContainerElement() {
@@ -227,6 +206,10 @@ export class DefaultViewer extends AbstractViewer {
             let backgroundMaterial = new BackgroundMaterial('groundmat', this.scene);
             ground.rotation.x = Math.PI / 2; // Face up by default.
             ground.receiveShadows = groundConfig.receiveShadows || false;
+
+            // position the ground correctly
+            let groundPosition = focusMeshes[0].getHierarchyBoundingVectors().min.y;
+            ground.position.y = groundPosition;
 
             // default values
             backgroundMaterial.alpha = 0.9;

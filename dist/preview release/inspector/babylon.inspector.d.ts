@@ -780,6 +780,7 @@ declare module INSPECTOR {
         static REFRESH_TIME: number;
         /** The list of data to update */
         private _updatableProperties;
+        private interval;
         constructor();
         static getInstance(): Scheduler;
         /** Add a property line to be updated every X ms */
@@ -787,6 +788,7 @@ declare module INSPECTOR {
         /** Removes the given property from the list of properties to update */
         remove(prop: PropertyLine): void;
         private _update();
+        dispose(): void;
     }
 }
 

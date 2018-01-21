@@ -117,15 +117,15 @@
         }
 
         /**
-         * Returns the DirectionalLight absolute position in the World.
+         * Returns the ShadowLight absolute position in the World.
          */
         public getAbsolutePosition(): Vector3 {
             return this.transformedPosition ? this.transformedPosition : this.position;
         }
 
         /**
-         * Sets the DirectionalLight direction toward the passed target (Vector3).
-         * Returns the updated DirectionalLight direction (Vector3).
+         * Sets the ShadowLight direction toward the passed target (Vector3).
+         * Returns the updated ShadowLight direction (Vector3).
          */
         public setDirectionToTarget(target: Vector3): Vector3 {
             this.direction = Vector3.Normalize(target.subtract(this.position));

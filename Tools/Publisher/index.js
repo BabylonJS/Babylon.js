@@ -46,30 +46,53 @@ let packages = [
     }
 ];
 
+function updateEngineVersion(newVersion) {
+    console.log("updating version in babylon.engine.ts");
+    let engineContent = fs.readFileSync("../../src/Engine/babylon.engine.ts").toString();
+    let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
+    fs.writeFileSync("../../src/Engine/babylon.engine.ts", replaced);
+}
+
+function runGulp() {
+    // run gulp typescript-all
+    let exec = shelljs.exec("gulp typescript-all --gulpfile ../Gulp/gulpfile.js");
+    if (exec.code) {
+        console.log("error during compilation, aborting");
+        process.exit(1);
+    }
+}
+
+function processPackages() {
+    packages.forEach((package) => {
+        if (package.name === "core") {
+            processCore(package, version);
+        } else {
+            let packageJson = require(package.path + 'package.json');
+            packageJson.version = version;
+            if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
+            fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
+            console.log('Publishing ' + package.name + " from " + package.path);
+            //publish the respected package
+            shelljs.exec('npm publish \"' + package.path + "\"");
+        }
+
+    });
+}
+
 //check if logged in
 console.log("Using npm user:");
 let loginCheck = shelljs.exec('npm whoami');
-console.log("No that I can check, but - did you forget to run gulp typescript-all?");
+console.log("Not that I can check, but - did you run gulp typescript-all?");
 if (loginCheck.code === 0) {
     prompt.start();
 
     prompt.get(['version'], function (err, result) {
         let version = result.version;
-        packages.forEach((package) => {
-            if (package.name === "core") {
-                processCore(package, version);
-            } else {
-                let packageJson = require(package.path + 'package.json');
-                packageJson.version = version;
-                if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
-                fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
-                console.log('Publishing ' + package.name + " from " + package.path);
-                //publish the respected package
-                shelljs.exec('npm publish \"' + package.path + "\"");
-            }
+        updateEngineVersion(version);
+        runGulp();
+        processPackages();
 
-        });
-        console.log("done, please don't forget to commit the changes")
+        console.log("done, please tag git with " + version);
     });
 } else {
     console.log('not logged in.');
@@ -85,6 +108,10 @@ function processCore(package, version) {
         {
             path: basePath + "/babylon.d.ts",
             objectName: "babylon.d.ts"
+        },
+        {
+            path: basePath + "/es6.js",
+            objectName: "es6.js"
         },
         {
             path: basePath + "/babylon.js",
@@ -108,7 +135,8 @@ function processCore(package, version) {
         }
     ];
 
-    fs.readdirSync(basePath + '/modules/').forEach(object => {
+    // remove the modules for now
+    /*fs.readdirSync(basePath + '/modules/').forEach(object => {
         console.log(object);
         if (fs.statSync(basePath + '/modules/' + object).isDirectory) {
             files.push({
@@ -117,7 +145,7 @@ function processCore(package, version) {
                 isDir: true
             });
         }
-    })
+    })*/
 
     //copy them to the package path
     files.forEach(file => {
@@ -143,7 +171,7 @@ function processCore(package, version) {
 
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
 
-    console.log('Publishing ' + package.name + " from " + package.path);
+    console.log('Publishing ' + package.name + " from " + basePath + '/package/');
     //publish the respected package
     shelljs.exec('npm publish \"' + basePath + '/package/' + "\"");
 
