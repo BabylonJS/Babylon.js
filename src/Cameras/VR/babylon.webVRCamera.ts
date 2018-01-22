@@ -300,29 +300,26 @@ module BABYLON {
          * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
          */
         public useStandingMatrix(callback = (bool: boolean) => { }) {
-            var webVRInitobserver: Nullable<Observable<{ vrDisplay: any, vrSupported: any }>> = null;
-            var setStandingMatrix = ()=>{
-                if (!this._vrDevice || !this._vrDevice.stageParameters||!this._vrDevice.stageParameters.sittingToStandingTransform) {
-                    callback(false);
-                } else {
-                    this._standingMatrix = new Matrix();
-                    Matrix.FromFloat32ArrayToRefScaled(this._vrDevice.stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
-                    if (!this.getScene().useRightHandedSystem) {
-                        [2, 6, 8, 9, 14].forEach((num) => {
-                            if (this._standingMatrix) {
-                                this._standingMatrix.m[num] *= -1;
-                            }
-                        });
+            // Use standing matrix if available
+            if (!navigator || !navigator.getVRDisplays) {
+                callback(false);
+            } else {
+                navigator.getVRDisplays().then((displays: any) => {
+                    if (!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform) {
+                            callback(false);
+                    } else {
+                        this._standingMatrix = new Matrix();
+                        Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                        if (!this.getScene().useRightHandedSystem) {
+                                [2, 6, 8, 9, 14].forEach((num) => {
+                                    if (this._standingMatrix) {
+                                        this._standingMatrix.m[num] *= -1;
+                                }
+                            });
+                        }
+                        callback(true);
                     }
-                    callback(true);
-                }
-                this.getEngine().onVRDisplayChangedObservable.removeCallback(setStandingMatrix);
-            }
-
-            if(this._vrDevice){
-                setStandingMatrix();
-            }else{
-                this.getEngine().onVRDisplayChangedObservable.add(setStandingMatrix);
+                });
             }
         }
 
