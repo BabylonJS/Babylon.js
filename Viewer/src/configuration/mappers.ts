@@ -118,4 +118,3 @@ export class MapperManager {
 }
 
 export let mapperManager = new MapperManager();
-export default mapperManager;

@@ -539,7 +539,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha4";
+            return "3.2.0-alpha5";
         }
 
         // Updatable statics so stick with vars here
@@ -733,7 +733,6 @@
         protected _activeChannel = 0;
         private _currentTextureChannel = -1;
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-        protected _boundTexturesStack = new Array<InternalTexture>();
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
@@ -751,6 +750,8 @@
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
         private _textureUnits: Int32Array;
+        private _firstBoundInternalTextureTracker = new DummyInternalTextureTracker();
+        private _lastBoundInternalTextureTracker = new DummyInternalTextureTracker();
 
         private _workingCanvas: Nullable<HTMLCanvasElement>;
         private _workingContext: Nullable<CanvasRenderingContext2D>;
@@ -1090,6 +1091,8 @@
             for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this._currentBufferPointers[i] = new BufferPointer();
             }
+
+            this._linkTrackers(this._firstBoundInternalTextureTracker, this._lastBoundInternalTextureTracker);
 
             // Load WebVR Devices
             if (options.autoEnableWebVR) {
@@ -4740,14 +4743,19 @@
         }
 
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-            let index = this._boundTexturesStack.indexOf(internalTexture);
-
-            if (index > -1 && index !== this._boundTexturesStack.length - 1) {
-                this._boundTexturesStack.splice(index, 1);
-                this._boundTexturesStack.push(internalTexture);
+            if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
+                return;
             }
-        }
 
+            // Remove
+            this._linkTrackers(internalTexture.previous, internalTexture.next);
+
+            // Bind last to it
+            this._linkTrackers(this._lastBoundInternalTextureTracker.previous, internalTexture);
+
+            // Bind to dummy
+            this._linkTrackers(internalTexture, this._lastBoundInternalTextureTracker);
+        }
 
         private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>): number {
             if (!internalTexture) {
@@ -4772,7 +4780,7 @@
 
                         // We need to recycle the oldest bound texture, sorry.
                         this._textureCollisions.addCount(1, false);
-                        return this._removeDesignatedSlot(this._boundTexturesStack[0]);
+                        return this._removeDesignatedSlot(<InternalTexture>this._firstBoundInternalTextureTracker.next);
                     }
                 }
             }
@@ -4780,20 +4788,25 @@
             return channel;
         }
 
+        private _linkTrackers(previous: Nullable<IInternalTextureTracker>, next: Nullable<IInternalTextureTracker>) {
+            previous!.next = next;
+            next!.previous = previous;
+        }
 
         private _removeDesignatedSlot(internalTexture: InternalTexture): number {
             let currentSlot = internalTexture._designatedSlot;
+            if (currentSlot === -1) {
+                return -1;
+            }
 
             internalTexture._designatedSlot = -1;
-            let index = this._boundTexturesStack.indexOf(internalTexture);
 
-            if (index > -1) {
-                this._boundTexturesStack.splice(index, 1);
-                if (currentSlot > -1) {
-                    this._boundTexturesCache[currentSlot] = null;
-                    this._nextFreeTextureSlots.push(currentSlot);
-                }
-            }
+            // Remove from bound list
+            this._linkTrackers(internalTexture.previous, internalTexture.next);
+
+            // Free the slot
+            this._boundTexturesCache[currentSlot] = null;
+            this._nextFreeTextureSlots.push(currentSlot);
 
             return currentSlot;
         }
@@ -4829,7 +4842,9 @@
                         if (slotIndex > -1) {
                             this._nextFreeTextureSlots.splice(slotIndex, 1);
                         }
-                        this._boundTexturesStack.push(texture);
+
+                        this._linkTrackers(this._lastBoundInternalTextureTracker.previous, texture);
+                        this._linkTrackers(texture, this._lastBoundInternalTextureTracker);
                     }
 
                     texture._designatedSlot = this._activeChannel;
@@ -5269,7 +5284,7 @@
             var index = Engine.Instances.indexOf(this);
 
             if (index >= 0) {
-                delete Engine.Instances[index];
+                Engine.Instances.splice(index, 1);
             }
 
             this._workingCanvas = null;
@@ -5730,7 +5745,7 @@
             let request = Tools.LoadFile(url, onSuccess, onProgress, database, useArrayBuffer, onError);
             this._activeRequests.push(request);
             request.onCompleteObservable.add(request => {
-                delete this._activeRequests[this._activeRequests.indexOf(request)];
+                this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
         }

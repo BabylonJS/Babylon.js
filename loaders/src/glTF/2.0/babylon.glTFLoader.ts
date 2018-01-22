@@ -40,7 +40,7 @@ module BABYLON.GLTF2 {
     }
 
     export class GLTFLoader implements IGLTFLoader {
-        public _gltf: IGLTF;
+        public _gltf: _IGLTF;
         public _babylonScene: Scene;
 
         private _disposed = false;
@@ -182,7 +182,7 @@ module BABYLON.GLTF2 {
         }
 
         private _loadData(data: IGLTFLoaderData): void {
-            this._gltf = <IGLTF>data.json;
+            this._gltf = <_IGLTF>data.json;
 
             // Assign the index of each object for convinience.
             GLTFLoader._AssignIndices(this._gltf.accessors);
@@ -1620,9 +1620,6 @@ module BABYLON.GLTF2 {
             }) as IGLTFLoaderFileRequest;
 
             this._requests.push(request);
-            request.onCompleteObservable.add(() => {
-                this._requests.splice(this._requests.indexOf(request), 1);
-            });
         }
 
         public _tryCatchOnError(handler: () => void): void {
