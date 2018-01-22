@@ -20,6 +20,8 @@ export abstract class AbstractViewer {
     public onEngineInitObservable: PromiseObservable<Engine>;
     public onModelLoadedObservable: PromiseObservable<AbstractMesh[]>;
 
+    private canvas: HTMLCanvasElement;
+
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
@@ -62,6 +64,10 @@ export abstract class AbstractViewer {
             this.templateManager.initTemplate(templateConfiguration);
             // when done, execute onTemplatesLoaded()
             this.templateManager.onAllLoaded.add(() => {
+                let canvas = this.templateManager.getCanvas();
+                if (canvas) {
+                    this.canvas = canvas;
+                }
                 this.onTemplatesLoaded();
             });
         });
@@ -70,6 +76,27 @@ export abstract class AbstractViewer {
 
     public getBaseId(): string {
         return this.baseId;
+    }
+
+    public isCanvasInDOM(): boolean {
+        return !!this.canvas && !!this.canvas.parentElement;
+    }
+
+    public resize = (): void => {
+        // Only resize if Canvas is in the DOM
+        if (!this.isCanvasInDOM()) {
+            return;
+        }
+
+        if (this.canvas.clientWidth <= 0 || this.canvas.clientHeight <= 0) {
+            return;
+        }
+
+        this.engine.resize();
+    }
+
+    public dispose() {
+        window.removeEventListener('resize', this.resize);
     }
 
     protected abstract prepareContainerElement();
@@ -108,14 +135,15 @@ export abstract class AbstractViewer {
         }
         let config = this.configuration.engine || {};
         // TDO enable further configuration
-        this.engine = new Engine(canvasElement, !!config.antialiasing);
+        this.engine = new Engine(canvasElement, !!config.antialiasing, config.engineOptions);
 
         // Disable manifest checking
         Database.IDBStorageEnabled = false;
 
-        window.addEventListener('resize', () => {
-            this.engine.resize();
-        });
+        if (!config.disableResize) {
+            window.addEventListener('resize', this.resize);
+        }
+
 
         this.engine.runRenderLoop(() => {
             this.scene && this.scene.render();
