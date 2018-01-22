@@ -1,7 +1,7 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Tools', () => {
+describe('Babylon SceneLoader', () => {
     var subject : BABYLON.Engine;
 
     /**
@@ -46,6 +46,46 @@ describe('Babylon Tools', () => {
 
                 done();
             });
+        });
+    });
+
+    describe('#AssetContainer', () => {
+        it('should be loaded from BoomBox GLTF', (done) => {
+            var scene = new BABYLON.Scene(subject);
+            BABYLON.SceneLoader.LoadAssetContainer("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene, function (container) {
+                expect(container.meshes.length).to.eq(2);
+                done();
+            });
+        });
+        it('should be adding and removing objects from scene', () => {
+            // Create a scene with some assets
+            var scene = new BABYLON.Scene(subject);
+            var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+            var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene);
+            var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+            var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 2, scene);
+
+            // Move all the assets from the scene into a container
+            var container = new BABYLON.AssetContainer(scene);
+            var keepAssets = new BABYLON.KeepAssets();
+            keepAssets.cameras.push(camera)
+            container.moveAllFromScene(keepAssets)
+            expect(scene.cameras.length).to.eq(1)
+            expect(scene.meshes.length).to.eq(0)
+            expect(scene.lights.length).to.eq(0)
+            expect(container.cameras.length).to.eq(0)
+            expect(container.meshes.length).to.eq(2)
+            expect(container.lights.length).to.eq(1)
+
+            // Add them back and then remove again
+            container.addAllToScene();
+            expect(scene.cameras.length).to.eq(1)
+            expect(scene.meshes.length).to.eq(2)
+            expect(scene.lights.length).to.eq(1)
+            container.removeAllFromScene();
+            expect(scene.cameras.length).to.eq(1)
+            expect(scene.meshes.length).to.eq(0)
+            expect(scene.lights.length).to.eq(0)
         });
     });
 });

@@ -44,12 +44,26 @@ module BABYLON {
         boxMaximum: Array<number>;
     }
 
+    /**
+     * Interface describing the value associated with a geometry
+     */
     export interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
         id: string;
+        /**
+         * Defines the array containing the positions
+         */
         positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */        
         indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */        
         normals: Float32Array;
-        //uvs?: Float32Array;
     }
 
     export interface BabylonMessage {
