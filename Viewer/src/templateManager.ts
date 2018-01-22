@@ -89,8 +89,12 @@ export class TemplateManager {
         }
 
         //build the html tree
-        this.buildHTMLTree(templates).then(htmlTree => {
-            internalInit(htmlTree, 'main');
+        return this.buildHTMLTree(templates).then(htmlTree => {
+            if (this.templates['main']) {
+                internalInit(htmlTree, 'main');
+                return true;
+            }
+            return false;
         });
     }
 
@@ -123,8 +127,9 @@ export class TemplateManager {
                     buildTree(parentObject[element], element);
                 });
             }
-
-            buildTree(templateStructure, "main");
+            if (this.templates['main']) {
+                buildTree(templateStructure, "main");
+            }
             return templateStructure;
         });
     }
