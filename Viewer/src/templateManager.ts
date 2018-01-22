@@ -89,8 +89,13 @@ export class TemplateManager {
         }
 
         //build the html tree
-        this.buildHTMLTree(templates).then(htmlTree => {
-            internalInit(htmlTree, 'main');
+        return this.buildHTMLTree(templates).then(htmlTree => {
+            if (this.templates['main']) {
+                internalInit(htmlTree, 'main');
+            } else {
+                this.checkLoadedState();
+            }
+            return;
         });
     }
 
@@ -123,8 +128,9 @@ export class TemplateManager {
                     buildTree(parentObject[element], element);
                 });
             }
-
-            buildTree(templateStructure, "main");
+            if (this.templates['main']) {
+                buildTree(templateStructure, "main");
+            }
             return templateStructure;
         });
     }
@@ -139,7 +145,7 @@ export class TemplateManager {
     }
 
     private checkLoadedState() {
-        let done = Object.keys(this.templates).every((key) => {
+        let done = Object.keys(this.templates).length === 0 || Object.keys(this.templates).every((key) => {
             return this.templates[key].isLoaded && !!this.templates[key].parent;
         });
 
