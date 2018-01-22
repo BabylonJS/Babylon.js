@@ -92,9 +92,10 @@ export class TemplateManager {
         return this.buildHTMLTree(templates).then(htmlTree => {
             if (this.templates['main']) {
                 internalInit(htmlTree, 'main');
-                return true;
+            } else {
+                this.checkLoadedState();
             }
-            return false;
+            return;
         });
     }
 
@@ -144,7 +145,7 @@ export class TemplateManager {
     }
 
     private checkLoadedState() {
-        let done = Object.keys(this.templates).every((key) => {
+        let done = Object.keys(this.templates).length === 0 || Object.keys(this.templates).every((key) => {
             return this.templates[key].isLoaded && !!this.templates[key].parent;
         });
 
