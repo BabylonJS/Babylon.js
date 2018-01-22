@@ -331,7 +331,7 @@
         }
 
         private static _ExtractLongWordOrder(value: number): number {
-            if (value === 255 || value === -16777216) {
+            if (value === 0 ||value === 255 || value === -16777216) {
                 return 0;
             }
 

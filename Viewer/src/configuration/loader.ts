@@ -23,20 +23,27 @@ export class ConfigurationLoader {
         if (loadedConfig.configuration) {
 
             let mapperType = "json";
-            let url = loadedConfig.configuration;
+            return Promise.resolve().then(() => {
+                if (typeof loadedConfig.configuration === "string" || loadedConfig.configuration.url) {
+                    // a file to load
+                    let url = loadedConfig.configuration;
 
-            // if configuration is an object
-            if (loadedConfig.configuration.url) {
-                url = loadedConfig.configuration.url;
-                mapperType = loadedConfig.configuration.mapper;
-                if (!mapperType) {
-                    // load mapper type from filename / url
-                    mapperType = loadedConfig.configuration.url.split('.').pop();
+                    // if configuration is an object
+                    if (loadedConfig.configuration.url) {
+                        url = loadedConfig.configuration.url;
+                        mapperType = loadedConfig.configuration.mapper;
+                        if (!mapperType) {
+                            // load mapper type from filename / url
+                            mapperType = loadedConfig.configuration.url.split('.').pop();
+                        }
+                    }
+                    return this.loadFile(url);
+                } else {
+                    mapperType = loadedConfig.configuration.mapper || mapperType;
+                    return loadedConfig.configuration.payload || {};
                 }
-            }
-
-            let mapper = mapperManager.getMapper(mapperType);
-            return this.loadFile(url).then((data: any) => {
+            }).then((data: any) => {
+                let mapper = mapperManager.getMapper(mapperType);
                 let parsed = mapper.map(data);
                 return deepmerge(loadedConfig, parsed);
             });
