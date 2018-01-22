@@ -513,7 +513,7 @@ module BABYLON {
         /**
          * Child classes can use it to update shaders
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false, forceCompilation?: boolean): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -544,7 +544,7 @@ module BABYLON {
                 defines.MAINUV2 = false;
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        if (!this._diffuseTexture.isReadyOrNotBlocking()) {
+                        if (!this._diffuseTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             MaterialHelper.PrepareDefinesForMergedUV(this._diffuseTexture, defines, "DIFFUSE");
@@ -554,7 +554,7 @@ module BABYLON {
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                        if (!this._ambientTexture.isReadyOrNotBlocking()) {
+                        if (!this._ambientTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
@@ -564,7 +564,7 @@ module BABYLON {
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        if (!this._opacityTexture.isReadyOrNotBlocking()) {
+                        if (!this._opacityTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
@@ -575,7 +575,7 @@ module BABYLON {
                     }
 
                     if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (!this._reflectionTexture.isReadyOrNotBlocking()) {
+                        if (!this._reflectionTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             defines._needNormals = true;
@@ -622,7 +622,7 @@ module BABYLON {
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                        if (!this._emissiveTexture.isReadyOrNotBlocking()) {
+                        if (!this._emissiveTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
@@ -632,7 +632,7 @@ module BABYLON {
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                        if (!this._lightmapTexture.isReadyOrNotBlocking()) {
+                        if (!this._lightmapTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
@@ -643,7 +643,7 @@ module BABYLON {
                     }
 
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
-                        if (!this._specularTexture.isReadyOrNotBlocking()) {
+                        if (!this._specularTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             MaterialHelper.PrepareDefinesForMergedUV(this._specularTexture, defines, "SPECULAR");
@@ -668,7 +668,7 @@ module BABYLON {
                     }
 
                     if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        if (!this._refractionTexture.isReadyOrNotBlocking()) {
+                        if (!this._refractionTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         } else {
                             defines._needUVs = true;

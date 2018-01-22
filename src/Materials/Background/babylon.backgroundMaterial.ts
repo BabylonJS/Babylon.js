@@ -550,7 +550,7 @@
          * @param subMesh The submesh to check against
          * @param useInstances Specify wether or not the material is used with instances
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false, forceCompilation?: boolean): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -584,7 +584,7 @@
                     }
 
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        if (!this._diffuseTexture.isReadyOrNotBlocking()) {
+                        if (!this._diffuseTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -601,7 +601,7 @@
 
                     var reflectionTexture = this._reflectionTexture;
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (!reflectionTexture.isReadyOrNotBlocking()) {
+                        if (!reflectionTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 

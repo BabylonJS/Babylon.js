@@ -599,7 +599,7 @@
 
         private static _scaledReflectivity = new Color3();
 
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean, forceCompilation?: boolean): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -633,7 +633,7 @@
                     }
 
                     if (this._albedoTexture && StandardMaterial.DiffuseTextureEnabled) {
-                        if (!this._albedoTexture.isReadyOrNotBlocking()) {
+                        if (!this._albedoTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -643,7 +643,7 @@
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
-                        if (!this._ambientTexture.isReadyOrNotBlocking()) {
+                        if (!this._ambientTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -654,7 +654,7 @@
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
-                        if (!this._opacityTexture.isReadyOrNotBlocking()) {
+                        if (!this._opacityTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -666,7 +666,7 @@
 
                     var reflectionTexture = this._getReflectionTexture();
                     if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
-                        if (!reflectionTexture.isReadyOrNotBlocking()) {
+                        if (!reflectionTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -744,7 +744,7 @@
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
-                        if (!this._lightmapTexture.isReadyOrNotBlocking()) {
+                        if (!this._lightmapTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -755,7 +755,7 @@
                     }
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
-                        if (!this._emissiveTexture.isReadyOrNotBlocking()) {
+                        if (!this._emissiveTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -766,7 +766,7 @@
 
                     if (StandardMaterial.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
-                            if (!this._metallicTexture.isReadyOrNotBlocking()) {
+                            if (!this._metallicTexture.isReadyOrNotBlocking() && !forceCompilation) {
                                 return false;
                             }
 
@@ -778,7 +778,7 @@
                             defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                         }
                         else if (this._reflectivityTexture) {
-                            if (!this._reflectivityTexture.isReadyOrNotBlocking()) {
+                            if (!this._reflectivityTexture.isReadyOrNotBlocking() && !forceCompilation) {
                                 return false;
                             }
 
@@ -792,7 +792,7 @@
                         }
 
                         if (this._microSurfaceTexture) {
-                            if (!this._microSurfaceTexture.isReadyOrNotBlocking()) {
+                            if (!this._microSurfaceTexture.isReadyOrNotBlocking() && !forceCompilation) {
                                 return false;
                             }
 
@@ -806,8 +806,8 @@
                     }
 
                     if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial.BumpTextureEnabled && !this._disableBumpMap) {
-                        // Bump texure can not be none blocking.
-                        if (!this._bumpTexture.isReady()) {
+                        // Bump texture can not be non-blocking.
+                        if (!this._bumpTexture.isReady() && !forceCompilation) {
                             return false;
                         }
 
@@ -826,7 +826,7 @@
 
                     var refractionTexture = this._getRefractionTexture();
                     if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
-                        if (!refractionTexture.isReadyOrNotBlocking()) {
+                        if (!refractionTexture.isReadyOrNotBlocking() && !forceCompilation) {
                             return false;
                         }
 
@@ -845,7 +845,7 @@
 
                     if (this._environmentBRDFTexture && StandardMaterial.ReflectionTextureEnabled) {
                         // This is blocking.
-                        if (!this._environmentBRDFTexture.isReady()) {
+                        if (!this._environmentBRDFTexture.isReady() && !forceCompilation) {
                             return false;
                         }
                         defines.ENVIRONMENTBRDF = true;
