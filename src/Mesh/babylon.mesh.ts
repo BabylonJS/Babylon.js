@@ -775,7 +775,7 @@
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data && applySkeleton && this.skeleton) {
-                data = data.slice();
+                data = Tools.Slice(data);
 
                 var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
                 var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
