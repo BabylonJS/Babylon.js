@@ -82,7 +82,7 @@ export abstract class AbstractViewer {
         return !!this.canvas && !!this.canvas.parentElement;
     }
 
-    public resize = (): void => {
+    protected resize = (): void => {
         // Only resize if Canvas is in the DOM
         if (!this.isCanvasInDOM()) {
             return;
@@ -93,6 +93,10 @@ export abstract class AbstractViewer {
         }
 
         this.engine.resize();
+    }
+
+    protected render = (): void => {
+        this.scene && this.scene.render();
     }
 
     public dispose() {
@@ -145,9 +149,7 @@ export abstract class AbstractViewer {
         }
 
 
-        this.engine.runRenderLoop(() => {
-            this.scene && this.scene.render();
-        });
+        this.engine.runRenderLoop(this.render);
 
         var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
         this.engine.setHardwareScalingLevel(scale);
