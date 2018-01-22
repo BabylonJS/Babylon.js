@@ -31,7 +31,5 @@
     },
     "engines": {
         "node": "*"
-    },
-    "_id": "babylonjs-loaders@3.1.0-alpha1",
-    "_from": "babylonjs-loaders@"
+    }
 }
