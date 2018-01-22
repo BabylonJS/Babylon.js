@@ -1,226 +1,83 @@
-module BABYLON {
-    /**
-     * glTF Asset interface
-     */
-    interface _IGLTFAsset {
-        generator: string;
-        version: string;
-    }
+/// <reference path="../../../../dist/babylon.glTFInterface.d.ts"/>
 
+/**
+ * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
+ * @ignore - capitalization of GLTF2 module.
+ */
+module BABYLON.GLTF2 {
     /**
-     * glTF Scene interface
+     * Converts Babylon Scene into glTF 2.0.
      */
-    interface _IGLTFScene {
-        nodes: number[];
-    }
-
-    /**
-     * glTF Node interface
-     */
-    interface _IGLTFNode {
-        mesh: number;
-        name?: string;
-        translation?: number[];
-        scale?: number[];
-        rotation?: number[];
-    }
-
-    /**
-     * glTF Mesh Primitive interface
-     */
-    interface _IGLTFMeshPrimitive {
-        attributes: { [index: string]: number };
-        indices?: number;
-        material?: number;
-    }
-
-    /**
-     * glTF Texture interface
-     */
-    interface _IGLTFTexture {
-        name?: string;
-        sampler?: number;
-        source: number;
-    }
-
-    /**
-     * glTF texture info interface
-     */
-    interface _IGLTFTextureInfo {
-        index: number;
-        texCoord?: number;
-    }
-
-    /**
-     * glTF Image mimetype enum
-     */
-    enum _EGLTFImageMimeTypeEnum {
-        PNG = "image/png",
-        JPG = "image/jpeg"
-    }
-
-    /**
-     * glTF Image interface
-     */
-    interface _IGLTFImage {
-        name?: string;
-        uri?: string;
-        bufferView?: number;
-        mimeType?: _EGLTFImageMimeTypeEnum;
-    }
-
-    /**
-     * glTF Mesh interface
-     */
-    interface _IGLTFMesh {
-        primitives: _IGLTFMeshPrimitive[];
-    }
-
-    /**
-     * glTF Alpha Mode Enum
-     */
-    export enum _EGLTFAlphaModeEnum {
-        OPAQUE = "OPAQUE",
-        MASK = "MASK",
-        BLEND = "BLEND"
-    }
-    
-    /**
-     * glTF Occlusion texture interface
-     */
-    interface _IGLTFOcclusionTexture extends _IGLTFTextureInfo {
-        strength?: number;
-    }
-
-    /**
-     * glTF Normal texture interface
-     */
-    interface _IGLTFNormalTexture extends _IGLTFTextureInfo {
-        scale?: number;
-    }
-
-    /**
-     * glTF Material interface
-     */
-    interface _IGLTFMaterial {
-        name?: string;
-        doubleSided?: boolean;
-        alphaMode?: string;
-        alphaCutoff?: number;
-        emissiveTexture?: _IGLTFTextureInfo;
-        emissiveFactor?: number[];
-        occlusionTexture?: _IGLTFOcclusionTexture;
-        normalTexture?: _IGLTFNormalTexture;
-        pbrMetallicRoughness?: _IGLTFPBRMetallicRoughnessMaterial;
-    }
-
-    /**
-     * glTF Metallic Roughness Material interface
-     */
-    interface _IGLTFPBRMetallicRoughnessMaterial {
-        baseColorFactor?: number[];
-        baseColorTexture?: _IGLTFTextureInfo;
-        metallicFactor?: number;
-        roughnessFactor?: number;
-        metallicRoughnessTexture?: _IGLTFTexture;
-    }
-
-    /**
-     * glTF Buffer interface
-     */
-    interface _IGLTFBuffer {
-        byteLength: number;
-        uri?: string;
-    }
-
-    /**
-     * glTF BufferView interface
-     */
-    interface _IGLTFBufferView {
-        name?: string;
-        buffer: number;
-        byteOffset?: number;
-        byteLength: number;
-    }
-
-    /**
-     * glTF Accessor interface
-     */
-    interface _IGLTFAccessor {
-        name: string;
-        bufferView: number;
-        componentType: number;
-        count: number;
-        type: string;
-        min?: number[];
-        max?: number[];
-    }
-
-    /**
-     * glTF file interface
-     */
-    interface _IGLTF {
-        buffers?: _IGLTFBuffer[];
-        asset: _IGLTFAsset;
-        meshes?: _IGLTFMesh[];
-        materials?: _IGLTFMaterial[];
-        scenes?: _IGLTFScene[];
-        scene?: number;
-        nodes?: _IGLTFNode[];
-        bufferViews?: _IGLTFBufferView[];
-        accessors?: _IGLTFAccessor[];
-        textures?: _IGLTFTexture[];
-        images?: _IGLTFImage[];
-    }
-
-    /**
-     * Babylon Specular Glossiness interface
-     */
-    export interface _IBabylonSpecularGlossiness {
-        diffuse: Color3;
-        opacity: number;
-        specular: Color3;
-        glossiness: number;
-    }
-
-    /**
-     * Babylon Metallic Roughness interface
-     */
-    export interface _IBabylonMetallicRoughness {
-        baseColor: Color3;
-        opacity: number;
-        metallic: number;
-        roughness: number;
-    }
-
-    /**
-     * Converts Babylon Scene into glTF 2.0
-     */
-    export class _GLTF2Exporter {
-        private bufferViews: _IGLTFBufferView[];
-        private accessors: _IGLTFAccessor[];
-        private nodes: _IGLTFNode[];
-        private asset: _IGLTFAsset;
-        private scenes: _IGLTFScene[];
-        private meshes: _IGLTFMesh[];
-        private materials: _IGLTFMaterial[];
-        private textures: _IGLTFTexture[];
-        private images: _IGLTFImage[];
+    export class _Exporter {
+        /**
+         * Stores all generated buffer views, which represents views into the main glTF buffer data.
+         */
+        private bufferViews: IBufferView[];
+        /**
+         * Stores all the generated accessors, which is used for accessing the data within the buffer views in glTF.
+         */
+        private accessors: IAccessor[];
+        /**
+         * Stores all the generated nodes, which contains transform and/or mesh information per node.
+         */
+        private nodes: INode[];
+        /**
+         * Stores the glTF asset information, which represents the glTF version and this file generator.
+         */
+        private asset: IAsset;
+        /**
+         * Stores all the generated glTF scenes, which stores multiple node hierarchies.
+         */
+        private scenes: IScene[];
+        /**
+         * Stores all the generated mesh information, each containing a set of primitives to render in glTF.
+         */
+        private meshes: IMesh[];
+        /**
+         * Stores all the generated material information, which represents the appearance of each primitive.
+         */
+        private materials: IMaterial[];
+        /**
+         * Stores all the generated texture information, which is referenced by glTF materials.
+         */
+        private textures: ITexture[];
+        /**
+         * Stores all the generated image information, which is referenced by glTF textures.
+         */
+        private images: IImage[];
+        /**
+         * Stores the total amount of bytes stored in the glTF buffer.
+         */
         private totalByteLength: number;
+        /**
+         * Stores a reference to the Babylon scene containing the source geometry and material information.
+         */
         private babylonScene: Scene;
-        private options?: IGLTFExporterOptions;
-        private imageData: { [fileName: string]: { data: Uint8Array, mimeType: _EGLTFImageMimeTypeEnum } };
+        /**
+         * Stores the exporter options, which are optionally passed in from the glTF serializer.
+         */
+        private options?: IExporterOptions;
+        /**
+         * Stores a map of the image data, where the key is the file name and the value
+         * is the image data.
+         */
+        private imageData: { [fileName: string]: { data: Uint8Array, mimeType: ImageMimeType } };
 
-        public constructor(babylonScene: Scene, options?: IGLTFExporterOptions) {
+        /**
+         * Creates a glTF Exporter instance, which can accept optional exporter options.
+         * @param babylonScene - Babylon scene object
+         * @param options - Options to modify the behavior of the exporter.
+         */
+        public constructor(babylonScene: Scene, options?: IExporterOptions) {
             this.asset = { generator: "BabylonJS", version: "2.0" };
             this.babylonScene = babylonScene;
-            this.bufferViews = new Array<_IGLTFBufferView>();
-            this.accessors = new Array<_IGLTFAccessor>();
-            this.meshes = new Array<_IGLTFMesh>();
-            this.scenes = new Array<_IGLTFScene>();
-            this.nodes = new Array<_IGLTFNode>();
-            this.images = new Array<_IGLTFImage>();
-            this.materials = new Array<_IGLTFMaterial>();
+            this.bufferViews = new Array<IBufferView>();
+            this.accessors = new Array<IAccessor>();
+            this.meshes = new Array<IMesh>();
+            this.scenes = new Array<IScene>();
+            this.nodes = new Array<INode>();
+            this.images = new Array<IImage>();
+            this.materials = new Array<IMaterial>();
             this.imageData = {};
             if (options !== undefined) {
                 this.options = options;
@@ -240,8 +97,8 @@ module BABYLON {
          * @param {number} byteLength - byte length of the bufferView
          * @returns - bufferView for glTF
          */
-        private createBufferView(bufferIndex: number, byteOffset: number, byteLength: number, name?: string): _IGLTFBufferView {
-            let bufferview: _IGLTFBufferView = { buffer: bufferIndex, byteLength: byteLength };
+        private createBufferView(bufferIndex: number, byteOffset: number, byteLength: number, name?: string): IBufferView {
+            let bufferview: IBufferView = { buffer: bufferIndex, byteLength: byteLength };
             if (byteOffset > 0) {
                 bufferview.byteOffset = byteOffset;
             }
@@ -263,8 +120,8 @@ module BABYLON {
          * @param max 
          * @returns - accessor for glTF 
          */
-        private createAccessor(bufferviewIndex: number, name: string, type: string, componentType: number, count: number, min?: number[], max?: number[]): _IGLTFAccessor {
-            let accessor: _IGLTFAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
+        private createAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, min?: number[], max?: number[]): IAccessor {
+            let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
 
             if (min) {
                 accessor.min = min;
@@ -435,9 +292,9 @@ module BABYLON {
          * @returns - json data as string
          */
         private generateJSON(glb: boolean, glTFPrefix?: string, prettyPrint?: boolean): string {
-            let buffer: _IGLTFBuffer = { byteLength: this.totalByteLength };
+            let buffer: IBuffer = { byteLength: this.totalByteLength };
 
-            let glTF: _IGLTF = {
+            let glTF: IGLTF = {
                 asset: this.asset
             };
             if (buffer.byteLength > 0) {
@@ -641,7 +498,7 @@ module BABYLON {
          * @param babylonMesh 
          * @param useRightHandedSystem 
          */
-        private setNodeTransformation(node: _IGLTFNode, babylonMesh: AbstractMesh, useRightHandedSystem: boolean): void {
+        private setNodeTransformation(node: INode, babylonMesh: AbstractMesh, useRightHandedSystem: boolean): void {
             if (!(babylonMesh.position.x === 0 && babylonMesh.position.y === 0 && babylonMesh.position.z === 0)) {
                 if (useRightHandedSystem) {
                     node.translation = babylonMesh.position.asArray();
@@ -678,10 +535,10 @@ module BABYLON {
          * @param babylonTexture 
          * @return - glTF texture, or null if the texture format is not supported
          */
-        private exportTexture(babylonTexture: BaseTexture, mimeType: _EGLTFImageMimeTypeEnum = _EGLTFImageMimeTypeEnum.JPG): Nullable<_IGLTFTextureInfo> {
-            let textureInfo: Nullable<_IGLTFTextureInfo> = null;
+        private exportTexture(babylonTexture: BaseTexture, mimeType: ImageMimeType = ImageMimeType.JPEG): Nullable<ITextureInfo> {
+            let textureInfo: Nullable<ITextureInfo> = null;
 
-            let glTFTexture: Nullable<_IGLTFTexture>;
+            let glTFTexture: Nullable<ITexture>;
 
             glTFTexture = {
                 source: this.images.length
@@ -693,10 +550,10 @@ module BABYLON {
                 textureName = splitFilename[splitFilename.length - 1];
                 const basefile = textureName.split('.')[0];
                 let extension = textureName.split('.')[1];
-                if (mimeType === _EGLTFImageMimeTypeEnum.JPG) {
+                if (mimeType === ImageMimeType.JPEG) {
                     extension = ".jpg";
                 }
-                else if (mimeType === _EGLTFImageMimeTypeEnum.PNG) {
+                else if (mimeType === ImageMimeType.PNG) {
                     extension = ".png";
                 }
                 else {
@@ -729,8 +586,8 @@ module BABYLON {
             const imageValues = { data: arr, mimeType: mimeType };
 
             this.imageData[textureName] = imageValues;
-            if (mimeType === _EGLTFImageMimeTypeEnum.JPG) {
-                const glTFImage: _IGLTFImage = {
+            if (mimeType === ImageMimeType.JPEG) {
+                const glTFImage: IImage = {
                     uri: textureName
                 }
                 let foundIndex = -1;
@@ -740,7 +597,6 @@ module BABYLON {
                         break;
                     }
                 }
-
                 if (foundIndex === -1) {
                     this.images.push(glTFImage);
                     glTFTexture.source = this.images.length - 1;
@@ -773,12 +629,12 @@ module BABYLON {
          * @param dataBuffer 
          * @returns - bytelength of the primitive attributes plus the passed in byteOffset
          */
-        private setPrimitiveAttributes(mesh: _IGLTFMesh, babylonMesh: AbstractMesh, byteOffset: number, useRightHandedSystem: boolean, dataBuffer?: DataView): number {
+        private setPrimitiveAttributes(mesh: IMesh, babylonMesh: AbstractMesh, byteOffset: number, useRightHandedSystem: boolean, dataBuffer?: DataView): number {
             // go through all mesh primitives (submeshes)
             for (let j = 0; j < babylonMesh.subMeshes.length; ++j) {
                 let bufferMesh = null;
                 const submesh = babylonMesh.subMeshes[j];
-                const meshPrimitive: _IGLTFMeshPrimitive = { attributes: {} };
+                const meshPrimitive: IMeshPrimitive = { attributes: {} };
 
                 if (babylonMesh instanceof Mesh) {
                     bufferMesh = (babylonMesh as Mesh);
@@ -812,7 +668,7 @@ module BABYLON {
 
                         // Create accessor
                         const result = this.calculateMinMax(positions!, submesh.verticesStart, submesh.verticesCount, positionVertexBufferOffset!, positionStrideSize!);
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Position", "VEC3", 5126, submesh.verticesCount, result.min, result.max);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Position", AccessorType.VEC3, AccessorComponentType.FLOAT, submesh.verticesCount, result.min, result.max);
                         this.accessors.push(accessor);
 
                         meshPrimitive.attributes.POSITION = this.accessors.length - 1;
@@ -840,7 +696,7 @@ module BABYLON {
                         this.bufferViews.push(bufferview);
 
                         // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Normal", "VEC3", 5126, submesh.verticesCount);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Normal", AccessorType.VEC3, AccessorComponentType.FLOAT, submesh.verticesCount);
                         this.accessors.push(accessor);
 
                         meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
@@ -868,7 +724,7 @@ module BABYLON {
                         this.bufferViews.push(bufferview);
 
                         // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Tangent", "VEC4", 5126, submesh.verticesCount);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Tangent", AccessorType.VEC4, AccessorComponentType.FLOAT, submesh.verticesCount);
                         this.accessors.push(accessor);
 
                         meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
@@ -896,7 +752,7 @@ module BABYLON {
                         this.bufferViews.push(bufferview);
 
                         // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Color", "VEC4", 5126, submesh.verticesCount);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Color", AccessorType.VEC4, AccessorComponentType.FLOAT, submesh.verticesCount);
                         this.accessors.push(accessor);
 
                         meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
@@ -924,7 +780,7 @@ module BABYLON {
                         this.bufferViews.push(bufferview);
 
                         // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Texture Coords", "VEC2", 5126, submesh.verticesCount);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Texture Coords", AccessorType.VEC2, AccessorComponentType.FLOAT, submesh.verticesCount);
                         this.accessors.push(accessor);
 
                         meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
@@ -952,7 +808,7 @@ module BABYLON {
                         this.bufferViews.push(bufferview);
 
                         // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Texture Coords", "VEC2", 5126, submesh.verticesCount);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Texture Coords", AccessorType.VEC2, AccessorComponentType.FLOAT, submesh.verticesCount);
                         this.accessors.push(accessor);
 
                         meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
@@ -987,7 +843,7 @@ module BABYLON {
                         this.bufferViews.push(bufferview);
 
                         // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Indices", "SCALAR", 5125, indicesCount);
+                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Indices", AccessorType.SCALAR, AccessorComponentType.UNSIGNED_INT, indicesCount);
                         this.accessors.push(accessor);
 
                         meshPrimitive.indices = this.accessors.length - 1;
@@ -997,7 +853,7 @@ module BABYLON {
                     if (bufferMesh!.material instanceof StandardMaterial) {
                         const babylonStandardMaterial = bufferMesh!.material as StandardMaterial;
 
-                        const glTFMaterial: _IGLTFMaterial = { name: babylonStandardMaterial.name };
+                        const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
                         if (!babylonStandardMaterial.backFaceCulling) {
                             glTFMaterial.doubleSided = true;
                         }
@@ -1021,27 +877,8 @@ module BABYLON {
                             }
                         }
                         // Spec Gloss
-                        const babylonSpecularGlossiness: _IBabylonSpecularGlossiness = {
-                            diffuse: babylonStandardMaterial.diffuseColor,
-                            opacity: babylonStandardMaterial.alpha,
-                            specular: babylonStandardMaterial.specularColor || Color3.Black(),
-                            glossiness: babylonStandardMaterial.specularPower / 256
-                        };
-                        if (babylonStandardMaterial.specularTexture) {
-
-                        }
-                        const babylonMetallicRoughness = _GLTFMaterial.ConvertToMetallicRoughness(babylonSpecularGlossiness);
-
-                        const glTFPbrMetallicRoughness: _IGLTFPBRMetallicRoughnessMaterial = {
-                            baseColorFactor: [
-                                babylonMetallicRoughness.baseColor.r,
-                                babylonMetallicRoughness.baseColor.g,
-                                babylonMetallicRoughness.baseColor.b,
-                                babylonMetallicRoughness.opacity
-                            ],
-                            metallicFactor: babylonMetallicRoughness.metallic,
-                            roughnessFactor: babylonMetallicRoughness.roughness
-                        };
+                        const glTFPbrMetallicRoughness = _GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
+                        
                         glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
 
                         // TODO: Handle Textures
@@ -1050,10 +887,10 @@ module BABYLON {
                     }
                     else if (bufferMesh!.material instanceof PBRMetallicRoughnessMaterial) {
                         if (!this.textures) {
-                            this.textures = new Array<_IGLTFTexture>();
+                            this.textures = new Array<ITexture>();
                         }
                         const babylonPBRMaterial = bufferMesh!.material as PBRMetallicRoughnessMaterial;
-                        const glTFPbrMetallicRoughness: _IGLTFPBRMetallicRoughnessMaterial = {};
+                        const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
 
                         if (babylonPBRMaterial.baseColor) {
                             glTFPbrMetallicRoughness.baseColorFactor = [
@@ -1077,7 +914,7 @@ module BABYLON {
                             glTFPbrMetallicRoughness.roughnessFactor = babylonPBRMaterial.roughness;
                         }
 
-                        const glTFMaterial: _IGLTFMaterial = {
+                        const glTFMaterial: IMaterial = {
                             name: babylonPBRMaterial.name
                         };
                         if (babylonPBRMaterial.doubleSided) {
@@ -1110,9 +947,9 @@ module BABYLON {
                         if (babylonPBRMaterial.transparencyMode) {
                             const alphaMode = _GLTFMaterial.GetAlphaMode(babylonPBRMaterial);
 
-                            if (alphaMode !== _EGLTFAlphaModeEnum.OPAQUE) { //glTF defaults to opaque
+                            if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
                                 glTFMaterial.alphaMode = alphaMode;
-                                if (alphaMode === _EGLTFAlphaModeEnum.BLEND) {
+                                if (alphaMode === MaterialAlphaMode.BLEND) {
                                     glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
                                 }
                             }
@@ -1152,7 +989,7 @@ module BABYLON {
                     }
                     else {
                         // create node to hold translation/rotation/scale and the mesh
-                        const node: _IGLTFNode = { mesh: -1 };
+                        const node: INode = { mesh: -1 };
                         const babylonMesh = babylonMeshes[i];
                         const useRightHandedSystem = babylonMesh.getScene().useRightHandedSystem;
 
@@ -1160,7 +997,7 @@ module BABYLON {
                         this.setNodeTransformation(node, babylonMesh, useRightHandedSystem);
 
                         // create mesh
-                        const mesh: _IGLTFMesh = { primitives: new Array<_IGLTFMeshPrimitive>() };
+                        const mesh: IMesh = { primitives: new Array<IMeshPrimitive>() };
                         mesh.primitives = [];
                         byteOffset = this.setPrimitiveAttributes(mesh, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
                         // go through all mesh primitives (submeshes)

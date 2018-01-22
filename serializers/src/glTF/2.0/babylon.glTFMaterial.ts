@@ -1,17 +1,102 @@
-module BABYLON {
+/// <reference path="../../../../dist/babylon.glTFInterface.d.ts"/>
+
+module BABYLON.GLTF2 {
     /**
-     * Utility methods for working with glTF material conversion properties
+     * Represents the components used for representing a physically-based specular glossiness material
+     */
+    interface IBabylonPbrSpecularGlossiness {
+        /**
+         * The diffuse color of the model, whose color values should be 
+         * normalized from 0 to 1.  
+         */
+        diffuse: Color3;
+        /**
+         * Represents the transparency of the material, from a range of 0 to 1.
+         */
+        opacity: number;
+        /**
+         * Represents how specular the material is, from a range of 0 to 1.
+         */
+        specular: Color3;
+        /**
+         * Represents how glossy the material is, from a range of 0 to 1.
+         */
+        glossiness: number;
+    }
+
+    /**
+     * Represents the components used for representing a physically-based metallic roughness material.
+     */
+    interface _IBabylonPbrMetallicRoughness {
+        /**
+         * The albedo color of the material, whose color components should be normalized from 0 to 1.
+         */
+        baseColor: Color3;
+        /**
+         * Represents the transparency of the material, from a range of 0 (transparent) to 1 (opaque).
+         */
+        opacity: number;
+        /**
+         * Represents the "metalness" of a material, from a range of 0 (dielectric) to 1 (metal).
+         */
+        metallic: number;
+        /**
+         * Represents the "roughness" of a material, from a range of 0 (completely smooth) to 1 (completely rough).
+         */
+        roughness: number;
+    }
+
+    /**
+     * Utility methods for working with glTF material conversion properties.  This class should only be used internally.
      */
     export class _GLTFMaterial {
-        private static dielectricSpecular = new Color3(0.04, 0.04, 0.04);
-        private static epsilon = 1e-6;
+        /**
+         * Represents the dielectric specular values for R, G and B.
+         */
+        private static readonly dielectricSpecular = new Color3(0.04, 0.04, 0.04);
+        /**
+         * Epsilon value, used as a small tolerance value for a numeric value.
+         */
+        private static readonly epsilon = 1e-6;
 
         /**
-         * Converts Specular Glossiness to Metallic Roughness
+         * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material.
+         * @param babylonStandardMaterial 
+         * @returns - glTF Metallic Roughness Material representation
+         */
+        public static ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness {
+            const babylonSpecularGlossiness: IBabylonPbrSpecularGlossiness = {
+                diffuse: babylonStandardMaterial.diffuseColor,
+                opacity: babylonStandardMaterial.alpha,
+                specular: babylonStandardMaterial.specularColor || Color3.Black(),
+                glossiness: babylonStandardMaterial.specularPower / 256
+            };
+            if (babylonStandardMaterial.specularTexture) {
+
+            }
+            const babylonMetallicRoughness = _GLTFMaterial._ConvertToMetallicRoughness(babylonSpecularGlossiness);
+
+            const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {
+                baseColorFactor: [
+                    babylonMetallicRoughness.baseColor.r,
+                    babylonMetallicRoughness.baseColor.g,
+                    babylonMetallicRoughness.baseColor.b,
+                    babylonMetallicRoughness.opacity
+                ],
+                metallicFactor: babylonMetallicRoughness.metallic,
+                roughnessFactor: babylonMetallicRoughness.roughness
+            };
+
+            return glTFPbrMetallicRoughness;
+        }
+
+        /**
+         * Converts Specular Glossiness to Metallic Roughness.  This is based on the algorithm used in the Babylon glTF 3ds Max Exporter.
+         * {@link https://github.com/BabylonJS/Exporters/blob/master/3ds%20Max/Max2Babylon/Exporter/BabylonExporter.GLTFExporter.Material.cs}
          * @param  babylonSpecularGlossiness - Babylon specular glossiness parameters
          * @returns - Babylon metallic roughness values
          */
-        public static ConvertToMetallicRoughness(babylonSpecularGlossiness: _IBabylonSpecularGlossiness): _IBabylonMetallicRoughness {
+        private static _ConvertToMetallicRoughness(babylonSpecularGlossiness: IBabylonPbrSpecularGlossiness): _IBabylonPbrMetallicRoughness {
             const diffuse = babylonSpecularGlossiness.diffuse;
             const opacity = babylonSpecularGlossiness.opacity;
             const specular = babylonSpecularGlossiness.specular;
@@ -28,7 +113,7 @@ module BABYLON {
             let baseColor = new Color3();
             lerpColor.clampToRef(0, 1, baseColor);
 
-            const babylonMetallicRoughness: _IBabylonMetallicRoughness = {
+            const babylonMetallicRoughness: _IBabylonPbrMetallicRoughness = {
                 baseColor: baseColor,
                 opacity: opacity,
                 metallic: metallic,
@@ -71,16 +156,16 @@ module BABYLON {
          * @param babylonMaterial - Babylon Material
          * @returns - The Babylon alpha mode value
          */
-        public static GetAlphaMode(babylonMaterial: Material): string {
+        public static GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode {
             if (babylonMaterial instanceof StandardMaterial) {
                 const babylonStandardMaterial = babylonMaterial as StandardMaterial;
                 if ((babylonStandardMaterial.alpha != 1.0) || 
                     (babylonStandardMaterial.diffuseTexture != null && babylonStandardMaterial.diffuseTexture.hasAlpha) ||
                     (babylonStandardMaterial.opacityTexture != null)) {
-                    return  _EGLTFAlphaModeEnum.BLEND;
+                    return  MaterialAlphaMode.BLEND;
                 }
                 else {
-                    return _EGLTFAlphaModeEnum.OPAQUE;
+                    return MaterialAlphaMode.OPAQUE;
                 }
             }
             else if (babylonMaterial instanceof PBRMetallicRoughnessMaterial) {
@@ -88,17 +173,17 @@ module BABYLON {
 
                 switch(babylonPBRMetallicRoughness.transparencyMode) {
                     case PBRMaterial.PBRMATERIAL_OPAQUE: {
-                        return _EGLTFAlphaModeEnum.OPAQUE;
+                        return MaterialAlphaMode.OPAQUE;
                     }
                     case PBRMaterial.PBRMATERIAL_ALPHABLEND: {
-                        return _EGLTFAlphaModeEnum.BLEND;
+                        return MaterialAlphaMode.BLEND;
                     }
                     case PBRMaterial.PBRMATERIAL_ALPHATEST: {
-                        return _EGLTFAlphaModeEnum.MASK;
+                        return MaterialAlphaMode.MASK;
                     }
                     case PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND: {
                         console.warn("GLTF Exporter | Alpha test and blend mode not supported in glTF.  Alpha blend used instead.");
-                        return _EGLTFAlphaModeEnum.BLEND;
+                        return MaterialAlphaMode.BLEND;
                     }
                     default: {
                         throw new Error("Unsupported alpha mode " + babylonPBRMetallicRoughness.transparencyMode);
@@ -110,5 +195,4 @@ module BABYLON {
             }   
         }
     }
-
 }
