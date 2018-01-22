@@ -84,7 +84,11 @@ export abstract class AbstractViewer {
      */
     protected onTemplatesLoaded(): Promise<AbstractViewer> {
         return this.initEngine().then(() => {
-            return this.loadModel();
+            if (this.configuration.model) {
+                return this.loadModel();
+            } else {
+                return this.scene;
+            }
         }).then(() => {
             return this;
         });
