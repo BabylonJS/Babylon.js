@@ -3221,7 +3221,7 @@
 
                 this._totalVertices.addCount(mesh.getTotalVertices(), false);
 
-                if (!mesh.isReady() || (checkIsEnabled && !mesh.isEnabled())) {
+                if ((checkIsEnabled && !mesh.isEnabled()) || !mesh.isReady()) {
                     continue;
                 }
 
