@@ -6,7 +6,7 @@
     class GlowBlurPostProcess extends PostProcess {
         constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
-
+            
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -56,6 +56,11 @@
          * The camera attached to the layer.
          */
         camera: Nullable<Camera>;
+
+        /**
+         * Should we display highlight as a solid stroke?
+         */
+        isStroke?: boolean;
     }
 
     /**
@@ -289,7 +294,8 @@
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
-                ["textureSampler"], "");
+                ["textureSampler"],
+                this._options.isStroke ? "#define STROKE \n" : undefined);
 
             // Render target
             this.setMainTextureSize();

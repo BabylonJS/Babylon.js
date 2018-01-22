@@ -284,7 +284,7 @@ module BABYLON.GLTF2 {
         texCoord?: number;
     }
 
-    export interface IGLTF extends IGLTFProperty {
+    export interface _IGLTF extends IGLTFProperty {
         accessors?: IGLTFAccessor[];
         animations?: IGLTFAnimation[];
         asset: IGLTFAsset;

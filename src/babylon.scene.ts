@@ -931,6 +931,21 @@
         private _depthRenderer: Nullable<DepthRenderer>;
         private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
+        /**
+         * Gets the current geometry buffer associated to the scene.
+         */
+        public get geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+            return this._geometryBufferRenderer;
+        }
+        /**
+         * Sets the current geometry buffer for the scene.
+         */
+        public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
+            if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = geometryBufferRenderer;
+            }
+        }
+
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
         private _pickedDownSprite: Nullable<Sprite>;

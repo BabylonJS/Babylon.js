@@ -16,7 +16,7 @@
         "srcOutputDirectory": "../../src/",
         "currentConfig": "all",
         "typedocJSON": "../../.temp/babylon.typedoc.json",
-        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json" 
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
     },
     "buildConfigurations": {
         "all": [
@@ -196,6 +196,7 @@
                 "../../src/babylon.assetContainer.js",
                 "../../src/Mesh/babylon.buffer.js",
                 "../../src/Mesh/babylon.vertexBuffer.js",
+                "../../src/Materials/Textures/babylon.internalTextureTracker.js",
                 "../../src/Materials/Textures/babylon.internalTexture.js",
                 "../../src/Materials/Textures/babylon.baseTexture.js",
                 "../../src/Materials/Textures/babylon.texture.js",
@@ -1469,7 +1470,8 @@
                 "files": [
                     "../../serializers/src/glTF/2.0/babylon.glTFSerializer.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFExporter.ts",
-                    "../../serializers/src/glTF/2.0/babylon.glTFData.ts"
+                    "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
+                    "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts"
                 ],
                 "output": "babylon.glTF2Serializer.js"
             }
