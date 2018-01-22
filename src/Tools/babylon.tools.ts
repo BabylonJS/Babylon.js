@@ -1155,6 +1155,32 @@
             });
         }
 
+        /**
+        * Test if the given uri is a base64 string.
+        * @param uri The uri to test
+        * @return True if the uri is a base64 string or false otherwise.
+        */
+        public static IsBase64(uri: string): boolean {
+            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        }
+
+        /**
+        * Decode the given base64 uri.
+        * @param uri The uri to decode
+        * @return The decoded base64 data.
+        */
+        public static DecodeBase64(uri: string): ArrayBuffer {
+            const decodedString = atob(uri.split(",")[1]);
+            const bufferLength = decodedString.length;
+            const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+            for (let i = 0; i < bufferLength; i++) {
+                bufferView[i] = decodedString.charCodeAt(i);
+            }
+
+            return bufferView.buffer;
+        }
+
         // Logs
         private static _NoneLogLevel = 0;
         private static _MessageLogLevel = 1;
