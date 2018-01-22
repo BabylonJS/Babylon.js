@@ -1020,7 +1020,7 @@ declare module BABYLON.GLTF2 {
         index: number;
         texCoord?: number;
     }
-    interface IGLTF extends IGLTFProperty {
+    interface _IGLTF extends IGLTFProperty {
         accessors?: IGLTFAccessor[];
         animations?: IGLTFAnimation[];
         asset: IGLTFAsset;
@@ -1044,7 +1044,7 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2 {
     class GLTFLoader implements IGLTFLoader {
-        _gltf: IGLTF;
+        _gltf: _IGLTF;
         _babylonScene: Scene;
         private _disposed;
         private _rootUrl;
