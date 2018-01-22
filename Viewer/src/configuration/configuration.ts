@@ -9,7 +9,8 @@ export interface ViewerConfiguration {
     pageUrl?: string; // will be used for sharing and other fun stuff. This is the page showing the model (not the model's url!)
 
     configuration?: string | {
-        url: string;
+        url?: string;
+        payload?: any;
         mapper?: string; // json (default), html, yaml, xml, etc'. if not provided, file extension will be used.
     };
 
