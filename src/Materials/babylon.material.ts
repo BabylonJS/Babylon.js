@@ -466,7 +466,15 @@
             return true;
         }
 
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean): boolean {
+        /**
+         * Check if this material is ready for the given mesh and sub mesh.
+         * @param mesh The mesh to test
+         * @param subMesh The sub mesh to test
+         * @param useInstances Specify if using hardware instanced rendering
+         * @param forceCompilation Specify if calling from forceCompilation
+         * @return True if this material is ready or false otherwise.
+         */
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: BaseSubMesh, useInstances?: boolean, forceCompilation?: boolean): boolean {
             return false;
         }
 
@@ -626,7 +634,7 @@
                 }
 
                 if (this.storeEffectOnSubMeshes) {
-                    if (this.isReadyForSubMesh(mesh, subMesh)) {
+                    if (this.isReadyForSubMesh(mesh, subMesh, undefined, true)) {
                         if (onCompiled) {
                             onCompiled(this);
                         }
