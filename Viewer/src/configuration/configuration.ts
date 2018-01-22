@@ -124,6 +124,8 @@ export interface ViewerConfiguration {
     // engine configuration. optional!
     engine?: {
         antialiasing?: boolean;
+        disableResize?: boolean;
+        engineOptions?: { [key: string]: any };
     },
     //templateStructure?: ITemplateStructure,
     templates?: {
