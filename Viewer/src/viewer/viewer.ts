@@ -151,8 +151,10 @@ export abstract class AbstractViewer {
 
         this.engine.runRenderLoop(this.render);
 
-        var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
-        this.engine.setHardwareScalingLevel(scale);
+        if (this.configuration.engine && this.configuration.engine.adaptiveQuality) {
+            var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
+            this.engine.setHardwareScalingLevel(scale);
+        }
 
         return this.onEngineInitObservable.notifyWithPromise(this.engine).then(() => {
             return this.engine;
