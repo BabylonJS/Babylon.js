@@ -126,6 +126,7 @@ export interface ViewerConfiguration {
         antialiasing?: boolean;
         disableResize?: boolean;
         engineOptions?: { [key: string]: any };
+        adaptiveQuality?: boolean;
     },
     //templateStructure?: ITemplateStructure,
     templates?: {
