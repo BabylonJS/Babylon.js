@@ -5170,208 +5170,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     */
-    class EngineInstrumentation implements IDisposable {
-        engine: Engine;
-        private _captureGPUFrameTime;
-        private _gpuFrameTimeToken;
-        private _gpuFrameTime;
-        private _captureShaderCompilationTime;
-        private _shaderCompilationTime;
-        private _onBeginFrameObserver;
-        private _onEndFrameObserver;
-        private _onBeforeShaderCompilationObserver;
-        private _onAfterShaderCompilationObserver;
-        /**
-         * Gets the perf counter used for GPU frame time
-         */
-        readonly gpuFrameTimeCounter: PerfCounter;
-        /**
-         * Gets the GPU frame time capture status
-         */
-        /**
-         * Enable or disable the GPU frame time capture
-         */
-        captureGPUFrameTime: boolean;
-        /**
-         * Gets the perf counter used for shader compilation time
-         */
-        readonly shaderCompilationTimeCounter: PerfCounter;
-        /**
-         * Gets the shader compilation time capture status
-         */
-        /**
-         * Enable or disable the shader compilation time capture
-         */
-        captureShaderCompilationTime: boolean;
-        constructor(engine: Engine);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This class can be used to get instrumentation data from a Babylon engine
-     */
-    class SceneInstrumentation implements IDisposable {
-        scene: Scene;
-        private _captureActiveMeshesEvaluationTime;
-        private _activeMeshesEvaluationTime;
-        private _captureRenderTargetsRenderTime;
-        private _renderTargetsRenderTime;
-        private _captureFrameTime;
-        private _frameTime;
-        private _captureRenderTime;
-        private _renderTime;
-        private _captureInterFrameTime;
-        private _interFrameTime;
-        private _captureParticlesRenderTime;
-        private _particlesRenderTime;
-        private _captureSpritesRenderTime;
-        private _spritesRenderTime;
-        private _capturePhysicsTime;
-        private _physicsTime;
-        private _captureAnimationsTime;
-        private _animationsTime;
-        private _onBeforeActiveMeshesEvaluationObserver;
-        private _onAfterActiveMeshesEvaluationObserver;
-        private _onBeforeRenderTargetsRenderObserver;
-        private _onAfterRenderTargetsRenderObserver;
-        private _onAfterRenderObserver;
-        private _onBeforeDrawPhaseObserver;
-        private _onAfterDrawPhaseObserver;
-        private _onBeforeAnimationsObserver;
-        private _onBeforeParticlesRenderingObserver;
-        private _onAfterParticlesRenderingObserver;
-        private _onBeforeSpritesRenderingObserver;
-        private _onAfterSpritesRenderingObserver;
-        private _onBeforePhysicsObserver;
-        private _onAfterPhysicsObserver;
-        private _onAfterAnimationsObserver;
-        /**
-         * Gets the perf counter used for active meshes evaluation time
-         */
-        readonly activeMeshesEvaluationTimeCounter: PerfCounter;
-        /**
-         * Gets the active meshes evaluation time capture status
-         */
-        /**
-         * Enable or disable the active meshes evaluation time capture
-         */
-        captureActiveMeshesEvaluationTime: boolean;
-        /**
-         * Gets the perf counter used for render targets render time
-         */
-        readonly renderTargetsRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the render targets render time capture status
-         */
-        /**
-         * Enable or disable the render targets render time capture
-         */
-        captureRenderTargetsRenderTime: boolean;
-        /**
-         * Gets the perf counter used for particles render time
-         */
-        readonly particlesRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the particles render time capture status
-         */
-        /**
-         * Enable or disable the particles render time capture
-         */
-        captureParticlesRenderTime: boolean;
-        /**
-         * Gets the perf counter used for sprites render time
-         */
-        readonly spritesRenderTimeCounter: PerfCounter;
-        /**
-         * Gets the sprites render time capture status
-         */
-        /**
-         * Enable or disable the sprites render time capture
-         */
-        captureSpritesRenderTime: boolean;
-        /**
-         * Gets the perf counter used for physics time
-         */
-        readonly physicsTimeCounter: PerfCounter;
-        /**
-         * Gets the physics time capture status
-         */
-        /**
-         * Enable or disable the physics time capture
-         */
-        capturePhysicsTime: boolean;
-        /**
-         * Gets the perf counter used for animations time
-         */
-        readonly animationsTimeCounter: PerfCounter;
-        /**
-         * Gets the animations time capture status
-         */
-        /**
-         * Enable or disable the animations time capture
-         */
-        captureAnimationsTime: boolean;
-        /**
-         * Gets the perf counter used for frame time capture
-         */
-        readonly frameTimeCounter: PerfCounter;
-        /**
-         * Gets the frame time capture status
-         */
-        /**
-         * Enable or disable the frame time capture
-         */
-        captureFrameTime: boolean;
-        /**
-         * Gets the perf counter used for inter-frames time capture
-         */
-        readonly interFrameTimeCounter: PerfCounter;
-        /**
-         * Gets the inter-frames time capture status
-         */
-        /**
-         * Enable or disable the inter-frames time capture
-         */
-        captureInterFrameTime: boolean;
-        /**
-         * Gets the perf counter used for render time capture
-         */
-        readonly renderTimeCounter: PerfCounter;
-        /**
-         * Gets the render time capture status
-         */
-        /**
-         * Enable or disable the render time capture
-         */
-        captureRenderTime: boolean;
-        /**
-         * Gets the perf counter used for draw calls
-         */
-        readonly drawCallsCounter: PerfCounter;
-        /**
-         * Gets the perf counter used for texture collisions
-         */
-        readonly textureCollisionsCounter: PerfCounter;
-        constructor(scene: Scene);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class _TimeToken {
-        _startTimeQuery: Nullable<WebGLQuery>;
-        _endTimeQuery: Nullable<WebGLQuery>;
-        _timeElapsedQuery: Nullable<WebGLQuery>;
-        _timeElapsedQueryEnded: boolean;
-    }
-}
-
-declare module BABYLON {
-    /**
      * Represents the different options available during the creation of
      * a Environment helper.
      *
@@ -5662,6 +5460,208 @@ declare module BABYLON {
          * Dispose all the elements created by the Helper.
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     */
+    class EngineInstrumentation implements IDisposable {
+        engine: Engine;
+        private _captureGPUFrameTime;
+        private _gpuFrameTimeToken;
+        private _gpuFrameTime;
+        private _captureShaderCompilationTime;
+        private _shaderCompilationTime;
+        private _onBeginFrameObserver;
+        private _onEndFrameObserver;
+        private _onBeforeShaderCompilationObserver;
+        private _onAfterShaderCompilationObserver;
+        /**
+         * Gets the perf counter used for GPU frame time
+         */
+        readonly gpuFrameTimeCounter: PerfCounter;
+        /**
+         * Gets the GPU frame time capture status
+         */
+        /**
+         * Enable or disable the GPU frame time capture
+         */
+        captureGPUFrameTime: boolean;
+        /**
+         * Gets the perf counter used for shader compilation time
+         */
+        readonly shaderCompilationTimeCounter: PerfCounter;
+        /**
+         * Gets the shader compilation time capture status
+         */
+        /**
+         * Enable or disable the shader compilation time capture
+         */
+        captureShaderCompilationTime: boolean;
+        constructor(engine: Engine);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This class can be used to get instrumentation data from a Babylon engine
+     */
+    class SceneInstrumentation implements IDisposable {
+        scene: Scene;
+        private _captureActiveMeshesEvaluationTime;
+        private _activeMeshesEvaluationTime;
+        private _captureRenderTargetsRenderTime;
+        private _renderTargetsRenderTime;
+        private _captureFrameTime;
+        private _frameTime;
+        private _captureRenderTime;
+        private _renderTime;
+        private _captureInterFrameTime;
+        private _interFrameTime;
+        private _captureParticlesRenderTime;
+        private _particlesRenderTime;
+        private _captureSpritesRenderTime;
+        private _spritesRenderTime;
+        private _capturePhysicsTime;
+        private _physicsTime;
+        private _captureAnimationsTime;
+        private _animationsTime;
+        private _onBeforeActiveMeshesEvaluationObserver;
+        private _onAfterActiveMeshesEvaluationObserver;
+        private _onBeforeRenderTargetsRenderObserver;
+        private _onAfterRenderTargetsRenderObserver;
+        private _onAfterRenderObserver;
+        private _onBeforeDrawPhaseObserver;
+        private _onAfterDrawPhaseObserver;
+        private _onBeforeAnimationsObserver;
+        private _onBeforeParticlesRenderingObserver;
+        private _onAfterParticlesRenderingObserver;
+        private _onBeforeSpritesRenderingObserver;
+        private _onAfterSpritesRenderingObserver;
+        private _onBeforePhysicsObserver;
+        private _onAfterPhysicsObserver;
+        private _onAfterAnimationsObserver;
+        /**
+         * Gets the perf counter used for active meshes evaluation time
+         */
+        readonly activeMeshesEvaluationTimeCounter: PerfCounter;
+        /**
+         * Gets the active meshes evaluation time capture status
+         */
+        /**
+         * Enable or disable the active meshes evaluation time capture
+         */
+        captureActiveMeshesEvaluationTime: boolean;
+        /**
+         * Gets the perf counter used for render targets render time
+         */
+        readonly renderTargetsRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the render targets render time capture status
+         */
+        /**
+         * Enable or disable the render targets render time capture
+         */
+        captureRenderTargetsRenderTime: boolean;
+        /**
+         * Gets the perf counter used for particles render time
+         */
+        readonly particlesRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the particles render time capture status
+         */
+        /**
+         * Enable or disable the particles render time capture
+         */
+        captureParticlesRenderTime: boolean;
+        /**
+         * Gets the perf counter used for sprites render time
+         */
+        readonly spritesRenderTimeCounter: PerfCounter;
+        /**
+         * Gets the sprites render time capture status
+         */
+        /**
+         * Enable or disable the sprites render time capture
+         */
+        captureSpritesRenderTime: boolean;
+        /**
+         * Gets the perf counter used for physics time
+         */
+        readonly physicsTimeCounter: PerfCounter;
+        /**
+         * Gets the physics time capture status
+         */
+        /**
+         * Enable or disable the physics time capture
+         */
+        capturePhysicsTime: boolean;
+        /**
+         * Gets the perf counter used for animations time
+         */
+        readonly animationsTimeCounter: PerfCounter;
+        /**
+         * Gets the animations time capture status
+         */
+        /**
+         * Enable or disable the animations time capture
+         */
+        captureAnimationsTime: boolean;
+        /**
+         * Gets the perf counter used for frame time capture
+         */
+        readonly frameTimeCounter: PerfCounter;
+        /**
+         * Gets the frame time capture status
+         */
+        /**
+         * Enable or disable the frame time capture
+         */
+        captureFrameTime: boolean;
+        /**
+         * Gets the perf counter used for inter-frames time capture
+         */
+        readonly interFrameTimeCounter: PerfCounter;
+        /**
+         * Gets the inter-frames time capture status
+         */
+        /**
+         * Enable or disable the inter-frames time capture
+         */
+        captureInterFrameTime: boolean;
+        /**
+         * Gets the perf counter used for render time capture
+         */
+        readonly renderTimeCounter: PerfCounter;
+        /**
+         * Gets the render time capture status
+         */
+        /**
+         * Enable or disable the render time capture
+         */
+        captureRenderTime: boolean;
+        /**
+         * Gets the perf counter used for draw calls
+         */
+        readonly drawCallsCounter: PerfCounter;
+        /**
+         * Gets the perf counter used for texture collisions
+         */
+        readonly textureCollisionsCounter: PerfCounter;
+        constructor(scene: Scene);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class _TimeToken {
+        _startTimeQuery: Nullable<WebGLQuery>;
+        _endTimeQuery: Nullable<WebGLQuery>;
+        _timeElapsedQuery: Nullable<WebGLQuery>;
+        _timeElapsedQueryEnded: boolean;
     }
 }
 
@@ -5986,123 +5986,6 @@ declare module BABYLON {
         dispose(): void;
         static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
         serialize(): any;
-    }
-}
-
-declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    class SceneLoaderProgressEvent {
-        readonly lengthComputable: boolean;
-        readonly loaded: number;
-        readonly total: number;
-        constructor(lengthComputable: boolean, loaded: number, total: number);
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPluginFactory {
-        name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
-        canDirectLoad?: (data: string) => boolean;
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => Nullable<AssetContainer>;
-    }
-    interface ISceneLoaderPluginAsync {
-        name: string;
-        extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        canDirectLoad?: (data: string) => boolean;
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: Nullable<AssetContainer>) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     }
 }
 
@@ -6636,6 +6519,123 @@ declare module BABYLON {
          * Return the SpotLight.
          */
         transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    class SceneLoaderProgressEvent {
+        readonly lengthComputable: boolean;
+        readonly loaded: number;
+        readonly total: number;
+        constructor(lengthComputable: boolean, loaded: number, total: number);
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPluginFactory {
+        name: string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPlugin {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
+        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
+        canDirectLoad?: (data: string) => boolean;
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => Nullable<AssetContainer>;
+    }
+    interface ISceneLoaderPluginAsync {
+        name: string;
+        extensions: string | ISceneLoaderPluginExtensions;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        canDirectLoad?: (data: string) => boolean;
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: Nullable<AssetContainer>) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     }
 }
 
@@ -10318,6 +10318,70 @@ declare module BABYLON {
         convertIncidentRadianceToIrradiance(): void;
         convertIrradianceToLambertianRadiance(): void;
         static getsphericalHarmonicsFromPolynomial(polynomial: SphericalPolynomial): SphericalHarmonics;
+    }
+}
+
+declare module BABYLON {
+    class MorphTarget {
+        name: string;
+        animations: Animation[];
+        private _positions;
+        private _normals;
+        private _tangents;
+        private _influence;
+        onInfluenceChanged: Observable<boolean>;
+        influence: number;
+        constructor(name: string, influence?: number);
+        readonly hasPositions: boolean;
+        readonly hasNormals: boolean;
+        readonly hasTangents: boolean;
+        setPositions(data: Nullable<FloatArray>): void;
+        getPositions(): Nullable<FloatArray>;
+        setNormals(data: Nullable<FloatArray>): void;
+        getNormals(): Nullable<FloatArray>;
+        setTangents(data: Nullable<FloatArray>): void;
+        getTangents(): Nullable<FloatArray>;
+        /**
+         * Serializes the current target into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        static Parse(serializationObject: any): MorphTarget;
+        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
+    }
+}
+
+declare module BABYLON {
+    class MorphTargetManager {
+        private _targets;
+        private _targetObservable;
+        private _activeTargets;
+        private _scene;
+        private _influences;
+        private _supportsNormals;
+        private _supportsTangents;
+        private _vertexCount;
+        private _uniqueId;
+        private _tempInfluences;
+        constructor(scene?: Nullable<Scene>);
+        readonly uniqueId: number;
+        readonly vertexCount: number;
+        readonly supportsNormals: boolean;
+        readonly supportsTangents: boolean;
+        readonly numTargets: number;
+        readonly numInfluencers: number;
+        readonly influences: Float32Array;
+        getActiveTarget(index: number): MorphTarget;
+        getTarget(index: number): MorphTarget;
+        addTarget(target: MorphTarget): void;
+        removeTarget(target: MorphTarget): void;
+        /**
+         * Serializes the current manager into a Serialization object.
+         * Returns the serialized object.
+         */
+        serialize(): any;
+        private _syncActiveTargets(needUpdate);
+        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -14584,70 +14648,6 @@ declare module BABYLON {
         static readonly MatricesWeightsKind: string;
         static readonly MatricesIndicesExtraKind: string;
         static readonly MatricesWeightsExtraKind: string;
-    }
-}
-
-declare module BABYLON {
-    class MorphTarget {
-        name: string;
-        animations: Animation[];
-        private _positions;
-        private _normals;
-        private _tangents;
-        private _influence;
-        onInfluenceChanged: Observable<boolean>;
-        influence: number;
-        constructor(name: string, influence?: number);
-        readonly hasPositions: boolean;
-        readonly hasNormals: boolean;
-        readonly hasTangents: boolean;
-        setPositions(data: Nullable<FloatArray>): void;
-        getPositions(): Nullable<FloatArray>;
-        setNormals(data: Nullable<FloatArray>): void;
-        getNormals(): Nullable<FloatArray>;
-        setTangents(data: Nullable<FloatArray>): void;
-        getTangents(): Nullable<FloatArray>;
-        /**
-         * Serializes the current target into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        static Parse(serializationObject: any): MorphTarget;
-        static FromMesh(mesh: AbstractMesh, name?: string, influence?: number): MorphTarget;
-    }
-}
-
-declare module BABYLON {
-    class MorphTargetManager {
-        private _targets;
-        private _targetObservable;
-        private _activeTargets;
-        private _scene;
-        private _influences;
-        private _supportsNormals;
-        private _supportsTangents;
-        private _vertexCount;
-        private _uniqueId;
-        private _tempInfluences;
-        constructor(scene?: Nullable<Scene>);
-        readonly uniqueId: number;
-        readonly vertexCount: number;
-        readonly supportsNormals: boolean;
-        readonly supportsTangents: boolean;
-        readonly numTargets: number;
-        readonly numInfluencers: number;
-        readonly influences: Float32Array;
-        getActiveTarget(index: number): MorphTarget;
-        getTarget(index: number): MorphTarget;
-        addTarget(target: MorphTarget): void;
-        removeTarget(target: MorphTarget): void;
-        /**
-         * Serializes the current manager into a Serialization object.
-         * Returns the serialized object.
-         */
-        serialize(): any;
-        private _syncActiveTargets(needUpdate);
-        static Parse(serializationObject: any, scene: Scene): MorphTargetManager;
     }
 }
 
@@ -20920,9 +20920,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-}
-
-declare module BABYLON {
     /**
      * Interface to implement to create a shadow generator compatible with BJS.
      */
@@ -21099,6 +21096,9 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
