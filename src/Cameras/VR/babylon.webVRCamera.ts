@@ -314,18 +314,15 @@ module BABYLON {
                             }
                         });
                     }
-                    callback(true)
+                    callback(true);
                 }
-                if(webVRInitobserver){
-                    webVRInitobserver.removeCallback(setStandingMatrix)
-                }
+                this.getEngine().onVRDisplayChangedObservable.removeCallback(setStandingMatrix);
             }
 
             if(this._vrDevice){
                 setStandingMatrix();
             }else{
-                webVRInitobserver = this.getEngine().initWebVR();
-                webVRInitobserver.add(setStandingMatrix);
+                this.getEngine().onVRDisplayChangedObservable.add(setStandingMatrix);
             }
         }
 
