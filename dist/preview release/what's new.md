@@ -23,7 +23,8 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
    ([carloslanderas](https://github.com/carloslanderas))
-- `AssetsManager` will now clear its `tasks` lsit from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
+- `AssetsManager` will now clear its `tasks` list from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
+- Added documentation to WebVRCamera and VRExperienceHelper ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
