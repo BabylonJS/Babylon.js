@@ -32,6 +32,7 @@
    ([carloslanderas](https://github.com/carloslanderas))
 
 ## Bug fixes
+- Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 
