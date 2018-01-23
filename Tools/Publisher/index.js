@@ -46,6 +46,39 @@ let packages = [
     }
 ];
 
+function updateEngineVersion(newVersion) {
+    console.log("updating version in babylon.engine.ts");
+    let engineContent = fs.readFileSync("../../src/Engine/babylon.engine.ts").toString();
+    let replaced = engineContent.replace(/(public static get Version\(\): string {\s*return ")(.*)(";\s*})/g, "$1" + newVersion + "$3");
+    fs.writeFileSync("../../src/Engine/babylon.engine.ts", replaced);
+}
+
+function runGulp() {
+    // run gulp typescript-all
+    let exec = shelljs.exec("gulp typescript-all --gulpfile ../Gulp/gulpfile.js");
+    if (exec.code) {
+        console.log("error during compilation, aborting");
+        process.exit(1);
+    }
+}
+
+function processPackages() {
+    packages.forEach((package) => {
+        if (package.name === "core") {
+            processCore(package, version);
+        } else {
+            let packageJson = require(package.path + 'package.json');
+            packageJson.version = version;
+            if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
+            fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
+            console.log('Publishing ' + package.name + " from " + package.path);
+            //publish the respected package
+            shelljs.exec('npm publish \"' + package.path + "\"");
+        }
+
+    });
+}
+
 //check if logged in
 console.log("Using npm user:");
 let loginCheck = shelljs.exec('npm whoami');
@@ -55,21 +88,11 @@ if (loginCheck.code === 0) {
 
     prompt.get(['version'], function (err, result) {
         let version = result.version;
-        packages.forEach((package) => {
-            if (package.name === "core") {
-                processCore(package, version);
-            } else {
-                let packageJson = require(package.path + 'package.json');
-                packageJson.version = version;
-                if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
-                fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
-                console.log('Publishing ' + package.name + " from " + package.path);
-                //publish the respected package
-                shelljs.exec('npm publish \"' + package.path + "\"");
-            }
+        updateEngineVersion(version);
+        runGulp();
+        processPackages();
 
-        });
-        console.log("done, please don't forget to commit the changes")
+        console.log("done, please tag git with " + version);
     });
 } else {
     console.log('not logged in.');
@@ -143,7 +166,7 @@ function processCore(package, version) {
     });
     console.log("updating package.json");
     packageJson.files = packageFiles;
-    packageJson.main = "babylon.max.js";
+    packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
 
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
@@ -163,7 +186,7 @@ function processCore(package, version) {
             return file;
         }
     });
-    packageJson.main = "dist/preview release/babylon.max.js";
+    packageJson.main = "dist/preview release/babylon.js";
     packageJson.typings = "dist/preview release/babylon.d.ts";
 
     fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
