@@ -191,7 +191,7 @@ export abstract class AbstractViewer {
 
         return Promise.resolve().then(() => {
             if (!this.scene || clearScene) return this.initScene();
-            else return this.scene;
+            else return this.scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
                 SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
