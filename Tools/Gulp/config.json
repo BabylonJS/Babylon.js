@@ -57,6 +57,7 @@
             "geometryBufferRenderer",
             "additionalPostProcesses",
             "additionalPostProcess_blur",
+            "additionalPostProcess_depthOfFieldBlur",
             "additionalPostProcess_fxaa",
             "additionalPostProcess_circleOfConfusion",
             "additionalPostProcess_depthOfFieldMerge",
@@ -709,6 +710,24 @@
         "additionalPostProcess_blur": {
             "files": [
                 "../../src/PostProcess/babylon.blurPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "kernelBlur.vertex",
+                "kernelBlur.fragment"
+            ],
+            "shaderIncludes": [
+                "kernelBlurFragment",
+                "kernelBlurFragment2",
+                "kernelBlurVaryingDeclaration",
+                "kernelBlurVertex"
+            ]
+        },
+        "additionalPostProcess_depthOfFieldBlur": {
+            "files": [
+                "../../src/PostProcess/babylon.depthOfFieldBlurPostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses"
