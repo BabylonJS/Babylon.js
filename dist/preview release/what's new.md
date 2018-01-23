@@ -28,6 +28,7 @@
 - Introduced `isStroke` on `HighlightLayerOptions` which makes the highlight solid ([PixelsCommander](https://github.com/pixelscommander))
 
 ## Bug fixes
+- Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 
