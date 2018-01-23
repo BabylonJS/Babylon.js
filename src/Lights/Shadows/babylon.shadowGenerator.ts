@@ -345,7 +345,6 @@
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
         private _currentRenderID: number;
-        private _downSamplePostprocess: Nullable<PassPostProcess>;
         private _boxBlurPostprocess: Nullable<PostProcess>;
         private _kernelBlurXPostprocess: Nullable<PostProcess>;
         private _kernelBlurYPostprocess: Nullable<PostProcess>;
@@ -427,10 +426,6 @@
             this._shadowMap.onAfterUnbindObservable.add(() => {
                 if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
                     return;
-                }
-
-                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
-                    this._initializeBlurRTTAndPostProcesses();
                 }
                 let shadowMap = this.getShadowMapForRendering();
 
@@ -727,7 +722,27 @@
                     ["diffuseSampler"], join);
             }
 
-            return this._effect.isReady();
+            if (!this._effect.isReady()) {
+                return false;
+            }
+
+            if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {
+                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
+                    this._initializeBlurRTTAndPostProcesses();
+                }
+            }
+
+            if (this._kernelBlurXPostprocess && !this._kernelBlurXPostprocess.isReady()) {
+                return false;
+            }
+            if (this._kernelBlurYPostprocess && !this._kernelBlurYPostprocess.isReady()) {
+                return false;
+            }
+            if (this._boxBlurPostprocess && !this._boxBlurPostprocess.isReady()) {
+                return false;
+            }
+
+            return true;
         }
 
         /**
@@ -859,11 +874,6 @@
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
                 this._shadowMap2 = null;
-            }
-
-            if (this._downSamplePostprocess) {
-                this._downSamplePostprocess.dispose();
-                this._downSamplePostprocess = null;
             }
 
             if (this._boxBlurPostprocess) {

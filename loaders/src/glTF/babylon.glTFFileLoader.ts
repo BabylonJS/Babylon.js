@@ -239,6 +239,29 @@ module BABYLON {
             }
         }
 
+        public loadAssetsAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (assets:AssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void {
+            try {
+                const loaderData = this._parse(data);
+                this._loader = this._getLoader(loaderData);
+                this._loader.importMeshAsync(null, scene, loaderData, rootUrl,  (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => {
+                    var container = new AssetContainer(scene);
+                    Array.prototype.push.apply(container.meshes, meshes)
+                    Array.prototype.push.apply(container.particleSystems, particleSystems)
+                    Array.prototype.push.apply(container.skeletons, skeletons)
+                    container.removeAllFromScene();
+                    onSuccess(container)
+                }, onProgress, onError);
+            }
+            catch (e) {
+                if (onError) {
+                    onError(e.message, e);
+                }
+                else {
+                    Tools.Error(e.message);
+                }
+            }
+        }
+
         public canDirectLoad(data: string): boolean {
             return ((data.indexOf("scene") !== -1) && (data.indexOf("node") !== -1));
         }

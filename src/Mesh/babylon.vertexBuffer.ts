@@ -145,6 +145,7 @@
 
         /**
          * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * This function will create a new buffer if the current one is not updatable
          * Returns the updated WebGLBuffer.  
          */
         public update(data: FloatArray): void {

@@ -931,6 +931,21 @@
         private _depthRenderer: Nullable<DepthRenderer>;
         private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
+        /**
+         * Gets the current geometry buffer associated to the scene.
+         */
+        public get geometryBufferRenderer(): Nullable<GeometryBufferRenderer> {
+            return this._geometryBufferRenderer;
+        }
+        /**
+         * Sets the current geometry buffer for the scene.
+         */
+        public set geometryBufferRenderer(geometryBufferRenderer: Nullable<GeometryBufferRenderer>) {
+            if (geometryBufferRenderer && geometryBufferRenderer.isSupported) {
+                this._geometryBufferRenderer = geometryBufferRenderer;
+            }
+        }
+
         private _pickedDownMesh: Nullable<AbstractMesh>;
         private _pickedUpMesh: Nullable<AbstractMesh>;
         private _pickedDownSprite: Nullable<Sprite>;
@@ -1855,7 +1870,11 @@
             this.onPrePointerObservable.clear();
         }
 
-        // Ready
+        /**
+         * This function will check if the scene can be rendered (textures are loaded, shaders are compiled)
+         * Delay loaded resources are not taking in account
+         * @return true if all required resources are ready
+         */
         public isReady(): boolean {
             if (this._isDisposed) {
                 return false;
@@ -1864,7 +1883,8 @@
             if (this._pendingData.length > 0) {
                 return false;
             }
-            var index: number;
+            let index: number;
+            let engine = this.getEngine();
 
             // Geometries
             for (index = 0; index < this._geometries.length; index++) {
@@ -1891,10 +1911,17 @@
                     return false;
                 }
 
-                var mat = mesh.material;
-                if (mat) {
-                    if (!mat.isReady(mesh)) {
-                        return false;
+                // Highlight layers
+                let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
+                for (var layer of this.highlightLayers) {
+                    if (!layer.hasMesh(mesh)) {
+                        continue;
+                    }
+
+                    for (var subMesh of mesh.subMeshes) {
+                        if (!layer.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -1922,6 +1949,33 @@
 
         public unregisterAfterRender(func: () => void): void {
             this.onAfterRenderObservable.removeCallback(func);
+        }
+
+        private _executeOnceBeforeRender(func: () => void): void {
+            let execFunc = () => {
+                func();
+                setTimeout(() => {
+                    this.unregisterBeforeRender(execFunc);
+                });
+            }
+            this.registerBeforeRender(execFunc);
+        }
+
+        /**
+         * The provided function will run before render once and will be disposed afterwards.
+         * A timeout delay can be provided so that the function will be executed in N ms.
+         * The timeout is using the browser's native setTimeout so time percision cannot be guaranteed.
+         * @param func The function to be executed.
+         * @param timeout optional delay in ms
+         */
+        public executeOnceBeforeRender(func: () => void, timeout?: number): void {
+            if (timeout !== undefined) {
+                setTimeout(() => {
+                    this._executeOnceBeforeRender(func);
+                }, timeout);
+            } else {
+                this._executeOnceBeforeRender(func);
+            }
         }
 
         public _addPendingData(data: any): void {
@@ -2221,6 +2275,7 @@
             if (this.collisionCoordinator) {
                 this.collisionCoordinator.onMeshAdded(newMesh);
             }
+            newMesh._resyncLightSources();
 
             this.onNewMeshAddedObservable.notifyObservers(newMesh);
         }
@@ -2278,6 +2333,11 @@
         public removeLight(toRemove: Light): number {
             var index = this.lights.indexOf(toRemove);
             if (index !== -1) {
+                // Remove from meshes
+                for (var mesh of this.meshes) {
+                    mesh._removeLightSource(toRemove);
+                }
+
                 // Remove from the scene if mesh found
                 this.lights.splice(index, 1);
                 this.sortLightsByPriority();
@@ -2310,9 +2370,61 @@
             return index;
         }
 
+
+        public removeParticleSystem(toRemove: ParticleSystem): number {
+            var index = this.particleSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.particleSystems.splice(index, 1);
+            }
+            return index;
+        };
+        public removeAnimation(toRemove: Animation): number {
+            var index = this.animations.indexOf(toRemove);
+            if (index !== -1) {
+                this.animations.splice(index, 1);
+            }
+            return index;
+        };
+        public removeMultiMaterial(toRemove: MultiMaterial): number {
+            var index = this.multiMaterials.indexOf(toRemove);
+            if (index !== -1) {
+                this.multiMaterials.splice(index, 1);
+            }
+            return index;
+        };
+        public removeMaterial(toRemove: Material): number {
+            var index = this.materials.indexOf(toRemove);
+            if (index !== -1) {
+                this.materials.splice(index, 1);
+            }
+            return index;
+        };
+        public removeLensFlareSystem(toRemove: LensFlareSystem) {
+            var index = this.lensFlareSystems.indexOf(toRemove);
+            if (index !== -1) {
+                this.lensFlareSystems.splice(index, 1);
+            }
+            return index;
+        };
+        public removeActionManager(toRemove: ActionManager) {
+            var index = this._actionManagers.indexOf(toRemove);
+            if (index !== -1) {
+                this._actionManagers.splice(index, 1);
+            }
+            return index;
+        };
+
         public addLight(newLight: Light) {
             this.lights.push(newLight);
             this.sortLightsByPriority();
+
+            // Add light to all meshes (To support if the light is removed and then readded)
+            for (var mesh of this.meshes) {
+                if (mesh._lightSources.indexOf(newLight) === -1) {
+                    mesh._lightSources.push(newLight);
+                    mesh._resyncLightSources();
+                }
+            }
 
             this.onNewLightAddedObservable.notifyObservers(newLight);
         }
@@ -2326,6 +2438,42 @@
         public addCamera(newCamera: Camera) {
             this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
+        }
+
+        public addSkeleton(newSkeleton: Skeleton) {
+            this.skeletons.push(newSkeleton)
+        }
+
+        public addParticleSystem(newParticleSystem: ParticleSystem) {
+            this.particleSystems.push(newParticleSystem)
+        }
+
+        public addAnimation(newAnimation: Animation) {
+            this.animations.push(newAnimation)
+        }
+
+        public addMultiMaterial(newMultiMaterial: MultiMaterial) {
+            this.multiMaterials.push(newMultiMaterial)
+        }
+
+        public addMaterial(newMaterial: Material) {
+            this.materials.push(newMaterial)
+        }
+
+        public addMorphTargetManager(newMorphTargetManager: MorphTargetManager) {
+            this.morphTargetManagers.push(newMorphTargetManager)
+        }
+
+        public addGeometry(newGeometrie: Geometry) {
+            this._geometries.push(newGeometrie)
+        }
+
+        public addLensFlareSystem(newLensFlareSystem: LensFlareSystem) {
+            this.lensFlareSystems.push(newLensFlareSystem)
+        }
+
+        public addActionManager(newActionManager: ActionManager) {
+            this._actionManagers.push(newActionManager)
         }
 
         /**

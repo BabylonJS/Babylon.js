@@ -135,7 +135,7 @@
             return "VolumetricLightScatteringPostProcess";
         }
 
-        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        private _isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
 
             // Render this.mesh as default
@@ -287,7 +287,7 @@
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
 
-                if (this.isReady(subMesh, hardwareInstancedRendering)) {
+                if (this._isReady(subMesh, hardwareInstancedRendering)) {
                     var effect: Effect = this._volumetricLightScatteringPass;
                     if (mesh === this.mesh) {
                         if (subMesh.effect) {
@@ -358,11 +358,9 @@
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
 
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
 
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes

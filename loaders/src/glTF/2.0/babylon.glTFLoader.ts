@@ -40,7 +40,7 @@ module BABYLON.GLTF2 {
     }
 
     export class GLTFLoader implements IGLTFLoader {
-        public _gltf: IGLTF;
+        public _gltf: _IGLTF;
         public _babylonScene: Scene;
 
         private _disposed = false;
@@ -182,7 +182,7 @@ module BABYLON.GLTF2 {
         }
 
         private _loadData(data: IGLTFLoaderData): void {
-            this._gltf = <IGLTF>data.json;
+            this._gltf = <_IGLTF>data.json;
 
             // Assign the index of each object for convinience.
             GLTFLoader._AssignIndices(this._gltf.accessors);
@@ -256,6 +256,10 @@ module BABYLON.GLTF2 {
                 return;
             }
 
+            for (const animation of animations) {
+                animation.babylonAnimationGroup.normalize();
+            }
+
             switch (this.animationStartMode) {
                 case GLTFLoaderAnimationStartMode.NONE: {
                     // do nothing
@@ -263,16 +267,12 @@ module BABYLON.GLTF2 {
                 }
                 case GLTFLoaderAnimationStartMode.FIRST: {
                     const animation = animations[0];
-                    for (const target of animation.targets) {
-                        this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
-                    }
+                    animation.babylonAnimationGroup.start(true);
                     break;
                 }
                 case GLTFLoaderAnimationStartMode.ALL: {
                     for (const animation of animations) {
-                        for (const target of animation.targets) {
-                            this._babylonScene.beginAnimation(target, 0, Number.MAX_VALUE, true);
-                        }
+                        animation.babylonAnimationGroup.start(true);
                     }
                     break;
                 }
@@ -363,7 +363,6 @@ module BABYLON.GLTF2 {
             }
 
             node.babylonMesh = new Mesh(node.name || "mesh" + node.index, this._babylonScene);
-            node.babylonMesh.hasVertexAlpha = true;
 
             this._loadTransform(node);
 
@@ -431,7 +430,7 @@ module BABYLON.GLTF2 {
                 for (const primitive of primitives) {
                     vertexData.merge(primitive.vertexData);
                 }
-
+                node.babylonMesh.hasVertexAlpha = mesh.hasVertexAlpha;
                 new Geometry(node.babylonMesh.name, this._babylonScene, vertexData, false, node.babylonMesh);
 
                 // TODO: optimize this so that sub meshes can be created without being overwritten after setting vertex data.
@@ -652,6 +651,10 @@ module BABYLON.GLTF2 {
                         }
                         case "COLOR_0": {
                             vertexData.colors = this._convertToFloat4ColorArray(context, data, accessor);
+                            const hasVertexAlpha = GLTFLoader._GetNumComponents(context, accessor.type) === 4;
+                            if (!mesh.hasVertexAlpha && hasVertexAlpha) {
+                                mesh.hasVertexAlpha = hasVertexAlpha;
+                            }
                             break;
                         }
                         default: {
@@ -683,7 +686,7 @@ module BABYLON.GLTF2 {
                 });
             }
         }
-
+        
         private _createMorphTargets(context: string, node: IGLTFNode, mesh: IGLTFMesh): void {
             const primitives = mesh.primitives;
 
@@ -943,7 +946,7 @@ module BABYLON.GLTF2 {
         }
 
         private _loadAnimation(context: string, animation: IGLTFAnimation): void {
-            animation.targets = [];
+            animation.babylonAnimationGroup = new AnimationGroup(animation.name || "animation" + animation.index, this._babylonScene);
 
             for (let index = 0; index < animation.channels.length; index++) {
                 const channel = GLTFLoader._GetProperty(animation.channels, index);
@@ -1045,8 +1048,18 @@ module BABYLON.GLTF2 {
                     }
                 }
 
-                let getNextKey: (frameIndex: number) => any;
+                sampler.interpolation = sampler.interpolation || "LINEAR";
+
+                let getNextKey: (frameIndex: number) => IAnimationKey;
                 switch (sampler.interpolation) {
+                    case "STEP": {
+                        getNextKey = frameIndex => ({
+                            frame: inputData[frameIndex],
+                            value: getNextOutputValue(),
+                            interpolation: AnimationKeyInterpolation.STEP
+                        });
+                        break;
+                    }
                     case "LINEAR": {
                         getNextKey = frameIndex => ({
                             frame: inputData[frameIndex],
@@ -1068,7 +1081,7 @@ module BABYLON.GLTF2 {
                     }
                 };
 
-                let keys: Array<any>;
+                let keys: Array<IAnimationKey>;
                 if (inputData.length === 1) {
                     let key = getNextKey(0);
                     keys = [
@@ -1088,7 +1101,7 @@ module BABYLON.GLTF2 {
 
                     for (let targetIndex = 0; targetIndex < morphTargetManager.numTargets; targetIndex++) {
                         const morphTarget = morphTargetManager.getTarget(targetIndex);
-                        const animationName = (animation.name || "anim" + animation.index) + "_" + targetIndex;
+                        const animationName = animation.babylonAnimationGroup.name + "_channel" + animation.babylonAnimationGroup.targetedAnimations.length;
                         const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys.map(key => ({
                             frame: key.frame,
@@ -1097,19 +1110,17 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        morphTarget.animations.push(babylonAnimation);
-                        animation.targets.push(morphTarget);
+                        animation.babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
                     }
                 }
                 else {
-                    const animationName = animation.name || "anim" + animation.index;
+                    const animationName = animation.babylonAnimationGroup.name + "_channel" + animation.babylonAnimationGroup.targetedAnimations.length;
                     const babylonAnimation = new Animation(animationName, targetPath, 1, animationType);
                     babylonAnimation.setKeys(keys);
 
                     if (targetNode.babylonAnimationTargets) {
                         for (const target of targetNode.babylonAnimationTargets) {
-                            target.animations.push(babylonAnimation.clone());
-                            animation.targets.push(target);
+                            animation.babylonAnimationGroup.addTargetedAnimation(babylonAnimation, target);
                         }
                     }
                 }
@@ -1614,9 +1625,6 @@ module BABYLON.GLTF2 {
             }) as IGLTFLoaderFileRequest;
 
             this._requests.push(request);
-            request.onCompleteObservable.add(() => {
-                this._requests.splice(this._requests.indexOf(request), 1);
-            });
         }
 
         public _tryCatchOnError(handler: () => void): void {

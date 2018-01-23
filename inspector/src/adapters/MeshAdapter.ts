@@ -5,7 +5,7 @@ module INSPECTOR {
         implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
 
         /** Keep track of the axis of the actual object */
-        private _axesViewer: BABYLON.Nullable<BABYLON.Debug.AxesViewer>;
+        private _axesViewer: BABYLON.Nullable<any>;
         private onBeforeRenderObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Scene>>;
 
         constructor(mesh: BABYLON.Node) {

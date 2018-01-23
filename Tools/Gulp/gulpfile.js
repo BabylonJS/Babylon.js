@@ -6,6 +6,11 @@ var srcToVariable = require("gulp-content-to-variable");
 var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
 var addModuleExports = require("./gulp-addModuleExports");
+var addES6Exports = require("./gulp-addES6Exports");
+var babylonModuleExports = require("./gulp-babylonModule");
+var babylonES6ModuleExports = require("./gulp-es6ModuleExports");
+var dtsModuleSupport = require("./gulp-dtsModuleSupport");
+let calculateDependencies = require("./gulp-calculateDependencies");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
 var rename = require("gulp-rename");
@@ -20,12 +25,15 @@ var webserver = require("gulp-webserver");
 var path = require("path");
 var sass = require("gulp-sass");
 var webpack = require("webpack-stream");
+var typedoc = require("gulp-typedoc");
+var validateTypedoc = require("./gulp-validateTypedoc");
+var request = require('request');
+var fs = require("fs");
+var karmaServer = require('karma').Server;
 
 var config = require("./config.json");
 
 var del = require("del");
-
-var karmaServer = require('karma').Server;
 
 var debug = require("gulp-debug");
 var includeShadersStream;
@@ -52,7 +60,12 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -68,7 +81,12 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 
 var minimist = require("minimist");
@@ -76,8 +94,8 @@ var commandLineOptions = minimist(process.argv.slice(2), {
     boolean: "public"
 });
 
-function processDependency(kind, dependency, filesToLoad) {
-    if (dependency.dependUpon) {
+function processDependency(kind, dependency, filesToLoad, firstLevelOnly) {
+    if (!firstLevelOnly && dependency.dependUpon) {
         for (var i = 0; i < dependency.dependUpon.length; i++) {
             var dependencyName = dependency.dependUpon[i];
             var parent = config.workloads[dependencyName];
@@ -206,23 +224,33 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
 gulp.task("build", ["shaders"], function () {
     var filesToProcess = determineFilesToProcess("files");
     var directFilesToProcess = determineFilesToProcess("directFiles");
-    return merge2(
+    let mergedStreams = merge2(
         gulp.src(filesToProcess).
             pipe(expect.real({ errorOnFailure: true }, filesToProcess)),
         shadersStream,
         includeShadersStream,
         gulp.src(directFilesToProcess)
     )
-        .pipe(concat(config.build.filename))
-        .pipe(cleants())
-        .pipe(replace(extendsSearchRegex, ""))
-        .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addModuleExports("BABYLON"))
-        .pipe(gulp.dest(config.build.outputDirectory))
-        .pipe(rename(config.build.minFilename))
-        .pipe(uglify())
-        .pipe(optimisejs())
-        .pipe(gulp.dest(config.build.outputDirectory));
+    return merge2(
+        mergedStreams
+            .pipe(concat(config.build.filename))
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(replace(decorateSearchRegex, ""))
+            .pipe(addModuleExports("BABYLON"))
+            .pipe(gulp.dest(config.build.outputDirectory))
+            .pipe(rename(config.build.minFilename))
+            .pipe(uglify())
+            .pipe(optimisejs())
+            .pipe(gulp.dest(config.build.outputDirectory)),
+        mergedStreams
+            .pipe(concat("es6.js"))
+            .pipe(cleants())
+            .pipe(replace(extendsSearchRegex, ""))
+            .pipe(replace(decorateSearchRegex, ""))
+            .pipe(addES6Exports("BABYLON"))
+            .pipe(gulp.dest(config.build.outputDirectory))
+    );
 });
 
 /*
@@ -235,14 +263,11 @@ gulp.task("typescript-compile", function () {
 
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
-        var error = false;
-        tsResult.on("error", function () {
-            error = true;
-        }).on("end", function () {
-            if (error) {
+        tsResult.once("error", function () {
+            tsResult.once("finish", function () {
                 console.log("Typescript compile failed");
                 process.exit(1);
-            }
+            });
         });
     }
 
@@ -420,7 +445,7 @@ var buildExternalLibrary = function (library, settings, watch) {
  * The default task, concat and min the main BJS files.
  */
 gulp.task("default", function (cb) {
-    runSequence("typescript-all", "intellisense", "tests-saucelabs", cb);
+    runSequence("typescript-all", "intellisense", "typedoc-all", "tests-unit", "tests-validation-virtualscreen", "tests-validation-browserstack", cb);
 });
 
 gulp.task("mainBuild", function (cb) {
@@ -478,7 +503,7 @@ gulp.task("typescript-all", function (cb) {
 /**
  * Watch ts files from typescript .
  */
-gulp.task("srcTscWatch", function() {
+gulp.task("srcTscWatch", function () {
     // Reuse The TSC CLI from gulp to enable -w.
     process.argv[2] = "-w";
     process.argv[3] = "-p";
@@ -559,8 +584,282 @@ gulp.task("webserver", function () {
 gulp.task("run", ["watch", "webserver"], function () {
 });
 
+/**
+ * Cleans map and js files from the src folder.
+ */
+gulp.task("clean-JS-MAP", function () {
+    return del([
+        "../../src/**/*.js.map", "../../src/**/*.js"
+    ], { force: true });
+});
 
-gulp.task("tests-integration", function (done) {
+// this is needed for the modules for the declaration files.
+gulp.task("modules-compile", function () {
+    var tsResult = gulp.src(config.typescript)
+        .pipe(sourcemaps.init())
+        .pipe(tsProject());
+
+    // If this gulp task is running on travis
+    if (process.env.TRAVIS) {
+        tsResult.once("error", function () {
+            tsResult.once("finish", function () {
+                console.log("Typescript compile failed");
+                process.exit(1);
+            });
+        });
+    }
+
+    return merge2([
+        tsResult.dts
+            .pipe(gulp.dest(config.build.srcOutputDirectory)),
+        tsResult.js
+            .pipe(sourcemaps.write("./",
+                {
+                    includeContent: false,
+                    sourceRoot: (filePath) => {
+                        return "";
+                    }
+                }))
+            .pipe(gulp.dest(config.build.srcOutputDirectory))
+    ]);
+});
+
+// this holds the declared objects in each module
+let declared = {}
+let perFile = {};
+let dependencyTree = {};
+
+gulp.task('prepare-for-modules', /*["modules-compile"],*/ function () {
+    let tasks = [];
+    Object.keys(config.workloads).forEach((moduleName) => {
+        let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
+        let dtsTask = gulp.src(dtsFiles)
+            .pipe(dtsModuleSupport(moduleName, false, declared, perFile));
+
+        tasks.push(dtsTask);
+    });
+
+    // now calculate internal dependencies in the .ts files!
+    /*Object.keys(config.workloads).forEach((moduleName) => {
+        let tsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".ts"))
+        let depTask = gulp.src(tsFiles)
+            .pipe(calculateDependencies(moduleName, perFile, dependencyTree));
+
+        tasks.push(depTask);
+    });*/
+
+    return merge2(tasks);
+});
+
+gulp.task('prepare-dependency-tree', ["prepare-for-modules"], function () {
+    let tasks = [];
+
+    // now calculate internal dependencies in the .ts files!
+    Object.keys(config.workloads).forEach((moduleName) => {
+        let tsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".ts"))
+        let depTask = gulp.src(tsFiles)
+            .pipe(calculateDependencies(moduleName, perFile, declared, dependencyTree));
+
+        tasks.push(depTask);
+    });
+
+    return merge2(tasks);
+});
+
+// generate the modules directory, along with commonjs modules and es6 modules
+// Note - the generated modules are UNMINIFIED! The user will choose whether they want to minify or not.
+gulp.task("modules", ["prepare-dependency-tree"], function () {
+    let tasks = [];
+
+    Object.keys(config.workloads)
+        .forEach((moduleName) => {
+            let shadersFiles = [];
+            processDependency("shaders", config.workloads[moduleName], shadersFiles, true);
+            for (var index = 0; index < shadersFiles.length; index++) {
+                shadersFiles[index] = "../../src/Shaders/" + shadersFiles[index] + ".fx";
+            }
+
+            let shaderIncludeFiles = [];
+            processDependency("shaderIncludes", config.workloads[moduleName], shaderIncludeFiles, true);
+            for (var index = 0; index < shaderIncludeFiles.length; index++) {
+                shaderIncludeFiles[index] = "../../src/Shaders/ShadersInclude/" + shaderIncludeFiles[index] + ".fx";
+            }
+
+            let commonJsTask = merge2([
+                gulp.src(config.workloads[moduleName].files)
+                    .pipe(replace(extendsSearchRegex, ""))
+                    .pipe(replace(decorateSearchRegex, ""))
+                    .pipe(replace(referenceSearchRegex, ""))
+                    .pipe(replace(/var BABYLON;\n/g, ""))
+                    .pipe(babylonModuleExports(moduleName, dependencyTree, false, perFile, shadersFiles.length, shaderIncludeFiles.length))
+                    .pipe(rename(function (path) {
+                        path.basename = path.basename.split(".").pop()
+                        path.extname = ".js"
+                    })),
+                gulp.src(shadersFiles)
+                    .pipe(expect.real({ errorOnFailure: true }, shadersFiles))
+                    .pipe(uncommentShader())
+                    .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", "commonjs"))
+                    .pipe(rename("shaders.js")),
+                gulp.src(shaderIncludeFiles)
+                    .pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles))
+                    .pipe(uncommentShader())
+                    .pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", "commonjs"))
+                    .pipe(rename("shaderIncludes.js")),
+                gulp.src(config.workloads[moduleName].files)
+                    .pipe(concat('index.js'))
+                    .pipe(babylonModuleExports(moduleName, dependencyTree, true, perFile))
+
+            ]).pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'))
+
+            let es6Tasks = merge2([
+                gulp.src(config.workloads[moduleName].files)
+                    .pipe(replace(extendsSearchRegex, ""))
+                    .pipe(replace(decorateSearchRegex, ""))
+                    .pipe(replace(referenceSearchRegex, ""))
+                    .pipe(replace(/var BABYLON;\n/g, ""))
+                    .pipe(babylonES6ModuleExports(moduleName, dependencyTree, false, perFile, shadersFiles.length, shaderIncludeFiles.length))
+                    .pipe(rename(function (path) {
+                        path.basename = path.basename.split(".").pop()
+                        path.extname = ".js"
+                    })),
+                gulp.src(shadersFiles)
+                    .pipe(expect.real({ errorOnFailure: true }, shadersFiles))
+                    .pipe(uncommentShader())
+                    .pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/es6/' + moduleName + ".fx", "es6"))
+                    .pipe(rename("shaders.js")),
+                gulp.src(shaderIncludeFiles)
+                    .pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles))
+                    .pipe(uncommentShader())
+                    .pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/es6/' + moduleName + ".include.fx", "es6"))
+                    .pipe(rename("shaderIncludes.js")),
+                gulp.src(config.workloads[moduleName].files)
+                    .pipe(concat('index.js'))
+                    .pipe(babylonES6ModuleExports(moduleName, dependencyTree, true, perFile))
+
+            ]).pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/es6/'))
+
+            //commonjs js generation task
+            /*let jsTask = merge2([
+                gulp.src(config.workloads[moduleName].files),
+                gulp.src(shadersFiles).
+                    //pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", true)),
+                gulp.src(shaderIncludeFiles).
+                    //pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
+            ]).pipe(concat('index.js'))
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(babylonModuleExports(moduleName, config.workloads[moduleName].dependUpon))
+                .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));*/
+
+
+            // es6 modules generation task
+            /*let es6Task = merge2([
+                gulp.src(config.workloads[moduleName].files),
+                gulp.src(shadersFiles).
+                    //pipe(expect.real({ errorOnFailure: true }, shadersFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.ShadersStore", shadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".fx", true)),
+                gulp.src(shaderIncludeFiles).
+                    //pipe(expect.real({ errorOnFailure: true }, shaderIncludeFiles)).
+                    pipe(uncommentShader()).
+                    pipe(appendSrcToVariable("BABYLON.Effect.IncludesShadersStore", includeShadersName, config.build.outputDirectory + '/commonjs/' + moduleName + ".include.fx", true))
+            ]).pipe(concat('es6.js'))
+                .pipe(replace(extendsSearchRegex, ""))
+                .pipe(replace(decorateSearchRegex, ""))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(replace(/var BABYLON;/g, ""))
+                .pipe(babylonES6ModuleExports(moduleName, config.workloads[moduleName].dependUpon))
+                .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));
+
+            // dts genration task
+            let dtsFiles = config.workloads[moduleName].files.map(f => f.replace(".js", ".d.ts"))
+            let dtsTask = gulp.src(dtsFiles)
+                .pipe(concat("index.d.ts"))
+                .pipe(replace(/declare module BABYLON {/g, `declare module 'babylonjs/${moduleName}' {`))
+                .pipe(replace(/\ninterface /g, `\nexport interface `))
+                .pipe(dtsModuleSupport(moduleName, true, declared, perFile, dependencyTree))
+                .pipe(gulp.dest(config.build.outputDirectory + '/modules/' + moduleName + '/'));
+*/
+            tasks.push(commonJsTask, es6Tasks);
+        });
+
+    // run da tasks man!
+    return merge2(tasks);
+})
+
+/**
+ * Generate the TypeDoc JSON output in order to create code metadata.
+ */
+gulp.task("typedoc-generate", function () {
+    return gulp
+        .src(["../../dist/preview release/babylon.d.ts"])
+        .pipe(typedoc({
+            // TypeScript options (see typescript docs)
+            mode: "modules",
+            module: "commonjs",
+            target: "es5",
+            includeDeclarations: true,
+
+            // Output options (see typedoc docs)
+            json: config.build.typedocJSON,
+
+            // TypeDoc options (see typedoc docs)
+            ignoreCompilerErrors: true,
+
+            readme: "none",
+
+            excludeExternals: true,
+            excludePrivate: true,
+            excludeProtected: true,
+
+            entryPoint: ["\"babylon.d\"", "BABYLON"]
+        }));
+});
+
+/**
+ * Validate the TypeDoc JSON output against the current baselin to ensure our code is correctly documented.
+ * (in the newly introduced areas)
+ */
+gulp.task("typedoc-validate", function () {
+    return gulp.src(config.build.typedocJSON)
+        .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, false));
+});
+
+/**
+ * Generate the validation reference to ensure our code is correctly documented.
+ */
+gulp.task("typedoc-generateValidationBaseline", function () {
+    return gulp.src(config.build.typedocJSON)
+        .pipe(validateTypedoc(config.build.typedocValidationBaseline, "BABYLON", true, true));
+});
+
+/**
+ * Validate the code comments and style case convention through typedoc and
+ * generate the new baseline.
+ */
+gulp.task("typedoc-all", function (cb) {
+    runSequence("typedoc-generate", "typedoc-validate", "typedoc-generateValidationBaseline", cb);
+});
+
+
+/**
+ * Validate compile the code and check the comments and style case convention through typedoc
+ */
+gulp.task("typedoc-check", function (cb) {
+    runSequence("typescript-compile", "typedoc-generate", "typedoc-validate", cb);
+});
+
+/**
+ * Launches the KARMA validation tests in chrome in order to debug them.
+ * (Can only be launch locally.)
+ */
+gulp.task("tests-validation-karma", function (done) {
     var kamaServerOptions = {
         configFile: __dirname + "/../../tests/validation/karma.conf.js",
         singleRun: false
@@ -570,14 +869,33 @@ gulp.task("tests-integration", function (done) {
     server.start();
 });
 
-gulp.task("tests-saucelabs", function (done) {
-    if (!process.env.TRAVIS) {
+/**
+ * Launches the KARMA validation tests in ff or virtual screen ff on travis for a quick analysis during the build.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-validation-virtualscreen", function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/validation/karma.conf.js",
+        singleRun: true,
+        browsers: ['Firefox']
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA validation tests in browser stack for remote and cross devices validation tests.
+ * (Can only be launch from secure branches.)
+ */
+gulp.task("tests-validation-browserstack", function (done) {
+    if (!process.env.BROWSER_STACK_USERNAME) {
         done();
         return;
     }
 
     var kamaServerOptions = {
-        configFile: __dirname + "/../../tests/validation/karma.conf.saucelabs.js",
+        configFile: __dirname + "/../../tests/validation/karma.conf.browserstack.js",
         singleRun: true
     };
 
@@ -585,8 +903,92 @@ gulp.task("tests-saucelabs", function (done) {
     server.start();
 });
 
-gulp.task("clean-JS-MAP", function () {
-    return del([
-        "../../src/**/*.js.map", "../../src/**/*.js"
-    ], { force: true });
+/**
+ * Transpiles typescript unit tests. 
+ */
+gulp.task("tests-unit-transpile", function (done) {
+    var tsProject = typescript.createProject('../../tests/unit/tsconfig.json');
+
+    var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" })
+        .pipe(tsProject());
+    
+    tsResult.once("error", function () {
+        tsResult.once("finish", function () {
+            console.log("Typescript compile failed");
+            process.exit(1);
+        });
+    });
+ 
+    return tsResult.js.pipe(gulp.dest("../../"));
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-unit-debug", ["tests-unit-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/unit/karma.conf.js",
+        singleRun: false,
+        browsers: ['Chrome']
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+/**
+ * Launches the KARMA unit tests in phantomJS.
+ * (Can only be launch on any branches.)
+ */
+gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
+    var kamaServerOptions = {
+        configFile: __dirname + "/../../tests/unit/karma.conf.js",
+        singleRun: true
+    };
+
+    var server = new karmaServer(kamaServerOptions, done);
+    server.start();
+});
+
+gulp.task("tests-whatsnew", function(done) {
+    // Only checks on Travis
+    if (!process.env.TRAVIS) {
+        done();
+        return;
+    }
+
+    // Only checks on Pull Requests
+    if (process.env.TRAVIS_PULL_REQUEST == "false") {
+        done();
+        return;
+    }
+
+    // Do not check deploy
+    if (process.env.TRAVIS_BRANCH == "preview") {
+        done();
+        return;
+    }
+
+    // Compare what's new with the current one in the preview release folder.
+    const https = require("https");
+    const url = "https://rawgit.com/BabylonJS/Babylon.js/master/dist/preview%20release/what's%20new.md";
+    https.get(url, res => {
+        res.setEncoding("utf8");
+        let oldData = "";
+        res.on("data", data => {
+            oldData += data;
+        });
+        res.on("end", () => {
+            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function(err, newData) {
+                if (err || oldData != newData) {
+                    done();
+                    return;
+                }
+                
+                console.error("What's new file did not change.");
+                process.exit(1);
+            });
+        });
+    });
 });

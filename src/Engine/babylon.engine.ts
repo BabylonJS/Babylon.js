@@ -281,7 +281,8 @@
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
         public static ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] }
+            { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
 
         public static Instances = new Array<Engine>();
@@ -538,7 +539,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha2";
+            return "3.2.0-alpha6";
         }
 
         // Updatable statics so stick with vars here
@@ -646,8 +647,14 @@
             return this._badDesktopOS;
         }
 
-        public static audioEngine: AudioEngine;
+        /**
+         * Gets or sets a value indicating if we want to disable texture binding optmization.
+         * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is.
+         */
+        public disableTextureBindingOptimization = false;
 
+        public static audioEngine: AudioEngine;
 
         // Focus
         private _onFocus: () => void;
@@ -673,7 +680,6 @@
         private _hardwareScalingLevel: number;
         protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
-        private _alphaTest: boolean;
         private _isStencilEnable: boolean;
         private _colorWrite = true;
 
@@ -717,16 +723,16 @@
         }
 
         // States
-        protected _depthCullingState = new Internals._DepthCullingState();
-        protected _stencilState = new Internals._StencilState();
-        protected _alphaState = new Internals._AlphaState();
+        protected _depthCullingState = new _DepthCullingState();
+        protected _stencilState = new _StencilState();
+        protected _alphaState = new _AlphaState();
         protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
-        protected _activeChannel: number;
+        protected _activeChannel = 0;
+        private _currentTextureChannel = -1;
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-        protected _boundTexturesStack = new Array<InternalTexture>();
         protected _currentEffect: Nullable<Effect>;
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
@@ -744,6 +750,8 @@
         private _currentInstanceLocations = new Array<number>();
         private _currentInstanceBuffers = new Array<WebGLBuffer>();
         private _textureUnits: Int32Array;
+        private _firstBoundInternalTextureTracker = new DummyInternalTextureTracker();
+        private _lastBoundInternalTextureTracker = new DummyInternalTextureTracker();
 
         private _workingCanvas: Nullable<HTMLCanvasElement>;
         private _workingContext: Nullable<CanvasRenderingContext2D>;
@@ -764,6 +772,7 @@
         private _frameHandler: number;
 
         private _nextFreeTextureSlots = new Array<number>();
+        private _maxSimultaneousTextures = 0;
 
         private _activeRequests = new Array<IFileRequest>();
 
@@ -810,11 +819,16 @@
 
         /**
          * @constructor
-         * @param {HTMLCanvasElement | WebGLRenderingContext} canvasOrContext - the canvas or the webgl context to be used for rendering
-         * @param {boolean} [antialias] - enable antialias
-         * @param options - further options to be sent to the getContext function
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param antialias defines enable antialiasing (default: false)
+         * @param options defines further options to be sent to the getContext() function
+         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio = false) {
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+
+            // Register promises
+            PromisePolyfill.Apply();
+
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 
@@ -884,6 +898,9 @@
                                 switch (target) {
                                     case "uniformBuffer":
                                         this.disableUniformBuffers = true;
+                                        break;
+                                    case "textureBindingOptimization":
+                                        this.disableTextureBindingOptimization = true;
                                         break;
                                 }
                             }
@@ -1078,6 +1095,8 @@
             for (var i = 0; i < this._caps.maxVertexAttribs; i++) {
                 this._currentBufferPointers[i] = new BufferPointer();
             }
+
+            this._linkTrackers(this._firstBoundInternalTextureTracker, this._lastBoundInternalTextureTracker);
 
             // Load WebVR Devices
             if (options.autoEnableWebVR) {
@@ -1295,7 +1314,8 @@
             this.setDepthWrite(true);
 
             // Texture maps
-            for (let slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            this._maxSimultaneousTextures = this._caps.maxCombinedTexturesImageUnits;
+            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
         }
@@ -1333,10 +1353,10 @@
                 this._boundTexturesCache[key] = null;
             }
             this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._caps.maxCombinedTexturesImageUnits; slot++) {
+            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
                 this._nextFreeTextureSlots.push(slot);
             }
-            this._activeChannel = -1;
+            this._currentTextureChannel = -1;
         }
 
         public isDeterministicLockStep(): boolean {
@@ -3014,14 +3034,6 @@
             return this._alphaMode;
         }
 
-        public setAlphaTesting(enable: boolean): void {
-            this._alphaTest = enable;
-        }
-
-        public getAlphaTesting(): boolean {
-            return !!this._alphaTest;
-        }
-
         // Textures
         public wipeCaches(bruteForce?: boolean): void {
             if (this.preventCacheWipeBetweenFrames && !bruteForce) {
@@ -3124,8 +3136,8 @@
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            var isTGA = (extension === ".tga");
+            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
+            var isTGA = (extension.indexOf(".tga") === 0);
 
             // determine if a ktx file should be substituted
             var isKTX = false;
@@ -3181,7 +3193,7 @@
             if (isKTX || isTGA || isDDS) {
                 if (isKTX) {
                     callback = (data) => {
-                        var ktx = new Internals.KhronosTextureContainer(data, 1);
+                        var ktx = new KhronosTextureContainer(data, 1);
 
                         this._prepareWebGLTexture(texture, scene, ktx.pixelWidth, ktx.pixelHeight, invertY, false, true, () => {
                             ktx.uploadLevels(this._gl, !noMipmap);
@@ -3192,21 +3204,21 @@
                     callback = (arrayBuffer) => {
                         var data = new Uint8Array(arrayBuffer);
 
-                        var header = Internals.TGATools.GetTGAHeader(data);
+                        var header = TGATools.GetTGAHeader(data);
 
                         this._prepareWebGLTexture(texture, scene, header.width, header.height, invertY, noMipmap, false, () => {
-                            Internals.TGATools.UploadContent(this._gl, data);
+                            TGATools.UploadContent(this._gl, data);
                             return false;
                         }, samplingMode);
                     };
 
                 } else if (isDDS) {
                     callback = (data) => {
-                        var info = Internals.DDSTools.GetDDSInfo(data);
+                        var info = DDSTools.GetDDSInfo(data);
 
                         var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap && ((info.width >> (info.mipmapCount - 1)) === 1);
                         this._prepareWebGLTexture(texture, scene, info.width, info.height, invertY, !loadMipmap, info.isFourCC, () => {
-                            Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
+                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 1);
                             return false;
                         }, samplingMode);
                     };
@@ -4089,11 +4101,11 @@
                     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
                     if (loadData.isDDS) {
-                        var info: Internals.DDSInfo = loadData.info;
+                        var info: DDSInfo = loadData.info;
                         var data: any = loadData.data;
                         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                        Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
+                        DDSTools.UploadDDSLevels(this, this._gl, data, info, true, 6, mipmapIndex);
                     }
                     else {
                         Tools.Warn("DDS is the only prefiltered cube map supported so far.")
@@ -4155,7 +4167,7 @@
 
             if (isKTX) {
                 this._loadFile(rootUrl, data => {
-                    var ktx = new Internals.KhronosTextureContainer(data, 6);
+                    var ktx = new KhronosTextureContainer(data, 6);
 
                     var loadMipmap = ktx.numberOfMipmapLevels > 1 && !noMipmap;
 
@@ -4175,19 +4187,19 @@
                     this._cascadeLoadFiles(rootUrl,
                         scene,
                         imgs => {
-                            var info: Internals.DDSInfo | undefined;
+                            var info: DDSInfo | undefined;
                             var loadMipmap: boolean = false;
                             var width: number = 0;
                             for (let index = 0; index < imgs.length; index++) {
                                 let data = imgs[index];
-                                info = Internals.DDSTools.GetDDSInfo(data);
+                                info = DDSTools.GetDDSInfo(data);
 
                                 loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                                 this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                                 gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                                Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
+                                DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6, -1, index);
 
                                 if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -4212,14 +4224,14 @@
                 } else {
                     this._loadFile(rootUrl,
                         data => {
-                            var info = Internals.DDSTools.GetDDSInfo(data);
+                            var info = DDSTools.GetDDSInfo(data);
 
                             var loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && !noMipmap;
 
                             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
                             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, info.isCompressed ? 1 : 0);
 
-                            Internals.DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
+                            DDSTools.UploadDDSLevels(this, this._gl, data, info, loadMipmap, 6);
 
                             if (!noMipmap && !info.isFourCC && info.mipmapCount === 1) {
                                 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
@@ -4734,67 +4746,119 @@
             this._currentEffect = null;
         }
 
-        private _activateTextureChannel(channel: number): void {
-            if (this._activeChannel !== channel && channel > -1) {
-                this._gl.activeTexture(this._gl.TEXTURE0 + channel);
-                this._activeChannel = channel;
-            }
-        }
-
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-            let index = this._boundTexturesStack.indexOf(internalTexture);
-
-            if (index > -1 && index !== this._boundTexturesStack.length - 1) {
-                this._boundTexturesStack.splice(index, 1);
-                this._boundTexturesStack.push(internalTexture);
-            }
-        }
-
-        private _removeDesignatedSlot(internalTexture: InternalTexture): number {
-            let currentSlot = internalTexture._designatedSlot;
-            internalTexture._designatedSlot = -1;
-            let index = this._boundTexturesStack.indexOf(internalTexture);
-
-            if (index > -1) {
-                this._boundTexturesStack.splice(index, 1);
-                if (currentSlot > -1) {
-                    this._boundTexturesCache[currentSlot] = null;
-                    this._nextFreeTextureSlots.push(currentSlot);
-                }
+            if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
+                return;
             }
 
-            return currentSlot;
+            // Remove
+            this._linkTrackers(internalTexture.previous, internalTexture.next);
+
+            // Bind last to it
+            this._linkTrackers(this._lastBoundInternalTextureTracker.previous, internalTexture);
+
+            // Bind to dummy
+            this._linkTrackers(internalTexture, this._lastBoundInternalTextureTracker);
         }
 
-        public _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, doNotBindUniformToTextureChannel = false): void {
-            let currentTextureBound = this._boundTexturesCache[this._activeChannel];
-            let isTextureForRendering = texture && texture._initialSlot > -1;
+        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>): number {
+            if (!internalTexture) {
+                return -1;
+            }
 
-            if (currentTextureBound !== texture) {
-                if (currentTextureBound) {
-                    this._removeDesignatedSlot(currentTextureBound);
+            internalTexture._initialSlot = channel;
+
+            if (this.disableTextureBindingOptimization) { // We want texture sampler ID === texture channel
+                if (channel !== internalTexture._designatedSlot) {
+                    this._textureCollisions.addCount(1, false);
                 }
-
-                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
-
-                if (this._activeChannel >= 0) {
-                    this._boundTexturesCache[this._activeChannel] = texture;
-
-                    if (isTextureForRendering) {
-                        let slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
-                        if (slotIndex > -1) {
-                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+            } else {
+                if (channel !== internalTexture._designatedSlot) {
+                    if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
+                        return internalTexture._designatedSlot;
+                    } else {
+                        // No slot for this texture, let's pick a new one (if we find a free slot)
+                        if (this._nextFreeTextureSlots.length) {
+                            return this._nextFreeTextureSlots[0];
                         }
-                        this._boundTexturesStack.push(texture!);
+
+                        // We need to recycle the oldest bound texture, sorry.
+                        this._textureCollisions.addCount(1, false);
+                        return this._removeDesignatedSlot(<InternalTexture>this._firstBoundInternalTextureTracker.next);
                     }
                 }
             }
 
-            if (isTextureForRendering && this._activeChannel > -1) {
-                texture!._designatedSlot = this._activeChannel;
-                if (!doNotBindUniformToTextureChannel) {
-                    this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
+            return channel;
+        }
+
+        private _linkTrackers(previous: Nullable<IInternalTextureTracker>, next: Nullable<IInternalTextureTracker>) {
+            previous!.next = next;
+            next!.previous = previous;
+        }
+
+        private _removeDesignatedSlot(internalTexture: InternalTexture): number {
+            let currentSlot = internalTexture._designatedSlot;
+            if (currentSlot === -1) {
+                return -1;
+            }
+
+            internalTexture._designatedSlot = -1;
+
+            // Remove from bound list
+            this._linkTrackers(internalTexture.previous, internalTexture.next);
+
+            // Free the slot
+            this._boundTexturesCache[currentSlot] = null;
+            this._nextFreeTextureSlots.push(currentSlot);
+
+            return currentSlot;
+        }
+
+        private _activateCurrentTexture() {
+            if (this._currentTextureChannel !== this._activeChannel) {
+                this._gl.activeTexture(this._gl.TEXTURE0 + this._activeChannel);
+                this._currentTextureChannel = this._activeChannel;
+            }
+        }
+
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false): void {
+            if (forTextureDataUpdate && texture && texture._designatedSlot > -1) {
+                this._activeChannel = texture._designatedSlot;
+            }
+
+            let currentTextureBound = this._boundTexturesCache[this._activeChannel];
+            let isTextureForRendering = texture && texture._initialSlot > -1;
+
+            if (currentTextureBound !== texture) {
+                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                    this._removeDesignatedSlot(currentTextureBound);
                 }
+
+                this._activateCurrentTexture();
+
+                this._gl.bindTexture(target, texture ? texture._webGLTexture : null);
+                this._boundTexturesCache[this._activeChannel] = texture;
+
+                if (texture) {
+                    if (!this.disableTextureBindingOptimization) {
+                        let slotIndex = this._nextFreeTextureSlots.indexOf(this._activeChannel);
+                        if (slotIndex > -1) {
+                            this._nextFreeTextureSlots.splice(slotIndex, 1);
+                        }
+
+                        this._linkTrackers(this._lastBoundInternalTextureTracker.previous, texture);
+                        this._linkTrackers(texture, this._lastBoundInternalTextureTracker);
+                    }
+
+                    texture._designatedSlot = this._activeChannel;
+                }
+            } else if (forTextureDataUpdate) {
+                this._activateCurrentTexture();
+            }
+
+            if (isTextureForRendering && !forTextureDataUpdate) {
+                this._bindSamplerUniformToChannel(texture!._initialSlot, this._activeChannel);
             }
         }
 
@@ -4807,7 +4871,7 @@
                 channel = this._getCorrectTextureChannel(channel, texture);
             }
 
-            this._activateTextureChannel(channel);
+            this._activeChannel = channel;
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture);
         }
 
@@ -4816,8 +4880,8 @@
         }
 
         public unbindAllTextures(): void {
-            for (var channel = 0; channel < this._caps.maxCombinedTexturesImageUnits; channel++) {
-                this._activateTextureChannel(channel);
+            for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
+                this._activeChannel = channel;
                 this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                 this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                 if (this.webGLVersion > 1) {
@@ -4838,41 +4902,20 @@
             this._setTexture(channel, texture);
         }
 
-        private _getCorrectTextureChannel(channel: number, internalTexture: Nullable<InternalTexture>): number {
-            if (!internalTexture) {
-                return -1;
-            }
-
-            internalTexture._initialSlot = channel;
-
-            if (channel !== internalTexture._designatedSlot) {
-                if (internalTexture._designatedSlot > -1) { // Texture is already assigned to a slot
-                    return internalTexture._designatedSlot;
-                } else {
-                    // No slot for this texture, let's pick a new one (if we find a free slot)
-                    if (this._nextFreeTextureSlots.length) {
-                        return this._nextFreeTextureSlots[0];
-                    }
-
-                    // We need to recycle the oldest bound texture, sorry.
-                    this._textureCollisions.addCount(1, false);
-                    return this._removeDesignatedSlot(this._boundTexturesStack[0]);
-                }
-            }
-
-            return channel;
-        }
-
         private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
             let uniform = this._boundUniforms[sourceSlot];
+            if (uniform._currentState === destination) {
+                return;
+            }
             this._gl.uniform1i(uniform, destination);
+            uniform._currentState = destination;
         }
 
         private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false): boolean {
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
-                    this._activateTextureChannel(channel);
+                    this._activeChannel = channel;
                     this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
                     this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
                     if (this.webGLVersion > 1) {
@@ -4883,10 +4926,8 @@
             }
 
             // Video
-            var alreadyActivated = false;
             if ((<VideoTexture>texture).video) {
-                this._activateTextureChannel(channel);
-                alreadyActivated = true;
+                this._activeChannel = channel;
                 (<VideoTexture>texture).update();
             } else if (texture.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) { // Delay loading
                 texture.delayLoad();
@@ -4919,9 +4960,7 @@
                 return false;
             }
 
-            if (!alreadyActivated) {
-                this._activateTextureChannel(channel);
-            }
+            this._activeChannel = channel;
 
             if (internalTexture && internalTexture.is3D) {
                 this._bindTextureDirectly(this._gl.TEXTURE_3D, internalTexture, isPartOfTextureArray);

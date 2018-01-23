@@ -113,6 +113,19 @@
             return fn;
         }
 
+        /**
+         * Provides a slice function that will work even on IE
+         * @param data defines the array to slice
+         * @returns the new sliced array
+         */
+        public static Slice(data: FloatArray): FloatArray {
+            if (data.slice) {
+                return data.slice();
+            }
+
+            return Array.prototype.slice.call(data);
+        }
+
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -1014,6 +1027,26 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
+        /**
+         * Generates an image screenshot from the specified camera.
+         *
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution.
+         * @param successCallback The callback receives a single parameter which contains the
+         * screenshot as a string of base64-encoded characters. This string can be assigned to the
+         * src parameter of an <img> to display it.
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types.
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @constructor
+         */
         public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             var width: number;
             var height: number;
@@ -1096,7 +1129,7 @@
 
                 if (dataType & 2) {
                     // Check header width and height since there is no "TGA" magic number
-                    var tgaHeader = Internals.TGATools.GetTGAHeader(xhr.response);
+                    var tgaHeader = TGATools.GetTGAHeader(xhr.response);
 
                     if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
                         return true;
