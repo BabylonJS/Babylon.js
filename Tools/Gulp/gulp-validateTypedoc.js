@@ -238,7 +238,15 @@ Validate.prototype.getContents = function () {
  * Validate a TypeDoc JSON file
  */
 Validate.prototype.validateTypedoc = function (json) {
-    var namespaces = json.children[0].children;
+    for (var i = 0; i < json.children.length; i++) {
+        var namespaces = json.children[i].children;
+        this.validateTypedocNamespaces(namespaces);
+    }
+}
+/**
+ * Validate namespaces attach to a declaration file from a TypeDoc JSON file
+ */
+Validate.prototype.validateTypedocNamespaces = function (namespaces) {
     var namespace = null;
 
     var containerNode;
@@ -436,6 +444,12 @@ Validate.prototype.validateComment = function(node) {
     if (node.inheritedFrom) {
         return true;
     }
+
+    // Return true for overwrited properties
+    if (node.overwrites) {
+        return true;
+    }
+    
 
     if (node.comment) {
 

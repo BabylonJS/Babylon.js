@@ -14,7 +14,7 @@
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
     },
-    "main": "dist/preview release/babylon.max.js",
+    "main": "dist/preview release/babylon.js",
     "files": [
         "package.json",
         "dist/preview release/babylon.d.ts",
