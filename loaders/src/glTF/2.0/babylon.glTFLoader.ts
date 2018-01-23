@@ -293,7 +293,7 @@ module BABYLON.GLTF2 {
         }
 
         private _loadScene(context: string, scene: IGLTFScene, nodeNames: any): void {
-            GLTFLoaderExtension.LoadScene(this, context, scene)) {
+            GLTFLoaderExtension.LoadScene(this, context, scene);
             
             this._rootNode = { babylonMesh: new Mesh("__root__", this._babylonScene) } as IGLTFNode;
 
