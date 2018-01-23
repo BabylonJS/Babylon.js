@@ -11,5 +11,5 @@ void main(void)
     vec4 blurred = texture2D(textureSampler, vUV);
     vec4 original = texture2D(originalSampler, vUV);
     float coc = texture2D(circleOfConfusionSampler, vUV).r;
-    gl_FragColor = (original * (1.0-coc))+(blurred*coc);
+    gl_FragColor = mix(original, blurred, coc);
 }
