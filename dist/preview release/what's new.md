@@ -23,10 +23,11 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
    ([carloslanderas](https://github.com/carloslanderas))
-- `AssetsManager` will now clear its `tasks` lsit from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
+- `AssetsManager` will now clear its `tasks` list from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
+- Added base64 helper functions to `Tools` ([bghgary](https://github.com/bghgary))
+- Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes
+- Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
-
-
