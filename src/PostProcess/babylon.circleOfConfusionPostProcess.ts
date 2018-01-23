@@ -1,8 +1,9 @@
 module BABYLON {
     export class CircleOfConfusionPostProcess extends PostProcess {
-        fStop = 4; // Aperture = focalLength/fStop
-        focusDistance = 15; // in scene units (eg. meter)
-        focalLength = 10; // in scene units/1000 (eg. millimeter)
+        lensSize = 50 // in scene units/1000 (eg. millimeter)
+        fStop = 1.4; // Aperture = lensSize/fStop
+        focusDistance = 15000; // in scene units/1000 (eg. millimeter)
+        focalLength = 500; // in scene units/1000 (eg. millimeter)
 
         
         constructor(name: string, depthTexture: RenderTargetTexture, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
@@ -11,7 +12,7 @@ module BABYLON {
                 effect.setTexture("depthSampler", depthTexture);
                 
                 // Circle of confusion calculation, See https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch23.html
-                var aperture = this.focalLength/this.fStop;
+                var aperture = this.lensSize/this.fStop;
                 var cocPrecalculation = ((aperture * this.focalLength)/((this.focusDistance - this.focalLength)));// * ((this.focusDistance - pixelDistance)/pixelDistance) [This part is done in shader]
                 
                 effect.setFloat('focusDistance', this.focusDistance);

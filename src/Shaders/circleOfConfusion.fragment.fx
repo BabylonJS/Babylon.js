@@ -14,7 +14,7 @@ uniform float cocPrecalculation;
 
 float sampleDistance(const in vec2 offset) {
     float depth = texture2D(depthSampler, offset).r;	// depth value from DepthRenderer: 0 to 1
-	return near + (far - near)*depth;		            // actual distance from the lens
+	return (near + (far - near)*depth)*1000.0;		            // actual distance from the lens in scene units/1000 (eg. millimeter)
 }
 
 void main(void)
