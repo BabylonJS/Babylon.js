@@ -114,11 +114,12 @@ export abstract class AbstractViewer {
      * @memberof AbstractViewer
      */
     protected onTemplatesLoaded(): Promise<AbstractViewer> {
+        let autoLoadModel = !!this.configuration.model;
         return this.initEngine().then(() => {
-            if (this.configuration.model) {
+            if (autoLoadModel) {
                 return this.loadModel();
             } else {
-                return this.scene;
+                return this.scene || this.initScene();
             }
         }).then(() => {
             return this;
