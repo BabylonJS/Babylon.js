@@ -9,8 +9,8 @@ module BABYLON {
 
         private depthOfFieldPass: PassPostProcess;
         private circleOfConfusion: CircleOfConfusionPostProcess;
-        private depthOfFieldBlurX: BlurPostProcess;
-        private depthOfFieldBlurY: BlurPostProcess;
+        private depthOfFieldBlurX: DepthOfFieldBlurPostProcess;
+        private depthOfFieldBlurY: DepthOfFieldBlurPostProcess;
         private depthOfFieldMerge: DepthOfFieldMergePostProcess;
 
         public set kernelSize(value: number){
@@ -58,9 +58,9 @@ module BABYLON {
 
             // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts 
             // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
-            this.depthOfFieldBlurY = new BlurPostProcess("verticle blur", new Vector2(0, 1.0), 15, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, new DepthOfFieldBlurOptions(depthMap, this.circleOfConfusion));
+            this.depthOfFieldBlurY = new DepthOfFieldBlurPostProcess("verticle blur", new Vector2(0, 1.0), 15, 1.0, null,depthMap, this.circleOfConfusion, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             pipeline.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.DepthOfFieldBlurYPostProcessId, () => { return this.depthOfFieldBlurY; }, true));
-            this.depthOfFieldBlurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 15, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, new DepthOfFieldBlurOptions(depthMap));
+            this.depthOfFieldBlurX = new DepthOfFieldBlurPostProcess("horizontal blur", new Vector2(1.0, 0), 15, 1.0, null, depthMap, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             pipeline.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.DepthOfFieldBlurXPostProcessId, () => { return this.depthOfFieldBlurX; }, true));
 
             // Merge blurred images with original image based on circleOfConfusion
