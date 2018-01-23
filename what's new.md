@@ -1,3 +1,9 @@
+# 3.2.0
+
+## Updates
+
+- Introduced `isStroke` on HighlightLayerOptions which makes the highlight solid ([PixelsCommander](https://github.com/pixelscommander))
+
 # 3.1.0
 
 ## Major updates
