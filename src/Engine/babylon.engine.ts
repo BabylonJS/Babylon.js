@@ -825,6 +825,10 @@
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+
+            // Register promises
+            PromisePolyfill.Apply();
+
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 

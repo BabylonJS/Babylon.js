@@ -177,6 +177,7 @@
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
                 "../../src/Tools/babylon.tools.js",
+                "../../src/Tools/babylon.promise.js",
                 "../../src/States/babylon.alphaCullingState.js",
                 "../../src/States/babylon.depthCullingState.js",
                 "../../src/States/babylon.stencilState.js",
