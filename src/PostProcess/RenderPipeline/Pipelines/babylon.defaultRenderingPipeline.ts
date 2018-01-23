@@ -8,11 +8,6 @@
         readonly BlurYPostProcessId: string = "BlurYPostProcessEffect";
         readonly CopyBackPostProcessId: string = "CopyBackPostProcessEffect";
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
-        readonly DepthOfFieldPassPostProcessId: string = "DepthOfFieldPassPostProcessId";
-        readonly CircleOfConfusionPostProcessId: string = "CircleOfConfusionPostProcessEffect"; 
-        readonly DepthOfFieldBlurXPostProcessId: string = "DepthOfFieldBlurXPostProcessEffect";
-        readonly DepthOfFieldBlurYPostProcessId: string = "DepthOfFieldBlurYPostProcessEffect";
-        readonly DepthOfFieldMergePostProcessId: string = "DepthOfFieldMergePostProcessEffect";
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
         readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
 
@@ -22,11 +17,7 @@
         public blurX: BlurPostProcess;
         public blurY: BlurPostProcess;
         public copyBack: PassPostProcess;
-        public depthOfFieldPass: PassPostProcess;
-        public circleOfConfusion: CircleOfConfusionPostProcess;
-        public depthOfFieldBlurX: BlurPostProcess;
-        public depthOfFieldBlurY: BlurPostProcess;
-        public depthOfFieldMerge: DepthOfFieldMergePostProcess;
+        public depthOfField: DepthOfFieldEffect;
         public fxaa: FxaaPostProcess;
         public imageProcessing: ImageProcessingPostProcess;
         public finalMerge: PassPostProcess;
@@ -245,27 +236,7 @@
             }
 
             if(this.depthOfFieldEnabled){
-                // Enable and get current depth map
-                var depthMap = this._scene.enableDepthRenderer().getDepthMap();
-                
-                // Circle of confusion value for each pixel is used to determine how much to blur that pixel
-                this.circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthMap, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, true, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.CircleOfConfusionPostProcessId, () => { return this.circleOfConfusion; }, true));  
-            
-                // Capture circle of confusion texture
-                this.depthOfFieldPass = new PassPostProcess("depthOfFieldPass", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldPassPostProcessId, () => { return this.depthOfFieldPass; }, true));
-                
-                // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts 
-                // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
-                this.depthOfFieldBlurY = new BlurPostProcess("verticle blur", new Vector2(0, 1.0), 15, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, new DepthOfFieldBlurOptions(depthMap, this.circleOfConfusion));
-                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldBlurYPostProcessId, () => { return this.depthOfFieldBlurY; }, true));
-                this.depthOfFieldBlurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 15, 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, new DepthOfFieldBlurOptions(depthMap));
-                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldBlurXPostProcessId, () => { return this.depthOfFieldBlurX; }, true));
-                
-                // Merge blurred images with original image based on circleOfConfusion
-                this.depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this.circleOfConfusion, this.depthOfFieldPass, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, engine, true, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.DepthOfFieldMergePostProcessId, () => { return this.depthOfFieldMerge; }, true));
+                this.depthOfField = new DepthOfFieldEffect(this, this._scene, this._cameras[0], this._defaultPipelineTextureType);
             }
 
             if (this._imageProcessingEnabled) {
@@ -352,6 +323,10 @@
                 if (this.finalMerge) {
                     this.finalMerge.dispose(camera);
                 }
+
+                if(this.depthOfField){
+                    this.depthOfField.disposeEffects(camera);
+                }
             }
 
             (<any>this.pass) = null;
@@ -362,6 +337,7 @@
             (<any>this.imageProcessing) = null;
             (<any>this.fxaa) = null;
             (<any>this.finalMerge) = null;
+            (<any>this.depthOfField) = null;
         }
 
         // Dispose
