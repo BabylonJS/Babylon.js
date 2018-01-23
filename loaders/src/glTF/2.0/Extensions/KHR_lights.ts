@@ -105,7 +105,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadRoot(loader: GLTFLoader, context: string, root: IGLTF): boolean {
+        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2.IGLTF): boolean {
             return this._loadExtension<IKHRLights>(context, root, (context, extension, onComplete) => {
                 extension.lights.forEach((light: IGLTFLight, idx: number) => {
                     light.index = idx;
