@@ -114,11 +114,12 @@ export abstract class AbstractViewer {
      * @memberof AbstractViewer
      */
     protected onTemplatesLoaded(): Promise<AbstractViewer> {
+        let autoLoadModel = !!this.configuration.model;
         return this.initEngine().then(() => {
-            if (this.configuration.model) {
+            if (autoLoadModel) {
                 return this.loadModel();
             } else {
-                return this.scene;
+                return this.scene || this.initScene();
             }
         }).then(() => {
             return this;
@@ -176,7 +177,7 @@ export abstract class AbstractViewer {
             this.scene.debugLayer.show();
         }
         return this.onSceneInitObservable.notifyWithPromise(this.scene).then(() => {
-            return this.scene;
+            return this.scene!;
         });
     }
 
@@ -188,9 +189,9 @@ export abstract class AbstractViewer {
         let base = parts.join('/') + '/';
         let plugin = (typeof model === 'string') ? undefined : model.loader;
 
-        return Promise.resolve().then(() => {
-            if (!this.scene || clearScene) return this.initScene();
-            else return this.scene;
+        return Promise.resolve(this.scene).then((scene) => {
+            if (!scene || clearScene) return this.initScene();
+            else return this.scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
                 SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
