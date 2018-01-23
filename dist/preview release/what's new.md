@@ -28,9 +28,10 @@
 - Introduced `isStroke` on `HighlightLayerOptions` which makes the highlight solid ([PixelsCommander](https://github.com/pixelscommander))
 - VRHelper will notify now onSelectedMeshUnselected observable to subscribers when the applied ray selection predicate does not produce a hit and a mesh compliant with the meshSelectionPredicate was previously selected
    ([carloslanderas](https://github.com/carloslanderas))
+- Added base64 helper functions to `Tools` ([bghgary](https://github.com/bghgary))
+- Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes
+- Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
-
-
