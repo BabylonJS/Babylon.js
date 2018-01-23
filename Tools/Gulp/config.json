@@ -60,6 +60,7 @@
             "additionalPostProcess_fxaa",
             "additionalPostProcess_circleOfConfusion",
             "additionalPostProcess_depthOfFieldMerge",
+            "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_imageProcessing",
             "bones",
             "hdr",
@@ -745,6 +746,11 @@
                 "depthOfFieldMerge.fragment"
             ]
         },
+        "additionalPostProcess_depthOfFieldEffect": {
+            "files": [
+                "../../src/PostProcess/babylon.depthOfFieldEffect.js"
+            ]
+        },
         "additionalPostProcess_fxaa": {
             "files": [
                 "../../src/PostProcess/babylon.fxaaPostProcess.js"
@@ -852,7 +858,8 @@
                 "renderingPipeline",
                 "additionalPostProcess_fxaa",
                 "additionalPostProcess_circleOfConfusion",
-                "additionalPostProcess_depthOfFieldMerge"
+                "additionalPostProcess_depthOfFieldMerge",
+                "additionalPostProcess_depthOfFieldEffect"
             ]
         },
         "bones": {
