@@ -137,4 +137,17 @@ describe('Babylon.Promise', () => {
             });
         });
     });   
+
+    describe('#Returning value', () => {
+        it('should correctly handle returned values', (done) => {
+            mocha.timeout(10000);
+            Promise.resolve(1)
+            .then(number => { return number + 1; })
+            .then(number => { return number + 1; })
+            .then(number => { 
+                number.should.be.equal(3);
+                done();
+             })
+        });
+    });      
 });
