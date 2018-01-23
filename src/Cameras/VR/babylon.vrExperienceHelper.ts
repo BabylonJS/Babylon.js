@@ -1,14 +1,36 @@
 module BABYLON {
+    /**
+     * Options to modify the vr teleportation behavior.
+     */
     export interface VRTeleportationOptions {
-        floorMeshName?: string; // If you'd like to provide a mesh acting as the floor
+        /**
+         * The name of the mesh which should be used as the teleportation floor. (default: null)
+         */
+        floorMeshName?: string;
+        /**
+         * A list of meshes to be used as the teleportation floor. (default: empty)
+         */
         floorMeshes?: Mesh[];
     }
 
+    /**
+     * Options to modify the vr experience helper's behavior.
+     */
     export interface VRExperienceHelperOptions extends WebVROptions {
-        createDeviceOrientationCamera?: boolean; // Create a DeviceOrientationCamera to be used as your out of vr camera.
-        createFallbackVRDeviceOrientationFreeCamera?: boolean; // Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found
+        /**
+         * Create a DeviceOrientationCamera to be used as your out of vr camera.
+         */
+        createDeviceOrientationCamera?: boolean;
+        /**
+         * Create a VRDeviceOrientationFreeCamera to be used for VR when no external HMD is found.
+         */
+        createFallbackVRDeviceOrientationFreeCamera?: boolean;
     }
 
+    /**
+     * Helps to quickly add VR support to an existing scene.
+     * See http://doc.babylonjs.com/how_to/webvr_helper
+     */
     export class VRExperienceHelper {
         private _scene: Scene;
         private _position: Vector3;
@@ -166,10 +188,16 @@ module BABYLON {
 
         private _dpadPressed = true;
 
+        /**
+         * The mesh used to display where the user is going to teleport.
+         */
         public get teleportationTarget(): Mesh {
             return this._teleportationTarget;
         }
 
+        /**
+         * Sets the mesh to be used to display where the user is going to teleport.
+         */
         public set teleportationTarget(value: Mesh) {
             if (value) {
                 value.name = "teleportationTarget";
@@ -178,10 +206,16 @@ module BABYLON {
             }
         }
 
+        /**
+         * If the ray of the gaze should be displayed.
+         */
         public get displayGaze(): boolean {
             return this._displayGaze;
         }
 
+        /**
+         * Sets if the ray of the gaze should be displayed.
+         */
         public set displayGaze(value: boolean) {
             this._displayGaze = value;
             if (!value) {
@@ -189,10 +223,16 @@ module BABYLON {
             }
         }
 
+        /**
+         * If the ray of the LaserPointer should be displayed.
+         */
         public get displayLaserPointer(): boolean {
             return this._displayLaserPointer;
         }
 
+        /**
+         * Sets if the ray of the LaserPointer should be displayed.
+         */
         public set displayLaserPointer(value: boolean) {
             this._displayLaserPointer = value;
             if (!value) {
@@ -213,11 +253,16 @@ module BABYLON {
             }
         }
 
+        /**
+         * The deviceOrientationCamera used as the camera when not in VR.
+         */
         public get deviceOrientationCamera(): Nullable<DeviceOrientationCamera> {
             return this._deviceOrientationCamera;
         }
 
-        // Based on the current WebVR support, returns the current VR camera used
+        /**
+         * Based on the current WebVR support, returns the current VR camera used.
+         */
         public get currentVRCamera(): Nullable<Camera> {
             if (this._webVRready) {
                 return this._webVRCamera;
@@ -227,15 +272,27 @@ module BABYLON {
             }
         }
 
+        /**
+         * The webVRCamera which is used when in VR.
+         */
         public get webVRCamera(): WebVRFreeCamera {
             return this._webVRCamera;
         }
 
+        /**
+         * The deviceOrientationCamera that is used as a fallback when vr device is not connected.
+         */
         public get vrDeviceOrientationCamera(): Nullable<VRDeviceOrientationFreeCamera> {
             return this._vrDeviceOrientationCamera;
         }
 
-        constructor(scene: Scene, public webVROptions: VRExperienceHelperOptions = {}) {
+        /**
+         * Instantiates a VRExperienceHelper.
+         * Helps to quickly add VR support to an existing scene.
+         * @param scene The scene the VRExperienceHelper belongs to.
+         * @param webVROptions Options to modify the vr experience helper's behavior.
+         */
+        constructor(scene: Scene, /** Options to modify the vr experience helper's behavior. */public webVROptions: VRExperienceHelperOptions = {}) {
             this._scene = scene;
             this._canvas = scene.getEngine().getRenderingCanvas();
 
@@ -581,10 +638,16 @@ module BABYLON {
             }
         }
 
+        /**
+         * The position of the vr experience helper.
+         */
         public get position(): Vector3 {
             return this._position;
         }
 
+        /**
+         * Sets the position of the vr experience helper.
+         */
         public set position(value: Vector3) {
             this._position = value;
 
@@ -593,6 +656,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Enables controllers and user interactions suck as selecting and object or clicking on an object.
+         */
         public enableInteractions() {
             if (!this._interactionsEnabled) {
                 this._interactionsRequested = true;
@@ -644,6 +710,10 @@ module BABYLON {
             return false;
         }
 
+        /**
+         * Adds a floor mesh to be used for teleportation.
+         * @param floorMesh the mesh to be used for teleportation.
+         */
         public addFloorMesh(floorMesh: Mesh): void {
             if (!this._floorMeshesCollection) {
                 return;
@@ -656,6 +726,10 @@ module BABYLON {
             this._floorMeshesCollection.push(floorMesh);
         }
 
+        /**
+         * Removes a floor mesh from being used for teleportation.
+         * @param floorMesh the mesh to be removed.
+         */
         public removeFloorMesh(floorMesh: Mesh): void {
             if (!this._floorMeshesCollection) {
                 return
@@ -667,6 +741,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Enables interactions and teleportation using the VR controllers and gaze.
+         * @param vrTeleportationOptions options to modify teleportation behavior.
+         */
         public enableTeleportation(vrTeleportationOptions: VRTeleportationOptions = {}) {
             if (!this._teleportationInitialized) {
                 this._teleportationRequested = true;
@@ -1463,6 +1541,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Sets the color of the laser ray from the vr controllers.
+         * @param color new color for the ray.
+         */
         public changeLaserColor(color: Color3) {
             if (this._leftLaserPointer && this._leftLaserPointer.material) {
                 (<StandardMaterial>this._leftLaserPointer.material).emissiveColor = color;
@@ -1472,12 +1554,19 @@ module BABYLON {
             }
         }
 
+        /**
+         * Sets the color of the ray from the vr headsets gaze.
+         * @param color new color for the ray.
+         */
         public changeGazeColor(color: Color3) {
             if (this._gazeTracker.material) {
                 (<StandardMaterial>this._gazeTracker.material).emissiveColor = color;
             }
         }
 
+        /**
+         * Exits VR and disposes of the vr experience helper
+         */
         public dispose() {
             if (this.isInVRMode) {
                 this.exitVR();
@@ -1535,6 +1624,10 @@ module BABYLON {
             this._scene.unregisterBeforeRender(this.beforeRender);
         }
 
+        /**
+         * Gets the name of the VRExperienceHelper class
+         * @returns "VRExperienceHelper"
+         */
         public getClassName(): string {
             return "VRExperienceHelper";
         }

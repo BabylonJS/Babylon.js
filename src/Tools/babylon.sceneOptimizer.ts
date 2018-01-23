@@ -6,6 +6,7 @@
     export class SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @returns description string
          */
         public getDescription(): string {
             return "";
@@ -14,9 +15,10 @@
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
-         * @returnstrue if everything that can be done was applied
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             return true;
         };
 
@@ -25,7 +27,11 @@
          * @param priority defines the priority of this optimization (0 by default which means first in the list)
          * @param desc defines the description associated with the optimization
          */
-        constructor(public priority: number = 0) {
+        constructor(
+            /**
+             * Defines the priority of this optimization (0 by default which means first in the list)
+             */
+            public priority: number = 0) {
         }
     }
 
@@ -36,6 +42,7 @@
     export class TextureOptimization extends SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @returns description string
          */
         public getDescription(): string {
             return "Reducing render target texture size to " + this.maximumSize;
@@ -47,15 +54,29 @@
          * @param maximumSize defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
          * @param step defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
          */
-        constructor(public priority: number = 0, public maximumSize: number = 1024, public step = 0.5) {
+        constructor(
+            /**
+             * Defines the priority of this optimization (0 by default which means first in the list)
+             */
+            public priority: number = 0,
+            /**
+             * Defines the maximum sized allowed for textures (1024 is the default value). If a texture is bigger, it will be scaled down using a factor defined by the step parameter
+             */
+            public maximumSize: number = 1024,
+            /**
+             * Defines the factor (0.5 by default) used to scale down textures bigger than maximum sized allowed.
+             */
+            public step = 0.5) {
             super(priority);
         }
 
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
 
             var allDone = true;
             for (var index = 0; index < scene.textures.length; index++) {
@@ -88,6 +109,7 @@
 
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
             return "Setting hardware scaling level to " + this._currentScale;
@@ -95,19 +117,33 @@
 
         /**
          * Creates the HardwareScalingOptimization object
-         * @param priority priority defines the priority of this optimization (0 by default which means first in the list)
-         * @param maximumScale 
-         * @param step 
+         * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @param maximumScale defines the maximum scale to use (2 by default)
+         * @param step defines the step to use between two passes (0.5 by default)
          */
-        constructor(public priority: number = 0, public maximumScale: number = 2, public step: number = 0.25) {
+        constructor(
+            /**
+             * Defines the priority of this optimization (0 by default which means first in the list)
+             */
+            public priority: number = 0,
+            /**
+             * Defines the maximum scale to use (2 by default)
+             */
+            public maximumScale: number = 2,
+            /**
+             * Defines the step to use between two passes (0.5 by default)
+             */
+            public step: number = 0.25) {
             super(priority);
         }
 
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             if (this._currentScale === -1) {
                 this._currentScale = scene.getEngine().getHardwareScalingLevel();
                 if (this._currentScale > this.maximumScale) {
@@ -130,17 +166,20 @@
     export class ShadowsOptimization extends SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
-            return "Turning shadows off";
+            return "Turning shadows on/off";
         }
 
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
-            scene.shadowsEnabled = false;
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+            scene.shadowsEnabled = optimizer.isInImprovementMode;
             return true;
         };
     }
@@ -152,17 +191,20 @@
     export class PostProcessesOptimization extends SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
-            return "Turning post-processes off";
+            return "Turning post-processes on/off";
         }
 
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
-            scene.postProcessesEnabled = false;
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+            scene.postProcessesEnabled = optimizer.isInImprovementMode;
             return true;
         };
     }
@@ -174,17 +216,20 @@
     export class LensFlaresOptimization extends SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
-            return "Turning lens flares off";
+            return "Turning lens flares on/off";
         }
 
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
-            scene.lensFlaresEnabled = false;
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+            scene.lensFlaresEnabled = optimizer.isInImprovementMode;
             return true;
         };
     }
@@ -196,10 +241,8 @@
     export class CustomOptimization extends SceneOptimization {
         /**
          * Callback called to apply the custom optimization.
-         * @param scene defines the scene to apply the optimization to
-         * @returns a boolean defining if all the optimization was applied or if more options are available (for the next turn)
          */
-        public onApply: (scene: Scene) => boolean;
+        public onApply: (scene: Scene, optimizer: SceneOptimizer) => boolean;
 
         /**
          * Callback called to get custom description
@@ -208,6 +251,7 @@
 
         /**
          * Gets a string describing the action executed by the current optimization
+         * @returns description string
          */
         public getDescription(): string {
             if (this.onGetDescription) {
@@ -220,10 +264,12 @@
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
             if (this.onApply) {
-                return this.onApply(scene);
+                return this.onApply(scene, optimizer);
             }
             return true;
         };
@@ -236,17 +282,20 @@
     export class ParticlesOptimization extends SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
-            return "Turning particles off";
+            return "Turning particles on/off";
         }
 
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
-            scene.particlesEnabled = false;
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+            scene.particlesEnabled = optimizer.isInImprovementMode;
             return true;
         };
     }
@@ -258,6 +307,7 @@
     export class RenderTargetsOptimization extends SceneOptimization {
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
             return "Turning render targets off";
@@ -266,9 +316,11 @@
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene): boolean {
-            scene.renderTargetsEnabled = false;
+        public apply(scene: Scene, optimizer: SceneOptimizer): boolean {
+            scene.renderTargetsEnabled = optimizer.isInImprovementMode;
             return true;
         };
     }
@@ -279,7 +331,7 @@
      * @description More details at http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer
      */
     export class MergeMeshesOptimization extends SceneOptimization {
-        static _UpdateSelectionTree = false;
+        private static _UpdateSelectionTree = false;
 
         /**
          * Gets or sets a boolean which defines if optimization octree has to be updated
@@ -297,6 +349,7 @@
 
         /**
          * Gets a string describing the action executed by the current optimization
+         * @return description string
          */
         public getDescription(): string {
             return "Merging similar meshes together";
@@ -331,8 +384,11 @@
         /**
          * This function will be called by the SceneOptimizer when its priority is reached in order to apply the change required by the current optimization
          * @param scene defines the current scene where to apply this optimization
+         * @param optimizer defines the current optimizer
+         * @param updateSelectionTree defines that the selection octree has to be updated (false by default)
+         * @returns true if everything that can be done was applied
          */
-        public apply(scene: Scene, updateSelectionTree?: boolean): boolean {
+        public apply(scene: Scene, optimizer: SceneOptimizer, updateSelectionTree?: boolean): boolean {
 
             var globalPool = scene.meshes.slice(0);
             var globalLength = globalPool.length;
@@ -408,12 +464,21 @@
          * @param targetFrameRate defines the target frame rate to reach (60 by default)
          * @param trackerDuration defines the interval between two checkes (2000ms by default)
          */
-        constructor(public targetFrameRate: number = 60, public trackerDuration: number = 2000) {
+        constructor(
+            /**
+             * Defines the target frame rate to reach (60 by default)
+             */
+            public targetFrameRate: number = 60,
+            /**
+             * Defines the interval between two checkes (2000ms by default)
+             */
+            public trackerDuration: number = 2000) {
         }
 
         /**
          * Add a new optimization
          * @param optimization defines the SceneOptimization to add to the list of active optimizations
+         * @returns the current SceneOptimizerOptions
          */
         public addOptimization(optimization: SceneOptimization): SceneOptimizerOptions {
             this.optimizations.push(optimization);
@@ -422,11 +487,12 @@
 
         /**
          * Add a new custom optimization
-         * @param onApply defines the callback called to apply the custom optimization.
+         * @param onApply defines the callback called to apply the custom optimization (true if everything that can be done was applied)
          * @param onGetDescription defines the callback called to get the description attached with the optimization.
          * @param priority defines the priority of this optimization (0 by default which means first in the list)
+         * @returns the current SceneOptimizerOptions
          */
-        public addCustomOptimization(onApply: (scene: Scene) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
+        public addCustomOptimization(onApply: (scene: Scene, ) => boolean, onGetDescription: () => string, priority: number = 0): SceneOptimizerOptions {
             let optimization = new CustomOptimization(priority);
             optimization.onApply = onApply;
             optimization.onGetDescription = onGetDescription;
@@ -540,6 +606,7 @@
         private _trackerDuration = 2000;
         private _currentFrameRate = 0;
         private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+        private _improvementMode = false;
 
         /**
          * Defines an observable called when the optimizer reaches the target frame rate
@@ -553,6 +620,13 @@
          * Defines an observable called when the optimizer is not able to reach the target frame rate
          */
         public onFailureObservable = new Observable<SceneOptimizer>();
+
+        /**
+         * Gets a boolean indicating if the optimizer is in improvement mode
+         */
+        public get isInImprovementMode(): boolean {
+            return this._improvementMode;
+        }
 
         /**
          * Gets the current priority level (0 at start)
@@ -608,8 +682,9 @@
          * @param scene defines the scene to work on
          * @param options defines the options to use with the SceneOptimizer
          * @param autoGeneratePriorities defines if priorities must be generated and not read from SceneOptimization property (true by default)
+         * @param improvementMode defines if the scene optimizer must run the maximum optimization while staying over a target frame instead of trying to reach the target framerate (false by default)
          */
-        public constructor(scene: Scene, options?: SceneOptimizerOptions, autoGeneratePriorities = true) {
+        public constructor(scene: Scene, options?: SceneOptimizerOptions, autoGeneratePriorities = true, improvementMode = false) {
             if (!options) {
                 this._options = new SceneOptimizerOptions();
             } else {
@@ -631,6 +706,7 @@
                 }
             }
 
+            this._improvementMode = improvementMode;
             this._scene = scene || Engine.LastCreatedScene;
             this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => {
                 this._sceneDisposeObserver = null;
@@ -645,10 +721,17 @@
             this._isRunning = false;
         }
 
+        /**
+         * Reset the optimizer to initial step (current priority level = 0)
+         */
         public reset() {
             this._currentPriorityLevel = 0;
         }
 
+        /**
+         * Start the optimizer. By default it will try to reach a specific framerate 
+         * but if the optimizer is set with improvementMode === true then it will run all optimiatiation while frame rate is above the target frame rate
+         */
         public start() {
             if (this._isRunning) {
                 return;
@@ -674,7 +757,8 @@
 
             this._currentFrameRate = Math.round(scene.getEngine().getFps());
 
-            if (this._currentFrameRate >= this._targetFrameRate) {
+            if (this._improvementMode && this._currentFrameRate <= this._targetFrameRate ||
+                !this._improvementMode && this._currentFrameRate >= this._targetFrameRate) {
                 this._isRunning = false;
                 this.onSuccessObservable.notifyObservers(this);
                 return;
@@ -688,7 +772,7 @@
 
                 if (optimization.priority === this._currentPriorityLevel) {
                     noOptimizationApplied = false;
-                    allDone = allDone && optimization.apply(scene);
+                    allDone = allDone && optimization.apply(scene, this);
                     this.onNewOptimizationAppliedObservable.notifyObservers(optimization);
                 }
             }
@@ -733,6 +817,7 @@
          * @param options defines the options to use with the SceneOptimizer
          * @param onSuccess defines a callback to call on success
          * @param onFailure defines a callback to call on failure
+         * @returns the new SceneOptimizer object
          */
         public static OptimizeAsync(scene: Scene, options?: SceneOptimizerOptions, onSuccess?: () => void, onFailure?: () => void): SceneOptimizer {
             let optimizer = new SceneOptimizer(scene, options || SceneOptimizerOptions.ModerateDegradationAllowed(), false);

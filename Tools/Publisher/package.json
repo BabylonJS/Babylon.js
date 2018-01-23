@@ -12,5 +12,8 @@
     "fs-extra": "^5.0.0",
     "prompt": "^1.0.0",
     "shelljs": "^0.7.8"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1"
   }
 }
