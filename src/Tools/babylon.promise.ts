@@ -18,7 +18,7 @@ module BABYLON {
         private _result?: Nullable<T>;
         private _reason: any;
         private _child: InternalPromise<T>;
-        private _onFulfilled?: (fulfillment?: Nullable<T>) => Nullable<InternalPromise<T>>;
+        private _onFulfilled?: (fulfillment?: Nullable<T>) => Nullable<InternalPromise<T>> | T;
         private _onRejected?: (reason: any) => void;
         private _rejectWasConsumed = false;
 
@@ -76,7 +76,7 @@ module BABYLON {
             return this.then(undefined, onRejected);
         }
 
-        public then(onFulfilled?: (fulfillment?: Nullable<T>) => Nullable<InternalPromise<T>>, onRejected?: (reason: any) => void): InternalPromise<T> {
+        public then(onFulfilled?: (fulfillment?: Nullable<T>) => Nullable<InternalPromise<T>> | T, onRejected?: (reason: any) => void): InternalPromise<T> {
             let newPromise = new InternalPromise<T>();
             newPromise._onFulfilled = onFulfilled;
             newPromise._onRejected = onRejected;
@@ -86,11 +86,16 @@ module BABYLON {
 
             if (this._state !== PromiseStates.Pending) {
                 if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
-                    let returnedPromise = newPromise._resolve(this._result);
+                    let returnedValue = newPromise._resolve(this._result);
 
-                    if (returnedPromise) {
-                        newPromise._child = returnedPromise;
-                        newPromise = returnedPromise;
+                    if (returnedValue !== undefined && returnedValue !== null) {
+                        if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
+                            let returnedPromise = returnedValue as InternalPromise<T>;
+                            newPromise._child = returnedPromise;
+                            newPromise = returnedPromise;
+                        } else {
+                            newPromise._result = (<T>returnedValue);
+                        }
                     }
                 } else {
                     newPromise._reject(this._reason);
@@ -100,11 +105,11 @@ module BABYLON {
             return newPromise;
         }       
         
-        private _resolve(value?: Nullable<T>): Nullable<InternalPromise<T>> {
+        private _resolve(value?: Nullable<T>): Nullable<InternalPromise<T>> | T {
             try {
                 this._state = PromiseStates.Fulfilled;
                 this._result = value;
-                let returnedPromise: Nullable<InternalPromise<T>> = null;
+                let returnedPromise: Nullable<InternalPromise<T>> | T = null;
 
                 if (this._onFulfilled) {
                     returnedPromise = this._onFulfilled(value);
