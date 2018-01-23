@@ -5754,6 +5754,16 @@
             return request;
         }
 
+        public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+            return new Promise((resolve, reject) => {
+                this._loadFile(url, (data) => {
+                    resolve(data);
+                }, undefined, database, useArrayBuffer, (request, exception) => {
+                    reject(exception);
+                })
+            });
+        }
+
         private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>, onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
             var onload = (data: string | ArrayBuffer) => {
                 loadedFiles[index] = data;
