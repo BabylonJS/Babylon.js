@@ -1487,9 +1487,8 @@ module BABYLON {
                     // Moving the teleportation area to this targetted point
 
                     //Raise onSelectedMeshUnselected observable if ray collided floor mesh/meshes and a non floor mesh was previously selected
-                    if (this._currentMeshSelected &&
-                        !this._isTeleportationFloor(this._currentMeshSelected)) {
-                        this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
+                    if (this._currentMeshSelected && !this._isTeleportationFloor(this._currentMeshSelected)) {
+                        this._notifySelectedMeshUnselected();
                     }
 
                     this._currentMeshSelected = null;
@@ -1522,9 +1521,7 @@ module BABYLON {
                         }
                     }
                     else {
-                        if (this._currentMeshSelected) {
-                            this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
-                        }
+                        this._notifySelectedMeshUnselected();
                         this._currentMeshSelected = null;
                         this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
                         this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
@@ -1533,11 +1530,18 @@ module BABYLON {
             }
             else {
                 this._currentHit = null;
+                this._notifySelectedMeshUnselected();
                 this._currentMeshSelected = null;
                 this._teleportationAllowed = false;
                 this._hideTeleportationTarget();
                 this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
                 this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
+            }
+        }
+        
+        private _notifySelectedMeshUnselected( ) {
+            if(this._currentMeshSelected) {
+                this.onSelectedMeshUnselected.notifyObservers(this._currentMeshSelected);
             }
         }
 
