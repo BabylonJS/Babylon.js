@@ -6,7 +6,7 @@
     class GlowBlurPostProcess extends PostProcess {
         constructor(name: string, public direction: Vector2, public kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean) {
             super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
-
+            
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
                 effect.setVector2("direction", this.direction);
@@ -56,6 +56,11 @@
          * The camera attached to the layer.
          */
         camera: Nullable<Camera>;
+
+        /**
+         * Should we display highlight as a solid stroke?
+         */
+        isStroke?: boolean;
     }
 
     /**
@@ -289,7 +294,8 @@
             this._glowMapMergeEffect = engine.createEffect("glowMapMerge",
                 [VertexBuffer.PositionKind],
                 ["offset"],
-                ["textureSampler"], "");
+                ["textureSampler"],
+                this._options.isStroke ? "#define STROKE \n" : undefined);
 
             // Render target
             this.setMainTextureSize();
@@ -456,7 +462,7 @@
                     emissiveTexture = (<any>material).emissiveTexture;
                 }
 
-                if (this.isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
+                if (this._isReady(subMesh, hardwareInstancedRendering, emissiveTexture)) {
                     engine.enableEffect(this._glowMapGenerationEffect);
                     mesh._bind(subMesh, this._glowMapGenerationEffect, Material.TriangleFillMode);
 
@@ -549,7 +555,31 @@
          * @param emissiveTexture the associated emissive texture used to generate the glow
          * @return true if ready otherwise, false
          */
-        private isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<Texture>): boolean {
+        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+            let material = subMesh.getMaterial();
+            let mesh = subMesh.getRenderingMesh();
+
+            if (!material || !mesh || !this._meshes) {
+                return false;
+            }
+
+            let emissiveTexture: Nullable<Texture> = null;
+            let highlightLayerMesh = this._meshes[mesh.uniqueId];
+
+            if (highlightLayerMesh && highlightLayerMesh.glowEmissiveOnly && material) {
+                emissiveTexture = (<any>material).emissiveTexture;
+            }
+            return this._isReady(subMesh, useInstances, emissiveTexture);
+        }
+
+        /**
+         * Checks for the readiness of the element composing the layer.
+         * @param subMesh the mesh to check for
+         * @param useInstances specify wether or not to use instances to render the mesh
+         * @param emissiveTexture the associated emissive texture used to generate the glow
+         * @return true if ready otherwise, false
+         */
+        private _isReady(subMesh: SubMesh, useInstances: boolean, emissiveTexture: Nullable<Texture>): boolean {
             let material = subMesh.getMaterial();
 
             if (!material) {
@@ -767,6 +797,19 @@
             }
 
             this._excludedMeshes[mesh.uniqueId] = null;
+        }
+
+        /**
+         * Determine if a given mesh will be highlighted by the current HighlightLayer
+         * @param mesh mesh to test
+         * @returns true if the mesh will be highlighted by the current HighlightLayer
+         */
+        public hasMesh(mesh: AbstractMesh): boolean {
+            if (!this._meshes) {
+                return false;
+            }
+
+            return this._meshes[mesh.uniqueId] !== undefined && this._meshes[mesh.uniqueId] !== null;
         }
 
         /**

@@ -26,24 +26,24 @@ module BABYLON {
         @serializeAsTexture("diffuseTexture")
         private _diffuseTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public diffuseTexture: Nullable<BaseTexture>;        
-        
+        public diffuseTexture: Nullable<BaseTexture>;
+
         @serializeAsTexture("distortionTexture")
         private _distortionTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public distortionTexture: Nullable<BaseTexture>;       
-        
+        public distortionTexture: Nullable<BaseTexture>;
+
         @serializeAsTexture("opacityTexture")
         private _opacityTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityTexture: Nullable<BaseTexture>;
-        
+
         @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
-        
+
         @serialize()
         public speed = 1.0;
-        
+
         private _scaledDiffuse = new Color3();
         private _renderId: number;
         private _lastTime: number = 0;
@@ -65,7 +65,7 @@ module BABYLON {
         }
 
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -97,7 +97,7 @@ module BABYLON {
                         defines._needUVs = true;
                         defines.DIFFUSE = true;
                     }
-                }              
+                }
             }
 
             // Misc.
@@ -105,10 +105,10 @@ module BABYLON {
                 defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
                 defines.FOG = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled);
             }
-            
+
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh));
+
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
 
@@ -119,11 +119,11 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
-                
+
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -144,24 +144,24 @@ module BABYLON {
 
                 // Legacy browser patch
                 var shaderName = "fire";
-                
+
                 var join = defines.toString();
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     {
                         attributes: attribs,
                         uniformsNames: ["world", "view", "viewProjection", "vEyePosition",
-                                "vFogInfos", "vFogColor", "pointSize",
-                                "vDiffuseInfos", 
-                                "mBones",
-                                "vClipPlane", "diffuseMatrix",
-                                // Fire
-                                "time", "speed"
-                            ],
+                            "vFogInfos", "vFogColor", "pointSize",
+                            "vDiffuseInfos",
+                            "mBones",
+                            "vClipPlane", "diffuseMatrix",
+                            // Fire
+                            "time", "speed"
+                        ],
                         uniformBuffersNames: [],
                         samplers: ["diffuseSampler",
-                                // Fire
-                                "distortionSampler", "opacitySampler"
-                            ],
+                            // Fire
+                            "distortionSampler", "opacitySampler"
+                        ],
                         defines: join,
                         fallbacks: fallbacks,
                         onCompiled: this.onCompiled,
@@ -171,7 +171,7 @@ module BABYLON {
                         transformFeedbackVaryings: null
                     }, engine), defines);
             }
-            
+
             if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
@@ -210,11 +210,11 @@ module BABYLON {
 
                     this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                     this._activeEffect.setMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
-                    
+
                     this._activeEffect.setTexture("distortionSampler", this._distortionTexture);
                     this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
                 }
-                
+
                 // Clip plane
                 if (scene.clipPlane) {
                     var clipPlane = scene.clipPlane;
@@ -226,7 +226,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                MaterialHelper.BindEyePosition(effect, scene);               
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
@@ -235,14 +235,14 @@ module BABYLON {
             if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
                 this._activeEffect.setMatrix("view", scene.getViewMatrix());
             }
-            
+
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
-            
+
             // Time
             this._lastTime += scene.getEngine().getDeltaTime();
             this._activeEffect.setFloat("time", this._lastTime);
-            
+
             // Speed
             this._activeEffect.setFloat("speed", this.speed);
 
@@ -294,18 +294,18 @@ module BABYLON {
 
             if (this._distortionTexture === texture) {
                 return true;
-            }    
+            }
 
             if (this._opacityTexture === texture) {
                 return true;
-            }            
+            }
 
-            return false;    
-        }         
+            return false;
+        }
 
         public getClassName(): string {
             return "FireMaterial";
-        }        
+        }
 
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
@@ -321,23 +321,23 @@ module BABYLON {
         public clone(name: string): FireMaterial {
             return SerializationHelper.Clone<FireMaterial>(() => new FireMaterial(name, this.getScene()), this);
         }
-		
-		public serialize(): any {
-		
+
+        public serialize(): any {
+
             var serializationObject = super.serialize();
-            serializationObject.customType      = "BABYLON.FireMaterial";
-            serializationObject.diffuseColor    = this.diffuseColor.asArray();
-            serializationObject.speed           = this.speed;
+            serializationObject.customType = "BABYLON.FireMaterial";
+            serializationObject.diffuseColor = this.diffuseColor.asArray();
+            serializationObject.speed = this.speed;
 
             if (this._diffuseTexture) {
                 serializationObject._diffuseTexture = this._diffuseTexture.serialize();
             }
-            
-			if (this._distortionTexture) {
+
+            if (this._distortionTexture) {
                 serializationObject._distortionTexture = this._distortionTexture.serialize();
             }
-			
-			if (this._opacityTexture) {
+
+            if (this._opacityTexture) {
                 serializationObject._opacityTexture = this._opacityTexture.serialize();
             }
 
@@ -347,12 +347,12 @@ module BABYLON {
         public static Parse(source: any, scene: Scene, rootUrl: string): FireMaterial {
             var material = new FireMaterial(source.name, scene);
 
-            material.diffuseColor   = Color3.FromArray(source.diffuseColor);
-            material.speed          = source.speed;
+            material.diffuseColor = Color3.FromArray(source.diffuseColor);
+            material.speed = source.speed;
 
-            material.alpha          = source.alpha;
+            material.alpha = source.alpha;
 
-            material.id             = source.id;
+            material.id = source.id;
 
             Tags.AddTagsTo(material, source.tags);
             material.backFaceCulling = source.backFaceCulling;
@@ -365,8 +365,8 @@ module BABYLON {
             if (source._distortionTexture) {
                 material._distortionTexture = Texture.Parse(source._distortionTexture, scene, rootUrl);
             }
-			
-			if (source._opacityTexture) {
+
+            if (source._opacityTexture) {
                 material._opacityTexture = Texture.Parse(source._opacityTexture, scene, rootUrl);
             }
 
@@ -377,5 +377,5 @@ module BABYLON {
             return material;
         }
     }
-} 
+}
 

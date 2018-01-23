@@ -1,4 +1,4 @@
-namespace BABYLON {
+module BABYLON {
     /**
      * Represents the different options available during the creation of 
      * a Environment helper.

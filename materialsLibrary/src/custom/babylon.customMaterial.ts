@@ -423,6 +423,10 @@ module BABYLON {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
+        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        }
+
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) => string;
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
@@ -721,7 +725,7 @@ module BABYLON {
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh));
 
             // Get correct effect      
             if (defines.isDirty) {

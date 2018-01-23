@@ -1,4 +1,4 @@
-window.__karma__.loaded = function() {};
+window.__karma__.loaded = function () { };
 
 // Loading tests
 var xhr = new XMLHttpRequest();
@@ -10,47 +10,60 @@ xhr.addEventListener("load", function () {
 
         config = JSON.parse(xhr.responseText);
 
-        describe("Validation Tests", function() {
+        describe("Validation Tests", function () {
             before(function (done) {
                 this.timeout(180000);
                 require = null;
                 BABYLONDEVTOOLS.Loader
-                .require('/tests/validation/validation.js')
-                .useDist()
-                .load(function() {
-                    done();            
-                });
+                    .require('/tests/validation/validation.js')
+                    .useDist()
+                    .load(function () {
+                        var info = engine.getGlInfo();
+                        console.log("Webgl Version: " + info.version);
+                        console.log("Webgl Vendor: " + info.vendor);
+                        console.log("Webgl Renderer: " + info.renderer);
+                        done();
+                    });
             });
-        
+
             // Run tests
             for (let index = 0; index < config.tests.length; index++) {
                 var test = config.tests[index];
-                if (test.onlyVisual) {
+                if (test.onlyVisual || test.excludeFromAutomaticTesting) {
                     continue;
                 }
 
-                it(test.title, function(done) {
-                    this.timeout(240000);
-        
+                it(test.title, function (done) {
+                    this.timeout(180000);
+
+                    var deferredDone = function() {
+                        setTimeout(function() {
+                            done();
+                        }, 3000);
+                    }
+
                     try {
-                        runTest(index, function(result) {
+                        runTest(index, function(result, screenshot) {
                             try {
                                 expect(result).to.be.true; 
-                                done();
+                                deferredDone();
                             }
                             catch (e) {
-                                done(e);
+                                if (screenshot) {
+                                    console.error(screenshot);
+                                }
+                                deferredDone(e);
                             }
-                        });                
+                        });
                     }
                     catch (e) {
-                        done(e);
+                        deferredDone(e);
                     }
                 });
             };
         });
 
-        window.__karma__.start();          
+        window.__karma__.start();
     }
 }, false);
 

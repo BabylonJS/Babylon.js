@@ -1,5 +1,6 @@
 /// <reference types="babylonjs"/>
 
+
 declare module 'babylonjs-loaders' { 
     export = BABYLON; 
 }
@@ -14,6 +15,7 @@ declare module BABYLON {
         extensions: ISceneLoaderPluginExtensions;
         importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
         load(scene: Scene, data: any, rootUrl: string): boolean;
+        loadAssets(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): Nullable<AssetContainer>;
         private isBinary(data);
         private parseBinary(mesh, data);
         private parseASCII(mesh, solidData);
@@ -80,6 +82,7 @@ declare module BABYLON {
         private _loadMTL(url, rootUrl, onSuccess);
         importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean;
         load(scene: Scene, data: string, rootUrl: string): boolean;
+        loadAssets(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): Nullable<AssetContainer>;
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.
@@ -214,6 +217,7 @@ declare module BABYLON {
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAssetsAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (assets: AssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -879,7 +883,7 @@ declare module BABYLON.GLTF2 {
         channels: IGLTFAnimationChannel[];
         samplers: IGLTFAnimationSampler[];
         index: number;
-        targets: any[];
+        babylonAnimationGroup: AnimationGroup;
     }
     interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;
@@ -966,6 +970,7 @@ declare module BABYLON.GLTF2 {
         primitives: IGLTFMeshPrimitive[];
         weights?: number[];
         index: number;
+        hasVertexAlpha: boolean;
     }
     interface IGLTFNode extends IGLTFChildRootProperty {
         camera?: number;
@@ -1015,7 +1020,7 @@ declare module BABYLON.GLTF2 {
         index: number;
         texCoord?: number;
     }
-    interface IGLTF extends IGLTFProperty {
+    interface _IGLTF extends IGLTFProperty {
         accessors?: IGLTFAccessor[];
         animations?: IGLTFAnimation[];
         asset: IGLTFAsset;
@@ -1039,7 +1044,7 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2 {
     class GLTFLoader implements IGLTFLoader {
-        _gltf: IGLTF;
+        _gltf: _IGLTF;
         _babylonScene: Scene;
         private _disposed;
         private _rootUrl;

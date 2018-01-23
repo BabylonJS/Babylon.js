@@ -1,72 +1,58 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
+    /**
+     * Holds a collection of exporter options and parameters
+     */
+    export interface IExporterOptions {
+        /**
+         * Function which indicates whether a babylon mesh should be exported or not.
+         * @param mesh - source Babylon mesh. It is used to check whether it should be 
+         * exported to glTF or not.
+         * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
+         */
+        shouldExportMesh?(mesh: AbstractMesh): boolean;
+    };
+
+    /**
+     * Class for generating glTF data from a Babylon scene.
+     */
     export class GLTF2Export {
         /**
-         * Exports the geometry of a Mesh array in .gltf file format.
-         * If glb is set to true, exports as .glb.
-         * @param meshes 
-         * @param materials 
-         * 
-         * @returns {[fileName: string]: string | Blob} Returns an object with a .gltf, .glb and associates textures
+         * Exports the geometry of the scene to .gltf file format.
+         * @param scene - Babylon scene with scene hierarchy information.
+         * @param filePrefix - File prefix to use when generating the glTF file.
+         * @param options - Exporter options.
+         * @returns - Returns an object with a .gltf file and associates texture names
          * as keys and their data and paths as values.
          */
-        public static GLTF(scene: BABYLON.Scene, filename: string): {[fileName: string]: string | Blob} {
-            let glTFPrefix = filename.replace(/\.[^/.]+$/, "");
-            let gltfGenerator = new _GLTF2Exporter(scene);
-
-            return gltfGenerator._generateGLTF(glTFPrefix);
-        }
-        /**
-         * 
-         * @param meshes 
-         * @param filename 
-         * 
-         * @returns {[fileName: string]: string | Blob} Returns an object with a .glb filename as key and data as value
-         */
-        public static GLB(scene: BABYLON.Scene, filename: string): {[fileName: string]: string | Blob} {
-            let glTFPrefix = filename.replace(/\.[^/.]+$/, "");        
-            let gltfGenerator = new _GLTF2Exporter(scene);
-
-            return gltfGenerator._generateGLB(glTFPrefix);
-        }
-        /**
-         * Downloads data from glTF object.
-         * 
-         * @param gltfData glTF object with keys being file names and values being data
-         */
-        public static downloadFiles(gltfData: {[fileName: string]: string | Blob} ): void {
-            /**
-             * Checks for a matching suffix at the end of a string (for ES5 and lower)
-             * @param str 
-             * @param suffix 
-             * 
-             * @returns {boolean} indicating whether the suffix matches or not
-             */
-            function endsWith(str: string, suffix: string): boolean {
-                return str.indexOf(suffix, str.length - suffix.length) !== -1;
+        public static GLTF(scene: Scene, filePrefix: string, options?: IExporterOptions): _GLTFData {
+            const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");
+            const gltfGenerator = new GLTF2._Exporter(scene, options);
+            if (scene.isReady) {
+                return gltfGenerator._generateGLTF(glTFPrefix);
             }
-            for (let key in gltfData) {
-                let link = document.createElement('a');
-                document.body.appendChild(link);
-                link.setAttribute("type", "hidden");
-                link.download = key;
-                let blob = gltfData[key];
-                let mimeType;
-                
-                if (endsWith(key, ".glb")) {
-                    mimeType = {type: "model/gltf-binary"};
-                }
-                else if (endsWith(key, ".bin")) {
-                    mimeType = {type: "application/octet-stream"};
-                }
-                else if (endsWith(key, ".gltf")) {
-                    mimeType = {type: "model/gltf+json"};
-                }
+            else {
+                throw new Error("glTF Serializer: Scene is not ready!");
+            } 
+        }
 
-                link.href = window.URL.createObjectURL(new Blob([blob], mimeType));
-                link.click();
+        /**
+         * Exports the geometry of the scene to .glb file format.
+         * @param scene - Babylon scene with scene hierarchy information.
+         * @param filePrefix - File prefix to use when generating glb file.
+         * @param options - Exporter options.
+         * @returns - Returns an object with a .glb filename as key and data as value
+         */
+        public static GLB(scene: Scene, filePrefix: string, options?: IExporterOptions): _GLTFData {
+            const glTFPrefix = filePrefix.replace(/\.[^/.]+$/, "");        
+            const gltfGenerator = new GLTF2._Exporter(scene, options);
+            if (scene.isReady) {
+                return gltfGenerator._generateGLB(glTFPrefix);
             }
+            else {
+                throw new Error("glTF Serializer: Scene is not ready!");
+            }  
         }
     }
 }

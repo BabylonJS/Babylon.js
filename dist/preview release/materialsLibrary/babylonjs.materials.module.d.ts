@@ -1,5 +1,6 @@
 /// <reference types="babylonjs"/>
 
+
 declare module 'babylonjs-materials' { 
     export = BABYLON; 
 }
@@ -727,6 +728,7 @@ declare module BABYLON {
          * Sets the Color Grading 2D Lookup Texture.
          */
         cameraColorGradingTexture: Nullable<BaseTexture>;
+        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean;
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;

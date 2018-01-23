@@ -97,7 +97,7 @@
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
-        private _LODLevels = new Array<Internals.MeshLODLevel>();
+        private _LODLevels = new Array<MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
         // Morph
@@ -186,14 +186,19 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
+
+                // Metadata
+                if (source.metadata && source.metadata.clone) {
+                    this.metadata = source.metadata.clone();
+                } else {
+                    this.metadata = source.metadata;
+                }
 
                 // Tags
                 if (Tags && Tags.HasTags(source)) {
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
-
-                this.metadata = source.metadata;
 
                 // Parent
                 this.parent = source.parent;
@@ -292,6 +297,14 @@
             return this._LODLevels.length > 0;
         }
 
+        /**
+         * Gets the list of {BABYLON.MeshLODLevel} associated with the current mesh
+         * @returns an array of {BABYLON.MeshLODLevel} 
+         */
+        public getLODLevels(): MeshLODLevel[] {
+            return this._LODLevels;
+        }
+
         private _sortLODLevels(): void {
             this._LODLevels.sort((a, b) => {
                 if (a.distance < b.distance) {
@@ -318,7 +331,7 @@
                 return this;
             }
 
-            var level = new Internals.MeshLODLevel(distance, mesh);
+            var level = new MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
             if (mesh) {
@@ -593,14 +606,68 @@
         }
 
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        public isReady(): boolean {
+        public isReady(forceInstanceSupport = false): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            return super.isReady();
+            if (!super.isReady()) {
+                return false;
+            }
+
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
+            let engine = this.getEngine();
+            let scene = this.getScene();
+            let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+
+            this.computeWorldMatrix();
+
+            let mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var subMesh of this.subMeshes) {
+                        let effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        return false;
+                    }
+                }
+            }
+
+            // Shadows
+            for (var light of this._lightSources) {
+                let generator = light.getShadowGenerator();
+
+                if (generator) {
+                    for (var subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // LOD
+            for (var lod of this._LODLevels) {
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /**
@@ -708,7 +775,7 @@
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data && applySkeleton && this.skeleton) {
-                data = data.slice();
+                data = Tools.Slice(data);
 
                 var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
                 var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -2433,14 +2500,14 @@
                     mesh._delayInfo.push(VertexBuffer.MatricesWeightsKind);
                 }
 
-                mesh._delayLoadingFunction = Geometry.ImportGeometry;
+                mesh._delayLoadingFunction = Geometry._ImportGeometry;
 
                 if (SceneLoader.ForceFullSceneLoadingForIncremental) {
                     mesh._checkDelayState();
                 }
 
             } else {
-                Geometry.ImportGeometry(parsedMesh, mesh);
+                Geometry._ImportGeometry(parsedMesh, mesh);
             }
 
             // Material

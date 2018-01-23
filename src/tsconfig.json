@@ -14,6 +14,11 @@
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
   }
 }

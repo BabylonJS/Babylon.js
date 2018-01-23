@@ -103,18 +103,13 @@ module BABYLON {
             this._supportsTangents = true;
             this._vertexCount = 0;
             for (var target of this._targets) {
-                if (target.influence > 0) {
-                    this._activeTargets.push(target);
-                    this._tempInfluences[influenceCount++] = target.influence;
+                this._activeTargets.push(target);
+                this._tempInfluences[influenceCount++] = target.influence;
 
+                const positions = target.getPositions();
+                if (positions) {
                     this._supportsNormals = this._supportsNormals && target.hasNormals;
                     this._supportsTangents = this._supportsTangents && target.hasTangents;
-
-                    const positions = target.getPositions();
-                    if (!positions) {
-                        Tools.Error("Invalid target. Target must positions.");
-                        return;
-                    }
 
                     const vertexCount = positions.length / 3;
                     if (this._vertexCount === 0) {

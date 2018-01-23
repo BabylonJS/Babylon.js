@@ -164,8 +164,8 @@ module BABYLON {
             // Create render targets
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
-                this._renderTargets.push(<RenderTargetTexture> this._reflectionRTT);
-                this._renderTargets.push(<RenderTargetTexture> this._refractionRTT);
+                this._renderTargets.push(<RenderTargetTexture>this._reflectionRTT);
+                this._renderTargets.push(<RenderTargetTexture>this._refractionRTT);
 
                 return this._renderTargets;
             }
@@ -275,7 +275,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh));
 
             MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
 
@@ -614,12 +614,12 @@ module BABYLON {
                 this.bumpTexture.dispose();
             }
 
-            var index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture> this._refractionRTT);
+            var index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._refractionRTT);
             if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
             index = -1;
-            index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture> this._reflectionRTT);
+            index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._reflectionRTT);
             if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
@@ -641,7 +641,7 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            
+
             serializationObject.renderList = [];
             if (this._refractionRTT && this._refractionRTT.renderList) {
                 for (var i = 0; i < this._refractionRTT.renderList.length; i++) {

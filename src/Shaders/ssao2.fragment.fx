@@ -40,12 +40,14 @@ uniform mat4 projection;
 void main()
 {
 	vec3 random = texture2D(randomSampler, vUV * randTextureTiles).rgb;
-	float depth = abs(texture2D(textureSampler, vUV).r);
+	float depth = texture2D(textureSampler, vUV).r;
+	float depthSign = depth / abs(depth);
+	depth = depth * depthSign;
 	vec3 normal = texture2D(normalSampler, vUV).rgb; 
 	float occlusion = 0.0;
 	float correctedRadius = min(radius, minZAspect * depth / near);
 
-	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, 1.0);
+	vec3 vViewRay = vec3((vUV.x * 2.0 - 1.0)*xViewport, (vUV.y * 2.0 - 1.0)*yViewport, depthSign);
 	vec3 origin = vViewRay * depth;
 	vec3 rvec = random * 2.0 - 1.0;
 	rvec.z = 0.0;
@@ -79,7 +81,7 @@ void main()
 	   float sampleDepth = abs(texture2D(textureSampler, offset.xy).r);
 		// range check & accumulate:
 	   float rangeCheck = abs(depth - sampleDepth) < correctedRadius ? 1.0 : 0.0;
-	   difference = samplePosition.z - sampleDepth;
+	   difference = depthSign * samplePosition.z - sampleDepth;
 	  //occlusion += step(fallOff, difference) * (1.0 - smoothstep(fallOff, area, difference)) * rangeCheck;
 	   occlusion += (difference >= 1e-5 ? 1.0 : 0.0) * rangeCheck;
 	}

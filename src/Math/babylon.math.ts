@@ -126,6 +126,21 @@
         }
 
         /**
+         * Clamps the rgb values by the min and max values and stores the result into "result".
+         * Returns the unmodified current Color3.
+         * @param min - minimum clamping value.  Defaults to 0
+         * @param max - maximum clamping value.  Defaults to 1
+         * @param result - color to store the result into.
+         * @returns - the original Color3
+         */
+        public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            return this;
+        }
+
+        /**
          * Returns a new Color3 set with the added values of the current Color3 and of the passed one.  
          */
         public add(otherColor: Color3): Color3 {
@@ -385,6 +400,22 @@
             result.g = this.g * scale;
             result.b = this.b * scale;
             result.a = this.a * scale;
+            return this;
+        }
+
+        /**
+         * Clamps the rgb values by the min and max values and stores the result into "result".
+         * Returns the unmodified current Color4.
+         * @param min - minimum clamping value.  Defaults to 0
+         * @param max - maximum clamping value.  Defaults to 1
+         * @param result - color to store the result into.
+         * @returns - the original Color4
+         */
+        public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            result.a = BABYLON.Scalar.Clamp(this.a, min, max);
             return this;
         }
 
@@ -762,6 +793,15 @@
             result.y = this.y / otherVector.y;
             return this;
         }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector2): Vector2 {
+            return this.divideToRef(otherVector, this);
+        }
+
         /**
          * Returns a new Vector2 with current Vector2 negated coordinates.  
          */
@@ -1290,6 +1330,14 @@
         }
 
         /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector3): Vector3 {
+            return this.divideToRef(otherVector, this);
+        }
+
+        /**
          * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.  
          * Returns the updated Vector3.  
          */
@@ -1440,6 +1488,24 @@
             var s = d0 / (d0 - d1);
 
             return s;
+        }
+
+        /**
+         * Get angle between two vectors.
+         * @param vector0 angle between vector0 and vector1
+         * @param vector1 angle between vector0 and vector1
+         * @param normal direction of the normal.
+         * @return the angle between vector0 and vector1.
+         */
+        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
+            var v0:Vector3 = vector0.clone().normalize();
+            var v1:Vector3 = vector1.clone().normalize();
+            var dot:number = Vector3.Dot(v0, v1);
+            var n = Vector3.Cross(v0, v1);
+            if (Vector3.Dot(n, normal) > 0) {
+                return Math.acos(dot);
+            }
+            return -Math.acos(dot);
         }
 
         /**
@@ -2101,6 +2167,14 @@
             result.z = this.z / otherVector.z;
             result.w = this.w / otherVector.w;
             return this;
+        }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector4): Vector4 {
+            return this.divideToRef(otherVector, this);
         }
 
         /**

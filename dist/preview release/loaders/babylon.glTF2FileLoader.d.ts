@@ -116,6 +116,7 @@ declare module BABYLON {
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        loadAssetsAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (assets: AssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -224,7 +225,7 @@ declare module BABYLON.GLTF2 {
         channels: IGLTFAnimationChannel[];
         samplers: IGLTFAnimationSampler[];
         index: number;
-        targets: any[];
+        babylonAnimationGroup: AnimationGroup;
     }
     interface IGLTFAsset extends IGLTFChildRootProperty {
         copyright?: string;
@@ -311,6 +312,7 @@ declare module BABYLON.GLTF2 {
         primitives: IGLTFMeshPrimitive[];
         weights?: number[];
         index: number;
+        hasVertexAlpha: boolean;
     }
     interface IGLTFNode extends IGLTFChildRootProperty {
         camera?: number;
@@ -360,7 +362,7 @@ declare module BABYLON.GLTF2 {
         index: number;
         texCoord?: number;
     }
-    interface IGLTF extends IGLTFProperty {
+    interface _IGLTF extends IGLTFProperty {
         accessors?: IGLTFAccessor[];
         animations?: IGLTFAnimation[];
         asset: IGLTFAsset;
@@ -384,7 +386,7 @@ declare module BABYLON.GLTF2 {
 
 declare module BABYLON.GLTF2 {
     class GLTFLoader implements IGLTFLoader {
-        _gltf: IGLTF;
+        _gltf: _IGLTF;
         _babylonScene: Scene;
         private _disposed;
         private _rootUrl;
