@@ -177,7 +177,7 @@ export abstract class AbstractViewer {
             this.scene.debugLayer.show();
         }
         return this.onSceneInitObservable.notifyWithPromise(this.scene).then(() => {
-            return this.scene;
+            return this.scene!;
         });
     }
 
@@ -189,8 +189,8 @@ export abstract class AbstractViewer {
         let base = parts.join('/') + '/';
         let plugin = (typeof model === 'string') ? undefined : model.loader;
 
-        return Promise.resolve().then(() => {
-            if (!this.scene || clearScene) return this.initScene();
+        return Promise.resolve(this.scene).then((scene) => {
+            if (!scene || clearScene) return this.initScene();
             else return this.scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
