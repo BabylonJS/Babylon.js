@@ -1,8 +1,8 @@
 module BABYLON {
     /**
-     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes, video attempts to autoplay.
-     * Subclass of Node so there can be multiple locational videos or instead have it parented to the camera.
-     * This effect can be achieved by using a VideoTexture and correctly configured material on an inverted sphere.
+     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of Node, this allow parenting to the camera or multiple videos with different locations in the scene.
+     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
      * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
      */
     export class VideoDome extends Node {
@@ -25,12 +25,12 @@ module BABYLON {
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOrVideo -
+         * @param urlsOrVideo
          * @param options An object containing optional or exposed sub element properties:
          * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
          * @param options **autoPlay=true** Automatically attempt to being playing the video.
          * @param options **loop=true** Automatically loop video on end.
-         * @param options **size=1000** Physical size to create the dome at, defaults to half the far clip plane.
+         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
          */
         constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, options: {
             clickToPlay?: boolean,
@@ -51,11 +51,15 @@ module BABYLON {
             let tempOptions:VideoTextureSettings = {loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true};
             let material = this._material = new BABYLON.BackgroundMaterial(name+"_material", scene);
             this._videoTexture = new BABYLON.VideoTexture(name+"_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
-            this._mesh = BABYLON.MeshBuilder.CreateBox(name+"_mesh", {size:-options.size}, scene); // needs to be inside out
+            this._mesh = BABYLON.MeshBuilder.CreateIcoSphere(name+"_mesh", {
+                radius: options.size,
+                subdivisions: 1,
+                sideOrientation: BABYLON.Mesh.BACKSIDE
+            }, scene); // needs to be inside out
 
             // configure material
+            this._videoTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches src
             material.reflectionTexture = this._videoTexture;
-            material.reflectionTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches src
 
             // configure mesh
             this._mesh.material = material;
