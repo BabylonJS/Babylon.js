@@ -10,7 +10,7 @@ module BABYLON.GLTF2 {
 
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { return false; }
 
-        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2.IGLTF): boolean { return false; }
+        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean { return false; }
 
         protected _loadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean { return false; }
 
@@ -47,7 +47,7 @@ module BABYLON.GLTF2 {
             return this._ApplyExtensions(extension => extension._traverseNode(loader, context, node, action, parentNode));
         }
 
-        public static LoadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2.IGLTF): boolean {
+        public static LoadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean {
             return this._ApplyExtensions(extension => extension._loadRoot(loader, context, root));
         }
 
