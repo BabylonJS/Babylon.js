@@ -46,14 +46,8 @@ module BABYLON.GLTF2.Extensions {
                         return;
                     }
 
-                    // Use monochromatic hemispheric light to simulate ambient light.
-                    const direction = new Vector3(0, 1, 0);
-                    extension.babylonLight = new BABYLON.HemisphericLight("light", direction, loader._babylonScene);
-
-                    this.applyCommonProperties(extension.babylonLight, lightInfo);
-
-                    const groundColor = lightInfo.color ? lightInfo.color : [1, 1, 1];
-                    (extension.babylonLight as HemisphericLight).groundColor.copyFromFloats(groundColor[0], groundColor[1], groundColor[2]);
+                    const lightColor = lightInfo.color ? lightInfo.color : [1, 1, 1];
+                    loader._babylonScene.ambientColor.copyFromFloats(lightColor[0], lightColor[1], lightColor[2]);
                 }
                 
                 onComplete();
