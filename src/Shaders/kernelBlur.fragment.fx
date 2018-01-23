@@ -65,6 +65,10 @@ void main(void)
 	#endif
 
 	#ifdef DOF
+		// If there are no samples to blend, make pixel black.
+		if(sumOfWeights == 0.0){
+			gl_FragColor = vec4(0.0,0.0,0.0,1.0);
+		}
 		gl_FragColor /= sumOfWeights;
 	#endif
 }
