@@ -14,81 +14,111 @@ declare module BABYLON {
 
 
 declare module BABYLON {
-    interface IGLTFExporterOptions {
+    /**
+     * Holds a collection of exporter options and parameters
+     */
+    interface IExporterOptions {
         /**
-         * Interface function which indicates whether a babylon mesh should be exported or not.
-         * @param mesh
+         * Function which indicates whether a babylon mesh should be exported or not.
+         * @param mesh - source Babylon mesh. It is used to check whether it should be
+         * exported to glTF or not.
          * @returns boolean, which indicates whether the mesh should be exported (true) or not (false)
          */
         shouldExportMesh?(mesh: AbstractMesh): boolean;
     }
+    /**
+     * Class for generating glTF data from a Babylon scene.
+     */
     class GLTF2Export {
         /**
-         * Exports the geometry of a Mesh array in .gltf file format.
-         * @param meshes
-         * @param materials
-         * @param options
-         *
-         * @returns - Returns an object with a .gltf, .glb and associates textures
+         * Exports the geometry of the scene to .gltf file format.
+         * @param scene - Babylon scene with scene hierarchy information.
+         * @param filePrefix - File prefix to use when generating the glTF file.
+         * @param options - Exporter options.
+         * @returns - Returns an object with a .gltf file and associates texture names
          * as keys and their data and paths as values.
          */
-        static GLTF(scene: Scene, filename: string, options?: IGLTFExporterOptions): _GLTFData;
+        static GLTF(scene: Scene, filePrefix: string, options?: IExporterOptions): _GLTFData;
         /**
-         *
-         * @param meshes
-         * @param filename
-         *
+         * Exports the geometry of the scene to .glb file format.
+         * @param scene - Babylon scene with scene hierarchy information.
+         * @param filePrefix - File prefix to use when generating glb file.
+         * @param options - Exporter options.
          * @returns - Returns an object with a .glb filename as key and data as value
          */
-        static GLB(scene: Scene, filename: string, options?: IGLTFExporterOptions): _GLTFData;
+        static GLB(scene: Scene, filePrefix: string, options?: IExporterOptions): _GLTFData;
     }
 }
 
-declare module BABYLON {
+
+/**
+ * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
+ * @ignore - capitalization of GLTF2 module.
+ */
+declare module BABYLON.GLTF2 {
     /**
-     * glTF Alpha Mode Enum
+     * Converts Babylon Scene into glTF 2.0.
      */
-    enum _EGLTFAlphaModeEnum {
-        OPAQUE = "OPAQUE",
-        MASK = "MASK",
-        BLEND = "BLEND",
-    }
-    /**
-     * Babylon Specular Glossiness interface
-     */
-    interface _IBabylonSpecularGlossiness {
-        diffuse: Color3;
-        opacity: number;
-        specular: Color3;
-        glossiness: number;
-    }
-    /**
-     * Babylon Metallic Roughness interface
-     */
-    interface _IBabylonMetallicRoughness {
-        baseColor: Color3;
-        opacity: number;
-        metallic: number;
-        roughness: number;
-    }
-    /**
-     * Converts Babylon Scene into glTF 2.0
-     */
-    class _GLTF2Exporter {
+    class _Exporter {
+        /**
+         * Stores all generated buffer views, which represents views into the main glTF buffer data.
+         */
         private bufferViews;
+        /**
+         * Stores all the generated accessors, which is used for accessing the data within the buffer views in glTF.
+         */
         private accessors;
+        /**
+         * Stores all the generated nodes, which contains transform and/or mesh information per node.
+         */
         private nodes;
+        /**
+         * Stores the glTF asset information, which represents the glTF version and this file generator.
+         */
         private asset;
+        /**
+         * Stores all the generated glTF scenes, which stores multiple node hierarchies.
+         */
         private scenes;
+        /**
+         * Stores all the generated mesh information, each containing a set of primitives to render in glTF.
+         */
         private meshes;
+        /**
+         * Stores all the generated material information, which represents the appearance of each primitive.
+         */
         private materials;
+        /**
+         * Stores all the generated texture information, which is referenced by glTF materials.
+         */
         private textures;
+        /**
+         * Stores all the generated image information, which is referenced by glTF textures.
+         */
         private images;
+        /**
+         * Stores the total amount of bytes stored in the glTF buffer.
+         */
         private totalByteLength;
+        /**
+         * Stores a reference to the Babylon scene containing the source geometry and material information.
+         */
         private babylonScene;
+        /**
+         * Stores the exporter options, which are optionally passed in from the glTF serializer.
+         */
         private options?;
+        /**
+         * Stores a map of the image data, where the key is the file name and the value
+         * is the image data.
+         */
         private imageData;
-        constructor(babylonScene: Scene, options?: IGLTFExporterOptions);
+        /**
+         * Creates a glTF Exporter instance, which can accept optional exporter options.
+         * @param babylonScene - Babylon scene object
+         * @param options - Options to modify the behavior of the exporter.
+         */
+        constructor(babylonScene: Scene, options?: IExporterOptions);
         /**
          * Creates a buffer view based on teh supplied arguments
          * @param {number} bufferIndex - index value of the specified buffer
@@ -203,35 +233,56 @@ declare module BABYLON {
     }
 }
 
+
 declare module BABYLON {
     /**
      * Class for holding and downloading glTF file data
      */
     class _GLTFData {
+        /**
+         * Object which contains the file name as the key and its data as the value.
+         */
         glTFFiles: {
             [fileName: string]: string | Blob;
         };
+        /**
+         * Initializes the glTF file object.
+         */
         constructor();
         /**
-         * Downloads glTF data.
+         * Downloads the glTF data as files based on their names and data.
          */
         downloadFiles(): void;
     }
 }
 
-declare module BABYLON {
+
+declare module BABYLON.GLTF2 {
     /**
-     * Utility methods for working with glTF material conversion properties
+     * Utility methods for working with glTF material conversion properties.  This class should only be used internally.
      */
     class _GLTFMaterial {
-        private static dielectricSpecular;
-        private static epsilon;
         /**
-         * Converts Specular Glossiness to Metallic Roughness
+         * Represents the dielectric specular values for R, G and B.
+         */
+        private static readonly dielectricSpecular;
+        /**
+         * Epsilon value, used as a small tolerance value for a numeric value.
+         */
+        private static readonly epsilon;
+        /**
+         * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material.
+         * @param babylonStandardMaterial
+         * @returns - glTF Metallic Roughness Material representation
+         */
+        static ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness;
+        /**
+         * Converts Specular Glossiness to Metallic Roughness.  This is based on the algorithm used in the Babylon glTF 3ds Max Exporter.
+         * {@link https://github.com/BabylonJS/Exporters/blob/master/3ds%20Max/Max2Babylon/Exporter/BabylonExporter.GLTFExporter.Material.cs}
          * @param  babylonSpecularGlossiness - Babylon specular glossiness parameters
          * @returns - Babylon metallic roughness values
          */
-        static ConvertToMetallicRoughness(babylonSpecularGlossiness: _IBabylonSpecularGlossiness): _IBabylonMetallicRoughness;
+        private static _ConvertToMetallicRoughness(babylonSpecularGlossiness);
         /**
          * Returns the perceived brightness value based on the provided color
          * @param color - color used in calculating the perceived brightness
@@ -251,6 +302,6 @@ declare module BABYLON {
          * @param babylonMaterial - Babylon Material
          * @returns - The Babylon alpha mode value
          */
-        static GetAlphaMode(babylonMaterial: Material): string;
+        static GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
     }
 }
