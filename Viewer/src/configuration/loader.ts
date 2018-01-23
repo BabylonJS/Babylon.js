@@ -14,9 +14,9 @@ export class ConfigurationLoader {
 
     public loadConfiguration(initConfig: ViewerConfiguration = {}): Promise<ViewerConfiguration> {
 
-        let loadedConfig = deepmerge({}, initConfig);
+        let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
 
-        let extendedConfiguration = getConfigurationType(loadedConfig && loadedConfig.extends);
+        let extendedConfiguration = getConfigurationType(loadedConfig.extends || "");
 
         loadedConfig = deepmerge(extendedConfiguration, loadedConfig);
 
@@ -24,23 +24,33 @@ export class ConfigurationLoader {
 
             let mapperType = "json";
             return Promise.resolve().then(() => {
-                if (typeof loadedConfig.configuration === "string" || loadedConfig.configuration.url) {
+                if (typeof loadedConfig.configuration === "string" || (loadedConfig.configuration && loadedConfig.configuration.url)) {
                     // a file to load
-                    let url = loadedConfig.configuration;
+
+                    let url: string = '';
+                    if (typeof loadedConfig.configuration === "string") {
+                        url = loadedConfig.configuration;
+                    }
 
                     // if configuration is an object
-                    if (loadedConfig.configuration.url) {
+                    if (typeof loadedConfig.configuration === "object" && loadedConfig.configuration.url) {
                         url = loadedConfig.configuration.url;
-                        mapperType = loadedConfig.configuration.mapper;
-                        if (!mapperType) {
+                        let type = loadedConfig.configuration.mapper;
+                        // empty string?
+                        if (!type) {
                             // load mapper type from filename / url
-                            mapperType = loadedConfig.configuration.url.split('.').pop();
+                            type = loadedConfig.configuration.url.split('.').pop();
                         }
+                        mapperType = type || mapperType;
                     }
                     return this.loadFile(url);
                 } else {
-                    mapperType = loadedConfig.configuration.mapper || mapperType;
-                    return loadedConfig.configuration.payload || {};
+                    if (typeof loadedConfig.configuration === "object") {
+                        mapperType = loadedConfig.configuration.mapper || mapperType;
+                        return loadedConfig.configuration.payload || {};
+                    }
+                    return {};
+
                 }
             }).then((data: any) => {
                 let mapper = mapperManager.getMapper(mapperType);
@@ -50,10 +60,6 @@ export class ConfigurationLoader {
         } else {
             return Promise.resolve(loadedConfig);
         }
-    }
-
-    public getConfigurationType(type: string) {
-
     }
 
     private loadFile(url: string): Promise<any> {

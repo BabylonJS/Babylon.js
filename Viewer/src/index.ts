@@ -15,10 +15,12 @@ import 'babylonjs';
 import 'babylonjs-loaders';
 import '../assets/pep.min';
 
+import { PromisePolyfill } from 'babylonjs';
+
 import { InitTags } from './initializer';
 
 // promise polyfill, if needed!
-global.Promise = typeof Promise === 'undefined' ? require('es6-promise').Promise : Promise;
+PromisePolyfill.Apply();
 
 export let disableInit: boolean = false;
 document.addEventListener("DOMContentLoaded", function (event) {
