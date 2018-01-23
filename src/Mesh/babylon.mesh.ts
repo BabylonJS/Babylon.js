@@ -297,6 +297,14 @@
             return this._LODLevels.length > 0;
         }
 
+        /**
+         * Gets the list of {BABYLON.MeshLODLevel} associated with the current mesh
+         * @returns an array of {BABYLON.MeshLODLevel} 
+         */
+        public getLODLevels(): MeshLODLevel[] {
+            return this._LODLevels;
+        }
+
         private _sortLODLevels(): void {
             this._LODLevels.sort((a, b) => {
                 if (a.distance < b.distance) {
@@ -767,7 +775,7 @@
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data && applySkeleton && this.skeleton) {
-                data = data.slice();
+                data = Tools.Slice(data);
 
                 var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
                 var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);

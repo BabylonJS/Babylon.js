@@ -166,7 +166,7 @@ function processCore(package, version) {
     });
     console.log("updating package.json");
     packageJson.files = packageFiles;
-    packageJson.main = "babylon.max.js";
+    packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
 
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
@@ -186,7 +186,7 @@ function processCore(package, version) {
             return file;
         }
     });
-    packageJson.main = "dist/preview release/babylon.max.js";
+    packageJson.main = "dist/preview release/babylon.js";
     packageJson.typings = "dist/preview release/babylon.d.ts";
 
     fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
