@@ -169,10 +169,3 @@ interface EXT_disjoint_timer_query {
 interface WebGLUniformLocation {
     _currentState: any;
 }
-
-interface Promise<T> {
-    new (executor: (resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void): Promise<T>;
-    then(onFulfilled?: (fulfillment?: BABYLON.Nullable<T>) => BABYLON.Nullable<Promise<T>>, onRejected?: (reason: string) => void): Promise<T>
-}
-
-declare var Promise: Promise<any>;
