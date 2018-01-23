@@ -7,7 +7,7 @@ module BABYLON {
 
         
         constructor(name: string, depthTexture: RenderTargetTexture, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "circleOfConfusion", ["near", "far", "focusDistance", "cocPrecalculation"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType);
+            super(name, "circleOfConfusion", ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setTexture("depthSampler", depthTexture);
                 
@@ -18,8 +18,7 @@ module BABYLON {
                 effect.setFloat('focusDistance', this.focusDistance);
                 effect.setFloat('cocPrecalculation', cocPrecalculation);
                 
-                effect.setFloat('near', camera.minZ);
-                effect.setFloat('far', camera.maxZ);
+                effect.setFloat2("cameraMinMaxZ", camera.minZ, camera.maxZ);
             })
         }
     }

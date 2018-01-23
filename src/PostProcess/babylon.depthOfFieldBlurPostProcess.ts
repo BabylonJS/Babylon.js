@@ -12,8 +12,7 @@ module BABYLON {
                 }
                 effect.setTexture("depthSampler", depthMap)
                 
-                effect.setFloat('near', camera.minZ);
-                effect.setFloat('far', camera.maxZ);
+                effect.setFloat2('cameraMinMaxZ', camera.minZ, camera.maxZ);
 			});
         }
     }

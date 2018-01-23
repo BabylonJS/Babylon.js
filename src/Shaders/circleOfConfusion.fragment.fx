@@ -5,8 +5,7 @@ uniform sampler2D depthSampler;
 varying vec2 vUV;
 
 // preconputed uniforms (not effect parameters)
-uniform float near;
-uniform float far;
+uniform vec2 cameraMinMaxZ;
 
 // uniforms
 uniform float focusDistance;
@@ -14,7 +13,7 @@ uniform float cocPrecalculation;
 
 float sampleDistance(const in vec2 offset) {
     float depth = texture2D(depthSampler, offset).r;	// depth value from DepthRenderer: 0 to 1
-	return (near + (far - near)*depth)*1000.0;		            // actual distance from the lens in scene units/1000 (eg. millimeter)
+	return (cameraMinMaxZ.x + (cameraMinMaxZ.y - cameraMinMaxZ.x)*depth)*1000.0;		            // actual distance from the lens in scene units/1000 (eg. millimeter)
 }
 
 void main(void)
