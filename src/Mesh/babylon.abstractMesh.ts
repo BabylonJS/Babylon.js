@@ -539,6 +539,8 @@
                 return;
             }
             this._lightSources.splice(index, 1);
+
+            this._markSubMeshesAsLightDirty();
         }
 
         private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {

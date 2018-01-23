@@ -31,7 +31,5 @@
     },
     "engines": {
         "node": "*"
-    },
-    "_id": "babylonjs-procedural-textures@3.1.0-alpha1",
-    "_from": "babylonjs-procedural-textures@"
+    }
 }

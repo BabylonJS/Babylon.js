@@ -15,6 +15,10 @@
         public inputs: FreeCameraInputsManager;
 
         //-- begin properties for backward compatibility for inputs
+        /**
+         * Gets the input sensibility for a mouse input. (default is 2000.0)
+         * Higher values reduce sensitivity.
+         */
         public get angularSensibility(): number {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
@@ -23,6 +27,10 @@
             return 0;
         }
 
+        /**
+         * Sets the input sensibility for a mouse input. (default is 2000.0)
+         * Higher values reduce sensitivity.
+         */
         public set angularSensibility(value: number) {
             var mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
             if (mouse)
@@ -212,4 +220,4 @@
             return "FreeCamera";
         }
     }
-} 
+}
