@@ -136,11 +136,9 @@
                 this._generateMipMaps,
                 this._samplingMode
             );
-            this._texture.width;
-
-            this._updateInternalTexture();
 
             this._texture.isReady = true;
+            this._updateInternalTexture();
         };
 
         private reset = (): void => {
