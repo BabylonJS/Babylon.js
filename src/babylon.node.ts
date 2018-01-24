@@ -418,7 +418,7 @@
                 return;
             }
 
-            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+            return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         }
 
         public serializeAnimationRanges(): any {
