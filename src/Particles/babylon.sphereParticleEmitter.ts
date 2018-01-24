@@ -29,7 +29,7 @@ module BABYLON {
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var direction = particle.position.subtract(worldMatrix.getTranslation()).normalize();
             var randX = Scalar.RandomRange(0, this.directionRandomizer);
             var randY = Scalar.RandomRange(0, this.directionRandomizer);
@@ -48,7 +48,7 @@ module BABYLON {
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+        public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var phi = Scalar.RandomRange(0, 2 * Math.PI);
             var theta = Scalar.RandomRange(0, Math.PI);
             var randX = this.radius * Math.cos(phi) * Math.sin(theta);
@@ -56,6 +56,18 @@ module BABYLON {
             var randZ = this.radius * Math.sin(phi) * Math.sin(theta);
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         }
+
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        public clone(): SphereParticleEmitter {
+            let newOne = new SphereParticleEmitter(this.radius, this.directionRandomizer);
+
+            Tools.DeepCopy(this, newOne);
+
+            return newOne;
+        }        
     }
 
     /**
@@ -89,11 +101,23 @@ module BABYLON {
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
             var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
             var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
             Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
         }
+
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        public clone(): SphereDirectedParticleEmitter {
+            let newOne = new SphereDirectedParticleEmitter(this.radius, this.direction1, this.direction2);
+
+            Tools.DeepCopy(this, newOne);
+
+            return newOne;
+        }          
     }
 }

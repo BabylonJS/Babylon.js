@@ -3136,8 +3136,8 @@
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            var isTGA = (extension === ".tga");
+            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
+            var isTGA = (extension.indexOf(".tga") === 0);
 
             // determine if a ktx file should be substituted
             var isKTX = false;
@@ -5752,6 +5752,17 @@
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
+        }
+
+        /** @ignore */
+        public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+            return new Promise((resolve, reject) => {
+                this._loadFile(url, (data) => {
+                    resolve(data);
+                }, undefined, database, useArrayBuffer, (request, exception) => {
+                    reject(exception);
+                })
+            });
         }
 
         private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>, onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
