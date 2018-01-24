@@ -237,6 +237,17 @@
       "referenceImage": "assetContainer.png"
     },
     {
+      "title": "Depth of field",
+      "playgroundId": "#IDSQK2#16",
+      "renderCount": 20,
+      "referenceImage": "depthOfField.png"
+    },
+    {
+      "title": "Kernel Blur",
+      "playgroundId": "#Y0WKT0",
+      "referenceImage": "KernelBlur.png"
+    },
+    {
       "title": "GLTF Mesh Primitive Attribute Test",
       "scriptToRun": "/Demos/GLTFMeshPrimitiveAttributeTest/index.js",
       "functionToCall": "createScene",
