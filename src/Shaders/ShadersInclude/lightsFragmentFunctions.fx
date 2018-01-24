@@ -32,9 +32,7 @@ lightingInfo computeLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightData, 
 #ifdef NDOTL
 	result.ndl = ndl;
 #endif
-
 	result.diffuse = ndl * diffuseColor * attenuation;
-
 #ifdef SPECULARTERM
 	// Specular
 	vec3 angleW = normalize(viewDirectionW + lightVectorW);
@@ -67,7 +65,6 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 		result.ndl = ndl;
 #endif
 		result.diffuse = ndl * diffuseColor * attenuation;
-
 #ifdef SPECULARTERM
 		// Specular
 		vec3 angleW = normalize(viewDirectionW + lightVectorW);
@@ -76,7 +73,7 @@ lightingInfo computeSpotLighting(vec3 viewDirectionW, vec3 vNormal, vec4 lightDa
 
 		result.specular = specComp * specularColor * attenuation;
 #endif
-		return result;
+        return result;
 	}
 
 	result.diffuse = vec3(0.);
@@ -109,6 +106,14 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 
 	result.specular = specComp * specularColor;
 #endif
+		return result;
+}
 
+lightingInfo computeProjectionTexture(lightingInfo origin,sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
+	lightingInfo result = origin;
+	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
+	strq /= strq.w;
+	vec4 textureColor = texture2D(projectionLightSampler, strq.xy);
+	result.diffuse *= vec3(textureColor);
 	return result;
 }
