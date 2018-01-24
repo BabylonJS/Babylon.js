@@ -147,7 +147,32 @@ describe('Babylon.Promise', () => {
             .then(number => { 
                 number.should.be.equal(3);
                 done();
-             })
+             });
         });
-    });      
+    });     
+    
+    describe('#Multiple children', () => {
+        it('should correctly handle multiple independant "then"', (done) => {
+            mocha.timeout(10000);
+            var promise1 = new Promise(function(resolve, reject) {
+                setTimeout(function() {
+                    resolve('Success!');
+                }, 500);
+            });
+            var sum = 0;
+            promise1.then(function(value) {
+                sum++;
+                if (sum === 2) {
+                    done();
+                }
+            });
+            
+            promise1.then(function(value) {
+                sum++;
+                if (sum === 2) {
+                    done();
+                }
+            });
+        });
+    });     
 });
