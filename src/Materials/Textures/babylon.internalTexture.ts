@@ -389,6 +389,8 @@ module BABYLON {
             if (this._references === 0) {
                 this._engine._releaseTexture(this);
                 this._webGLTexture = null;
+                this.previous = null;
+                this.next = null;
             }
         }
     }
