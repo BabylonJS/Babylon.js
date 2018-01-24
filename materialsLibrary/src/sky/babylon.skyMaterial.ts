@@ -88,7 +88,7 @@ module BABYLON {
                 }
             }
 
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);

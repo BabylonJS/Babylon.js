@@ -696,10 +696,10 @@
             }
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
             // Attribs
             if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
