@@ -247,7 +247,6 @@
                 }
                 if (obs.mask & mask) {
                     if (obs.scope) {
-                        // TODO - I can add the variable from the last function here. Requires changing callback sig
                         p = p.then((lastReturnedValue) => {
                             state.lastReturnValue = lastReturnedValue;
                             return obs.callback.apply(obs.scope, [eventData, state]);
