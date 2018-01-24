@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent } from 'babylonjs';
+import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -12,6 +12,14 @@ export abstract class AbstractViewer {
     public engine: Engine;
     public scene: Scene;
     public baseId: string;
+
+    /**
+     * The last loader used to load a model. 
+     * 
+     * @type {(ISceneLoaderPlugin | ISceneLoaderPluginAsync)}
+     * @memberof AbstractViewer
+     */
+    public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     protected configuration: ViewerConfiguration;
 
@@ -211,7 +219,7 @@ export abstract class AbstractViewer {
             else return this.scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
-                SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
+                this.lastUsedLoader = SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
                     resolve(meshes);
                 }, (progressEvent) => {
                     this.onModelLoadProgressObservable.notifyWithPromise(progressEvent);
