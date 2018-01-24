@@ -1,5 +1,55 @@
 ﻿module BABYLON {
     export class SpotLight extends ShadowLight {
+        /**
+            upVector , rightVector and direction will form the coordinate system for this spot light. 
+            These three vectors will be used as projection matrix when doing texture projection.
+            
+            Also we have the following rules always holds:
+            direction cross up   = right
+            right cross dirction = up
+            up cross right       = forward
+
+            light_near and light_far will control the range of the texture projection. If a plane is 
+            out of the range in spot light space, there is no texture projection.
+
+            Warning:
+            Change the angle of the Spotlight, direction of the SpotLight will not re-compute the 
+            projection matrix. Need to call computeTextureMatrix() to recompute manually. Add inheritance
+            to the setting function of the 2 attributes will solve the problem.
+        */
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        protected _computeTextureMatrix(): void{    
+
+            var viewLightMatrix = Matrix.Zero();
+            Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);
+
+            var light_far = this.light_far;
+            var light_near = this.light_near;
+
+            var P = light_far / (light_far - light_near);
+            var Q = - P * light_near;
+            var S = 1.0 / Math.tan(this._angle / 2.0);
+            var A = 1.0;
+            
+            var projectionLightMatrix = Matrix.Zero();
+            Matrix.FromValuesToRef(S/A, 0.0, 0.0, 0.0,
+                0.0, S, 0.0, 0.0,
+                0.0, 0.0, P, 1.0,
+                0.0, 0.0, Q, 0.0, projectionLightMatrix);
+
+            var scaleMatrix = Matrix.Zero();
+            Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0,
+                0.0, 0.5, 0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0, scaleMatrix);
+                
+            this._textureProjectionMatrix.copyFrom(viewLightMatrix);
+            this._textureProjectionMatrix.multiplyToRef(projectionLightMatrix, this._textureProjectionMatrix);
+            this._textureProjectionMatrix.multiplyToRef(scaleMatrix, this._textureProjectionMatrix);
+        }
+
         private _angle: number;
         @serialize()
         public get angle(): number {
@@ -25,9 +75,24 @@
             this._shadowAngleScale = value;
             this.forceProjectionMatrixCompute();
         }
-
         @serialize()
         public exponent: number;
+
+        private _textureProjectionMatrix = Matrix.Zero();
+        @serialize()
+        /**
+        * Allows reading the projecton texture
+        */
+        public get textureMatrix(): Matrix{
+            return this._textureProjectionMatrix;
+        }
+        /**
+        * Allows setting the value of projection texture
+        */
+        public set textureMatrix(value: Matrix) {
+            this._textureProjectionMatrix = value;
+        }
+
         
         /**
          * Creates a SpotLight object in the scene with the passed parameters :   
@@ -123,6 +188,11 @@
                 normalizeDirection.z,
                 Math.cos(this.angle * 0.5),
                 lightIndex);
+
+            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._textureProjectionMatrix);
+            if (this.projectedLightTexture){
+                effect.setTexture("projectionLightSampler" + lightIndex, this.projectedLightTexture);
+            }
             return this;
         }
     }
