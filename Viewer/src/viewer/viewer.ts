@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database } from 'babylonjs';
+import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -19,6 +19,7 @@ export abstract class AbstractViewer {
     public onSceneInitObservable: PromiseObservable<Scene>;
     public onEngineInitObservable: PromiseObservable<Engine>;
     public onModelLoadedObservable: PromiseObservable<AbstractMesh[]>;
+    public onModelLoadProgressObservable: PromiseObservable<SceneLoaderProgressEvent>;
     public onInitDoneObservable: PromiseObservable<AbstractViewer>;
 
     protected canvas: HTMLCanvasElement;
@@ -34,6 +35,7 @@ export abstract class AbstractViewer {
         this.onSceneInitObservable = new PromiseObservable();
         this.onEngineInitObservable = new PromiseObservable();
         this.onModelLoadedObservable = new PromiseObservable();
+        this.onModelLoadProgressObservable = new PromiseObservable();
         this.onInitDoneObservable = new PromiseObservable();
 
         // add this viewer to the viewer manager
@@ -211,8 +213,10 @@ export abstract class AbstractViewer {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
                 SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
                     resolve(meshes);
-                }, undefined, (e, m, exception) => {
-                    console.log(m, exception);
+                }, (progressEvent) => {
+                    this.onModelLoadProgressObservable.notifyWithPromise(progressEvent);
+                }, (e, m, exception) => {
+                    // console.log(m, exception);
                     reject(m);
                 }, plugin);
             });
