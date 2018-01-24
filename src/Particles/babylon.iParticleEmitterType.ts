@@ -20,5 +20,11 @@ module BABYLON {
          * @param particle is the particle we are computed the position for
          */
         startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void;
+
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        clone(): IParticleEmitterType;
     }
 }
