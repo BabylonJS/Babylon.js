@@ -17,6 +17,10 @@
         public blurX: BlurPostProcess;
         public blurY: BlurPostProcess;
         public copyBack: PassPostProcess;
+        /**
+         * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
+         */
+        public depthOfField: DepthOfFieldEffect;
         public fxaa: FxaaPostProcess;
         public imageProcessing: ImageProcessingPostProcess;
         public finalMerge: PassPostProcess;
@@ -26,6 +30,7 @@
 
         // Values       
         private _bloomEnabled: boolean = false;
+        private _depthOfFieldEnabled: boolean = false;
         private _fxaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
@@ -90,6 +95,23 @@
         @serialize()
         public get bloomEnabled(): boolean {
             return this._bloomEnabled;
+        }
+
+        /**
+         * If the depth of field is enabled.
+         */
+        @serialize()
+        public get depthOfFieldEnabled(): boolean {
+            return this._depthOfFieldEnabled;
+        }   
+        
+        public set depthOfFieldEnabled(enabled: boolean) {
+            if (this._depthOfFieldEnabled === enabled) {
+                return;
+            }
+            this._depthOfFieldEnabled = enabled;
+            
+            this._buildPipeline();
         }
 
         public set fxaaEnabled(enabled: boolean) {
@@ -219,6 +241,10 @@
                 this.copyBack.autoClear = false;
             }
 
+            if(this.depthOfFieldEnabled){
+                this.depthOfField = new DepthOfFieldEffect(this, this._scene, this._cameras[0], this._defaultPipelineTextureType);
+            }
+
             if (this._imageProcessingEnabled) {
                 this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 if (this._hdr) {
@@ -303,6 +329,10 @@
                 if (this.finalMerge) {
                     this.finalMerge.dispose(camera);
                 }
+
+                if(this.depthOfField){
+                    this.depthOfField.disposeEffects(camera);
+                }
             }
 
             (<any>this.pass) = null;
@@ -313,6 +343,7 @@
             (<any>this.imageProcessing) = null;
             (<any>this.fxaa) = null;
             (<any>this.finalMerge) = null;
+            (<any>this.depthOfField) = null;
         }
 
         // Dispose
