@@ -31,6 +31,7 @@
 - (Viewer) Models can be loaded async using JavaScript ([RaananW](https://github.com/RaananW))
 - VRHelper will notify now onSelectedMeshUnselected observable to subscribers when the applied ray selection predicate does not produce a hit and a mesh compliant with the meshSelectionPredicate was previously selected
    ([carloslanderas](https://github.com/carloslanderas))
+- (Viewer) initScene and initEngine can now be extended. onProgress during model loading is implemented as observable. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
