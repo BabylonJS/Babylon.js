@@ -1,10 +1,9 @@
 module BABYLON {
     
-    //TODO is there something this class should extend?. I dont think this fits as a postprocess or pipeline.
     /**
      * The depth of field effect applies a blur to objects that are closer or further from where the camera is focusing.
      */
-    export class DepthOfFieldEffect {
+    export class DepthOfFieldEffect extends PostProcessRenderEffect{
         private readonly DepthOfFieldPassPostProcessId: string = "DepthOfFieldPassPostProcessId";
         private readonly CircleOfConfusionPostProcessId: string = "CircleOfConfusionPostProcessEffect"; 
         private readonly DepthOfFieldBlurXPostProcessId: string = "DepthOfFieldBlurXPostProcessEffect";
@@ -72,6 +71,7 @@ module BABYLON {
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
         constructor(pipeline: PostProcessRenderPipeline, scene: Scene, camera:Camera, pipelineTextureType = 0) {
+            super(scene.getEngine(), "depth of field", ()=>{return this.circleOfConfusion}, true);
             // Enable and get current depth map
             var depthMap = scene.enableDepthRenderer().getDepthMap();
             // Circle of confusion value for each pixel is used to determine how much to blur that pixel
