@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database } from 'babylonjs';
+import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -13,14 +13,24 @@ export abstract class AbstractViewer {
     public scene: Scene;
     public baseId: string;
 
+    /**
+     * The last loader used to load a model. 
+     * 
+     * @type {(ISceneLoaderPlugin | ISceneLoaderPluginAsync)}
+     * @memberof AbstractViewer
+     */
+    public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+
     protected configuration: ViewerConfiguration;
 
     // observables
     public onSceneInitObservable: PromiseObservable<Scene>;
     public onEngineInitObservable: PromiseObservable<Engine>;
     public onModelLoadedObservable: PromiseObservable<AbstractMesh[]>;
+    public onModelLoadProgressObservable: PromiseObservable<SceneLoaderProgressEvent>;
+    public onInitDoneObservable: PromiseObservable<AbstractViewer>;
 
-    private canvas: HTMLCanvasElement;
+    protected canvas: HTMLCanvasElement;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
@@ -33,6 +43,8 @@ export abstract class AbstractViewer {
         this.onSceneInitObservable = new PromiseObservable();
         this.onEngineInitObservable = new PromiseObservable();
         this.onModelLoadedObservable = new PromiseObservable();
+        this.onModelLoadProgressObservable = new PromiseObservable();
+        this.onInitDoneObservable = new PromiseObservable();
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
@@ -68,7 +80,7 @@ export abstract class AbstractViewer {
                 if (canvas) {
                     this.canvas = canvas;
                 }
-                this.onTemplatesLoaded();
+                this._onTemplateLoaded();
             });
         });
 
@@ -114,16 +126,33 @@ export abstract class AbstractViewer {
      * @memberof AbstractViewer
      */
     protected onTemplatesLoaded(): Promise<AbstractViewer> {
-        let autoLoadModel = !!this.configuration.model;
-        return this.initEngine().then(() => {
-            if (autoLoadModel) {
-                return this.loadModel();
-            } else {
-                return this.scene || this.initScene();
-            }
-        }).then(() => {
-            return this;
-        });
+        return Promise.resolve(this);
+    }
+
+    /**
+     * This will force the creation of an engine and a scene.
+     * It will also load a model if preconfigured.
+     * But first - it will load the extendible onTemplateLoaded()!
+     */
+    private _onTemplateLoaded(): Promise<AbstractViewer> {
+        return this.onTemplatesLoaded().then(() => {
+            let autoLoadModel = !!this.configuration.model;
+            return this.initEngine().then((engine) => {
+                return this.onEngineInitObservable.notifyWithPromise(engine);
+            }).then(() => {
+                if (autoLoadModel) {
+                    return this.loadModel();
+                } else {
+                    return this.scene || this.initScene();
+                }
+            }).then((scene) => {
+                return this.onSceneInitObservable.notifyWithPromise(scene);
+            }).then(() => {
+                return this.onInitDoneObservable.notifyWithPromise(this);
+            }).then(() => {
+                return this;
+            });
+        })
     }
 
     /**
@@ -157,9 +186,7 @@ export abstract class AbstractViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
-        return this.onEngineInitObservable.notifyWithPromise(this.engine).then(() => {
-            return this.engine;
-        });
+        return Promise.resolve(this.engine);
     }
 
     protected initScene(): Promise<Scene> {
@@ -176,9 +203,7 @@ export abstract class AbstractViewer {
         if (this.configuration.scene && this.configuration.scene.debug) {
             this.scene.debugLayer.show();
         }
-        return this.onSceneInitObservable.notifyWithPromise(this.scene).then(() => {
-            return this.scene!;
-        });
+        return Promise.resolve(this.scene);
     }
 
     public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
@@ -194,12 +219,14 @@ export abstract class AbstractViewer {
             else return this.scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
-                SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
+                this.lastUsedLoader = SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
                     resolve(meshes);
-                }, undefined, (e, m, exception) => {
-                    console.log(m, exception);
+                }, (progressEvent) => {
+                    this.onModelLoadProgressObservable.notifyWithPromise(progressEvent);
+                }, (e, m, exception) => {
+                    // console.log(m, exception);
                     reject(m);
-                }, plugin);
+                }, plugin)!;
             });
         }).then((meshes: Array<AbstractMesh>) => {
             return this.onModelLoadedObservable.notifyWithPromise(meshes).then(() => {
