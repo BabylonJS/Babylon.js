@@ -205,7 +205,24 @@
 
         private _occlusionQuery: Nullable<WebGLQuery>;
 
-        public visibility = 1.0;
+        private _visibility = 1.0;
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */
+        public get visibility(): number {
+            return this._visibility;
+        }
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */        
+        public set visibility(value: number) {
+            if (this._visibility === value) {
+                return;
+            }
+
+            this._visibility = value;
+            this._markSubMeshesAsMiscDirty();
+        }        
         public alphaIndex = Number.MAX_VALUE;
         public isVisible = true;
         public isPickable = true;
@@ -269,6 +286,7 @@
 
             this._hasVertexAlpha = value;
             this._markSubMeshesAsAttributesDirty();
+            this._markSubMeshesAsMiscDirty();
         }
 
         private _useVertexColors = true;

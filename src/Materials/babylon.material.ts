@@ -251,8 +251,18 @@
         @serialize()
         public state = "";
 
-        @serialize()
-        public alpha = 1.0;
+        @serialize("alpha")
+        protected _alpha = 1.0;
+        public set alpha(value: number) {
+            if (this._alpha === value) {
+                return;
+            }
+            this._alpha = value;
+            this.markAsDirty(Material.MiscDirtyFlag);
+        }
+        public get alpha(): number {
+            return this._alpha;
+        }        
 
         @serialize("backFaceCulling")
         protected _backFaceCulling = true;
@@ -708,6 +718,13 @@
             this._markAllSubMeshesAsDirty(defines => defines.markAsFresnelDirty());
         }
 
+        protected _markAllSubMeshesAsFresnelAndMiscDirty() {
+            this._markAllSubMeshesAsDirty(defines => {
+                defines.markAsFresnelDirty();
+                defines.markAsMiscDirty();
+            });
+        }        
+
         protected _markAllSubMeshesAsLightsDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsLightDirty());
         }
@@ -719,6 +736,13 @@
         protected _markAllSubMeshesAsMiscDirty() {
             this._markAllSubMeshesAsDirty(defines => defines.markAsMiscDirty());
         }
+
+        protected _markAllSubMeshesAsTexturesAndMiscDirty() {
+            this._markAllSubMeshesAsDirty(defines => {
+                defines.markAsTexturesDirty();
+                defines.markAsMiscDirty();
+            });
+        }        
 
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             // Animations
