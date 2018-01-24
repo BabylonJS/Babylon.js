@@ -28,6 +28,8 @@
 - Introduced `isStroke` on `HighlightLayerOptions` which makes the highlight solid ([PixelsCommander](https://github.com/pixelscommander))
 - (Viewer) There is now an option to paste payload instead of a URL for configuration ([RaananW](https://github.com/RaananW))
 - (Viewer) Models can be loaded async using JavaScript ([RaananW](https://github.com/RaananW))
+- VRHelper will notify now onSelectedMeshUnselected observable to subscribers when the applied ray selection predicate does not produce a hit and a mesh compliant with the meshSelectionPredicate was previously selected
+   ([carloslanderas](https://github.com/carloslanderas))
 
 ## Bug fixes
 
