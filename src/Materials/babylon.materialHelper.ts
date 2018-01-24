@@ -276,7 +276,6 @@
                 if (uniformBuffersList) {
                     uniformBuffersList.push("Light" + lightIndex);
                 }
-                //====================
                 samplersList.push("shadowSampler" + lightIndex,);
                 if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
                     samplersList.push("projectionLightSampler" + lightIndex,);

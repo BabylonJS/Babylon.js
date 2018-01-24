@@ -385,7 +385,7 @@
             return b.renderPriority - a.renderPriority;
         }
         // Projection texture, if needed
-        public computeTextureMatrix(): void{
+        protected computeTextureMatrix(): void{
             //Leave out for different light type
         }
         protected _light_far  :number;
@@ -401,6 +401,7 @@
          */
         public set light_far(value: number) {
             this._light_far = value;
+            this.computeTextureMatrix();
         }
 
         protected _light_near :number;
@@ -416,6 +417,7 @@
          */
         public set light_near(value: number) {
             this._light_near = value;
+            this.computeTextureMatrix();
         }
 
         @serializeAsTexture("projectedLightTexture")
