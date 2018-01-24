@@ -75,7 +75,7 @@ module BABYLON {
             // Enable and get current depth map
             var depthMap = scene.enableDepthRenderer().getDepthMap();
             // Circle of confusion value for each pixel is used to determine how much to blur that pixel
-            this.circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthMap, 1, camera, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), true, pipelineTextureType);
+            this.circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", scene, depthMap, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             pipeline.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.CircleOfConfusionPostProcessId, () => { return this.circleOfConfusion; }, true));  
          
             // Capture circle of confusion texture
@@ -84,13 +84,13 @@ module BABYLON {
 
             // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts 
             // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
-            this.depthOfFieldBlurY = new DepthOfFieldBlurPostProcess("verticle blur", new Vector2(0, 1.0), 15, 1.0, camera, depthMap, this.circleOfConfusion, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this.depthOfFieldBlurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), 15, 1.0, null, depthMap, this.circleOfConfusion, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             pipeline.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.DepthOfFieldBlurYPostProcessId, () => { return this.depthOfFieldBlurY; }, true));
-            this.depthOfFieldBlurX = new DepthOfFieldBlurPostProcess("horizontal blur", new Vector2(1.0, 0), 15, 1.0, camera,  depthMap, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this.depthOfFieldBlurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), 15, 1.0, null,  depthMap, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             pipeline.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.DepthOfFieldBlurXPostProcessId, () => { return this.depthOfFieldBlurX; }, true));
 
             // Merge blurred images with original image based on circleOfConfusion
-            this.depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this.circleOfConfusion, this.depthOfFieldPass, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), true, pipelineTextureType);
+            this.depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this.circleOfConfusion, this.depthOfFieldPass, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             pipeline.addEffect(new PostProcessRenderEffect(scene.getEngine(), this.DepthOfFieldMergePostProcessId, () => { return this.depthOfFieldMerge; }, true));
         }
 
