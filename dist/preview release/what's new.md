@@ -30,6 +30,7 @@
 - (Viewer) Models can be loaded async using JavaScript ([RaananW](https://github.com/RaananW))
 - VRHelper will notify now onSelectedMeshUnselected observable to subscribers when the applied ray selection predicate does not produce a hit and a mesh compliant with the meshSelectionPredicate was previously selected
    ([carloslanderas](https://github.com/carloslanderas))
+- glTF loader now supports the KHR_lights extension ([MiiBond](https://github.com/MiiBond))
 
 ## Bug fixes
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
