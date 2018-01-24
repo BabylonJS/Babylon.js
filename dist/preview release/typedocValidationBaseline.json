@@ -1,7 +1,7 @@
 {
-  "errors": 8794,
+  "errors": 8788,
   "babylon.typedoc.json": {
-    "errors": 8794,
+    "errors": 8788,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -10635,40 +10635,6 @@
               }
             },
             "matrix": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_loadFragmentShader": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "fragment": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "callback": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_loadVertexShader": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "vertex": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "callback": {
               "Comments": {
                 "MissingText": true
               }

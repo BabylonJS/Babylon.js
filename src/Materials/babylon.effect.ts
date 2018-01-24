@@ -184,24 +184,20 @@
             }
 
             let finalVertexCode: string;
+
             this._loadVertexShaderAsync(vertexSource)
             .then((vertexCode) => {
                 return this._processIncludesAsync(vertexCode);
             })
             .then((vertexCodeWithIncludes) => {
-                return this._processShaderConversion(vertexCodeWithIncludes, false);
-            })
-            .then((migratedVertexCode) => {
-                finalVertexCode = migratedVertexCode;
+                finalVertexCode = this._processShaderConversion(vertexCodeWithIncludes, false);
                 return this._loadFragmentShaderAsync(fragmentSource);
             })
             .then((fragmentCode) => {
                 return this._processIncludesAsync(fragmentCode);
             })
             .then((fragmentCodeWithIncludes) => {
-                return this._processShaderConversion(fragmentCodeWithIncludes, true);
-            })
-            .then((migratedFragmentCode) => {
+                let migratedFragmentCode = this._processShaderConversion(fragmentCodeWithIncludes, true);
                 if (baseName) {
                     var vertex = baseName.vertexElement || baseName.vertex || baseName;
                     var fragment = baseName.fragmentElement || baseName.fragment || baseName;
@@ -279,6 +275,7 @@
             });
         }
 
+        /** @ignore */
         public _loadVertexShaderAsync(vertex: any): Promise<any> {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
@@ -311,6 +308,7 @@
             return this._engine._loadFileAsync(vertexShaderUrl + ".vertex.fx");
         }
 
+        /** @ignore */
         public _loadFragmentShaderAsync(fragment: any): Promise<any>  {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
@@ -422,7 +420,7 @@
                 var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
                 var match = regex.exec(sourceCode);
 
-                var returnValue = new String(sourceCode);
+                var returnValue = sourceCode;
 
                 while (match != null) {
                     var includeFile = match[1];
@@ -490,13 +488,15 @@
                     } else {
                         var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
 
-                        return this._engine._loadFileAsync(includeShaderUrl)
-                                .then((fileContent) => {
-                                    Effect.IncludesShadersStore[includeFile] = fileContent as string;
-                                    this._processIncludesAsync(<string>returnValue).then((value) => {
-                                        resolve(value)
-                                    });
-                                });
+                        this._engine._loadFileAsync(includeShaderUrl)
+                            .then((fileContent) => {
+                                Effect.IncludesShadersStore[includeFile] = fileContent as string;
+                                return this._processIncludesAsync(returnValue);
+                            })
+                            .then((returnValue) => {
+                                resolve(returnValue);
+                            });
+                        return;
                     }
 
                     match = regex.exec(sourceCode);

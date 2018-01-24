@@ -5754,6 +5754,7 @@
             return request;
         }
 
+        /** @ignore */
         public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
             return new Promise((resolve, reject) => {
                 this._loadFile(url, (data) => {
