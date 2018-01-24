@@ -238,7 +238,8 @@
     },
     {
       "title": "Depth of field",
-      "playgroundId": "#IDSQK2#7",
+      "playgroundId": "#IDSQK2#16",
+      "renderCount": 20,
       "referenceImage": "depthOfField.png"
     },
     {
