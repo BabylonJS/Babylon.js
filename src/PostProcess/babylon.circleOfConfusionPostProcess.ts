@@ -2,9 +2,8 @@ module BABYLON {
     export class CircleOfConfusionPostProcess extends PostProcess {
         lensSize = 50 // in scene units/1000 (eg. millimeter)
         fStop = 1.4; // Aperture = lensSize/fStop
-        focusDistance = 15000; // in scene units/1000 (eg. millimeter)
-        focalLength = 500; // in scene units/1000 (eg. millimeter)
-
+        focusDistance = 2000; // in scene units/1000 (eg. millimeter)
+        focalLength = 50; // in scene units/1000 (eg. millimeter)
         
         constructor(name: string, depthTexture: RenderTargetTexture, options: number | PostProcessOptions, camera: Camera, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "circleOfConfusion", ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType);
