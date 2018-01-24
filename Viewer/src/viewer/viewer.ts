@@ -137,16 +137,16 @@ export abstract class AbstractViewer {
     private _onTemplateLoaded(): Promise<AbstractViewer> {
         return this.onTemplatesLoaded().then(() => {
             let autoLoadModel = !!this.configuration.model;
-            return this.initEngine().then(() => {
-                return this.onEngineInitObservable.notifyWithPromise(this);
+            return this.initEngine().then((engine) => {
+                return this.onEngineInitObservable.notifyWithPromise(engine);
             }).then(() => {
                 if (autoLoadModel) {
                     return this.loadModel();
                 } else {
                     return this.scene || this.initScene();
                 }
-            }).then(() => {
-                return this.onSceneInitObservable.notifyWithPromise(this);
+            }).then((scene) => {
+                return this.onSceneInitObservable.notifyWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyWithPromise(this);
             }).then(() => {
@@ -226,7 +226,7 @@ export abstract class AbstractViewer {
                 }, (e, m, exception) => {
                     // console.log(m, exception);
                     reject(m);
-                }, plugin);
+                }, plugin)!;
             });
         }).then((meshes: Array<AbstractMesh>) => {
             return this.onModelLoadedObservable.notifyWithPromise(meshes).then(() => {
