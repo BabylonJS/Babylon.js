@@ -33,6 +33,7 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - (Viewer) initScene and initEngine can now be extended. onProgress during model loading is implemented as observable. ([RaananW](https://github.com/RaananW))
 - glTF loader now supports the KHR_lights extension ([MiiBond](https://github.com/MiiBond))
+- The observable can now notify observers using promise-based callback chain. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
