@@ -3136,8 +3136,8 @@
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            var isTGA = (extension === ".tga");
+            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
+            var isTGA = (extension.indexOf(".tga") === 0);
 
             // determine if a ktx file should be substituted
             var isKTX = false;
