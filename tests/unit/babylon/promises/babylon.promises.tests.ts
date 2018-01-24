@@ -162,7 +162,6 @@ describe('Babylon.Promise', () => {
             var sum = 0;
             promise1.then(function(value) {
                 sum++;
-                console.log(sum);
                 if (sum === 2) {
                     done();
                 }
@@ -170,7 +169,6 @@ describe('Babylon.Promise', () => {
             
             promise1.then(function(value) {
                 sum++;
-                console.log(sum);
                 if (sum === 2) {
                     done();
                 }

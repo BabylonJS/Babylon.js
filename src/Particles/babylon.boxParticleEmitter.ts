@@ -74,7 +74,7 @@ module BABYLON {
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             var randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
             var randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
             var randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
@@ -88,12 +88,25 @@ module BABYLON {
          * @param positionToUpdate is the position vector to update with the result
          * @param particle is the particle we are computed the position for
          */
-        startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
+        public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var randX = Scalar.RandomRange(this.minEmitBox.x, this.maxEmitBox.x);
             var randY = Scalar.RandomRange(this.minEmitBox.y, this.maxEmitBox.y);
             var randZ = Scalar.RandomRange(this.minEmitBox.z, this.maxEmitBox.z);
 
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
+        }
+
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        public clone(): BoxParticleEmitter
+        {
+            let newOne = new BoxParticleEmitter(this._particleSystem);
+
+            Tools.DeepCopy(this, newOne);
+
+            return newOne;
         }
     }
 }
