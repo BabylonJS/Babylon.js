@@ -60,7 +60,12 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -76,7 +81,12 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 
 var minimist = require("minimist");

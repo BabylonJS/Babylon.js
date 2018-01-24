@@ -192,6 +192,7 @@
 
             if (this._localDelayOffset === null) {
                 this._localDelayOffset = delay;
+                this._pausedDelay = null;
             } else if (this._pausedDelay !== null) {
                 this._localDelayOffset += delay - this._pausedDelay;
                 this._pausedDelay = null;

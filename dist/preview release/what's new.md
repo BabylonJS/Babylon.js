@@ -6,6 +6,7 @@
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
 - `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
+- Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
 - Tons of functions and classes received the code comments they deserved (All the community)
@@ -23,10 +24,16 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
    ([carloslanderas](https://github.com/carloslanderas))
-- `AssetsManager` will now clear its `tasks` list from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
+- `AssetsManager` will now clear its `tasks` lsit from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))tasks ([deltakosh](https://github.com/deltakosh))
 - Added documentation to WebVRCamera and VRExperienceHelper ([trevordev](https://github.com/trevordev))
+- Introduced `isStroke` on `HighlightLayerOptions` which makes the highlight solid ([PixelsCommander](https://github.com/pixelscommander))
+- (Viewer) There is now an option to paste payload instead of a URL for configuration ([RaananW](https://github.com/RaananW))
+- (Viewer) Models can be loaded async using JavaScript ([RaananW](https://github.com/RaananW))
+- VRHelper will notify now onSelectedMeshUnselected observable to subscribers when the applied ray selection predicate does not produce a hit and a mesh compliant with the meshSelectionPredicate was previously selected
+   ([carloslanderas](https://github.com/carloslanderas))
 
 ## Bug fixes
+- Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 
