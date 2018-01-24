@@ -1,7 +1,12 @@
 declare module BABYLON.GLTF2 {
-    /**
-     * Specifies if the attribute is a scalar, vector, or matrix.
-     */
+    const enum AccessorComponentType {
+        BYTE = 5120,
+        UNSIGNED_BYTE = 5121,
+        SHORT = 5122,
+        UNSIGNED_SHORT = 5123,
+        UNSIGNED_INT = 5125,
+        FLOAT = 5126,
+    }
     const enum AccessorType {
         SCALAR = "SCALAR",
         VEC2 = "VEC2",
@@ -11,33 +16,29 @@ declare module BABYLON.GLTF2 {
         MAT3 = "MAT3",
         MAT4 = "MAT4",
     }
-    const enum MaterialAlphaMode {
-        OPAQUE = "OPAQUE",
-        MASK = "MASK",
-        BLEND = "BLEND",
-    }
     const enum AnimationChannelTargetPath {
         TRANSLATION = "translation",
         ROTATION = "rotation",
         SCALE = "scale",
         WEIGHTS = "weights",
     }
-    const enum CameraType {
-        PERSPECTIVE = "perspective",
-        ORTHOGRAPHIC = "orthographic",
-    }
-    const enum AccessorComponentType {
-        BYTE = 5120,
-        UNSIGNED_BYTE = 5121,
-        SHORT = 5122,
-        UNSIGNED_SHORT = 5123,
-        UNSIGNED_INT = 5125,
-        FLOAT = 5126,
-    }
     const enum AnimationInterpolation {
         LINEAR = "LINEAR",
         STEP = "STEP",
         CUBICSPLINE = "CUBICSPLINE",
+    }
+    const enum CameraType {
+        PERSPECTIVE = "perspective",
+        ORTHOGRAPHIC = "orthographic",
+    }
+    const enum ImageMimeType {
+        JPEG = "image/jpeg",
+        PNG = "image/png",
+    }
+    const enum MaterialAlphaMode {
+        OPAQUE = "OPAQUE",
+        MASK = "MASK",
+        BLEND = "BLEND",
     }
     const enum MeshPrimitiveMode {
         POINTS = 0,
@@ -47,10 +48,6 @@ declare module BABYLON.GLTF2 {
         TRIANGLES = 4,
         TRIANGLE_STRIP = 5,
         TRIANGLE_FAN = 6,
-    }
-    const enum ImageMimeType {
-        JPEG = "image/jpeg",
-        PNG = "image/png",
     }
     const enum TextureMagFilter {
         NEAREST = 9728,
