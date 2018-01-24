@@ -55,7 +55,7 @@
                     scene = scenes[scenes.length - 1];
                 }
                 else {
-                    scene = BABYLON.Engine.LastCreatedScene;
+                    scene = Engine.LastCreatedScene;
                 }
 
                 this._imageProcessingConfiguration = (<Scene>scene).imageProcessingConfiguration;
@@ -314,13 +314,14 @@
 
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {
             super(name, "imageProcessing", [], [], options, camera, samplingMode, engine, reusable,
-                                            null, textureType, "postprocess", null, true);
+                null, textureType, "postprocess", null, true);
 
             // Setup the configuration as forced by the constructor. This would then not force the 
             // scene materials output in linear space and let untouched the default forward pass.
             if (imageProcessingConfiguration) {
+                imageProcessingConfiguration.applyByPostProcess = true;
                 this._attachImageProcessingConfiguration(imageProcessingConfiguration, true);
-                this.imageProcessingConfiguration.applyByPostProcess = false;
+                // This will cause the shader to be compiled
                 this.fromLinearSpace = false;
             }
             // Setup the default processing configuration to the scene.
@@ -336,7 +337,7 @@
 
         public getClassName(): string {
             return "ImageProcessingPostProcess";
-        }           
+        }
 
         protected _updateParameters(): void {
             this._defines.FROMLINEARSPACE = this._fromLinearSpace;
@@ -363,7 +364,7 @@
             if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
                 this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
             }
-            
+
             this.imageProcessingConfiguration.applyByPostProcess = false;
         }
     }

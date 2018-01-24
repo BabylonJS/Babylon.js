@@ -27,7 +27,7 @@
             this._defines[rank].push(define);
         }
 
-        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
+        public addCPUSkinningFallback(rank: number, mesh: AbstractMesh) {
             this._mesh = mesh;
 
             if (rank < this._currentRank) {
@@ -183,28 +183,32 @@
                 fragmentSource = baseName.fragment || baseName;
             }
 
-            this._loadVertexShader(vertexSource, vertexCode => {
-                this._processIncludes(vertexCode, vertexCodeWithIncludes => {
-                    this._processShaderConversion(vertexCodeWithIncludes, false, migratedVertexCode => {
-                        this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                            this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
-                                this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
-                                    if (baseName) {
-                                        var vertex = baseName.vertexElement || baseName.vertex || baseName;
-                                        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+            let finalVertexCode: string;
 
-                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
-                                    } else {
-                                        this._vertexSourceCode = migratedVertexCode;
-                                        this._fragmentSourceCode = migratedFragmentCode;
-                                    }
-                                    this._prepareEffect();
-                                });
-                            });
-                        });
-                    });
-                });
+            this._loadVertexShaderAsync(vertexSource)
+            .then((vertexCode) => {
+                return this._processIncludesAsync(vertexCode);
+            })
+            .then((vertexCodeWithIncludes) => {
+                finalVertexCode = this._processShaderConversion(vertexCodeWithIncludes, false);
+                return this._loadFragmentShaderAsync(fragmentSource);
+            })
+            .then((fragmentCode) => {
+                return this._processIncludesAsync(fragmentCode);
+            })
+            .then((fragmentCodeWithIncludes) => {
+                let migratedFragmentCode = this._processShaderConversion(fragmentCodeWithIncludes, true);
+                if (baseName) {
+                    var vertex = baseName.vertexElement || baseName.vertex || baseName;
+                    var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+
+                    this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + finalVertexCode;
+                    this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
+                } else {
+                    this._vertexSourceCode = finalVertexCode;
+                    this._fragmentSourceCode = migratedFragmentCode;
+                }
+                this._prepareEffect(); 
             });
         }
 
@@ -271,27 +275,25 @@
             });
         }
 
-        public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
+        /** @ignore */
+        public _loadVertexShaderAsync(vertex: any): Promise<any> {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
                 if (vertex instanceof HTMLElement) {
                     var vertexCode = Tools.GetDOMTextContent(vertex);
-                    callback(vertexCode);
-                    return;
+                    return Promise.resolve(vertexCode);
                 }
             }
 
             // Base64 encoded ?
             if (vertex.substr(0, 7) === "base64:") {
                 var vertexBinary = window.atob(vertex.substr(7));
-                callback(vertexBinary);
-                return;
+                return Promise.resolve(vertexBinary);
             }
 
             // Is in local store ?
             if (Effect.ShadersStore[vertex + "VertexShader"]) {
-                callback(Effect.ShadersStore[vertex + "VertexShader"]);
-                return;
+                return Promise.resolve(Effect.ShadersStore[vertex + "VertexShader"]);
             }
 
             var vertexShaderUrl;
@@ -303,35 +305,32 @@
             }
 
             // Vertex shader
-            Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            return this._engine._loadFileAsync(vertexShaderUrl + ".vertex.fx");
         }
 
-        public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
+        /** @ignore */
+        public _loadFragmentShaderAsync(fragment: any): Promise<any>  {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
                 if (fragment instanceof HTMLElement) {
                     var fragmentCode = Tools.GetDOMTextContent(fragment);
-                    callback(fragmentCode);
-                    return;
+                    return Promise.resolve(fragmentCode);
                 }
             }
 
             // Base64 encoded ?
             if (fragment.substr(0, 7) === "base64:") {
                 var fragmentBinary = window.atob(fragment.substr(7));
-                callback(fragmentBinary);
-                return;
+                return Promise.resolve(fragmentBinary);
             }
 
             // Is in local store ?
             if (Effect.ShadersStore[fragment + "PixelShader"]) {
-                callback(Effect.ShadersStore[fragment + "PixelShader"]);
-                return;
+                return Promise.resolve(Effect.ShadersStore[fragment + "PixelShader"]);
             }
 
             if (Effect.ShadersStore[fragment + "FragmentShader"]) {
-                callback(Effect.ShadersStore[fragment + "FragmentShader"]);
-                return;
+                return Promise.resolve(Effect.ShadersStore[fragment + "FragmentShader"]);
             }
 
             var fragmentShaderUrl;
@@ -343,7 +342,7 @@
             }
 
             // Fragment shader
-            Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            return this._engine._loadFileAsync(fragmentShaderUrl + ".fragment.fx");
         }
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
@@ -362,32 +361,29 @@
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
             else if (this.name.vertex) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
             }
             else {
-                BABYLON.Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
             }
         };
 
-        private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
-
+        private _processShaderConversion(sourceCode: string, isFragment: boolean): any {
             var preparedSourceCode = this._processPrecision(sourceCode);
 
             if (this._engine.webGLVersion == 1) {
-                callback(preparedSourceCode);
-                return;
+                return preparedSourceCode;
             }
 
             // Already converted
             if (preparedSourceCode.indexOf("#version 3") !== -1) {
-                callback(preparedSourceCode.replace("#version 300 es", ""));
-                return;
+                return preparedSourceCode.replace("#version 300 es", "");
             }
 
             var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
@@ -416,92 +412,97 @@
                 result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
 
-            callback(result);
+            return result;
         }
 
-        private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
-            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-            var match = regex.exec(sourceCode);
+        private _processIncludesAsync(sourceCode: string): Promise<any> {
+            return new Promise((resolve, reject) => {
+                var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+                var match = regex.exec(sourceCode);
 
-            var returnValue = new String(sourceCode);
+                var returnValue = sourceCode;
 
-            while (match != null) {
-                var includeFile = match[1];
+                while (match != null) {
+                    var includeFile = match[1];
 
-                // Uniform declaration
-                if (includeFile.indexOf("__decl__") !== -1) {
-                    includeFile = includeFile.replace(/__decl__/, "");
-                    if (this._engine.supportsUniformBuffers) {
-                        includeFile = includeFile.replace(/Vertex/, "Ubo");
-                        includeFile = includeFile.replace(/Fragment/, "Ubo");
-                    }
-                    includeFile = includeFile + "Declaration";
-                }
-
-                if (Effect.IncludesShadersStore[includeFile]) {
-                    // Substitution
-                    var includeContent = Effect.IncludesShadersStore[includeFile];
-                    if (match[2]) {
-                        var splits = match[3].split(",");
-
-                        for (var index = 0; index < splits.length; index += 2) {
-                            var source = new RegExp(splits[index], "g");
-                            var dest = splits[index + 1];
-
-                            includeContent = includeContent.replace(source, dest);
+                    // Uniform declaration
+                    if (includeFile.indexOf("__decl__") !== -1) {
+                        includeFile = includeFile.replace(/__decl__/, "");
+                        if (this._engine.supportsUniformBuffers) {
+                            includeFile = includeFile.replace(/Vertex/, "Ubo");
+                            includeFile = includeFile.replace(/Fragment/, "Ubo");
                         }
+                        includeFile = includeFile + "Declaration";
                     }
 
-                    if (match[4]) {
-                        var indexString = match[5];
+                    if (Effect.IncludesShadersStore[includeFile]) {
+                        // Substitution
+                        var includeContent = Effect.IncludesShadersStore[includeFile];
+                        if (match[2]) {
+                            var splits = match[3].split(",");
 
-                        if (indexString.indexOf("..") !== -1) {
-                            var indexSplits = indexString.split("..");
-                            var minIndex = parseInt(indexSplits[0]);
-                            var maxIndex = parseInt(indexSplits[1]);
-                            var sourceIncludeContent = includeContent.slice(0);
-                            includeContent = "";
+                            for (var index = 0; index < splits.length; index += 2) {
+                                var source = new RegExp(splits[index], "g");
+                                var dest = splits[index + 1];
 
-                            if (isNaN(maxIndex)) {
-                                maxIndex = this._indexParameters[indexSplits[1]];
+                                includeContent = includeContent.replace(source, dest);
                             }
+                        }
 
-                            for (var i = minIndex; i < maxIndex; i++) {
+                        if (match[4]) {
+                            var indexString = match[5];
+
+                            if (indexString.indexOf("..") !== -1) {
+                                var indexSplits = indexString.split("..");
+                                var minIndex = parseInt(indexSplits[0]);
+                                var maxIndex = parseInt(indexSplits[1]);
+                                var sourceIncludeContent = includeContent.slice(0);
+                                includeContent = "";
+
+                                if (isNaN(maxIndex)) {
+                                    maxIndex = this._indexParameters[indexSplits[1]];
+                                }
+
+                                for (var i = minIndex; i < maxIndex; i++) {
+                                    if (!this._engine.supportsUniformBuffers) {
+                                        // Ubo replacement
+                                        sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                            return p1 + "{X}";
+                                        });
+                                    }
+                                    includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
+                                }
+                            } else {
                                 if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
-                                    sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                    includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
+                                includeContent = includeContent.replace(/\{X\}/g, indexString);
                             }
-                        } else {
-                            if (!this._engine.supportsUniformBuffers) {
-                                // Ubo replacement
-                                includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
-                                    return p1 + "{X}";
-                                });
-                            }
-                            includeContent = includeContent.replace(/\{X\}/g, indexString);
                         }
+
+                        // Replace
+                        returnValue = returnValue.replace(match[0], includeContent);
+                    } else {
+                        var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+
+                        this._engine._loadFileAsync(includeShaderUrl)
+                            .then((fileContent) => {
+                                Effect.IncludesShadersStore[includeFile] = fileContent as string;
+                                return this._processIncludesAsync(returnValue);
+                            })
+                            .then((returnValue) => {
+                                resolve(returnValue);
+                            });
+                        return;
                     }
 
-                    // Replace
-                    returnValue = returnValue.replace(match[0], includeContent);
-                } else {
-                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
-
-                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
-                        Effect.IncludesShadersStore[includeFile] = fileContent as string;
-                        this._processIncludes(<string>returnValue, callback);
-                    });
-                    return;
+                    match = regex.exec(sourceCode);
                 }
-
-                match = regex.exec(sourceCode);
-            }
-
-            callback(returnValue);
+                resolve(returnValue);
+            });            
         }
 
         private _processPrecision(source: string): string {
@@ -544,6 +545,11 @@
             this._prepareEffect();
         }
 
+        public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
+            let engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        }
+
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
@@ -553,7 +559,7 @@
             var previousProgram = this._program;
 
             try {
-                var engine = this._engine;
+                let engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                     this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
@@ -563,7 +569,7 @@
                 }
                 this._program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
 
-                if (engine.webGLVersion > 1) {
+                if (engine.supportsUniformBuffers) {
                     for (var name in this._uniformBuffersNames) {
                         this.bindUniformBlock(name, this._uniformBuffersNames[name]);
                     }
@@ -605,10 +611,10 @@
 
                 // Let's go through fallbacks then
                 Tools.Error("Unable to compile effect:");
-                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
+                Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
                     return " " + uniform;
                 }));
-                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
+                Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
                     return " " + attribute;
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
@@ -758,7 +764,7 @@
 
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
             let bufferName = this._uniformBuffersNames[name];
-            if (Effect._baseCache[bufferName] === buffer) {
+            if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
                 return;
             }
             Effect._baseCache[bufferName] = buffer;
@@ -767,6 +773,18 @@
 
         public bindUniformBlock(blockName: string, index: number): void {
             this._engine.bindUniformBlock(this._program, blockName, index);
+        }
+
+        public setInt(uniformName: string, value: number): Effect {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+
+            this._valueCache[uniformName] = value;
+
+            this._engine.setInt(this.getUniform(uniformName), value);
+
+            return this;
         }
 
         public setIntArray(uniformName: string, array: Int32Array): Effect {

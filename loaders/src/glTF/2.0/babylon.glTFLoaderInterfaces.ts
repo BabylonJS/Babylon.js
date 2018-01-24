@@ -109,7 +109,7 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
-        targets: any[];
+        babylonAnimationGroup: AnimationGroup;
     }
 
     export interface IGLTFAsset extends IGLTFChildRootProperty {
@@ -217,6 +217,7 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
+        hasVertexAlpha: boolean;
     }
 
     export interface IGLTFNode extends IGLTFChildRootProperty {
@@ -232,9 +233,8 @@ module BABYLON.GLTF2 {
 
         // Runtime values
         index: number;
-        parent?: IGLTFNode;
+        parent: IGLTFNode;
         babylonMesh: Mesh;
-        babylonBones?: { [skin: number]: Bone };
         babylonAnimationTargets?: Node[];
     }
 
@@ -243,6 +243,13 @@ module BABYLON.GLTF2 {
         minFilter?: ETextureMinFilter;
         wrapS?: ETextureWrapMode;
         wrapT?: ETextureWrapMode;
+
+        // Runtime values
+        index: number;
+        noMipMaps: boolean;
+        samplingMode: number;
+        wrapU: number;
+        wrapV: number;
     }
 
     export interface IGLTFScene extends IGLTFChildRootProperty {
@@ -277,7 +284,7 @@ module BABYLON.GLTF2 {
         texCoord?: number;
     }
 
-    export interface IGLTF extends IGLTFProperty {
+    export interface _IGLTF extends IGLTFProperty {
         accessors?: IGLTFAccessor[];
         animations?: IGLTFAnimation[];
         asset: IGLTFAsset;

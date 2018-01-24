@@ -1,4 +1,4 @@
-namespace BABYLON {
+module BABYLON {
     /**
      * Represents the different options available during the creation of 
      * a Environment helper.
@@ -81,6 +81,11 @@ namespace BABYLON {
          * Unsigned Int by Default.
          */
         groundMirrorTextureType: number;
+        /**
+         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
+         * the shown objects.
+         */
+        groundYBias: number;
 
         /**
          * Specifies wether or not to create a skybox.
@@ -191,7 +196,7 @@ namespace BABYLON {
                 createGround: true,
                 groundSize: 15,
                 groundTexture: this._groundTextureCDNUrl,
-                groundColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
+                groundColor: new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
                 groundOpacity: 0.9,
                 enableGroundShadow: true,
                 groundShadowLevel: 0.5,
@@ -204,10 +209,12 @@ namespace BABYLON {
                 groundMirrorFallOffDistance: 0,
                 groundMirrorTextureType: Engine.TEXTURETYPE_UNSIGNED_INT,
 
+                groundYBias: 0.00001,
+
                 createSkybox: true,
                 skyboxSize: 20,
                 skyboxTexture: this._skyboxTextureCDNUrl,
-                skyboxColor: new BABYLON.Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
+                skyboxColor: new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3),
 
                 backgroundYRotation: 0,
                 sizeAuto: true,
@@ -260,7 +267,7 @@ namespace BABYLON {
         public get ground(): Nullable<Mesh> {
             return this._ground;
         }
-        
+
         private _groundTexture: Nullable<BaseTexture>;
         /**
          * Gets the ground texture created by the helper.
@@ -268,7 +275,7 @@ namespace BABYLON {
         public get groundTexture(): Nullable<BaseTexture> {
             return this._groundTexture;
         }
-        
+
         private _groundMirror: Nullable<MirrorTexture>;
         /**
          * Gets the ground mirror created by the helper.
@@ -307,7 +314,7 @@ namespace BABYLON {
          * @param options 
          * @param scene The scene to add the material to
          */
-        constructor(options: Partial<IEnvironmentHelperOptions>, scene: BABYLON.Scene) {
+        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene) {
             this._options = {
                 ...EnvironmentHelper._getDefaultOptions(),
                 ...options
@@ -338,9 +345,11 @@ namespace BABYLON {
                 this._groundMaterial = null;
             }
 
-            if (this._options.groundTexture && !newOptions.groundTexture && this._groundTexture) {
-                this._groundTexture.dispose();
-                this._groundTexture = null;
+            if (this._groundTexture) {
+                if (this._options.groundTexture != newOptions.groundTexture) {
+                    this._groundTexture.dispose();
+                    this._groundTexture = null;
+                }
             }
 
             if (this._skybox && !newOptions.createSkybox) {
@@ -353,9 +362,11 @@ namespace BABYLON {
                 this._skyboxMaterial = null;
             }
 
-            if (this._options.skyboxTexture && !newOptions.skyboxTexture && this._skyboxTexture) {
-                this._skyboxTexture.dispose();
-                this._skyboxTexture = null;
+            if (this._skyboxTexture) {
+                if (this._options.skyboxTexture != newOptions.skyboxTexture) {
+                    this._skyboxTexture.dispose();
+                    this._skyboxTexture = null;
+                }
             }
 
             if (this._groundMirror && !newOptions.enableGroundMirror) {
@@ -363,8 +374,10 @@ namespace BABYLON {
                 this._groundMirror = null;
             }
 
-            if (this._options.environmentTexture && !newOptions.environmentTexture && this._scene.environmentTexture) {
-                this._scene.environmentTexture.dispose();
+            if (this._scene.environmentTexture) {
+                if (this._options.environmentTexture != newOptions.environmentTexture) {
+                    this._scene.environmentTexture.dispose();
+                }
             }
 
             this._options = newOptions;
@@ -398,7 +411,7 @@ namespace BABYLON {
             if (this._options.setupImageProcessing) {
                 this._scene.imageProcessingConfiguration.contrast = this._options.cameraContrast;
                 this._scene.imageProcessingConfiguration.exposure = this._options.cameraExposure;
-                this._scene.imageProcessingConfiguration.toneMappingEnabled = this._options.toneMappingEnabled;                
+                this._scene.imageProcessingConfiguration.toneMappingEnabled = this._options.toneMappingEnabled;
                 this._setupEnvironmentTexture();
             }
         }
@@ -459,30 +472,31 @@ namespace BABYLON {
             let groundSize = this._options.groundSize;
             let skyboxSize = this._options.skyboxSize;
             let rootPosition = this._options.rootPosition;
+            if (!this._scene.meshes || this._scene.meshes.length === 1) { // 1 only means the root of the helper.
+                return { groundSize, skyboxSize, rootPosition };
+            }
+
             const sceneExtends = this._scene.getWorldExtends();
             const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-            let bias = 0.0001;
 
             if (this._options.sizeAuto) {
                 if (this._scene.activeCamera instanceof ArcRotateCamera &&
                     this._scene.activeCamera.upperRadiusLimit) {
                     groundSize = this._scene.activeCamera.upperRadiusLimit * 2;
-                }
-
-                if (this._scene.activeCamera) {
-                    bias = (this._scene.activeCamera.maxZ - this._scene.activeCamera.minZ) / 10000;
+                    skyboxSize = groundSize;
                 }
 
                 const sceneDiagonalLenght = sceneDiagonal.length();
                 if (sceneDiagonalLenght > groundSize) {
                     groundSize = sceneDiagonalLenght * 2;
+                    skyboxSize = groundSize;
                 }
 
                 // 10 % bigger.
                 groundSize *= 1.1;
                 skyboxSize *= 1.5;
                 rootPosition = sceneExtends.min.add(sceneDiagonal.scale(0.5));
-                rootPosition.y = sceneExtends.min.y - bias;
+                rootPosition.y = sceneExtends.min.y - this._options.groundYBias;
             }
 
             return { groundSize, skyboxSize, rootPosition };
@@ -496,9 +510,9 @@ namespace BABYLON {
                 this._ground = Mesh.CreatePlane("BackgroundPlane", sceneSize.groundSize, this._scene);
                 this._ground.rotation.x = Math.PI / 2; // Face up by default.
                 this._ground.parent = this._rootMesh;
-                this._ground.onDisposeObservable.add(() => { this._ground = null; })
+                this._ground.onDisposeObservable.add(() => { this._ground = null; });
             }
-            
+
             this._ground.receiveShadows = this._options.enableGroundShadow;
         }
 
@@ -507,10 +521,10 @@ namespace BABYLON {
          */
         private _setupGroundMaterial(): void {
             if (!this._groundMaterial) {
-                this._groundMaterial = new BABYLON.BackgroundMaterial("BackgroundPlaneMaterial", this._scene);
+                this._groundMaterial = new BackgroundMaterial("BackgroundPlaneMaterial", this._scene);
             }
             this._groundMaterial.alpha = this._options.groundOpacity;
-            this._groundMaterial.alphaMode = BABYLON.Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            this._groundMaterial.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
             this._groundMaterial.shadowLevel = this._options.groundShadowLevel;
             this._groundMaterial.primaryLevel = 1;
             this._groundMaterial.primaryColor = this._options.groundColor;
@@ -518,7 +532,7 @@ namespace BABYLON {
             this._groundMaterial.tertiaryLevel = 0;
             this._groundMaterial.useRGBColor = false;
             this._groundMaterial.enableNoise = true;
-            
+
             if (this._ground) {
                 this._ground.material = this._groundMaterial;
             }
@@ -541,7 +555,7 @@ namespace BABYLON {
                 return;
             }
 
-            const diffuseTexture = new BABYLON.Texture(this._options.groundTexture, this._scene);
+            const diffuseTexture = new Texture(this._options.groundTexture, this._scene);
             diffuseTexture.gammaSpace = false;
             diffuseTexture.hasAlpha = true;
             this._groundMaterial.diffuseTexture = diffuseTexture;
@@ -551,16 +565,16 @@ namespace BABYLON {
          * Setup the ground mirror texture according to the specified options.
          */
         private _setupGroundMirrorTexture(sceneSize: ISceneSize): void {
-            let wrapping = BABYLON.Texture.CLAMP_ADDRESSMODE;
+            let wrapping = Texture.CLAMP_ADDRESSMODE;
             if (!this._groundMirror) {
-                this._groundMirror = new BABYLON.MirrorTexture("BackgroundPlaneMirrorTexture", 
+                this._groundMirror = new MirrorTexture("BackgroundPlaneMirrorTexture",
                     { ratio: this._options.groundMirrorSizeRatio },
                     this._scene,
                     false,
                     this._options.groundMirrorTextureType,
-                    BABYLON.Texture.BILINEAR_SAMPLINGMODE,
+                    Texture.BILINEAR_SAMPLINGMODE,
                     true);
-                this._groundMirror.mirrorPlane = new BABYLON.Plane(0, -1, 0, sceneSize.rootPosition.y);
+                this._groundMirror.mirrorPlane = new Plane(0, -1, 0, sceneSize.rootPosition.y);
                 this._groundMirror.anisotropicFilteringLevel = 1;
                 this._groundMirror.wrapU = wrapping;
                 this._groundMirror.wrapV = wrapping;
@@ -569,7 +583,7 @@ namespace BABYLON {
                 if (this._groundMirror.renderList) {
                     for (let i = 0; i < this._scene.meshes.length; i++) {
                         const mesh = this._scene.meshes[i];
-                        if (mesh !== this._ground && 
+                        if (mesh !== this._ground &&
                             mesh !== this._skybox &&
                             mesh !== this._rootMesh) {
                             this._groundMirror.renderList.push(mesh);
@@ -577,8 +591,8 @@ namespace BABYLON {
                     }
                 }
             }
-            
-            this._groundMirror.clearColor = new BABYLON.Color4(
+
+            this._groundMirror.clearColor = new Color4(
                 this._options.groundColor.r,
                 this._options.groundColor.g,
                 this._options.groundColor.b,
@@ -604,7 +618,7 @@ namespace BABYLON {
          */
         private _setupSkybox(sceneSize: ISceneSize): void {
             if (!this._skybox) {
-                this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, BABYLON.Mesh.BACKSIDE);                
+                this._skybox = Mesh.CreateBox("BackgroundSkybox", sceneSize.skyboxSize, this._scene, undefined, Mesh.BACKSIDE);
                 this._skybox.onDisposeObservable.add(() => { this._skybox = null; })
             }
             this._skybox.parent = this._rootMesh;
@@ -648,8 +662,8 @@ namespace BABYLON {
                 return;
             }
 
-            this._skyboxTexture = new BABYLON.CubeTexture(this._options.skyboxTexture, this._scene);
-            this._skyboxTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            this._skyboxTexture = new CubeTexture(this._options.skyboxTexture, this._scene);
+            this._skyboxTexture.coordinatesMode = Texture.SKYBOX_MODE;
             this._skyboxTexture.gammaSpace = false;
             this._skyboxMaterial.reflectionTexture = this._skyboxTexture;
         }

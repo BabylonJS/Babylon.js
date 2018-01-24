@@ -27,11 +27,12 @@ module BABYLON {
         rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
         translate(axis: Vector3, distance: number, space?: Space): TransformNode;
         setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        getClassName(): string;
     }
 
     export class PhysicsImpostor {
 
-        public static DEFAULT_OBJECT_SIZE: Vector3 = new BABYLON.Vector3(1, 1, 1);
+        public static DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
 
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
@@ -157,7 +158,7 @@ module BABYLON {
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
-            if (!this.parent || this._options.ignoreParent) {
+            if (!this._isDisposed && (!this.parent || this._options.ignoreParent)) {
                 this._physicsEngine.addImpostor(this);
             }
         }
@@ -440,7 +441,7 @@ module BABYLON {
         /**
          * Legacy collision detection event support
          */
-        public onCollideEvent: Nullable<(collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void> = null;
+        public onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void> = null;
 
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {

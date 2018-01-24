@@ -129,14 +129,14 @@ module BABYLON {
                                 if (codecSupportedFound) {
                                     // Loading sound using XHR2
                                     if (!this._streaming) {
-                                        Tools.LoadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, this._scene.database, true);
+                                        this._scene._loadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, true, true);
                                     }
                                     // Streaming sound using HTML5 Audio tag
                                     else {
                                         this._htmlAudioElement = new Audio(url);
                                         this._htmlAudioElement.controls = false;
                                         this._htmlAudioElement.loop = this.loop;
-                                        this._htmlAudioElement.crossOrigin = "anonymous";
+                                        Tools.SetCorsBehavior(url, this._htmlAudioElement);
                                         this._htmlAudioElement.preload = "auto";
                                         this._htmlAudioElement.addEventListener("canplaythrough", () => {
                                             this._isReadyToPlay = true;

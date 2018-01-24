@@ -252,8 +252,9 @@ module INSPECTOR {
         private _createElements() {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new ColorPickerElement(this.value, this));
-                //this._elements.push(new ColorElement(this.value));
+                if (!Helpers.IsBrowserIE()) {
+                    this._elements.push(new ColorPickerElement(this.value, this));
+                }
             }
             // Texture
             if (this.type == 'Texture') {
@@ -388,7 +389,13 @@ module INSPECTOR {
                     let objToDetail = this.value;
                     // Display all properties that are not functions
                     let propToDisplay = Helpers.GetAllLinesPropertiesAsString(objToDetail);
-                    propToDisplay.sort().reverse();
+
+                    // special case for color3
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
+                        propToDisplay.sort();
+                    } else {
+                        propToDisplay.sort().reverse();
+                    }
 
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);

@@ -7,18 +7,18 @@
 
         @serialize("hasAlpha")
         private _hasAlpha = false;
-        public set hasAlpha(value : boolean) {
+        public set hasAlpha(value: boolean) {
             if (this._hasAlpha === value) {
                 return;
             }
             this._hasAlpha = value;
             if (this._scene) {
-                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag | Material.MiscDirtyFlag);
             }
         }
         public get hasAlpha(): boolean {
             return this._hasAlpha;
-        }    
+        }
 
         @serialize()
         public getAlphaFromRGB = false;
@@ -31,7 +31,7 @@
 
         @serialize("coordinatesMode")
         private _coordinatesMode = Texture.EXPLICIT_MODE;
-        public set coordinatesMode(value : number) {
+        public set coordinatesMode(value: number) {
             if (this._coordinatesMode === value) {
                 return;
             }
@@ -42,7 +42,7 @@
         }
         public get coordinatesMode(): number {
             return this._coordinatesMode;
-        }            
+        }
 
         @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;
@@ -93,7 +93,7 @@
 
         public getClassName(): string {
             return "BaseTexture";
-        }             
+        }
 
         public animations = new Array<Animation>();
 
@@ -213,7 +213,7 @@
         }
 
         public _rebuild(): void {
-            
+
         }
 
         public delayLoad(): void {
@@ -268,13 +268,13 @@
         }
 
         public get sphericalPolynomial(): Nullable<SphericalPolynomial> {
-            if (!this._texture || !Internals.CubeMapToSphericalPolynomialTools || !this.isReady()) {
+            if (!this._texture || !CubeMapToSphericalPolynomialTools || !this.isReady()) {
                 return null;
             }
 
             if (!this._texture._sphericalPolynomial) {
-                this._texture._sphericalPolynomial = 
-                    Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
+                this._texture._sphericalPolynomial =
+                    CubeMapToSphericalPolynomialTools.ConvertCubeMapTextureToSphericalPolynomial(this);
             }
 
             return this._texture._sphericalPolynomial;
@@ -311,7 +311,7 @@
             if (!this._scene) {
                 return;
             }
-            
+
             // Animations
             this._scene.stopAnimation(this);
 

@@ -51,6 +51,14 @@ module INSPECTOR {
             var regexp = /Edge/
             return regexp.test(navigator.userAgent);
         }
+        /**
+         * Returns true if the user browser is IE.
+         */
+        public static IsBrowserIE(): boolean {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./
+            return regexp.test(navigator.userAgent);
+        }
 
         /** 
          * Returns the name of the type of the given object, where the name 

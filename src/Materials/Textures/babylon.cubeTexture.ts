@@ -52,12 +52,14 @@
                 files = [];
 
                 if (extensions) {
-                    
+
                     for (var index = 0; index < extensions.length; index++) {
                         files.push(rootUrl + extensions[index]);
                     }
                 }
             }
+
+            this._files = files;
 
             if (!this._texture) {
                 if (!scene.useDelayedTextureLoading) {
@@ -113,7 +115,7 @@
 
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
-                return new BABYLON.CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
+                return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
             }, parsedTexture, scene);
 
             // Animations
@@ -131,7 +133,7 @@
         public clone(): CubeTexture {
             return SerializationHelper.Clone(() => {
                 let scene = this.getScene();
-                
+
                 if (!scene) {
                     return this;
                 }

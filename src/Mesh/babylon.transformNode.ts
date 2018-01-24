@@ -35,6 +35,7 @@ module BABYLON {
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
+        public _worldMatrixDeterminant = 0;
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
@@ -111,6 +112,13 @@ module BABYLON {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
+        }
+
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            return this._worldMatrixDeterminant;
         }
 
         /**
@@ -331,22 +339,31 @@ module BABYLON {
         }
 
         private static _lookAtVectorCache = new Vector3(0, 0, 0);
-        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
-            /// <summary>Orients a mesh towards a target point. Mesh must be drawn facing user.</summary>
-            /// <param name="targetPoint" type="Vector3">The position (must be in same space as current mesh) to look at</param>
-            /// <param name="yawCor" type="Number">optional yaw (y-axis) correction in radians</param>
-            /// <param name="pitchCor" type="Number">optional pitch (x-axis) correction in radians</param>
-            /// <param name="rollCor" type="Number">optional roll (z-axis) correction in radians</param>
-            /// <returns>Mesh oriented towards targetMesh</returns>
 
+        /**
+         * Orients a mesh towards a target point. Mesh must be drawn facing user.
+         * @param targetPoint the position (must be in same space as current mesh) to look at
+         * @param yawCor optional yaw (y-axis) correction in radians
+         * @param pitchCor optional pitch (x-axis) correction in radians
+         * @param rollCor optional roll (z-axis) correction in radians
+         * @param space the choosen space of the target
+         * @returns the TransformNode. 
+         */
+        public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
             var dv = AbstractMesh._lookAtVectorCache;
             var pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
             targetPoint.subtractToRef(pos, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
             var len = Math.sqrt(dv.x * dv.x + dv.z * dv.z);
             var pitch = Math.atan2(dv.y, len);
-            this.rotationQuaternion = this.rotationQuaternion || new Quaternion();
-            Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            if (this.rotationQuaternion) {
+                Quaternion.RotationYawPitchRollToRef(yaw + yawCor, pitch + pitchCor, rollCor, this.rotationQuaternion);
+            }
+            else {
+                this.rotation.x = pitch + pitchCor;
+                this.rotation.y = yaw + yawCor;
+                this.rotation.z = rollCor;
+            }
             return this;
         }
 
@@ -441,15 +458,15 @@ module BABYLON {
          * The node will remain exactly where it is and its position / rotation will be updated accordingly
          * Returns the TransformNode.
          */
-        public setParent(node: Nullable<TransformNode>): TransformNode {
+        public setParent(node: Nullable<Node>): TransformNode {
 
-            if (node == null) {
+            if (node === null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
 
-                if (this.parent && (<TransformNode>this.parent).computeWorldMatrix) {
-                    (<TransformNode>this.parent).computeWorldMatrix(true);
+                if (this.parent && this.parent.computeWorldMatrix) {
+                    this.parent.computeWorldMatrix(true);
                 }
                 this.computeWorldMatrix(true);
                 this.getWorldMatrix().decompose(scale, rotation, position);
@@ -641,7 +658,7 @@ module BABYLON {
                 rotationQuaternion = Tmp.Quaternion[1];
                 Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
             }
-            var accumulation = BABYLON.Tmp.Quaternion[0];
+            var accumulation = Tmp.Quaternion[0];
             Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
             rotationQuaternion.multiplyInPlace(accumulation);
             if (!this.rotationQuaternion) {
@@ -682,7 +699,7 @@ module BABYLON {
             if (this.rotationQuaternion) {
                 var len = this.rotation.length();
                 if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
+                    this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             }
@@ -815,6 +832,9 @@ module BABYLON {
                 this._poseMatrix = Matrix.Invert(this._worldMatrix);
             }
 
+            // Cache the determinant
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
+
             return this._worldMatrix;
         }
 
@@ -938,8 +958,6 @@ module BABYLON {
 
             // Remove from scene
             this.getScene().removeTransformNode(this);
-
-            this._cache = null;
 
             if (!doNotRecurse) {
                 // Children

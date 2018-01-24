@@ -1,7 +1,7 @@
 module BABYLON {
     export var CameraInputTypes = {};
 
-    export interface ICameraInput<TCamera extends BABYLON.Camera> {
+    export interface ICameraInput<TCamera extends Camera> {
         camera: Nullable<TCamera>;
         getClassName(): string;
         getSimpleName(): string;
@@ -10,12 +10,12 @@ module BABYLON {
         checkInputs?: () => void;
     }
 
-    export interface CameraInputsMap<TCamera extends BABYLON.Camera> {
+    export interface CameraInputsMap<TCamera extends Camera> {
         [name: string]: ICameraInput<TCamera>;
         [idx: number]: ICameraInput<TCamera>;
     }
 
-    export class CameraInputsManager<TCamera extends BABYLON.Camera> {
+    export class CameraInputsManager<TCamera extends Camera> {
         attached: CameraInputsMap<TCamera>;
         public attachedElement: Nullable<HTMLElement>;
         public noPreventDefault: boolean;
@@ -28,6 +28,12 @@ module BABYLON {
             this.checkInputs = () => { };
         }
 
+        /**
+         * Add an input method to a camera.
+         * builtin inputs example: camera.inputs.addGamepad();
+         * custom inputs example: camera.inputs.add(new BABYLON.FreeCameraGamepadInput());
+         * @param input camera input method
+         */
         public add(input: ICameraInput<TCamera>) {
             var type = input.getSimpleName();
             if (this.attached[type]) {
@@ -38,7 +44,7 @@ module BABYLON {
             this.attached[type] = input;
 
             input.camera = this.camera;
-            
+
             //for checkInputs, we are dynamically creating a function
             //the goal is to avoid the performance penalty of looping for inputs in the render loop
             if (input.checkInputs) {
@@ -49,7 +55,11 @@ module BABYLON {
                 input.attachControl(this.attachedElement);
             }
         }
-
+        /**
+         * Remove a specific input method from a camera
+         * example: camera.inputs.remove(camera.inputs.attached.mouse);
+         * @param inputToRemove camera input method
+         */
         public remove(inputToRemove: ICameraInput<TCamera>) {
             for (var cam in this.attached) {
                 var input = this.attached[cam];
@@ -129,6 +139,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Remove all attached input methods from a camera
+         */
         public clear() {
             if (this.attachedElement) {
                 this.detachElement(this.attachedElement, true);
@@ -139,7 +152,7 @@ module BABYLON {
         }
 
         public serialize(serializedCamera: any) {
-            var inputs: {[key: string]: any} = {};
+            var inputs: { [key: string]: any } = {};
             for (var cam in this.attached) {
                 var input = this.attached[cam];
                 var res = SerializationHelper.Serialize(input);
@@ -162,7 +175,7 @@ module BABYLON {
                         this.add(input as any);
                     }
                 }
-            } else { 
+            } else {
                 //2016-03-08 this part is for managing backward compatibility
                 for (var n in this.attached) {
                     var construct = (<any>CameraInputTypes)[this.attached[n].getClassName()];
@@ -175,5 +188,5 @@ module BABYLON {
             }
         }
     }
-} 
+}
 

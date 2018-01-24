@@ -315,6 +315,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        StandardMaterial_OldVer.prototype._shouldTurnAlphaTestOn = function (mesh) {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        };
         StandardMaterial_OldVer.prototype.getClassName = function () {
             return "StandardMaterial_OldVer";
         };
@@ -560,7 +563,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
@@ -1957,7 +1960,7 @@ vColor=color;\n\
             var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
-            var fn_afterBind = this._afterBind;
+            var fn_afterBind = this._afterBind.bind(this);
             this._afterBind = function (m, e) {
                 if (!e) {
                     return;

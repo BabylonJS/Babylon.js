@@ -289,6 +289,7 @@ var INSPECTOR;
                     }
                 }
             }
+            INSPECTOR.Scheduler.getInstance().dispose();
         };
         /** Open the inspector in a new popup
          * Set 'firstTime' to true if there is no inspector created beforehands
@@ -1562,8 +1563,9 @@ var INSPECTOR;
         PropertyLine.prototype._createElements = function () {
             // Colors
             if (this.type == 'Color3' || this.type == 'Color4') {
-                this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
-                //this._elements.push(new ColorElement(this.value));
+                if (!INSPECTOR.Helpers.IsBrowserIE()) {
+                    this._elements.push(new INSPECTOR.ColorPickerElement(this.value, this));
+                }
             }
             // Texture
             if (this.type == 'Texture') {
@@ -1699,7 +1701,13 @@ var INSPECTOR;
                     var objToDetail = this.value;
                     // Display all properties that are not functions
                     var propToDisplay = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(objToDetail);
-                    propToDisplay.sort().reverse();
+                    // special case for color3
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
+                        propToDisplay.sort();
+                    }
+                    else {
+                        propToDisplay.sort().reverse();
+                    }
                     for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
                         var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
@@ -2253,6 +2261,14 @@ var INSPECTOR;
             return regexp.test(navigator.userAgent);
         };
         /**
+         * Returns true if the user browser is IE.
+         */
+        Helpers.IsBrowserIE = function () {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./;
+            return regexp.test(navigator.userAgent);
+        };
+        /**
          * Returns the name of the type of the given object, where the name
          * is in PROPERTIES constant.
          * Returns 'Undefined' if no type exists for this object
@@ -2416,7 +2432,7 @@ var INSPECTOR;
             this.pause = false;
             /** The list of data to update */
             this._updatableProperties = [];
-            setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+            this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
         Scheduler.getInstance = function () {
             if (!Scheduler._instance) {
@@ -2443,6 +2459,9 @@ var INSPECTOR;
                     prop.update();
                 }
             }
+        };
+        Scheduler.prototype.dispose = function () {
+            window.clearInterval(this.interval);
         };
         /** All properties are refreshed every 250ms */
         Scheduler.REFRESH_TIME = 250;
@@ -3551,6 +3570,12 @@ var INSPECTOR;
                 _this._updatableProperties.push({
                     elem: elemValue,
                     updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
+                });
+                _this._createStatLabel("Texture collisions", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._sceneInstrumentation.textureCollisionsCounter.current.toString(); }
                 });
                 _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);

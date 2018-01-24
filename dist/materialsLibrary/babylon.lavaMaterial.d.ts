@@ -15,13 +15,12 @@ declare module BABYLON {
         disableLighting: boolean;
         private _maxSimultaneousLights;
         maxSimultaneousLights: number;
-        private _worldViewProjectionMatrix;
         private _scaledDiffuse;
         private _renderId;
         constructor(name: string, scene: Scene);
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
@@ -30,6 +29,7 @@ declare module BABYLON {
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): LavaMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): LavaMaterial;
     }
 }

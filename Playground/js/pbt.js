@@ -417,7 +417,7 @@ var PBT = function() {
             parent.addControl(header);  
 
             button.onValueChangedObservable.add(function(value) {
-                header.text = "Y-rotation: " + onValueChange(value) + " " + unit;
+                header.text = text + onValueChange(value) + " " + unit;
                 func(value);
             });
             parent.addControl(button);

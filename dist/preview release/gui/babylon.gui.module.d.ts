@@ -1,5 +1,6 @@
 /// <reference types="babylonjs"/>
 
+
 declare module 'babylonjs-gui' { 
     export = BABYLON.GUI; 
 }
@@ -61,6 +62,17 @@ declare module BABYLON.GUI {
         private _manageFocus();
         private _attachToOnPointerOut(scene);
         static CreateForMesh(mesh: AbstractMesh, width?: number, height?: number, supportPointerMove?: boolean): AdvancedDynamicTexture;
+        /**
+         * FullScreenUI is created in a layer. This allows it to be treated like any other layer.
+         * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
+         * When the GUI is not Created as FullscreenUI it does not respect the layerMask.
+         * layerMask is set through advancedTexture.layer.layerMask
+         * @param name name for the Texture
+         * @param foreground render in foreground (default is true)
+         * @param scene scene to be rendered in
+         * @param sampling method for scaling to fit screen
+         * @returns AdvancedDynamicTexture
+         */
         static CreateFullscreenUI(name: string, foreground?: boolean, scene?: Nullable<Scene>, sampling?: number): AdvancedDynamicTexture;
     }
 }
@@ -170,8 +182,8 @@ declare module BABYLON.GUI {
         private _transformCenterX;
         private _transformCenterY;
         private _transformMatrix;
-        private _invertTransformMatrix;
-        private _transformedPosition;
+        protected _invertTransformMatrix: Matrix2D;
+        protected _transformedPosition: Vector2;
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;
@@ -446,6 +458,7 @@ declare module BABYLON.GUI {
         private _borderColor;
         private _barOffset;
         private _isThumbCircle;
+        private _isThumbClamped;
         onValueChangedObservable: Observable<number>;
         borderColor: string;
         background: string;
@@ -457,11 +470,12 @@ declare module BABYLON.GUI {
         maximum: number;
         value: number;
         isThumbCircle: boolean;
+        isThumbClamped: boolean;
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         private _pointerIsDown;
-        private _updateValueFromPointer(x);
+        private _updateValueFromPointer(x, y);
         _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: Vector2): void;
         _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void;
@@ -512,6 +526,9 @@ declare module BABYLON.GUI {
 
 declare module BABYLON.GUI {
     class TextBlock extends Control {
+        /**
+         * Defines the name of the control
+         */
         name: string | undefined;
         private _text;
         private _textWrapping;
@@ -519,19 +536,76 @@ declare module BABYLON.GUI {
         private _textVerticalAlignment;
         private _lines;
         private _resizeToFit;
+        private _lineSpacing;
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
         */
         onTextChangedObservable: Observable<TextBlock>;
+        /**
+        * An event triggered after the text was broken up into lines
+        * @type {BABYLON.Observable}
+        */
+        onLinesReadyObservable: Observable<TextBlock>;
+        /**
+         * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
+         */
+        readonly lines: any[];
+        /**
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
+        /**
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
         resizeToFit: boolean;
+        /**
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
+        /**
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
         textWrapping: boolean;
+        /**
+         * Gets or sets text to display
+         */
+        /**
+         * Gets or sets text to display
+         */
         text: string;
+        /**
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
+        /**
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
         textHorizontalAlignment: number;
+        /**
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */
+        /**
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */
         textVerticalAlignment: number;
-        constructor(name?: string | undefined, text?: string);
+        /**
+         * Gets or sets line spacing value
+         */
+        /**
+         * Gets or sets line spacing value
+         */
+        lineSpacing: string | number;
+        /**
+         * Creates a new TextBlock object
+         * @param name defines the name of the control
+         * @param text defines the text to display (emptry string by default)
+         */
+        constructor(
+            /**
+             * Defines the name of the control
+             */
+            name?: string | undefined, text?: string);
         protected _getTypeName(): string;
         private _drawText(text, textWidth, y, context);
+        /** @ignore */
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
@@ -683,6 +757,7 @@ declare module BABYLON.GUI {
         placeholderColor: string;
         placeholderText: string;
         text: string;
+        width: string | number;
         constructor(name?: string | undefined, text?: string);
         onBlur(): void;
         onFocus(): void;
@@ -718,9 +793,13 @@ declare module BABYLON.GUI {
         defaultButtonPaddingBottom: string;
         defaultButtonColor: string;
         defaultButtonBackground: string;
+        shiftButtonColor: string;
+        selectedShiftThickness: number;
+        shiftState: number;
         protected _getTypeName(): string;
         private _createKey(key, propertySet);
         addKeysRow(keys: Array<string>, propertySets?: Array<KeyPropertySet>): void;
+        applyShiftState(shiftState: number): void;
         private _connectedInputText;
         private _onFocusObserver;
         private _onBlurObserver;

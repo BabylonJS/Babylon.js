@@ -97,7 +97,7 @@
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
-        private _LODLevels = new Array<Internals.MeshLODLevel>();
+        private _LODLevels = new Array<MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
         // Morph
@@ -149,6 +149,17 @@
             return this._source;
         }
 
+        public get isUnIndexed(): boolean {
+            return this._unIndexed;
+        }
+
+        public set isUnIndexed(value: boolean) {
+            if (this._unIndexed !== value) {
+                this._unIndexed = value;
+                this._markSubMeshesAsAttributesDirty();
+            }
+        }
+
         /**
          * @constructor
          * @param {string} name The value used by scene.getMeshByName() to do a lookup.
@@ -175,14 +186,19 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
 
-                // Tags
-                if (Tags.HasTags(source)) {
-                    Tags.AddTagsTo(this, Tags.GetTags(source, true));
+                // Metadata
+                if (source.metadata && source.metadata.clone) {
+                    this.metadata = source.metadata.clone();
+                } else {
+                    this.metadata = source.metadata;
                 }
 
-                this.metadata = source.metadata;
+                // Tags
+                if (Tags && Tags.HasTags(source)) {
+                    Tags.AddTagsTo(this, Tags.GetTags(source, true));
+                }
 
                 // Parent
                 this.parent = source.parent;
@@ -281,6 +297,14 @@
             return this._LODLevels.length > 0;
         }
 
+        /**
+         * Gets the list of {BABYLON.MeshLODLevel} associated with the current mesh
+         * @returns an array of {BABYLON.MeshLODLevel} 
+         */
+        public getLODLevels(): MeshLODLevel[] {
+            return this._LODLevels;
+        }
+
         private _sortLODLevels(): void {
             this._LODLevels.sort((a, b) => {
                 if (a.distance < b.distance) {
@@ -307,7 +331,7 @@
                 return this;
             }
 
-            var level = new Internals.MeshLODLevel(distance, mesh);
+            var level = new MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
             if (mesh) {
@@ -416,7 +440,7 @@
          * Returns a positive integer : the total number of vertices within the mesh geometry or zero if the mesh has no geometry.
          */
         public getTotalVertices(): number {
-            if (!this._geometry) {
+            if (this._geometry === null || this._geometry === undefined) {
                 return 0;
             }
             return this._geometry.getTotalVertices();
@@ -582,14 +606,68 @@
         }
 
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        public isReady(): boolean {
+        public isReady(forceInstanceSupport = false): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            return super.isReady();
+            if (!super.isReady()) {
+                return false;
+            }
+
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
+            let engine = this.getEngine();
+            let scene = this.getScene();
+            let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+
+            this.computeWorldMatrix();
+
+            let mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var subMesh of this.subMeshes) {
+                        let effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        return false;
+                    }
+                }
+            }
+
+            // Shadows
+            for (var light of this._lightSources) {
+                let generator = light.getShadowGenerator();
+
+                if (generator) {
+                    for (var subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // LOD
+            for (var lod of this._LODLevels) {
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /**
@@ -665,15 +743,19 @@
 
         /**
          * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
-         * This means the mesh underlying bounding box and sphere are recomputed.   
-         * Returns the Mesh.  
+         * This means the mesh underlying bounding box and sphere are recomputed.
+         * Returns the Mesh.
          */
         public refreshBoundingInfo(): Mesh {
+            return this._refreshBoundingInfo(false);
+        }
+
+        public _refreshBoundingInfo(applySkeleton: boolean): Mesh {
             if (this._boundingInfo && this._boundingInfo.isLocked) {
                 return this;
             }
-            var data = this.getVerticesData(VertexBuffer.PositionKind);
 
+            var data = this._getPositionData(applySkeleton);
             if (data) {
                 var extend = Tools.ExtractMinAndMax(data, 0, this.getTotalVertices());
                 this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
@@ -687,6 +769,55 @@
 
             this._updateBoundingInfo();
             return this;
+        }
+
+        private _getPositionData(applySkeleton: boolean): Nullable<FloatArray> {
+            var data = this.getVerticesData(VertexBuffer.PositionKind);
+
+            if (data && applySkeleton && this.skeleton) {
+                data = Tools.Slice(data);
+
+                var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
+                var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+                if (matricesWeightsData && matricesIndicesData) {
+                    var needExtras = this.numBoneInfluencers > 4;
+                    var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                    var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+
+                    var skeletonMatrices = this.skeleton.getTransformMatrices(this);
+
+                    var tempVector = Tmp.Vector3[0];
+                    var finalMatrix = Tmp.Matrix[0];
+                    var tempMatrix = Tmp.Matrix[1];
+
+                    var matWeightIdx = 0;
+                    for (var index = 0; index < data.length; index += 3, matWeightIdx += 4) {
+                        finalMatrix.reset();
+
+                        var inf: number;
+                        var weight: number;
+                        for (inf = 0; inf < 4; inf++) {
+                            weight = matricesWeightsData[matWeightIdx + inf];
+                            if (weight <= 0) break;
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            finalMatrix.addToSelf(tempMatrix);
+                        }
+                        if (needExtras) {
+                            for (inf = 0; inf < 4; inf++) {
+                                weight = matricesWeightsExtraData![matWeightIdx + inf];
+                                if (weight <= 0) break;
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                                finalMatrix.addToSelf(tempMatrix);
+                            }
+                        }
+
+                        Vector3.TransformCoordinatesFromFloatsToRef(data[index], data[index + 1], data[index + 2], finalMatrix, tempVector);
+                        tempVector.toArray(data, index);
+                    }
+                }
+            }
+
+            return data;
         }
 
         public _createGlobalSubMesh(force: boolean): Nullable<SubMesh> {
@@ -997,25 +1128,14 @@
             let scene = this.getScene();
             let engine = scene.getEngine();
 
-            // Draw order
-            switch (fillMode) {
-                case Material.PointFillMode:
-                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    break;
-                case Material.WireFrameFillMode:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
-                    }
-                    break;
-
-                default:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
-                    }
+            if (this._unIndexed || fillMode == Material.PointFillMode) {
+                // or triangles as points
+                engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            } else if (fillMode == Material.WireFrameFillMode) {
+                // Triangles as wireframe
+                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+            } else {
+                engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
 
             if (scene._isAlternateRenderingEnabled && !alternate) {
@@ -1251,7 +1371,7 @@
                 return this;
             }
 
-            this._effectiveMaterial = material
+            this._effectiveMaterial = material;
 
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
@@ -1285,7 +1405,15 @@
                 return this;
             }
 
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
+            var sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (this._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
+            }
+
+            var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
 
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
@@ -1386,13 +1514,13 @@
             else if (this.delayLoadState === Engine.DELAYLOADSTATE_NOTLOADED) {
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADING;
 
-                this._queueLoad(this, scene);
+                this._queueLoad(scene);
             }
             return this;
         }
 
-        private _queueLoad(mesh: Mesh, scene: Scene): Mesh {
-            scene._addPendingData(mesh);
+        private _queueLoad(scene: Scene): Mesh {
+            scene._addPendingData(this);
 
             var getBinaryData = (this.delayLoadingFile.indexOf(".babylonbinarymeshdata") !== -1);
 
@@ -1529,7 +1657,7 @@
          * Modifies the mesh geometry according to its own current World Matrix.  
          * The mesh World Matrix is then reset.
          * This method returns nothing but really modifies the mesh even if it's originally not set as updatable.
-         * tuto : tuto : http://doc.babylonjs.com/tutorials/How_Rotations_and_Translations_Work#baking-transform 
+         * tuto : tuto : http://doc.babylonjs.com/resources/baking_transformations
          * Note that, under the hood, this method sets a new VertexBuffer each call.   
          * Returns the Mesh.  
          */
@@ -2043,7 +2171,7 @@
             serializationObject.scaling = this.scaling.asArray();
             serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
-            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isEnabled = this.isEnabled(false);
             serializationObject.isVisible = this.isVisible;
             serializationObject.infiniteDistance = this.infiniteDistance;
             serializationObject.pickable = this.isPickable;
@@ -2062,6 +2190,7 @@
             }
 
             // Geometry
+            serializationObject.isUnIndexed = this.isUnIndexed;
             var geometry = this._geometry;
             if (geometry) {
                 var geometryId = geometry.id;
@@ -2121,6 +2250,7 @@
                 var instance = this.instances[index];
                 var serializationInstance: any = {
                     name: instance.name,
+                    id: instance.id,
                     position: instance.position.asArray(),
                     scaling: instance.scaling.asArray()
                 };
@@ -2321,6 +2451,7 @@
             }
 
             // Geometry
+            mesh.isUnIndexed = !!parsedMesh.isUnIndexed;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
             if (parsedMesh.delayLoadingFile) {
@@ -2369,14 +2500,14 @@
                     mesh._delayInfo.push(VertexBuffer.MatricesWeightsKind);
                 }
 
-                mesh._delayLoadingFunction = Geometry.ImportGeometry;
+                mesh._delayLoadingFunction = Geometry._ImportGeometry;
 
                 if (SceneLoader.ForceFullSceneLoadingForIncremental) {
                     mesh._checkDelayState();
                 }
 
             } else {
-                Geometry.ImportGeometry(parsedMesh, mesh);
+                Geometry._ImportGeometry(parsedMesh, mesh);
             }
 
             // Material
@@ -2420,10 +2551,9 @@
                 mesh.layerMask = 0x0FFFFFFF;
             }
 
-
             // Physics
             if (parsedMesh.physicsImpostor) {
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
+                mesh.physicsImpostor = new PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,
                     friction: parsedMesh.physicsFriction,
                     restitution: parsedMesh.physicsRestitution
@@ -2435,6 +2565,10 @@
                 for (var index = 0; index < parsedMesh.instances.length; index++) {
                     var parsedInstance = parsedMesh.instances[index];
                     var instance = mesh.createInstance(parsedInstance.name);
+
+                    if (parsedInstance.id) {
+                        instance.id = parsedInstance.id;
+                    }
 
                     if (Tags) {
                         Tags.AddTagsTo(instance, parsedInstance.tags);
@@ -3115,10 +3249,6 @@
             var matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
             var matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
-            if (!matricesWeightsExtraData || !matricesIndicesExtraData) {
-                return this;
-            }
-
             var skeletonMatrices = skeleton.getTransformMatrices(this);
 
             var tempVector3 = Vector3.Zero();
@@ -3139,9 +3269,9 @@
                 }
                 if (needExtras) {
                     for (inf = 0; inf < 4; inf++) {
-                        weight = matricesWeightsExtraData[matWeightIdx + inf];
+                        weight = matricesWeightsExtraData![matWeightIdx + inf];
                         if (weight > 0) {
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
                         } else break;
@@ -3201,7 +3331,7 @@
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         public static Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3 {
-            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 
@@ -3286,7 +3416,7 @@
 
                 //-- aplique la subdivision en fonction du tableau d'indices
                 while (index < indiceArray.length) {
-                    BABYLON.SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                    SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
                     offset += indiceArray[index];
                     index++;
                 }

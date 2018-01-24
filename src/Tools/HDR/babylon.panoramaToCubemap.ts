@@ -1,4 +1,4 @@
-module BABYLON.Internals {
+module BABYLON {
     /**
      * CubeMap information grouping all the data for each faces as well as the cubemap size.
      */
@@ -8,37 +8,37 @@ module BABYLON.Internals {
          * This is stored in format, left to right, up to down format.
          */
         front: Nullable<ArrayBufferView>;
-        
+
         /**
          * The pixel array for the back face.
          * This is stored in format, left to right, up to down format.
          */
         back: Nullable<ArrayBufferView>;
-        
+
         /**
          * The pixel array for the left face.
          * This is stored in format, left to right, up to down format.
          */
         left: Nullable<ArrayBufferView>;
-        
+
         /**
          * The pixel array for the right face.
          * This is stored in format, left to right, up to down format.
          */
         right: Nullable<ArrayBufferView>;
-        
+
         /**
          * The pixel array for the up face.
          * This is stored in format, left to right, up to down format.
          */
         up: Nullable<ArrayBufferView>;
-        
+
         /**
          * The pixel array for the down face.
          * This is stored in format, left to right, up to down format.
          */
         down: Nullable<ArrayBufferView>;
-        
+
         /**
          * The size of the cubemap stored.
          * 
@@ -191,7 +191,7 @@ module BABYLON.Internals {
 
             var dx = theta / Math.PI;
             var dy = phi / Math.PI;
-            
+
             // recenter.
             dx = dx * 0.5 + 0.5;
 
@@ -215,5 +215,5 @@ module BABYLON.Internals {
             };
         }
     }
-} 
+}
 

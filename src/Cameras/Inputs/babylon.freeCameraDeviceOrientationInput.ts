@@ -1,4 +1,8 @@
 module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
     export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
         private _camera: FreeCamera;
 
@@ -55,8 +59,8 @@ module BABYLON {
         public checkInputs() {
             //if no device orientation provided, don't update the rotation.
             //Only testing against alpha under the assumption thatnorientation will never be so exact when set.
-            if(!this._alpha) return;
-            Quaternion.RotationYawPitchRollToRef(BABYLON.Tools.ToRadians(this._alpha), BABYLON.Tools.ToRadians(this._beta), -BABYLON.Tools.ToRadians(this._gamma), this.camera.rotationQuaternion)
+            if (!this._alpha) return;
+            Quaternion.RotationYawPitchRollToRef(Tools.ToRadians(this._alpha), Tools.ToRadians(this._beta), -Tools.ToRadians(this._gamma), this.camera.rotationQuaternion)
             this._camera.rotationQuaternion.multiplyInPlace(this._screenQuaternion);
             this._camera.rotationQuaternion.multiplyInPlace(this._constantTranform);
             //Mirror on XY Plane

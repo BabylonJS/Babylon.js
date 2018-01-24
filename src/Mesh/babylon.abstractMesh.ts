@@ -42,12 +42,12 @@
             Y: 1,
             Z: 1
         };
-      
+
         private _facetDepthSort: boolean = false;                           // is the facet depth sort to be computed
         private _facetDepthSortEnabled: boolean = false;                    // is the facet depth sort initialized
         private _depthSortedIndices: IndicesArray;                          // copy of the indices array to store them once sorted
-        private _depthSortedFacets: {ind: number, sqDistance: number}[];    // array of depth sorted facets
-        private _facetDepthSortFunction: (f1: {ind: number, sqDistance: number}, f2: {ind: number, sqDistance: number}) => number;  // facet depth sort function
+        private _depthSortedFacets: { ind: number, sqDistance: number }[];    // array of depth sorted facets
+        private _facetDepthSortFunction: (f1: { ind: number, sqDistance: number }, f2: { ind: number, sqDistance: number }) => number;  // facet depth sort function
         private _facetDepthSortFrom: Vector3;                               // location where to depth sort from
         private _facetDepthSortOrigin: Vector3;                             // same as facetDepthSortFrom but expressed in the mesh local space
         private _invertedMatrix: Matrix;                                    // Mesh inverted World Matrix
@@ -205,7 +205,24 @@
 
         private _occlusionQuery: Nullable<WebGLQuery>;
 
-        public visibility = 1.0;
+        private _visibility = 1.0;
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */
+        public get visibility(): number {
+            return this._visibility;
+        }
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */        
+        public set visibility(value: number) {
+            if (this._visibility === value) {
+                return;
+            }
+
+            this._visibility = value;
+            this._markSubMeshesAsMiscDirty();
+        }        
         public alphaIndex = Number.MAX_VALUE;
         public isVisible = true;
         public isPickable = true;
@@ -269,6 +286,7 @@
 
             this._hasVertexAlpha = value;
             this._markSubMeshesAsAttributesDirty();
+            this._markSubMeshesAsMiscDirty();
         }
 
         private _useVertexColors = true;
@@ -351,10 +369,10 @@
          * This scene's action manager
          * @type {BABYLON.ActionManager}
         */
-        public actionManager: Nullable<ActionManager>;
+        public actionManager: Nullable<ActionManager> = null;
 
         // Physics
-        public physicsImpostor: Nullable<PhysicsImpostor>;
+        public physicsImpostor: Nullable<PhysicsImpostor> = null;
 
         // Collisions
         private _checkCollisions = false;
@@ -539,6 +557,8 @@
                 return;
             }
             this._lightSources.splice(index, 1);
+
+            this._markSubMeshesAsLightDirty();
         }
 
         private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
@@ -803,6 +823,17 @@
             return super.getWorldMatrix();
         }
 
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
+
+            return super._getWorldMatrixDeterminant();
+        }
+
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
@@ -894,11 +925,13 @@
                     let childMesh = <AbstractMesh>descendant;
 
                     childMesh.computeWorldMatrix(true);
-                    let childBoundingInfo = childMesh.getBoundingInfo();
 
-                    if (childMesh.getTotalVertices() === 0) {
+                    //make sure we have the needed params to get mix and max
+                    if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
+
+                    let childBoundingInfo = childMesh.getBoundingInfo();
                     let boundingBox = childBoundingInfo.boundingBox;
 
                     var minBox = boundingBox.minimumWorld;
@@ -1064,17 +1097,23 @@
             }
         }
 
+        /**
+         * Gets Collider object used to compute collisions (not physics)
+         */
+        public get collider(): Collider {
+            return this._collider;
+        }
+
         public moveWithCollisions(displacement: Vector3): AbstractMesh {
             var globalPosition = this.getAbsolutePosition();
 
-            globalPosition.subtractFromFloatsToRef(0, this.ellipsoid.y, 0, this._oldPositionForCollisions);
-            this._oldPositionForCollisions.addInPlace(this.ellipsoidOffset);
+            globalPosition.addToRef(this.ellipsoidOffset, this._oldPositionForCollisions);
 
             if (!this._collider) {
                 this._collider = new Collider();
             }
 
-            this._collider.radius = this.ellipsoid;
+            this._collider._radius = this.ellipsoid;
 
             this.getScene().collisionCoordinator.getNewPosition(this._oldPositionForCollisions, displacement, this._collider, 3, this, this._onCollisionPositionChange, this.uniqueId);
             return this;
@@ -1083,7 +1122,7 @@
         private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
             //TODO move this to the collision coordinator!
             if (this.getScene().workerCollisions)
-                newPosition.multiplyInPlace(this._collider.radius);
+                newPosition.multiplyInPlace(this._collider._radius);
 
             newPosition.subtractToRef(this._oldPositionForCollisions, this._diffPositionForCollisions);
 
@@ -1154,8 +1193,8 @@
 
             // Octrees
             if (this._submeshesOctree && this.useOctreeForCollisions) {
-                var radius = collider.velocityWorldLength + Math.max(collider.radius.x, collider.radius.y, collider.radius.z);
-                var intersections = this._submeshesOctree.intersects(collider.basePointWorld, radius);
+                var radius = collider._velocityWorldLength + Math.max(collider._radius.x, collider._radius.y, collider._radius.z);
+                var intersections = this._submeshesOctree.intersects(collider._basePointWorld, radius);
 
                 len = intersections.length;
                 subMeshes = intersections.data;
@@ -1182,7 +1221,7 @@
                 return this;
 
             // Transformation matrix
-            Matrix.ScalingToRef(1.0 / collider.radius.x, 1.0 / collider.radius.y, 1.0 / collider.radius.z, this._collisionsScalingMatrix);
+            Matrix.ScalingToRef(1.0 / collider._radius.x, 1.0 / collider._radius.y, 1.0 / collider._radius.z, this._collisionsScalingMatrix);
             this.worldMatrixFromCache.multiplyToRef(this._collisionsScalingMatrix, this._collisionsTransformMatrix);
             this._processCollisionsForSubMeshes(collider, this._collisionsTransformMatrix);
             return this;
@@ -1303,7 +1342,7 @@
             var index: number;
 
             // Action manager
-            if (this.actionManager) {
+            if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
                 this.actionManager = null;
             }
@@ -1369,8 +1408,8 @@
             }
 
             // Octree
-            var sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree) {
+            const sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
                 var index = sceneOctree.dynamicContent.indexOf(this);
 
                 if (index !== -1) {
@@ -1489,7 +1528,7 @@
                 }
                 else if (indices instanceof Uint32Array) {
                     this._depthSortedIndices = new Uint32Array(indices!);
-                } 
+                }
                 else {
                     var needs32bits = false;
                     for (var i = 0; i < indices!.length; i++) {
@@ -1500,12 +1539,12 @@
                     }
                     if (needs32bits) {
                         this._depthSortedIndices = new Uint32Array(indices!);
-                    } 
+                    }
                     else {
                         this._depthSortedIndices = new Uint16Array(indices!);
                     }
-                }               
-                this._facetDepthSortFunction = function(f1, f2) {
+                }
+                this._facetDepthSortFunction = function (f1, f2) {
                     return (f2.sqDistance - f1.sqDistance);
                 };
                 if (!this._facetDepthSortFrom) {
@@ -1553,7 +1592,7 @@
 
             if (this._facetDepthSort && this._facetDepthSortEnabled) {
                 this._depthSortedFacets.sort(this._facetDepthSortFunction);
-                var l = (this._depthSortedIndices.length / 3)|0;
+                var l = (this._depthSortedIndices.length / 3) | 0;
                 for (var f = 0; f < l; f++) {
                     var sind = this._depthSortedFacets[f].ind;
                     this._depthSortedIndices[f * 3] = indices![sind];
@@ -1782,19 +1821,19 @@
          * Align the mesh with a normal.
          * Returns the mesh.  
          */
-        public alignWithNormal(normal:BABYLON.Vector3, upDirection?:BABYLON.Vector3):AbstractMesh{       
-            if(!upDirection){
-                upDirection = BABYLON.Axis.Y;
+        public alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {
+            if (!upDirection) {
+                upDirection = Axis.Y;
             }
-            
+
             var axisX = Tmp.Vector3[0];
             var axisZ = Tmp.Vector3[1];
             Vector3.CrossToRef(upDirection, normal, axisZ);
             Vector3.CrossToRef(normal, axisZ, axisX);
-            
-            if(this.rotationQuaternion){
+
+            if (this.rotationQuaternion) {
                 Quaternion.RotationQuaternionFromAxisToRef(axisX, normal, axisZ, this.rotationQuaternion);
-            }else{
+            } else {
                 Vector3.RotationFromAxisToRef(axisX, normal, axisZ, this.rotation);
             }
             return this;

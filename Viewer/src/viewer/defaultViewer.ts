@@ -1,12 +1,10 @@
-import { ViewerConfiguration } from './../configuration/configuration';
-import { Template } from './../templateManager';
-import { AbstractViewer } from './viewer';
-import { Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ShadowOnlyMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
-import { CameraBehavior } from '../interfaces';
 
-// A small hack for the inspector. to be removed!
-import * as BABYLON from 'babylonjs';
-window['BABYLON'] = BABYLON;
+
+import { ViewerConfiguration } from './../configuration/configuration';
+import { Template, EventCallback } from './../templateManager';
+import { AbstractViewer } from './viewer';
+import { MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { CameraBehavior } from '../interfaces';
 
 export class DefaultViewer extends AbstractViewer {
 
@@ -29,9 +27,22 @@ export class DefaultViewer extends AbstractViewer {
         this.showLoadingScreen();
 
         // navbar
-        let viewerElement = this.templateManager.getTemplate('viewer');
+        this.initNavbar();
+
+        // close overlay button
+        let closeButton = document.getElementById('close-button');
+        if (closeButton) {
+            closeButton.addEventListener('pointerdown', () => {
+                this.hideOverlayScreen();
+            })
+        }
+
+        return super.onTemplatesLoaded();
+    }
+
+    private initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
-        if (viewerElement && navbar) {
+        if (navbar) {
             let navbarHeight = navbar.parent.clientHeight + 'px';
 
             let navbarShown: boolean = true;
@@ -63,64 +74,30 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
 
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerout');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, true), 'pointerdown');
+            this.templateManager.eventManager.registerCallback('viewer', triggerNavbar.bind(this, false), 'pointerup');
+            this.templateManager.eventManager.registerCallback('navBar', triggerNavbar.bind(this, true), 'pointerover');
 
-
-            viewerElement.parent.addEventListener('pointerout', triggerNavbar.bind(this, false));
-            viewerElement.parent.addEventListener('pointerdown', triggerNavbar.bind(this, true));
-            viewerElement.parent.addEventListener('pointerup', triggerNavbar.bind(this, false));
-            navbar.parent.addEventListener('pointerover', triggerNavbar.bind(this, true))
-            // triggerNavbar(false);
-
-            // events registration
-            this.registerNavbarButtons();
-        }
-
-        // close overlay button
-        let closeButton = document.getElementById('close-button');
-        if (closeButton) {
-            closeButton.addEventListener('pointerdown', () => {
-                this.hideOverlayScreen();
-            })
-        }
-
-        return super.onTemplatesLoaded();
-    }
-
-    private registerNavbarButtons() {
-        let isFullscreen = false;
-
-        let navbar = this.templateManager.getTemplate('navBar');
-        let viewerTemplate = this.templateManager.getTemplate('viewer');
-        if (!navbar || !viewerTemplate) return;
-
-        let viewerElement = viewerTemplate.parent;
-
-
-        navbar.onEventTriggered.add((data) => {
-            switch (data.event.type) {
-                case 'pointerdown':
-                    let event: PointerEvent = <PointerEvent>data.event;
-                    if (event.button === 0) {
-                        switch (data.selector) {
-                            case '#fullscreen-button':
-                                if (!isFullscreen) {
-                                    let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
-                                    requestFullScreen.call(viewerElement);
-                                } else {
-                                    let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || document.mozCancelFullScreen
-                                    exitFullscreen.call(document);
-                                }
-
-                                isFullscreen = !isFullscreen;
-                                break;
-                            case '#help-button':
-                                this.showOverlayScreen('help');
-                                break;
-                        }
+            // other events
+            let viewerTemplate = this.templateManager.getTemplate('viewer');
+            let viewerElement = viewerTemplate && viewerTemplate.parent;
+            // full screen
+            let triggerFullscren = (eventData: EventCallback) => {
+                if (viewerElement) {
+                    let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || (<any>document).mozFullScreenElement || (<any>document).msFullscreenElement;
+                    if (!fullscreenElement) {
+                        let requestFullScreen = viewerElement.requestFullscreen || viewerElement.webkitRequestFullscreen || (<any>viewerElement).msRequestFullscreen || (<any>viewerElement).mozRequestFullScreen;
+                        requestFullScreen.call(viewerElement);
+                    } else {
+                        let exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || (<any>document).msExitFullscreen || (<any>document).mozCancelFullScreen
+                        exitFullscreen.call(document);
                     }
-                    break;
+                }
             }
-        });
+
+            this.templateManager.eventManager.registerCallback('navBar', triggerFullscren, 'pointerdown', '#fullscreen-button');
+        }
     }
 
     protected prepareContainerElement() {
@@ -158,7 +135,7 @@ export class DefaultViewer extends AbstractViewer {
         this.setupCamera(meshes);
         this.setupLights(meshes);
 
-        return this.initEnvironment();
+        return this.initEnvironment(meshes);
     }
 
     private setModelMetaData() {
@@ -190,7 +167,7 @@ export class DefaultViewer extends AbstractViewer {
 
     }
 
-    public initEnvironment(): Promise<Scene> {
+    public initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
         if (this.configuration.skybox) {
             // Define a general environment textue
             let texture;
@@ -215,23 +192,75 @@ export class DefaultViewer extends AbstractViewer {
                 }
 
                 this.extendClassWithConfig(box, this.configuration.skybox);
+
+                box && focusMeshes.push(box);
             }
         }
 
         if (this.configuration.ground) {
             let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
 
-            var ground = Mesh.CreateGround('ground', groundConfig.size || 1000, groundConfig.size || 1000, 8, this.scene);
+            let groundSize = groundConfig.size || (this.configuration.skybox && this.configuration.skybox.scale) || 3000;
+
+            let ground = Mesh.CreatePlane("BackgroundPlane", groundSize, this.scene);
+            let backgroundMaterial = new BackgroundMaterial('groundmat', this.scene);
+            ground.rotation.x = Math.PI / 2; // Face up by default.
+            ground.receiveShadows = groundConfig.receiveShadows || false;
+
+            // position the ground correctly
+            let groundPosition = focusMeshes[0].getHierarchyBoundingVectors().min.y;
+            ground.position.y = groundPosition;
+
+            // default values
+            backgroundMaterial.alpha = 0.9;
+            backgroundMaterial.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
+            backgroundMaterial.shadowLevel = 0.5;
+            backgroundMaterial.primaryLevel = 1;
+            backgroundMaterial.primaryColor = new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3);
+            backgroundMaterial.secondaryLevel = 0;
+            backgroundMaterial.tertiaryLevel = 0;
+            backgroundMaterial.useRGBColor = false;
+            backgroundMaterial.enableNoise = true;
+
+            // if config provided, extend the default values
+            if (groundConfig.material) {
+                this.extendClassWithConfig(ground, ground.material);
+            }
+
+            ground.material = backgroundMaterial;
             if (this.configuration.ground === true || groundConfig.shadowOnly) {
-                ground.material = new ShadowOnlyMaterial('groundmat', this.scene);
+                // shadow only:
+                ground.receiveShadows = true;
+                const diffuseTexture = new Texture("https://assets.babylonjs.com/environments/backgroundGround.png", this.scene);
+                diffuseTexture.gammaSpace = false;
+                diffuseTexture.hasAlpha = true;
+                backgroundMaterial.diffuseTexture = diffuseTexture;
+            } else if (groundConfig.mirror) {
+                var mirror = new MirrorTexture("mirror", 512, this.scene);
+                mirror.mirrorPlane = new Plane(0, -1, 0, 0);
+                mirror.renderList = mirror.renderList || [];
+                focusMeshes.length && focusMeshes.forEach(m => {
+                    m && mirror.renderList && mirror.renderList.push(m);
+                });
+
+                backgroundMaterial.reflectionTexture = mirror;
             } else {
-                ground.material = new StandardMaterial('groundmat', this.scene);
+                if (groundConfig.material) {
+                    if (groundConfig.material.diffuseTexture) {
+                        const diffuseTexture = new Texture(groundConfig.material.diffuseTexture, this.scene);
+                        backgroundMaterial.diffuseTexture = diffuseTexture;
+                    }
+                }
+                // ground.material = new StandardMaterial('groundmat', this.scene);
             }
             //default configuration
             if (this.configuration.ground === true) {
                 ground.receiveShadows = true;
-                ground.material.alpha = 0.4;
+                if (ground.material)
+                    ground.material.alpha = 0.4;
             }
+
+
 
 
             this.extendClassWithConfig(ground, groundConfig);
@@ -354,7 +383,7 @@ export class DefaultViewer extends AbstractViewer {
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
                     if (lightConfig.shadowEnabled) {
-                        var shadowGenerator = new BABYLON.ShadowGenerator(512, light);
+                        var shadowGenerator = new ShadowGenerator(512, light);
                         this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                         // add the focues meshes to the shadow list
                         let shadownMap = shadowGenerator.getShadowMap();

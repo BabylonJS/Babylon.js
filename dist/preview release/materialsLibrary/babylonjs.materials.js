@@ -97,7 +97,7 @@ var BABYLON;
                 }
             }
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
@@ -327,7 +327,7 @@ var BABYLON;
             }
             var engine = scene.getEngine();
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
@@ -611,7 +611,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
@@ -922,7 +922,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
@@ -1234,7 +1234,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
@@ -1572,24 +1572,28 @@ var BABYLON;
         });
         // Methods
         WaterMaterial.prototype.addToRenderList = function (node) {
-            if (this._refractionRTT.renderList) {
+            if (this._refractionRTT && this._refractionRTT.renderList) {
                 this._refractionRTT.renderList.push(node);
             }
-            if (this._reflectionRTT.renderList) {
+            if (this._reflectionRTT && this._reflectionRTT.renderList) {
                 this._reflectionRTT.renderList.push(node);
             }
         };
         WaterMaterial.prototype.enableRenderTargets = function (enable) {
             var refreshRate = enable ? 1 : 0;
-            this._refractionRTT.refreshRate = refreshRate;
-            this._reflectionRTT.refreshRate = refreshRate;
+            if (this._refractionRTT) {
+                this._refractionRTT.refreshRate = refreshRate;
+            }
+            if (this._reflectionRTT) {
+                this._reflectionRTT.refreshRate = refreshRate;
+            }
         };
         WaterMaterial.prototype.getRenderList = function () {
-            return this._refractionRTT.renderList;
+            return this._refractionRTT ? this._refractionRTT.renderList : [];
         };
         Object.defineProperty(WaterMaterial.prototype, "renderTargetsEnabled", {
             get: function () {
-                return !(this._refractionRTT.refreshRate === 0);
+                return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
             },
             enumerable: true,
             configurable: true
@@ -1639,7 +1643,7 @@ var BABYLON;
                 }
             }
             BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             if (defines._areMiscDirty) {
                 if (this._fresnelSeparate) {
                     defines.FRESNELSEPARATE = true;
@@ -1655,7 +1659,14 @@ var BABYLON;
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
+            // Configure this
             this._mesh = mesh;
+            if (this._waitingRenderList) {
+                for (var i = 0; i < this._waitingRenderList.length; i++) {
+                    this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                }
+                this._waitingRenderList = null;
+            }
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -1922,8 +1933,12 @@ var BABYLON;
         WaterMaterial.prototype.serialize = function () {
             var serializationObject = BABYLON.SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.reflectionTexture.isRenderTarget = true;
-            serializationObject.refractionTexture.isRenderTarget = true;
+            serializationObject.renderList = [];
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+                    serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
+                }
+            }
             return serializationObject;
         };
         WaterMaterial.prototype.getClassName = function () {
@@ -1931,7 +1946,9 @@ var BABYLON;
         };
         // Statics
         WaterMaterial.Parse = function (source, scene, rootUrl) {
-            return BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
+            var mat = BABYLON.SerializationHelper.Parse(function () { return new WaterMaterial(source.name, scene); }, source, scene, rootUrl);
+            mat._waitingRenderList = source.renderList;
+            return mat;
         };
         WaterMaterial.CreateDefaultMesh = function (name, scene) {
             var mesh = BABYLON.Mesh.CreateGround(name, 512, 512, 32, scene, false);
@@ -2477,7 +2494,7 @@ var BABYLON;
                 defines.markAsUnprocessed();
             }
             // Misc.   
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
@@ -2894,7 +2911,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
@@ -3300,7 +3317,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame
@@ -3641,7 +3658,7 @@ var BABYLON;
                     return true;
                 }
             }
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
             // Get correct effect      
@@ -3890,7 +3907,7 @@ var BABYLON;
                 defines.PREMULTIPLYALPHA = !defines.PREMULTIPLYALPHA;
                 defines.markAsUnprocessed();
             }
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();
@@ -4294,6 +4311,9 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        StandardMaterial_OldVer.prototype._shouldTurnAlphaTestOn = function (mesh) {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        };
         StandardMaterial_OldVer.prototype.getClassName = function () {
             return "StandardMaterial_OldVer";
         };
@@ -4539,7 +4559,7 @@ var BABYLON;
                 }
             }
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Attribs
             BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
             // Values that need to be evaluated on every frame
@@ -5936,7 +5956,7 @@ vColor=color;\n\
             var name = "custom_" + CustomMaterial.ShaderIndexer;
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
-            var fn_afterBind = this._afterBind;
+            var fn_afterBind = this._afterBind.bind(this);
             this._afterBind = function (m, e) {
                 if (!e) {
                     return;
@@ -6129,7 +6149,7 @@ var BABYLON;
             // High level
             defines.CELLBASIC = !this.computeHighLevel;
             // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
             // Lights
             defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
             // Values that need to be evaluated on every frame

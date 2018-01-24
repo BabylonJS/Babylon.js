@@ -140,8 +140,8 @@ module BABYLON {
 		*/
         private _mesh: Nullable<AbstractMesh> = null;
 
-        private _refractionRTT: RenderTargetTexture;
-        private _reflectionRTT: RenderTargetTexture;
+        private _refractionRTT: Nullable<RenderTargetTexture>;
+        private _reflectionRTT: Nullable<RenderTargetTexture>;
 
         private _reflectionTransform: Matrix = Matrix.Zero();
         private _lastTime: number = 0;
@@ -150,6 +150,8 @@ module BABYLON {
         private _renderId: number;
 
         private _useLogarithmicDepth: boolean;
+
+        private _waitingRenderList: Nullable<string[]>;
 
         /**
 		* Constructor
@@ -162,8 +164,8 @@ module BABYLON {
             // Create render targets
             this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
                 this._renderTargets.reset();
-                this._renderTargets.push(this._reflectionRTT);
-                this._renderTargets.push(this._refractionRTT);
+                this._renderTargets.push(<RenderTargetTexture>this._reflectionRTT);
+                this._renderTargets.push(<RenderTargetTexture>this._refractionRTT);
 
                 return this._renderTargets;
             }
@@ -181,21 +183,21 @@ module BABYLON {
         }
 
         // Get / Set
-        public get refractionTexture(): RenderTargetTexture {
+        public get refractionTexture(): Nullable<RenderTargetTexture> {
             return this._refractionRTT;
         }
 
-        public get reflectionTexture(): RenderTargetTexture {
+        public get reflectionTexture(): Nullable<RenderTargetTexture> {
             return this._reflectionRTT;
         }
 
         // Methods
         public addToRenderList(node: any): void {
-            if (this._refractionRTT.renderList) {
+            if (this._refractionRTT && this._refractionRTT.renderList) {
                 this._refractionRTT.renderList.push(node);
             }
 
-            if (this._reflectionRTT.renderList) {
+            if (this._reflectionRTT && this._reflectionRTT.renderList) {
                 this._reflectionRTT.renderList.push(node);
             }
         }
@@ -203,16 +205,21 @@ module BABYLON {
         public enableRenderTargets(enable: boolean): void {
             var refreshRate = enable ? 1 : 0;
 
-            this._refractionRTT.refreshRate = refreshRate;
-            this._reflectionRTT.refreshRate = refreshRate;
+            if (this._refractionRTT) {
+                this._refractionRTT.refreshRate = refreshRate;
+            }
+
+            if (this._reflectionRTT) {
+                this._reflectionRTT.refreshRate = refreshRate;
+            }
         }
 
         public getRenderList(): Nullable<AbstractMesh[]> {
-            return this._refractionRTT.renderList;
+            return this._refractionRTT ? this._refractionRTT.renderList : [];
         }
 
         public get renderTargetsEnabled(): boolean {
-            return !(this._refractionRTT.refreshRate === 0);
+            return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
         }
 
         public needAlphaBlending(): boolean {
@@ -270,7 +277,7 @@ module BABYLON {
 
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             if (defines._areMiscDirty) {
                 if (this._fresnelSeparate) {
@@ -292,7 +299,16 @@ module BABYLON {
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
+            // Configure this
             this._mesh = mesh;
+
+            if (this._waitingRenderList) {
+                for (var i = 0; i < this._waitingRenderList.length; i++) {
+                    this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                }
+
+                this._waitingRenderList = null;
+            }
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -598,12 +614,12 @@ module BABYLON {
                 this.bumpTexture.dispose();
             }
 
-            var index = this.getScene().customRenderTargets.indexOf(this._refractionRTT);
+            var index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._refractionRTT);
             if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
             index = -1;
-            index = this.getScene().customRenderTargets.indexOf(this._reflectionRTT);
+            index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._reflectionRTT);
             if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
@@ -625,8 +641,14 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.reflectionTexture.isRenderTarget = true;
-            serializationObject.refractionTexture.isRenderTarget = true;
+
+            serializationObject.renderList = [];
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+                    serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
+                }
+            }
+
             return serializationObject;
         }
 
@@ -636,7 +658,10 @@ module BABYLON {
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
-            return SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+            var mat = SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+            mat._waitingRenderList = source.renderList;
+
+            return mat;
         }
 
         public static CreateDefaultMesh(name: string, scene: Scene): Mesh {

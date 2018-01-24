@@ -1,5 +1,6 @@
 /// <reference types="babylonjs"/>
 
+
 declare module 'babylonjs-materials' { 
     export = BABYLON; 
 }
@@ -220,13 +221,14 @@ declare module BABYLON {
         private _lastDeltaTime;
         private _renderId;
         private _useLogarithmicDepth;
+        private _waitingRenderList;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
         useLogarithmicDepth: boolean;
-        readonly refractionTexture: RenderTargetTexture;
-        readonly reflectionTexture: RenderTargetTexture;
+        readonly refractionTexture: Nullable<RenderTargetTexture>;
+        readonly reflectionTexture: Nullable<RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
         getRenderList(): Nullable<AbstractMesh[]>;
@@ -726,6 +728,7 @@ declare module BABYLON {
          * Sets the Color Grading 2D Lookup Texture.
          */
         cameraColorGradingTexture: Nullable<BaseTexture>;
+        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean;
         customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) => string;
         protected _renderTargets: SmartArray<RenderTargetTexture>;
         protected _worldViewProjectionMatrix: Matrix;
