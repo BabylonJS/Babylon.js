@@ -120,7 +120,7 @@ module BABYLON {
                 defines.markAsUnprocessed();
             }
 
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
 
             // Get correct effect      
             if (defines.isDirty) {

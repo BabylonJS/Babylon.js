@@ -3,28 +3,51 @@
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;
 
+    /**
+     * Class used to hold a RBG color
+     */
     export class Color3 {
+
         /**
-         * Creates a new Color3 object from red, green, blue values, all between 0 and 1.  
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0) 
+         * @param b defines the blue component (between 0 and 1, default is 0)
          */
-        constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
+        constructor(
+            /**
+             * Defines the red component (between 0 and 1, default is 0)
+             */
+            public r: number = 0, 
+            /**
+             * Defines the green component (between 0 and 1, default is 0) 
+             */
+            public g: number = 0, 
+            /**
+             * Defines the blue component (between 0 and 1, default is 0)
+             */
+            public b: number = 0) {
         }
 
         /**
-         * Returns a string with the Color3 current values.  
+         * Creates a string with the Color3 current values
+         * @returns the string representation of the Color3 object
          */
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         }
 
         /**
-         * Returns the string "Color3".
+         * Returns the string "Color3"
+         * @returns "Color3"
          */
         public getClassName(): string {
             return "Color3";
         }
+
         /**
-         * Returns the Color3 hash code.  
+         * Compute the Color3 hash code
+         * @returns an unique number that can be used to hash Color3 objects
          */
         public getHashCode(): number {
             let hash = this.r || 0;
@@ -34,9 +57,12 @@
         }
 
         // Operators
+
         /**
-         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
-         * Returns the Color3.  
+         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements  
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color3 object
          */
         public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
@@ -51,14 +77,17 @@
         }
 
         /**
-         * Returns a new Color4 object from the current Color3 and the passed alpha.  
+         * Returns a new {BABYLON.Color4} object from the current Color3 and the passed alpha 
+         * @param alpha defines the alpha component on the new {BABYLON.Color4} object (default is 1)
+         * @returns a new {BABYLON.Color4} object
          */
         public toColor4(alpha = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
         }
 
         /**
-         * Returns a new array populated with 3 numeric elements : red, green and blue values.  
+         * Returns a new array populated with 3 numeric elements : red, green and blue values  
+         * @returns the new array
          */
         public asArray(): number[] {
             var result = new Array<number>();
@@ -67,23 +96,27 @@
         }
 
         /**
-         * Returns the luminance value (float).  
+         * Returns the luminance value
+         * @returns a float value
          */
         public toLuminance(): number {
             return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
         }
 
         /**
-         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object.  
-         * Returns this new object.  
+         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object 
+         * @param otherColor defines the second operand
+         * @returns the new Color3 object
          */
         public multiply(otherColor: Color3): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
 
         /**
-         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result".  
-         * Returns the current Color3.  
+         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result"
+         * @param otherColor defines the second operand
+         * @param result defines the Color3 object where to store the result
+         * @returns the current Color3
          */
         public multiplyToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r * otherColor.r;
@@ -93,30 +126,39 @@
         }
 
         /**
-         * Boolean : True if the rgb values are equal to the passed ones.  
+         * Determines equality between Color3 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgb values are equal to the passed ones 
          */
         public equals(otherColor: Color3): boolean {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         }
 
         /**
-         * Boolean : True if the rgb values are equal to the passed ones.  
+         * Determines equality between the current Color3 object and a set of r,b,g values
+         * @param r defines the red component to check
+         * @param g defines the green component to check
+         * @param b defines the blue component to check
+         * @returns true if the rgb values are equal to the passed ones 
          */
         public equalsFloats(r: number, g: number, b: number): boolean {
             return this.r === r && this.g === g && this.b === b;
         }
 
         /**
-         * Multiplies in place each rgb value by scale.  
-         * Returns the updated Color3.  
+         * Multiplies in place each rgb value by scale 
+         * @param scale defines the scaling factor
+         * @returns the updated Color3.  
          */
         public scale(scale: number): Color3 {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         }
 
         /**
-         * Multiplies the rgb values by scale and stores the result into "result".  
-         * Returns the unmodified current Color3.  
+         * Multiplies the rgb values by scale and stores the result into "result"
+         * @param scale defines the scaling factor 
+         * @param result defines the Color3 object where to store the result
+         * @returns the unmodified current Color3.  
          */
         public scaleToRef(scale: number, result: Color3): Color3 {
             result.r = this.r * scale;
@@ -126,12 +168,11 @@
         }
 
         /**
-         * Clamps the rgb values by the min and max values and stores the result into "result".
-         * Returns the unmodified current Color3.
-         * @param min - minimum clamping value.  Defaults to 0
-         * @param max - maximum clamping value.  Defaults to 1
-         * @param result - color to store the result into.
-         * @returns - the original Color3
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into
+         * @returns the original Color3
          */
         public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
             result.r = BABYLON.Scalar.Clamp(this.r, min, max);
@@ -141,15 +182,19 @@
         }
 
         /**
-         * Returns a new Color3 set with the added values of the current Color3 and of the passed one.  
+         * Creates a new Color3 set with the added values of the current Color3 and of the passed one
+         * @param otherColor defines the second operand
+         * @returns the new Color3
          */
         public add(otherColor: Color3): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         }
 
         /**
-         * Stores the result of the addition of the current Color3 and passed one rgb values into "result".  
-         * Returns the unmodified current Color3.  
+         * Stores the result of the addition of the current Color3 and passed one rgb values into "result"
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
          */
         public addToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r + otherColor.r;
@@ -159,15 +204,19 @@
         }
 
         /**
-         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3 .  
+         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3
+         * @param otherColor defines the second operand
+         * @returns the new Color3
          */
         public subtract(otherColor: Color3): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         }
 
         /**
-         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result".  
-         * Returns the unmodified current Color3.  
+         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result"  
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
          */
         public subtractToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r - otherColor.r;
@@ -177,15 +226,17 @@
         }
 
         /**
-         * Returns a new Color3 copied the current one.  
+         * Copy the current object
+         * @returns a new Color3 copied the current one
          */
         public clone(): Color3 {
             return new Color3(this.r, this.g, this.b);
         }
 
         /**
-         * Copies the rgb values from the source in the current Color3.  
-         * Returns the updated Color3.  
+         * Copies the rgb values from the source in the current Color3
+         * @param source defines the source Color3 object
+         * @returns the updated Color3 object
          */
         public copyFrom(source: Color3): Color3 {
             this.r = source.r;
@@ -193,9 +244,13 @@
             this.b = source.b;
             return this;
         }
+
         /**
-         * Updates the Color3 rgb values from the passed floats.  
-         * Returns the Color3.  
+         * Updates the Color3 rgb values from the passed floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
          */
         public copyFromFloats(r: number, g: number, b: number): Color3 {
             this.r = r;
@@ -205,15 +260,19 @@
         }
 
         /**
-         * Updates the Color3 rgb values from the passed floats.  
-         * Returns the Color3.  
+         * Updates the Color3 rgb values from the passed floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
          */
         public set(r: number, g: number, b: number): Color3 {
             return this.copyFromFloats(r, g, b);
         }
 
         /**
-         * Returns the Color3 hexadecimal code as a string.  
+         * Compute the Color3 hexadecimal code as a string  
+         * @returns a string containing the hexadecimal representation of the Color3 object
          */
         public toHexString(): string {
             var intR = (this.r * 255) | 0;
@@ -223,7 +282,8 @@
         }
 
         /**
-         * Returns a new Color3 converted to linear space.  
+         * Computes a new Color3 converted from the current one to linear space
+         * @returns a new Color3 object
          */
         public toLinearSpace(): Color3 {
             var convertedColor = new Color3();
@@ -232,8 +292,9 @@
         }
 
         /**
-         * Converts the Color3 values to linear space and stores the result in "convertedColor".  
-         * Returns the unmodified Color3.  
+         * Converts the Color3 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the linear space version 
+         * @returns the unmodified Color3
          */
         public toLinearSpaceToRef(convertedColor: Color3): Color3 {
             convertedColor.r = Math.pow(this.r, ToLinearSpace);
@@ -243,7 +304,8 @@
         }
 
         /**
-         * Returns a new Color3 converted to gamma space.  
+         * Computes a new Color3 converted from the current one to gamma space
+         * @returns a new Color3 object
          */
         public toGammaSpace(): Color3 {
             var convertedColor = new Color3();
@@ -252,8 +314,9 @@
         }
 
         /**
-         * Converts the Color3 values to gamma space and stores the result in "convertedColor".  
-         * Returns the unmodified Color3.  
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the gamma space version 
+         * @returns the unmodified Color3
          */
         public toGammaSpaceToRef(convertedColor: Color3): Color3 {
             convertedColor.r = Math.pow(this.r, ToGammaSpace);
@@ -263,8 +326,11 @@
         }
 
         // Statics
+
         /**
-         * Creates a new Color3 from the string containing valid hexadecimal values.  
+         * Creates a new Color3 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color3 object 
          */
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
@@ -280,21 +346,32 @@
         }
 
         /**
-         * Creates a new Vector3 from the startind index of the passed array.
+         * Creates a new Vector3 from the starting index of the passed array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns a new Color3 object
          */
         public static FromArray(array: ArrayLike<number>, offset: number = 0): Color3 {
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
         /**
-         * Creates a new Color3 from integer values ( < 256).  
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @returns a new Color3 object
          */
         public static FromInts(r: number, g: number, b: number): Color3 {
             return new Color3(r / 255.0, g / 255.0, b / 255.0);
         }
 
         /**
-         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3.  
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
+         * @param start defines the start Color3 value
+         * @param end defines the end Color3 value
+         * @param amount defines the gradient value between start and end
+         * @returns a new Color3 object
          */
         public static Lerp(start: Color3, end: Color3, amount: number): Color3 {
             var r = start.r + ((end.r - start.r) * amount);
@@ -303,30 +380,99 @@
             return new Color3(r, g, b);
         }
 
+        /**
+         * Returns a Color3 value containing a red color
+         * @returns a new Color3 object
+         */
         public static Red(): Color3 { return new Color3(1, 0, 0); }
+        /**
+         * Returns a Color3 value containing a green color
+         * @returns a new Color3 object
+         */        
         public static Green(): Color3 { return new Color3(0, 1, 0); }
+        /**
+         * Returns a Color3 value containing a blue color
+         * @returns a new Color3 object
+         */        
         public static Blue(): Color3 { return new Color3(0, 0, 1); }
+        /**
+         * Returns a Color3 value containing a black color
+         * @returns a new Color3 object
+         */        
         public static Black(): Color3 { return new Color3(0, 0, 0); }
+        /**
+         * Returns a Color3 value containing a white color
+         * @returns a new Color3 object
+         */        
         public static White(): Color3 { return new Color3(1, 1, 1); }
+        /**
+         * Returns a Color3 value containing a purple color
+         * @returns a new Color3 object
+         */        
         public static Purple(): Color3 { return new Color3(0.5, 0, 0.5); }
+        /**
+         * Returns a Color3 value containing a magenta color
+         * @returns a new Color3 object
+         */        
         public static Magenta(): Color3 { return new Color3(1, 0, 1); }
+        /**
+         * Returns a Color3 value containing a yellow color
+         * @returns a new Color3 object
+         */        
         public static Yellow(): Color3 { return new Color3(1, 1, 0); }
+        /**
+         * Returns a Color3 value containing a gray color
+         * @returns a new Color3 object
+         */        
         public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
+        /**
+         * Returns a Color3 value containing a teal color
+         * @returns a new Color3 object
+         */        
         public static Teal(): Color3 { return new Color3(0, 1.0, 1.0); }
+        /**
+         * Returns a Color3 value containing a random color
+         * @returns a new Color3 object
+         */     
         public static Random(): Color3 { return new Color3(Math.random(), Math.random(), Math.random()); }
     }
 
+    /**
+     * Class used to hold a RBGA color
+     */    
     export class Color4 {
         /**
-         * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.  
+         * Creates a new Color4 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0) 
+         * @param b defines the blue component (between 0 and 1, default is 0)
+         * @param a defines the alpha component (between 0 and 1, default is 1)
          */
-        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 1) {
+        constructor(
+            /**
+             * Defines the red component (between 0 and 1, default is 0)
+             */
+            public r: number = 0, 
+            /**
+             * Defines the green component (between 0 and 1, default is 0) 
+             */
+            public g: number = 0, 
+            /**
+             * Defines the blue component (between 0 and 1, default is 0)
+             */
+            public b: number = 0, 
+            /**
+             * Defines the alpha component (between 0 and 1, default is 1)
+             */
+            public a: number = 1) {
         }
 
         // Operators
+
         /**
-         * Adds in place the passed Color4 values to the current Color4.  
-         * Returns the updated Color4.  
+         * Adds in place the passed Color4 values to the current Color4 object
+         * @param right defines the second operand
+         * @returns the current updated Color4 object
          */
         public addInPlace(right: Color4): Color4 {
             this.r += right.r;
@@ -337,7 +483,8 @@
         }
 
         /**
-         * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
+         * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
+         * @returns the new array
          */
         public asArray(): number[] {
             var result = new Array<number>();
@@ -346,8 +493,10 @@
         }
 
         /**
-         * Stores from the starting index in the passed array the Color4 successive values.  
-         * Returns the Color4.  
+         * Stores from the starting index in the passed array the Color4 successive values 
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color4 object
          */
         public toArray(array: number[], index?: number): Color4 {
             if (index === undefined) {
@@ -361,21 +510,28 @@
         }
 
         /**
-         * Returns a new Color4 set with the added values of the current Color4 and of the passed one.  
+         * Creates a new Color4 set with the added values of the current Color4 and of the passed one 
+         * @param right defines the second operand
+         * @returns a new Color4 object
          */
         public add(right: Color4): Color4 {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
         }
+
         /**
-         * Returns a new Color4 set with the subtracted values of the passed one from the current Color4.    
+         * Creates a new Color4 set with the subtracted values of the passed one from the current Color4   
+         * @param right defines the second operand
+         * @returns a new Color4 object
          */
         public subtract(right: Color4): Color4 {
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         }
 
         /**
-         * Subtracts the passed ones from the current Color4 values and stores the results in "result".  
-         * Returns the Color4.  
+         * Subtracts the passed ones from the current Color4 values and stores the results in "result"
+         * @param right defines the second operand
+         * @param result defines the Color4 object where to store the result
+         * @returns the current Color4 object 
          */
         public subtractToRef(right: Color4, result: Color4): Color4 {
             result.r = this.r - right.r;
@@ -384,16 +540,21 @@
             result.a = this.a - right.a;
             return this;
         }
+
         /**
-         * Creates a new Color4 with the current Color4 values multiplied by scale.  
+         * Creates a new Color4 with the current Color4 values multiplied by scale
+         * @param scale defines the scaling factor to apply
+         * @returns a new Color4 object  
          */
         public scale(scale: number): Color4 {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
         }
 
         /**
-         * Multiplies the current Color4 values by scale and stores the result in "result".  
-         * Returns the Color4.  
+         * Multiplies the current Color4 values by scale and stores the result in "result"
+         * @param scale defines the scaling factor to apply
+         * @param result defines the Color4 object where to store the result
+         * @returns the current Color4.  
          */
         public scaleToRef(scale: number, result: Color4): Color4 {
             result.r = this.r * scale;
@@ -404,12 +565,11 @@
         }
 
         /**
-         * Clamps the rgb values by the min and max values and stores the result into "result".
-         * Returns the unmodified current Color4.
-         * @param min - minimum clamping value.  Defaults to 0
-         * @param max - maximum clamping value.  Defaults to 1
-         * @param result - color to store the result into.
-         * @returns - the original Color4
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into.
+         * @returns the cuurent Color4
          */
         public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
             result.r = BABYLON.Scalar.Clamp(this.r, min, max);
@@ -420,19 +580,19 @@
         }
 
         /**
-          * Multipy an RGBA Color4 value by another and return a new Color4 object
-          * @param color The Color4 (RGBA) value to multiply by
-          * @returns A new Color4.
+          * Multipy an Color4 value by another and return a new Color4 object
+          * @param color defines the Color4 value to multiply by
+          * @returns a new Color4 object
           */
         public multiply(color: Color4): Color4 {
             return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
         }
 
         /**
-         * Multipy an RGBA Color4 value by another and push the result in a reference value
-         * @param color The Color4 (RGBA) value to multiply by
-         * @param result The Color4 (RGBA) to fill the result in 
-         * @returns the result Color4.
+         * Multipy a Color4 value by another and push the result in a reference value
+         * @param color defines the Color4 value to multiply by
+         * @param result defines the Color4 to fill the result in 
+         * @returns the result Color4
          */
         public multiplyToRef(color: Color4, result: Color4): Color4 {
             result.r = this.r * color.r;
@@ -441,20 +601,26 @@
             result.a = this.a * color.a;
             return result;
         }
+
         /**
-         * Returns a string with the Color4 values.  
+         * Creates a string with the Color4 current values
+         * @returns the string representation of the Color4 object
          */
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
+
         /**
          * Returns the string "Color4"
+         * @returns "Color4"
          */
         public getClassName(): string {
             return "Color4";
         }
+
         /**
-         * Return the Color4 hash code as a number.  
+         * Compute the Color4 hash code
+         * @returns an unique number that can be used to hash Color4 objects
          */
         public getHashCode(): number {
             let hash = this.r || 0;
@@ -463,15 +629,19 @@
             hash = (hash * 397) ^ (this.a || 0);
             return hash;
         }
+
         /**
-         * Creates a new Color4 copied from the current one.  
+         * Creates a new Color4 copied from the current one
+         * @returns a new Color4 object
          */
         public clone(): Color4 {
             return new Color4(this.r, this.g, this.b, this.a);
         }
+
         /**
-         * Copies the passed Color4 values into the current one.  
-         * Returns the updated Color4.  
+         * Copies the passed Color4 values into the current one
+         * @param source defines the source Color4 object
+         * @returns the current updated Color4 object
          */
         public copyFrom(source: Color4): Color4 {
             this.r = source.r;
@@ -482,8 +652,12 @@
         }
 
         /**
-         * Copies the passed float values into the current one.  
-         * Returns the updated Color4.  
+         * Copies the passed float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object 
          */
         public copyFromFloats(r: number, g: number, b: number, a: number): Color4 {
             this.r = r;
@@ -494,14 +668,20 @@
         }
 
         /**
-         * Copies the passed float values into the current one.  
-         * Returns the updated Color4.  
+         * Copies the passed float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object 
          */
         public set(r: number, g: number, b: number, a: number): Color4 {
             return this.copyFromFloats(r, g, b, a);
         }
+
         /**
-         * Returns a string containing the hexadecimal Color4 code.  
+         * Compute the Color4 hexadecimal code as a string  
+         * @returns a string containing the hexadecimal representation of the Color4 object
          */
         public toHexString(): string {
             var intR = (this.r * 255) | 0;
@@ -512,7 +692,8 @@
         }
 
         /**
-         * Returns a new Color4 converted to linear space.  
+         * Computes a new Color4 converted from the current one to linear space
+         * @returns a new Color4 object
          */
         public toLinearSpace(): Color4 {
             var convertedColor = new Color4();
@@ -521,8 +702,9 @@
         }
 
         /**
-         * Converts the Color4 values to linear space and stores the result in "convertedColor".  
-         * Returns the unmodified Color4.  
+         * Converts the Color4 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the linear space version 
+         * @returns the unmodified Color4
          */
         public toLinearSpaceToRef(convertedColor: Color4): Color4 {
             convertedColor.r = Math.pow(this.r, ToLinearSpace);
@@ -533,7 +715,8 @@
         }
 
         /**
-         * Returns a new Color4 converted to gamma space.  
+         * Computes a new Color4 converted from the current one to gamma space
+         * @returns a new Color4 object
          */
         public toGammaSpace(): Color4 {
             var convertedColor = new Color4();
@@ -542,8 +725,9 @@
         }
 
         /**
-         * Converts the Color4 values to gamma space and stores the result in "convertedColor".  
-         * Returns the unmodified Color4.  
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the gamma space version 
+         * @returns the unmodified Color4
          */
         public toGammaSpaceToRef(convertedColor: Color4): Color4 {
             convertedColor.r = Math.pow(this.r, ToGammaSpace);
@@ -554,8 +738,11 @@
         }
 
         // Statics
+
         /**
-         * Creates a new Color4 from the valid hexadecimal value contained in the passed string.  
+         * Creates a new Color4 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color4 object 
          */
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
@@ -572,15 +759,24 @@
         }
 
         /**
-         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 and the right Color4.  
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @returns a new Color4 object
          */
         public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
             var result = new Color4(0.0, 0.0, 0.0, 0.0);
             Color4.LerpToRef(left, right, amount, result);
             return result;
         }
+
         /**
-         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @param result defines the Color4 object where to store data
          */
         public static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void {
             result.r = left.r + (right.r - left.r) * amount;
@@ -590,19 +786,34 @@
         }
 
         /**
-         * Creates a new Color4 from the starting index element of the passed array.
+         * Creates a new Color4 from the starting index element of the passed array
+         * @param array defines the source array to read from
+         * @param offset defines the offset in the source array
+         * @returns a new Color4 object
          */
         public static FromArray(array: ArrayLike<number>, offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 
         /**
-         * Creates a new Color4 from the passed integers ( < 256 ).
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @param a defines the alpha component to read from (value between 0 and 255)
+         * @returns a new Color3 object
          */
         public static FromInts(r: number, g: number, b: number, a: number): Color4 {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
         }
 
+        /**
+         * Check the content of a given array and convert it to an array containing RGBA data
+         * If the original array was already containing count * 4 values then it is returned directly
+         * @param colors defines the array to check
+         * @param count defines the number of RGBA data to expect
+         * @returns an array containing count * 4 values (RGBA)
+         */
         public static CheckColors4(colors: number[], count: number): number[] {
             // Check if color3 was used
             if (colors.length === count * 3) {
@@ -3393,7 +3604,7 @@
          * - a scale vector3 passed as a reference to update, 
          * - a rotation quaternion passed as a reference to update,
          * - a translation vector3 passed as a reference to update.  
-         * Returns the boolean `true`.  
+         * Returns the true if operation was successful.  
          */
         public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
             translation.x = this.m[12];
