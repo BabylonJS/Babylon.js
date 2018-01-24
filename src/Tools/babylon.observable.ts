@@ -39,6 +39,12 @@
          * The current object in the bubbling phase
          */
         public currentTarget?: any;
+
+        /**
+         * This will be populated with the return value of the last function that was executed.
+         * If it is the first function in the callback chain it will be the event data.
+         */
+        public lastReturnValue?: any;
     }
 
     /**
@@ -187,13 +193,14 @@
             state.target = target;
             state.currentTarget = currentTarget;
             state.skipNextObservers = false;
+            state.lastReturnValue = eventData;
 
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
                     if (obs.scope) {
-                        obs.callback.apply(obs.scope, [eventData, state])
+                        state.lastReturnValue = obs.callback.apply(obs.scope, [eventData, state])
                     } else {
-                        obs.callback(eventData, state);
+                        state.lastReturnValue = obs.callback(eventData, state);
                     }
                 }
                 if (state.skipNextObservers) {
@@ -241,11 +248,13 @@
                 if (obs.mask & mask) {
                     if (obs.scope) {
                         // TODO - I can add the variable from the last function here. Requires changing callback sig
-                        p = p.then(() => {
+                        p = p.then((lastReturnedValue) => {
+                            state.lastReturnValue = lastReturnedValue;
                             return obs.callback.apply(obs.scope, [eventData, state]);
                         });
                     } else {
-                        p = p.then(() => {
+                        p = p.then((lastReturnedValue) => {
+                            state.lastReturnValue = lastReturnedValue;
                             return obs.callback(eventData, state);
                         });
                     }
