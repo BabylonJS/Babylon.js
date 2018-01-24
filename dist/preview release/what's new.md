@@ -6,6 +6,7 @@
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
 - `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
+- Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
 - Tons of functions and classes received the code comments they deserved (All the community)
@@ -32,6 +33,7 @@
    ([carloslanderas](https://github.com/carloslanderas))
 
 ## Bug fixes
+- Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 

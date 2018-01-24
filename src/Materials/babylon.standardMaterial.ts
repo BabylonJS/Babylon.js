@@ -108,7 +108,7 @@ module BABYLON {
     export class StandardMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
         private _diffuseTexture: Nullable<BaseTexture>;;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public diffuseTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("ambientTexture")
@@ -118,7 +118,7 @@ module BABYLON {
 
         @serializeAsTexture("opacityTexture")
         private _opacityTexture: Nullable<BaseTexture>;;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public opacityTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("reflectionTexture")
@@ -233,7 +233,7 @@ module BABYLON {
 
         @serializeAsFresnelParameters("opacityFresnelParameters")
         private _opacityFresnelParameters: FresnelParameters;
-        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
+        @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
         public opacityFresnelParameters: FresnelParameters;
 
 
@@ -739,13 +739,13 @@ module BABYLON {
             }
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, this._shouldTurnAlphaTestOn(mesh));
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
             // Get correct effect      
             if (defines.isDirty) {
