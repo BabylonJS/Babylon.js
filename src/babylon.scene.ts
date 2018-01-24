@@ -4834,5 +4834,16 @@
             });
             return request;
         }
+
+        /** @ignore */
+        public _loadFileAsync(url: string, useDatabase?: boolean, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+            return new Promise((resolve, reject) => {
+                this._loadFile(url, (data) => {
+                    resolve(data);
+                }, undefined, useDatabase, useArrayBuffer, (request, exception) => {
+                    reject(exception);
+                })
+            });
+        }
     }
 }

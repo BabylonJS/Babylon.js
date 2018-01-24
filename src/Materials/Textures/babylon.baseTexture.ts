@@ -13,7 +13,7 @@
             }
             this._hasAlpha = value;
             if (this._scene) {
-                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+                this._scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag | Material.MiscDirtyFlag);
             }
         }
         public get hasAlpha(): boolean {
