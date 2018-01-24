@@ -4,45 +4,135 @@ declare var VRFrameData: any;
 
 module BABYLON {
     /**
-     * This is a copy of VRPose.
+     * This is a copy of VRPose. See https://developer.mozilla.org/en-US/docs/Web/API/VRPose
      * IMPORTANT!! The data is right-hand data.
      * @export
      * @interface DevicePose
      */
     export interface DevicePose {
+        /**
+         * The position of the device, values in array are [x,y,z].
+         */
         readonly position?: Float32Array;
+        /**
+         * The linearVelocity of the device, values in array are [x,y,z].
+         */
         readonly linearVelocity?: Float32Array;
+        /**
+         * The linearAcceleration of the device, values in array are [x,y,z].
+         */
         readonly linearAcceleration?: Float32Array;
 
+        /**
+         * The orientation of the device in a quaternion array, values in array are [x,y,z,w].
+         */
         readonly orientation?: Float32Array;
+        /**
+         * The angularVelocity of the device, values in array are [x,y,z].
+         */
         readonly angularVelocity?: Float32Array;
+        /**
+         * The angularAcceleration of the device, values in array are [x,y,z].
+         */
         readonly angularAcceleration?: Float32Array;
     }
 
+     /**
+     * Interface representing a pose controlled object in Babylon.
+     * A pose controlled object has both regular pose values as well as pose values 
+     * from an external device such as a VR head mounted display
+     */
     export interface PoseControlled {
+        /**
+         * The position of the object in babylon space.
+         */
         position: Vector3;
+        /**
+         * The rotation quaternion of the object in babylon space.
+         */
         rotationQuaternion: Quaternion;
+        /**
+         * The position of the device in babylon space.
+         */
         devicePosition?: Vector3;
+        /**
+         * The rotation quaternion of the device in babylon space.
+         */
         deviceRotationQuaternion: Quaternion;
+        /**
+         * The raw pose coming from the device.
+         */
         rawPose: Nullable<DevicePose>;
+        /**
+         * The scale of the device to be used when translating from device space to babylon space.
+         */
         deviceScaleFactor: number;
+        /**
+         * Updates the poseControlled values based on the input device pose.
+         * @param poseData the pose data to update the object with
+         */
         updateFromDevice(poseData: DevicePose): void;
     }
 
+    /**
+     * Set of options to customize the webVRCamera
+     */
     export interface WebVROptions {
-        trackPosition?: boolean; //for the sake of your users - set it to true.
+        /**
+         * Sets if the webVR camera should be tracked to the vrDevice. (default: true)
+         */
+        trackPosition?: boolean;
+        /**
+         * Sets the scale of the vrDevice in babylon space. (default: 1)
+         */
         positionScale?: number;
-        displayName?: string; //if there are more than one VRDisplays.
-        controllerMeshes?: boolean; // should the native controller meshes be initialized
-        defaultLightingOnControllers?: boolean; // creating a default HemiLight only on controllers
-        useCustomVRButton?: boolean; // if you don't want to use the default VR button of the helper
-        customVRButton?: HTMLButtonElement; //if you'd like to provide your own button to the VRHelper
-        rayLength?: number; // to change the length of the ray for gaze/controllers.
-        defaultHeight?: number; // to change the default offset from the ground to account for user's height
+        /**
+         * If there are more than one VRDisplays, this will choose the display matching this name. (default: pick first vrDisplay)
+         */
+        displayName?: string;
+        /**
+         * Should the native controller meshes be initialized. (default: true)
+         */
+        controllerMeshes?: boolean;
+        /**
+         * Creating a default HemiLight only on controllers. (default: true)
+         */
+        defaultLightingOnControllers?: boolean;
+        /**
+         * If you don't want to use the default VR button of the helper. (default: false)
+         */
+        useCustomVRButton?: boolean;
+
+        /**
+         * If you'd like to provide your own button to the VRHelper. (default: standard babylon vr button)
+         */
+        customVRButton?: HTMLButtonElement;
+
+        /**
+         * To change the length of the ray for gaze/controllers. (default: 100)
+         */
+        rayLength?: number;
+
+        /**
+         * To change the default offset from the ground to account for user's height. (default: 1.7)
+         */
+        defaultHeight?: number;
+
     }
 
+    /**
+     * This represents a WebVR camera.
+     * The WebVR camera is Babylon's simple interface to interaction with Windows Mixed Reality, HTC Vive and Oculus Rift.
+     * @example http://doc.babylonjs.com/how_to/webvr_camera
+     */
     export class WebVRFreeCamera extends FreeCamera implements PoseControlled {
+        /**
+         * The vrDisplay tied to the camera. See https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay
+         */
         public _vrDevice: any = null;
+        /**
+         * The rawPose of the vrDevice.
+         */
         public rawPose: Nullable<DevicePose> = null;
         private _onVREnabled: (success: boolean) => void;
         private _specsVersion: string = "1.1";
@@ -58,24 +148,51 @@ module BABYLON {
 
         private _standingMatrix: Nullable<Matrix> = null;
 
-        // Represents device position and rotation in babylon space
+        /**
+         * Represents device position in babylon space.
+         */
         public devicePosition = Vector3.Zero();
+        /**
+         * Represents device rotation in babylon space.
+         */
         public deviceRotationQuaternion = Quaternion.Identity();
 
+        /**
+         * The scale of the device to be used when translating from device space to babylon space.
+         */
         public deviceScaleFactor: number = 1;
 
         private _deviceToWorld = Matrix.Identity();
         private _worldToDevice = Matrix.Identity();
 
+        /**
+         * References to the webVR controllers for the vrDevice.
+         */
         public controllers: Array<WebVRController> = [];
+        /**
+         * Emits an event when a controller is attached.
+         */
         public onControllersAttachedObservable = new Observable<Array<WebVRController>>();
+        /**
+         * Emits an event when a controller's mesh has been loaded;
+         */
         public onControllerMeshLoadedObservable = new Observable<WebVRController>();
-
-        public rigParenting: boolean = true; // should the rig cameras be used as parent instead of this camera.
+        /**
+         * If the rig cameras be used as parent instead of this camera.
+         */
+        public rigParenting: boolean = true;
 
         private _lightOnControllers: HemisphericLight;
 
-        private _defaultHeight = 0;
+        private _defaultHeight?: number = undefined;
+
+        /**
+         * Instantiates a WebVRFreeCamera.
+         * @param name The name of the WebVRFreeCamera
+         * @param position The starting anchor position for the camera
+         * @param scene The scene the camera belongs to
+         * @param webVROptions a set of customizable options for the webVRCamera
+         */
         constructor(name: string, position: Vector3, scene: Scene, private webVROptions: WebVROptions = {}) {
             super(name, position, scene);
             this._cache.position = Vector3.Zero();
@@ -164,18 +281,26 @@ module BABYLON {
             });
         }
 
-        public deviceDistanceToRoomGround = () => {
-            if (this._standingMatrix) {
+        /**
+         * Gets the device distance from the ground.
+         * @returns the distance from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
+         */
+        public deviceDistanceToRoomGround(): number {
+            if (this._standingMatrix && this._defaultHeight === undefined) {
                 // Add standing matrix offset to get real offset from ground in room
                 this._standingMatrix.getTranslationToRef(this._workingVector);
                 return this._deviceRoomPosition.y + this._workingVector.y
-            } else {
-                return this._defaultHeight;
             }
+            //If VRDisplay does not inform stage parameters and no default height is set we fallback to zero.
+            return this._defaultHeight || 0;            
         }
 
-        public useStandingMatrix = (callback = (bool: boolean) => { }) => {
-            // Use standing matrix if availible
+        /**
+         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
+         * @param callback will be called when the standing matrix is set. Callback parameter is if the standing matrix is supported.
+         */
+        public useStandingMatrix(callback = (bool: boolean) => { }) {
+            // Use standing matrix if available
             if (!navigator || !navigator.getVRDisplays) {
                 callback(false);
             } else {
@@ -192,17 +317,25 @@ module BABYLON {
                                 }
                             });
                         }
-                        callback(true)
+                        callback(true);
                     }
-                })
+                });
             }
         }
 
+        /**
+         * Disposes the camera
+         */
         public dispose(): void {
             this.getEngine().onVRRequestPresentComplete.removeCallback(this._onVREnabled);
             super.dispose();
         }
 
+        /**
+         * Gets a vrController by name.
+         * @param name The name of the controller to retreive
+         * @returns the controller matching the name specified or null if not found
+         */
         public getControllerByName(name: string): Nullable<WebVRController> {
             for (var gp of this.controllers) {
                 if (gp.hand === name) {
@@ -214,6 +347,9 @@ module BABYLON {
         }
 
         private _leftController: Nullable<WebVRController>;
+        /**
+         * The controller corrisponding to the users left hand.
+         */
         public get leftController(): Nullable<WebVRController> {
             if (!this._leftController) {
                 this._leftController = this.getControllerByName("left");
@@ -223,6 +359,9 @@ module BABYLON {
         };
 
         private _rightController: Nullable<WebVRController>;
+        /**
+         * The controller corrisponding to the users right hand.
+         */
         public get rightController(): Nullable<WebVRController> {
             if (!this._rightController) {
                 this._rightController = this.getControllerByName("right");
@@ -232,7 +371,11 @@ module BABYLON {
         };
 
 
-
+        /**
+         * Casts a ray forward from the vrCamera's gaze.
+         * @param length Length of the ray (default: 100)
+         * @returns the ray corrisponding to the gaze
+         */
         public getForwardRay(length = 100): Ray {
             if (this.leftCamera) {
                 // Use left eye to avoid computation to compute center on every call
@@ -243,6 +386,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Updates the camera based on device's frame data
+         */
         public _checkInputs(): void {
             if (this._vrDevice && this._vrDevice.isPresenting) {
                 this._vrDevice.getFrameData(this._frameData);
@@ -253,6 +399,10 @@ module BABYLON {
             super._checkInputs();
         }
 
+        /**
+         * Updates the poseControlled values based on the input device pose.
+         * @param poseData Pose coming from the device
+         */
         updateFromDevice(poseData: DevicePose) {
             if (poseData && poseData.orientation) {
                 this.rawPose = poseData;
@@ -277,10 +427,8 @@ module BABYLON {
          * within a user-interaction callback. Example:
          * <pre> scene.onPointerDown = function() { camera.attachControl(canvas); }</pre>
          * 
-         * @param {HTMLElement} element 
-         * @param {boolean} [noPreventDefault] 
-         * 
-         * @memberOf WebVRFreeCamera
+         * @param element html element to attach the vrDevice to
+         * @param noPreventDefault prevent the default html element operation when attaching the vrDevice
          */
         public attachControl(element: HTMLElement, noPreventDefault?: boolean): void {
             super.attachControl(element, noPreventDefault);
@@ -293,6 +441,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Detaches the camera from the html element and disables VR
+         * 
+         * @param element html element to detach from
+         */
         public detachControl(element: HTMLElement): void {
             this.getScene().gamepadManager.onGamepadConnectedObservable.remove(this._onGamepadConnectedObserver);
             this.getScene().gamepadManager.onGamepadDisconnectedObservable.remove(this._onGamepadDisconnectedObserver);
@@ -302,16 +455,26 @@ module BABYLON {
             this.getEngine().disableVR();
         }
 
+        /**
+         * @returns the name of this class
+         */
         public getClassName(): string {
             return "WebVRFreeCamera";
         }
 
+        /**
+         * Calls resetPose on the vrDisplay
+         * See: https://developer.mozilla.org/en-US/docs/Web/API/VRDisplay/resetPose
+         */
         public resetToCurrentRotation() {
             //uses the vrDisplay's "resetPose()".
             //pitch and roll won't be affected.
             this._vrDevice.resetPose();
         }
 
+        /**
+         * Updates the rig cameras (left and right eye)
+         */
         public _updateRigCameras() {
             var camLeft = <TargetCamera>this._rigCameras[0];
             var camRight = <TargetCamera>this._rigCameras[1];
@@ -328,6 +491,10 @@ module BABYLON {
 
         private updateCacheCalled: boolean;
 
+        /**
+         * Updates the cached values of the camera
+         * @param ignoreParentClass ignores updating the parent class's cache (default: false)
+         */
         public _updateCache(ignoreParentClass?: boolean): void {
             if (!this.rotationQuaternion.equals(this._cache.rotationQuaternion) || !this.position.equals(this._cache.position)) {
                 // Update to ensure devicePosition is up to date with most recent _deviceRoomPosition
@@ -367,6 +534,9 @@ module BABYLON {
             this.updateCacheCalled = false;
         }
 
+        /**
+         * Updates the current device position and rotation in the babylon world
+         */
         public update() {
             // Get current device position in babylon world
             Vector3.TransformCoordinatesToRef(this._deviceRoomPosition, this._deviceToWorld, this.devicePosition);
@@ -378,6 +548,11 @@ module BABYLON {
 
             super.update();
         }
+
+        /**
+         * Gets the view matrix of this camera (Always set to identity as left and right eye cameras contain the actual view matrix)
+         * @returns an identity matrix
+         */
         public _getViewMatrix(): Matrix {
             return Matrix.Identity();
         }
@@ -447,6 +622,9 @@ module BABYLON {
         private _onGamepadConnectedObserver: Nullable<Observer<Gamepad>>;
         private _onGamepadDisconnectedObserver: Nullable<Observer<Gamepad>>;
 
+        /**
+         * Initializes the controllers and their meshes
+         */
         public initControllers() {
             this.controllers = [];
 

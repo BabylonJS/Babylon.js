@@ -539,7 +539,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha5";
+            return "3.2.0-alpha6";
         }
 
         // Updatable statics so stick with vars here
@@ -825,6 +825,10 @@
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+
+            // Register promises
+            PromisePolyfill.Apply();
+
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 
@@ -3132,8 +3136,8 @@
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            var isTGA = (extension === ".tga");
+            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
+            var isTGA = (extension.indexOf(".tga") === 0);
 
             // determine if a ktx file should be substituted
             var isKTX = false;
@@ -4743,7 +4747,7 @@
         }
 
         private _moveBoundTextureOnTop(internalTexture: InternalTexture): void {
-            if (this._lastBoundInternalTextureTracker.previous === internalTexture) {
+            if (this.disableTextureBindingOptimization || this._lastBoundInternalTextureTracker.previous === internalTexture) {
                 return;
             }
 

@@ -5031,9 +5031,6 @@ var BABYLON;
                     });
                 });
                 this._requests.push(request);
-                request.onCompleteObservable.add(function () {
-                    _this._requests.splice(_this._requests.indexOf(request), 1);
-                });
             };
             GLTFLoader.prototype._tryCatchOnError = function (handler) {
                 if (this._disposed) {
