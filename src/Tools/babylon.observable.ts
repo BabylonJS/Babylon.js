@@ -217,12 +217,11 @@
          * and it is crucial that all callbacks will be executed.
          * The order of the callbacks is kept, callbacks are not executed parallel.
          * 
-         * @param {T} eventData The data to be sent to each callback
-         * @param {number} [mask=-1] mask is used to filter observers
-         * @param {*} [target] the callback target (see EventState)
-         * @param {*} [currentTarget] 
+         * @param eventData The data to be sent to each callback
+         * @param [mask=-1] mask is used to filter observers
+         * @param [target] the callback target (see EventState)
+         * @param [currentTarget] 
          * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
-         * @memberof Observable
          */
         public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any): Promise<T> {
 
