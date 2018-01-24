@@ -93,7 +93,6 @@
             this._textureProjectionMatrix = value;
         }
 
-        
         /**
          * Creates a SpotLight object in the scene with the passed parameters :   
          * - `position` (Vector3) is the initial SpotLight position,  
