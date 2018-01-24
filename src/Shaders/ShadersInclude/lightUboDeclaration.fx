@@ -13,7 +13,10 @@
 		vec4 shadowsInfo;
 		vec2 depthValues;
 	} light{X};
-
+#ifdef PROJECTEDLIGHTTEXTURE{X}
+	uniform mat4 textureProjectionMatrix{X};
+	uniform sampler2D projectionLightSampler{X};
+#endif
 #ifdef SHADOW{X}
 	#if defined(SHADOWCUBE{X})
 		uniform samplerCube shadowSampler{X};

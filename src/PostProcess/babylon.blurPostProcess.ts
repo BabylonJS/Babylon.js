@@ -3,7 +3,7 @@
 		protected _kernel: number;
 		protected _idealKernel: number;
 		protected _packedFloat: boolean	= false;
-
+		protected _staticDefines:string = ""
 		/**
 		 * Sets the length in pixels of the blur sample region
 		 */
@@ -44,10 +44,11 @@
 		}
 
         constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "kernelBlur", ["delta", "direction"], null, options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
-            this.onApplyObservable.add((effect: Effect) => {
-                effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
-            });
+            super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
+			
+			this.onApplyObservable.add((effect: Effect) => {
+				effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
+			});
 
             this.kernel = kernel;
         }
@@ -120,7 +121,8 @@
 
             let varyingCount = Math.min(offsets.length, freeVaryingVec2);
         
-            let defines = "";
+			let defines = "";
+			defines+=this._staticDefines;
             for (let i = 0; i < varyingCount; i++) {
                 defines += `#define KERNEL_OFFSET${i} ${this._glslFloat(offsets[i])}\r\n`;
                 defines += `#define KERNEL_WEIGHT${i} ${this._glslFloat(weights[i])}\r\n`;
