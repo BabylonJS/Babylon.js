@@ -53,7 +53,7 @@ module BABYLON {
          * @param directionToUpdate is the direction vector to update with the result
          * @param particle is the particle we are computed the direction for
          */
-        startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
+        public startDirectionFunction(emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void {
             if (this.angle === 0) {
                 Vector3.TransformNormalFromFloatsToRef(0, emitPower, 0, worldMatrix, directionToUpdate);
             }
@@ -92,5 +92,17 @@ module BABYLON {
 
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         }
+
+        /**
+         * Clones the current emitter and returns a copy of it
+         * @returns the new emitter
+         */
+        public clone(): ConeParticleEmitter {
+            let newOne = new ConeParticleEmitter(this.radius, this.angle, this.directionRandomizer);
+
+            Tools.DeepCopy(this, newOne);
+
+            return newOne;
+        }          
     }
 }
