@@ -17,6 +17,9 @@
         public blurX: BlurPostProcess;
         public blurY: BlurPostProcess;
         public copyBack: PassPostProcess;
+        /**
+         * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
+         */
         public depthOfField: DepthOfFieldEffect;
         public fxaa: FxaaPostProcess;
         public imageProcessing: ImageProcessingPostProcess;
@@ -94,6 +97,9 @@
             return this._bloomEnabled;
         }
 
+        /**
+         * If the depth of field is enabled.
+         */
         @serialize()
         public get depthOfFieldEnabled(): boolean {
             return this._depthOfFieldEnabled;
