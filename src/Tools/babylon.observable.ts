@@ -204,6 +204,59 @@
         }
 
         /**
+         * Calling this will execute each callback, expecting it to be a promise or return a value.
+         * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
+         * This is useful when a chain of events (sometimes async events) is needed to initialize a certain object
+         * and it is crucial that all callbacks will be executed.
+         * The order of the callbacks is kept, callbacks are not executed parallel.
+         * 
+         * @param {T} eventData The data to be sent to each callback
+         * @param {number} [mask=-1] mask is used to filter observers
+         * @param {*} [target] the callback target (see EventState)
+         * @param {*} [currentTarget] 
+         * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
+         * @memberof Observable
+         */
+        public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any): Promise<T> {
+
+            // create an empty promise
+            let p: Promise<any> = Promise.resolve(eventData);
+
+            // no observers? return this promise.
+            if (!this._observers.length) {
+                return p;
+            }
+
+            let state = this._eventState;
+            state.mask = mask;
+            state.target = target;
+            state.currentTarget = currentTarget;
+            state.skipNextObservers = false;
+
+            // execute one callback after another (not using Promise.all, the order is important)
+            this._observers.forEach(obs => {
+                if (state.skipNextObservers) {
+                    return;
+                }
+                if (obs.mask & mask) {
+                    if (obs.scope) {
+                        // TODO - I can add the variable from the last function here. Requires changing callback sig
+                        p = p.then(() => {
+                            return obs.callback.apply(obs.scope, [eventData, state]);
+                        });
+                    } else {
+                        p = p.then(() => {
+                            return obs.callback(eventData, state);
+                        });
+                    }
+                }
+            });
+
+            // return the eventData
+            return p.then(() => { return eventData; });
+        }
+
+        /**
          * Notify a specific observer
          * @param eventData
          * @param mask
