@@ -1,31 +1,85 @@
 ﻿module BABYLON {
+    /**
+	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
+     * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline
+     */
     export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         private _scene: Scene;
 
+        /**
+		 * ID of the pass post process used for bloom,
+		 */
         readonly PassPostProcessId: string = "PassPostProcessEffect";
+        /**
+		 * ID of the highlight post process used for bloom,
+		 */
         readonly HighLightsPostProcessId: string = "HighLightsPostProcessEffect";
+        /**
+		 * ID of the blurX post process used for bloom,
+		 */
         readonly BlurXPostProcessId: string = "BlurXPostProcessEffect";
+        /**
+		 * ID of the blurY post process used for bloom,
+		 */
         readonly BlurYPostProcessId: string = "BlurYPostProcessEffect";
+        /**
+		 * ID of the copy back post process used for bloom,
+		 */
         readonly CopyBackPostProcessId: string = "CopyBackPostProcessEffect";
+        /**
+		 * ID of the image processing post process;
+		 */
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
+        /**
+		 * ID of the Fast Approximate Anti-Aliasing post process;
+		 */
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
+        /**
+		 * ID of the final merge post process;
+		 */
         readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
 
         // Post-processes
+        /**
+		 * First pass of bloom to capture the original image texture for later use.
+		 */
         public pass: PassPostProcess;
+        /**
+		 * Second pass of bloom used to brighten bright portions of the image.
+		 */
         public highlights: HighlightsPostProcess;
+        /**
+		 * BlurX post process used in coordination with blurY to guassian blur the highlighted image.
+		 */
         public blurX: BlurPostProcess;
+        /**
+		 * BlurY post process used in coordination with blurX to guassian blur the highlighted image.
+		 */
         public blurY: BlurPostProcess;
+        /**
+		 * Final pass run for bloom to copy the resulting bloom texture back to screen.
+		 */
         public copyBack: PassPostProcess;
         /**
          * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
          */
         public depthOfField: DepthOfFieldEffect;
+        /**
+         * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+         */
         public fxaa: FxaaPostProcess;
+        /**
+         * Image post processing pass used to perform operations such as tone mapping or color grading.
+         */
         public imageProcessing: ImageProcessingPostProcess;
+        /**
+         * Final post process to merge results of all previous passes
+         */
         public finalMerge: PassPostProcess;
 
-        // IAnimatable
+        /**
+         * Animations which can be used to tweak settings over a period of time
+         */
         public animations: Animation[] = [];
 
         // Values       
@@ -53,6 +107,9 @@
         @serialize()
         private _hdr: boolean;
 
+        /**
+         * The strength of the bloom.
+         */
         public set bloomWeight(value: number) {
             if (this._bloomWeight === value) {
                 return;
@@ -69,6 +126,9 @@
             return this._bloomWeight;
         }
 
+        /**
+         * The scale of the bloom, lower value will provide better performance.
+         */
         public set bloomScale(value: number) {
             if (this._bloomScale === value) {
                 return;
@@ -83,6 +143,9 @@
             return this._bloomScale;
         }
 
+        /**
+         * Enable or disable the bloom from the pipeline
+         */
         public set bloomEnabled(enabled: boolean) {
             if (this._bloomEnabled === enabled) {
                 return;
@@ -114,6 +177,9 @@
             this._buildPipeline();
         }
 
+        /**
+         * If the anti aliasing is enabled.
+         */
         public set fxaaEnabled(enabled: boolean) {
             if (this._fxaaEnabled === enabled) {
                 return;
@@ -128,6 +194,9 @@
             return this._fxaaEnabled;
         }
 
+        /**
+         * If image processing is enabled.
+         */
         public set imageProcessingEnabled(enabled: boolean) {
             if (this._imageProcessingEnabled === enabled) {
                 return;
