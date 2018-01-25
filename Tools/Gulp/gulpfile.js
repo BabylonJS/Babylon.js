@@ -441,9 +441,10 @@ var buildExternalLibrary = function (library, settings, watch) {
                     }
 
                     out.destination.forEach(dest => {
+                        var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
                         let destBuild = outBuild
                             .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                            .pipe(gulp.dest(dest.outputDirectory));
+                            .pipe(gulp.dest(outputDirectory));
                         sequence.push(destBuild);
                     });
                 })
