@@ -385,7 +385,7 @@ module BABYLON {
             return b.renderPriority - a.renderPriority;
         }
         // Projection texture, if needed
-        protected computeTextureMatrix(): void{
+        protected _computeTextureMatrix(): void{
             //Leave out for different light type
         }
         protected _light_far  :number;
@@ -401,7 +401,7 @@ module BABYLON {
          */
         public set light_far(value: number) {
             this._light_far = value;
-            this.computeTextureMatrix();
+            this._computeTextureMatrix();
         }
 
         protected _light_near :number;
@@ -417,7 +417,7 @@ module BABYLON {
          */
         public set light_near(value: number) {
             this._light_near = value;
-            this.computeTextureMatrix();
+            this._computeTextureMatrix();
         }
 
         @serializeAsTexture("projectedLightTexture")
@@ -433,9 +433,9 @@ module BABYLON {
         */
         public set projectedLightTexture(value: Nullable<BaseTexture>) {
             this._projectedLightTexture = value;
-            this.light_far = 1000.0;
-            this.light_near = 1e-7;
-            this.computeTextureMatrix();
+            this._light_far = 1000.0;
+            this._light_near = 1e-6;
+            this._computeTextureMatrix();
         }
         /**
          * Disposes the light.  

@@ -20,7 +20,7 @@
         /**
          * Main function for light texture projection matrix computing.
          */
-        public computeTextureMatrix(): void{    
+        protected _computeTextureMatrix(): void{    
 
             var viewLightMatrix = Matrix.Zero();
             Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);

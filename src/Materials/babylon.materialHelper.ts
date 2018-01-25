@@ -293,6 +293,9 @@ module BABYLON {
                 samplersList.push("shadowSampler" + lightIndex);
                 if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
                     samplersList.push("projectionLightSampler" + lightIndex,);
+                    uniformsList.push(
+                        "textureProjectionMatrix" + lightIndex,
+                    );
                 }
             }
 
