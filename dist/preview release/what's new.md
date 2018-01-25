@@ -36,7 +36,8 @@
 - Added depth of field effect to default pipeline ([trevordev](https://github.com/trevordev))
 - The observable can now notify observers using promise-based callback chain. ([RaananW](https://github.com/RaananW))
 - Added base64 helper functions to `Tools` ([bghgary](https://github.com/bghgary))
-- Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))
+- Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))  
+- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie))  
 
 ## Bug fixes
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
