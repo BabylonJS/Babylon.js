@@ -1,32 +1,28 @@
 module BABYLON {
     export class PostProcessRenderEffect {
         private _postProcesses: any;
-        private _getPostProcess: () => Nullable<PostProcess | Array<PostProcess>>;
+        private _getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>;
 
         private _singleInstance: boolean;
 
         private _cameras: { [key: string]: Nullable<Camera> };
         private _indicesForCamera: { [key: string]: number[] };
 
-        private _renderEffectAsPasses: any;
-
         // private
         public _name: string;
 
         public applyParameters: (postProcess: PostProcess) => void;
         
-        constructor(engine: Engine, name: string, getPostProcess: () => Nullable<PostProcess | Array<PostProcess>>, singleInstance?: boolean) {
+        constructor(engine: Engine, name: string, getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>, singleInstance?: boolean) {
             this._name = name;
             this._singleInstance = singleInstance || true;
 
-            this._getPostProcess = getPostProcess;
+            this._getPostProcesses = getPostProcesses;
 
             this._cameras = {};
             this._indicesForCamera = {};
 
             this._postProcesses = {};
-
-            this._renderEffectAsPasses = {};
         }
 
         public get isSupported(): boolean {
@@ -41,11 +37,6 @@ module BABYLON {
         }
 
         public _update(): void {
-        }
-        public addRenderEffectAsPass(renderEffect: PostProcessRenderEffect): void {
-            this._renderEffectAsPasses[renderEffect._name] = renderEffect;
-
-            this._linkParameters();
         }
 
         // private
@@ -72,7 +63,7 @@ module BABYLON {
                 }
 
                 if(!this._postProcesses[cameraKey]){
-                    var postProcess = this._getPostProcess();
+                    var postProcess = this._getPostProcesses();
                     if(postProcess){
                         this._postProcesses[cameraKey] = Array.isArray(postProcess) ? postProcess :[postProcess];
                     }
@@ -161,16 +152,15 @@ module BABYLON {
             }
         }
 
-        public getPostProcess(camera?: Camera): Nullable<PostProcess> {
+        public getPostProcesses(camera?: Camera): Nullable<Array<PostProcess>> {
             if (this._singleInstance) {
-                return this._postProcesses[0][0];
+                return this._postProcesses[0];
             }
             else {
-
                 if (!camera) {
                     return null;
                 }
-                return this._postProcesses[camera.name][0];
+                return this._postProcesses[camera.name];
             }
         }
 
@@ -180,17 +170,7 @@ module BABYLON {
                     if (this.applyParameters) {
                         this.applyParameters(postProcess);
                     }
-
-                    postProcess.onBeforeRenderObservable.add((effect: Effect) => {
-                        this._linkTextures(effect);
-                    });
                 });
-            }
-        }
-
-        private _linkTextures(effect: Effect): void {
-            for (var renderEffectName in this._renderEffectAsPasses) {
-                effect.setTextureFromPostProcess(renderEffectName + "Sampler", this._renderEffectAsPasses[renderEffectName].getPostProcess());
             }
         }
     }
