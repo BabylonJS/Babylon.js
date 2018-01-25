@@ -1465,7 +1465,8 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "doNotIncludeInBundle": true,
                 "output": "babylon.glTF2FileLoader.js"
@@ -1484,7 +1485,8 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }
