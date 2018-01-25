@@ -34,11 +34,10 @@
 - (Viewer) initScene and initEngine can now be extended. onProgress during model loading is implemented as observable. ([RaananW](https://github.com/RaananW))
 - Added depth of field effect to default pipeline ([trevordev](https://github.com/trevordev))
 - The observable can now notify observers using promise-based callback chain. ([RaananW](https://github.com/RaananW))
-- Removed unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
-
+- Removed unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
 
