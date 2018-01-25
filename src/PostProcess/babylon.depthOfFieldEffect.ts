@@ -63,7 +63,7 @@ module BABYLON {
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
         constructor(scene: Scene, pipelineTextureType = 0) {
-            super(scene.getEngine(), "depth of field", ()=>{return [this.circleOfConfusion, this.depthOfFieldPass, this.depthOfFieldBlurX, this.depthOfFieldBlurY, this.depthOfFieldMerge]}, true);
+            super(scene.getEngine(), "depth of field", ()=>{return [this.circleOfConfusion, this.depthOfFieldPass, this.depthOfFieldBlurY, this.depthOfFieldBlurX, this.depthOfFieldMerge]}, true);
             // Enable and get current depth map
             var depthMap = scene.enableDepthRenderer().getDepthMap();
             // Circle of confusion value for each pixel is used to determine how much to blur that pixel
