@@ -68,6 +68,11 @@
         dispose(): void;
     }
 
+    /**
+     * Default implementation of @see IShadowGenerator.
+     * This is the main object responsible of generating shadows in the framework.
+     * Documentation: https://doc.babylonjs.com/babylon101/shadows
+     */
     export class ShadowGenerator implements IShadowGenerator {
         private static _FILTER_NONE = 0;
         private static _FILTER_EXPONENTIALSHADOWMAP = 1;
@@ -452,6 +457,7 @@
          * Helper function to add a mesh and its descendants to the list of shadow casters.
          * @param mesh Mesh to add
          * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         * @returns the Shadow Generator itself
          */
         public addShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
             if (!this._shadowMap) {
@@ -475,6 +481,7 @@
          * Helper function to remove a mesh and its descendants from the list of shadow casters
          * @param mesh Mesh to remove
          * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         * @returns the Shadow Generator itself
          */
         public removeShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
             if (!this._shadowMap || !this._shadowMap.renderList) {
@@ -505,6 +512,7 @@
         private _light: IShadowLight;
         /**
          * Returns the associated light object.
+         * @returns the light generating the shadow
          */
         public getLight(): IShadowLight {
             return this._light;
