@@ -43,11 +43,11 @@
             this.forceProjectionMatrixCompute();
         }
 
-        @serialize()
         /**
-         * Automatically compute the projection matrix to best fit (including all the caster and receivers)
+         * Automatically compute the projection matrix to best fit (including all the casters)
          * on each frame.
          */
+        @serialize()
         public autoUpdateExtends = true;
 
         // Cache
