@@ -1656,7 +1656,7 @@
                     "destination": [
                         {
                             "filename": "viewer.min.js",
-                            "outputDirectory": "../../Viewer/dist/"
+                            "outputDirectory": "/../../Viewer/dist/"
                         },
                         {
                             "filename": "babylon.viewer.js",
@@ -1669,7 +1669,7 @@
                     "destination": [
                         {
                             "filename": "viewer.js",
-                            "outputDirectory": "../../Viewer/dist/"
+                            "outputDirectory": "/../../Viewer/dist/"
                         }
                     ]
                 }
