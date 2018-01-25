@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export class MaterialHelper {
 
         public static BindEyePosition(effect: Effect, scene: Scene): void {
@@ -207,6 +207,12 @@
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
                     }
 
+                    //Projection texture
+                    if (light.projectedLightTexture){
+                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = true;
+                    }else{
+                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = false;                        
+                    }
                     lightIndex++;
                     if (lightIndex === maxSimultaneousLights)
                         break;
@@ -285,6 +291,12 @@
                 }
 
                 samplersList.push("shadowSampler" + lightIndex);
+                if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
+                    samplersList.push("projectionLightSampler" + lightIndex,);
+                    uniformsList.push(
+                        "textureProjectionMatrix" + lightIndex,
+                    );
+                }
             }
 
             if (defines["NUM_MORPH_INFLUENCERS"]) {

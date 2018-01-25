@@ -4619,14 +4619,13 @@
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
-        public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false) {
-            // Dispose existing camera or light in replace mode.
+        /**
+         * Creates a default light for the scene.
+         * @param replace Whether to replace the existing lights in the scene.
+         */
+        public createDefaultLight(replace = false): void {
+            // Dispose existing light in replace mode.
             if (replace) {
-                if (this.activeCamera) {
-                    this.activeCamera.dispose();
-                    this.activeCamera = null;
-                }
-
                 if (this.lights) {
                     for (var i = 0; i < this.lights.length; i++) {
                         this.lights[i].dispose();
@@ -4637,6 +4636,22 @@
             // Light
             if (this.lights.length === 0) {
                 new HemisphericLight("default light", Vector3.Up(), this);
+            }
+        }
+
+        /**
+         * Creates a default camera for the scene.
+         * @param createArcRotateCamera Whether to create an arc rotate or a free camera.
+         * @param replace Whether to replace the existing active camera in the scene.
+         * @param attachCameraControls Whether to attach camera controls to the canvas.
+         */
+        public createDefaultCamera(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
+            // Dispose existing camera in replace mode.
+            if (replace) {
+                if (this.activeCamera) {
+                    this.activeCamera.dispose();
+                    this.activeCamera = null;
+                }
             }
 
             // Camera
@@ -4668,6 +4683,11 @@
                     camera.attachControl(canvas);
                 }
             }
+        }
+
+        public createDefaultCameraOrLight(createArcRotateCamera = false, replace = false, attachCameraControls = false): void {
+            this.createDefaultLight(replace);
+            this.createDefaultCamera(createArcRotateCamera, replace, attachCameraControls);
         }
 
         public createDefaultSkybox(environmentTexture?: BaseTexture, pbr = false, scale = 1000, blur = 0): Nullable<Mesh> {
