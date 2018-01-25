@@ -1,6 +1,13 @@
 ﻿module BABYLON {
+    /**
+     * A spot light is defined by a position, a direction, an angle, and an exponent. 
+     * These values define a cone of light starting from the position, emitting toward the direction.
+     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam, 
+     * and the exponent defines the speed of the decay of the light with distance (reach).
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
     export class SpotLight extends ShadowLight {
-        /**
+        /*
             upVector , rightVector and direction will form the coordinate system for this spot light. 
             These three vectors will be used as projection matrix when doing texture projection.
             
@@ -17,10 +24,167 @@
             projection matrix. Need to call computeTextureMatrix() to recompute manually. Add inheritance
             to the setting function of the 2 attributes will solve the problem.
         */
+
+        private _angle: number;
+        @serialize()
+        /**
+         * Gets the cone angle of the spot light in Radians.
+         */
+        public get angle(): number {
+            return this._angle
+        }
+        /**
+         * Sets the cone angle of the spot light in Radians.
+         */
+        public set angle(value: number) {
+            this._angle = value;
+            this.forceProjectionMatrixCompute();
+        }
+
+        private _shadowAngleScale: number;
+        @serialize()
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        public get shadowAngleScale(): number {
+            return this._shadowAngleScale
+        }
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        public set shadowAngleScale(value: number) {
+            this._shadowAngleScale = value;
+            this.forceProjectionMatrixCompute();
+        }
+
+        /**
+         * The light decay speed with the distance from the emission spot.
+         */
+        @serialize()
+        public exponent: number;
+
+        private _textureProjectionMatrix = Matrix.Zero();
+        @serialize()
+        /**
+        * Allows reading the projecton texture
+        */
+        public get textureMatrix(): Matrix{
+            return this._textureProjectionMatrix;
+        }
+        /**
+        * Allows setting the value of projection texture
+        */
+        public set textureMatrix(value: Matrix) {
+            this._textureProjectionMatrix = value;
+        }
+
+        protected _light_near :number;
+        @serialize()
+        /**
+         * Gets the near clip of the Spotlight for texture projection.
+         */
+        public get light_near(): number {
+            return this._light_near;
+        }
+        /**
+         * Sets the near clip of the Spotlight for texture projection.
+         */
+        public set light_near(value: number) {
+            this._light_near = value;
+            this._computeTextureMatrix();
+        }
+
+        protected _light_far  :number;
+        /**
+         * Gets the far clip of the Spotlight for texture projection.
+         */
+        @serialize()
+        public get light_far(): number {
+            return this._light_far;
+        }
+        /**
+         * Sets the far clip of the Spotlight for texture projection.
+         */
+        public set light_far(value: number) {
+            this._light_far = value;
+        }
+
+        @serializeAsTexture("projectedLightTexture")
+        private _projectedLightTexture: Nullable<BaseTexture>;;
+        /** 
+         * Gets the projection texture of the light.
+        */
+        public get projectedLightTexture(): Nullable<BaseTexture> {
+            return this._projectedLightTexture;
+        }
+        /**
+        * Sets the projection texture of the light.
+        */
+        public set projectedLightTexture(value: Nullable<BaseTexture>) {
+            this._projectedLightTexture = value;
+            this._light_far = 1000.0;
+            this._light_near = 1e-6;
+            this._computeTextureMatrix();
+        }
+
+        /**
+         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
+         * It can cast shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The light friendly name
+         * @param position The position of the spot light in the scene
+         * @param direction The direction of the light in the scene
+         * @param angle The cone angle of the light in Radians
+         * @param exponent The light decay speed with the distance from the emission spot
+         * @param scene The scene the lights belongs to
+         */
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene) {
+            super(name, scene);
+
+            this.position = position;
+            this.direction = direction;
+            this.angle = angle;
+            this.exponent = exponent;
+        }
+
+        /**
+         * Returns the string "SpotLight".
+         * @returns the class name
+         */
+        public getClassName(): string {
+            return "SpotLight";
+        }
+
+        /**
+         * Returns the integer 2.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        public getTypeID(): number {
+            return Light.LIGHTTYPEID_SPOTLIGHT;
+        }
+
+        /**
+         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.  
+         * Returns the SpotLight.  
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
+            var activeCamera = this.getScene().activeCamera;
+
+            if (!activeCamera) {
+                return;
+            }
+
+            this._shadowAngleScale = this._shadowAngleScale || 1;
+            var angle = this._shadowAngleScale * this._angle;
+            
+            Matrix.PerspectiveFovLHToRef(angle, 1.0, 
+            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
+        }
+
         /**
          * Main function for light texture projection matrix computing.
          */
-        protected _computeTextureMatrix(): void{    
+        protected _computeTextureMatrix(): void {
 
             var viewLightMatrix = Matrix.Zero();
             Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);
@@ -50,100 +214,6 @@
             this._textureProjectionMatrix.multiplyToRef(scaleMatrix, this._textureProjectionMatrix);
         }
 
-        private _angle: number;
-        @serialize()
-        public get angle(): number {
-            return this._angle
-        }
-        public set angle(value: number) {
-            this._angle = value;
-            this.forceProjectionMatrixCompute();
-        }
-
-        private _shadowAngleScale: number;
-        @serialize()
-        /**
-         * Allows scaling the angle of the light for shadow generation only.
-         */
-        public get shadowAngleScale(): number {
-            return this._shadowAngleScale
-        }
-        /**
-         * Allows scaling the angle of the light for shadow generation only.
-         */
-        public set shadowAngleScale(value: number) {
-            this._shadowAngleScale = value;
-            this.forceProjectionMatrixCompute();
-        }
-        @serialize()
-        public exponent: number;
-
-        private _textureProjectionMatrix = Matrix.Zero();
-        @serialize()
-        /**
-        * Allows reading the projecton texture
-        */
-        public get textureMatrix(): Matrix{
-            return this._textureProjectionMatrix;
-        }
-        /**
-        * Allows setting the value of projection texture
-        */
-        public set textureMatrix(value: Matrix) {
-            this._textureProjectionMatrix = value;
-        }
-
-        /**
-         * Creates a SpotLight object in the scene with the passed parameters :   
-         * - `position` (Vector3) is the initial SpotLight position,  
-         * - `direction` (Vector3) is the initial SpotLight direction,  
-         * - `angle` (float, in radians) is the spot light cone angle,
-         * - `exponent` (float) is the light decay speed with the distance from the emission spot.  
-         * A spot light is a simply light oriented cone.   
-         * It can cast shadows.  
-         * Documentation : http://doc.babylonjs.com/tutorials/lights  
-         */
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene) {
-            super(name, scene);
-
-            this.position = position;
-            this.direction = direction;
-            this.angle = angle;
-            this.exponent = exponent;
-        }
-
-        /**
-         * Returns the string "SpotLight".
-         */
-        public getClassName(): string {
-            return "SpotLight";
-        }
-
-        /**
-         * Returns the integer 2.
-         */
-        public getTypeID(): number {
-            return Light.LIGHTTYPEID_SPOTLIGHT;
-        }
-
-        /**
-         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.  
-         * Returns the SpotLight.  
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
-            var activeCamera = this.getScene().activeCamera;
-
-            if (!activeCamera) {
-                return;
-            }
-
-            this._shadowAngleScale = this._shadowAngleScale || 1;
-            var angle = this._shadowAngleScale * this._angle;
-            
-            Matrix.PerspectiveFovLHToRef(angle, 1.0, 
-            this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
-        }
-
         protected _buildUniformLayout(): void {
             this._uniformBuffer.addUniform("vLightData", 4);
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
@@ -156,7 +226,9 @@
 
         /**
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.  
-         * Return the SpotLight.   
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The spot light
          */
         public transferToEffect(effect: Effect, lightIndex: string): SpotLight {
             var normalizeDirection;
@@ -193,6 +265,16 @@
                 effect.setTexture("projectionLightSampler" + lightIndex, this.projectedLightTexture);
             }
             return this;
+        }
+
+        /**
+         * Disposes the light and the associated resources.
+         */
+        public dispose() : void {
+            super.dispose();
+            if (this._projectedLightTexture){
+                this._projectedLightTexture.dispose();
+            }
         }
     }
 }
