@@ -116,6 +116,7 @@ module BABYLON {
          * @param useBones Precise whether bones should be used or not (override mesh info)
          * @param useMorphTargets Precise whether morph targets should be used or not (override mesh info)
          * @param useVertexAlpha Precise whether vertex alpha should be used or not (override mesh info)
+         * @returns false if defines are considered not dirty and have not been checked
          */
         public static PrepareDefinesForAttributes(mesh: AbstractMesh, defines: any, useVertexColor: boolean, useBones: boolean, useMorphTargets = false, useVertexAlpha = true): boolean {
             if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
@@ -548,7 +549,7 @@ module BABYLON {
 
         /**
          * Binds the morph targets information from the mesh to the effect.
-         * @param mesh The mesh we are binding the information to render 
+         * @param abstractMesh The mesh we are binding the information to render 
          * @param effect The effect we are binding the data to
          */
         public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
