@@ -47,6 +47,23 @@ export interface ViewerConfiguration {
         clearColor?: { r: number, g: number, b: number, a: number };
         imageProcessingConfiguration?: IImageProcessingConfiguration;
     },
+    optimizer?: {
+        targetFrameRate?: number;
+        trackerDuration?: number;
+        autoGeneratePriorities?: boolean;
+        improvementMode?: boolean;
+        degradation?: string; // low, moderate, high
+        types?: {
+            texture?: SceneOptimizerParameters;
+            hardwareScaling?: SceneOptimizerParameters;
+            shadow?: SceneOptimizerParameters;
+            postProcess?: SceneOptimizerParameters;
+            lensFlare?: SceneOptimizerParameters;
+            particles?: SceneOptimizerParameters;
+            renderTarget?: SceneOptimizerParameters;
+            mergeMeshes?: SceneOptimizerParameters;
+        }
+    },
     // at the moment, support only a single camera.
     camera?: {
         position?: { x: number, y: number, z: number };
@@ -134,6 +151,12 @@ export interface ViewerConfiguration {
         [key: string]: ITemplateConfiguration
     };
     // nodes?
+}
+
+export interface SceneOptimizerParameters {
+    priority?: number;
+    maximumSize?: number;
+    step?: number;
 }
 
 export interface IImageProcessingConfiguration {

@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
+import { SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -11,6 +11,7 @@ export abstract class AbstractViewer {
 
     public engine: Engine;
     public scene: Scene;
+    public sceneOptimizer: SceneOptimizer;
     public baseId: string;
 
     /**
@@ -113,6 +114,12 @@ export abstract class AbstractViewer {
 
     public dispose() {
         window.removeEventListener('resize', this.resize);
+
+        this.sceneOptimizer.stop();
+        this.sceneOptimizer.dispose();
+
+        this.scene.dispose();
+        this.engine.dispose();
     }
 
     protected abstract prepareContainerElement();
@@ -200,9 +207,38 @@ export abstract class AbstractViewer {
         this.scene = new Scene(this.engine);
         // make sure there is a default camera and light.
         this.scene.createDefaultCameraOrLight(true, true, true);
-        if (this.configuration.scene && this.configuration.scene.debug) {
-            this.scene.debugLayer.show();
+        if (this.configuration.scene) {
+            if (this.configuration.scene.debug) {
+                this.scene.debugLayer.show();
+            }
+
+            // Scene optimizer
+            if (this.configuration.optimizer) {
+
+                let optimizerConfig = this.configuration.optimizer;
+                let optimizerOptions: SceneOptimizerOptions = new SceneOptimizerOptions(optimizerConfig.targetFrameRate, optimizerConfig.trackerDuration);
+                // check for degradation
+                if (optimizerConfig.degradation) {
+                    switch (optimizerConfig.degradation) {
+                        case "low":
+                            optimizerOptions = SceneOptimizerOptions.LowDegradationAllowed(optimizerConfig.targetFrameRate);
+                            break;
+                        case "moderate":
+                            optimizerOptions = SceneOptimizerOptions.ModerateDegradationAllowed(optimizerConfig.targetFrameRate);
+                            break;
+                        case "hight":
+                            optimizerOptions = SceneOptimizerOptions.HighDegradationAllowed(optimizerConfig.targetFrameRate);
+                            break;
+                    }
+                }
+
+                this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
+                this.sceneOptimizer.start();
+            }
         }
+
+
+
         return Promise.resolve(this.scene);
     }
 
