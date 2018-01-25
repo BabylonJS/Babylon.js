@@ -154,6 +154,19 @@ export class TemplateManager {
         }
     }
 
+    public dispose() {
+        // dispose all templates
+        Object.keys(this.templates).forEach(template => {
+            this.templates[template].dispose();
+        });
+
+        this.onInit.clear();
+        this.onAllLoaded.clear();
+        this.onEventTriggered.clear();
+        this.onLoaded.clear();
+        this.onStateChange.clear();
+    }
+
 }
 
 
