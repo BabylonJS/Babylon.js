@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
+import { Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -176,6 +176,10 @@ export abstract class AbstractViewer {
      * @memberof Viewer
      */
     protected initEngine(): Promise<Engine> {
+
+        // init custom shaders
+        this.injectCustomShaders();
+
         let canvasElement = this.templateManager.getCanvas();
         if (!canvasElement) {
             return Promise.reject('Canvas element not found!');
@@ -198,6 +202,8 @@ export abstract class AbstractViewer {
             var scale = Math.max(0.5, 1 / (window.devicePixelRatio || 2));
             this.engine.setHardwareScalingLevel(scale);
         }
+
+        this.handleHardwareLimitations();
 
         return Promise.resolve(this.engine);
     }
@@ -275,5 +281,54 @@ export abstract class AbstractViewer {
                 return this.scene;
             });
         });
+    }
+
+    /**
+		 * Alters render settings to reduce features based on hardware feature limitations
+		 * @param options Viewer options to modify
+		 */
+    protected handleHardwareLimitations() {
+        if (!this.configuration.scene) {
+            this.configuration.scene = {};
+        }
+        //flip rendering settings switches based on hardware support
+        let maxVaryingRows = this.engine.getCaps().maxVaryingVectors;
+        let maxFragmentSamplers = this.engine.getCaps().maxTexturesImageUnits;
+
+        //shadows are disabled if there's not enough varyings for a single shadow
+        if ((maxVaryingRows < 8) || (maxFragmentSamplers < 8)) {
+            this.configuration.scene.maxShadows = 0;
+        }
+
+        //can we render to any >= 16-bit targets (required for HDR)
+        let caps = this.engine.getCaps();
+        let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
+        let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
+
+        let supportsHDR: boolean = !!(linearFloatTargets || linearHalfFloatTargets);
+        this.configuration.scene.enableHdr = this.configuration.scene.enableHdr && supportsHDR;
+    }
+
+    /**
+     * Injects all the spectre shader in the babylon shader store
+     */
+    protected injectCustomShaders(): void {
+        let customShaders = this.configuration.customShaders;
+        // Inject all the spectre shader in the babylon shader store.
+        if (!customShaders) {
+            return;
+        }
+        if (customShaders.shaders) {
+            Object.keys(customShaders.shaders).forEach(key => {
+                // typescript considers a callback "unsafe", so... '!'
+                Effect.ShadersStore[key] = customShaders!.shaders![key];
+            });
+        }
+        if (customShaders.includes) {
+            Object.keys(customShaders.includes).forEach(key => {
+                // typescript considers a callback "unsafe", so... '!'
+                Effect.IncludesShadersStore[key] = customShaders!.includes![key];
+            });
+        }
     }
 }
