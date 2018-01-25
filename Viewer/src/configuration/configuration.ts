@@ -46,8 +46,7 @@ export interface ViewerConfiguration {
         defaultLight?: boolean;
         clearColor?: { r: number, g: number, b: number, a: number };
         imageProcessingConfiguration?: IImageProcessingConfiguration;
-        enableHdr?: boolean;
-        maxShadows?: number;
+        environmentTexture?: string;
     },
     optimizer?: {
         targetFrameRate?: number;
@@ -85,14 +84,15 @@ export interface ViewerConfiguration {
         [propName: string]: any;
     },
     skybox?: {
-        cubeTexture: {
+        cubeTexture?: {
             noMipMap?: boolean;
             gammaSpace?: boolean;
-            url: string | Array<string>;
+            url?: string | Array<string>;
         };
-        pbr?: boolean;
+        color?: { r: number, g: number, b: number };
+        pbr?: boolean; // deprecated
         scale?: number;
-        blur?: number;
+        blur?: number; // deprecated
         material?: {
             imageProcessingConfiguration?: IImageProcessingConfiguration;
         };
@@ -103,11 +103,23 @@ export interface ViewerConfiguration {
     ground?: boolean | {
         size?: number;
         receiveShadows?: boolean;
-        shadowOnly?: boolean;
-        mirror?: boolean;
-        material?: {
+        shadowLevel?: number;
+        shadowOnly?: boolean; // deprecated
+        mirror?: boolean | {
+            sizeRatio?: number;
+            blurKernel?: number;
+            amount?: number;
+            fresnelWeight?: number;
+            fallOffDistance?: number;
+            textureType?: number;
+        };
+        texture?: string;
+        color?: { r: number, g: number, b: number };
+        opacity?: number;
+        material?: { // deprecated!
             [propName: string]: any;
-        }
+        };
+
     };
     lights?: {
         [name: string]: {

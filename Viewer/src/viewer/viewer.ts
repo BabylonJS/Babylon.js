@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
+import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
 import { PromiseObservable } from '../util/promiseObservable';
 
@@ -23,6 +23,13 @@ export abstract class AbstractViewer {
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     protected configuration: ViewerConfiguration;
+    protected environmentHelper: EnvironmentHelper;
+
+    protected defaultHighpTextureType: number;
+    protected shadowGeneratorBias: number;
+    protected defaultPipelineTextureType: number;
+    protected maxShadows: number;
+
 
     // observables
     public onSceneInitObservable: PromiseObservable<Scene>;
@@ -84,6 +91,8 @@ export abstract class AbstractViewer {
                 this._onTemplateLoaded();
             });
         });
+
+        //this.onModelLoadedObservable.add(this.initEnvironment.bind(this));
 
     }
 
@@ -203,6 +212,7 @@ export abstract class AbstractViewer {
             this.engine.setHardwareScalingLevel(scale);
         }
 
+        // set hardware limitations for scene initialization
         this.handleHardwareLimitations();
 
         return Promise.resolve(this.engine);
@@ -247,6 +257,15 @@ export abstract class AbstractViewer {
                 this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
                 this.sceneOptimizer.start();
             }
+
+            // image processing configuration - optional.
+            if (this.configuration.scene.imageProcessingConfiguration) {
+                this.extendClassWithConfig(this.scene.imageProcessingConfiguration, this.configuration.scene.imageProcessingConfiguration);
+            }
+            if (this.configuration.scene.environmentTexture) {
+                const environmentTexture = CubeTexture.CreateFromPrefilteredData(this.configuration.scene.environmentTexture, this.scene);
+                this.scene.environmentTexture = environmentTexture;
+            }
         }
 
 
@@ -277,10 +296,120 @@ export abstract class AbstractViewer {
                 }, plugin)!;
             });
         }).then((meshes: Array<AbstractMesh>) => {
-            return this.onModelLoadedObservable.notifyWithPromise(meshes).then(() => {
-                return this.scene;
-            });
+            return this.onModelLoadedObservable.notifyWithPromise(meshes)
+                .then(() => {
+                    this.initEnvironment();
+                }).then(() => {
+                    return this.scene;
+                });
         });
+    }
+
+    protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
+        if (!this.configuration.skybox && !this.configuration.ground) {
+            if (this.environmentHelper) {
+                this.environmentHelper.dispose();
+            };
+            return Promise.resolve(this.scene);
+        }
+
+        const options: Partial<IEnvironmentHelperOptions> = {
+            createGround: !!this.configuration.ground,
+            createSkybox: !!this.configuration.skybox,
+            setupImageProcessing: false // will be done at the scene level!
+        };
+
+        if (this.configuration.ground) {
+            let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
+
+            let groundSize = groundConfig.size || (this.configuration.skybox && this.configuration.skybox.scale);
+            if (groundSize) {
+                options.groundSize = groundSize;
+            }
+
+            options.enableGroundShadow = this.configuration.ground === true || groundConfig.receiveShadows;
+            if (groundConfig.shadowLevel) {
+                options.groundShadowLevel = groundConfig.shadowLevel;
+            }
+            options.enableGroundMirror = !!groundConfig.mirror;
+            if (groundConfig.texture) {
+                options.groundTexture = groundConfig.texture;
+            }
+            if (groundConfig.color) {
+                options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
+            }
+
+            if (groundConfig.mirror) {
+                options.enableGroundMirror = true;
+                // to prevent undefines
+                if (typeof groundConfig.mirror === "object") {
+                    if (groundConfig.mirror.amount)
+                        options.groundMirrorAmount = groundConfig.mirror.amount;
+                    if (groundConfig.mirror.sizeRatio)
+                        options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
+                    if (groundConfig.mirror.blurKernel)
+                        options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
+                    if (groundConfig.mirror.fresnelWeight)
+                        options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
+                    if (groundConfig.mirror.fallOffDistance)
+                        options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
+                    if (this.defaultHighpTextureType !== undefined)
+                        options.groundMirrorTextureType = this.defaultHighpTextureType;
+                }
+            }
+
+        }
+
+        let postInitSkyboxMaterial = false;
+        if (this.configuration.skybox) {
+            let conf = this.configuration.skybox;
+            if (conf.material && conf.material.imageProcessingConfiguration) {
+                options.setupImageProcessing = false; // will be configured later manually.
+            }
+            let skyboxSize = this.configuration.skybox.scale;
+            if (skyboxSize) {
+                options.skyboxSize = skyboxSize;
+            }
+            options.sizeAuto = !options.skyboxSize;
+            if (conf.color) {
+                options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
+            }
+            if (conf.cubeTexture && conf.cubeTexture.url) {
+                if (typeof conf.cubeTexture.url === "string") {
+                    options.skyboxTexture = conf.cubeTexture.url;
+                } else {
+                    // init later!
+                    postInitSkyboxMaterial = true;
+                }
+            }
+
+            if (conf.material && conf.material.imageProcessingConfiguration) {
+                postInitSkyboxMaterial = true;
+            }
+        }
+
+        if (!this.environmentHelper) {
+            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+        }
+        else {
+            // there might be a new scene! we need to dispose.
+            // Need to decide if a scene should stay or be disposed.
+            this.environmentHelper.dispose();
+            //this.environmentHelper.updateOptions(options);
+            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+        }
+        console.log(options);
+
+        if (postInitSkyboxMaterial) {
+            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
+            if (skyboxMaterial) {
+                if (this.configuration.skybox && this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration) {
+                    this.extendClassWithConfig(skyboxMaterial.imageProcessingConfiguration, this.configuration.skybox.material.imageProcessingConfiguration);
+                }
+            }
+        }
+
+        return Promise.resolve(this.scene);
     }
 
     /**
@@ -288,16 +417,15 @@ export abstract class AbstractViewer {
 		 * @param options Viewer options to modify
 		 */
     protected handleHardwareLimitations() {
-        if (!this.configuration.scene) {
-            this.configuration.scene = {};
-        }
         //flip rendering settings switches based on hardware support
         let maxVaryingRows = this.engine.getCaps().maxVaryingVectors;
         let maxFragmentSamplers = this.engine.getCaps().maxTexturesImageUnits;
 
         //shadows are disabled if there's not enough varyings for a single shadow
         if ((maxVaryingRows < 8) || (maxFragmentSamplers < 8)) {
-            this.configuration.scene.maxShadows = 0;
+            this.maxShadows = 0;
+        } else {
+            this.maxShadows = 3;
         }
 
         //can we render to any >= 16-bit targets (required for HDR)
@@ -306,7 +434,19 @@ export abstract class AbstractViewer {
         let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
 
         let supportsHDR: boolean = !!(linearFloatTargets || linearHalfFloatTargets);
-        this.configuration.scene.enableHdr = this.configuration.scene.enableHdr && supportsHDR;
+
+        if (linearHalfFloatTargets) {
+            this.defaultHighpTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
+            this.shadowGeneratorBias = 0.002;
+        } else if (linearFloatTargets) {
+            this.defaultHighpTextureType = Engine.TEXTURETYPE_FLOAT;
+            this.shadowGeneratorBias = 0.001;
+        } else {
+            this.defaultHighpTextureType = Engine.TEXTURETYPE_UNSIGNED_INT;
+            this.shadowGeneratorBias = 0.001;
+        }
+
+        this.defaultPipelineTextureType = supportsHDR ? this.defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**
@@ -330,5 +470,20 @@ export abstract class AbstractViewer {
                 Effect.IncludesShadersStore[key] = customShaders!.includes![key];
             });
         }
+    }
+
+    protected extendClassWithConfig(object: any, config: any) {
+        if (!config) return;
+        Object.keys(config).forEach(key => {
+            if (key in object && typeof object[key] !== 'function') {
+                if (typeof object[key] === 'function') return;
+                // if it is an object, iterate internally until reaching basic types
+                if (typeof object[key] === 'object') {
+                    this.extendClassWithConfig(object[key], config[key]);
+                } else {
+                    object[key] = config[key];
+                }
+            }
+        });
     }
 }
