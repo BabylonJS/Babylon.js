@@ -169,6 +169,7 @@ module BABYLON {
                     var type;
                     if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
                         type = "SPOTLIGHT" + lightIndex;
+                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = (light as SpotLight).projectedLightTexture ? true : false;
                     } else if (light.getTypeID() === Light.LIGHTTYPEID_HEMISPHERICLIGHT) {
                         type = "HEMILIGHT" + lightIndex;
                     } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
@@ -207,12 +208,6 @@ module BABYLON {
                         defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
                     }
 
-                    //Projection texture
-                    if (light.projectedLightTexture){
-                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = true;
-                    }else{
-                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = false;                        
-                    }
                     lightIndex++;
                     if (lightIndex === maxSimultaneousLights)
                         break;

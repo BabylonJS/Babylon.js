@@ -17,38 +17,6 @@
             projection matrix. Need to call computeTextureMatrix() to recompute manually. Add inheritance
             to the setting function of the 2 attributes will solve the problem.
         */
-        /**
-         * Main function for light texture projection matrix computing.
-         */
-        protected _computeTextureMatrix(): void{    
-
-            var viewLightMatrix = Matrix.Zero();
-            Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);
-
-            var light_far = this.light_far;
-            var light_near = this.light_near;
-
-            var P = light_far / (light_far - light_near);
-            var Q = - P * light_near;
-            var S = 1.0 / Math.tan(this._angle / 2.0);
-            var A = 1.0;
-            
-            var projectionLightMatrix = Matrix.Zero();
-            Matrix.FromValuesToRef(S/A, 0.0, 0.0, 0.0,
-                0.0, S, 0.0, 0.0,
-                0.0, 0.0, P, 1.0,
-                0.0, 0.0, Q, 0.0, projectionLightMatrix);
-
-            var scaleMatrix = Matrix.Zero();
-            Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0,
-                0.0, 0.5, 0.0, 0.0,
-                0.0, 0.0, 0.5, 0.0,
-                0.5, 0.5, 0.5, 1.0, scaleMatrix);
-                
-            this._textureProjectionMatrix.copyFrom(viewLightMatrix);
-            this._textureProjectionMatrix.multiplyToRef(projectionLightMatrix, this._textureProjectionMatrix);
-            this._textureProjectionMatrix.multiplyToRef(scaleMatrix, this._textureProjectionMatrix);
-        }
 
         private _angle: number;
         @serialize()
@@ -91,6 +59,53 @@
         */
         public set textureMatrix(value: Matrix) {
             this._textureProjectionMatrix = value;
+        }
+
+        protected _light_near :number;
+        @serialize()
+        /**
+         * Allows reading the near clip of the Spotlight for texture projection.
+         */
+        public get light_near(): number {
+            return this._light_near;
+        }
+        /**
+         * Allows setting the near clip of the Spotlight for texture projection.
+         */
+        public set light_near(value: number) {
+            this._light_near = value;
+            this._computeTextureMatrix();
+        }
+
+        @serializeAsTexture("projectedLightTexture")
+        private _projectedLightTexture: Nullable<BaseTexture>;;
+        /** 
+         * Allows reading the projection texture of the light.
+        */
+        public get projectedLightTexture(): Nullable<BaseTexture> {
+            return this._projectedLightTexture;
+        }
+
+        protected _light_far  :number;
+        @serialize()
+        /**
+         * Allows reading the far clip of the Spotlight for texture projection.
+         */
+        public get light_far(): number {
+            return this._light_far;
+        }
+        public set light_far(value: number) {
+            this._light_far = value;
+        }
+
+        /**
+        * Allows setting the projection texture of the light.
+        */
+        public set projectedLightTexture(value: Nullable<BaseTexture>) {
+            this._projectedLightTexture = value;
+            this._light_far = 1000.0;
+            this._light_near = 1e-6;
+            this._computeTextureMatrix();
         }
 
         /**
@@ -144,6 +159,39 @@
             this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
 
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        protected _computeTextureMatrix(): void {
+
+            var viewLightMatrix = Matrix.Zero();
+            Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);
+
+            var light_far = this.light_far;
+            var light_near = this.light_near;
+
+            var P = light_far / (light_far - light_near);
+            var Q = - P * light_near;
+            var S = 1.0 / Math.tan(this._angle / 2.0);
+            var A = 1.0;
+            
+            var projectionLightMatrix = Matrix.Zero();
+            Matrix.FromValuesToRef(S/A, 0.0, 0.0, 0.0,
+                0.0, S, 0.0, 0.0,
+                0.0, 0.0, P, 1.0,
+                0.0, 0.0, Q, 0.0, projectionLightMatrix);
+
+            var scaleMatrix = Matrix.Zero();
+            Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0,
+                0.0, 0.5, 0.0, 0.0,
+                0.0, 0.0, 0.5, 0.0,
+                0.5, 0.5, 0.5, 1.0, scaleMatrix);
+                
+            this._textureProjectionMatrix.copyFrom(viewLightMatrix);
+            this._textureProjectionMatrix.multiplyToRef(projectionLightMatrix, this._textureProjectionMatrix);
+            this._textureProjectionMatrix.multiplyToRef(scaleMatrix, this._textureProjectionMatrix);
+        }
+
         protected _buildUniformLayout(): void {
             this._uniformBuffer.addUniform("vLightData", 4);
             this._uniformBuffer.addUniform("vLightDiffuse", 4);
@@ -193,6 +241,16 @@
                 effect.setTexture("projectionLightSampler" + lightIndex, this.projectedLightTexture);
             }
             return this;
+        }
+
+        /**
+         * Disposes the light.
+         */
+        public dispose() : void {
+            super.dispose();
+            if (this._projectedLightTexture){
+                this._projectedLightTexture.dispose();
+            }
         }
     }
 }
