@@ -2431,7 +2431,7 @@
 
         public sortLightsByPriority(): void {
             if (this.requireLightSorting) {
-                this.lights.sort(Light.compareLightsPriority);
+                this.lights.sort(Light.CompareLightsPriority);
             }
         }
 
