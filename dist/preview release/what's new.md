@@ -43,3 +43,4 @@
 - Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
+- Removed unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
