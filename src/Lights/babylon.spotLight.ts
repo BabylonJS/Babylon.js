@@ -1,6 +1,13 @@
 ﻿module BABYLON {
+    /**
+     * A spot light is defined by a position, a direction, an angle, and an exponent. 
+     * These values define a cone of light starting from the position, emitting toward the direction.
+     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam, 
+     * and the exponent defines the speed of the decay of the light with distance (reach).
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
     export class SpotLight extends ShadowLight {
-        /**
+        /*
             upVector , rightVector and direction will form the coordinate system for this spot light. 
             These three vectors will be used as projection matrix when doing texture projection.
             
@@ -20,9 +27,15 @@
 
         private _angle: number;
         @serialize()
+        /**
+         * Gets the cone angle of the spot light in Radians.
+         */
         public get angle(): number {
             return this._angle
         }
+        /**
+         * Sets the cone angle of the spot light in Radians.
+         */
         public set angle(value: number) {
             this._angle = value;
             this.forceProjectionMatrixCompute();
@@ -43,6 +56,10 @@
             this._shadowAngleScale = value;
             this.forceProjectionMatrixCompute();
         }
+
+        /**
+         * The light decay speed with the distance from the emission spot.
+         */
         @serialize()
         public exponent: number;
 
@@ -64,42 +81,44 @@
         protected _light_near :number;
         @serialize()
         /**
-         * Allows reading the near clip of the Spotlight for texture projection.
+         * Gets the near clip of the Spotlight for texture projection.
          */
         public get light_near(): number {
             return this._light_near;
         }
         /**
-         * Allows setting the near clip of the Spotlight for texture projection.
+         * Sets the near clip of the Spotlight for texture projection.
          */
         public set light_near(value: number) {
             this._light_near = value;
             this._computeTextureMatrix();
         }
 
-        @serializeAsTexture("projectedLightTexture")
-        private _projectedLightTexture: Nullable<BaseTexture>;;
-        /** 
-         * Allows reading the projection texture of the light.
-        */
-        public get projectedLightTexture(): Nullable<BaseTexture> {
-            return this._projectedLightTexture;
-        }
-
         protected _light_far  :number;
-        @serialize()
         /**
-         * Allows reading the far clip of the Spotlight for texture projection.
+         * Gets the far clip of the Spotlight for texture projection.
          */
+        @serialize()
         public get light_far(): number {
             return this._light_far;
         }
+        /**
+         * Sets the far clip of the Spotlight for texture projection.
+         */
         public set light_far(value: number) {
             this._light_far = value;
         }
 
+        @serializeAsTexture("projectedLightTexture")
+        private _projectedLightTexture: Nullable<BaseTexture>;;
+        /** 
+         * Gets the projection texture of the light.
+        */
+        public get projectedLightTexture(): Nullable<BaseTexture> {
+            return this._projectedLightTexture;
+        }
         /**
-        * Allows setting the projection texture of the light.
+        * Sets the projection texture of the light.
         */
         public set projectedLightTexture(value: Nullable<BaseTexture>) {
             this._projectedLightTexture = value;
@@ -109,14 +128,15 @@
         }
 
         /**
-         * Creates a SpotLight object in the scene with the passed parameters :   
-         * - `position` (Vector3) is the initial SpotLight position,  
-         * - `direction` (Vector3) is the initial SpotLight direction,  
-         * - `angle` (float, in radians) is the spot light cone angle,
-         * - `exponent` (float) is the light decay speed with the distance from the emission spot.  
-         * A spot light is a simply light oriented cone.   
-         * It can cast shadows.  
-         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
+         * It can cast shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The light friendly name
+         * @param position The position of the spot light in the scene
+         * @param direction The direction of the light in the scene
+         * @param angle The cone angle of the light in Radians
+         * @param exponent The light decay speed with the distance from the emission spot
+         * @param scene The scene the lights belongs to
          */
         constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene) {
             super(name, scene);
@@ -129,6 +149,7 @@
 
         /**
          * Returns the string "SpotLight".
+         * @returns the class name
          */
         public getClassName(): string {
             return "SpotLight";
@@ -136,6 +157,7 @@
 
         /**
          * Returns the integer 2.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
          */
         public getTypeID(): number {
             return Light.LIGHTTYPEID_SPOTLIGHT;
@@ -204,7 +226,9 @@
 
         /**
          * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.  
-         * Return the SpotLight.   
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The spot light
          */
         public transferToEffect(effect: Effect, lightIndex: string): SpotLight {
             var normalizeDirection;
@@ -244,7 +268,7 @@
         }
 
         /**
-         * Disposes the light.
+         * Disposes the light and the associated resources.
          */
         public dispose() : void {
             super.dispose();
