@@ -242,7 +242,8 @@
             }
 
             if(this.depthOfFieldEnabled){
-                this.depthOfField = new DepthOfFieldEffect(this, this._scene, this._cameras[0], this._defaultPipelineTextureType);
+                this.depthOfField = new DepthOfFieldEffect(this._scene, this._defaultPipelineTextureType);
+                this.addEffect(this.depthOfField);
             }
 
             if (this._imageProcessingEnabled) {
