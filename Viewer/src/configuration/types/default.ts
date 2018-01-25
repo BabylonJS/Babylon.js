@@ -1,9 +1,7 @@
 import { ViewerConfiguration } from './../configuration';
 
 export let defaultConfiguration: ViewerConfiguration = {
-    version: "0.1",
-    //eventPrefix: 'babylonviewer-',
-    //events: true,
+    version: "3.2.0-alpha4",
     templates: {
         main: {
             html: require("../../../assets/templates/default/defaultTemplate.html")
@@ -71,12 +69,12 @@ export let defaultConfiguration: ViewerConfiguration = {
             }
         }
     },
-    /*lights: [
-        {
+    /*lights: {
+        "default": {
             type: 1,
             shadowEnabled: true,
-            direction: { x: -0.2, y: -1, z: 0 },
-            position: { x: 0.017, y: 50, z: 0 },
+            direction: { x: -0.2, y: -0.8, z: 0 },
+            position: { x: 10, y: 10, z: 0 },
             intensity: 4.5,
             shadowConfig: {
                 useBlurExponentialShadowMap: true,
@@ -85,16 +83,16 @@ export let defaultConfiguration: ViewerConfiguration = {
                 blurScale: 4
             }
         }
-    ],*/
+    },*/
     skybox: {
-        cubeTexture: {
+        /*cubeTexture: {
             url: 'https://playground.babylonjs.com/textures/environment.dds',
             gammaSpace: false
-        },
+        },*/
         pbr: true,
         blur: 0.7,
         infiniteDIstance: false,
-        material: {
+        /*material: {
             imageProcessingConfiguration: {
                 colorCurves: {
                     globalDensity: 89,
@@ -110,7 +108,7 @@ export let defaultConfiguration: ViewerConfiguration = {
                 vignetteColor: { r: 0.8, g: 0.6, b: 0.4 },
                 vignetteM: true
             }
-        }
+        }*/
     },
     ground: true,
     engine: {
@@ -122,7 +120,5 @@ export let defaultConfiguration: ViewerConfiguration = {
             contrast: 1.66,
             toneMappingEnabled: true
         }
-        //autoRotate: true,
-        //rotationSpeed: 0.1
     }
 }

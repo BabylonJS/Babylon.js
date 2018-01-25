@@ -46,6 +46,24 @@ export interface ViewerConfiguration {
         defaultLight?: boolean;
         clearColor?: { r: number, g: number, b: number, a: number };
         imageProcessingConfiguration?: IImageProcessingConfiguration;
+        environmentTexture?: string;
+    },
+    optimizer?: {
+        targetFrameRate?: number;
+        trackerDuration?: number;
+        autoGeneratePriorities?: boolean;
+        improvementMode?: boolean;
+        degradation?: string; // low, moderate, high
+        types?: {
+            texture?: SceneOptimizerParameters;
+            hardwareScaling?: SceneOptimizerParameters;
+            shadow?: SceneOptimizerParameters;
+            postProcess?: SceneOptimizerParameters;
+            lensFlare?: SceneOptimizerParameters;
+            particles?: SceneOptimizerParameters;
+            renderTarget?: SceneOptimizerParameters;
+            mergeMeshes?: SceneOptimizerParameters;
+        }
     },
     // at the moment, support only a single camera.
     camera?: {
@@ -66,14 +84,15 @@ export interface ViewerConfiguration {
         [propName: string]: any;
     },
     skybox?: {
-        cubeTexture: {
+        cubeTexture?: {
             noMipMap?: boolean;
             gammaSpace?: boolean;
-            url: string | Array<string>;
+            url?: string | Array<string>;
         };
-        pbr?: boolean;
+        color?: { r: number, g: number, b: number };
+        pbr?: boolean; // deprecated
         scale?: number;
-        blur?: number;
+        blur?: number; // deprecated
         material?: {
             imageProcessingConfiguration?: IImageProcessingConfiguration;
         };
@@ -84,11 +103,23 @@ export interface ViewerConfiguration {
     ground?: boolean | {
         size?: number;
         receiveShadows?: boolean;
-        shadowOnly?: boolean;
-        mirror?: boolean;
-        material?: {
+        shadowLevel?: number;
+        shadowOnly?: boolean; // deprecated
+        mirror?: boolean | {
+            sizeRatio?: number;
+            blurKernel?: number;
+            amount?: number;
+            fresnelWeight?: number;
+            fallOffDistance?: number;
+            textureType?: number;
+        };
+        texture?: string;
+        color?: { r: number, g: number, b: number };
+        opacity?: number;
+        material?: { // deprecated!
             [propName: string]: any;
-        }
+        };
+
     };
     lights?: {
         [name: string]: {
@@ -133,7 +164,21 @@ export interface ViewerConfiguration {
         main: ITemplateConfiguration,
         [key: string]: ITemplateConfiguration
     };
-    // nodes?
+
+    customShaders?: {
+        shaders?: {
+            [key: string]: string;
+        };
+        includes?: {
+            [key: string]: string;
+        }
+    }
+}
+
+export interface SceneOptimizerParameters {
+    priority?: number;
+    maximumSize?: number;
+    step?: number;
 }
 
 export interface IImageProcessingConfiguration {
