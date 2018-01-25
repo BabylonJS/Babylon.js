@@ -338,7 +338,7 @@ module BABYLON {
          * @param lightIndex The index of the light in the effect to update
          * @returns The light
          */
-        public abstract transferToEffect(effect: Effect, lightIndex: string): void;
+        public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
 
         /**
          * @ignore internal use only.
@@ -356,6 +356,7 @@ module BABYLON {
         /**
          * Converts the light information to a readable string for debug purpose.
          * @param fullDetails Supports for multiple levels of logging within scene loading
+         * @returns the human readable light info
          */
         public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
@@ -456,7 +457,7 @@ module BABYLON {
 		 * @param b Second Light object to compare first.
 		 * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
 		 */
-        public static compareLightsPriority(a: Light, b: Light): number {
+        public static CompareLightsPriority(a: Light, b: Light): number {
             //shadow-casting lights have priority over non-shadow-casting lights
             //the renderPrioirty is a secondary sort criterion
             if (a.shadowEnabled !== b.shadowEnabled) {
