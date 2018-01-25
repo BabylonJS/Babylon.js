@@ -1,25 +1,67 @@
 ﻿module BABYLON {
     export type PostProcessOptions = { width: number, height: number };
 
+    /**
+	 * PostProcess can be used to apply a shader to a texture after it has been rendered
+     * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
+     */
     export class PostProcess {
+        /**
+        * Width of the texture to apply the post process on
+        */
         public width = -1;
+        /**
+        * Height of the texture to apply the post process on
+        */
         public height = -1;
+        /**
+        * Sampling mode used by the shader
+        * See https://doc.babylonjs.com/classes/3.1/texture
+        */
         public renderTargetSamplingMode: number;
+        /**
+        * Clear color to use when screen clearing
+        */
         public clearColor: Color4;
+        /**
+        * If the buffer needs to be cleared before applying the post process. (default: true)
+        * Should be set to false if shader will overwrite all previous pixels.
+        */
         public autoClear = true;
+        /**
+        * Type of alpha mode to use when performing the post process (default: Engine.ALPHA_DISABLE)
+        */
         public alphaMode = Engine.ALPHA_DISABLE;
+        /**
+        * Sets the setAlphaBlendConstants of the babylon engine
+        */
         public alphaConstants: Color4;
+        /**
+        * Animations to be used for the post processing 
+        */
         public animations = new Array<Animation>();
 
         /*
             Enable Pixel Perfect mode where texture is not scaled to be power of 2.
-            Can only be used on a single postprocess or on the last one of a chain.
+            Can only be used on a single postprocess or on the last one of a chain. (default: false)
         */
         public enablePixelPerfectMode = false;
 
+        /**
+        * Scale mode for the post process (default: Engine.SCALEMODE_FLOOR)
+        */
         public scaleMode = Engine.SCALEMODE_FLOOR;
+        /**
+        * Force textures to be a power of two (default: false)
+        */
         public alwaysForcePOT = false;
+        /**
+        * Number of sample textures (default: 1)
+        */
         public samples = 1;
+        /**
+        * Modify the scale of the post process to be the same as the viewport (default: false)
+        */
         public adaptScaleToCurrentViewport = false;
 
         private _camera: Camera;
@@ -50,6 +92,9 @@
         public onActivateObservable = new Observable<Camera>();
 
         private _onActivateObserver: Nullable<Observer<Camera>>;
+        /**
+        * A function that is added to the onActivateObservable
+        */
         public set onActivate(callback: Nullable<(camera: Camera) => void>) {
             if (this._onActivateObserver) {
                 this.onActivateObservable.remove(this._onActivateObserver);
@@ -66,6 +111,9 @@
         public onSizeChangedObservable = new Observable<PostProcess>();
 
         private _onSizeChangedObserver: Nullable<Observer<PostProcess>>;
+        /**
+        * A function that is added to the onSizeChangedObservable
+        */
         public set onSizeChanged(callback: (postProcess: PostProcess) => void) {
             if (this._onSizeChangedObserver) {
                 this.onSizeChangedObservable.remove(this._onSizeChangedObserver);
@@ -80,6 +128,9 @@
         public onApplyObservable = new Observable<Effect>();
 
         private _onApplyObserver: Nullable<Observer<Effect>>;
+        /**
+        * A function that is added to the onApplyObservable
+        */
         public set onApply(callback: (effect: Effect) => void) {
             if (this._onApplyObserver) {
                 this.onApplyObservable.remove(this._onApplyObserver);
@@ -94,6 +145,9 @@
         public onBeforeRenderObservable = new Observable<Effect>();
 
         private _onBeforeRenderObserver: Nullable<Observer<Effect>>;
+        /**
+        * A function that is added to the onBeforeRenderObservable
+        */
         public set onBeforeRender(callback: (effect: Effect) => void) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -108,6 +162,9 @@
         public onAfterRenderObservable = new Observable<Effect>();
 
         private _onAfterRenderObserver: Nullable<Observer<Effect>>;
+        /**
+        * A function that is added to the onAfterRenderObservable
+        */
         public set onAfterRender(callback: (efect: Effect) => void) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -115,6 +172,9 @@
             this._onAfterRenderObserver = this.onAfterRenderObservable.add(callback);
         }
 
+        /**
+        * The resulting output of the post process.
+        */
         public get outputTexture(): InternalTexture {
             return this._textures.data[this._currentRenderTextureInd];
         }
@@ -123,10 +183,17 @@
             this._forcedOutputTexture = value;
         }
 
+        /**
+        * Gets the camera which post process is applied to
+        */
         public getCamera(): Camera {
             return this._camera;
         }
 
+        /**
+        * Gets the texel size of the postprocess
+        * See https://en.wikipedia.org/wiki/Texel_(graphics)
+        */
         public get texelSize(): Vector2 {
             if (this._shareOutputWithPostProcess) {
                 return this._shareOutputWithPostProcess.texelSize;

@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+	/**
+	 * The Blur Post Process which blurs an image based on a kernel and direction. 
+	 * Can be used twice in x and y directions to perform a guassian blur in two passes.
+     */
     export class BlurPostProcess extends PostProcess {
 		protected _kernel: number;
 		protected _idealKernel: number;
@@ -43,7 +47,19 @@
 			return this._packedFloat;
 		}
 
-        constructor(name: string, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+		/**
+         * Creates a new instance of @see BlurPostProcess
+         * @param name The name of the effect.
+         * @param direction The direction in which to blur the image.
+		 * @param kernel The size of the kernel to be used when computing the blur. eg. Size of 3 will blur the center pixel by 2 pixels surrounding it.
+         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         */
+        constructor(name: string, /*The direction in which to blur the image.*/public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
 			
 			this.onApplyObservable.add((effect: Effect) => {
