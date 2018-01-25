@@ -1,4 +1,10 @@
 ﻿module BABYLON {
+    /**
+     * A directional light is defined by a direction (what a surprise!). 
+     * The light is emitted from everywhere in the specified direction, and has an infinite range. 
+     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
     export class DirectionalLight extends ShadowLight {
 
         private _shadowFrustumSize = 0;
@@ -18,15 +24,29 @@
         }
 
         private _shadowOrthoScale = 0.5;
+        /**
+         * Gets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
         @serialize()
         public get shadowOrthoScale(): number {
             return this._shadowOrthoScale
         }
+        /**
+         * Sets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
         public set shadowOrthoScale(value: number) {
             this._shadowOrthoScale = value;
             this.forceProjectionMatrixCompute();
         }
 
+        /**
+         * Automatically compute the projection matrix to best fit (including all the casters)
+         * on each frame.
+         */
         @serialize()
         public autoUpdateExtends = true;
 
@@ -39,8 +59,11 @@
         /**
          * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).  
          * The directional light is emitted from everywhere in the given direction.  
-         * It can cast shawdows.  
-         * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         * It can cast shawdows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light
+         * @param scene The scene the light belongs to
          */
         constructor(name: string, direction: Vector3, scene: Scene) {
             super(name, scene);
@@ -49,7 +72,8 @@
         }
 
         /**
-         * Returns the string "DirectionalLight".  
+         * Returns the string "DirectionalLight".
+         * @return The class name
          */
         public getClassName(): string {
             return "DirectionalLight";
@@ -57,6 +81,7 @@
 
         /**
          * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
          */
         public getTypeID(): number {
             return Light.LIGHTTYPEID_DIRECTIONALLIGHT;
@@ -155,7 +180,9 @@
 
         /**
          * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.  
-         * Returns the DirectionalLight.  
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The directional light
          */
         public transferToEffect(effect: Effect, lightIndex: string): DirectionalLight {
             if (this.computeTransformedInformation()) {
@@ -171,7 +198,8 @@
          * 
          * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
          * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera 
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
          */
         public getDepthMinZ(activeCamera: Camera): number {
             return 1;
@@ -182,7 +210,8 @@
          * 
          * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
          * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera 
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
          */
         public getDepthMaxZ(activeCamera: Camera): number {
             return 1;

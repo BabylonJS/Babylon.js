@@ -1,5 +1,10 @@
 module BABYLON {
-    export class Light extends Node {
+    /**
+     * Base class of all the lights in Babylon. It groups all the generic information about lights.
+     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour. 
+     * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
+     */
+    export abstract class Light extends Node {
 
         //lightmapMode Consts
         private static _LIGHTMAP_DEFAULT = 0;
@@ -112,15 +117,31 @@ module BABYLON {
             return Light._LIGHTTYPEID_HEMISPHERICLIGHT;
         }
 
+        /**
+         * Diffuse gives the basic color to an object.
+         */
         @serializeAsColor3()
         public diffuse = new Color3(1.0, 1.0, 1.0);
 
+        /**
+         * Specular produces a highlight color on an object.
+         * Note: This is note affecting PBR materials.
+         */
         @serializeAsColor3()
         public specular = new Color3(1.0, 1.0, 1.0);
 
+        /**
+         * Strength of the light.
+         * Note: By default it is define in the framework own unit.
+         * Note: In PBR materials the intensityMode can be use to chose what unit the intensity is defined in.
+         */
         @serialize()
         public intensity = 1.0;
 
+        /**
+         * Defines how far from the source the light is impacting in scene units.
+         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
+         */
         @serialize()
         public range = Number.MAX_VALUE;
 
@@ -164,12 +185,13 @@ module BABYLON {
             this._computePhotometricScale();
         };
 
+        
+        @serialize()
+        private _renderPriority: number;
         /**
          * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
          * exceeding the number allowed of the materials.
          */
-        @serialize()
-        private _renderPriority: number;
         @expandToProperty("_reorderLightsInScene")
         public renderPriority: number = 0;
 
@@ -181,19 +203,30 @@ module BABYLON {
         public shadowEnabled: boolean = true;
 
         private _includedOnlyMeshes: AbstractMesh[];
+        /**
+         * Gets the only meshes impacted by this light.
+         */
         public get includedOnlyMeshes(): AbstractMesh[] {
             return this._includedOnlyMeshes;
         }
-
+        /**
+         * Sets the only meshes impacted by this light.
+         */
         public set includedOnlyMeshes(value: AbstractMesh[]) {
             this._includedOnlyMeshes = value;
             this._hookArrayForIncludedOnly(value);
         }
 
         private _excludedMeshes: AbstractMesh[];
+        /**
+         * Gets the meshes not impacted by this light.
+         */
         public get excludedMeshes(): AbstractMesh[] {
             return this._excludedMeshes;
         }
+        /**
+         * Sets the meshes not impacted by this light.
+         */
         public set excludedMeshes(value: AbstractMesh[]) {
             this._excludedMeshes = value;
             this._hookArrayForExcluded(value);
@@ -201,10 +234,17 @@ module BABYLON {
 
         @serialize("excludeWithLayerMask")
         private _excludeWithLayerMask = 0;
+        /**
+         * Gets the layer id use to find what meshes are not impacted by the light.
+         * Inactive if 0
+         */
         public get excludeWithLayerMask(): number {
             return this._excludeWithLayerMask;
         }
-
+        /**
+         * Sets the layer id use to find what meshes are not impacted by the light.
+         * Inactive if 0
+         */
         public set excludeWithLayerMask(value: number) {
             this._excludeWithLayerMask = value;
             this._resyncMeshes();
@@ -212,10 +252,17 @@ module BABYLON {
 
         @serialize("includeOnlyWithLayerMask")
         private _includeOnlyWithLayerMask = 0;
+        /**
+         * Gets the layer id use to find what meshes are impacted by the light.
+         * Inactive if 0
+         */
         public get includeOnlyWithLayerMask(): number {
             return this._includeOnlyWithLayerMask;
         }
-
+        /**
+         * Sets the layer id use to find what meshes are impacted by the light.
+         * Inactive if 0
+         */
         public set includeOnlyWithLayerMask(value: number) {
             this._includeOnlyWithLayerMask = value;
             this._resyncMeshes();
@@ -223,10 +270,15 @@ module BABYLON {
 
         @serialize("lightmapMode")
         private _lightmapMode = 0;
+        /**
+         * Gets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+         */
         public get lightmapMode(): number {
             return this._lightmapMode;
         }
-
+        /**
+         * Sets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+         */
         public set lightmapMode(value: number) {
             if (this._lightmapMode === value) {
                 return;
@@ -237,16 +289,34 @@ module BABYLON {
         }
 
         private _parentedWorldMatrix: Matrix;
+
+        /**
+         * Shadow generator associted to the light.
+         * Internal use only.
+         */
         public _shadowGenerator: Nullable<IShadowGenerator>;
+
+        /**
+         * @ignore Internal use only.
+         */
         public _excludedMeshesIds = new Array<string>();
+
+        /**
+         * @ignore Internal use only.
+         */
         public _includedOnlyMeshesIds = new Array<string>();
 
-        // Light uniform buffer
+        /**
+         * The current light unifom buffer.
+         * @ignore Internal use only.
+         */
         public _uniformBuffer: UniformBuffer;
 
         /**
          * Creates a Light object in the scene.  
          * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         * @param name The firendly name of the light
+         * @param scene The scene the light belongs too 
          */
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -260,19 +330,33 @@ module BABYLON {
             this._resyncMeshes();
         }
 
-        protected _buildUniformLayout(): void {
-            // Overridden
-        }
+        protected abstract _buildUniformLayout(): void;
 
         /**
-         * Returns the string "Light".  
+         * Sets the passed Effect "effect" with the Light information.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        public abstract transferToEffect(effect: Effect, lightIndex: string): Light;
+
+        /**
+         * @ignore internal use only.
+         */
+        public abstract _getWorldMatrix(): Matrix;
+
+        /**
+         * Returns the string "Light".
+         * @returns the class name
          */
         public getClassName(): string {
             return "Light";
         }
 
         /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         * Converts the light information to a readable string for debug purpose.
+         * @param fullDetails Supports for multiple levels of logging within scene loading
+         * @returns the human readable light info
          */
         public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name;
@@ -287,10 +371,9 @@ module BABYLON {
             return ret;
         }
 
-
         /**
          * Set the enabled state of this node.
-         * @param {boolean} value - the new enabled state
+         * @param value - the new enabled state
          * @see isEnabled
          */
         public setEnabled(value: boolean): void {
@@ -300,7 +383,8 @@ module BABYLON {
         }
 
         /**
-         * Returns the Light associated shadow generator.  
+         * Returns the Light associated shadow generator if any.
+         * @return the associated shadow generator.
          */
         public getShadowGenerator(): Nullable<IShadowGenerator> {
             return this._shadowGenerator;
@@ -308,20 +392,16 @@ module BABYLON {
 
         /**
          * Returns a Vector3, the absolute light position in the World.  
+         * @returns the world space position of the light
          */
         public getAbsolutePosition(): Vector3 {
             return Vector3.Zero();
         }
 
-        public transferToEffect(effect: Effect, lightIndex: string): void {
-        }
-
-        public _getWorldMatrix(): Matrix {
-            return Matrix.Identity();
-        }
-
         /**
-         * Boolean : True if the light will affect the passed mesh.  
+         * Specifies if the light will affect the passed mesh.
+         * @param mesh The mesh to test against the light
+         * @return true the mesh is affected otherwise, false.
          */
         public canAffectMesh(mesh: AbstractMesh): boolean {
             if (!mesh) {
@@ -348,7 +428,8 @@ module BABYLON {
         }
 
         /**
-         * Returns the light World matrix.  
+         * Computes and Returns the light World matrix.
+         * @returns the world matrix 
          */
         public getWorldMatrix(): Matrix {
             this._currentRenderId = this.getScene().getRenderId();
@@ -376,7 +457,7 @@ module BABYLON {
 		 * @param b Second Light object to compare first.
 		 * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
 		 */
-        public static compareLightsPriority(a: Light, b: Light): number {
+        public static CompareLightsPriority(a: Light, b: Light): number {
             //shadow-casting lights have priority over non-shadow-casting lights
             //the renderPrioirty is a secondary sort criterion
             if (a.shadowEnabled !== b.shadowEnabled) {
@@ -384,59 +465,7 @@ module BABYLON {
             }
             return b.renderPriority - a.renderPriority;
         }
-        // Projection texture, if needed
-        protected _computeTextureMatrix(): void{
-            //Leave out for different light type
-        }
-        protected _light_far  :number;
-        @serialize()
-        /**
-         * Allows reading the far clip of the Spotlight for texture projection.
-         */
-        public get light_far(): number {
-            return this._light_far;
-        }
-        /**
-         * Allows setting the far clip of the Spotlight for texture projection.
-         */
-        public set light_far(value: number) {
-            this._light_far = value;
-            this._computeTextureMatrix();
-        }
 
-        protected _light_near :number;
-        @serialize()
-        /**
-         * Allows reading the near clip of the Spotlight for texture projection.
-         */
-        public get light_near(): number {
-            return this._light_near;
-        }
-        /**
-         * Allows setting the near clip of the Spotlight for texture projection.
-         */
-        public set light_near(value: number) {
-            this._light_near = value;
-            this._computeTextureMatrix();
-        }
-
-        @serializeAsTexture("projectedLightTexture")
-        private _projectedLightTexture: Nullable<BaseTexture>;;
-        /** 
-         * Allows reading the projection texture of the light.
-        */
-        public get projectedLightTexture(): Nullable<BaseTexture> {
-            return this._projectedLightTexture;
-        }
-        /**
-        * Allows setting the projection texture of the light.
-        */
-        public set projectedLightTexture(value: Nullable<BaseTexture>) {
-            this._projectedLightTexture = value;
-            this._light_far = 1000.0;
-            this._light_near = 1e-6;
-            this._computeTextureMatrix();
-        }
         /**
          * Disposes the light.  
          */
@@ -455,16 +484,15 @@ module BABYLON {
             }
 
             this._uniformBuffer.dispose();
-            if (this._projectedLightTexture){
-                this._projectedLightTexture.dispose();
-            }
+
             // Remove from scene
             this.getScene().removeLight(this);
             super.dispose();
         }
 
         /**
-         * Returns the light type ID (integer).  
+         * Returns the light type ID (integer).
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
          */
         public getTypeID(): number {
             return 0;
@@ -472,13 +500,16 @@ module BABYLON {
 
         /**
          * Returns the intensity scaled by the Photometric Scale according to the light type and intensity mode.
+         * @returns the scaled intensity in intensity mode unit
          */
         public getScaledIntensity() {
             return this._photometricScale * this.intensity;
         }
 
         /**
-         * Returns a new Light object, named "name", from the current one.  
+         * Returns a new Light object, named "name", from the current one.
+         * @param name The name of the cloned light
+         * @returns the new created light
          */
         public clone(name: string): Nullable<Light> {
             let constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
@@ -488,9 +519,10 @@ module BABYLON {
             }
             return SerializationHelper.Clone(constructor, this);
         }
+
         /**
          * Serializes the current light into a Serialization object.  
-         * Returns the serialized object.  
+         * @returns the serialized object.
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
@@ -527,9 +559,13 @@ module BABYLON {
 
         /**
          * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.  
-         * This new light is named "name" and added to the passed scene.  
+         * This new light is named "name" and added to the passed scene.
+         * @param type Type according to the types available in Light.LIGHTTYPEID_x
+         * @param name The friendly name of the light
+         * @param scene The scene the new light will belong to
+         * @returns the constructor function
          */
-        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
+        public static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light> {
             switch (type) {
                 case 0:
                     return () => new PointLight(name, Vector3.Zero(), scene);
@@ -545,7 +581,10 @@ module BABYLON {
         }
 
         /**
-         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.  
+         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
+         * @param parsedLight The JSON representation of the light
+         * @param scene The scene to create the parsed light in
+         * @returns the created light after parsing
          */
         public static Parse(parsedLight: any, scene: Scene): Nullable<Light> {
             let constructor = Light.GetConstructorFromName(parsedLight.type, parsedLight.name, scene);
@@ -643,6 +682,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Forces the meshes to update their light related information in their rendering used effects
+         * @ignore Internal Use Only
+         */
         public _markMeshesAsLightDirty() {
             for (var mesh of this.getScene().meshes) {
                 if (mesh._lightSources.indexOf(this) !== -1) {
@@ -717,6 +760,11 @@ module BABYLON {
             }
             return photometricScale;
         }
+
+        /**
+         * Reorder the light in the scene according to their defined priority.
+         * @ignore Internal Use Only
+         */
         public _reorderLightsInScene(): void {
             var scene = this.getScene();
             if (this._renderPriority != 0) {
@@ -724,8 +772,5 @@ module BABYLON {
             }
             this.getScene().sortLightsByPriority();
         }
-
-
-
     }
 }
