@@ -46,6 +46,8 @@ export interface ViewerConfiguration {
         defaultLight?: boolean;
         clearColor?: { r: number, g: number, b: number, a: number };
         imageProcessingConfiguration?: IImageProcessingConfiguration;
+        enableHdr?: boolean;
+        maxShadows?: number;
     },
     optimizer?: {
         targetFrameRate?: number;
@@ -150,7 +152,15 @@ export interface ViewerConfiguration {
         main: ITemplateConfiguration,
         [key: string]: ITemplateConfiguration
     };
-    // nodes?
+
+    customShaders?: {
+        shaders?: {
+            [key: string]: string;
+        };
+        includes?: {
+            [key: string]: string;
+        }
+    }
 }
 
 export interface SceneOptimizerParameters {
