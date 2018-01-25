@@ -73,6 +73,7 @@
 
         /**
          * Returns the string "DirectionalLight".
+         * @return The class name
          */
         public getClassName(): string {
             return "DirectionalLight";
@@ -80,6 +81,7 @@
 
         /**
          * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
          */
         public getTypeID(): number {
             return Light.LIGHTTYPEID_DIRECTIONALLIGHT;
@@ -178,7 +180,6 @@
 
         /**
          * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.  
-         * Returns the DirectionalLight.
          * @param effect The effect to update
          * @param lightIndex The index of the light in the effect to update
          * @returns The directional light
