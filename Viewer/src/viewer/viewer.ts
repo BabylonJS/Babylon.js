@@ -118,8 +118,14 @@ export abstract class AbstractViewer {
         this.sceneOptimizer.stop();
         this.sceneOptimizer.dispose();
 
+        if (this.scene.activeCamera) {
+            this.scene.activeCamera.detachControl(this.canvas);
+        }
+
         this.scene.dispose();
         this.engine.dispose();
+
+        this.templateManager.dispose();
     }
 
     protected abstract prepareContainerElement();
