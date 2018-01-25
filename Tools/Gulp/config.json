@@ -1651,7 +1651,29 @@
         ],
         "build": {
             "srcOutputDirectory": "../../Viewer/",
-            "distOutputDirectory": "/viewer/"
+            "outputs": [
+                {
+                    "destination": [
+                        {
+                            "filename": "viewer.min.js",
+                            "outputDirectory": "/../../Viewer/dist/"
+                        },
+                        {
+                            "filename": "babylon.viewer.js",
+                            "outputDirectory": "/viewer/"
+                        }
+                    ],
+                    "minified": true
+                },
+                {
+                    "destination": [
+                        {
+                            "filename": "viewer.js",
+                            "outputDirectory": "/../../Viewer/dist/"
+                        }
+                    ]
+                }
+            ]
         }
     }
 }
