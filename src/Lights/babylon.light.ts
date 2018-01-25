@@ -1,4 +1,4 @@
-﻿module BABYLON {
+module BABYLON {
     export class Light extends Node {
 
         //lightmapMode Consts
@@ -384,7 +384,59 @@
             }
             return b.renderPriority - a.renderPriority;
         }
+        // Projection texture, if needed
+        protected _computeTextureMatrix(): void{
+            //Leave out for different light type
+        }
+        protected _light_far  :number;
+        @serialize()
+        /**
+         * Allows reading the far clip of the Spotlight for texture projection.
+         */
+        public get light_far(): number {
+            return this._light_far;
+        }
+        /**
+         * Allows setting the far clip of the Spotlight for texture projection.
+         */
+        public set light_far(value: number) {
+            this._light_far = value;
+            this._computeTextureMatrix();
+        }
 
+        protected _light_near :number;
+        @serialize()
+        /**
+         * Allows reading the near clip of the Spotlight for texture projection.
+         */
+        public get light_near(): number {
+            return this._light_near;
+        }
+        /**
+         * Allows setting the near clip of the Spotlight for texture projection.
+         */
+        public set light_near(value: number) {
+            this._light_near = value;
+            this._computeTextureMatrix();
+        }
+
+        @serializeAsTexture("projectedLightTexture")
+        private _projectedLightTexture: Nullable<BaseTexture>;;
+        /** 
+         * Allows reading the projection texture of the light.
+        */
+        public get projectedLightTexture(): Nullable<BaseTexture> {
+            return this._projectedLightTexture;
+        }
+        /**
+        * Allows setting the projection texture of the light.
+        */
+        public set projectedLightTexture(value: Nullable<BaseTexture>) {
+            this._projectedLightTexture = value;
+            this._light_far = 1000.0;
+            this._light_near = 1e-6;
+            this._computeTextureMatrix();
+        }
         /**
          * Disposes the light.  
          */
@@ -397,8 +449,15 @@
             // Animations
             this.getScene().stopAnimation(this);
 
-            this._uniformBuffer.dispose();
+            // Remove from meshes
+            for (var mesh of this.getScene().meshes) {
+                mesh._removeLightSource(this);
+            }
 
+            this._uniformBuffer.dispose();
+            if (this._projectedLightTexture){
+                this._projectedLightTexture.dispose();
+            }
             // Remove from scene
             this.getScene().removeLight(this);
             super.dispose();
@@ -658,7 +717,6 @@
             }
             return photometricScale;
         }
-
         public _reorderLightsInScene(): void {
             var scene = this.getScene();
             if (this._renderPriority != 0) {
@@ -666,5 +724,8 @@
             }
             this.getScene().sortLightsByPriority();
         }
+
+
+
     }
 }
