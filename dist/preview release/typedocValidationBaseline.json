@@ -1,7 +1,7 @@
 {
-  "errors": 8631,
+  "errors": 8288,
   "babylon.typedoc.json": {
-    "errors": 8631,
+    "errors": 8288,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -26422,266 +26422,6 @@
         }
       }
     },
-    "PostProcessRenderEffect": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new PostProcessRenderEffect": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "getPostProcess": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "singleInstance": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "_name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "applyParameters": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isSupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "_attachCameras": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_detachCameras": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_disable": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_enable": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_update": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "addPass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPass": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "addRenderEffectAsPass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderEffect": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "emptyPasses": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getPass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "passName": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getPostProcess": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "removePass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPass": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "PostProcessRenderPass": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new PostProcessRenderPass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "size": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "renderList": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "beforeRender": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "afterRender": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "_name": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "_decRefCount": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_incRefCount": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_update": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getRenderTexture": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "setRenderList": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderList": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "PostProcessRenderPipeline": {
       "Class": {
         "Comments": {
@@ -26749,41 +26489,12 @@
             }
           }
         },
-        "_disableDisplayOnlyPass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "_disableEffect": {
           "Comments": {
             "MissingText": true
           },
           "Parameter": {
             "renderEffectName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_enableDisplayOnlyPass": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "passName": {
               "Comments": {
                 "MissingText": true
               }
@@ -26921,23 +26632,6 @@
             }
           }
         },
-        "disableDisplayOnlyPassInPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipelineName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "disableEffectInPipeline": {
           "Comments": {
             "MissingText": true
@@ -26963,28 +26657,6 @@
         "dispose": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "enableDisplayOnlyPassInPipeline": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "renderPipelineName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "passName": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "cameras": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "enableEffectInPipeline": {
