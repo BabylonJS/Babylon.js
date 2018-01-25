@@ -84,6 +84,10 @@ module BABYLON {
          * Still set as invisible in order to skip useless computations (Internal use)
          */
         public _stillInvisible: boolean = false;
+        /**
+         * Last computed particle rotation matrix
+         */
+        public _rotationMatrix: number[] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
 
         /**
          * Creates a Solid Particle object.

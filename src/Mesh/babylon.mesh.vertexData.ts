@@ -336,7 +336,7 @@
             }
 
             if (!other) {
-                var padding = new Float32Array((<FloatArray>source).length);
+                var padding = new Float32Array(length);
                 padding.fill(defaultValue);
                 return this._mergeElement(source, padding, length);
             }

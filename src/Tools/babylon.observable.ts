@@ -39,6 +39,12 @@
          * The current object in the bubbling phase
          */
         public currentTarget?: any;
+
+        /**
+         * This will be populated with the return value of the last function that was executed.
+         * If it is the first function in the callback chain it will be the event data.
+         */
+        public lastReturnValue?: any;
     }
 
     /**
@@ -187,13 +193,14 @@
             state.target = target;
             state.currentTarget = currentTarget;
             state.skipNextObservers = false;
+            state.lastReturnValue = eventData;
 
             for (var obs of this._observers) {
                 if (obs.mask & mask) {
                     if (obs.scope) {
-                        obs.callback.apply(obs.scope, [eventData, state])
+                        state.lastReturnValue = obs.callback.apply(obs.scope, [eventData, state])
                     } else {
-                        obs.callback(eventData, state);
+                        state.lastReturnValue = obs.callback(eventData, state);
                     }
                 }
                 if (state.skipNextObservers) {
@@ -201,6 +208,59 @@
                 }
             }
             return true;
+        }
+
+        /**
+         * Calling this will execute each callback, expecting it to be a promise or return a value.
+         * If at any point in the chain one function fails, the promise will fail and the execution will not continue.
+         * This is useful when a chain of events (sometimes async events) is needed to initialize a certain object
+         * and it is crucial that all callbacks will be executed.
+         * The order of the callbacks is kept, callbacks are not executed parallel.
+         * 
+         * @param eventData The data to be sent to each callback
+         * @param mask is used to filter observers defaults to -1
+         * @param target the callback target (see EventState)
+         * @param currentTarget The current object in the bubbling phase
+         * @returns {Promise<T>} will return a Promise than resolves when all callbacks executed successfully.
+         */
+        public notifyObserversWithPromise(eventData: T, mask: number = -1, target?: any, currentTarget?: any): Promise<T> {
+
+            // create an empty promise
+            let p: Promise<any> = Promise.resolve(eventData);
+
+            // no observers? return this promise.
+            if (!this._observers.length) {
+                return p;
+            }
+
+            let state = this._eventState;
+            state.mask = mask;
+            state.target = target;
+            state.currentTarget = currentTarget;
+            state.skipNextObservers = false;
+
+            // execute one callback after another (not using Promise.all, the order is important)
+            this._observers.forEach(obs => {
+                if (state.skipNextObservers) {
+                    return;
+                }
+                if (obs.mask & mask) {
+                    if (obs.scope) {
+                        p = p.then((lastReturnedValue) => {
+                            state.lastReturnValue = lastReturnedValue;
+                            return obs.callback.apply(obs.scope, [eventData, state]);
+                        });
+                    } else {
+                        p = p.then((lastReturnedValue) => {
+                            state.lastReturnValue = lastReturnedValue;
+                            return obs.callback(eventData, state);
+                        });
+                    }
+                }
+            });
+
+            // return the eventData
+            return p.then(() => { return eventData; });
         }
 
         /**
