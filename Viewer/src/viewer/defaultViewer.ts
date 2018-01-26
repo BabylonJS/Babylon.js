@@ -121,9 +121,13 @@ export class DefaultViewer extends AbstractViewer {
         this.setModelMetaData();
 
         // with a short timeout, making sure everything is there already.
+        let hideLoadingDelay = 500;
+        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        }
         setTimeout(() => {
             this.hideLoadingScreen();
-        }, 500);
+        }, hideLoadingDelay);
 
 
         // recreate the camera
@@ -360,6 +364,11 @@ export class DefaultViewer extends AbstractViewer {
 
         let sceneConfig = this.configuration.scene || { defaultLight: true };
 
+        // labs feature - flashlight
+        if (this.configuration.lab && this.configuration.lab.flashlight) {
+
+        }
+
         if (!sceneConfig.defaultLight && (this.configuration.lights && Object.keys(this.configuration.lights).length)) {
             // remove old lights
             this.scene.lights.forEach(l => {
@@ -395,22 +404,6 @@ export class DefaultViewer extends AbstractViewer {
                     }
                 }
             });
-        } else {
-            if (!this.configuration.lights && this.configuration.ground) {
-                let light = this.scene.lights[0];
-                if (light instanceof ShadowLight) {
-                    if (this.maxShadows) {
-                        var shadowGenerator = new ShadowGenerator(512, light);
-                        // add the focues meshes to the shadow list
-                        let shadownMap = shadowGenerator.getShadowMap();
-                        if (!shadownMap) return;
-                        let renderList = shadownMap.renderList;
-                        for (var index = 0; index < focusMeshes.length; index++) {
-                            renderList && renderList.push(focusMeshes[index]);
-                        }
-                    }
-                }
-            }
         }
     }
 
