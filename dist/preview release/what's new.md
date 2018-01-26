@@ -40,7 +40,7 @@
 - Gulp process now supports multiple outputs when using webpack. ([RaananW](https://github.com/RaananW))
 - (Viewer) Scene Optimizer intergrated in viewer. ([RaananW](https://github.com/RaananW))
 - (Viewer) The viewer supports custom shaders in the configuration. ([RaananW](https://github.com/RaananW))
-- Documented PostProcessRenderEffect class ([trevordev](https://github.com/trevordev))
+- Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager classes ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
