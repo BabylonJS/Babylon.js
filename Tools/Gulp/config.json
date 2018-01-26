@@ -57,7 +57,11 @@
             "geometryBufferRenderer",
             "additionalPostProcesses",
             "additionalPostProcess_blur",
+            "additionalPostProcess_depthOfFieldBlur",
             "additionalPostProcess_fxaa",
+            "additionalPostProcess_circleOfConfusion",
+            "additionalPostProcess_depthOfFieldMerge",
+            "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_imageProcessing",
             "bones",
             "hdr",
@@ -722,6 +726,51 @@
                 "kernelBlurVertex"
             ]
         },
+        "additionalPostProcess_depthOfFieldBlur": {
+            "files": [
+                "../../src/PostProcess/babylon.depthOfFieldBlurPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "kernelBlur.vertex",
+                "kernelBlur.fragment"
+            ],
+            "shaderIncludes": [
+                "kernelBlurFragment",
+                "kernelBlurFragment2",
+                "kernelBlurVaryingDeclaration",
+                "kernelBlurVertex"
+            ]
+        },
+        "additionalPostProcess_circleOfConfusion": {
+            "files": [
+                "../../src/PostProcess/babylon.circleOfConfusionPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "circleOfConfusion.fragment"
+            ]
+        },
+        "additionalPostProcess_depthOfFieldMerge": {
+            "files": [
+                "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "depthOfFieldMerge.fragment"
+            ]
+        },
+        "additionalPostProcess_depthOfFieldEffect": {
+            "files": [
+                "../../src/PostProcess/babylon.depthOfFieldEffect.js"
+            ]
+        },
         "additionalPostProcess_fxaa": {
             "files": [
                 "../../src/PostProcess/babylon.fxaaPostProcess.js"
@@ -792,7 +841,6 @@
         "renderingPipeline": {
             "files": [
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipelineManager.js",
-                "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPass.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderEffect.js",
                 "../../src/PostProcess/RenderPipeline/babylon.postProcessRenderPipeline.js"
             ],
@@ -827,7 +875,10 @@
             ],
             "dependUpon": [
                 "renderingPipeline",
-                "additionalPostProcess_fxaa"
+                "additionalPostProcess_fxaa",
+                "additionalPostProcess_circleOfConfusion",
+                "additionalPostProcess_depthOfFieldMerge",
+                "additionalPostProcess_depthOfFieldEffect"
             ]
         },
         "bones": {
@@ -1414,7 +1465,8 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "doNotIncludeInBundle": true,
                 "output": "babylon.glTF2FileLoader.js"
@@ -1433,7 +1485,8 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
-                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts"
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
             }
@@ -1600,7 +1653,29 @@
         ],
         "build": {
             "srcOutputDirectory": "../../Viewer/",
-            "distOutputDirectory": "/viewer/"
+            "outputs": [
+                {
+                    "destination": [
+                        {
+                            "filename": "viewer.min.js",
+                            "outputDirectory": "/../../Viewer/dist/"
+                        },
+                        {
+                            "filename": "babylon.viewer.js",
+                            "outputDirectory": "/viewer/"
+                        }
+                    ],
+                    "minified": true
+                },
+                {
+                    "destination": [
+                        {
+                            "filename": "viewer.js",
+                            "outputDirectory": "/../../Viewer/dist/"
+                        }
+                    ]
+                }
+            ]
         }
     }
 }

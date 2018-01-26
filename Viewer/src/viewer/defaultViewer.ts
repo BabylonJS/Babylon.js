@@ -135,7 +135,7 @@ export class DefaultViewer extends AbstractViewer {
         this.setupCamera(meshes);
         this.setupLights(meshes);
 
-        return this.initEnvironment(meshes);
+        return; //this.initEnvironment(meshes);
     }
 
     private setModelMetaData() {
@@ -167,7 +167,7 @@ export class DefaultViewer extends AbstractViewer {
 
     }
 
-    public initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
+    /*protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
         if (this.configuration.skybox) {
             // Define a general environment textue
             let texture;
@@ -267,7 +267,7 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         return Promise.resolve(this.scene);
-    }
+    }*/
 
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
@@ -382,7 +382,7 @@ export class DefaultViewer extends AbstractViewer {
 
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
-                    if (lightConfig.shadowEnabled) {
+                    if (lightConfig.shadowEnabled && this.maxShadows) {
                         var shadowGenerator = new ShadowGenerator(512, light);
                         this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                         // add the focues meshes to the shadow list
@@ -395,6 +395,22 @@ export class DefaultViewer extends AbstractViewer {
                     }
                 }
             });
+        } else {
+            if (!this.configuration.lights && this.configuration.ground) {
+                let light = this.scene.lights[0];
+                if (light instanceof ShadowLight) {
+                    if (this.maxShadows) {
+                        var shadowGenerator = new ShadowGenerator(512, light);
+                        // add the focues meshes to the shadow list
+                        let shadownMap = shadowGenerator.getShadowMap();
+                        if (!shadownMap) return;
+                        let renderList = shadownMap.renderList;
+                        for (var index = 0; index < focusMeshes.length; index++) {
+                            renderList && renderList.push(focusMeshes[index]);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -430,6 +446,11 @@ export class DefaultViewer extends AbstractViewer {
         if (sceneConfig.autoRotate) {
             this.camera.useAutoRotationBehavior = true;
         }
+
+        const sceneExtends = this.scene.getWorldExtends();
+        const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
+        const sceneDiagonalLenght = sceneDiagonal.length();
+        this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
     }
 
     private setCameraBehavior(behaviorConfig: number | {
@@ -480,20 +501,5 @@ export class DefaultViewer extends AbstractViewer {
                 }
                 break;
         }
-    }
-
-    private extendClassWithConfig(object: any, config: any) {
-        if (!config) return;
-        Object.keys(config).forEach(key => {
-            if (key in object && typeof object[key] !== 'function') {
-                if (typeof object[key] === 'function') return;
-                // if it is an object, iterate internally until reaching basic types
-                if (typeof object[key] === 'object') {
-                    this.extendClassWithConfig(object[key], config[key]);
-                } else {
-                    object[key] = config[key];
-                }
-            }
-        });
     }
 }
