@@ -336,6 +336,12 @@
                     rootUrl = plugin.rewriteRootURL(rootUrl, responseURL);
                 }
 
+                if (sceneFilename === "") {
+                    if (sceneFilename === "") {
+                        rootUrl = this._StripFilenameFromRootUrl(rootUrl);
+                    }
+                }
+
                 if ((<any>plugin).importMesh) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     var meshes = new Array<AbstractMesh>();
@@ -434,6 +440,10 @@
             };
 
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
+                if (sceneFilename === "") {
+                    rootUrl = this._StripFilenameFromRootUrl(rootUrl);
+                }
+
                 if ((<any>plugin).load) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
@@ -456,6 +466,17 @@
                     });
                 }
             }, progressHandler, errorHandler, disposeHandler, pluginExtension);
+        }
+
+        private static _StripFilenameFromRootUrl(rootUrl: string): string {
+            // We need to strip the filename off from the rootUrl
+            let lastSlash = rootUrl.lastIndexOf("/");
+
+            if (lastSlash > -1) {
+                rootUrl = rootUrl.substr(0, lastSlash + 1);
+            }
+
+            return rootUrl;
         }
         
         public static LoadAssetContainer(

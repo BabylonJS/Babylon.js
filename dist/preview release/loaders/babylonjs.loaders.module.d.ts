@@ -1179,10 +1179,14 @@ declare module BABYLON.GLTF2 {
         readonly abstract name: string;
         protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean;
         protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean;
+        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean;
+        protected _loadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean;
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean;
         static _Extensions: GLTFLoaderExtension[];
         static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean;
+        static LoadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean;
+        static LoadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean;
         static LoadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean;
         static LoadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private static _ApplyExtensions(action);
@@ -1211,5 +1215,16 @@ declare module BABYLON.GLTF2.Extensions {
         readonly name: string;
         protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean;
         private _loadSpecularGlossinessProperties(loader, context, material, properties);
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    class KHRLights extends GLTFLoaderExtension {
+        readonly name: string;
+        private applyCommonProperties(light, lightInfo);
+        protected _loadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean;
+        protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean;
+        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean;
     }
 }
