@@ -109,11 +109,12 @@ lightingInfo computeHemisphericLighting(vec3 viewDirectionW, vec3 vNormal, vec4 
 		return result;
 }
 
-lightingInfo computeProjectionTexture(lightingInfo origin,sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
-	lightingInfo result = origin;
+void appendProjectionTextureLighting(inout lightingInfo origin, sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
 	vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
 	strq /= strq.w;
-	vec4 textureColor = texture2D(projectionLightSampler, strq.xy);
-	result.diffuse *= vec3(textureColor);
-	return result;
+	vec3 textureColor = texture2D(projectionLightSampler, strq.xy).rgb;
+#ifdef PBR
+	textureColor = toLinearSpace(textureColor);
+#endif
+	origin.diffuse *= textureColor;
 }

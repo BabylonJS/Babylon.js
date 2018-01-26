@@ -214,7 +214,8 @@ module BABYLON {
                     var type;
                     if (light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
                         type = "SPOTLIGHT" + lightIndex;
-                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = (light as SpotLight).projectedLightTexture ? true : false;
+                        let spotLight = light as SpotLight;
+                        defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = spotLight.projectionTexture ? spotLight.projectionTexture.isReady() : false;
                     } else if (light.getTypeID() === Light.LIGHTTYPEID_HEMISPHERICLIGHT) {
                         type = "HEMILIGHT" + lightIndex;
                     } else if (light.getTypeID() === Light.LIGHTTYPEID_POINTLIGHT) {
