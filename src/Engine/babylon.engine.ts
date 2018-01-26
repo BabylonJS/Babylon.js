@@ -1347,7 +1347,7 @@
         public resetTextureCache() {
             for (var key in this._boundTexturesCache) {
                 let boundTexture = this._boundTexturesCache[key];
-                if (boundTexture) {
+                if (!this.disableTextureBindingOptimization && boundTexture) {
                     this._removeDesignatedSlot(boundTexture);
                 }
                 this._boundTexturesCache[key] = null;
