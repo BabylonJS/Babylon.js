@@ -106,7 +106,7 @@ module BABYLON {
         }       
 
         private _moveChildren(children: InternalPromise<T>[]): void {
-            this._children = children.splice(0, children.length);
+            this._children.push(...children.splice(0, children.length));
 
             if (this.isFulfilled) {
                 for (var child of this._children) {
