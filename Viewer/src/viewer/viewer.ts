@@ -3,7 +3,6 @@ import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
 import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
 import { ViewerConfiguration } from '../configuration/configuration';
-import { PromiseObservable } from '../util/promiseObservable';
 
 export abstract class AbstractViewer {
 
@@ -32,11 +31,11 @@ export abstract class AbstractViewer {
 
 
     // observables
-    public onSceneInitObservable: PromiseObservable<Scene>;
-    public onEngineInitObservable: PromiseObservable<Engine>;
-    public onModelLoadedObservable: PromiseObservable<AbstractMesh[]>;
-    public onModelLoadProgressObservable: PromiseObservable<SceneLoaderProgressEvent>;
-    public onInitDoneObservable: PromiseObservable<AbstractViewer>;
+    public onSceneInitObservable: Observable<Scene>;
+    public onEngineInitObservable: Observable<Engine>;
+    public onModelLoadedObservable: Observable<AbstractMesh[]>;
+    public onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    public onInitDoneObservable: Observable<AbstractViewer>;
 
     protected canvas: HTMLCanvasElement;
 
@@ -48,11 +47,11 @@ export abstract class AbstractViewer {
             this.baseId = containerElement.id = 'bjs' + Math.random().toString(32).substr(2, 8);
         }
 
-        this.onSceneInitObservable = new PromiseObservable();
-        this.onEngineInitObservable = new PromiseObservable();
-        this.onModelLoadedObservable = new PromiseObservable();
-        this.onModelLoadProgressObservable = new PromiseObservable();
-        this.onInitDoneObservable = new PromiseObservable();
+        this.onSceneInitObservable = new Observable();
+        this.onEngineInitObservable = new Observable();
+        this.onModelLoadedObservable = new Observable();
+        this.onModelLoadProgressObservable = new Observable();
+        this.onInitDoneObservable = new Observable();
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
@@ -160,7 +159,7 @@ export abstract class AbstractViewer {
         return this.onTemplatesLoaded().then(() => {
             let autoLoadModel = !!this.configuration.model;
             return this.initEngine().then((engine) => {
-                return this.onEngineInitObservable.notifyWithPromise(engine);
+                return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
                 if (autoLoadModel) {
                     return this.loadModel();
@@ -168,9 +167,9 @@ export abstract class AbstractViewer {
                     return this.scene || this.initScene();
                 }
             }).then((scene) => {
-                return this.onSceneInitObservable.notifyWithPromise(scene);
+                return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
-                return this.onInitDoneObservable.notifyWithPromise(this);
+                return this.onInitDoneObservable.notifyObserversWithPromise(this);
             }).then(() => {
                 return this;
             });
@@ -289,14 +288,14 @@ export abstract class AbstractViewer {
                 this.lastUsedLoader = SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
                     resolve(meshes);
                 }, (progressEvent) => {
-                    this.onModelLoadProgressObservable.notifyWithPromise(progressEvent);
+                    this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
                 }, (e, m, exception) => {
                     // console.log(m, exception);
                     reject(m);
                 }, plugin)!;
             });
         }).then((meshes: Array<AbstractMesh>) => {
-            return this.onModelLoadedObservable.notifyWithPromise(meshes)
+            return this.onModelLoadedObservable.notifyObserversWithPromise(meshes)
                 .then(() => {
                     this.initEnvironment();
                 }).then(() => {
