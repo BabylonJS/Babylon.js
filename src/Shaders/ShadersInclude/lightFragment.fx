@@ -24,7 +24,7 @@
 			#endif
 		#endif
 		#ifdef PROJECTEDLIGHTTEXTURE{X}
-			info = computeProjectionTexture(info,projectionLightSampler{X},textureProjectionMatrix{X});
+			info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightSampler{X}, textureProjectionMatrix{X});
 		#endif
     #endif
 	#ifdef SHADOW{X}
