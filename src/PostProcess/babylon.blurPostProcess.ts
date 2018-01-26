@@ -59,8 +59,8 @@
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
-        constructor(name: string, /*The direction in which to blur the image.*/public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
+        constructor(name: string, /** The direction in which to blur the image. */ public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+			super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
 			
 			this.onApplyObservable.add((effect: Effect) => {
 				effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);

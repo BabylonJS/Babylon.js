@@ -8898,6 +8898,50 @@
         }
       }
     },
+    "DefaultRenderingPipeline": {			
+      "Property": {		
+        "BlurXPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "BlurYPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "CopyBackPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "FinalMergePostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "FxaaPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "HighLightsPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "ImageProcessingPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        },		
+        "PassPostProcessId": {		
+          "Naming": {		
+            "NotCamelCase": true		
+          }		
+        }
+      }
+    },
     "DepthRenderer": {
       "Class": {
         "Comments": {

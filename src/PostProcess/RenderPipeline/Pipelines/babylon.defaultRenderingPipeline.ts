@@ -416,7 +416,9 @@
             (<any>this.depthOfField) = null;
         }
 
-        // Dispose
+        /**
+         * Dispose of the pipeline and stop all post processes
+         */
         public dispose(): void {
             this._disposePostProcesses();
 
@@ -425,7 +427,10 @@
             super.dispose();
         }
 
-        // Serialize rendering pipeline
+        /**
+         * Serialize the rendering pipeline (Used when exporting)
+         * @returns the serialized object
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "DefaultRenderingPipeline";
@@ -433,7 +438,13 @@
             return serializationObject;
         }
 
-        // Parse serialized pipeline
+        /**
+         * Parse the serialized pipeline
+         * @param source Source pipeline.
+         * @param scene The scene to load the pipeline to.
+         * @param rootUrl The URL of the serialized pipeline.
+         * @returns An instantiated pipeline from the serialized object.
+         */
         public static Parse(source: any, scene: Scene, rootUrl: string): DefaultRenderingPipeline {
             return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
         }
