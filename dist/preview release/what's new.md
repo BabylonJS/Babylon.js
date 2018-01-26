@@ -12,7 +12,7 @@
 ## Updates
 - Tons of functions and classes received the code comments they deserved (All the community)
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
-- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adapatability ([deltakosh](https://github.com/deltakosh))
+- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adaptability ([deltakosh](https://github.com/deltakosh))
 - Improved `scene.isReady()` function which now takes in account shadows and LOD ([deltakosh](https://github.com/deltakosh))
 - New watcher configuration for VSCode. Now the task only compiles changed files ([sebavan](https://github.com/sebavan))
 - Added new draw modes to engine (points, lines, linesloop, linestrip, trianglestrip, trianglefan) ([benaadams](https://github.com/benaadams))
