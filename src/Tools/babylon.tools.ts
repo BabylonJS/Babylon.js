@@ -212,10 +212,14 @@
             return path.substring(index + 1);
         }
 
-        public static GetFolderPath(uri: string): string {
+        public static GetFolderPath(uri: string, returnUnchangedIfNoSlash = false): string {
             var index = uri.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
+                if (returnUnchangedIfNoSlash) {
+                    return uri;
+                }
                 return "";
+            }
 
             return uri.substring(0, index + 1);
         }

@@ -205,7 +205,7 @@ module BABYLON {
                     InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
                 }
             } else {
-                newPromise._resolve();
+                newPromise._resolve([]);
             }
 
 

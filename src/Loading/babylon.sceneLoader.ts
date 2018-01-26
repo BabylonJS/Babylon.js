@@ -338,7 +338,7 @@
 
                 if (sceneFilename === "") {
                     if (sceneFilename === "") {
-                        rootUrl = this._StripFilenameFromRootUrl(rootUrl);
+                        rootUrl = Tools.GetFolderPath(rootUrl, true);
                     }
                 }
 
@@ -441,7 +441,7 @@
 
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
                 if (sceneFilename === "") {
-                    rootUrl = this._StripFilenameFromRootUrl(rootUrl);
+                    rootUrl = Tools.GetFolderPath(rootUrl, true);
                 }
 
                 if ((<any>plugin).load) {
@@ -466,17 +466,6 @@
                     });
                 }
             }, progressHandler, errorHandler, disposeHandler, pluginExtension);
-        }
-
-        private static _StripFilenameFromRootUrl(rootUrl: string): string {
-            // We need to strip the filename off from the rootUrl
-            let lastSlash = rootUrl.lastIndexOf("/");
-
-            if (lastSlash > -1) {
-                rootUrl = rootUrl.substr(0, lastSlash + 1);
-            }
-
-            return rootUrl;
         }
         
         public static LoadAssetContainer(
