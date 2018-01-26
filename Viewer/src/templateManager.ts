@@ -110,7 +110,10 @@ export class TemplateManager {
      * @memberof TemplateManager
      */
     private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
-        let promises = Object.keys(templates).map(name => {
+        let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(name => {
+            // if the template was overridden
+            if (!templates[name]) return Promise.resolve(false);
+            // else - we have a template, let's do our job!
             let template = new Template(name, templates[name]);
             // make sure the global onEventTriggered is called as well
             template.onEventTriggered.add(eventData => this.onEventTriggered.notifyObservers(eventData));
