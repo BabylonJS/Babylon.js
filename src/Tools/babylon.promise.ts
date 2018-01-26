@@ -135,6 +135,8 @@ module BABYLON {
                         let returnedPromise = returnedValue as InternalPromise<T>;
                         
                         returnedPromise._moveChildren(this._children);
+                    } else {
+                        value = <T>returnedValue;
                     }
                 }
 
