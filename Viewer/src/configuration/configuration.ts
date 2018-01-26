@@ -173,6 +173,19 @@ export interface ViewerConfiguration {
             [key: string]: string;
         }
     }
+
+    // features that are being tested.
+    // those features' syntax will change and move out! 
+    // Don't use in production (or be ready to make the changes :) )
+    lab?: {
+        flashlight?: boolean | {
+            exponent?: number;
+            radius?: number;
+            diffuse?: { r: number, g: number, b: number };
+            specular?: { r: number, g: number, b: number };
+        }
+        hideLoadingDelay?: number;
+    }
 }
 
 export interface SceneOptimizerParameters {
