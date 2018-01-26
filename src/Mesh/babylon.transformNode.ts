@@ -216,9 +216,12 @@ module BABYLON {
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
-            if (this._postMultiplyPivotMatrix) {
-                this._pivotMatrixInverse = Matrix.Invert(matrix);
+            if(!this._pivotMatrixInverse){
+                this._pivotMatrixInverse = Matrix.Invert(this._pivotMatrix);
+            } else {
+                this._pivotMatrix.invertToRef(this._pivotMatrixInverse);
             }
+
             return this;
         }
 
@@ -407,6 +410,13 @@ module BABYLON {
             this._pivotMatrix.m[12] = -point.x;
             this._pivotMatrix.m[13] = -point.y;
             this._pivotMatrix.m[14] = -point.z;
+
+            if(!this._pivotMatrixInverse){
+                this._pivotMatrixInverse = Matrix.Invert(this._pivotMatrix);
+            } else {
+                this._pivotMatrix.invertToRef(this._pivotMatrixInverse);
+            }
+            
             this._cache.pivotMatrixUpdated = true;
             return this;
         }
@@ -824,6 +834,10 @@ module BABYLON {
 
             // Absolute position
             this._absolutePosition.copyFromFloats(this._worldMatrix.m[12], this._worldMatrix.m[13], this._worldMatrix.m[14]);
+
+            if(this._pivotMatrixInverse){
+                Vector3.TransformCoordinatesToRef(this._absolutePosition, this._pivotMatrixInverse, this._absolutePosition);
+            }
 
             // Callbacks
             this.onAfterWorldMatrixUpdateObservable.notifyObservers(this);
