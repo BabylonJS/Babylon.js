@@ -35,6 +35,7 @@ export abstract class AbstractViewer {
     public onEngineInitObservable: Observable<Engine>;
     public onModelLoadedObservable: Observable<AbstractMesh[]>;
     public onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    public onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     public onInitDoneObservable: Observable<AbstractViewer>;
 
     protected canvas: HTMLCanvasElement;
@@ -54,6 +55,7 @@ export abstract class AbstractViewer {
         this.onModelLoadedObservable = new Observable();
         this.onModelLoadProgressObservable = new Observable();
         this.onInitDoneObservable = new Observable();
+        this.onLoaderInitObservable = new Observable();
 
         this.registeredOnBeforerenderFunctions = [];
 
@@ -297,6 +299,7 @@ export abstract class AbstractViewer {
                     // console.log(m, exception);
                     reject(m);
                 }, plugin)!;
+                this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
             });
         }).then((meshes: Array<AbstractMesh>) => {
             return this.onModelLoadedObservable.notifyObserversWithPromise(meshes)
