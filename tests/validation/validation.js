@@ -7,7 +7,7 @@ var config;
 var justOnce;
 
 var threshold = 25;
-var errorRatio = 5;
+var errorRatio = 2.5;
 
 // Overload the random to make it deterministic
 var seed = 100000,

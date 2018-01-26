@@ -118,25 +118,44 @@
 
         protected abstract _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
 
+        protected _position: Vector3;
+        protected _setPosition(value: Vector3) {
+            this._position = value;
+        }
         /**
-         * The position the shdow will be casted from.
+         * Sets the position the shadow will be casted from. Also use as the light position for both 
+         * point and spot lights.
          */
         @serializeAsVector3()
-        public position: Vector3;
+        public get position(): Vector3 {
+            return this._position;
+        }
+        /**
+         * Sets the position the shadow will be casted from. Also use as the light position for both 
+         * point and spot lights.
+         */
+        public set position(value: Vector3) {
+            this._setPosition(value);
+        }
 
         protected _direction: Vector3;
-        @serializeAsVector3()
+        protected _setDirection(value: Vector3) {
+            this._direction = value;
+        }
         /**
          * In 2d mode (needCube being false), gets the direction used to cast the shadow.
+         * Also use as the light direction on spot and directional lights.
          */
+        @serializeAsVector3()
         public get direction(): Vector3 {
             return this._direction;
         }
         /**
          * In 2d mode (needCube being false), sets the direction used to cast the shadow.
+         * Also use as the light direction on spot and directional lights.
          */
         public set direction(value: Vector3) {
-            this._direction = value;
+            this._setDirection(value);
         }
 
         private _shadowMinZ: number;
