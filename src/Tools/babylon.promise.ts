@@ -200,9 +200,14 @@ module BABYLON {
             agregator.target = promises.length;
             agregator.rootPromise = newPromise;
 
-            for(var index = 0; index < promises.length; index++) {
-                InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
+            if (promises.length) {
+                for(var index = 0; index < promises.length; index++) {
+                    InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
+                }
+            } else {
+                newPromise._resolve();
             }
+
 
             return newPromise;
         }
