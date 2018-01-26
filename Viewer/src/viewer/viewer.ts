@@ -39,6 +39,8 @@ export abstract class AbstractViewer {
 
     protected canvas: HTMLCanvasElement;
 
+    protected registeredOnBeforerenderFunctions: Array<() => void>;
+
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
@@ -52,6 +54,8 @@ export abstract class AbstractViewer {
         this.onModelLoadedObservable = new Observable();
         this.onModelLoadProgressObservable = new Observable();
         this.onInitDoneObservable = new Observable();
+
+        this.registeredOnBeforerenderFunctions = [];
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);

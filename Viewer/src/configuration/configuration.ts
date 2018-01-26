@@ -180,7 +180,8 @@ export interface ViewerConfiguration {
     lab?: {
         flashlight?: boolean | {
             exponent?: number;
-            radius?: number;
+            angle?: number;
+            intensity?: number;
             diffuse?: { r: number, g: number, b: number };
             specular?: { r: number, g: number, b: number };
         }
