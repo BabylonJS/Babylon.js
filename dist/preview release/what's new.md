@@ -7,7 +7,7 @@
 - `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
 - Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
-- Introduced Projection Texture on SpotLight (`spotLight.projectedLightTexture`). ([lostink](https://github.com/lostink))
+- Introduced Projection Texture on SpotLight (`spotLight.projectedLightTexture`) ([lostink](https://github.com/lostink))
 
 ## Updates
 - Tons of functions and classes received the code comments they deserved (All the community)
