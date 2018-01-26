@@ -10,29 +10,42 @@ module BABYLON {
         /**
          * The video texture being displayed on the sphere
          */
-        private _videoTexture: VideoTexture;
+        protected _videoTexture: VideoTexture;
 
         /**
          * The skybox material
          */
-        private _material: BackgroundMaterial;
+        protected _material: BackgroundMaterial;
 
         /**
          * The surface used for the skybox
          */
-        private _mesh: Mesh;
+        protected _mesh: Mesh;
+
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        public get fovMultiplier(): number {
+            return this._material.fovMultiplier;
+        }
+        public set fovMultiplier(value: number) {
+            this._material.fovMultiplier = value;
+        }
 
         /**
          * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
          * @param name Element's name, child elements will append suffixes for their own names.
          * @param urlsOrVideo
          * @param options An object containing optional or exposed sub element properties:
+         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
          * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
          * @param options **autoPlay=true** Automatically attempt to being playing the video.
          * @param options **loop=true** Automatically loop video on end.
          * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
          */
         constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, options: {
+            resolution?: number,
             clickToPlay?: boolean,
             autoPlay?: boolean,
             loop?: boolean,
@@ -42,6 +55,7 @@ module BABYLON {
 
             // set defaults and manage values
             name = name || "videoDome";
+            options.resolution = (Math.abs(options.resolution as any) | 0) || 12;
             options.clickToPlay = Boolean(options.clickToPlay);
             options.autoPlay = options.autoPlay === undefined ? true : Boolean(options.autoPlay);
             options.loop = options.loop === undefined ? true : Boolean(options.loop);
@@ -52,14 +66,16 @@ module BABYLON {
             let material = this._material = new BABYLON.BackgroundMaterial(name+"_material", scene);
             this._videoTexture = new BABYLON.VideoTexture(name+"_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
             this._mesh = BABYLON.MeshBuilder.CreateIcoSphere(name+"_mesh", {
+                flat: false, // saves on vertex data
                 radius: options.size,
-                subdivisions: 1,
-                sideOrientation: BABYLON.Mesh.BACKSIDE
-            }, scene); // needs to be inside out
+                subdivisions: options.resolution,
+                sideOrientation: BABYLON.Mesh.BACKSIDE // needs to be inside out
+            }, scene);
 
             // configure material
             this._videoTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches src
             material.reflectionTexture = this._videoTexture;
+            material.fovMultiplier = 1.0;
 
             // configure mesh
             this._mesh.material = material;
