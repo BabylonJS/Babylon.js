@@ -41,10 +41,10 @@
         */
         public animations = new Array<Animation>();
 
-        /*
-            Enable Pixel Perfect mode where texture is not scaled to be power of 2.
-            Can only be used on a single postprocess or on the last one of a chain. (default: false)
-        */
+        /**
+         * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
+         * Can only be used on a single postprocess or on the last one of a chain. (default: false)
+         */
         public enablePixelPerfectMode = false;
 
         /**
@@ -70,7 +70,13 @@
         private _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
+        /**
+        * Smart array of input and output textures for the post process.
+        */
         public _textures = new SmartArray<InternalTexture>(2);
+        /**
+        * The index in _textures that corresponds to the output texture.
+        */
         public _currentRenderTextureInd = 0;
         private _effect: Effect;
         private _samplers: string[];
@@ -184,14 +190,15 @@
         }
 
         /**
-        * Gets the camera which post process is applied to
+        * Gets the camera which post process is applied to.
+        * @returns The camera the post process is applied to.
         */
         public getCamera(): Camera {
             return this._camera;
         }
 
         /**
-        * Gets the texel size of the postprocess
+        * Gets the texel size of the postprocess.
         * See https://en.wikipedia.org/wiki/Texel_(graphics)
         */
         public get texelSize(): Vector2 {
@@ -206,7 +213,24 @@
             return this._texelSize;
         }
 
-        constructor(public name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
+        /**
+         * Creates a new instance of @see PostProcess
+         * @param name The name of the PostProcess.
+         * @param fragmentUrl The url of the fragment shader to be used.
+		 * @param parameters Array of the names of uniform non-sampler2D variables that will be passed to the shader.
+         * @param samplers Array of the names of uniform sampler2D variables that will be passed to the shader.
+         * @param options The required width/height ratio to downsize to before computing the render pass. (Use 1.0 for full size)
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param defines String of defines that will be set when running the fragment shader. (default: null)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
+         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+         * @param blockCompilation If the shader should be compiled imediatly. (default: false) 
+         */
+        constructor(/** Name of the PostProcess. */public name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
             samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
             if (camera != null) {
                 this._camera = camera;
@@ -242,14 +266,27 @@
             }
         }
 
+        /**
+         * Gets the engine which this post process belongs to.
+         * @returns The engine the post process was enabled with.
+         */
         public getEngine(): Engine {
             return this._engine;
         }
 
+        /**
+         * The effect that is created when initializing the post process.
+         * @returns The created effect corrisponding the the postprocess.
+         */
         public getEffect(): Effect {
             return this._effect;
         }
 
+        /**
+         * To avoid multiple redundant textures for multiple post process, the output the output texture for this post process can be shared with another.
+         * @param postProcess The post process to share the output with.
+         * @returns This post process.
+         */
         public shareOutputWith(postProcess: PostProcess): PostProcess {
             this._disposeTextures();
 
@@ -258,6 +295,15 @@
             return this;
         }
 
+        /**
+         * Updates the effect with the current post process compile time values and recompiles the shader.
+         * @param defines Define statements that should be added at the beginning of the shader. (default: null)
+         * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
+         * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
+         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+         * @param onCompiled Called when the shader has been compiled.
+         * @param onError Called if there is an error when compiling a shader.
+         */
         public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
             this._effect = this._engine.createEffect({ vertex: this._vertexUrl, fragment: this._fragmentUrl },
@@ -272,6 +318,10 @@
             );
         }
 
+        /**
+         * The post process is reusable if it can be used multiple times within one frame.
+         * @returns If the post process is reusable
+         */
         public isReusable(): boolean {
             return this._reusable;
         }
@@ -281,6 +331,12 @@
             this.width = -1;
         }
 
+        /**
+         * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
+         * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
+         * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
+         * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
+         */
         public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): void {
             camera = camera || this._camera;
 
@@ -386,10 +442,17 @@
             }
         }
 
+
+        /**
+         * If the post process is supported.
+         */
         public get isSupported(): boolean {
             return this._effect.isSupported;
         }
 
+        /**
+         * The aspect ratio of the output texture.
+         */
         public get aspectRatio(): number {
             if (this._shareOutputWithPostProcess) {
                 return this._shareOutputWithPostProcess.aspectRatio;
@@ -409,6 +472,10 @@
             return this._effect && this._effect.isReady();
         }
 
+        /**
+         * Binds all textures and uniforms to the shader, this will be run on every pass.
+         * @returns the effect corrisponding to this post process. Null if not compiled or not ready.
+         */
         public apply(): Nullable<Effect> {
             // Check
             if (!this._effect || !this._effect.isReady())
@@ -457,6 +524,10 @@
             this._textures.dispose();
         }
 
+        /**
+         * Disposes the post process.
+         * @param camera The camera to dispose the post process on.
+         */
         public dispose(camera?: Camera): void {
             camera = camera || this._camera;
 
