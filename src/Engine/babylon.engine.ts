@@ -283,6 +283,7 @@
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
             { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+            { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
 
         public static Instances = new Array<Engine>();
