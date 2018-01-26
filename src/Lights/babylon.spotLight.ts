@@ -13,23 +13,18 @@
             
             Also we have the following rules always holds:
             direction cross up   = right
-            right cross dirction = up
+            right cross direction = up
             up cross right       = forward
 
             light_near and light_far will control the range of the texture projection. If a plane is 
             out of the range in spot light space, there is no texture projection.
-
-            Warning:
-            Change the angle of the Spotlight, direction of the SpotLight will not re-compute the 
-            projection matrix. Need to call computeTextureMatrix() to recompute manually. Add inheritance
-            to the setting function of the 2 attributes will solve the problem.
         */
 
         private _angle: number;
-        @serialize()
         /**
          * Gets the cone angle of the spot light in Radians.
          */
+        @serialize()
         public get angle(): number {
             return this._angle
         }
@@ -38,14 +33,15 @@
          */
         public set angle(value: number) {
             this._angle = value;
+            this._projectionTextureProjectionLightDirty = true;
             this.forceProjectionMatrixCompute();
         }
 
         private _shadowAngleScale: number;
-        @serialize()
         /**
          * Allows scaling the angle of the light for shadow generation only.
          */
+        @serialize()
         public get shadowAngleScale(): number {
             return this._shadowAngleScale
         }
@@ -63,69 +59,88 @@
         @serialize()
         public exponent: number;
 
-        private _textureProjectionMatrix = Matrix.Zero();
-        @serialize()
+        private _projectionTextureMatrix = Matrix.Zero();
         /**
         * Allows reading the projecton texture
         */
-        public get textureMatrix(): Matrix{
-            return this._textureProjectionMatrix;
-        }
-        /**
-        * Allows setting the value of projection texture
-        */
-        public set textureMatrix(value: Matrix) {
-            this._textureProjectionMatrix = value;
+        public get projectionTextureMatrix(): Matrix{
+            return this._projectionTextureMatrix;
         }
 
-        protected _light_near :number;
-        @serialize()
+        protected _projectionTextureLightNear : number = 1e-6;;
         /**
          * Gets the near clip of the Spotlight for texture projection.
          */
-        public get light_near(): number {
-            return this._light_near;
+        @serialize()
+        public get projectionTextureLightNear(): number {
+            return this._projectionTextureLightNear;
         }
         /**
          * Sets the near clip of the Spotlight for texture projection.
          */
-        public set light_near(value: number) {
-            this._light_near = value;
-            this._computeTextureMatrix();
+        public set projectionTextureLightNear(value: number) {
+            this._projectionTextureLightNear = value;
+            this._projectionTextureProjectionLightDirty = true;
         }
 
-        protected _light_far  :number;
+        protected _projectionTextureLightFar : number = 1000.0;
         /**
          * Gets the far clip of the Spotlight for texture projection.
          */
         @serialize()
-        public get light_far(): number {
-            return this._light_far;
+        public get projectionTextureLightFar(): number {
+            return this._projectionTextureLightFar;
         }
         /**
          * Sets the far clip of the Spotlight for texture projection.
          */
-        public set light_far(value: number) {
-            this._light_far = value;
+        public set projectionTextureLightFar(value: number) {
+            this._projectionTextureLightFar = value;
+            this._projectionTextureProjectionLightDirty = true;
+        }
+
+        protected _projectionTextureUpDirection: Vector3 = Vector3.Up();
+        /**
+         * Gets the Up vector of the Spotlight for texture projection.
+         */
+        @serialize()
+        public get projectionTextureUpDirection(): Vector3 {
+            return this._projectionTextureUpDirection;
+        }
+        /**
+         * Sets the Up vector of the Spotlight for texture projection.
+         */
+        public set projectionTextureUpDirection(value: Vector3) {
+            this._projectionTextureUpDirection = value;
+            this._projectionTextureProjectionLightDirty = true;
         }
 
         @serializeAsTexture("projectedLightTexture")
-        private _projectedLightTexture: Nullable<BaseTexture>;;
+        private _projectionTexture: Nullable<BaseTexture>;;
         /** 
          * Gets the projection texture of the light.
         */
-        public get projectedLightTexture(): Nullable<BaseTexture> {
-            return this._projectedLightTexture;
+        public get projectionTexture(): Nullable<BaseTexture> {
+            return this._projectionTexture;
         }
         /**
         * Sets the projection texture of the light.
         */
-        public set projectedLightTexture(value: Nullable<BaseTexture>) {
-            this._projectedLightTexture = value;
-            this._light_far = 1000.0;
-            this._light_near = 1e-6;
-            this._computeTextureMatrix();
+        public set projectionTexture(value: Nullable<BaseTexture>) {
+            this._projectionTexture = value;
+            this._projectionTextureDirty = true;
         }
+
+        private _projectionTextureViewLightDirty = true;
+        private _projectionTextureProjectionLightDirty = true;
+        private _projectionTextureDirty = true;
+        private _projectionTextureViewTargetVector = Vector3.Zero();
+        private _projectionTextureViewLightMatrix = Matrix.Zero();
+        private _projectionTextureProjectionLightMatrix = Matrix.Zero();
+        private _projectionTextureScalingMatrix = Matrix.FromValues(0.5, 0.0, 0.0, 0.0,
+            0.0, 0.5, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.5, 0.5, 0.5, 1.0);
 
         /**
          * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
@@ -164,6 +179,22 @@
         }
 
         /**
+         * Overrides the direction setter to recompute the projection texture view light Matrix.
+         */
+        protected _setDirection(value: Vector3) {
+            super._setDirection(value);
+            this._projectionTextureViewLightDirty = true;
+        }
+
+        /**
+         * Overrides the position setter to recompute the projection texture view light Matrix.
+         */
+        protected _setPosition(value: Vector3) {
+            super._setPosition(value);
+            this._projectionTextureViewLightDirty = true;
+        }
+
+        /**
          * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.  
          * Returns the SpotLight.  
          */
@@ -181,37 +212,43 @@
             this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
 
-        /**
-         * Main function for light texture projection matrix computing.
-         */
-        protected _computeTextureMatrix(): void {
+        protected _computeProjectionTextureViewLightMatrix(): void {
+            this._projectionTextureViewLightDirty = false;
+            this._projectionTextureDirty = true;
+            
+            this.position.addToRef(this.direction, this._projectionTextureViewTargetVector);
+            Matrix.LookAtLHToRef(this.position, 
+                this._projectionTextureViewTargetVector, 
+                this._projectionTextureUpDirection, 
+                this._projectionTextureViewLightMatrix);
+        }
 
-            var viewLightMatrix = Matrix.Zero();
-            Matrix.LookAtLHToRef(this.position, this.position.add(this.direction), Vector3.Up(), viewLightMatrix);
+        protected _computeProjectionTextureProjectionLightMatrix(): void {
+            this._projectionTextureProjectionLightDirty = false;
+            this._projectionTextureDirty = true;
 
-            var light_far = this.light_far;
-            var light_near = this.light_near;
+            var light_far = this.projectionTextureLightFar;
+            var light_near = this.projectionTextureLightNear;
 
             var P = light_far / (light_far - light_near);
             var Q = - P * light_near;
             var S = 1.0 / Math.tan(this._angle / 2.0);
             var A = 1.0;
-            
-            var projectionLightMatrix = Matrix.Zero();
-            Matrix.FromValuesToRef(S/A, 0.0, 0.0, 0.0,
+
+            Matrix.FromValuesToRef(S / A, 0.0, 0.0, 0.0,
                 0.0, S, 0.0, 0.0,
                 0.0, 0.0, P, 1.0,
-                0.0, 0.0, Q, 0.0, projectionLightMatrix);
+                0.0, 0.0, Q, 0.0, this._projectionTextureProjectionLightMatrix);
+        }
 
-            var scaleMatrix = Matrix.Zero();
-            Matrix.FromValuesToRef(0.5, 0.0, 0.0, 0.0,
-                0.0, 0.5, 0.0, 0.0,
-                0.0, 0.0, 0.5, 0.0,
-                0.5, 0.5, 0.5, 1.0, scaleMatrix);
-                
-            this._textureProjectionMatrix.copyFrom(viewLightMatrix);
-            this._textureProjectionMatrix.multiplyToRef(projectionLightMatrix, this._textureProjectionMatrix);
-            this._textureProjectionMatrix.multiplyToRef(scaleMatrix, this._textureProjectionMatrix);
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        protected _computeProjectionTextureMatrix(): void {
+            this._projectionTextureDirty = false;
+
+            this._projectionTextureViewLightMatrix.multiplyToRef(this._projectionTextureProjectionLightMatrix, this._projectionTextureMatrix);
+            this._projectionTextureMatrix.multiplyToRef(this._projectionTextureScalingMatrix, this._projectionTextureMatrix);
         }
 
         protected _buildUniformLayout(): void {
@@ -260,9 +297,18 @@
                 Math.cos(this.angle * 0.5),
                 lightIndex);
 
-            effect.setMatrix("textureProjectionMatrix" + lightIndex, this._textureProjectionMatrix);
-            if (this.projectedLightTexture){
-                effect.setTexture("projectionLightSampler" + lightIndex, this.projectedLightTexture);
+            if (this.projectionTexture && this.projectionTexture.isReady()) {
+                if (this._projectionTextureViewLightDirty) {
+                    this._computeProjectionTextureViewLightMatrix();
+                }
+                if (this._projectionTextureProjectionLightDirty) {
+                    this._computeProjectionTextureProjectionLightMatrix();
+                }
+                if (this._projectionTextureDirty) {
+                    this._computeProjectionTextureMatrix();
+                }
+                effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
+                effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
             }
             return this;
         }
@@ -272,8 +318,8 @@
          */
         public dispose() : void {
             super.dispose();
-            if (this._projectedLightTexture){
-                this._projectedLightTexture.dispose();
+            if (this._projectionTexture){
+                this._projectionTexture.dispose();
             }
         }
     }
