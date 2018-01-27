@@ -411,7 +411,7 @@
             return this._ranges[name];
         }
 
-        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
             var range = this.getAnimationRange(name);
 
             if (!range) {
