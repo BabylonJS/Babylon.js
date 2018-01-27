@@ -1973,10 +1973,9 @@
          * The cross product is then orthogonal to both "left" and "right". 
          */
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
-            MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
-            MathTmp.Vector3[0].y = left.z * right.x - left.x * right.z;
-            MathTmp.Vector3[0].z = left.x * right.y - left.y * right.x;
-            result.copyFrom(MathTmp.Vector3[0]);
+            result.x = left.y * right.z - left.z * right.y;
+            result.y = left.z * right.x - left.x * right.z;
+            result.z = left.x * right.y - left.y * right.x;
         }
 
         /**
