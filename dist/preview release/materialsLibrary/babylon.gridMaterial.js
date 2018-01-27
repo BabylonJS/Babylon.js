@@ -110,7 +110,7 @@ var BABYLON;
                 defines.PREMULTIPLYALPHA = !defines.PREMULTIPLYALPHA;
                 defines.markAsUnprocessed();
             }
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, defines);
+            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
             // Get correct effect      
             if (defines.isDirty) {
                 defines.markAsProcessed();

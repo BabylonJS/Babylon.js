@@ -336,6 +336,12 @@
                     rootUrl = plugin.rewriteRootURL(rootUrl, responseURL);
                 }
 
+                if (sceneFilename === "") {
+                    if (sceneFilename === "") {
+                        rootUrl = Tools.GetFolderPath(rootUrl, true);
+                    }
+                }
+
                 if ((<any>plugin).importMesh) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     var meshes = new Array<AbstractMesh>();
@@ -434,6 +440,10 @@
             };
 
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
+                if (sceneFilename === "") {
+                    rootUrl = Tools.GetFolderPath(rootUrl, true);
+                }
+
                 if ((<any>plugin).load) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {

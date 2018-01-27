@@ -31,7 +31,5 @@
     },
     "engines": {
         "node": "*"
-    },
-    "_id": "babylonjs-materials@3.1.0-alpha1",
-    "_from": "babylonjs-materials@"
+    }
 }
