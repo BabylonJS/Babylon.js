@@ -60,7 +60,12 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -76,7 +81,12 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 
 var minimist = require("minimist");
@@ -416,14 +426,40 @@ var buildExternalLibrary = function (library, settings, watch) {
         }
 
         if (library.webpack) {
-            return waitAll.on("end", function () {
-                return webpack(require(library.webpack))
-                    .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
-                    .pipe(uglify())
-                    .pipe(optimisejs())
-                    .pipe(gulp.dest(outputDirectory))
-            });
+            let sequence = [waitAll];
+            let wpBuild = webpack(require(library.webpack));
+            if (settings.build.outputs) {
+                let build = wpBuild
+                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true));
+
+                settings.build.outputs.forEach(out => {
+                    let outBuild = build;
+                    if (out.minified) {
+                        outBuild = build
+                            .pipe(uglify())
+                            .pipe(optimisejs())
+                    }
+
+                    out.destination.forEach(dest => {
+                        var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
+                        let destBuild = outBuild
+                            .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                            .pipe(gulp.dest(outputDirectory));
+                        sequence.push(destBuild);
+                    });
+                })
+            } else {
+                sequence.push(
+                    wpBuild
+                        .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                        .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
+                        .pipe(uglify())
+                        .pipe(optimisejs())
+                        .pipe(gulp.dest(outputDirectory))
+                )
+            }
+
+            return merge2(sequence);
         }
         else {
             return waitAll;
@@ -901,14 +937,14 @@ gulp.task("tests-unit-transpile", function (done) {
 
     var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" })
         .pipe(tsProject());
-    
+
     tsResult.once("error", function () {
         tsResult.once("finish", function () {
             console.log("Typescript compile failed");
             process.exit(1);
         });
     });
- 
+
     return tsResult.js.pipe(gulp.dest("../../"));
 });
 
@@ -941,7 +977,7 @@ gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
     server.start();
 });
 
-gulp.task("tests-whatsnew", function(done) {
+gulp.task("tests-whatsnew", function (done) {
     // Only checks on Travis
     if (!process.env.TRAVIS) {
         done();
@@ -970,12 +1006,12 @@ gulp.task("tests-whatsnew", function(done) {
             oldData += data;
         });
         res.on("end", () => {
-            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function(err, newData) {
+            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function (err, newData) {
                 if (err || oldData != newData) {
                     done();
                     return;
                 }
-                
+
                 console.error("What's new file did not change.");
                 process.exit(1);
             });

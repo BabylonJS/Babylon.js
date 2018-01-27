@@ -113,6 +113,19 @@
             return fn;
         }
 
+        /**
+         * Provides a slice function that will work even on IE
+         * @param data defines the array to slice
+         * @returns the new sliced array
+         */
+        public static Slice(data: FloatArray): FloatArray {
+            if (data.slice) {
+                return data.slice();
+            }
+
+            return Array.prototype.slice.call(data);
+        }
+
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -199,10 +212,20 @@
             return path.substring(index + 1);
         }
 
-        public static GetFolderPath(uri: string): string {
+        /**
+         * Extracts the "folder" part of a path (everything before the filename).
+         * @param uri The URI to extract the info from
+         * @param returnUnchangedIfNoSlash Do not touch the URI if no slashes are present
+         * @returns The "folder" part of the path
+         */
+        public static GetFolderPath(uri: string, returnUnchangedIfNoSlash = false): string {
             var index = uri.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
+                if (returnUnchangedIfNoSlash) {
+                    return uri;
+                }
                 return "";
+            }
 
             return uri.substring(0, index + 1);
         }
@@ -1153,6 +1176,32 @@
                 var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
+        }
+
+        /**
+        * Test if the given uri is a base64 string.
+        * @param uri The uri to test
+        * @return True if the uri is a base64 string or false otherwise.
+        */
+        public static IsBase64(uri: string): boolean {
+            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        }
+
+        /**
+        * Decode the given base64 uri.
+        * @param uri The uri to decode
+        * @return The decoded base64 data.
+        */
+        public static DecodeBase64(uri: string): ArrayBuffer {
+            const decodedString = atob(uri.split(",")[1]);
+            const bufferLength = decodedString.length;
+            const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+            for (let i = 0; i < bufferLength; i++) {
+                bufferView[i] = decodedString.charCodeAt(i);
+            }
+
+            return bufferView.buffer;
         }
 
         // Logs
