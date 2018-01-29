@@ -412,7 +412,15 @@ declare module BABYLON {
         createAnimationRange(name: string, from: number, to: number): void;
         deleteAnimationRange(name: string, deleteFrames?: boolean): void;
         getAnimationRange(name: string): Nullable<AnimationRange>;
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void;
+        /**
+         * Will start the animation sequence
+         * @param name defines the range frames for animation sequence
+         * @param loop defines if the animation should loop (false by default)
+         * @param speedRatio defines the speed factor in which to run the animation (1 by default)
+         * @param onAnimationEnd defines a function to be executed when the animation ended (undefined by default)
+         * @returns the {BABYLON.Animatable} object created for this animation. If range does not exist, it will return null
+         */
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
         serializeAnimationRanges(): any;
         computeWorldMatrix(force?: boolean): Matrix;
         dispose(): void;
@@ -2465,757 +2473,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Bone extends Node {
-        name: string;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        children: Bone[];
-        animations: Animation[];
-        length: number;
-        _index: Nullable<number>;
-        private _skeleton;
-        private _localMatrix;
-        private _restPose;
-        private _baseMatrix;
-        private _worldTransform;
-        private _absoluteTransform;
-        private _invertedAbsoluteTransform;
-        private _parent;
-        private _scaleMatrix;
-        private _scaleVector;
-        private _negateScaleChildren;
-        private _scalingDeterminant;
-        _matrix: Matrix;
-        constructor(name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
-        getSkeleton(): Skeleton;
-        getParent(): Nullable<Bone>;
-        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
-        getLocalMatrix(): Matrix;
-        getBaseMatrix(): Matrix;
-        getRestPose(): Matrix;
-        returnToRest(): void;
-        getWorldMatrix(): Matrix;
-        getInvertedAbsoluteTransform(): Matrix;
-        getAbsoluteTransform(): Matrix;
-        position: Vector3;
-        rotation: Vector3;
-        rotationQuaternion: Quaternion;
-        scaling: Vector3;
-        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean): void;
-        _updateDifferenceMatrix(rootMatrix?: Matrix): void;
-        markAsDirty(): void;
-        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Nullable<Vector3>): boolean;
-        /**
-         * Translate the bone in local or world space.
-         * @param vec The amount to translate the bone.
-         * @param space The space that the translation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the postion of the bone in local or world space.
-         * @param position The position to set the bone.
-         * @param space The space that the position is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the absolute postion of the bone (world space).
-         * @param position The position to set the bone.
-         * @param mesh The mesh that this bone is attached to.
-         */
-        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
-        /**
-         * Set the scale of the bone on the x, y and z axes.
-         * @param x The scale of the bone on the x axis.
-         * @param x The scale of the bone on the y axis.
-         * @param z The scale of the bone on the z axis.
-         * @param scaleChildren Set this to true if children of the bone should be scaled.
-         */
-        setScale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Scale the bone on the x, y and z axes.
-         * @param x The amount to scale the bone on the x axis.
-         * @param x The amount to scale the bone on the y axis.
-         * @param z The amount to scale the bone on the z axis.
-         * @param scaleChildren Set this to true if children of the bone should be scaled.
-         */
-        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
-        /**
-         * Set the yaw, pitch, and roll of the bone in local or world space.
-         * @param yaw The rotation of the bone on the y axis.
-         * @param pitch The rotation of the bone on the x axis.
-         * @param roll The rotation of the bone on the z axis.
-         * @param space The space that the axes of rotation are in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Rotate the bone on an axis in local or world space.
-         * @param axis The axis to rotate the bone on.
-         * @param amount The amount to rotate the bone.
-         * @param space The space that the axis is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation of the bone to a particular axis angle in local or world space.
-         * @param axis The axis to rotate the bone on.
-         * @param angle The angle that the bone should be rotated to.
-         * @param space The space that the axis is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the euler rotation of the bone in local of world space.
-         * @param rotation The euler rotation that the bone should be set to.
-         * @param space The space that the rotation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the quaternion rotation of the bone in local of world space.
-         * @param quat The quaternion rotation that the bone should be set to.
-         * @param space The space that the rotation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
-        /**
-         * Set the rotation matrix of the bone in local of world space.
-         * @param rotMat The rotation matrix that the bone should be set to.
-         * @param space The space that the rotation is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         */
-        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
-        private _rotateWithMatrix(rmat, space?, mesh?);
-        private _getNegativeRotationToRef(rotMatInv, space?, mesh?);
-        /**
-         * Get the scale of the bone
-         * @returns the scale of the bone
-         */
-        getScale(): Vector3;
-        /**
-         * Copy the scale of the bone to a vector3.
-         * @param result The vector3 to copy the scale to
-         */
-        getScaleToRef(result: Vector3): void;
-        /**
-         * Get the position of the bone in local or world space.
-         * @param space The space that the returned position is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The position of the bone
-         */
-        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the position of the bone to a vector3 in local or world space.
-         * @param space The space that the returned position is in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The vector3 to copy the position to.
-         */
-        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
-        /**
-         * Get the absolute position of the bone (world space).
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The absolute position of the bone
-         */
-        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the absolute position of the bone (world space) to the result param.
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 to copy the absolute position to.
-         */
-        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
-        /**
-         * Compute the absolute transforms of this bone and its children.
-         */
-        computeAbsoluteTransforms(): void;
-        private _syncScaleVector();
-        /**
-         * Get the world direction from an axis that is in the local space of the bone.
-         * @param localAxis The local direction that is used to compute the world direction.
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The world direction
-         */
-        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the world direction to a vector3 from an axis that is in the local space of the bone.
-         * @param localAxis The local direction that is used to compute the world direction.
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 that the world direction will be copied to.
-         */
-        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the euler rotation of the bone in local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The euler rotation
-         */
-        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The vector3 that the rotation should be copied to.
-         */
-        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the quaternion rotation of the bone in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The quaternion rotation
-         */
-        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
-        /**
-         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The quaternion that the rotation should be copied to.
-         */
-        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
-        /**
-         * Get the rotation matrix of the bone in local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @returns The rotation matrix
-         */
-        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
-        /**
-         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space.
-         * @param space The space that the rotation should be in.
-         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
-         * @param result The quaternion that the rotation should be copied to.
-         */
-        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
-        /**
-         * Get the world position of a point that is in the local space of the bone.
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The world position
-         */
-        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the world position of a point that is in the local space of the bone and copy it to the result param.
-         * @param position The local position
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 that the world position should be copied to.
-         */
-        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-        /**
-         * Get the local position of a point that is in world space.
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to.
-         * @returns The local position
-         */
-        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
-        /**
-         * Get the local position of a point that is in world space and copy it to the result param.
-         * @param position The world position
-         * @param mesh The mesh that this bone is attached to.
-         * @param result The vector3 that the local position should be copied to.
-         */
-        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    class BoneIKController {
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        targetMesh: AbstractMesh;
-        poleTargetMesh: AbstractMesh;
-        poleTargetBone: Nullable<Bone>;
-        targetPosition: Vector3;
-        poleTargetPosition: Vector3;
-        poleTargetLocalOffset: Vector3;
-        poleAngle: number;
-        mesh: AbstractMesh;
-        slerpAmount: number;
-        private _bone1Quat;
-        private _bone1Mat;
-        private _bone2Ang;
-        private _bone1;
-        private _bone2;
-        private _bone1Length;
-        private _bone2Length;
-        private _maxAngle;
-        private _maxReach;
-        private _rightHandedSystem;
-        private _bendAxis;
-        private _slerping;
-        private _adjustRoll;
-        maxAngle: number;
-        constructor(mesh: AbstractMesh, bone: Bone, options?: {
-            targetMesh?: AbstractMesh;
-            poleTargetMesh?: AbstractMesh;
-            poleTargetBone?: Bone;
-            poleTargetLocalOffset?: Vector3;
-            poleAngle?: number;
-            bendAxis?: Vector3;
-            maxAngle?: number;
-            slerpAmount?: number;
-        });
-        private _setMaxAngle(ang);
-        update(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoneLookController {
-        private static _tmpVecs;
-        private static _tmpQuat;
-        private static _tmpMats;
-        /**
-         * The target Vector3 that the bone will look at.
-         */
-        target: Vector3;
-        /**
-         * The mesh that the bone is attached to.
-         */
-        mesh: AbstractMesh;
-        /**
-         * The bone that will be looking to the target.
-         */
-        bone: Bone;
-        /**
-         * The up axis of the coordinate system that is used when the bone is rotated.
-         */
-        upAxis: Vector3;
-        /**
-         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
-         */
-        upAxisSpace: Space;
-        /**
-         * Used to make an adjustment to the yaw of the bone.
-         */
-        adjustYaw: number;
-        /**
-         * Used to make an adjustment to the pitch of the bone.
-         */
-        adjustPitch: number;
-        /**
-         * Used to make an adjustment to the roll of the bone.
-         */
-        adjustRoll: number;
-        /**
-         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp).
-         */
-        slerpAmount: number;
-        private _minYaw;
-        private _maxYaw;
-        private _minPitch;
-        private _maxPitch;
-        private _minYawSin;
-        private _minYawCos;
-        private _maxYawSin;
-        private _maxYawCos;
-        private _midYawConstraint;
-        private _minPitchTan;
-        private _maxPitchTan;
-        private _boneQuat;
-        private _slerping;
-        private _transformYawPitch;
-        private _transformYawPitchInv;
-        private _firstFrameSkipped;
-        private _yawRange;
-        private _fowardAxis;
-        /**
-         * Get/set the minimum yaw angle that the bone can look to.
-         */
-        minYaw: number;
-        /**
-         * Get/set the maximum yaw angle that the bone can look to.
-         */
-        maxYaw: number;
-        /**
-         * Get/set the minimum pitch angle that the bone can look to.
-         */
-        minPitch: number;
-        /**
-         * Get/set the maximum pitch angle that the bone can look to.
-         */
-        maxPitch: number;
-        /**
-         * Create a BoneLookController
-         * @param mesh the mesh that the bone belongs to
-         * @param bone the bone that will be looking to the target
-         * @param target the target Vector3 to look at
-         * @param settings optional settings:
-         * - maxYaw: the maximum angle the bone will yaw to
-         * - minYaw: the minimum angle the bone will yaw to
-         * - maxPitch: the maximum angle the bone will pitch to
-         * - minPitch: the minimum angle the bone will yaw to
-         * - slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
-         * - upAxis: the up axis of the coordinate system
-         * - upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
-         * - yawAxis: set yawAxis if the bone does not yaw on the y axis
-         * - pitchAxis: set pitchAxis if the bone does not pitch on the x axis
-         * - adjustYaw: used to make an adjustment to the yaw of the bone
-         * - adjustPitch: used to make an adjustment to the pitch of the bone
-         * - adjustRoll: used to make an adjustment to the roll of the bone
-         **/
-        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
-            maxYaw?: number;
-            minYaw?: number;
-            maxPitch?: number;
-            minPitch?: number;
-            slerpAmount?: number;
-            upAxis?: Vector3;
-            upAxisSpace?: Space;
-            yawAxis?: Vector3;
-            pitchAxis?: Vector3;
-            adjustYaw?: number;
-            adjustPitch?: number;
-            adjustRoll?: number;
-        });
-        /**
-         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender()).
-         */
-        update(): void;
-        private _getAngleDiff(ang1, ang2);
-        private _getAngleBetween(ang1, ang2);
-        private _isAngleBetween(ang, ang1, ang2);
-    }
-}
-
-declare module BABYLON {
-    class Skeleton implements IAnimatable {
-        name: string;
-        id: string;
-        bones: Bone[];
-        dimensionsAtRest: Vector3;
-        needInitialSkinMatrix: boolean;
-        animations: Array<Animation>;
-        private _scene;
-        private _isDirty;
-        private _transformMatrices;
-        private _meshesWithPoseMatrix;
-        private _animatables;
-        private _identity;
-        private _synchronizedWithMesh;
-        private _ranges;
-        private _lastAbsoluteTransformsUpdateId;
-        /**
-         * An event triggered before computing the skeleton's matrices
-         * @type {BABYLON.Observable}
-         */
-        onBeforeComputeObservable: Observable<Skeleton>;
-        constructor(name: string, id: string, scene: Scene);
-        getTransformMatrices(mesh: AbstractMesh): Float32Array;
-        getScene(): Scene;
-        /**
-         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-        * Get bone's index searching by name
-        * @param {string} name is bone's name to search for
-        * @return {number} Indice of the bone. Returns -1 if not found
-        */
-        getBoneIndexByName(name: string): number;
-        createAnimationRange(name: string, from: number, to: number): void;
-        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
-        getAnimationRange(name: string): Nullable<AnimationRange>;
-        /**
-         *  Returns as an Array, all AnimationRanges defined on this skeleton
-         */
-        getAnimationRanges(): Nullable<AnimationRange>[];
-        /**
-         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
-         */
-        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
-        returnToRest(): void;
-        private _getHighestAnimationFrame();
-        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
-        _markAsDirty(): void;
-        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
-        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void;
-        prepare(): void;
-        getAnimatables(): IAnimatable[];
-        clone(name: string, id: string): Skeleton;
-        enableBlending(blendingSpeed?: number): void;
-        dispose(): void;
-        serialize(): any;
-        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
-        computeAbsoluteTransforms(forceUpdate?: boolean): void;
-        getPoseMatrix(): Nullable<Matrix>;
-        sortBones(): void;
-        private _sortBones(index, bones, visited);
-    }
-}
-
-declare module BABYLON {
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _radius: Vector3;
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        _velocityWorldLength: number;
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        _initialVelocity: Vector3;
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Nullable<Vector3>;
-        pickedMesh: Nullable<AbstractMesh>;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Nullable<Sprite>;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        getTextureCoordinates(): Nullable<Vector2>;
-    }
-}
-
-declare module BABYLON {
     class ArcRotateCamera extends TargetCamera {
         alpha: number;
         beta: number;
@@ -3815,137 +3072,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON {
-    class Debug {
-        static AxesViewer: {
-            new (scene: Scene, scaleLines?: number): {
-                _xline: Vector3[];
-                _yline: Vector3[];
-                _zline: Vector3[];
-                _xmesh: Nullable<LinesMesh>;
-                _ymesh: Nullable<LinesMesh>;
-                _zmesh: Nullable<LinesMesh>;
-                scene: Nullable<Scene>;
-                scaleLines: number;
-                update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-                dispose(): void;
-            };
-        };
-        static BoneAxesViewer: {
-            new (scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number): {
-                mesh: Nullable<Mesh>;
-                bone: Nullable<Bone>;
-                pos: Vector3;
-                xaxis: Vector3;
-                yaxis: Vector3;
-                zaxis: Vector3;
-                update(): void;
-                dispose(): void;
-                _xline: Vector3[];
-                _yline: Vector3[];
-                _zline: Vector3[];
-                _xmesh: Nullable<LinesMesh>;
-                _ymesh: Nullable<LinesMesh>;
-                _zmesh: Nullable<LinesMesh>;
-                scene: Nullable<Scene>;
-                scaleLines: number;
-            };
-        };
-        static PhysicsViewer: {
-            new (scene: Scene): {
-                _impostors: Nullable<PhysicsImpostor>[];
-                _meshes: Nullable<AbstractMesh>[];
-                _scene: Nullable<Scene>;
-                _numMeshes: number;
-                _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-                _renderFunction: () => void;
-                _debugBoxMesh: Mesh;
-                _debugSphereMesh: Mesh;
-                _debugMaterial: StandardMaterial;
-                _updateDebugMeshes(): void;
-                showImpostor(impostor: PhysicsImpostor): void;
-                hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-                _getDebugMaterial(scene: Scene): Material;
-                _getDebugBoxMesh(scene: Scene): AbstractMesh;
-                _getDebugSphereMesh(scene: Scene): AbstractMesh;
-                _getDebugMesh(impostor: PhysicsImpostor, scene: Scene): Nullable<AbstractMesh>;
-                dispose(): void;
-            };
-        };
-        static SkeletonViewer: {
-            new (skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number): {
-                color: Color3;
-                _scene: Scene;
-                _debugLines: Vector3[][];
-                _debugMesh: Nullable<LinesMesh>;
-                _isEnabled: boolean;
-                _renderFunction: () => void;
-                skeleton: Skeleton;
-                mesh: AbstractMesh;
-                autoUpdateBonesMatrices: boolean;
-                renderingGroupId: number;
-                isEnabled: boolean;
-                _getBonePosition(position: Vector3, bone: Bone, meshMat: Matrix, x?: number, y?: number, z?: number): void;
-                _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void;
-                _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void;
-                update(): void;
-                dispose(): void;
-            };
-        };
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
         maximum: Vector3;
@@ -4071,65 +3197,484 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
+    class Bone extends Node {
+        name: string;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        children: Bone[];
+        animations: Animation[];
+        length: number;
+        _index: Nullable<number>;
+        private _skeleton;
+        private _localMatrix;
+        private _restPose;
+        private _baseMatrix;
+        private _worldTransform;
+        private _absoluteTransform;
+        private _invertedAbsoluteTransform;
+        private _parent;
+        private _scaleMatrix;
+        private _scaleVector;
+        private _negateScaleChildren;
+        private _scalingDeterminant;
+        _matrix: Matrix;
+        constructor(name: string, skeleton: Skeleton, parentBone?: Nullable<Bone>, localMatrix?: Nullable<Matrix>, restPose?: Nullable<Matrix>, baseMatrix?: Nullable<Matrix>, index?: Nullable<number>);
+        getSkeleton(): Skeleton;
+        getParent(): Nullable<Bone>;
+        setParent(parent: Nullable<Bone>, updateDifferenceMatrix?: boolean): void;
+        getLocalMatrix(): Matrix;
+        getBaseMatrix(): Matrix;
+        getRestPose(): Matrix;
+        returnToRest(): void;
+        getWorldMatrix(): Matrix;
+        getInvertedAbsoluteTransform(): Matrix;
+        getAbsoluteTransform(): Matrix;
+        position: Vector3;
+        rotation: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        updateMatrix(matrix: Matrix, updateDifferenceMatrix?: boolean): void;
+        _updateDifferenceMatrix(rootMatrix?: Matrix): void;
+        markAsDirty(): void;
+        copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired?: boolean, skelDimensionsRatio?: Nullable<Vector3>): boolean;
+        /**
+         * Translate the bone in local or world space.
+         * @param vec The amount to translate the bone.
+         * @param space The space that the translation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        translate(vec: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the postion of the bone in local or world space.
+         * @param position The position to set the bone.
+         * @param space The space that the position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setPosition(position: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the absolute postion of the bone (world space).
+         * @param position The position to set the bone.
+         * @param mesh The mesh that this bone is attached to.
+         */
+        setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
+        /**
+         * Set the scale of the bone on the x, y and z axes.
+         * @param x The scale of the bone on the x axis.
+         * @param x The scale of the bone on the y axis.
+         * @param z The scale of the bone on the z axis.
+         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         */
+        setScale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        /**
+         * Scale the bone on the x, y and z axes.
+         * @param x The amount to scale the bone on the x axis.
+         * @param x The amount to scale the bone on the y axis.
+         * @param z The amount to scale the bone on the z axis.
+         * @param scaleChildren Set this to true if children of the bone should be scaled.
+         */
+        scale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        /**
+         * Set the yaw, pitch, and roll of the bone in local or world space.
+         * @param yaw The rotation of the bone on the y axis.
+         * @param pitch The rotation of the bone on the x axis.
+         * @param roll The rotation of the bone on the z axis.
+         * @param space The space that the axes of rotation are in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setYawPitchRoll(yaw: number, pitch: number, roll: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Rotate the bone on an axis in local or world space.
+         * @param axis The axis to rotate the bone on.
+         * @param amount The amount to rotate the bone.
+         * @param space The space that the axis is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        rotate(axis: Vector3, amount: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation of the bone to a particular axis angle in local or world space.
+         * @param axis The axis to rotate the bone on.
+         * @param angle The angle that the bone should be rotated to.
+         * @param space The space that the axis is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setAxisAngle(axis: Vector3, angle: number, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the euler rotation of the bone in local of world space.
+         * @param rotation The euler rotation that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setRotation(rotation: Vector3, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the quaternion rotation of the bone in local of world space.
+         * @param quat The quaternion rotation that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setRotationQuaternion(quat: Quaternion, space?: Space, mesh?: AbstractMesh): void;
+        /**
+         * Set the rotation matrix of the bone in local of world space.
+         * @param rotMat The rotation matrix that the bone should be set to.
+         * @param space The space that the rotation is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         */
+        setRotationMatrix(rotMat: Matrix, space?: Space, mesh?: AbstractMesh): void;
+        private _rotateWithMatrix(rmat, space?, mesh?);
+        private _getNegativeRotationToRef(rotMatInv, space?, mesh?);
+        /**
+         * Get the scale of the bone
+         * @returns the scale of the bone
+         */
+        getScale(): Vector3;
+        /**
+         * Copy the scale of the bone to a vector3.
+         * @param result The vector3 to copy the scale to
+         */
+        getScaleToRef(result: Vector3): void;
+        /**
+         * Get the position of the bone in local or world space.
+         * @param space The space that the returned position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The position of the bone
+         */
+        getPosition(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the position of the bone to a vector3 in local or world space.
+         * @param space The space that the returned position is in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The vector3 to copy the position to.
+         */
+        getPositionToRef(space: Space | undefined, mesh: Nullable<AbstractMesh>, result: Vector3): void;
+        /**
+         * Get the absolute position of the bone (world space).
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The absolute position of the bone
+         */
+        getAbsolutePosition(mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the absolute position of the bone (world space) to the result param.
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 to copy the absolute position to.
+         */
+        getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3): void;
+        /**
+         * Compute the absolute transforms of this bone and its children.
+         */
+        computeAbsoluteTransforms(): void;
+        private _syncScaleVector();
+        /**
+         * Get the world direction from an axis that is in the local space of the bone.
+         * @param localAxis The local direction that is used to compute the world direction.
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The world direction
+         */
+        getDirection(localAxis: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the world direction to a vector3 from an axis that is in the local space of the bone.
+         * @param localAxis The local direction that is used to compute the world direction.
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the world direction will be copied to.
+         */
+        getDirectionToRef(localAxis: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the euler rotation of the bone in local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The euler rotation
+         */
+        getRotation(space?: Space, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Copy the euler rotation of the bone to a vector3.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The vector3 that the rotation should be copied to.
+         */
+        getRotationToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the quaternion rotation of the bone in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The quaternion rotation
+         */
+        getRotationQuaternion(space?: Space, mesh?: Nullable<AbstractMesh>): Quaternion;
+        /**
+         * Copy the quaternion rotation of the bone to a quaternion.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The quaternion that the rotation should be copied to.
+         */
+        getRotationQuaternionToRef(space: Space | undefined, mesh: AbstractMesh | null | undefined, result: Quaternion): void;
+        /**
+         * Get the rotation matrix of the bone in local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @returns The rotation matrix
+         */
+        getRotationMatrix(space: Space | undefined, mesh: AbstractMesh): Matrix;
+        /**
+         * Copy the rotation matrix of the bone to a matrix.  The rotation can be in either local or world space.
+         * @param space The space that the rotation should be in.
+         * @param mesh The mesh that this bone is attached to.  This is only used in world space.
+         * @param result The quaternion that the rotation should be copied to.
+         */
+        getRotationMatrixToRef(space: Space | undefined, mesh: AbstractMesh, result: Matrix): void;
+        /**
+         * Get the world position of a point that is in the local space of the bone.
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The world position
+         */
+        getAbsolutePositionFromLocal(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the world position of a point that is in the local space of the bone and copy it to the result param.
+         * @param position The local position
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the world position should be copied to.
+         */
+        getAbsolutePositionFromLocalToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
+        /**
+         * Get the local position of a point that is in world space.
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to.
+         * @returns The local position
+         */
+        getLocalPositionFromAbsolute(position: Vector3, mesh?: Nullable<AbstractMesh>): Vector3;
+        /**
+         * Get the local position of a point that is in world space and copy it to the result param.
+         * @param position The world position
+         * @param mesh The mesh that this bone is attached to.
+         * @param result The vector3 that the local position should be copied to.
+         */
+        getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: AbstractMesh | null | undefined, result: Vector3): void;
     }
 }
 
 declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
+    class BoneIKController {
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        targetMesh: AbstractMesh;
+        poleTargetMesh: AbstractMesh;
+        poleTargetBone: Nullable<Bone>;
+        targetPosition: Vector3;
+        poleTargetPosition: Vector3;
+        poleTargetLocalOffset: Vector3;
+        poleAngle: number;
+        mesh: AbstractMesh;
+        slerpAmount: number;
+        private _bone1Quat;
+        private _bone1Mat;
+        private _bone2Ang;
+        private _bone1;
+        private _bone2;
+        private _bone1Length;
+        private _bone2Length;
+        private _maxAngle;
+        private _maxReach;
+        private _rightHandedSystem;
+        private _bendAxis;
+        private _slerping;
+        private _adjustRoll;
+        maxAngle: number;
+        constructor(mesh: AbstractMesh, bone: Bone, options?: {
+            targetMesh?: AbstractMesh;
+            poleTargetMesh?: AbstractMesh;
+            poleTargetBone?: Bone;
+            poleTargetLocalOffset?: Vector3;
+            poleAngle?: number;
+            bendAxis?: Vector3;
+            maxAngle?: number;
+            slerpAmount?: number;
+        });
+        private _setMaxAngle(ang);
+        update(): void;
     }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+}
+
+declare module BABYLON {
+    class BoneLookController {
+        private static _tmpVecs;
+        private static _tmpQuat;
+        private static _tmpMats;
+        /**
+         * The target Vector3 that the bone will look at.
+         */
+        target: Vector3;
+        /**
+         * The mesh that the bone is attached to.
+         */
+        mesh: AbstractMesh;
+        /**
+         * The bone that will be looking to the target.
+         */
+        bone: Bone;
+        /**
+         * The up axis of the coordinate system that is used when the bone is rotated.
+         */
+        upAxis: Vector3;
+        /**
+         * The space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         */
+        upAxisSpace: Space;
+        /**
+         * Used to make an adjustment to the yaw of the bone.
+         */
+        adjustYaw: number;
+        /**
+         * Used to make an adjustment to the pitch of the bone.
+         */
+        adjustPitch: number;
+        /**
+         * Used to make an adjustment to the roll of the bone.
+         */
+        adjustRoll: number;
+        /**
+         * The amount to slerp (spherical linear interpolation) to the target.  Set this to a value between 0 and 1 (a value of 1 disables slerp).
+         */
+        slerpAmount: number;
+        private _minYaw;
+        private _maxYaw;
+        private _minPitch;
+        private _maxPitch;
+        private _minYawSin;
+        private _minYawCos;
+        private _maxYawSin;
+        private _maxYawCos;
+        private _midYawConstraint;
+        private _minPitchTan;
+        private _maxPitchTan;
+        private _boneQuat;
+        private _slerping;
+        private _transformYawPitch;
+        private _transformYawPitchInv;
+        private _firstFrameSkipped;
+        private _yawRange;
+        private _fowardAxis;
+        /**
+         * Get/set the minimum yaw angle that the bone can look to.
+         */
+        minYaw: number;
+        /**
+         * Get/set the maximum yaw angle that the bone can look to.
+         */
+        maxYaw: number;
+        /**
+         * Get/set the minimum pitch angle that the bone can look to.
+         */
+        minPitch: number;
+        /**
+         * Get/set the maximum pitch angle that the bone can look to.
+         */
+        maxPitch: number;
+        /**
+         * Create a BoneLookController
+         * @param mesh the mesh that the bone belongs to
+         * @param bone the bone that will be looking to the target
+         * @param target the target Vector3 to look at
+         * @param settings optional settings:
+         * - maxYaw: the maximum angle the bone will yaw to
+         * - minYaw: the minimum angle the bone will yaw to
+         * - maxPitch: the maximum angle the bone will pitch to
+         * - minPitch: the minimum angle the bone will yaw to
+         * - slerpAmount: set the between 0 and 1 to make the bone slerp to the target.
+         * - upAxis: the up axis of the coordinate system
+         * - upAxisSpace: the space that the up axis is in - BABYLON.Space.BONE, BABYLON.Space.LOCAL (default), or BABYLON.Space.WORLD.
+         * - yawAxis: set yawAxis if the bone does not yaw on the y axis
+         * - pitchAxis: set pitchAxis if the bone does not pitch on the x axis
+         * - adjustYaw: used to make an adjustment to the yaw of the bone
+         * - adjustPitch: used to make an adjustment to the pitch of the bone
+         * - adjustRoll: used to make an adjustment to the roll of the bone
+         **/
+        constructor(mesh: AbstractMesh, bone: Bone, target: Vector3, options?: {
+            maxYaw?: number;
+            minYaw?: number;
+            maxPitch?: number;
+            minPitch?: number;
+            slerpAmount?: number;
+            upAxis?: Vector3;
+            upAxisSpace?: Space;
+            yawAxis?: Vector3;
+            pitchAxis?: Vector3;
+            adjustYaw?: number;
+            adjustPitch?: number;
+            adjustRoll?: number;
+        });
+        /**
+         * Update the bone to look at the target.  This should be called before the scene is rendered (use scene.registerBeforeRender()).
+         */
+        update(): void;
+        private _getAngleDiff(ang1, ang2);
+        private _getAngleBetween(ang1, ang2);
+        private _isAngleBetween(ang, ang1, ang2);
     }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+}
+
+declare module BABYLON {
+    class Skeleton implements IAnimatable {
+        name: string;
+        id: string;
+        bones: Bone[];
+        dimensionsAtRest: Vector3;
+        needInitialSkinMatrix: boolean;
+        animations: Array<Animation>;
+        private _scene;
+        private _isDirty;
+        private _transformMatrices;
+        private _meshesWithPoseMatrix;
+        private _animatables;
+        private _identity;
+        private _synchronizedWithMesh;
+        private _ranges;
+        private _lastAbsoluteTransformsUpdateId;
+        /**
+         * An event triggered before computing the skeleton's matrices
+         * @type {BABYLON.Observable}
+         */
+        onBeforeComputeObservable: Observable<Skeleton>;
+        constructor(name: string, id: string, scene: Scene);
+        getTransformMatrices(mesh: AbstractMesh): Float32Array;
+        getScene(): Scene;
+        /**
+         * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+        * Get bone's index searching by name
+        * @param {string} name is bone's name to search for
+        * @return {number} Indice of the bone. Returns -1 if not found
+        */
+        getBoneIndexByName(name: string): number;
+        createAnimationRange(name: string, from: number, to: number): void;
+        deleteAnimationRange(name: string, deleteFrames?: boolean): void;
+        getAnimationRange(name: string): Nullable<AnimationRange>;
+        /**
+         *  Returns as an Array, all AnimationRanges defined on this skeleton
+         */
+        getAnimationRanges(): Nullable<AnimationRange>[];
+        /**
+         *  note: This is not for a complete retargeting, only between very similar skeleton's with only possible bone length differences
+         */
+        copyAnimationRange(source: Skeleton, name: string, rescaleAsRequired?: boolean): boolean;
+        returnToRest(): void;
+        private _getHighestAnimationFrame();
+        beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable>;
+        _markAsDirty(): void;
+        _registerMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        _unregisterMeshWithPoseMatrix(mesh: AbstractMesh): void;
+        _computeTransformMatrices(targetMatrix: Float32Array, initialSkinMatrix: Nullable<Matrix>): void;
+        prepare(): void;
+        getAnimatables(): IAnimatable[];
+        clone(name: string, id: string): Skeleton;
+        enableBlending(blendingSpeed?: number): void;
+        dispose(): void;
+        serialize(): any;
+        static Parse(parsedSkeleton: any, scene: Scene): Skeleton;
+        computeAbsoluteTransforms(forceUpdate?: boolean): void;
+        getPoseMatrix(): Nullable<Matrix>;
+        sortBones(): void;
+        private _sortBones(index, bones, visited);
     }
 }
 
@@ -5029,6 +4574,137 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
+    class DebugLayer {
+        private _scene;
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
+    }
+}
+
+declare module BABYLON {
+    class Debug {
+        static AxesViewer: {
+            new (scene: Scene, scaleLines?: number): {
+                _xline: Vector3[];
+                _yline: Vector3[];
+                _zline: Vector3[];
+                _xmesh: Nullable<LinesMesh>;
+                _ymesh: Nullable<LinesMesh>;
+                _zmesh: Nullable<LinesMesh>;
+                scene: Nullable<Scene>;
+                scaleLines: number;
+                update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+                dispose(): void;
+            };
+        };
+        static BoneAxesViewer: {
+            new (scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number): {
+                mesh: Nullable<Mesh>;
+                bone: Nullable<Bone>;
+                pos: Vector3;
+                xaxis: Vector3;
+                yaxis: Vector3;
+                zaxis: Vector3;
+                update(): void;
+                dispose(): void;
+                _xline: Vector3[];
+                _yline: Vector3[];
+                _zline: Vector3[];
+                _xmesh: Nullable<LinesMesh>;
+                _ymesh: Nullable<LinesMesh>;
+                _zmesh: Nullable<LinesMesh>;
+                scene: Nullable<Scene>;
+                scaleLines: number;
+            };
+        };
+        static PhysicsViewer: {
+            new (scene: Scene): {
+                _impostors: Nullable<PhysicsImpostor>[];
+                _meshes: Nullable<AbstractMesh>[];
+                _scene: Nullable<Scene>;
+                _numMeshes: number;
+                _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+                _renderFunction: () => void;
+                _debugBoxMesh: Mesh;
+                _debugSphereMesh: Mesh;
+                _debugMaterial: StandardMaterial;
+                _updateDebugMeshes(): void;
+                showImpostor(impostor: PhysicsImpostor): void;
+                hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+                _getDebugMaterial(scene: Scene): Material;
+                _getDebugBoxMesh(scene: Scene): AbstractMesh;
+                _getDebugSphereMesh(scene: Scene): AbstractMesh;
+                _getDebugMesh(impostor: PhysicsImpostor, scene: Scene): Nullable<AbstractMesh>;
+                dispose(): void;
+            };
+        };
+        static SkeletonViewer: {
+            new (skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number): {
+                color: Color3;
+                _scene: Scene;
+                _debugLines: Vector3[][];
+                _debugMesh: Nullable<LinesMesh>;
+                _isEnabled: boolean;
+                _renderFunction: () => void;
+                skeleton: Skeleton;
+                mesh: AbstractMesh;
+                autoUpdateBonesMatrices: boolean;
+                renderingGroupId: number;
+                isEnabled: boolean;
+                _getBonePosition(position: Vector3, bone: Bone, meshMat: Matrix, x?: number, y?: number, z?: number): void;
+                _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void;
+                _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void;
+                update(): void;
+                dispose(): void;
+            };
+        };
+    }
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -5476,6 +5152,338 @@ declare module BABYLON {
         dPadRight: number;
         update(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare module BABYLON {
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _radius: Vector3;
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        _velocityWorldLength: number;
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        _initialVelocity: Vector3;
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
+    }
+}
+
+declare module BABYLON {
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+    }
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+    }
+    /**
+     * Interface describing the value associated with a geometry
+     */
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
+    }
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Nullable<Vector3>;
+        pickedMesh: Nullable<AbstractMesh>;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Nullable<Sprite>;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        getTextureCoordinates(): Nullable<Vector2>;
     }
 }
 
@@ -17445,6 +17453,36 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        invertYAxis: boolean;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: Nullable<AbstractMesh[]>;
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     class AnaglyphPostProcess extends PostProcess {
         private _passedProcess;
         constructor(name: string, options: number | PostProcessOptions, rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean);
@@ -18295,36 +18333,6 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        invertYAxis: boolean;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: Nullable<AbstractMesh[]>;
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
     }
 }
 
@@ -23073,6 +23081,834 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    /**
+     * The Physically based material base class of BJS.
+     *
+     * This offers the main features of a standard PBR material.
+     * For more information, please refer to the documentation :
+     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     */
+    abstract class PBRBaseMaterial extends PushMaterial {
+        /**
+         * Intensity of the direct lights e.g. the four lights available in your scene.
+         * This impacts both the direct diffuse and specular highlights.
+         */
+        protected _directIntensity: number;
+        /**
+         * Intensity of the emissive part of the material.
+         * This helps controlling the emissive effect without modifying the emissive color.
+         */
+        protected _emissiveIntensity: number;
+        /**
+         * Intensity of the environment e.g. how much the environment will light the object
+         * either through harmonics for rough material or through the refelction for shiny ones.
+         */
+        protected _environmentIntensity: number;
+        /**
+         * This is a special control allowing the reduction of the specular highlights coming from the
+         * four lights of the scene. Those highlights may not be needed in full environment lighting.
+         */
+        protected _specularIntensity: number;
+        private _lightingInfos;
+        /**
+         * Debug Control allowing disabling the bump map on this material.
+         */
+        protected _disableBumpMap: boolean;
+        /**
+         * AKA Diffuse Texture in standard nomenclature.
+         */
+        protected _albedoTexture: BaseTexture;
+        /**
+         * AKA Occlusion Texture in other nomenclature.
+         */
+        protected _ambientTexture: BaseTexture;
+        /**
+         * AKA Occlusion Texture Intensity in other nomenclature.
+         */
+        protected _ambientTextureStrength: number;
+        protected _opacityTexture: BaseTexture;
+        protected _reflectionTexture: BaseTexture;
+        protected _refractionTexture: BaseTexture;
+        protected _emissiveTexture: BaseTexture;
+        /**
+         * AKA Specular texture in other nomenclature.
+         */
+        protected _reflectivityTexture: BaseTexture;
+        /**
+         * Used to switch from specular/glossiness to metallic/roughness workflow.
+         */
+        protected _metallicTexture: BaseTexture;
+        /**
+         * Specifies the metallic scalar of the metallic/roughness workflow.
+         * Can also be used to scale the metalness values of the metallic texture.
+         */
+        protected _metallic: number;
+        /**
+         * Specifies the roughness scalar of the metallic/roughness workflow.
+         * Can also be used to scale the roughness values of the metallic texture.
+         */
+        protected _roughness: number;
+        /**
+         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         */
+        protected _microSurfaceTexture: BaseTexture;
+        protected _bumpTexture: BaseTexture;
+        protected _lightmapTexture: BaseTexture;
+        protected _ambientColor: Color3;
+        /**
+         * AKA Diffuse Color in other nomenclature.
+         */
+        protected _albedoColor: Color3;
+        /**
+         * AKA Specular Color in other nomenclature.
+         */
+        protected _reflectivityColor: Color3;
+        protected _reflectionColor: Color3;
+        protected _emissiveColor: Color3;
+        /**
+         * AKA Glossiness in other nomenclature.
+         */
+        protected _microSurface: number;
+        /**
+         * source material index of refraction (IOR)' / 'destination material IOR.
+         */
+        protected _indexOfRefraction: number;
+        /**
+         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
+         */
+        protected _invertRefractionY: boolean;
+        /**
+         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+         * Materials half opaque for instance using refraction could benefit from this control.
+         */
+        protected _linkRefractionWithTransparency: boolean;
+        protected _useLightmapAsShadowmap: boolean;
+        /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        protected _useHorizonOcclusion: boolean;
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        protected _useRadianceOcclusion: boolean;
+        /**
+         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+         */
+        protected _useAlphaFromAlbedoTexture: boolean;
+        /**
+         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+         */
+        protected _useSpecularOverAlpha: boolean;
+        /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+         */
+        protected _useMicroSurfaceFromReflectivityMapAlpha: boolean;
+        /**
+         * Specifies if the metallic texture contains the roughness information in its alpha channel.
+         */
+        protected _useRoughnessFromMetallicTextureAlpha: boolean;
+        /**
+         * Specifies if the metallic texture contains the roughness information in its green channel.
+         */
+        protected _useRoughnessFromMetallicTextureGreen: boolean;
+        /**
+         * Specifies if the metallic texture contains the metallness information in its blue channel.
+         */
+        protected _useMetallnessFromMetallicTextureBlue: boolean;
+        /**
+         * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+         */
+        protected _useAmbientOcclusionFromMetallicTextureRed: boolean;
+        /**
+         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         */
+        protected _useAmbientInGrayScale: boolean;
+        /**
+         * In case the reflectivity map does not contain the microsurface information in its alpha channel,
+         * The material will try to infer what glossiness each pixel should be.
+         */
+        protected _useAutoMicroSurfaceFromReflectivityMap: boolean;
+        /**
+         * BJS is using an harcoded light falloff based on a manually sets up range.
+         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+         */
+        protected _usePhysicalLightFalloff: boolean;
+        /**
+         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
+         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+         */
+        protected _useRadianceOverAlpha: boolean;
+        /**
+         * Allows using the bump map in parallax mode.
+         */
+        protected _useParallax: boolean;
+        /**
+         * Allows using the bump map in parallax occlusion mode.
+         */
+        protected _useParallaxOcclusion: boolean;
+        /**
+         * Controls the scale bias of the parallax mode.
+         */
+        protected _parallaxScaleBias: number;
+        /**
+         * If sets to true, disables all the lights affecting the material.
+         */
+        protected _disableLighting: boolean;
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        protected _maxSimultaneousLights: number;
+        /**
+         * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
+         */
+        protected _invertNormalMapX: boolean;
+        /**
+         * If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
+         */
+        protected _invertNormalMapY: boolean;
+        /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        protected _twoSidedLighting: boolean;
+        /**
+         * Defines the alpha limits in alpha test mode.
+         */
+        protected _alphaCutOff: number;
+        /**
+         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+         */
+        protected _forceAlphaTest: boolean;
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
+         */
+        protected _useAlphaFresnel: boolean;
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         */
+        protected _useLinearAlphaFresnel: boolean;
+        /**
+         * The transparency mode of the material.
+         */
+        protected _transparencyMode: Nullable<number>;
+        /**
+         * Specifies the environment BRDF texture used to comput the scale and offset roughness values
+         * from cos thetav and roughness:
+         * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
+         */
+        protected _environmentBRDFTexture: Nullable<BaseTexture>;
+        /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        protected _forceIrradianceInFragment: boolean;
+        /**
+         * Force normal to face away from face.
+         */
+        protected _forceNormalForward: boolean;
+        /**
+         * Force metallic workflow.
+         */
+        protected _forceMetallicWorkflow: boolean;
+        /**
+         * Default configuration related to image processing available in the PBR Material.
+         */
+        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Keep track of the image processing observer to allow dispose and replace.
+         */
+        private _imageProcessingObserver;
+        /**
+         * Attaches a new image processing configuration to the PBR Material.
+         * @param configuration
+         */
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
+        private _renderTargets;
+        private _globalAmbientColor;
+        private _useLogarithmicDepth;
+        /**
+         * Instantiates a new PBRMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        getClassName(): string;
+        useLogarithmicDepth: boolean;
+        /**
+         * Gets the current transparency mode.
+         */
+        /**
+         * Sets the transparency mode of the material.
+         */
+        transparencyMode: Nullable<number>;
+        /**
+         * Returns true if alpha blending should be disabled.
+         */
+        private readonly _disableAlphaBlending;
+        /**
+         * Specifies whether or not this material should be rendered in alpha blend mode.
+         */
+        needAlphaBlending(): boolean;
+        /**
+         * Specifies whether or not this material should be rendered in alpha blend mode for the given mesh.
+         */
+        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Specifies whether or not this material should be rendered in alpha test mode.
+         */
+        needAlphaTesting(): boolean;
+        /**
+         * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
+         */
+        protected _shouldUseAlphaFromAlbedoTexture(): boolean;
+        getAlphaTestTexture(): BaseTexture;
+        private static _scaledReflectivity;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        buildUniformLayout(): void;
+        unbind(): void;
+        bindOnlyWorldMatrix(world: Matrix): void;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
+        getAnimatables(): IAnimatable[];
+        private _getReflectionTexture();
+        private _getRefractionTexture();
+        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The Physically based simple base material of BJS.
+     *
+     * This enables better naming and convention enforcements on top of the pbrMaterial.
+     * It is used as the base class for both the specGloss and metalRough conventions.
+     */
+    abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        maxSimultaneousLights: number;
+        /**
+         * If sets to true, disables all the lights affecting the material.
+         */
+        disableLighting: boolean;
+        /**
+         * Environment Texture used in the material (this is use for both reflection and environment lighting).
+         */
+        environmentTexture: BaseTexture;
+        /**
+         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
+         */
+        invertNormalMapX: boolean;
+        /**
+         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+         */
+        invertNormalMapY: boolean;
+        /**
+         * Normal map used in the model.
+         */
+        normalTexture: BaseTexture;
+        /**
+         * Emissivie color used to self-illuminate the model.
+         */
+        emissiveColor: Color3;
+        /**
+         * Emissivie texture used to self-illuminate the model.
+         */
+        emissiveTexture: BaseTexture;
+        /**
+         * Occlusion Channel Strenght.
+         */
+        occlusionStrength: number;
+        /**
+         * Occlusion Texture of the material (adding extra occlusion effects).
+         */
+        occlusionTexture: BaseTexture;
+        /**
+         * Defines the alpha limits in alpha test mode.
+         */
+        alphaCutOff: number;
+        /**
+         * Gets the current double sided mode.
+         */
+        /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        doubleSided: boolean;
+        lightmapTexture: BaseTexture;
+        useLightmapAsShadowmap: boolean;
+        /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
+        /**
+         * Instantiates a new PBRMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        getClassName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The Physically based material of BJS.
+     *
+     * This offers the main features of a standard PBR material.
+     * For more information, please refer to the documentation :
+     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
+     */
+    class PBRMaterial extends PBRBaseMaterial {
+        private static _PBRMATERIAL_OPAQUE;
+        /**
+         * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+         */
+        static readonly PBRMATERIAL_OPAQUE: number;
+        private static _PBRMATERIAL_ALPHATEST;
+        /**
+         * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
+        static readonly PBRMATERIAL_ALPHATEST: number;
+        private static _PBRMATERIAL_ALPHABLEND;
+        /**
+         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
+        static readonly PBRMATERIAL_ALPHABLEND: number;
+        private static _PBRMATERIAL_ALPHATESTANDBLEND;
+        /**
+         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
+        static readonly PBRMATERIAL_ALPHATESTANDBLEND: number;
+        /**
+         * Intensity of the direct lights e.g. the four lights available in your scene.
+         * This impacts both the direct diffuse and specular highlights.
+         */
+        directIntensity: number;
+        /**
+         * Intensity of the emissive part of the material.
+         * This helps controlling the emissive effect without modifying the emissive color.
+         */
+        emissiveIntensity: number;
+        /**
+         * Intensity of the environment e.g. how much the environment will light the object
+         * either through harmonics for rough material or through the refelction for shiny ones.
+         */
+        environmentIntensity: number;
+        /**
+         * This is a special control allowing the reduction of the specular highlights coming from the
+         * four lights of the scene. Those highlights may not be needed in full environment lighting.
+         */
+        specularIntensity: number;
+        /**
+         * Debug Control allowing disabling the bump map on this material.
+         */
+        disableBumpMap: boolean;
+        /**
+         * AKA Diffuse Texture in standard nomenclature.
+         */
+        albedoTexture: BaseTexture;
+        /**
+         * AKA Occlusion Texture in other nomenclature.
+         */
+        ambientTexture: BaseTexture;
+        /**
+         * AKA Occlusion Texture Intensity in other nomenclature.
+         */
+        ambientTextureStrength: number;
+        opacityTexture: BaseTexture;
+        reflectionTexture: Nullable<BaseTexture>;
+        emissiveTexture: BaseTexture;
+        /**
+         * AKA Specular texture in other nomenclature.
+         */
+        reflectivityTexture: BaseTexture;
+        /**
+         * Used to switch from specular/glossiness to metallic/roughness workflow.
+         */
+        metallicTexture: BaseTexture;
+        /**
+         * Specifies the metallic scalar of the metallic/roughness workflow.
+         * Can also be used to scale the metalness values of the metallic texture.
+         */
+        metallic: number;
+        /**
+         * Specifies the roughness scalar of the metallic/roughness workflow.
+         * Can also be used to scale the roughness values of the metallic texture.
+         */
+        roughness: number;
+        /**
+         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
+         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
+         */
+        microSurfaceTexture: BaseTexture;
+        bumpTexture: BaseTexture;
+        lightmapTexture: BaseTexture;
+        refractionTexture: BaseTexture;
+        ambientColor: Color3;
+        /**
+         * AKA Diffuse Color in other nomenclature.
+         */
+        albedoColor: Color3;
+        /**
+         * AKA Specular Color in other nomenclature.
+         */
+        reflectivityColor: Color3;
+        reflectionColor: Color3;
+        emissiveColor: Color3;
+        /**
+         * AKA Glossiness in other nomenclature.
+         */
+        microSurface: number;
+        /**
+         * source material index of refraction (IOR)' / 'destination material IOR.
+         */
+        indexOfRefraction: number;
+        /**
+         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
+         */
+        invertRefractionY: boolean;
+        /**
+         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
+         * Materials half opaque for instance using refraction could benefit from this control.
+         */
+        linkRefractionWithTransparency: boolean;
+        useLightmapAsShadowmap: boolean;
+        /**
+         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
+         */
+        useAlphaFromAlbedoTexture: boolean;
+        /**
+         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+         */
+        forceAlphaTest: boolean;
+        /**
+         * Defines the alpha limits in alpha test mode.
+         */
+        alphaCutOff: number;
+        /**
+         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
+         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
+         */
+        useSpecularOverAlpha: boolean;
+        /**
+         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
+         */
+        useMicroSurfaceFromReflectivityMapAlpha: boolean;
+        /**
+         * Specifies if the metallic texture contains the roughness information in its alpha channel.
+         */
+        useRoughnessFromMetallicTextureAlpha: boolean;
+        /**
+         * Specifies if the metallic texture contains the roughness information in its green channel.
+         */
+        useRoughnessFromMetallicTextureGreen: boolean;
+        /**
+         * Specifies if the metallic texture contains the metallness information in its blue channel.
+         */
+        useMetallnessFromMetallicTextureBlue: boolean;
+        /**
+         * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
+         */
+        useAmbientOcclusionFromMetallicTextureRed: boolean;
+        /**
+         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
+         */
+        useAmbientInGrayScale: boolean;
+        /**
+         * In case the reflectivity map does not contain the microsurface information in its alpha channel,
+         * The material will try to infer what glossiness each pixel should be.
+         */
+        useAutoMicroSurfaceFromReflectivityMap: boolean;
+        /**
+         * BJS is using an harcoded light falloff based on a manually sets up range.
+         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
+         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
+         */
+        usePhysicalLightFalloff: boolean;
+        /**
+         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
+         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
+         */
+        useRadianceOverAlpha: boolean;
+        /**
+         * Allows using the bump map in parallax mode.
+         */
+        useParallax: boolean;
+        /**
+         * Allows using the bump map in parallax occlusion mode.
+         */
+        useParallaxOcclusion: boolean;
+        /**
+         * Controls the scale bias of the parallax mode.
+         */
+        parallaxScaleBias: number;
+        /**
+         * If sets to true, disables all the lights affecting the material.
+         */
+        disableLighting: boolean;
+        /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        forceIrradianceInFragment: boolean;
+        /**
+         * Number of Simultaneous lights allowed on the material.
+         */
+        maxSimultaneousLights: number;
+        /**
+         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
+         */
+        invertNormalMapX: boolean;
+        /**
+         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
+         */
+        invertNormalMapY: boolean;
+        /**
+         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
+         */
+        twoSidedLighting: boolean;
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
+         */
+        useAlphaFresnel: boolean;
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         */
+        useLinearAlphaFresnel: boolean;
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part.
+         */
+        environmentBRDFTexture: Nullable<BaseTexture>;
+        /**
+         * Force normal to face away from face.
+         */
+        forceNormalForward: boolean;
+        /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        useHorizonOcclusion: boolean;
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        useRadianceOcclusion: boolean;
+        /**
+         * Gets the image processing configuration used either in this material.
+         */
+        /**
+         * Sets the Default image processing configuration used either in the this material.
+         *
+         * If sets to null, the scene one is in use.
+         */
+        imageProcessingConfiguration: ImageProcessingConfiguration;
+        /**
+         * Gets wether the color curves effect is enabled.
+         */
+        /**
+         * Sets wether the color curves effect is enabled.
+         */
+        cameraColorCurvesEnabled: boolean;
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        /**
+         * Gets wether the color grading effect is enabled.
+         */
+        cameraColorGradingEnabled: boolean;
+        /**
+         * Gets wether tonemapping is enabled or not.
+         */
+        /**
+         * Sets wether tonemapping is enabled or not
+         */
+        cameraToneMappingEnabled: boolean;
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        /**
+         * The camera exposure used on this material.
+         * This property is here and not in the camera to allow controlling exposure without full screen post process.
+         * This corresponds to a photographic exposure.
+         */
+        cameraExposure: number;
+        /**
+         * Gets The camera contrast used on this material.
+         */
+        /**
+         * Sets The camera contrast used on this material.
+         */
+        cameraContrast: number;
+        /**
+         * Gets the Color Grading 2D Lookup Texture.
+         */
+        /**
+         * Sets the Color Grading 2D Lookup Texture.
+         */
+        cameraColorGradingTexture: Nullable<BaseTexture>;
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        cameraColorCurves: Nullable<ColorCurves>;
+        /**
+         * Instantiates a new PBRMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        getClassName(): string;
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
+        clone(name: string): PBRMaterial;
+        serialize(): any;
+        static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The PBR material of BJS following the metal roughness convention.
+     *
+     * This fits to the PBR convention in the GLTF definition:
+     * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
+     */
+    class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
+        /**
+         * The base color has two different interpretations depending on the value of metalness.
+         * When the material is a metal, the base color is the specific measured reflectance value
+         * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color
+         * of the material.
+         */
+        baseColor: Color3;
+        /**
+         * Base texture of the metallic workflow. It contains both the baseColor information in RGB as
+         * well as opacity information in the alpha channel.
+         */
+        baseTexture: BaseTexture;
+        /**
+         * Specifies the metallic scalar value of the material.
+         * Can also be used to scale the metalness values of the metallic texture.
+         */
+        metallic: number;
+        /**
+         * Specifies the roughness scalar value of the material.
+         * Can also be used to scale the roughness values of the metallic texture.
+         */
+        roughness: number;
+        /**
+         * Texture containing both the metallic value in the B channel and the
+         * roughness value in the G channel to keep better precision.
+         */
+        metallicRoughnessTexture: BaseTexture;
+        /**
+         * Instantiates a new PBRMetalRoughnessMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        /**
+         * Return the currrent class name of the material.
+         */
+        getClassName(): string;
+        /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
+        clone(name: string): PBRMetallicRoughnessMaterial;
+        /**
+         * Serialize the material to a parsable JSON object.
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object correponding to the serialize function.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The PBR material of BJS following the specular glossiness convention.
+     *
+     * This fits to the PBR convention in the GLTF definition:
+     * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
+     */
+    class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
+        /**
+         * Specifies the diffuse color of the material.
+         */
+        diffuseColor: Color3;
+        /**
+         * Specifies the diffuse texture of the material. This can also contains the opcity value in its alpha
+         * channel.
+         */
+        diffuseTexture: BaseTexture;
+        /**
+         * Specifies the specular color of the material. This indicates how reflective is the material (none to mirror).
+         */
+        specularColor: Color3;
+        /**
+         * Specifies the glossiness of the material. This indicates "how sharp is the reflection".
+         */
+        glossiness: number;
+        /**
+         * Specifies both the specular color RGB and the glossiness A of the material per pixels.
+         */
+        specularGlossinessTexture: BaseTexture;
+        /**
+         * Instantiates a new PBRSpecularGlossinessMaterial instance.
+         *
+         * @param name The material name
+         * @param scene The scene the material will be use in.
+         */
+        constructor(name: string, scene: Scene);
+        /**
+         * Return the currrent class name of the material.
+         */
+        getClassName(): string;
+        /**
+         * Return the active textures of the material.
+         */
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
+        clone(name: string): PBRSpecularGlossinessMaterial;
+        /**
+         * Serialize the material to a parsable JSON object.
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object correponding to the serialize function.
+         */
+        static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial;
+    }
+}
+
+declare module BABYLON {
     class BaseTexture {
         static DEFAULT_ANISOTROPIC_FILTERING_LEVEL: number;
         name: string;
@@ -23982,834 +24818,6 @@ declare module BABYLON {
             maxHeight: number;
             deviceId: string;
         }): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The Physically based material base class of BJS.
-     *
-     * This offers the main features of a standard PBR material.
-     * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
-     */
-    abstract class PBRBaseMaterial extends PushMaterial {
-        /**
-         * Intensity of the direct lights e.g. the four lights available in your scene.
-         * This impacts both the direct diffuse and specular highlights.
-         */
-        protected _directIntensity: number;
-        /**
-         * Intensity of the emissive part of the material.
-         * This helps controlling the emissive effect without modifying the emissive color.
-         */
-        protected _emissiveIntensity: number;
-        /**
-         * Intensity of the environment e.g. how much the environment will light the object
-         * either through harmonics for rough material or through the refelction for shiny ones.
-         */
-        protected _environmentIntensity: number;
-        /**
-         * This is a special control allowing the reduction of the specular highlights coming from the
-         * four lights of the scene. Those highlights may not be needed in full environment lighting.
-         */
-        protected _specularIntensity: number;
-        private _lightingInfos;
-        /**
-         * Debug Control allowing disabling the bump map on this material.
-         */
-        protected _disableBumpMap: boolean;
-        /**
-         * AKA Diffuse Texture in standard nomenclature.
-         */
-        protected _albedoTexture: BaseTexture;
-        /**
-         * AKA Occlusion Texture in other nomenclature.
-         */
-        protected _ambientTexture: BaseTexture;
-        /**
-         * AKA Occlusion Texture Intensity in other nomenclature.
-         */
-        protected _ambientTextureStrength: number;
-        protected _opacityTexture: BaseTexture;
-        protected _reflectionTexture: BaseTexture;
-        protected _refractionTexture: BaseTexture;
-        protected _emissiveTexture: BaseTexture;
-        /**
-         * AKA Specular texture in other nomenclature.
-         */
-        protected _reflectivityTexture: BaseTexture;
-        /**
-         * Used to switch from specular/glossiness to metallic/roughness workflow.
-         */
-        protected _metallicTexture: BaseTexture;
-        /**
-         * Specifies the metallic scalar of the metallic/roughness workflow.
-         * Can also be used to scale the metalness values of the metallic texture.
-         */
-        protected _metallic: number;
-        /**
-         * Specifies the roughness scalar of the metallic/roughness workflow.
-         * Can also be used to scale the roughness values of the metallic texture.
-         */
-        protected _roughness: number;
-        /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
-         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-         */
-        protected _microSurfaceTexture: BaseTexture;
-        protected _bumpTexture: BaseTexture;
-        protected _lightmapTexture: BaseTexture;
-        protected _ambientColor: Color3;
-        /**
-         * AKA Diffuse Color in other nomenclature.
-         */
-        protected _albedoColor: Color3;
-        /**
-         * AKA Specular Color in other nomenclature.
-         */
-        protected _reflectivityColor: Color3;
-        protected _reflectionColor: Color3;
-        protected _emissiveColor: Color3;
-        /**
-         * AKA Glossiness in other nomenclature.
-         */
-        protected _microSurface: number;
-        /**
-         * source material index of refraction (IOR)' / 'destination material IOR.
-         */
-        protected _indexOfRefraction: number;
-        /**
-         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
-         */
-        protected _invertRefractionY: boolean;
-        /**
-         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
-         * Materials half opaque for instance using refraction could benefit from this control.
-         */
-        protected _linkRefractionWithTransparency: boolean;
-        protected _useLightmapAsShadowmap: boolean;
-        /**
-         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
-         * makes the reflect vector face the model (under horizon).
-         */
-        protected _useHorizonOcclusion: boolean;
-        /**
-         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
-         * too much the area relying on ambient texture to define their ambient occlusion.
-         */
-        protected _useRadianceOcclusion: boolean;
-        /**
-         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
-         */
-        protected _useAlphaFromAlbedoTexture: boolean;
-        /**
-         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
-         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
-         */
-        protected _useSpecularOverAlpha: boolean;
-        /**
-         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-         */
-        protected _useMicroSurfaceFromReflectivityMapAlpha: boolean;
-        /**
-         * Specifies if the metallic texture contains the roughness information in its alpha channel.
-         */
-        protected _useRoughnessFromMetallicTextureAlpha: boolean;
-        /**
-         * Specifies if the metallic texture contains the roughness information in its green channel.
-         */
-        protected _useRoughnessFromMetallicTextureGreen: boolean;
-        /**
-         * Specifies if the metallic texture contains the metallness information in its blue channel.
-         */
-        protected _useMetallnessFromMetallicTextureBlue: boolean;
-        /**
-         * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
-         */
-        protected _useAmbientOcclusionFromMetallicTextureRed: boolean;
-        /**
-         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
-         */
-        protected _useAmbientInGrayScale: boolean;
-        /**
-         * In case the reflectivity map does not contain the microsurface information in its alpha channel,
-         * The material will try to infer what glossiness each pixel should be.
-         */
-        protected _useAutoMicroSurfaceFromReflectivityMap: boolean;
-        /**
-         * BJS is using an harcoded light falloff based on a manually sets up range.
-         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
-         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
-         */
-        protected _usePhysicalLightFalloff: boolean;
-        /**
-         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
-         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
-         */
-        protected _useRadianceOverAlpha: boolean;
-        /**
-         * Allows using the bump map in parallax mode.
-         */
-        protected _useParallax: boolean;
-        /**
-         * Allows using the bump map in parallax occlusion mode.
-         */
-        protected _useParallaxOcclusion: boolean;
-        /**
-         * Controls the scale bias of the parallax mode.
-         */
-        protected _parallaxScaleBias: number;
-        /**
-         * If sets to true, disables all the lights affecting the material.
-         */
-        protected _disableLighting: boolean;
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        protected _maxSimultaneousLights: number;
-        /**
-         * If sets to true, x component of normal map value will be inverted (x = 1.0 - x).
-         */
-        protected _invertNormalMapX: boolean;
-        /**
-         * If sets to true, y component of normal map value will be inverted (y = 1.0 - y).
-         */
-        protected _invertNormalMapY: boolean;
-        /**
-         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
-         */
-        protected _twoSidedLighting: boolean;
-        /**
-         * Defines the alpha limits in alpha test mode.
-         */
-        protected _alphaCutOff: number;
-        /**
-         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
-         */
-        protected _forceAlphaTest: boolean;
-        /**
-         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
-         */
-        protected _useAlphaFresnel: boolean;
-        /**
-         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
-         */
-        protected _useLinearAlphaFresnel: boolean;
-        /**
-         * The transparency mode of the material.
-         */
-        protected _transparencyMode: Nullable<number>;
-        /**
-         * Specifies the environment BRDF texture used to comput the scale and offset roughness values
-         * from cos thetav and roughness:
-         * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-         */
-        protected _environmentBRDFTexture: Nullable<BaseTexture>;
-        /**
-         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
-         */
-        protected _forceIrradianceInFragment: boolean;
-        /**
-         * Force normal to face away from face.
-         */
-        protected _forceNormalForward: boolean;
-        /**
-         * Force metallic workflow.
-         */
-        protected _forceMetallicWorkflow: boolean;
-        /**
-         * Default configuration related to image processing available in the PBR Material.
-         */
-        protected _imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Keep track of the image processing observer to allow dispose and replace.
-         */
-        private _imageProcessingObserver;
-        /**
-         * Attaches a new image processing configuration to the PBR Material.
-         * @param configuration
-         */
-        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void;
-        private _renderTargets;
-        private _globalAmbientColor;
-        private _useLogarithmicDepth;
-        /**
-         * Instantiates a new PBRMaterial instance.
-         *
-         * @param name The material name
-         * @param scene The scene the material will be use in.
-         */
-        constructor(name: string, scene: Scene);
-        getClassName(): string;
-        useLogarithmicDepth: boolean;
-        /**
-         * Gets the current transparency mode.
-         */
-        /**
-         * Sets the transparency mode of the material.
-         */
-        transparencyMode: Nullable<number>;
-        /**
-         * Returns true if alpha blending should be disabled.
-         */
-        private readonly _disableAlphaBlending;
-        /**
-         * Specifies whether or not this material should be rendered in alpha blend mode.
-         */
-        needAlphaBlending(): boolean;
-        /**
-         * Specifies whether or not this material should be rendered in alpha blend mode for the given mesh.
-         */
-        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Specifies whether or not this material should be rendered in alpha test mode.
-         */
-        needAlphaTesting(): boolean;
-        /**
-         * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
-         */
-        protected _shouldUseAlphaFromAlbedoTexture(): boolean;
-        getAlphaTestTexture(): BaseTexture;
-        private static _scaledReflectivity;
-        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
-        buildUniformLayout(): void;
-        unbind(): void;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
-        getAnimatables(): IAnimatable[];
-        private _getReflectionTexture();
-        private _getRefractionTexture();
-        dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The Physically based simple base material of BJS.
-     *
-     * This enables better naming and convention enforcements on top of the pbrMaterial.
-     * It is used as the base class for both the specGloss and metalRough conventions.
-     */
-    abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        maxSimultaneousLights: number;
-        /**
-         * If sets to true, disables all the lights affecting the material.
-         */
-        disableLighting: boolean;
-        /**
-         * Environment Texture used in the material (this is use for both reflection and environment lighting).
-         */
-        environmentTexture: BaseTexture;
-        /**
-         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
-         */
-        invertNormalMapX: boolean;
-        /**
-         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
-         */
-        invertNormalMapY: boolean;
-        /**
-         * Normal map used in the model.
-         */
-        normalTexture: BaseTexture;
-        /**
-         * Emissivie color used to self-illuminate the model.
-         */
-        emissiveColor: Color3;
-        /**
-         * Emissivie texture used to self-illuminate the model.
-         */
-        emissiveTexture: BaseTexture;
-        /**
-         * Occlusion Channel Strenght.
-         */
-        occlusionStrength: number;
-        /**
-         * Occlusion Texture of the material (adding extra occlusion effects).
-         */
-        occlusionTexture: BaseTexture;
-        /**
-         * Defines the alpha limits in alpha test mode.
-         */
-        alphaCutOff: number;
-        /**
-         * Gets the current double sided mode.
-         */
-        /**
-         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
-         */
-        doubleSided: boolean;
-        lightmapTexture: BaseTexture;
-        useLightmapAsShadowmap: boolean;
-        /**
-         * Return the active textures of the material.
-         */
-        getActiveTextures(): BaseTexture[];
-        hasTexture(texture: BaseTexture): boolean;
-        /**
-         * Instantiates a new PBRMaterial instance.
-         *
-         * @param name The material name
-         * @param scene The scene the material will be use in.
-         */
-        constructor(name: string, scene: Scene);
-        getClassName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The Physically based material of BJS.
-     *
-     * This offers the main features of a standard PBR material.
-     * For more information, please refer to the documentation :
-     * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
-     */
-    class PBRMaterial extends PBRBaseMaterial {
-        private static _PBRMATERIAL_OPAQUE;
-        /**
-         * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
-         */
-        static readonly PBRMATERIAL_OPAQUE: number;
-        private static _PBRMATERIAL_ALPHATEST;
-        /**
-         * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
-         */
-        static readonly PBRMATERIAL_ALPHATEST: number;
-        private static _PBRMATERIAL_ALPHABLEND;
-        /**
-         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         */
-        static readonly PBRMATERIAL_ALPHABLEND: number;
-        private static _PBRMATERIAL_ALPHATESTANDBLEND;
-        /**
-         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         * They are also discarded below the alpha cutoff threshold to improve performances.
-         */
-        static readonly PBRMATERIAL_ALPHATESTANDBLEND: number;
-        /**
-         * Intensity of the direct lights e.g. the four lights available in your scene.
-         * This impacts both the direct diffuse and specular highlights.
-         */
-        directIntensity: number;
-        /**
-         * Intensity of the emissive part of the material.
-         * This helps controlling the emissive effect without modifying the emissive color.
-         */
-        emissiveIntensity: number;
-        /**
-         * Intensity of the environment e.g. how much the environment will light the object
-         * either through harmonics for rough material or through the refelction for shiny ones.
-         */
-        environmentIntensity: number;
-        /**
-         * This is a special control allowing the reduction of the specular highlights coming from the
-         * four lights of the scene. Those highlights may not be needed in full environment lighting.
-         */
-        specularIntensity: number;
-        /**
-         * Debug Control allowing disabling the bump map on this material.
-         */
-        disableBumpMap: boolean;
-        /**
-         * AKA Diffuse Texture in standard nomenclature.
-         */
-        albedoTexture: BaseTexture;
-        /**
-         * AKA Occlusion Texture in other nomenclature.
-         */
-        ambientTexture: BaseTexture;
-        /**
-         * AKA Occlusion Texture Intensity in other nomenclature.
-         */
-        ambientTextureStrength: number;
-        opacityTexture: BaseTexture;
-        reflectionTexture: Nullable<BaseTexture>;
-        emissiveTexture: BaseTexture;
-        /**
-         * AKA Specular texture in other nomenclature.
-         */
-        reflectivityTexture: BaseTexture;
-        /**
-         * Used to switch from specular/glossiness to metallic/roughness workflow.
-         */
-        metallicTexture: BaseTexture;
-        /**
-         * Specifies the metallic scalar of the metallic/roughness workflow.
-         * Can also be used to scale the metalness values of the metallic texture.
-         */
-        metallic: number;
-        /**
-         * Specifies the roughness scalar of the metallic/roughness workflow.
-         * Can also be used to scale the roughness values of the metallic texture.
-         */
-        roughness: number;
-        /**
-         * Used to enable roughness/glossiness fetch from a separate chanel depending on the current mode.
-         * Gray Scale represents roughness in metallic mode and glossiness in specular mode.
-         */
-        microSurfaceTexture: BaseTexture;
-        bumpTexture: BaseTexture;
-        lightmapTexture: BaseTexture;
-        refractionTexture: BaseTexture;
-        ambientColor: Color3;
-        /**
-         * AKA Diffuse Color in other nomenclature.
-         */
-        albedoColor: Color3;
-        /**
-         * AKA Specular Color in other nomenclature.
-         */
-        reflectivityColor: Color3;
-        reflectionColor: Color3;
-        emissiveColor: Color3;
-        /**
-         * AKA Glossiness in other nomenclature.
-         */
-        microSurface: number;
-        /**
-         * source material index of refraction (IOR)' / 'destination material IOR.
-         */
-        indexOfRefraction: number;
-        /**
-         * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
-         */
-        invertRefractionY: boolean;
-        /**
-         * This parameters will make the material used its opacity to control how much it is refracting aginst not.
-         * Materials half opaque for instance using refraction could benefit from this control.
-         */
-        linkRefractionWithTransparency: boolean;
-        useLightmapAsShadowmap: boolean;
-        /**
-         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
-         */
-        useAlphaFromAlbedoTexture: boolean;
-        /**
-         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
-         */
-        forceAlphaTest: boolean;
-        /**
-         * Defines the alpha limits in alpha test mode.
-         */
-        alphaCutOff: number;
-        /**
-         * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
-         * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
-         */
-        useSpecularOverAlpha: boolean;
-        /**
-         * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
-         */
-        useMicroSurfaceFromReflectivityMapAlpha: boolean;
-        /**
-         * Specifies if the metallic texture contains the roughness information in its alpha channel.
-         */
-        useRoughnessFromMetallicTextureAlpha: boolean;
-        /**
-         * Specifies if the metallic texture contains the roughness information in its green channel.
-         */
-        useRoughnessFromMetallicTextureGreen: boolean;
-        /**
-         * Specifies if the metallic texture contains the metallness information in its blue channel.
-         */
-        useMetallnessFromMetallicTextureBlue: boolean;
-        /**
-         * Specifies if the metallic texture contains the ambient occlusion information in its red channel.
-         */
-        useAmbientOcclusionFromMetallicTextureRed: boolean;
-        /**
-         * Specifies if the ambient texture contains the ambient occlusion information in its red channel only.
-         */
-        useAmbientInGrayScale: boolean;
-        /**
-         * In case the reflectivity map does not contain the microsurface information in its alpha channel,
-         * The material will try to infer what glossiness each pixel should be.
-         */
-        useAutoMicroSurfaceFromReflectivityMap: boolean;
-        /**
-         * BJS is using an harcoded light falloff based on a manually sets up range.
-         * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
-         * This parameter can help you switch back to the BJS mode in order to create scenes using both materials.
-         */
-        usePhysicalLightFalloff: boolean;
-        /**
-         * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
-         * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
-         */
-        useRadianceOverAlpha: boolean;
-        /**
-         * Allows using the bump map in parallax mode.
-         */
-        useParallax: boolean;
-        /**
-         * Allows using the bump map in parallax occlusion mode.
-         */
-        useParallaxOcclusion: boolean;
-        /**
-         * Controls the scale bias of the parallax mode.
-         */
-        parallaxScaleBias: number;
-        /**
-         * If sets to true, disables all the lights affecting the material.
-         */
-        disableLighting: boolean;
-        /**
-         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
-         */
-        forceIrradianceInFragment: boolean;
-        /**
-         * Number of Simultaneous lights allowed on the material.
-         */
-        maxSimultaneousLights: number;
-        /**
-         * If sets to true, x component of normal map value will invert (x = 1.0 - x).
-         */
-        invertNormalMapX: boolean;
-        /**
-         * If sets to true, y component of normal map value will invert (y = 1.0 - y).
-         */
-        invertNormalMapY: boolean;
-        /**
-         * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
-         */
-        twoSidedLighting: boolean;
-        /**
-         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
-         */
-        useAlphaFresnel: boolean;
-        /**
-         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
-         */
-        useLinearAlphaFresnel: boolean;
-        /**
-         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part.
-         */
-        environmentBRDFTexture: Nullable<BaseTexture>;
-        /**
-         * Force normal to face away from face.
-         */
-        forceNormalForward: boolean;
-        /**
-         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
-         * makes the reflect vector face the model (under horizon).
-         */
-        useHorizonOcclusion: boolean;
-        /**
-         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
-         * too much the area relying on ambient texture to define their ambient occlusion.
-         */
-        useRadianceOcclusion: boolean;
-        /**
-         * Gets the image processing configuration used either in this material.
-         */
-        /**
-         * Sets the Default image processing configuration used either in the this material.
-         *
-         * If sets to null, the scene one is in use.
-         */
-        imageProcessingConfiguration: ImageProcessingConfiguration;
-        /**
-         * Gets wether the color curves effect is enabled.
-         */
-        /**
-         * Sets wether the color curves effect is enabled.
-         */
-        cameraColorCurvesEnabled: boolean;
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        /**
-         * Gets wether the color grading effect is enabled.
-         */
-        cameraColorGradingEnabled: boolean;
-        /**
-         * Gets wether tonemapping is enabled or not.
-         */
-        /**
-         * Sets wether tonemapping is enabled or not
-         */
-        cameraToneMappingEnabled: boolean;
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        /**
-         * The camera exposure used on this material.
-         * This property is here and not in the camera to allow controlling exposure without full screen post process.
-         * This corresponds to a photographic exposure.
-         */
-        cameraExposure: number;
-        /**
-         * Gets The camera contrast used on this material.
-         */
-        /**
-         * Sets The camera contrast used on this material.
-         */
-        cameraContrast: number;
-        /**
-         * Gets the Color Grading 2D Lookup Texture.
-         */
-        /**
-         * Sets the Color Grading 2D Lookup Texture.
-         */
-        cameraColorGradingTexture: Nullable<BaseTexture>;
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        /**
-         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
-         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
-         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
-         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
-         */
-        cameraColorCurves: Nullable<ColorCurves>;
-        /**
-         * Instantiates a new PBRMaterial instance.
-         *
-         * @param name The material name
-         * @param scene The scene the material will be use in.
-         */
-        constructor(name: string, scene: Scene);
-        getClassName(): string;
-        getActiveTextures(): BaseTexture[];
-        hasTexture(texture: BaseTexture): boolean;
-        clone(name: string): PBRMaterial;
-        serialize(): any;
-        static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The PBR material of BJS following the metal roughness convention.
-     *
-     * This fits to the PBR convention in the GLTF definition:
-     * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
-     */
-    class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
-        /**
-         * The base color has two different interpretations depending on the value of metalness.
-         * When the material is a metal, the base color is the specific measured reflectance value
-         * at normal incidence (F0). For a non-metal the base color represents the reflected diffuse color
-         * of the material.
-         */
-        baseColor: Color3;
-        /**
-         * Base texture of the metallic workflow. It contains both the baseColor information in RGB as
-         * well as opacity information in the alpha channel.
-         */
-        baseTexture: BaseTexture;
-        /**
-         * Specifies the metallic scalar value of the material.
-         * Can also be used to scale the metalness values of the metallic texture.
-         */
-        metallic: number;
-        /**
-         * Specifies the roughness scalar value of the material.
-         * Can also be used to scale the roughness values of the metallic texture.
-         */
-        roughness: number;
-        /**
-         * Texture containing both the metallic value in the B channel and the
-         * roughness value in the G channel to keep better precision.
-         */
-        metallicRoughnessTexture: BaseTexture;
-        /**
-         * Instantiates a new PBRMetalRoughnessMaterial instance.
-         *
-         * @param name The material name
-         * @param scene The scene the material will be use in.
-         */
-        constructor(name: string, scene: Scene);
-        /**
-         * Return the currrent class name of the material.
-         */
-        getClassName(): string;
-        /**
-         * Return the active textures of the material.
-         */
-        getActiveTextures(): BaseTexture[];
-        hasTexture(texture: BaseTexture): boolean;
-        clone(name: string): PBRMetallicRoughnessMaterial;
-        /**
-         * Serialize the material to a parsable JSON object.
-         */
-        serialize(): any;
-        /**
-         * Parses a JSON object correponding to the serialize function.
-         */
-        static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The PBR material of BJS following the specular glossiness convention.
-     *
-     * This fits to the PBR convention in the GLTF definition:
-     * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
-     */
-    class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
-        /**
-         * Specifies the diffuse color of the material.
-         */
-        diffuseColor: Color3;
-        /**
-         * Specifies the diffuse texture of the material. This can also contains the opcity value in its alpha
-         * channel.
-         */
-        diffuseTexture: BaseTexture;
-        /**
-         * Specifies the specular color of the material. This indicates how reflective is the material (none to mirror).
-         */
-        specularColor: Color3;
-        /**
-         * Specifies the glossiness of the material. This indicates "how sharp is the reflection".
-         */
-        glossiness: number;
-        /**
-         * Specifies both the specular color RGB and the glossiness A of the material per pixels.
-         */
-        specularGlossinessTexture: BaseTexture;
-        /**
-         * Instantiates a new PBRSpecularGlossinessMaterial instance.
-         *
-         * @param name The material name
-         * @param scene The scene the material will be use in.
-         */
-        constructor(name: string, scene: Scene);
-        /**
-         * Return the currrent class name of the material.
-         */
-        getClassName(): string;
-        /**
-         * Return the active textures of the material.
-         */
-        getActiveTextures(): BaseTexture[];
-        hasTexture(texture: BaseTexture): boolean;
-        clone(name: string): PBRSpecularGlossinessMaterial;
-        /**
-         * Serialize the material to a parsable JSON object.
-         */
-        serialize(): any;
-        /**
-         * Parses a JSON object correponding to the serialize function.
-         */
-        static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial;
     }
 }
 

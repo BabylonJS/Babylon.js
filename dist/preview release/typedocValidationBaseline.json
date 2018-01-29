@@ -1,7 +1,7 @@
 {
-  "errors": 8179,
+  "errors": 8172,
   "babylon.typedoc.json": {
-    "errors": 8179,
+    "errors": 8172,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -22184,33 +22184,6 @@
             }
           }
         },
-        "beginAnimation": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loop": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onAnimationEnd": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "computeWorldMatrix": {
           "Comments": {
             "MissingText": true
@@ -37211,18 +37184,6 @@
           },
           "Parameter": {
             "path": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "GetFolderPath": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "uri": {
               "Comments": {
                 "MissingText": true
               }
