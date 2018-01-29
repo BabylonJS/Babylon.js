@@ -1,4 +1,4 @@
-/// <reference path="../../../../dist/babylon.glTFInterface.d.ts"/>
+/// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
@@ -78,6 +78,7 @@ module BABYLON.GLTF2 {
             this.nodes = new Array<INode>();
             this.images = new Array<IImage>();
             this.materials = new Array<IMaterial>();
+            this.textures = new Array<ITexture>();
             this.imageData = {};
             if (options !== undefined) {
                 this.options = options;
@@ -85,25 +86,30 @@ module BABYLON.GLTF2 {
 
             let totalByteLength = 0;
 
-            totalByteLength = this.createScene(this.babylonScene, totalByteLength);
+            totalByteLength = this.createScene(this.babylonScene, totalByteLength, null);
 
             this.totalByteLength = totalByteLength;
         }
 
         /**
          * Creates a buffer view based on teh supplied arguments
-         * @param {number} bufferIndex - index value of the specified buffer
-         * @param {number} byteOffset - byte offset value
-         * @param {number} byteLength - byte length of the bufferView
+         * @param bufferIndex - index value of the specified buffer
+         * @param byteOffset - byte offset value
+         * @param byteLength - byte length of the bufferView
+         * @param byteStride - byte distance between conequential elements.
+         * @param name - name of the buffer view
          * @returns - bufferView for glTF
          */
-        private createBufferView(bufferIndex: number, byteOffset: number, byteLength: number, name?: string): IBufferView {
+        private createBufferView(bufferIndex: number, byteOffset: number, byteLength: number, byteStride?: number, name?: string): IBufferView {
             let bufferview: IBufferView = { buffer: bufferIndex, byteLength: byteLength };
             if (byteOffset > 0) {
                 bufferview.byteOffset = byteOffset;
             }
             if (name) {
                 bufferview.name = name;
+            }
+            if (byteStride) {
+                bufferview.byteStride = byteStride;
             }
 
             return bufferview;
@@ -120,7 +126,7 @@ module BABYLON.GLTF2 {
          * @param max 
          * @returns - accessor for glTF 
          */
-        private createAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, min?: number[], max?: number[]): IAccessor {
+        private createAccessor(bufferviewIndex: number, name: string, type: AccessorType, componentType: AccessorComponentType, count: number, byteOffset?: number, min?: number[], max?: number[]): IAccessor {
             let accessor: IAccessor = { name: name, bufferView: bufferviewIndex, componentType: componentType, count: count, type: type };
 
             if (min) {
@@ -129,32 +135,41 @@ module BABYLON.GLTF2 {
             if (max) {
                 accessor.max = max;
             }
+            if (byteOffset) {
+                accessor.byteOffset = byteOffset;
+            }
 
             return accessor;
         }
 
         /**
          * Calculates the minimum and maximum values of an array of floats, based on stride
-         * @param buff 
-         * @param vertexStart 
-         * @param vertexCount 
-         * @param arrayOffset 
-         * @param stride 
-         * @returns - min number array and max number array
+         * @param buff - Data to check for min and max values.
+         * @param vertexStart - Start offset to calculate min and max values.
+         * @param vertexCount - Number of vertices to check for min and max values.
+         * @param stride - Offset between consecutive attributes.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system.
+         * @returns - min number array and max number array.
          */
-        private calculateMinMax(buff: FloatArray, vertexStart: number, vertexCount: number, arrayOffset: number, stride: number): { min: number[], max: number[] } {
+        private calculateMinMax(buff: FloatArray, vertexStart: number, vertexCount: number, stride: number, useRightHandedSystem: boolean): { min: number[], max: number[] } {
             let min = [Infinity, Infinity, Infinity];
             let max = [-Infinity, -Infinity, -Infinity];
             let end = vertexStart + vertexCount;
             if (vertexCount > 0) {
                 for (let i = vertexStart; i < end; ++i) {
                     let index = stride * i;
+                    let scale = 1;
+
                     for (let j = 0; j < stride; ++j) {
-                        if (buff[index] < min[j]) {
-                            min[j] = buff[index];
+                        if (j === (stride - 1) && !useRightHandedSystem) {
+                            scale = -1;
                         }
-                        if (buff[index] > max[j]) {
-                            max[j] = buff[index];
+                        let num = scale * buff[index];
+                        if (num < min[j]) {
+                            min[j] = num;
+                        }
+                        if (num > max[j]) {
+                            max[j] = num;
                         }
                         ++index;
                     }
@@ -164,30 +179,34 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Write mesh attribute data to buffer.
+         * Writes mesh attribute data to a data buffer.
          * Returns the bytelength of the data.
-         * @param vertexBufferType 
-         * @param submesh 
-         * @param meshAttributeArray 
-         * @param strideSize 
-         * @param byteOffset 
-         * @param dataBuffer 
-         * @param useRightHandedSystem 
-         * @returns - byte length
+         * @param vertexBufferKind - Indicates what kind of vertex data is being passed in.
+         * @param meshAttributeArray - Array containing the attribute data. 
+         * @param strideSize - Represents the offset between consecutive attributes
+         * @param byteOffset - The offset to start counting bytes from.
+         * @param dataBuffer - The buffer to write the binary data to.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system. 
+         * @returns - Byte length of the attribute data.
          */
-        private writeAttributeData(vertexBufferType: string, submesh: SubMesh, meshAttributeArray: FloatArray, strideSize: number, byteOffset: number, dataBuffer: DataView, useRightHandedSystem: boolean): number {
+        private writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, strideSize: number, vertexBufferOffset: number, byteOffset: number, dataBuffer: DataView, useRightHandedSystem: boolean): number {
             let byteOff = byteOffset;
-            const end = submesh.verticesStart + submesh.verticesCount;
+
+            const start = 0;
+            const end = meshAttributeArray.length / strideSize;
+
             let byteLength = 0;
 
-            switch (vertexBufferType) {
+            switch (vertexBufferKind) {
                 case VertexBuffer.PositionKind: {
-                    for (let k = submesh.verticesStart; k < end; ++k) {
+                    for (let k = start; k < end; ++k) {
                         const index = k * strideSize!;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index], true);
-                        byteOff += 4!;
+                        byteOff += 4;
+
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 1], true);
-                        byteOff += 4!;
+                        byteOff += 4;
+
                         if (useRightHandedSystem) {
                             dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 2], true);
                         }
@@ -195,18 +214,19 @@ module BABYLON.GLTF2 {
                             dataBuffer!.setFloat32(byteOff, -meshAttributeArray![index + 2], true);
                         }
 
-                        byteOff += 4!;
+                        byteOff += 4;
                     }
-                    byteLength = submesh.verticesCount * 12;
+
+                    byteLength = meshAttributeArray.length * 4;
                     break;
                 }
                 case VertexBuffer.NormalKind: {
-                    for (let k = submesh.verticesStart; k < end; ++k) {
+                    for (let k = start; k < end; ++k) {
                         const index = k * strideSize!;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 1], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         if (useRightHandedSystem) {
                             dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 2], true);
                         }
@@ -214,70 +234,70 @@ module BABYLON.GLTF2 {
                             dataBuffer!.setFloat32(byteOff, -meshAttributeArray![index + 2], true);
                         }
 
-                        byteOff += 4!;
+                        byteOff += 4;
                     }
-                    byteLength = submesh.verticesCount * 12;
+                    byteLength = meshAttributeArray.length * 4;
                     break;
                 }
                 case VertexBuffer.TangentKind: {
-                    for (let k = submesh.indexStart; k < end; ++k) {
+                    for (let k = start; k < end; ++k) {
                         const index = k * strideSize!;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 1], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         if (useRightHandedSystem) {
                             dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 2], true);
                         }
                         else {
                             dataBuffer!.setFloat32(byteOff, -meshAttributeArray![index + 2], true);
                         }
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 3], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                     }
-                    byteLength = submesh.verticesCount * 16;
+                    byteLength = meshAttributeArray.length * 4;
                     break;
                 }
                 case VertexBuffer.ColorKind: {
-                    for (let k = submesh.verticesStart; k < end; ++k) {
+                    for (let k = start; k < end; ++k) {
                         const index = k * strideSize!;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 1], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 2], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 3], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                     }
-                    byteLength = submesh.verticesCount * 16;
+                    byteLength = meshAttributeArray.length * 4;
                     break;
                 }
                 case VertexBuffer.UVKind: {
-                    for (let k = submesh.verticesStart; k < end; ++k) {
+                    for (let k = start; k < end; ++k) {
                         const index = k * strideSize!;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 1], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                     }
-                    byteLength = submesh.verticesCount * 8;
+                    byteLength = meshAttributeArray.length * 4;
                     break;
                 }
                 case VertexBuffer.UV2Kind: {
-                    for (let k = submesh.verticesStart; k < end; ++k) {
+                    for (let k = start; k < end; ++k) {
                         const index = k * strideSize!;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                         dataBuffer!.setFloat32(byteOff, meshAttributeArray![index + 1], true);
-                        byteOff += 4!;
+                        byteOff += 4;
                     }
-                    byteLength = submesh.verticesCount * 8;
+                    byteLength = meshAttributeArray.length * 4;
                     break;
                 }
                 default: {
-                    throw new Error("Unsupported vertex buffer type: " + vertexBufferType);
+                    throw new Error("Unsupported vertex buffer type: " + vertexBufferKind);
                 }
             }
 
@@ -286,12 +306,12 @@ module BABYLON.GLTF2 {
 
         /**
          * Generates glTF json data
-         * @param glb 
-         * @param glTFPrefix 
-         * @param prettyPrint 
+         * @param shouldUseGlb - Indicates whether the json should be written for a glb file.
+         * @param glTFPrefix - Text to use when prefixing a glTF file.
+         * @param prettyPrint - Indicates whether the json file should be pretty printed (true) or not (false).
          * @returns - json data as string
          */
-        private generateJSON(glb: boolean, glTFPrefix?: string, prettyPrint?: boolean): string {
+        private generateJSON(shouldUseGlb: boolean, glTFPrefix?: string, prettyPrint?: boolean): string {
             let buffer: IBuffer = { byteLength: this.totalByteLength };
 
             let glTF: IGLTF = {
@@ -323,7 +343,7 @@ module BABYLON.GLTF2 {
                 glTF.textures = this.textures;
             }
             if (this.images && this.images.length !== 0) {
-                if (!glb) {
+                if (!shouldUseGlb) {
                     glTF.images = this.images;
                 }
                 else {
@@ -336,7 +356,7 @@ module BABYLON.GLTF2 {
                         if (image.uri !== undefined) {
                             const imageData = this.imageData[image.uri];
                             const imageName = image.uri.split('.')[0] + " image";
-                            const bufferView = this.createBufferView(0, byteOffset, imageData.data.length, imageName);
+                            const bufferView = this.createBufferView(0, byteOffset, imageData.data.length, undefined, imageName);
                             byteOffset += imageData.data.buffer.byteLength;
                             this.bufferViews.push(bufferView);
                             image.bufferView = this.bufferViews.length - 1;
@@ -350,7 +370,7 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            if (!glb) {
+            if (!shouldUseGlb) {
                 buffer.uri = glTFPrefix + ".bin";
             }
 
@@ -361,9 +381,8 @@ module BABYLON.GLTF2 {
 
         /**
          * Generates data for .gltf and .bin files based on the glTF prefix string
-         * @param glTFPrefix 
-         * @returns - object with glTF json tex filename 
-         * and binary file name as keys and their data as values
+         * @param glTFPrefix - Text to use when prefixing a glTF file.
+         * @returns - GLTFData with glTF file data. 
          */
         public _generateGLTF(glTFPrefix: string): _GLTFData {
             const jsonText = this.generateJSON(false, glTFPrefix, true);
@@ -401,7 +420,7 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Pads the number to a power of 4
+         * Pads the number to a multiple of 4
          * @param num - number to pad
          * @returns - padded number
          */
@@ -415,8 +434,6 @@ module BABYLON.GLTF2 {
         /**
          * Generates a glb file from the json and binary data.  
          * Returns an object with the glb file name as the key and data as the value.
-         * @param jsonText 
-         * @param binaryBuffer 
          * @param glTFPrefix 
          * @returns - object with glb filename as key and data as value
          */
@@ -434,8 +451,9 @@ module BABYLON.GLTF2 {
             }
             const jsonPadding = this._getPadding(jsonLength);
             const binPadding = this._getPadding(binaryBuffer.byteLength);
+            const imagePadding = this._getPadding(imageByteLength);
 
-            const byteLength = headerLength + (2 * chunkLengthPrefix) + jsonLength + jsonPadding + binaryBuffer.byteLength + binPadding + imageByteLength;
+            const byteLength = headerLength + (2 * chunkLengthPrefix) + jsonLength + jsonPadding + binaryBuffer.byteLength + binPadding + imageByteLength + imagePadding;
 
             //header
             const headerBuffer = new ArrayBuffer(headerLength);
@@ -465,7 +483,7 @@ module BABYLON.GLTF2 {
             //binary chunk
             const binaryChunkBuffer = new ArrayBuffer(chunkLengthPrefix);
             const binaryChunkBufferView = new DataView(binaryChunkBuffer);
-            binaryChunkBufferView.setUint32(0, binaryBuffer.byteLength + imageByteLength, true);
+            binaryChunkBufferView.setUint32(0, binaryBuffer.byteLength + imageByteLength + imagePadding, true);
             binaryChunkBufferView.setUint32(4, 0x004E4942, true);
 
             // binary padding
@@ -473,6 +491,12 @@ module BABYLON.GLTF2 {
             const binPaddingView = new Uint8Array(binPaddingBuffer);
             for (let i = 0; i < binPadding; ++i) {
                 binPaddingView[i] = 0;
+            }
+
+            const imagePaddingBuffer = new ArrayBuffer(imagePadding);
+            const imagePaddingView = new Uint8Array(imagePaddingBuffer);
+            for (let i = 0; i < imagePadding; ++i) {
+                imagePaddingView[i] = 0;
             }
 
             const glbData = [headerBuffer, jsonChunkBuffer, binaryChunkBuffer, binaryBuffer];
@@ -483,6 +507,7 @@ module BABYLON.GLTF2 {
             }
 
             glbData.push(binPaddingBuffer);
+            glbData.push(imagePaddingBuffer);
 
             const glbFile = new Blob(glbData, { type: 'application/octet-stream' });
 
@@ -494,9 +519,9 @@ module BABYLON.GLTF2 {
 
         /**
          * Sets the TRS for each node
-         * @param node 
-         * @param babylonMesh 
-         * @param useRightHandedSystem 
+         * @param node - glTF Node for storing the transformation data.
+         * @param babylonMesh - Babylon mesh used as the source for the transformation data.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system. 
          */
         private setNodeTransformation(node: INode, babylonMesh: AbstractMesh, useRightHandedSystem: boolean): void {
             if (!(babylonMesh.position.x === 0 && babylonMesh.position.y === 0 && babylonMesh.position.z === 0)) {
@@ -532,8 +557,9 @@ module BABYLON.GLTF2 {
 
         /**
          * 
-         * @param babylonTexture 
-         * @return - glTF texture, or null if the texture format is not supported
+         * @param babylonTexture - Babylon texture to extract.
+         * @param mimeType - Mime Type of the babylonTexture.
+         * @return - glTF texture, or null if the texture format is not supported.
          */
         private exportTexture(babylonTexture: BaseTexture, mimeType: ImageMimeType = ImageMimeType.JPEG): Nullable<ITextureInfo> {
             let textureInfo: Nullable<ITextureInfo> = null;
@@ -621,348 +647,390 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * Sets data for the primitive attributes of each submesh
-         * @param mesh 
-         * @param babylonMesh 
-         * @param byteOffset 
-         * @param useRightHandedSystem 
-         * @param dataBuffer 
-         * @returns - bytelength of the primitive attributes plus the passed in byteOffset
+         * Creates a bufferview based on the vertices type for the Babylon mesh
+         * @param kind - Indicates the type of vertices data.
+         * @param babylonMesh - The Babylon mesh to get the vertices data from.
+         * @param byteOffset - The offset from the buffer to start indexing from.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system. 
+         * @param dataBuffer - The buffer to write the bufferview data to.
+         * @returns bytelength of the bufferview data.
          */
-        private setPrimitiveAttributes(mesh: IMesh, babylonMesh: AbstractMesh, byteOffset: number, useRightHandedSystem: boolean, dataBuffer?: DataView): number {
+        private createBufferViewKind(kind: string, babylonMesh: AbstractMesh, byteOffset: number, useRightHandedSystem: boolean, dataBuffer: Nullable<DataView>): number {
+            let bufferMesh = null;
+            let byteLength = 0;
+            if (babylonMesh instanceof Mesh) {
+                bufferMesh = (babylonMesh as Mesh);
+            }
+            else if (babylonMesh instanceof InstancedMesh) {
+                bufferMesh = (babylonMesh as InstancedMesh).sourceMesh;
+            }
+            if (bufferMesh !== null) {
+                let vertexBuffer = null;
+                let vertexBufferOffset = null;
+                let vertexData = null;
+                let vertexStrideSize = null;
+                if (bufferMesh.getVerticesDataKinds().indexOf(kind) > -1) {
+                    vertexBuffer = bufferMesh.getVertexBuffer(kind);
+                    vertexBufferOffset = vertexBuffer!.getOffset();
+                    vertexData = vertexBuffer!.getData();
+                    vertexStrideSize = vertexBuffer!.getStrideSize();
+
+                    if (dataBuffer && vertexData) { // write data to buffer
+                        byteLength = this.writeAttributeData(
+                            kind,
+                            vertexData,
+                            vertexStrideSize,
+                            vertexBufferOffset,
+                            byteOffset,
+                            dataBuffer,
+                            useRightHandedSystem
+                        );
+                        byteOffset += byteLength;
+                    }
+                    else {
+                        let bufferViewName: Nullable<string> = null;
+                        switch (kind) {
+                            case VertexBuffer.PositionKind: {
+                                byteLength = vertexData!.length * 4;
+                                bufferViewName = "Position - " + bufferMesh.name;
+                                break;
+                            }
+                            case VertexBuffer.NormalKind: {
+                                byteLength = vertexData!.length * 4;
+                                bufferViewName = "Normal - " + bufferMesh.name;
+                                break;
+                            }
+                            case VertexBuffer.TangentKind: {
+                                byteLength = vertexData!.length * 4;
+                                bufferViewName = "Tangent - " + bufferMesh.name;
+                                break;
+                            }
+                            case VertexBuffer.ColorKind: {
+                                byteLength = vertexData!.length * 4;
+                                bufferViewName = "Color - " + bufferMesh.name;
+                                break;
+                            }
+                            case VertexBuffer.UVKind: {
+                                byteLength = vertexData!.length * 4;
+                                bufferViewName = "TexCoord 0 - " + bufferMesh.name;
+                                break;
+                            }
+                            case VertexBuffer.UV2Kind: {
+                                byteLength = vertexData!.length * 4;
+                                bufferViewName = "TexCoord 1 - " + bufferMesh.name;
+                                break;
+                            }
+                            default: {
+                                console.warn("Unsupported VertexBuffer kind: " + kind);
+                            }
+                        }
+
+                        if (bufferViewName !== null) {
+                            const bufferView = this.createBufferView(0, byteOffset, byteLength, vertexStrideSize * 4, bufferViewName);
+                            byteOffset += byteLength;
+                            this.bufferViews.push(bufferView);
+                        }
+                    }
+                }
+            }
+
+            return byteLength;
+        }
+
+        /**
+         * Sets data for the primitive attributes of each submesh
+         * @param mesh - glTF Mesh object to store the primitive attribute information.
+         * @param babylonMesh - Babylon mesh to get the primitive attribute data from.
+         * @param byteOffset - The offset in bytes of the buffer data.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system. 
+         * @param dataBuffer - Buffer to write the attribute data to.
+         * @returns - bytelength of the primitive attributes plus the passed in byteOffset.
+         */
+        private setPrimitiveAttributes(mesh: IMesh, babylonMesh: AbstractMesh, byteOffset: number, useRightHandedSystem: boolean, dataBuffer: Nullable<DataView>): number {
+            let bufferMesh = null;
+            if (babylonMesh instanceof Mesh) {
+                bufferMesh = (babylonMesh as Mesh);
+            }
+            else if (babylonMesh instanceof InstancedMesh) {
+                bufferMesh = (babylonMesh as InstancedMesh).sourceMesh;
+            }
+            let positionBufferViewIndex: Nullable<number> = null;
+            let normalBufferViewIndex: Nullable<number> = null;
+            let colorBufferViewIndex: Nullable<number> = null;
+            let tangentBufferViewIndex: Nullable<number> = null;
+            let texCoord0BufferViewIndex: Nullable<number> = null;
+            let texCoord1BufferViewIndex: Nullable<number> = null;
+            let indexBufferViewIndex: Nullable<number> = null;
+
+            if (bufferMesh !== null) {
+                // For each BabylonMesh, create bufferviews for each 'kind'
+                if (bufferMesh.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+                    byteOffset += this.createBufferViewKind(VertexBuffer.PositionKind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+                    positionBufferViewIndex = this.bufferViews.length - 1;
+                }
+                if (bufferMesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                    byteOffset += this.createBufferViewKind(VertexBuffer.NormalKind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+                    normalBufferViewIndex = this.bufferViews.length - 1;
+                }
+                if (bufferMesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
+                    byteOffset += this.createBufferViewKind(VertexBuffer.ColorKind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+                    colorBufferViewIndex = this.bufferViews.length - 1;
+                }
+                if (bufferMesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                    byteOffset += this.createBufferViewKind(VertexBuffer.TangentKind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+                    colorBufferViewIndex = this.bufferViews.length - 1;
+                }
+                if (bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                    byteOffset += this.createBufferViewKind(VertexBuffer.UVKind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+                    texCoord0BufferViewIndex = this.bufferViews.length - 1;
+                }
+                if (bufferMesh.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
+                    byteOffset += this.createBufferViewKind(VertexBuffer.UV2Kind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+                    texCoord1BufferViewIndex = this.bufferViews.length - 1;
+                }
+                if (bufferMesh.getTotalIndices() > 0) {
+                    const indices = bufferMesh.getIndices()!;
+                    if (dataBuffer) {
+                        const end = indices!.length;
+                        let byteOff = byteOffset;
+
+                        for (let k = 0; k < end; ++k) {
+                            dataBuffer.setUint32(byteOff, indices![k], true);
+                            byteOff += 4;
+                        }
+                        byteOffset = byteOff;
+                    }
+                    else {
+                        const byteLength = indices.length * 4;
+
+                        const bufferView = this.createBufferView(0, byteOffset, byteLength, undefined, "Indices - " + bufferMesh.name);
+                        byteOffset += byteLength;
+                        this.bufferViews.push(bufferView);
+                        indexBufferViewIndex = this.bufferViews.length - 1;
+                    }
+                }
+            }
+
             // go through all mesh primitives (submeshes)
             for (let j = 0; j < babylonMesh.subMeshes.length; ++j) {
-                let bufferMesh = null;
+
                 const submesh = babylonMesh.subMeshes[j];
                 const meshPrimitive: IMeshPrimitive = { attributes: {} };
 
-                if (babylonMesh instanceof Mesh) {
-                    bufferMesh = (babylonMesh as Mesh);
-                }
-                else if (babylonMesh instanceof InstancedMesh) {
-                    bufferMesh = (babylonMesh as InstancedMesh).sourceMesh;
-                }
 
-                // Loop through each attribute of the submesh (mesh primitive)
-                if (bufferMesh!.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-                    const positionVertexBuffer = bufferMesh!.getVertexBuffer(VertexBuffer.PositionKind);
-                    const positionVertexBufferOffset = positionVertexBuffer!.getOffset();
-                    const positions = positionVertexBuffer!.getData();
-                    const positionStrideSize = positionVertexBuffer!.getStrideSize();
-                    if (dataBuffer) {
-                        byteOffset += this.writeAttributeData(
-                            VertexBuffer.PositionKind,
-                            submesh,
-                            positions!,
-                            positionStrideSize!,
-                            byteOffset,
-                            dataBuffer,
-                            useRightHandedSystem);
-                    }
-                    else {
-                        // Create bufferview
-                        const byteLength = submesh.verticesCount * 12;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Positions");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
+                if (bufferMesh !== null) {
+                    // Create a bufferview storing all the positions
+                    if (!dataBuffer) {
+                        // Loop through each attribute of the submesh (mesh primitive)
+                        if (positionBufferViewIndex !== null) {
 
-                        // Create accessor
-                        const result = this.calculateMinMax(positions!, submesh.verticesStart, submesh.verticesCount, positionVertexBufferOffset!, positionStrideSize!);
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Position", AccessorType.VEC3, AccessorComponentType.FLOAT, submesh.verticesCount, result.min, result.max);
-                        this.accessors.push(accessor);
+                            const positionVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.PositionKind);
+                            const positions = positionVertexBuffer!.getData();
+                            const positionStrideSize = positionVertexBuffer!.getStrideSize();
 
-                        meshPrimitive.attributes.POSITION = this.accessors.length - 1;
-                    }
-                }
-                if (bufferMesh!.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    const normalVertexBuffer = bufferMesh!.getVertexBuffer(VertexBuffer.NormalKind);
-                    const normals = normalVertexBuffer!.getData();
-                    const normalStrideSize = normalVertexBuffer!.getStrideSize();
-                    if (dataBuffer) {
-                        byteOffset += this.writeAttributeData(
-                            VertexBuffer.NormalKind,
-                            submesh,
-                            normals!,
-                            normalStrideSize!,
-                            byteOffset,
-                            dataBuffer,
-                            useRightHandedSystem);
-                    }
-                    else {
-                        // Create bufferview
-                        const byteLength = submesh.verticesCount * 12;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Normals");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
+                            // Create accessor
+                            const result = this.calculateMinMax(positions!, 0, positions!.length/positionStrideSize, positionStrideSize!, useRightHandedSystem);
+                            const accessor = this.createAccessor(positionBufferViewIndex, "Position", AccessorType.VEC3, AccessorComponentType.FLOAT, positions!.length/positionStrideSize, 0, result.min, result.max);
+                            this.accessors.push(accessor);
 
-                        // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Normal", AccessorType.VEC3, AccessorComponentType.FLOAT, submesh.verticesCount);
-                        this.accessors.push(accessor);
+                            meshPrimitive.attributes.POSITION = this.accessors.length - 1;
 
-                        meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
-                    }
-                }
-                if (bufferMesh!.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-                    const tangentVertexBuffer = bufferMesh!.getVertexBuffer(VertexBuffer.TangentKind);
-                    const tangents = tangentVertexBuffer!.getData();
-                    const tangentStrideSize = tangentVertexBuffer!.getStrideSize();
-                    if (dataBuffer) {
-                        byteOffset += this.writeAttributeData(
-                            VertexBuffer.TangentKind,
-                            submesh,
-                            tangents!,
-                            tangentStrideSize!,
-                            byteOffset,
-                            dataBuffer,
-                            useRightHandedSystem);
-                    }
-                    else {
-                        // Create bufferview
-                        const byteLength = submesh.verticesCount * 16;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Tangents");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
-
-                        // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Tangent", AccessorType.VEC4, AccessorComponentType.FLOAT, submesh.verticesCount);
-                        this.accessors.push(accessor);
-
-                        meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
-                    }
-                }
-                if (bufferMesh!.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-                    const colorVertexBuffer = bufferMesh!.getVertexBuffer(VertexBuffer.ColorKind);
-                    const colors = colorVertexBuffer!.getData();
-                    const colorStrideSize = colorVertexBuffer!.getStrideSize();
-                    if (dataBuffer) {
-                        byteOffset += this.writeAttributeData(
-                            VertexBuffer.ColorKind,
-                            submesh,
-                            colors!,
-                            colorStrideSize!,
-                            byteOffset,
-                            dataBuffer,
-                            useRightHandedSystem);
-                    }
-                    else {
-                        // Create bufferview
-                        const byteLength = submesh.verticesCount * 16;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Colors");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
-
-                        // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Color", AccessorType.VEC4, AccessorComponentType.FLOAT, submesh.verticesCount);
-                        this.accessors.push(accessor);
-
-                        meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
-                    }
-                }
-                if (bufferMesh!.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                    const texCoord0VertexBuffer = bufferMesh!.getVertexBuffer(VertexBuffer.UVKind);
-                    const texCoords0 = texCoord0VertexBuffer!.getData();
-                    const texCoord0StrideSize = texCoord0VertexBuffer!.getStrideSize();
-                    if (dataBuffer) {
-                        byteOffset += this.writeAttributeData(
-                            VertexBuffer.UVKind,
-                            submesh,
-                            texCoords0!,
-                            texCoord0StrideSize!,
-                            byteOffset,
-                            dataBuffer,
-                            useRightHandedSystem);
-                    }
-                    else {
-                        // Create bufferview
-                        const byteLength = submesh.verticesCount * 8;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Texture Coords0");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
-
-                        // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Texture Coords", AccessorType.VEC2, AccessorComponentType.FLOAT, submesh.verticesCount);
-                        this.accessors.push(accessor);
-
-                        meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
-                    }
-                }
-                if (bufferMesh!.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-                    const texCoord1VertexBuffer = bufferMesh!.getVertexBuffer(VertexBuffer.UV2Kind);
-                    const texCoords1 = texCoord1VertexBuffer!.getData();
-                    const texCoord1StrideSize = texCoord1VertexBuffer!.getStrideSize();
-                    if (dataBuffer) {
-                        byteOffset += this.writeAttributeData(
-                            VertexBuffer.UV2Kind,
-                            submesh,
-                            texCoords1!,
-                            texCoord1StrideSize!,
-                            byteOffset,
-                            dataBuffer,
-                            useRightHandedSystem);
-                    }
-                    else {
-                        // Create bufferview
-                        const byteLength = submesh.verticesCount * 8;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Texture Coords 1");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
-
-                        // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Texture Coords", AccessorType.VEC2, AccessorComponentType.FLOAT, submesh.verticesCount);
-                        this.accessors.push(accessor);
-
-                        meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
-                    }
-                }
-
-                if (bufferMesh!.getTotalIndices() > 0) {
-                    if (dataBuffer) {
-                        const indices = bufferMesh!.getIndices();
-                        const start = submesh.indexStart;
-                        const end = submesh.indexCount + start;
-                        let byteOff = byteOffset;
-
-                        for (let k = start; k < end; k = k + 3) {
-                            dataBuffer!.setUint32(byteOff, indices![k], true);
-                            byteOff += 4;
-                            dataBuffer!.setUint32(byteOff, indices![k + 1], true);
-                            byteOff += 4;
-                            dataBuffer!.setUint32(byteOff, indices![k + 2], true);
-                            byteOff += 4;
                         }
+                        if (normalBufferViewIndex !== null) {
+                            const normalVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.NormalKind);
+                            const normals = normalVertexBuffer!.getData();
+                            const normalStrideSize = normalVertexBuffer!.getStrideSize();
 
-                        const byteLength = submesh.indexCount * 4;
-                        byteOffset += byteLength;
-                    }
-                    else {
-                        // Create bufferview
-                        const indicesCount = submesh.indexCount;
-                        const byteLength = indicesCount * 4;
-                        const bufferview = this.createBufferView(0, byteOffset, byteLength, "Indices");
-                        byteOffset += byteLength;
-                        this.bufferViews.push(bufferview);
+                            // Create accessor
+                            const accessor = this.createAccessor(normalBufferViewIndex, "Normal", AccessorType.VEC3, AccessorComponentType.FLOAT, normals!.length/normalStrideSize);
+                            this.accessors.push(accessor);
 
-                        // Create accessor
-                        const accessor = this.createAccessor(this.bufferViews.length - 1, "Indices", AccessorType.SCALAR, AccessorComponentType.UNSIGNED_INT, indicesCount);
-                        this.accessors.push(accessor);
+                            meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
 
-                        meshPrimitive.indices = this.accessors.length - 1;
-                    }
-                }
-                if (bufferMesh!.material) {
-                    if (bufferMesh!.material instanceof StandardMaterial) {
-                        const babylonStandardMaterial = bufferMesh!.material as StandardMaterial;
-
-                        const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
-                        if (!babylonStandardMaterial.backFaceCulling) {
-                            glTFMaterial.doubleSided = true;
                         }
-                        if (babylonStandardMaterial.bumpTexture) {
-                            const glTFTexture = this.exportTexture(babylonStandardMaterial.bumpTexture);
-                            if (glTFTexture) {
-                                glTFMaterial.normalTexture = glTFTexture;
+                        if (tangentBufferViewIndex !== null) {
+                            const tangentVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.TangentKind);
+                            const tangents = tangentVertexBuffer!.getData();
+                            const tangentStrideSize = tangentVertexBuffer!.getStrideSize();
+
+                            // Create accessor
+                            const accessor = this.createAccessor(tangentBufferViewIndex, "Tangent", AccessorType.VEC4, AccessorComponentType.FLOAT, tangents!.length/tangentStrideSize);
+                            this.accessors.push(accessor);
+
+                            meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
+
+                        }
+                        if (colorBufferViewIndex !== null) {
+                            const colorVertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.ColorKind);
+                            const colors = colorVertexBuffer!.getData();
+                            const colorStrideSize = colorVertexBuffer!.getStrideSize();
+
+                            // Create accessor
+                            const accessor = this.createAccessor(colorBufferViewIndex, "Color", AccessorType.VEC4, AccessorComponentType.FLOAT, colors!.length/colorStrideSize);
+                            this.accessors.push(accessor);
+
+                            meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
+
+                        }
+                        if (texCoord0BufferViewIndex !== null) {
+                            // Create accessor
+                            const texCoord0VertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.UVKind);
+                            const texCoord0s = texCoord0VertexBuffer!.getData();
+                            const texCoord0StrideSize = texCoord0VertexBuffer!.getStrideSize();
+                            const accessor = this.createAccessor(texCoord0BufferViewIndex, "Texture Coords 0", AccessorType.VEC2, AccessorComponentType.FLOAT, texCoord0s!.length/texCoord0StrideSize);
+                            this.accessors.push(accessor);
+
+                            meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
+
+                        }
+                        if (texCoord1BufferViewIndex !== null) {
+                            // Create accessor
+                            const texCoord1VertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.UV2Kind);
+                            const texCoord1s = texCoord1VertexBuffer!.getData();
+                            const texCoord1StrideSize = texCoord1VertexBuffer!.getStrideSize();
+                            const accessor = this.createAccessor(texCoord1BufferViewIndex, "Texture Coords 1", AccessorType.VEC2, AccessorComponentType.FLOAT, texCoord1s!.length/texCoord1StrideSize);
+                            this.accessors.push(accessor);
+
+                            meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
+
+                        }
+                        if (indexBufferViewIndex) {
+                            // Create accessor
+                            const accessor = this.createAccessor(indexBufferViewIndex, "Indices", AccessorType.SCALAR, AccessorComponentType.UNSIGNED_INT, submesh.indexCount, submesh.indexStart * 4);
+                            this.accessors.push(accessor);
+
+                            meshPrimitive.indices = this.accessors.length - 1;
+
+                        }
+                    }
+                    if (bufferMesh.material) {
+                        if (bufferMesh.material instanceof StandardMaterial) {
+                            console.warn("Standard Material is currently not fully supported/implemented in glTF serializer");
+                            const babylonStandardMaterial = bufferMesh.material as StandardMaterial;
+                            const glTFPbrMetallicRoughness = _GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
+
+                            const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
+                            if (!babylonStandardMaterial.backFaceCulling) {
+                                glTFMaterial.doubleSided = true;
                             }
-                        }
-                        if (babylonStandardMaterial.emissiveTexture) {
-                            const glTFEmissiveTexture = this.exportTexture(babylonStandardMaterial.emissiveTexture);
-                            if (glTFEmissiveTexture) {
-                                glTFMaterial.emissiveTexture = glTFEmissiveTexture;
-                            }
-                            glTFMaterial.emissiveFactor = [1.0, 1.0, 1.0];
-                        }
-                        if (babylonStandardMaterial.ambientTexture) {
-                            const glTFOcclusionTexture = this.exportTexture(babylonStandardMaterial.ambientTexture);
-                            if (glTFOcclusionTexture) {
-                                glTFMaterial.occlusionTexture = glTFOcclusionTexture;
-                            }
-                        }
-                        // Spec Gloss
-                        const glTFPbrMetallicRoughness = _GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
-                        
-                        glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-
-                        // TODO: Handle Textures
-                        this.materials.push(glTFMaterial);
-                        meshPrimitive.material = this.materials.length - 1;
-                    }
-                    else if (bufferMesh!.material instanceof PBRMetallicRoughnessMaterial) {
-                        if (!this.textures) {
-                            this.textures = new Array<ITexture>();
-                        }
-                        const babylonPBRMaterial = bufferMesh!.material as PBRMetallicRoughnessMaterial;
-                        const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
-
-                        if (babylonPBRMaterial.baseColor) {
-                            glTFPbrMetallicRoughness.baseColorFactor = [
-                                babylonPBRMaterial.baseColor.r,
-                                babylonPBRMaterial.baseColor.g,
-                                babylonPBRMaterial.baseColor.b,
-                                babylonPBRMaterial.alpha
-                            ];
-                        }
-                        if (babylonPBRMaterial.baseTexture !== undefined) {
-                            const glTFTexture = this.exportTexture(babylonPBRMaterial.baseTexture);
-                            if (glTFTexture !== null) {
-                                glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                            }
-                            glTFPbrMetallicRoughness.baseColorTexture
-                        }
-                        if (babylonPBRMaterial.metallic !== undefined) {
-                            glTFPbrMetallicRoughness.metallicFactor = babylonPBRMaterial.metallic;
-                        }
-                        if (babylonPBRMaterial.roughness !== undefined) {
-                            glTFPbrMetallicRoughness.roughnessFactor = babylonPBRMaterial.roughness;
-                        }
-
-                        const glTFMaterial: IMaterial = {
-                            name: babylonPBRMaterial.name
-                        };
-                        if (babylonPBRMaterial.doubleSided) {
-                            glTFMaterial.doubleSided = babylonPBRMaterial.doubleSided;
-                        }
-                        if (babylonPBRMaterial.normalTexture) {
-                            const glTFTexture = this.exportTexture(babylonPBRMaterial.normalTexture);
-                            if (glTFTexture) {
-                                glTFMaterial.normalTexture = glTFTexture;
-                            }
-                        }
-                        if (babylonPBRMaterial.occlusionTexture) {
-                            const glTFTexture = this.exportTexture(babylonPBRMaterial.occlusionTexture);
-                            if (glTFTexture) {
-                                glTFMaterial.occlusionTexture = glTFTexture;
-                                if (babylonPBRMaterial.occlusionStrength !== undefined) {
-                                    glTFMaterial.occlusionTexture.strength = babylonPBRMaterial.occlusionStrength;
+                            if (babylonStandardMaterial.diffuseTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                                const glTFTexture = this.exportTexture(babylonStandardMaterial.diffuseTexture);
+                                if (glTFTexture !== null) {
+                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
                                 }
                             }
-                        }
-                        if (babylonPBRMaterial.emissiveTexture) {
-                            const glTFTexture = this.exportTexture(babylonPBRMaterial.emissiveTexture);
-                            if (glTFTexture !== null) {
-                                glTFMaterial.emissiveTexture = glTFTexture;
-                            }
-                        }
-                        if (!babylonPBRMaterial.emissiveColor.equals(new Color3(0.0, 0.0, 0.0))) {
-                            glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
-                        }
-                        if (babylonPBRMaterial.transparencyMode) {
-                            const alphaMode = _GLTFMaterial.GetAlphaMode(babylonPBRMaterial);
-
-                            if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                                glTFMaterial.alphaMode = alphaMode;
-                                if (alphaMode === MaterialAlphaMode.BLEND) {
-                                    glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
+                            if (babylonStandardMaterial.bumpTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                                const glTFTexture = this.exportTexture(babylonStandardMaterial.bumpTexture);
+                                if (glTFTexture) {
+                                    glTFMaterial.normalTexture = glTFTexture;
                                 }
                             }
+                            if (babylonStandardMaterial.emissiveTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                                const glTFEmissiveTexture = this.exportTexture(babylonStandardMaterial.emissiveTexture);
+                                if (glTFEmissiveTexture) {
+                                    glTFMaterial.emissiveTexture = glTFEmissiveTexture;
+                                }
+                                glTFMaterial.emissiveFactor = [1.0, 1.0, 1.0];
+                            }
+                            if (babylonStandardMaterial.ambientTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
+                                const glTFOcclusionTexture = this.exportTexture(babylonStandardMaterial.ambientTexture);
+                                if (glTFOcclusionTexture) {
+                                    glTFMaterial.occlusionTexture = glTFOcclusionTexture;
+                                }
+                            }
+                            if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
+
+                                if (babylonStandardMaterial.alphaMode === Engine.ALPHA_COMBINE) {
+                                    glTFMaterial.alphaMode = GLTF2.MaterialAlphaMode.BLEND;
+                                }
+                                else {
+                                    console.warn("glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
+                                }
+                            }
+
+                            glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
+
+                            this.materials.push(glTFMaterial);
+                            meshPrimitive.material = this.materials.length - 1;
                         }
+                        else if (bufferMesh.material instanceof PBRMetallicRoughnessMaterial) {
+                            const babylonPBRMaterial = bufferMesh.material as PBRMetallicRoughnessMaterial;
+                            const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
 
-                        glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
+                            if (babylonPBRMaterial.baseColor) {
+                                glTFPbrMetallicRoughness.baseColorFactor = [
+                                    babylonPBRMaterial.baseColor.r,
+                                    babylonPBRMaterial.baseColor.g,
+                                    babylonPBRMaterial.baseColor.b,
+                                    babylonPBRMaterial.alpha
+                                ];
+                            }
+                            if (babylonPBRMaterial.baseTexture !== undefined) {
+                                const glTFTexture = this.exportTexture(babylonPBRMaterial.baseTexture);
+                                if (glTFTexture !== null) {
+                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
+                                }
+                                glTFPbrMetallicRoughness.baseColorTexture
+                            }
+                            if (babylonPBRMaterial.metallic !== undefined) {
+                                glTFPbrMetallicRoughness.metallicFactor = babylonPBRMaterial.metallic;
+                            }
+                            if (babylonPBRMaterial.roughness !== undefined) {
+                                glTFPbrMetallicRoughness.roughnessFactor = babylonPBRMaterial.roughness;
+                            }
 
-                        // TODO: Handle Textures
-                        this.materials.push(glTFMaterial);
-                        meshPrimitive.material = this.materials.length - 1;
+                            const glTFMaterial: IMaterial = {
+                                name: babylonPBRMaterial.name
+                            };
+                            if (babylonPBRMaterial.doubleSided) {
+                                glTFMaterial.doubleSided = babylonPBRMaterial.doubleSided;
+                            }
+                            if (babylonPBRMaterial.normalTexture) {
+                                const glTFTexture = this.exportTexture(babylonPBRMaterial.normalTexture);
+                                if (glTFTexture) {
+                                    glTFMaterial.normalTexture = glTFTexture;
+                                }
+                            }
+                            if (babylonPBRMaterial.occlusionTexture) {
+                                const glTFTexture = this.exportTexture(babylonPBRMaterial.occlusionTexture);
+                                if (glTFTexture) {
+                                    glTFMaterial.occlusionTexture = glTFTexture;
+                                    if (babylonPBRMaterial.occlusionStrength !== undefined) {
+                                        glTFMaterial.occlusionTexture.strength = babylonPBRMaterial.occlusionStrength;
+                                    }
+                                }
+                            }
+                            if (babylonPBRMaterial.emissiveTexture) {
+                                const glTFTexture = this.exportTexture(babylonPBRMaterial.emissiveTexture);
+                                if (glTFTexture !== null) {
+                                    glTFMaterial.emissiveTexture = glTFTexture;
+                                }
+                            }
+                            if (!babylonPBRMaterial.emissiveColor.equals(new Color3(0.0, 0.0, 0.0))) {
+                                glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
+                            }
+                            if (babylonPBRMaterial.transparencyMode) {
+                                const alphaMode = _GLTFMaterial.GetAlphaMode(babylonPBRMaterial);
+
+                                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
+                                    glTFMaterial.alphaMode = alphaMode;
+                                    if (alphaMode === MaterialAlphaMode.BLEND) {
+                                        glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
+                                    }
+                                }
+                            }
+
+                            glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
+
+                            this.materials.push(glTFMaterial);
+                            meshPrimitive.material = this.materials.length - 1;
+                        }
+                        else {
+                            console.warn("Material type is not yet implemented in glTF serializer: " + bufferMesh.material.name);
+                        }
                     }
+                    mesh.primitives.push(meshPrimitive);
                 }
-                mesh.primitives.push(meshPrimitive);
             }
             return byteOffset;
         }
@@ -970,13 +1038,12 @@ module BABYLON.GLTF2 {
         /**
          * Creates a glTF scene based on the array of meshes.
          * Returns the the total byte offset.
-         * @param gltf 
-         * @param byteOffset 
-         * @param buffer 
-         * @param dataBuffer 
+         * @param babylonScene - Babylon scene to get the mesh data from. 
+         * @param byteOffset - Offset to start from in bytes.
+         * @param dataBuffer - Buffer to write geometry data to.
          * @returns bytelength + byteoffset
          */
-        private createScene(babylonScene: Scene, byteOffset: number, dataBuffer?: DataView): number {
+        private createScene(babylonScene: Scene, byteOffset: number, dataBuffer: Nullable<DataView>): number {
             if (babylonScene.meshes.length > 0) {
                 const babylonMeshes = babylonScene.meshes;
                 const scene = { nodes: new Array<number>() };

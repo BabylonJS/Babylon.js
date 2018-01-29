@@ -3,7 +3,7 @@
 import { ViewerConfiguration } from './../configuration/configuration';
 import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 
 export class DefaultViewer extends AbstractViewer {
@@ -121,9 +121,13 @@ export class DefaultViewer extends AbstractViewer {
         this.setModelMetaData();
 
         // with a short timeout, making sure everything is there already.
+        let hideLoadingDelay = 500;
+        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        }
         setTimeout(() => {
             this.hideLoadingScreen();
-        }, 500);
+        }, hideLoadingDelay);
 
 
         // recreate the camera
@@ -135,7 +139,7 @@ export class DefaultViewer extends AbstractViewer {
         this.setupCamera(meshes);
         this.setupLights(meshes);
 
-        return this.initEnvironment(meshes);
+        return; //this.initEnvironment(meshes);
     }
 
     private setModelMetaData() {
@@ -167,7 +171,7 @@ export class DefaultViewer extends AbstractViewer {
 
     }
 
-    public initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
+    /*protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
         if (this.configuration.skybox) {
             // Define a general environment textue
             let texture;
@@ -267,7 +271,7 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         return Promise.resolve(this.scene);
-    }
+    }*/
 
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
@@ -360,6 +364,52 @@ export class DefaultViewer extends AbstractViewer {
 
         let sceneConfig = this.configuration.scene || { defaultLight: true };
 
+        // labs feature - flashlight
+        if (this.configuration.lab && this.configuration.lab.flashlight) {
+            let pointerPosition = BABYLON.Vector3.Zero();
+            let lightTarget;
+            let angle = 0.5;
+            let exponent = Math.PI / 2;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                exponent = this.configuration.lab.flashlight.exponent || exponent;
+                angle = this.configuration.lab.flashlight.angle || angle;
+            }
+            var flashlight = new SpotLight("flashlight", Vector3.Zero(),
+                Vector3.Zero(), exponent, angle, this.scene);
+            if (typeof this.configuration.lab.flashlight === "object") {
+                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this.configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
+                }
+                if (this.configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
+                }
+
+            }
+            this.scene.constantlyUpdateMeshUnderPointer = true;
+            this.scene.onPointerObservable.add((eventData, eventState) => {
+                if (eventData.type === 4 && eventData.pickInfo) {
+                    lightTarget = (eventData.pickInfo.pickedPoint);
+                } else {
+                    lightTarget = undefined;
+                }
+            });
+            let updateFlashlightFunction = () => {
+                if (this.camera && flashlight) {
+                    flashlight.position.copyFrom(this.camera.position);
+                    if (lightTarget) {
+                        lightTarget.subtractToRef(flashlight.position, flashlight.direction);
+                    }
+                }
+            }
+            this.scene.registerBeforeRender(updateFlashlightFunction);
+            this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
+        }
+
         if (!sceneConfig.defaultLight && (this.configuration.lights && Object.keys(this.configuration.lights).length)) {
             // remove old lights
             this.scene.lights.forEach(l => {
@@ -382,7 +432,7 @@ export class DefaultViewer extends AbstractViewer {
 
                 //position. Some lights don't support shadows
                 if (light instanceof ShadowLight) {
-                    if (lightConfig.shadowEnabled) {
+                    if (lightConfig.shadowEnabled && this.maxShadows) {
                         var shadowGenerator = new ShadowGenerator(512, light);
                         this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                         // add the focues meshes to the shadow list
@@ -430,6 +480,11 @@ export class DefaultViewer extends AbstractViewer {
         if (sceneConfig.autoRotate) {
             this.camera.useAutoRotationBehavior = true;
         }
+
+        const sceneExtends = this.scene.getWorldExtends();
+        const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
+        const sceneDiagonalLenght = sceneDiagonal.length();
+        this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
     }
 
     private setCameraBehavior(behaviorConfig: number | {
@@ -480,20 +535,5 @@ export class DefaultViewer extends AbstractViewer {
                 }
                 break;
         }
-    }
-
-    private extendClassWithConfig(object: any, config: any) {
-        if (!config) return;
-        Object.keys(config).forEach(key => {
-            if (key in object && typeof object[key] !== 'function') {
-                if (typeof object[key] === 'function') return;
-                // if it is an object, iterate internally until reaching basic types
-                if (typeof object[key] === 'object') {
-                    this.extendClassWithConfig(object[key], config[key]);
-                } else {
-                    object[key] = config[key];
-                }
-            }
-        });
     }
 }

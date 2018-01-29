@@ -283,6 +283,7 @@
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
             { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+            { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
 
         public static Instances = new Array<Engine>();
@@ -539,7 +540,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha5";
+            return "3.2.0-alpha6";
         }
 
         // Updatable statics so stick with vars here
@@ -1352,10 +1353,14 @@
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
-                this._nextFreeTextureSlots.push(slot);
+
+            if (!this.disableTextureBindingOptimization) {
+                this._nextFreeTextureSlots = [];
+                for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
+                    this._nextFreeTextureSlots.push(slot);
+                }
             }
+
             this._currentTextureChannel = -1;
         }
 
@@ -3136,8 +3141,8 @@
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            var isTGA = (extension === ".tga");
+            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
+            var isTGA = (extension.indexOf(".tga") === 0);
 
             // determine if a ktx file should be substituted
             var isKTX = false;
@@ -4805,6 +4810,10 @@
 
             internalTexture._designatedSlot = -1;
 
+            if (this.disableTextureBindingOptimization) {
+                return -1;
+            }
+            
             // Remove from bound list
             this._linkTrackers(internalTexture.previous, internalTexture.next);
 
@@ -4831,7 +4840,7 @@
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
             if (currentTextureBound !== texture) {
-                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                if (currentTextureBound) {
                     this._removeDesignatedSlot(currentTextureBound);
                 }
 
@@ -5752,6 +5761,17 @@
                 this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
             });
             return request;
+        }
+
+        /** @ignore */
+        public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+            return new Promise((resolve, reject) => {
+                this._loadFile(url, (data) => {
+                    resolve(data);
+                }, undefined, database, useArrayBuffer, (request, exception) => {
+                    reject(exception);
+                })
+            });
         }
 
         private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>, onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {

@@ -101,7 +101,7 @@
         public ambientTextureStrength: number = 1.0;
 
         @serializeAsTexture()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public opacityTexture: BaseTexture;
 
         @serializeAsTexture()
@@ -225,21 +225,21 @@
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public useAlphaFromAlbedoTexture = false;
 
         /**
          * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public forceAlphaTest = false;
 
         /**
          * Defines the alpha limits in alpha test mode.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public alphaCutOff = 0.4;
 
         /**

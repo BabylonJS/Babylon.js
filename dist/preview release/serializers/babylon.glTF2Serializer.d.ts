@@ -107,12 +107,14 @@ declare module BABYLON.GLTF2 {
         constructor(babylonScene: Scene, options?: IExporterOptions);
         /**
          * Creates a buffer view based on teh supplied arguments
-         * @param {number} bufferIndex - index value of the specified buffer
-         * @param {number} byteOffset - byte offset value
-         * @param {number} byteLength - byte length of the bufferView
+         * @param bufferIndex - index value of the specified buffer
+         * @param byteOffset - byte offset value
+         * @param byteLength - byte length of the bufferView
+         * @param byteStride - byte distance between conequential elements.
+         * @param name - name of the buffer view
          * @returns - bufferView for glTF
          */
-        private createBufferView(bufferIndex, byteOffset, byteLength, name?);
+        private createBufferView(bufferIndex, byteOffset, byteLength, byteStride?, name?);
         /**
          * Creates an accessor based on the supplied arguments
          * @param bufferviewIndex
@@ -124,43 +126,41 @@ declare module BABYLON.GLTF2 {
          * @param max
          * @returns - accessor for glTF
          */
-        private createAccessor(bufferviewIndex, name, type, componentType, count, min?, max?);
+        private createAccessor(bufferviewIndex, name, type, componentType, count, byteOffset?, min?, max?);
         /**
          * Calculates the minimum and maximum values of an array of floats, based on stride
-         * @param buff
-         * @param vertexStart
-         * @param vertexCount
-         * @param arrayOffset
-         * @param stride
-         * @returns - min number array and max number array
+         * @param buff - Data to check for min and max values.
+         * @param vertexStart - Start offset to calculate min and max values.
+         * @param vertexCount - Number of vertices to check for min and max values.
+         * @param stride - Offset between consecutive attributes.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system.
+         * @returns - min number array and max number array.
          */
-        private calculateMinMax(buff, vertexStart, vertexCount, arrayOffset, stride);
+        private calculateMinMax(buff, vertexStart, vertexCount, stride, useRightHandedSystem);
         /**
-         * Write mesh attribute data to buffer.
+         * Writes mesh attribute data to a data buffer.
          * Returns the bytelength of the data.
-         * @param vertexBufferType
-         * @param submesh
-         * @param meshAttributeArray
-         * @param strideSize
-         * @param byteOffset
-         * @param dataBuffer
-         * @param useRightHandedSystem
-         * @returns - byte length
+         * @param vertexBufferKind - Indicates what kind of vertex data is being passed in.
+         * @param meshAttributeArray - Array containing the attribute data.
+         * @param strideSize - Represents the offset between consecutive attributes
+         * @param byteOffset - The offset to start counting bytes from.
+         * @param dataBuffer - The buffer to write the binary data to.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system.
+         * @returns - Byte length of the attribute data.
          */
-        private writeAttributeData(vertexBufferType, submesh, meshAttributeArray, strideSize, byteOffset, dataBuffer, useRightHandedSystem);
+        private writeAttributeData(vertexBufferKind, meshAttributeArray, strideSize, vertexBufferOffset, byteOffset, dataBuffer, useRightHandedSystem);
         /**
          * Generates glTF json data
-         * @param glb
-         * @param glTFPrefix
-         * @param prettyPrint
+         * @param shouldUseGlb - Indicates whether the json should be written for a glb file.
+         * @param glTFPrefix - Text to use when prefixing a glTF file.
+         * @param prettyPrint - Indicates whether the json file should be pretty printed (true) or not (false).
          * @returns - json data as string
          */
-        private generateJSON(glb, glTFPrefix?, prettyPrint?);
+        private generateJSON(shouldUseGlb, glTFPrefix?, prettyPrint?);
         /**
          * Generates data for .gltf and .bin files based on the glTF prefix string
-         * @param glTFPrefix
-         * @returns - object with glTF json tex filename
-         * and binary file name as keys and their data as values
+         * @param glTFPrefix - Text to use when prefixing a glTF file.
+         * @returns - GLTFData with glTF file data.
          */
         _generateGLTF(glTFPrefix: string): _GLTFData;
         /**
@@ -169,7 +169,7 @@ declare module BABYLON.GLTF2 {
          */
         private generateBinary();
         /**
-         * Pads the number to a power of 4
+         * Pads the number to a multiple of 4
          * @param num - number to pad
          * @returns - padded number
          */
@@ -177,45 +177,53 @@ declare module BABYLON.GLTF2 {
         /**
          * Generates a glb file from the json and binary data.
          * Returns an object with the glb file name as the key and data as the value.
-         * @param jsonText
-         * @param binaryBuffer
          * @param glTFPrefix
          * @returns - object with glb filename as key and data as value
          */
         _generateGLB(glTFPrefix: string): _GLTFData;
         /**
          * Sets the TRS for each node
-         * @param node
-         * @param babylonMesh
-         * @param useRightHandedSystem
+         * @param node - glTF Node for storing the transformation data.
+         * @param babylonMesh - Babylon mesh used as the source for the transformation data.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system.
          */
         private setNodeTransformation(node, babylonMesh, useRightHandedSystem);
         /**
          *
-         * @param babylonTexture
-         * @return - glTF texture, or null if the texture format is not supported
+         * @param babylonTexture - Babylon texture to extract.
+         * @param mimeType - Mime Type of the babylonTexture.
+         * @return - glTF texture, or null if the texture format is not supported.
          */
         private exportTexture(babylonTexture, mimeType?);
         /**
-         * Sets data for the primitive attributes of each submesh
-         * @param mesh
-         * @param babylonMesh
-         * @param byteOffset
-         * @param useRightHandedSystem
-         * @param dataBuffer
-         * @returns - bytelength of the primitive attributes plus the passed in byteOffset
+         * Creates a bufferview based on the vertices type for the Babylon mesh
+         * @param kind - Indicates the type of vertices data.
+         * @param babylonMesh - The Babylon mesh to get the vertices data from.
+         * @param byteOffset - The offset from the buffer to start indexing from.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system.
+         * @param dataBuffer - The buffer to write the bufferview data to.
+         * @returns bytelength of the bufferview data.
          */
-        private setPrimitiveAttributes(mesh, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer?);
+        private createBufferViewKind(kind, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
+        /**
+         * Sets data for the primitive attributes of each submesh
+         * @param mesh - glTF Mesh object to store the primitive attribute information.
+         * @param babylonMesh - Babylon mesh to get the primitive attribute data from.
+         * @param byteOffset - The offset in bytes of the buffer data.
+         * @param useRightHandedSystem - Indicates whether the data should be modified for a right or left handed coordinate system.
+         * @param dataBuffer - Buffer to write the attribute data to.
+         * @returns - bytelength of the primitive attributes plus the passed in byteOffset.
+         */
+        private setPrimitiveAttributes(mesh, babylonMesh, byteOffset, useRightHandedSystem, dataBuffer);
         /**
          * Creates a glTF scene based on the array of meshes.
          * Returns the the total byte offset.
-         * @param gltf
-         * @param byteOffset
-         * @param buffer
-         * @param dataBuffer
+         * @param babylonScene - Babylon scene to get the mesh data from.
+         * @param byteOffset - Offset to start from in bytes.
+         * @param dataBuffer - Buffer to write geometry data to.
          * @returns bytelength + byteoffset
          */
-        private createScene(babylonScene, byteOffset, dataBuffer?);
+        private createScene(babylonScene, byteOffset, dataBuffer);
     }
 }
 
