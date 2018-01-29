@@ -216,13 +216,14 @@ module BABYLON.GUI {
             if (end) {
                 this.x2 = x;
                 this.y2 = y;
+                this._x2.ignoreAdaptiveScaling = true;
+                this._y2.ignoreAdaptiveScaling = true;
             } else {
                 this.x1 = x;
                 this.y1 = y;
+                this._x1.ignoreAdaptiveScaling = true;
+                this._y1.ignoreAdaptiveScaling = true;
             }
-
-            this._left.ignoreAdaptiveScaling = true;
-            this._top.ignoreAdaptiveScaling = true;
         }
     }    
 }
