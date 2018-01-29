@@ -411,14 +411,22 @@
             return this._ranges[name];
         }
 
-        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): void {
+        /**
+         * Will start the animation sequence
+         * @param name defines the range frames for animation sequence
+         * @param loop defines if the animation should loop (false by default)
+         * @param speedRatio defines the speed factor in which to run the animation (1 by default)
+         * @param onAnimationEnd defines a function to be executed when the animation ended (undefined by default)
+         * @returns the {BABYLON.Animatable} object created for this animation. If range does not exist, it will return null
+         */
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Nullable<Animatable> {
             var range = this.getAnimationRange(name);
 
             if (!range) {
-                return;
+                return null;
             }
 
-            this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
+            return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
         }
 
         public serializeAnimationRanges(): any {
