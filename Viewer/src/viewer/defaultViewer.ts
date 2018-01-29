@@ -3,7 +3,7 @@
 import { ViewerConfiguration } from './../configuration/configuration';
 import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 
 export class DefaultViewer extends AbstractViewer {
@@ -121,9 +121,13 @@ export class DefaultViewer extends AbstractViewer {
         this.setModelMetaData();
 
         // with a short timeout, making sure everything is there already.
+        let hideLoadingDelay = 500;
+        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        }
         setTimeout(() => {
             this.hideLoadingScreen();
-        }, 500);
+        }, hideLoadingDelay);
 
 
         // recreate the camera
@@ -360,6 +364,52 @@ export class DefaultViewer extends AbstractViewer {
 
         let sceneConfig = this.configuration.scene || { defaultLight: true };
 
+        // labs feature - flashlight
+        if (this.configuration.lab && this.configuration.lab.flashlight) {
+            let pointerPosition = BABYLON.Vector3.Zero();
+            let lightTarget;
+            let angle = 0.5;
+            let exponent = Math.PI / 2;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                exponent = this.configuration.lab.flashlight.exponent || exponent;
+                angle = this.configuration.lab.flashlight.angle || angle;
+            }
+            var flashlight = new SpotLight("flashlight", Vector3.Zero(),
+                Vector3.Zero(), exponent, angle, this.scene);
+            if (typeof this.configuration.lab.flashlight === "object") {
+                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this.configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
+                }
+                if (this.configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
+                }
+
+            }
+            this.scene.constantlyUpdateMeshUnderPointer = true;
+            this.scene.onPointerObservable.add((eventData, eventState) => {
+                if (eventData.type === 4 && eventData.pickInfo) {
+                    lightTarget = (eventData.pickInfo.pickedPoint);
+                } else {
+                    lightTarget = undefined;
+                }
+            });
+            let updateFlashlightFunction = () => {
+                if (this.camera && flashlight) {
+                    flashlight.position.copyFrom(this.camera.position);
+                    if (lightTarget) {
+                        lightTarget.subtractToRef(flashlight.position, flashlight.direction);
+                    }
+                }
+            }
+            this.scene.registerBeforeRender(updateFlashlightFunction);
+            this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
+        }
+
         if (!sceneConfig.defaultLight && (this.configuration.lights && Object.keys(this.configuration.lights).length)) {
             // remove old lights
             this.scene.lights.forEach(l => {
@@ -395,22 +445,6 @@ export class DefaultViewer extends AbstractViewer {
                     }
                 }
             });
-        } else {
-            if (!this.configuration.lights && this.configuration.ground) {
-                let light = this.scene.lights[0];
-                if (light instanceof ShadowLight) {
-                    if (this.maxShadows) {
-                        var shadowGenerator = new ShadowGenerator(512, light);
-                        // add the focues meshes to the shadow list
-                        let shadownMap = shadowGenerator.getShadowMap();
-                        if (!shadownMap) return;
-                        let renderList = shadownMap.renderList;
-                        for (var index = 0; index < focusMeshes.length; index++) {
-                            renderList && renderList.push(focusMeshes[index]);
-                        }
-                    }
-                }
-            }
         }
     }
 
