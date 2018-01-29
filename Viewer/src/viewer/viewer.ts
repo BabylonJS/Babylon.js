@@ -544,12 +544,15 @@ export abstract class AbstractViewer {
         }
         else {
             // there might be a new scene! we need to dispose.
-            // Need to decide if a scene should stay or be disposed.
-            this.environmentHelper.dispose();
-            //this.environmentHelper.updateOptions(options);
-            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+            // get the scene used by the envHelper
+            let scene: Scene = this.environmentHelper.rootMesh.getScene();
+            if (scene !== this.scene) {
+                this.environmentHelper.dispose();
+                this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+            } else {
+                this.environmentHelper.updateOptions(options)!;
+            }
         }
-        console.log(options);
 
         if (postInitSkyboxMaterial) {
             let skyboxMaterial = this.environmentHelper.skyboxMaterial;
