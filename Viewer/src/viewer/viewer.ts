@@ -2,7 +2,9 @@ import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
 import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
-import { ViewerConfiguration } from '../configuration/configuration';
+import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration } from '../configuration/configuration';
+
+import * as deepmerge from '../../assets/deepmerge.min.js';
 
 export abstract class AbstractViewer {
 
@@ -69,20 +71,8 @@ export abstract class AbstractViewer {
 
         // extend the configuration
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
-            this.configuration = configuration;
-
-            // adding preconfigured functions
-            if (this.configuration.observers) {
-                if (this.configuration.observers.onEngineInit) {
-                    this.onEngineInitObservable.add(window[this.configuration.observers.onEngineInit]);
-                }
-                if (this.configuration.observers.onSceneInit) {
-                    this.onSceneInitObservable.add(window[this.configuration.observers.onSceneInit]);
-                }
-                if (this.configuration.observers.onModelLoaded) {
-                    this.onModelLoadedObservable.add(window[this.configuration.observers.onModelLoaded]);
-                }
-            }
+            //this.configuration = configuration;
+            this.updateConfiguration(configuration);
 
             // initialize the templates
             let templateConfiguration = this.configuration.templates || {};
@@ -124,6 +114,136 @@ export abstract class AbstractViewer {
 
     protected render = (): void => {
         this.scene && this.scene.render();
+    }
+
+    /**
+     * Update the current viewer configuration with new values.
+     * Only provided information will be updated, old configuration values will be kept.
+     * If this.configuration was manually changed, you can trigger this function with no parameters, 
+     * and the entire configuration will be updated. 
+     * @param newConfiguration 
+     */
+    public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this.configuration) {
+        // update scene configuration
+        if (newConfiguration.scene) {
+            this.configurScene(newConfiguration.scene);
+        }
+        // optimizer
+        if (newConfiguration.optimizer) {
+            this.configureOptimizer(newConfiguration.optimizer);
+        }
+
+        // observers in configuration
+        if (newConfiguration.observers) {
+            this.configureObservers(newConfiguration.observers);
+        }
+
+        // update this.configuration with the new data
+        this.configuration = deepmerge(this.configuration || {}, newConfiguration);
+    }
+
+    protected configurScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration) {
+        // sanity check!
+        if (!this.scene) {
+            this.scene = new Scene(this.engine);
+        }
+
+        if (sceneConfig.debug) {
+            this.scene.debugLayer.show();
+        } else {
+            if (this.scene.debugLayer.isVisible()) {
+                this.scene.debugLayer.hide();
+            }
+        }
+
+        if (sceneConfig.clearColor) {
+            let cc = sceneConfig.clearColor;
+            let oldcc = this.scene.clearColor;
+            if (cc.r !== undefined) {
+                oldcc.r = cc.r;
+            }
+            if (cc.g !== undefined) {
+                oldcc.g = cc.g
+            }
+            if (cc.b !== undefined) {
+                oldcc.b = cc.b
+            }
+            if (cc.a !== undefined) {
+                oldcc.a = cc.a
+            }
+        }
+
+        // image processing configuration - optional.
+        if (sceneConfig.imageProcessingConfiguration) {
+            this.extendClassWithConfig(this.scene.imageProcessingConfiguration, sceneConfig.imageProcessingConfiguration);
+        }
+        if (sceneConfig.environmentTexture) {
+            if (this.scene.environmentTexture) {
+                this.scene.environmentTexture.dispose();
+            }
+            const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
+            this.scene.environmentTexture = environmentTexture;
+        }
+    }
+
+    protected configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean) {
+        if (typeof optimizerConfig === 'boolean') {
+            if (this.sceneOptimizer) {
+                this.sceneOptimizer.stop();
+                this.sceneOptimizer.dispose();
+                delete this.sceneOptimizer;
+            }
+            if (optimizerConfig) {
+                this.sceneOptimizer = new SceneOptimizer(this.scene);
+                this.sceneOptimizer.start();
+            }
+        } else {
+            let optimizerOptions: SceneOptimizerOptions = new SceneOptimizerOptions(optimizerConfig.targetFrameRate, optimizerConfig.trackerDuration);
+            // check for degradation
+            if (optimizerConfig.degradation) {
+                switch (optimizerConfig.degradation) {
+                    case "low":
+                        optimizerOptions = SceneOptimizerOptions.LowDegradationAllowed(optimizerConfig.targetFrameRate);
+                        break;
+                    case "moderate":
+                        optimizerOptions = SceneOptimizerOptions.ModerateDegradationAllowed(optimizerConfig.targetFrameRate);
+                        break;
+                    case "hight":
+                        optimizerOptions = SceneOptimizerOptions.HighDegradationAllowed(optimizerConfig.targetFrameRate);
+                        break;
+                }
+            }
+            if (this.sceneOptimizer) {
+                this.sceneOptimizer.stop();
+                this.sceneOptimizer.dispose()
+            }
+            this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
+            this.sceneOptimizer.start();
+        }
+    }
+
+    protected configureObservers(observersConfiguration: IObserversConfiguration) {
+        if (observersConfiguration.onEngineInit) {
+            this.onEngineInitObservable.add(window[observersConfiguration.onEngineInit]);
+        } else {
+            if (observersConfiguration.onEngineInit === '' && this.configuration.observers && this.configuration.observers!.onEngineInit) {
+                this.onEngineInitObservable.removeCallback(window[this.configuration.observers!.onEngineInit!]);
+            }
+        }
+        if (observersConfiguration.onSceneInit) {
+            this.onSceneInitObservable.add(window[observersConfiguration.onSceneInit]);
+        } else {
+            if (observersConfiguration.onSceneInit === '' && this.configuration.observers && this.configuration.observers!.onSceneInit) {
+                this.onSceneInitObservable.removeCallback(window[this.configuration.observers!.onSceneInit!]);
+            }
+        }
+        if (observersConfiguration.onModelLoaded) {
+            this.onModelLoadedObservable.add(window[observersConfiguration.onModelLoaded]);
+        } else {
+            if (observersConfiguration.onModelLoaded === '' && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
+                this.onModelLoadedObservable.removeCallback(window[this.configuration.observers!.onModelLoaded!]);
+            }
+        }
     }
 
     public dispose() {
@@ -235,45 +355,13 @@ export abstract class AbstractViewer {
         // make sure there is a default camera and light.
         this.scene.createDefaultCameraOrLight(true, true, true);
         if (this.configuration.scene) {
-            if (this.configuration.scene.debug) {
-                this.scene.debugLayer.show();
-            }
+            this.configurScene(this.configuration.scene);
 
             // Scene optimizer
             if (this.configuration.optimizer) {
-
-                let optimizerConfig = this.configuration.optimizer;
-                let optimizerOptions: SceneOptimizerOptions = new SceneOptimizerOptions(optimizerConfig.targetFrameRate, optimizerConfig.trackerDuration);
-                // check for degradation
-                if (optimizerConfig.degradation) {
-                    switch (optimizerConfig.degradation) {
-                        case "low":
-                            optimizerOptions = SceneOptimizerOptions.LowDegradationAllowed(optimizerConfig.targetFrameRate);
-                            break;
-                        case "moderate":
-                            optimizerOptions = SceneOptimizerOptions.ModerateDegradationAllowed(optimizerConfig.targetFrameRate);
-                            break;
-                        case "hight":
-                            optimizerOptions = SceneOptimizerOptions.HighDegradationAllowed(optimizerConfig.targetFrameRate);
-                            break;
-                    }
-                }
-
-                this.sceneOptimizer = new SceneOptimizer(this.scene, optimizerOptions, optimizerConfig.autoGeneratePriorities, optimizerConfig.improvementMode);
-                this.sceneOptimizer.start();
-            }
-
-            // image processing configuration - optional.
-            if (this.configuration.scene.imageProcessingConfiguration) {
-                this.extendClassWithConfig(this.scene.imageProcessingConfiguration, this.configuration.scene.imageProcessingConfiguration);
-            }
-            if (this.configuration.scene.environmentTexture) {
-                const environmentTexture = CubeTexture.CreateFromPrefilteredData(this.configuration.scene.environmentTexture, this.scene);
-                this.scene.environmentTexture = environmentTexture;
+                this.configureOptimizer(this.configuration.optimizer);
             }
         }
-
-
 
         return Promise.resolve(this.scene);
     }

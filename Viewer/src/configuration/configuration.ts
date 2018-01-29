@@ -15,11 +15,7 @@ export interface ViewerConfiguration {
     };
 
     // names of functions in the window context.
-    observers?: {
-        onEngineInit?: string;
-        onSceneInit?: string;
-        onModelLoaded?: string;
-    }
+    observers?: IObserversConfiguration;
 
     canvasElement?: string; // if there is a need to override the standard implementation - ID of HTMLCanvasElement
 
@@ -38,51 +34,10 @@ export interface ViewerConfiguration {
         [propName: string]: any; // further configuration, like title and creator
     } | string;
 
-    scene?: {
-        debug?: boolean;
-        autoRotate?: boolean;
-        rotationSpeed?: number;
-        defaultCamera?: boolean;
-        defaultLight?: boolean;
-        clearColor?: { r: number, g: number, b: number, a: number };
-        imageProcessingConfiguration?: IImageProcessingConfiguration;
-        environmentTexture?: string;
-    },
-    optimizer?: {
-        targetFrameRate?: number;
-        trackerDuration?: number;
-        autoGeneratePriorities?: boolean;
-        improvementMode?: boolean;
-        degradation?: string; // low, moderate, high
-        types?: {
-            texture?: SceneOptimizerParameters;
-            hardwareScaling?: SceneOptimizerParameters;
-            shadow?: SceneOptimizerParameters;
-            postProcess?: SceneOptimizerParameters;
-            lensFlare?: SceneOptimizerParameters;
-            particles?: SceneOptimizerParameters;
-            renderTarget?: SceneOptimizerParameters;
-            mergeMeshes?: SceneOptimizerParameters;
-        }
-    },
+    scene?: ISceneConfiguration;
+    optimizer?: ISceneOptimizerConfiguration | boolean;
     // at the moment, support only a single camera.
-    camera?: {
-        position?: { x: number, y: number, z: number };
-        rotation?: { x: number, y: number, z: number, w: number };
-        fov?: number;
-        fovMode?: number;
-        minZ?: number;
-        maxZ?: number;
-        inertia?: number;
-        behaviors?: {
-            [name: string]: number | {
-                type: number;
-                [propName: string]: any;
-            };
-        };
-
-        [propName: string]: any;
-    },
+    camera?: ICameraConfiguration,
     skybox?: {
         cubeTexture?: {
             noMipMap?: boolean;
@@ -189,7 +144,60 @@ export interface ViewerConfiguration {
     }
 }
 
-export interface SceneOptimizerParameters {
+export interface ISceneConfiguration {
+    debug?: boolean;
+    autoRotate?: boolean; // deprecated
+    rotationSpeed?: number; // deprecated
+    defaultCamera?: boolean; // deprecated
+    defaultLight?: boolean; // deprecated
+    clearColor?: { r: number, g: number, b: number, a: number };
+    imageProcessingConfiguration?: IImageProcessingConfiguration;
+    environmentTexture?: string;
+}
+
+export interface ISceneOptimizerConfiguration {
+    targetFrameRate?: number;
+    trackerDuration?: number;
+    autoGeneratePriorities?: boolean;
+    improvementMode?: boolean;
+    degradation?: string; // low, moderate, high
+    types?: {
+        texture?: ISceneOptimizerParameters;
+        hardwareScaling?: ISceneOptimizerParameters;
+        shadow?: ISceneOptimizerParameters;
+        postProcess?: ISceneOptimizerParameters;
+        lensFlare?: ISceneOptimizerParameters;
+        particles?: ISceneOptimizerParameters;
+        renderTarget?: ISceneOptimizerParameters;
+        mergeMeshes?: ISceneOptimizerParameters;
+    }
+}
+
+export interface IObserversConfiguration {
+    onEngineInit?: string;
+    onSceneInit?: string;
+    onModelLoaded?: string;
+}
+
+export interface ICameraConfiguration {
+    position?: { x: number, y: number, z: number };
+    rotation?: { x: number, y: number, z: number, w: number };
+    fov?: number;
+    fovMode?: number;
+    minZ?: number;
+    maxZ?: number;
+    inertia?: number;
+    behaviors?: {
+        [name: string]: number | {
+            type: number;
+            [propName: string]: any;
+        };
+    };
+
+    [propName: string]: any;
+}
+
+export interface ISceneOptimizerParameters {
     priority?: number;
     maximumSize?: number;
     step?: number;
