@@ -2,7 +2,7 @@ import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
 import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration } from '../configuration/configuration';
+import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 
@@ -145,8 +145,122 @@ export abstract class AbstractViewer {
             this.configureModel(newConfiguration.model);
         }
 
+        // environment
+        if (newConfiguration.skybox !== undefined || newConfiguration.ground !== undefined) {
+            this.configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
+        }
+
         // update this.configuration with the new data
         this.configuration = deepmerge(this.configuration || {}, newConfiguration);
+    }
+
+    protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
+        if (!skyboxConifguration && !groundConfiguration) {
+            if (this.environmentHelper) {
+                this.environmentHelper.dispose();
+            };
+            return Promise.resolve(this.scene);
+        }
+
+        const options: Partial<IEnvironmentHelperOptions> = {
+            createGround: !!groundConfiguration,
+            createSkybox: !!skyboxConifguration,
+            setupImageProcessing: false // will be done at the scene level!
+        };
+
+        if (groundConfiguration) {
+            let groundConfig = (typeof groundConfiguration === 'boolean') ? {} : groundConfiguration;
+
+            let groundSize = groundConfig.size || (typeof skyboxConifguration === 'object' && skyboxConifguration.scale);
+            if (groundSize) {
+                options.groundSize = groundSize;
+            }
+
+            options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
+            if (groundConfig.shadowLevel) {
+                options.groundShadowLevel = groundConfig.shadowLevel;
+            }
+            options.enableGroundMirror = !!groundConfig.mirror;
+            if (groundConfig.texture) {
+                options.groundTexture = groundConfig.texture;
+            }
+            if (groundConfig.color) {
+                options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
+            }
+
+            if (groundConfig.mirror) {
+                options.enableGroundMirror = true;
+                // to prevent undefines
+                if (typeof groundConfig.mirror === "object") {
+                    if (groundConfig.mirror.amount)
+                        options.groundMirrorAmount = groundConfig.mirror.amount;
+                    if (groundConfig.mirror.sizeRatio)
+                        options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
+                    if (groundConfig.mirror.blurKernel)
+                        options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
+                    if (groundConfig.mirror.fresnelWeight)
+                        options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
+                    if (groundConfig.mirror.fallOffDistance)
+                        options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
+                    if (this.defaultHighpTextureType !== undefined)
+                        options.groundMirrorTextureType = this.defaultHighpTextureType;
+                }
+            }
+
+        }
+
+        let postInitSkyboxMaterial = false;
+        if (skyboxConifguration) {
+            let conf = skyboxConifguration === true ? {} : skyboxConifguration;
+            if (conf.material && conf.material.imageProcessingConfiguration) {
+                options.setupImageProcessing = false; // will be configured later manually.
+            }
+            let skyboxSize = conf.scale;
+            if (skyboxSize) {
+                options.skyboxSize = skyboxSize;
+            }
+            options.sizeAuto = !options.skyboxSize;
+            if (conf.color) {
+                options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
+            }
+            if (conf.cubeTexture && conf.cubeTexture.url) {
+                if (typeof conf.cubeTexture.url === "string") {
+                    options.skyboxTexture = conf.cubeTexture.url;
+                } else {
+                    // init later!
+                    postInitSkyboxMaterial = true;
+                }
+            }
+
+            if (conf.material && conf.material.imageProcessingConfiguration) {
+                postInitSkyboxMaterial = true;
+            }
+        }
+
+        if (!this.environmentHelper) {
+            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+        } else {
+            // there might be a new scene! we need to dispose.
+
+            // get the scene used by the envHelper
+            let scene: Scene = this.environmentHelper.rootMesh.getScene();
+            // is it a different scene? Oh no!
+            if (scene !== this.scene) {
+                this.environmentHelper.dispose();
+                this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
+            } else {
+                this.environmentHelper.updateOptions(options)!;
+            }
+        }
+
+        if (postInitSkyboxMaterial) {
+            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
+            if (skyboxMaterial) {
+                if (typeof skyboxConifguration === 'object' && skyboxConifguration.material && skyboxConifguration.material.imageProcessingConfiguration) {
+                    this.extendClassWithConfig(skyboxMaterial.imageProcessingConfiguration, skyboxConifguration.material.imageProcessingConfiguration);
+                }
+            }
+        }
     }
 
     protected configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration) {
@@ -457,111 +571,7 @@ export abstract class AbstractViewer {
     }
 
     protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
-        if (!this.configuration.skybox && !this.configuration.ground) {
-            if (this.environmentHelper) {
-                this.environmentHelper.dispose();
-            };
-            return Promise.resolve(this.scene);
-        }
-
-        const options: Partial<IEnvironmentHelperOptions> = {
-            createGround: !!this.configuration.ground,
-            createSkybox: !!this.configuration.skybox,
-            setupImageProcessing: false // will be done at the scene level!
-        };
-
-        if (this.configuration.ground) {
-            let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
-
-            let groundSize = groundConfig.size || (this.configuration.skybox && this.configuration.skybox.scale);
-            if (groundSize) {
-                options.groundSize = groundSize;
-            }
-
-            options.enableGroundShadow = this.configuration.ground === true || groundConfig.receiveShadows;
-            if (groundConfig.shadowLevel) {
-                options.groundShadowLevel = groundConfig.shadowLevel;
-            }
-            options.enableGroundMirror = !!groundConfig.mirror;
-            if (groundConfig.texture) {
-                options.groundTexture = groundConfig.texture;
-            }
-            if (groundConfig.color) {
-                options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
-            }
-
-            if (groundConfig.mirror) {
-                options.enableGroundMirror = true;
-                // to prevent undefines
-                if (typeof groundConfig.mirror === "object") {
-                    if (groundConfig.mirror.amount)
-                        options.groundMirrorAmount = groundConfig.mirror.amount;
-                    if (groundConfig.mirror.sizeRatio)
-                        options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                    if (groundConfig.mirror.blurKernel)
-                        options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                    if (groundConfig.mirror.fresnelWeight)
-                        options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                    if (groundConfig.mirror.fallOffDistance)
-                        options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                    if (this.defaultHighpTextureType !== undefined)
-                        options.groundMirrorTextureType = this.defaultHighpTextureType;
-                }
-            }
-
-        }
-
-        let postInitSkyboxMaterial = false;
-        if (this.configuration.skybox) {
-            let conf = this.configuration.skybox;
-            if (conf.material && conf.material.imageProcessingConfiguration) {
-                options.setupImageProcessing = false; // will be configured later manually.
-            }
-            let skyboxSize = this.configuration.skybox.scale;
-            if (skyboxSize) {
-                options.skyboxSize = skyboxSize;
-            }
-            options.sizeAuto = !options.skyboxSize;
-            if (conf.color) {
-                options.skyboxColor = new Color3(conf.color.r, conf.color.g, conf.color.b)
-            }
-            if (conf.cubeTexture && conf.cubeTexture.url) {
-                if (typeof conf.cubeTexture.url === "string") {
-                    options.skyboxTexture = conf.cubeTexture.url;
-                } else {
-                    // init later!
-                    postInitSkyboxMaterial = true;
-                }
-            }
-
-            if (conf.material && conf.material.imageProcessingConfiguration) {
-                postInitSkyboxMaterial = true;
-            }
-        }
-
-        if (!this.environmentHelper) {
-            this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
-        }
-        else {
-            // there might be a new scene! we need to dispose.
-            // get the scene used by the envHelper
-            let scene: Scene = this.environmentHelper.rootMesh.getScene();
-            if (scene !== this.scene) {
-                this.environmentHelper.dispose();
-                this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
-            } else {
-                this.environmentHelper.updateOptions(options)!;
-            }
-        }
-
-        if (postInitSkyboxMaterial) {
-            let skyboxMaterial = this.environmentHelper.skyboxMaterial;
-            if (skyboxMaterial) {
-                if (this.configuration.skybox && this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration) {
-                    this.extendClassWithConfig(skyboxMaterial.imageProcessingConfiguration, this.configuration.skybox.material.imageProcessingConfiguration);
-                }
-            }
-        }
+        this.configureEnvironment(this.configuration.skybox, this.configuration.ground);
 
         return Promise.resolve(this.scene);
     }

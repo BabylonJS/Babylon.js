@@ -25,44 +25,9 @@ export interface ViewerConfiguration {
     optimizer?: ISceneOptimizerConfiguration | boolean;
     // at the moment, support only a single camera.
     camera?: ICameraConfiguration,
-    skybox?: {
-        cubeTexture?: {
-            noMipMap?: boolean;
-            gammaSpace?: boolean;
-            url?: string | Array<string>;
-        };
-        color?: { r: number, g: number, b: number };
-        pbr?: boolean; // deprecated
-        scale?: number;
-        blur?: number; // deprecated
-        material?: {
-            imageProcessingConfiguration?: IImageProcessingConfiguration;
-        };
-        infiniteDIstance?: boolean;
+    skybox?: boolean | ISkyboxConfiguration;
 
-    };
-
-    ground?: boolean | {
-        size?: number;
-        receiveShadows?: boolean;
-        shadowLevel?: number;
-        shadowOnly?: boolean; // deprecated
-        mirror?: boolean | {
-            sizeRatio?: number;
-            blurKernel?: number;
-            amount?: number;
-            fresnelWeight?: number;
-            fallOffDistance?: number;
-            textureType?: number;
-        };
-        texture?: string;
-        color?: { r: number, g: number, b: number };
-        opacity?: number;
-        material?: { // deprecated!
-            [propName: string]: any;
-        };
-
-    };
+    ground?: boolean | IGroundConfiguration;
     lights?: {
         [name: string]: ILightConfiguration
     },
@@ -116,6 +81,44 @@ export interface IModelConfiguration {
     thumbnail?: string; // URL or data-url
 
     // [propName: string]: any; // further configuration, like title and creator
+}
+
+export interface ISkyboxConfiguration {
+    cubeTexture?: {
+        noMipMap?: boolean;
+        gammaSpace?: boolean;
+        url?: string | Array<string>;
+    };
+    color?: { r: number, g: number, b: number };
+    pbr?: boolean; // deprecated
+    scale?: number;
+    blur?: number; // deprecated
+    material?: {
+        imageProcessingConfiguration?: IImageProcessingConfiguration;
+    };
+    infiniteDIstance?: boolean;
+
+}
+
+export interface IGroundConfiguration {
+    size?: number;
+    receiveShadows?: boolean;
+    shadowLevel?: number;
+    shadowOnly?: boolean; // deprecated
+    mirror?: boolean | {
+        sizeRatio?: number;
+        blurKernel?: number;
+        amount?: number;
+        fresnelWeight?: number;
+        fallOffDistance?: number;
+        textureType?: number;
+    };
+    texture?: string;
+    color?: { r: number, g: number, b: number };
+    opacity?: number;
+    material?: { // deprecated!
+        [propName: string]: any;
+    };
 }
 
 export interface ISceneConfiguration {
