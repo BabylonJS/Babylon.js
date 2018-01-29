@@ -1,7 +1,7 @@
 {
-  "errors": 8166,
+  "errors": 8133,
   "babylon.typedoc.json": {
-    "errors": 8166,
+    "errors": 8133,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -14203,37 +14203,6 @@
         }
       }
     },
-    "EventState": {
-      "Method": {
-        "initalize": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "mask": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "skipNextObservers": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "currentTarget": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "ExecuteCodeAction": {
       "Class": {
         "Comments": {
@@ -21963,42 +21932,6 @@
         }
       }
     },
-    "MultiObserver": {
-      "Method": {
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "Watch": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "observables": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "callback": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "mask": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scope": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "MultiRenderTarget": {
       "Class": {
         "Comments": {
@@ -22475,144 +22408,6 @@
           }
         },
         "textureSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "Observable": {
-      "Constructor": {
-        "new Observable": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "onObserverAdded": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "_observers": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "add": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "clone": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "hasObservers": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "hasSpecificMask": {
-          "Parameter": {
-            "mask": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "notifyObserver": {
-          "Parameter": {
-            "observer": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "eventData": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "notifyObservers": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "eventData": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "currentTarget": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "remove": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "removeCallback": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
-    "Observer": {
-      "Constructor": {
-        "new Observer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "callback": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "mask": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scope": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "callback": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "mask": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "scope": {
           "Comments": {
             "MissingText": true
           }
