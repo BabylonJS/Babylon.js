@@ -175,4 +175,28 @@ describe('Babylon.Promise', () => {
             });
         });
     });     
+
+    describe('#All and then', () => {
+        it('should correctly handle chaining a returning then after a all', (done) => {
+            mocha.timeout(10000);
+            var delayAsync = function (timeout) {
+                return new Promise(function (resolve) {
+                    setTimeout(function () {
+                        resolve(1);
+                    }, timeout);
+                });
+            };
+            
+            var promise = Promise.all([delayAsync(100), delayAsync(200)]).then(function () {
+                return 2;
+            });
+            
+            promise.then(function (value) {
+                value.should.be.equal(2);
+                done();
+            }); 
+        });
+    });      
+
+
 });
