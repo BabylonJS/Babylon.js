@@ -179,13 +179,14 @@
         }
 
         /**
-        * The resulting output of the post process.
+        * The input texture for this post process and the output texture of the previous post process. When added to a pipeline the previous post process will
+        * render it's output into this texture and this texture will be used as textureSampler in the fragment shader of this post process.
         */
-        public get outputTexture(): InternalTexture {
+        public get inputTexture(): InternalTexture {
             return this._textures.data[this._currentRenderTextureInd];
         }
 
-        public set outputTexture(value: InternalTexture) {
+        public set inputTexture(value: InternalTexture) {
             this._forcedOutputTexture = value;
         }
 
@@ -228,7 +229,7 @@
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param vertexUrl The url of the vertex shader to be used. (default: "postprocess")
          * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
-         * @param blockCompilation If the shader should be compiled imediatly. (default: false) 
+         * @param blockCompilation If the shader should not be compiled imediatly. (default: false) 
          */
         constructor(/** Name of the PostProcess. */public name: string, fragmentUrl: string, parameters: Nullable<string[]>, samplers: Nullable<string[]>, options: number | PostProcessOptions, camera: Nullable<Camera>,
             samplingMode: number = Texture.NEAREST_SAMPLINGMODE, engine?: Engine, reusable?: boolean, defines: Nullable<string> = null, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, vertexUrl: string = "postprocess", indexParameters?: any, blockCompilation = false) {
@@ -333,6 +334,7 @@
 
         /**
          * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
+         * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
          * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
          * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
          * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
@@ -411,16 +413,17 @@
             var target: InternalTexture;
 
             if (this._shareOutputWithPostProcess) {
-                target = this._shareOutputWithPostProcess.outputTexture;
+                target = this._shareOutputWithPostProcess.inputTexture;
             } else if (this._forcedOutputTexture) {
                 target = this._forcedOutputTexture;
 
                 this.width = this._forcedOutputTexture.width;
                 this.height = this._forcedOutputTexture.height;
             } else {
-                target = this.outputTexture;
+                target = this.inputTexture;
             }
 
+            // Bind the input of this post process to be used as the output of the previous post process.
             if (this.enablePixelPerfectMode) {
                 this._scaleRatio.copyFromFloats(requiredWidth / desiredWidth, requiredHeight / desiredHeight);
                 this._engine.bindFramebuffer(target, 0, requiredWidth, requiredHeight, true);
@@ -493,14 +496,14 @@
                 this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
             }
 
-            // Texture            
+            // Bind the output texture of the preivous post process as the input to this post process.            
             var source: InternalTexture;
             if (this._shareOutputWithPostProcess) {
-                source = this._shareOutputWithPostProcess.outputTexture;
+                source = this._shareOutputWithPostProcess.inputTexture;
             } else if (this._forcedOutputTexture) {
                 source = this._forcedOutputTexture;
             } else {
-                source = this.outputTexture;
+                source = this.inputTexture;
             }
             this._effect._bindTexture("textureSampler", source);
 
