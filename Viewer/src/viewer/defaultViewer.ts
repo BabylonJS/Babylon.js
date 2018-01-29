@@ -144,10 +144,6 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private onModelLoaded = (meshes: Array<AbstractMesh>) => {
-
-        // here we could set the navbar's model information:
-        this.configureModel(this.configuration.model || {});
-
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
         if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {

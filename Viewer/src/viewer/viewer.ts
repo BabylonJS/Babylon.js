@@ -441,6 +441,8 @@ export abstract class AbstractViewer {
                 this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
             });
         }).then((meshes: Array<AbstractMesh>) => {
+            // update the models' configuration
+            this.configureModel(model);
             return this.onModelLoadedObservable.notifyObserversWithPromise(meshes)
                 .then(() => {
                     this.initEnvironment();
