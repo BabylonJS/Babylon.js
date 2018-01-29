@@ -1,8 +1,8 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration } from '../configuration/configuration';
+import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion } from 'babylonjs';
+import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 
@@ -138,6 +138,11 @@ export abstract class AbstractViewer {
             this.configureObservers(newConfiguration.observers);
         }
 
+        // configure model
+        if (newConfiguration.model && typeof newConfiguration.model === 'object') {
+            this.configureModel(newConfiguration.model);
+        }
+
         // update this.configuration with the new data
         this.configuration = deepmerge(this.configuration || {}, newConfiguration);
     }
@@ -243,6 +248,52 @@ export abstract class AbstractViewer {
             if (observersConfiguration.onModelLoaded === '' && this.configuration.observers && this.configuration.observers!.onModelLoaded) {
                 this.onModelLoadedObservable.removeCallback(window[this.configuration.observers!.onModelLoaded!]);
             }
+        }
+    }
+
+    protected configureModel(modelConfiguration: Partial<IModelConfiguration>) {
+        let meshesWithNoParent: Array<AbstractMesh> = this.scene.meshes.filter(m => !m.parent);
+        let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
+            meshesWithNoParent.forEach(mesh => {
+                if (param) {
+                    mesh[variable][param] = value;
+                } else {
+                    mesh[variable] = value;
+                }
+            });
+        }
+        let updateXYZ = (variable: string, configValues: { x: number, y: number, z: number, w?: number }) => {
+            if (configValues.x !== undefined) {
+                updateMeshesWithNoParent(variable, configValues.x, 'x');
+            }
+            if (configValues.y !== undefined) {
+                updateMeshesWithNoParent(variable, configValues.y, 'y');
+            }
+            if (configValues.z !== undefined) {
+                updateMeshesWithNoParent(variable, configValues.z, 'z');
+            }
+            if (configValues.w !== undefined) {
+                updateMeshesWithNoParent(variable, configValues.w, 'w');
+            }
+        }
+        // position?
+        if (modelConfiguration.position) {
+            updateXYZ('position', modelConfiguration.position);
+        }
+        if (modelConfiguration.rotation) {
+            if (modelConfiguration.rotation.w) {
+                meshesWithNoParent.forEach(mesh => {
+                    if (!mesh.rotationQuaternion) {
+                        mesh.rotationQuaternion = new Quaternion();
+                    }
+                })
+                updateXYZ('rotationQuaternion', modelConfiguration.rotation);
+            } else {
+                updateXYZ('rotation', modelConfiguration.rotation);
+            }
+        }
+        if (modelConfiguration.scaling) {
+            updateXYZ('scaling', modelConfiguration.scaling);
         }
     }
 

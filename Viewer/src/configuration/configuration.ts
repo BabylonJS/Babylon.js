@@ -19,20 +19,7 @@ export interface ViewerConfiguration {
 
     canvasElement?: string; // if there is a need to override the standard implementation - ID of HTMLCanvasElement
 
-    model?: {
-        url?: string;
-        loader?: string; // obj, gltf?
-        position?: { x: number, y: number, z: number };
-        rotation?: { x: number, y: number, z: number, w: number };
-        scaling?: { x: number, y: number, z: number };
-        parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
-
-        title: string;
-        subtitle?: string;
-        thumbnail?: string; // URL or data-url
-
-        [propName: string]: any; // further configuration, like title and creator
-    } | string;
+    model?: IModelConfiguration | string;
 
     scene?: ISceneConfiguration;
     optimizer?: ISceneOptimizerConfiguration | boolean;
@@ -77,35 +64,7 @@ export interface ViewerConfiguration {
 
     };
     lights?: {
-        [name: string]: {
-            type: number;
-            name?: string;
-            disabled?: boolean;
-            position?: { x: number, y: number, z: number };
-            target?: { x: number, y: number, z: number };
-            direction?: { x: number, y: number, z: number };
-            diffuse?: { r: number, g: number, b: number };
-            specular?: { r: number, g: number, b: number };
-            intensity?: number;
-            radius?: number;
-            shadownEnabled?: boolean; // only on specific lights!
-            shadowConfig?: {
-                useBlurExponentialShadowMap?: boolean;
-                useKernelBlur?: boolean;
-                blurKernel?: number;
-                blurScale?: number;
-                [propName: string]: any;
-            }
-            [propName: string]: any;
-
-            // no behaviors for light at the moment, but allowing configuration for future reference.
-            behaviors?: {
-                [name: string]: number | {
-                    type: number;
-                    [propName: string]: any;
-                };
-            };
-        }
+        [name: string]: ILightConfiguration
     },
     // engine configuration. optional!
     engine?: {
@@ -142,6 +101,21 @@ export interface ViewerConfiguration {
         }
         hideLoadingDelay?: number;
     }
+}
+
+export interface IModelConfiguration {
+    url: string;
+    loader?: string; // obj, gltf?
+    position?: { x: number, y: number, z: number };
+    rotation?: { x: number, y: number, z: number, w?: number };
+    scaling?: { x: number, y: number, z: number };
+    parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
+
+    title: string;
+    subtitle?: string;
+    thumbnail?: string; // URL or data-url
+
+    // [propName: string]: any; // further configuration, like title and creator
 }
 
 export interface ISceneConfiguration {
@@ -195,6 +169,36 @@ export interface ICameraConfiguration {
     };
 
     [propName: string]: any;
+}
+
+export interface ILightConfiguration {
+    type: number;
+    name?: string;
+    disabled?: boolean;
+    position?: { x: number, y: number, z: number };
+    target?: { x: number, y: number, z: number };
+    direction?: { x: number, y: number, z: number };
+    diffuse?: { r: number, g: number, b: number };
+    specular?: { r: number, g: number, b: number };
+    intensity?: number;
+    radius?: number;
+    shadownEnabled?: boolean; // only on specific lights!
+    shadowConfig?: {
+        useBlurExponentialShadowMap?: boolean;
+        useKernelBlur?: boolean;
+        blurKernel?: number;
+        blurScale?: number;
+        [propName: string]: any;
+    }
+    [propName: string]: any;
+
+    // no behaviors for light at the moment, but allowing configuration for future reference.
+    behaviors?: {
+        [name: string]: number | {
+            type: number;
+            [propName: string]: any;
+        };
+    };
 }
 
 export interface ISceneOptimizerParameters {

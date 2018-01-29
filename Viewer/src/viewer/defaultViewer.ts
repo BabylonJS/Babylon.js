@@ -1,6 +1,6 @@
 
 
-import { ViewerConfiguration } from './../configuration/configuration';
+import { ViewerConfiguration, IModelConfiguration } from './../configuration/configuration';
 import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
@@ -105,6 +105,34 @@ export class DefaultViewer extends AbstractViewer {
         this.containerElement.style.display = 'flex';
     }
 
+    protected configureModel(modelConfiguration: Partial<IModelConfiguration>) {
+        super.configureModel(modelConfiguration);
+
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+
+        let metadataContainer = navbar.parent.querySelector('#model-metadata');
+        if (metadataContainer) {
+            if (modelConfiguration.title !== undefined) {
+                let element = metadataContainer.querySelector('span.model-title');
+                if (element) {
+                    element.innerHTML = modelConfiguration.title;
+                }
+            }
+
+            if (modelConfiguration.subtitle !== undefined) {
+                let element = metadataContainer.querySelector('span.model-subtitle');
+                if (element) {
+                    element.innerHTML = modelConfiguration.subtitle;
+                }
+            }
+
+            if (modelConfiguration.thumbnail !== undefined) {
+                (<HTMLDivElement>metadataContainer.querySelector('.thumbnail')).style.backgroundImage = `url('${modelConfiguration.thumbnail}')`;
+            }
+        }
+    }
+
     public loadModel(model: any = this.configuration.model): Promise<Scene> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
@@ -118,7 +146,7 @@ export class DefaultViewer extends AbstractViewer {
     private onModelLoaded = (meshes: Array<AbstractMesh>) => {
 
         // here we could set the navbar's model information:
-        this.setModelMetaData();
+        this.configureModel(this.configuration.model || {});
 
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
@@ -140,35 +168,6 @@ export class DefaultViewer extends AbstractViewer {
         this.setupLights(meshes);
 
         return; //this.initEnvironment(meshes);
-    }
-
-    private setModelMetaData() {
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
-
-        let metadataContainer = navbar.parent.querySelector('#model-metadata');
-
-        //title
-        if (metadataContainer && typeof this.configuration.model === 'object') {
-            if (this.configuration.model.title) {
-                let element = metadataContainer.querySelector('span.model-title');
-                if (element) {
-                    element.innerHTML = this.configuration.model.title;
-                }
-            }
-
-            if (this.configuration.model.subtitle) {
-                let element = metadataContainer.querySelector('span.model-subtitle');
-                if (element) {
-                    element.innerHTML = this.configuration.model.subtitle;
-                }
-            }
-
-            if (this.configuration.model.thumbnail) {
-                (<HTMLDivElement>metadataContainer.querySelector('.thumbnail')).style.backgroundImage = `url('${this.configuration.model.thumbnail}')`;
-            }
-        }
-
     }
 
     /*protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
