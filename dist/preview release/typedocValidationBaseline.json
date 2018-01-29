@@ -36875,40 +36875,6 @@
             }
           }
         },
-        "setPivotMatrix": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "matrix": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "postMultiplyPivotMatrix": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setPivotPoint": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "point": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "space": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "setPositionWithLocalVector": {
           "Comments": {
             "MissingReturn": true
