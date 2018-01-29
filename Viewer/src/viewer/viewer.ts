@@ -1,10 +1,11 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration } from '../configuration/configuration';
+import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior } from 'babylonjs';
+import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
+import { CameraBehavior } from 'src/interfaces';
 
 export abstract class AbstractViewer {
 
@@ -12,6 +13,7 @@ export abstract class AbstractViewer {
 
     public engine: Engine;
     public scene: Scene;
+    public camera: ArcRotateCamera;
     public sceneOptimizer: SceneOptimizer;
     public baseId: string;
 
@@ -74,6 +76,9 @@ export abstract class AbstractViewer {
         // extend the configuration
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
             this.configuration = configuration;
+            if (this.configuration.observers) {
+                this.configureObservers(this.configuration.observers);
+            }
             //this.updateConfiguration(configuration);
 
             // initialize the templates
@@ -115,7 +120,7 @@ export abstract class AbstractViewer {
     }
 
     protected render = (): void => {
-        this.scene && this.scene.render();
+        this.scene && this.scene.activeCamera && this.scene.render();
     }
 
     /**
@@ -273,7 +278,6 @@ export abstract class AbstractViewer {
         if (!this.scene) {
             return;
         }
-
         if (sceneConfig.debug) {
             this.scene.debugLayer.show();
         } else {
@@ -309,6 +313,10 @@ export abstract class AbstractViewer {
             }
             const environmentTexture = CubeTexture.CreateFromPrefilteredData(sceneConfig.environmentTexture, this.scene);
             this.scene.environmentTexture = environmentTexture;
+        }
+
+        if (sceneConfig.autoRotate) {
+            this.camera.useAutoRotationBehavior = true;
         }
     }
 
@@ -372,6 +380,34 @@ export abstract class AbstractViewer {
         }
     }
 
+    protected configureCamera(cameraConfig: ICameraConfiguration, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        if (!this.scene.activeCamera) {
+            this.scene.createDefaultCamera(true, true, true);
+            this.camera = <ArcRotateCamera>this.scene.activeCamera!;
+        }
+        if (cameraConfig.position) {
+            this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
+        }
+
+        if (cameraConfig.rotation) {
+            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
+        }
+
+        this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
+        this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
+
+        if (cameraConfig.behaviors) {
+            for (let name in cameraConfig.behaviors) {
+                this.setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
+            }
+        };
+
+        const sceneExtends = this.scene.getWorldExtends();
+        const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
+        const sceneDiagonalLenght = sceneDiagonal.length();
+        this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
+    }
+
     protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
         // sanity check!
         if (!Object.keys(lightsConfiguration).length) return;
@@ -425,7 +461,7 @@ export abstract class AbstractViewer {
                     let renderList = shadownMap.renderList;
                     for (var index = 0; index < focusMeshes.length; index++) {
                         if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
-                            renderList && renderList.push(focusMeshes[index]);
+                            // renderList && renderList.push(focusMeshes[index]);
                         }
                     }
                 } else if (shadowGenerator) {
@@ -435,12 +471,12 @@ export abstract class AbstractViewer {
         });
 
         // remove the unneeded lights
-        lightsAvailable.forEach(name => {
+        /*lightsAvailable.forEach(name => {
             let light = this.scene.getLightByName(name);
             if (light) {
                 light.dispose();
             }
-        });
+        });*/
     }
 
     protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
@@ -602,7 +638,8 @@ export abstract class AbstractViewer {
         // create a new scene
         this.scene = new Scene(this.engine);
         // make sure there is a default camera and light.
-        this.scene.createDefaultCameraOrLight(true, true, true);
+        this.scene.createDefaultLight(true);
+
         if (this.configuration.scene) {
             this.configureScene(this.configuration.scene);
 
@@ -654,9 +691,9 @@ export abstract class AbstractViewer {
                     this.configureLights(this.configuration.lights);
 
                     if (this.configuration.camera) {
-
+                        this.configureCamera(this.configuration.camera, meshes);
                     }
-                    return this.initEnvironment();
+                    return this.initEnvironment(meshes);
                 }).then(() => {
                     return this.scene;
                 });
@@ -742,5 +779,55 @@ export abstract class AbstractViewer {
                 }
             }
         });
+    }
+
+    private setCameraBehavior(behaviorConfig: number | {
+        type: number;
+        [propName: string]: any;
+    }, payload: any) {
+
+        let behavior: Behavior<ArcRotateCamera> | null;
+        let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
+
+        let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
+
+        // constructing behavior
+        switch (type) {
+            case CameraBehavior.AUTOROTATION:
+                behavior = new AutoRotationBehavior();
+                break;
+            case CameraBehavior.BOUNCING:
+                behavior = new BouncingBehavior();
+                break;
+            case CameraBehavior.FRAMING:
+                behavior = new FramingBehavior();
+                break;
+            default:
+                behavior = null;
+                break;
+        }
+
+        if (behavior) {
+            if (typeof behaviorConfig === "object") {
+                this.extendClassWithConfig(behavior, behaviorConfig);
+            }
+            this.camera.addBehavior(behavior);
+        }
+
+        // post attach configuration. Some functionalities require the attached camera.
+        switch (type) {
+            case CameraBehavior.AUTOROTATION:
+                break;
+            case CameraBehavior.BOUNCING:
+                break;
+            case CameraBehavior.FRAMING:
+                if (config.zoomOnBoundingInfo) {
+                    //payload is an array of meshes
+                    let meshes = <Array<AbstractMesh>>payload;
+                    let bounding = meshes[0].getHierarchyBoundingVectors();
+                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
+                }
+                break;
+        }
     }
 }

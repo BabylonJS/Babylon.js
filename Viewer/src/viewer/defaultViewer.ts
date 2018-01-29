@@ -8,8 +8,6 @@ import { CameraBehavior } from '../interfaces';
 
 export class DefaultViewer extends AbstractViewer {
 
-    public camera: ArcRotateCamera;
-
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this.onModelLoaded);
@@ -153,14 +151,7 @@ export class DefaultViewer extends AbstractViewer {
             this.hideLoadingScreen();
         }, hideLoadingDelay);
 
-
-        // recreate the camera
-        this.scene.createDefaultCameraOrLight(true, true, true);
-        this.camera = <ArcRotateCamera>this.scene.activeCamera;
-
         meshes[0].rotation.y += Math.PI;
-
-        this.setupCamera(meshes);
 
         return; //this.initEnvironment(meshes);
     }
@@ -356,6 +347,7 @@ export class DefaultViewer extends AbstractViewer {
 
     protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
         super.configureLights(lightsConfiguration, focusMeshes);
+        console.log("flashlight", this.configuration.lab);
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
             let pointerPosition = BABYLON.Vector3.Zero();
@@ -400,95 +392,6 @@ export class DefaultViewer extends AbstractViewer {
             }
             this.scene.registerBeforeRender(updateFlashlightFunction);
             this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
-        }
-    }
-
-    private setupCamera(focusMeshes: Array<AbstractMesh> = []) {
-
-        let cameraConfig = this.configuration.camera || {};
-        let sceneConfig = this.configuration.scene || { autoRotate: false, defaultCamera: true };
-
-        if (!this.configuration.camera && sceneConfig.defaultCamera) {
-            if (sceneConfig.autoRotate) {
-                this.camera.useAutoRotationBehavior = true;
-            }
-            return;
-        }
-
-        if (cameraConfig.position) {
-            this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
-        }
-
-        if (cameraConfig.rotation) {
-            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
-        }
-
-        this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
-        this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
-
-        if (cameraConfig.behaviors) {
-            for (let name in cameraConfig.behaviors) {
-                this.setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
-            }
-        };
-
-        if (sceneConfig.autoRotate) {
-            this.camera.useAutoRotationBehavior = true;
-        }
-
-        const sceneExtends = this.scene.getWorldExtends();
-        const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
-        const sceneDiagonalLenght = sceneDiagonal.length();
-        this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
-    }
-
-    private setCameraBehavior(behaviorConfig: number | {
-        type: number;
-        [propName: string]: any;
-    }, payload: any) {
-
-        let behavior: Behavior<ArcRotateCamera> | null;
-        let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
-
-        let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
-
-        // constructing behavior
-        switch (type) {
-            case CameraBehavior.AUTOROTATION:
-                behavior = new AutoRotationBehavior();
-                break;
-            case CameraBehavior.BOUNCING:
-                behavior = new BouncingBehavior();
-                break;
-            case CameraBehavior.FRAMING:
-                behavior = new FramingBehavior();
-                break;
-            default:
-                behavior = null;
-                break;
-        }
-
-        if (behavior) {
-            if (typeof behaviorConfig === "object") {
-                this.extendClassWithConfig(behavior, behaviorConfig);
-            }
-            this.camera.addBehavior(behavior);
-        }
-
-        // post attach configuration. Some functionalities require the attached camera.
-        switch (type) {
-            case CameraBehavior.AUTOROTATION:
-                break;
-            case CameraBehavior.BOUNCING:
-                break;
-            case CameraBehavior.FRAMING:
-                if (config.zoomOnBoundingInfo) {
-                    //payload is an array of meshes
-                    let meshes = <Array<AbstractMesh>>payload;
-                    let bounding = meshes[0].getHierarchyBoundingVectors();
-                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
-                }
-                break;
         }
     }
 }
