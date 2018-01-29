@@ -110,7 +110,10 @@ export class TemplateManager {
      * @memberof TemplateManager
      */
     private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
-        let promises = Object.keys(templates).map(name => {
+        let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(name => {
+            // if the template was overridden
+            if (!templates[name]) return Promise.resolve(false);
+            // else - we have a template, let's do our job!
             let template = new Template(name, templates[name]);
             // make sure the global onEventTriggered is called as well
             template.onEventTriggered.add(eventData => this.onEventTriggered.notifyObservers(eventData));
@@ -171,7 +174,6 @@ export class TemplateManager {
 
 
 import * as Handlebars from '../assets/handlebars.min.js';
-import { PromiseObservable } from './util/promiseObservable';
 import { EventManager } from './eventManager';
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper('eachInMap', function (map, block) {
