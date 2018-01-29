@@ -73,8 +73,8 @@ export abstract class AbstractViewer {
 
         // extend the configuration
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
-            //this.configuration = configuration;
-            this.updateConfiguration(configuration);
+            this.configuration = configuration;
+            //this.updateConfiguration(configuration);
 
             // initialize the templates
             let templateConfiguration = this.configuration.templates || {};
@@ -128,7 +128,7 @@ export abstract class AbstractViewer {
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this.configuration) {
         // update scene configuration
         if (newConfiguration.scene) {
-            this.configurScene(newConfiguration.scene);
+            this.configureScene(newConfiguration.scene);
         }
         // optimizer
         if (newConfiguration.optimizer) {
@@ -149,10 +149,10 @@ export abstract class AbstractViewer {
         this.configuration = deepmerge(this.configuration || {}, newConfiguration);
     }
 
-    protected configurScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration) {
+    protected configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration) {
         // sanity check!
         if (!this.scene) {
-            this.scene = new Scene(this.engine);
+            return;
         }
 
         if (sceneConfig.debug) {
@@ -408,7 +408,7 @@ export abstract class AbstractViewer {
         // make sure there is a default camera and light.
         this.scene.createDefaultCameraOrLight(true, true, true);
         if (this.configuration.scene) {
-            this.configurScene(this.configuration.scene);
+            this.configureScene(this.configuration.scene);
 
             // Scene optimizer
             if (this.configuration.optimizer) {
