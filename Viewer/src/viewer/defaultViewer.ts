@@ -1,6 +1,6 @@
 
 
-import { ViewerConfiguration, IModelConfiguration } from './../configuration/configuration';
+import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration/configuration';
 import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
@@ -161,7 +161,6 @@ export class DefaultViewer extends AbstractViewer {
         meshes[0].rotation.y += Math.PI;
 
         this.setupCamera(meshes);
-        this.setupLights(meshes);
 
         return; //this.initEnvironment(meshes);
     }
@@ -355,10 +354,8 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
-    private setupLights(focusMeshes: Array<AbstractMesh> = []) {
-
-        let sceneConfig = this.configuration.scene || { defaultLight: true };
-
+    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        super.configureLights(lightsConfiguration, focusMeshes);
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
             let pointerPosition = BABYLON.Vector3.Zero();
@@ -403,43 +400,6 @@ export class DefaultViewer extends AbstractViewer {
             }
             this.scene.registerBeforeRender(updateFlashlightFunction);
             this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
-        }
-
-        if (!sceneConfig.defaultLight && (this.configuration.lights && Object.keys(this.configuration.lights).length)) {
-            // remove old lights
-            this.scene.lights.forEach(l => {
-                l.dispose();
-            });
-
-            Object.keys(this.configuration.lights).forEach((name, idx) => {
-                let lightConfig = this.configuration.lights && this.configuration.lights[name] || { name: name, type: 0 };
-                lightConfig.name = name;
-                let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                if (!constructor) return;
-                let light = constructor();
-
-                //enabled
-                if (light.isEnabled() !== !lightConfig.disabled) {
-                    light.setEnabled(!lightConfig.disabled);
-                }
-
-                this.extendClassWithConfig(light, lightConfig);
-
-                //position. Some lights don't support shadows
-                if (light instanceof ShadowLight) {
-                    if (lightConfig.shadowEnabled && this.maxShadows) {
-                        var shadowGenerator = new ShadowGenerator(512, light);
-                        this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
-                        // add the focues meshes to the shadow list
-                        let shadownMap = shadowGenerator.getShadowMap();
-                        if (!shadownMap) return;
-                        let renderList = shadownMap.renderList;
-                        for (var index = 0; index < focusMeshes.length; index++) {
-                            renderList && renderList.push(focusMeshes[index]);
-                        }
-                    }
-                }
-            });
         }
     }
 
