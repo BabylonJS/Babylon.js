@@ -37,6 +37,7 @@ export abstract class AbstractViewer {
     public onEngineInitObservable: Observable<Engine>;
     public onModelLoadedObservable: Observable<AbstractMesh[]>;
     public onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    public onModelLoadErrorObservable: Observable<{ message: string; exception: any }>;
     public onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     public onInitDoneObservable: Observable<AbstractViewer>;
 
@@ -56,6 +57,7 @@ export abstract class AbstractViewer {
         this.onEngineInitObservable = new Observable();
         this.onModelLoadedObservable = new Observable();
         this.onModelLoadProgressObservable = new Observable();
+        this.onModelLoadErrorObservable = new Observable();
         this.onInitDoneObservable = new Observable();
         this.onLoaderInitObservable = new Observable();
 
@@ -436,16 +438,18 @@ export abstract class AbstractViewer {
                     this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
                 }, (e, m, exception) => {
                     // console.log(m, exception);
-                    reject(m);
+                    this.onModelLoadErrorObservable.notifyObserversWithPromise({ message: m, exception: exception }).then(() => {
+                        reject(exception);
+                    });
                 }, plugin)!;
                 this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
             });
         }).then((meshes: Array<AbstractMesh>) => {
-            // update the models' configuration
-            this.configureModel(model);
             return this.onModelLoadedObservable.notifyObserversWithPromise(meshes)
                 .then(() => {
-                    this.initEnvironment();
+                    // update the models' configuration
+                    this.configureModel(model);
+                    return this.initEnvironment();
                 }).then(() => {
                     return this.scene;
                 });
