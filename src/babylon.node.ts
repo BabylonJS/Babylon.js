@@ -411,7 +411,16 @@
             return this._ranges[name];
         }
 
-        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable {
+        /**
+         * Will start the animation sequence
+         * @param {string} name - range frame should animation start
+         * @param {boolean} [loop] - should the animation loop
+         * @param {number} [speedRatio] - the speed in which to run the animation
+         * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
+         * Returns {BABYLON.Animatable} the animatable object created for this animation, if range not exists will return null
+         * See BABYLON.Animatable
+         */
+        public beginAnimation(name: string, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void): Animatable? {
             var range = this.getAnimationRange(name);
 
             if (!range) {
