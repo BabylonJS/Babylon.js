@@ -212,10 +212,20 @@
             return path.substring(index + 1);
         }
 
-        public static GetFolderPath(uri: string): string {
+        /**
+         * Extracts the "folder" part of a path (everything before the filename).
+         * @param uri The URI to extract the info from
+         * @param returnUnchangedIfNoSlash Do not touch the URI if no slashes are present
+         * @returns The "folder" part of the path
+         */
+        public static GetFolderPath(uri: string, returnUnchangedIfNoSlash = false): string {
             var index = uri.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
+                if (returnUnchangedIfNoSlash) {
+                    return uri;
+                }
                 return "";
+            }
 
             return uri.substring(0, index + 1);
         }
