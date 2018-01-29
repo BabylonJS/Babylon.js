@@ -7,12 +7,12 @@
 - `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
 - Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
-- Introduced Projection Texture on SpotLight (`spotLight.projectedLightTexture`). ([lostink](https://github.com/lostink))
+- Introduced Projection Texture on SpotLight (`spotLight.projectedLightTexture`) ([lostink](https://github.com/lostink))
 
 ## Updates
 - Tons of functions and classes received the code comments they deserved (All the community)
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
-- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adapatability ([deltakosh](https://github.com/deltakosh))
+- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adaptability ([deltakosh](https://github.com/deltakosh))
 - Improved `scene.isReady()` function which now takes in account shadows and LOD ([deltakosh](https://github.com/deltakosh))
 - New watcher configuration for VSCode. Now the task only compiles changed files ([sebavan](https://github.com/sebavan))
 - Added new draw modes to engine (points, lines, linesloop, linestrip, trianglestrip, trianglefan) ([benaadams](https://github.com/benaadams))
@@ -41,8 +41,8 @@
 - Gulp process now supports multiple outputs when using webpack. ([RaananW](https://github.com/RaananW))
 - (Viewer) Scene Optimizer intergrated in viewer. ([RaananW](https://github.com/RaananW))
 - (Viewer) The viewer supports custom shaders in the configuration. ([RaananW](https://github.com/RaananW))
-- Documented PostProcessRenderEffect class ([trevordev](https://github.com/trevordev))
-- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie))
+- Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager classes ([trevordev](https://github.com/trevordev))
+- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
