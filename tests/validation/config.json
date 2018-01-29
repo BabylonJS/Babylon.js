@@ -342,6 +342,11 @@
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",
       "replace": "Dude.babylon, dude.babylon"
+    },
+    {
+      "title": "Light Projection Texture",
+      "playgroundId": "#CQNGRK",
+      "referenceImage": "LightProjectionTexture.png"
     }
   ]
 }
