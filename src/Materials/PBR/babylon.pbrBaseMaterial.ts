@@ -537,7 +537,7 @@
 
             this._forceAlphaTest = (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
 
-            this._markAllSubMeshesAsTexturesDirty();
+            this._markAllSubMeshesAsTexturesAndMiscDirty();
         }
 
         /**
@@ -901,10 +901,10 @@
             defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             // Attribs
             if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE) && mesh) {
