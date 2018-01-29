@@ -415,7 +415,7 @@
             var range = this.getAnimationRange(name);
 
             if (!range) {
-                return;
+                return null;
             }
 
             return this._scene.beginAnimation(this, range.from, range.to, loop, speedRatio, onAnimationEnd);
