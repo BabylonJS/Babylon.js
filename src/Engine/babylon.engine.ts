@@ -283,6 +283,7 @@
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
             { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+            { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
 
         public static Instances = new Array<Engine>();
@@ -1347,15 +1348,19 @@
         public resetTextureCache() {
             for (var key in this._boundTexturesCache) {
                 let boundTexture = this._boundTexturesCache[key];
-                if (!this.disableTextureBindingOptimization && boundTexture) {
+                if (boundTexture) {
                     this._removeDesignatedSlot(boundTexture);
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
-                this._nextFreeTextureSlots.push(slot);
+
+            if (!this.disableTextureBindingOptimization) {
+                this._nextFreeTextureSlots = [];
+                for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
+                    this._nextFreeTextureSlots.push(slot);
+                }
             }
+
             this._currentTextureChannel = -1;
         }
 
@@ -4805,6 +4810,10 @@
 
             internalTexture._designatedSlot = -1;
 
+            if (this.disableTextureBindingOptimization) {
+                return -1;
+            }
+            
             // Remove from bound list
             this._linkTrackers(internalTexture.previous, internalTexture.next);
 
@@ -4831,7 +4840,7 @@
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
             if (currentTextureBound !== texture) {
-                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                if (currentTextureBound) {
                     this._removeDesignatedSlot(currentTextureBound);
                 }
 
