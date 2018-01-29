@@ -2382,7 +2382,7 @@
             mesh.scaling = Vector3.FromArray(parsedMesh.scaling);
 
             if (parsedMesh.localMatrix) {
-                mesh.setPivotMatrix(Matrix.FromArray(parsedMesh.localMatrix));
+                mesh.setPreTransformMatrix(Matrix.FromArray(parsedMesh.localMatrix));
             } else if (parsedMesh.pivotMatrix) {
                 mesh.setPivotMatrix(Matrix.FromArray(parsedMesh.pivotMatrix));
             }
