@@ -181,6 +181,12 @@ module BABYLON.GUI {
             this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;            
         }
 
+        /**
+         * Move one end of the line given 3D cartesian coordinates.
+         * @param position Targeted world position
+         * @param scene Scene
+         * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
+         */
         public moveToVector3(position: Vector3, scene: Scene, end: boolean = false): void {
             if (!this._host || this._root !== this._host._rootContainer) {
                 Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
@@ -199,8 +205,11 @@ module BABYLON.GUI {
             this.notRenderable = false;
         }
 
+        /**
+         * @param projectedPosition 
+         * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
+         */
         public _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
-            
             let x: string = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
             let y: string = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
 
