@@ -106,7 +106,7 @@ module BABYLON {
         }       
 
         private _moveChildren(children: InternalPromise<T>[]): void {
-            this._children = children.splice(0, children.length);
+            this._children.push(...children.splice(0, children.length));
 
             if (this.isFulfilled) {
                 for (var child of this._children) {
@@ -200,9 +200,14 @@ module BABYLON {
             agregator.target = promises.length;
             agregator.rootPromise = newPromise;
 
-            for(var index = 0; index < promises.length; index++) {
-                InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
+            if (promises.length) {
+                for(var index = 0; index < promises.length; index++) {
+                    InternalPromise._RegisterForFulfillment(promises[index], agregator, index);
+                }
+            } else {
+                newPromise._resolve([]);
             }
+
 
             return newPromise;
         }

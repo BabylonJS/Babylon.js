@@ -1,7 +1,7 @@
 {
-  "errors": 8288,
+  "errors": 8166,
   "babylon.typedoc.json": {
-    "errors": 8288,
+    "errors": 8166,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -4774,20 +4774,6 @@
         }
       }
     },
-    "BlurPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "direction": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "Bone": {
       "Class": {
         "Comments": {
@@ -8913,173 +8899,45 @@
       }
     },
     "DefaultRenderingPipeline": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Property": {
         "BlurXPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "BlurYPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "CopyBackPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "FinalMergePostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "FxaaPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "HighLightsPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "ImageProcessingPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         },
         "PassPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "animations": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "bloomEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "bloomScale": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "bloomWeight": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "blurX": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "blurY": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "copyBack": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "finalMerge": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "fxaa": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "fxaaEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "highlights": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "imageProcessing": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "imageProcessingEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "pass": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "serialize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "Parse": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "source": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "rootUrl": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -22326,33 +22184,6 @@
             }
           }
         },
-        "beginAnimation": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loop": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onAnimationEnd": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "computeWorldMatrix": {
           "Comments": {
             "MissingText": true
@@ -25989,433 +25820,6 @@
       },
       "Method": {
         "clone": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "PostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new PostProcess": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "fragmentUrl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "parameters": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "samplers": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "options": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "samplingMode": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "reusable": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "defines": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "textureType": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "vertexUrl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "indexParameters": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "blockCompilation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "_currentRenderTextureInd": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_textures": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "adaptScaleToCurrentViewport": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "alphaConstants": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "alphaMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "alwaysForcePOT": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "animations": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "aspectRatio": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "autoClear": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "clearColor": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "enablePixelPerfectMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "height": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isSupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onActivate": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onAfterRender": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onApply": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onBeforeRender": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onSizeChanged": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "outputTexture": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "renderTargetSamplingMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samples": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "scaleMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "texelSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "width": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "activate": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "sourceTexture": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "forceDepthStencil": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "apply": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getCamera": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getEffect": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getEngine": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isReusable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "shareOutputWith": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "postProcess": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "updateEffect": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "defines": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uniforms": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "samplers": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "indexParameters": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onCompiled": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onError": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "PostProcessManager": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new PostProcessManager": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Method": {
-        "_finalizeFrame": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "doNotPresent": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "targetTexture": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "faceIndex": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "postProcesses": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "forceFullscreenViewport": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_prepareFrame": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "sourceTexture": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "postProcesses": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_rebuild": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "directRender": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "postProcesses": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "targetTexture": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "forceFullscreenViewport": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "dispose": {
           "Comments": {
             "MissingText": true
           }
@@ -37786,18 +37190,6 @@
             }
           }
         },
-        "GetFolderPath": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "uri": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "GetPointerPrefix": {
           "Comments": {
             "MissingText": true
@@ -38591,40 +37983,6 @@
           },
           "Parameter": {
             "node": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setPivotMatrix": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "matrix": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "postMultiplyPivotMatrix": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setPivotPoint": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "point": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "space": {
               "Comments": {
                 "MissingText": true
               }

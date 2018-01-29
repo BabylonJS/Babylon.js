@@ -32,12 +32,5 @@
         "uglifyjs-webpack-plugin": "^1.1.6",
         "webpack": "^3.10.0",
         "webpack-dev-server": "^2.11.0"
-    },
-    "dependencies": {
-        "babylonjs": "^3.2.0-alpha4",
-        "babylonjs-loaders": "^3.2.0-alpha4",
-        "deepmerge": "^2.0.1",
-        "es6-promise": "^4.2.2",
-        "handlebars": "^4.0.11"
     }
 }
