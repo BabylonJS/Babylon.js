@@ -1,11 +1,9 @@
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
     entry: {
-        'viewer': './src/index.ts',
-        'viewer.min': './src/index.ts',
+        'viewer': './src/index.ts'
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -16,17 +14,23 @@ module.exports = {
         devtoolModuleFilenameTemplate: '[absolute-resource-path]'
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js']
+        extensions: ['.ts', '.js'],
+        alias: {
+            "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
+            "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
+            "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
+            "deepmerge": __dirname + '/assets/deepmerge.min.js'
+        }
+    },
+    externals: {
+        // until physics will be integrated in the viewer, ignore cannon
+        cannon: 'CANNON'
     },
     devtool: 'source-map',
     plugins: [
         new webpack.WatchIgnorePlugin([
             /\.d\.ts$/
-        ]),
-        new UglifyJSPlugin({
-            parallel: true,
-            test: /\.min\.js$/i,
-        })
+        ])
     ],
     module: {
         loaders: [{

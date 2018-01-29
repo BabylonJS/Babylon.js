@@ -100,7 +100,7 @@ module BABYLON.GLTF2 {
             const diffuse = babylonSpecularGlossiness.diffuse;
             const opacity = babylonSpecularGlossiness.opacity;
             const specular = babylonSpecularGlossiness.specular;
-            const glossiness = babylonSpecularGlossiness.glossiness;
+            const glossiness = BABYLON.Scalar.Clamp(babylonSpecularGlossiness.glossiness);
             
             const oneMinusSpecularStrength = 1 - Math.max(specular.r, Math.max(specular.g, specular.b));
             const diffusePerceivedBrightness = _GLTFMaterial.PerceivedBrightness(diffuse);

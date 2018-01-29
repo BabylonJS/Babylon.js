@@ -12,7 +12,7 @@
 ## Updates
 - Tons of functions and classes received the code comments they deserved (All the community)
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
-- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adapatability ([deltakosh](https://github.com/deltakosh))
+- Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adaptability ([deltakosh](https://github.com/deltakosh))
 - Improved `scene.isReady()` function which now takes in account shadows and LOD ([deltakosh](https://github.com/deltakosh))
 - New watcher configuration for VSCode. Now the task only compiles changed files ([sebavan](https://github.com/sebavan))
 - Added new draw modes to engine (points, lines, linesloop, linestrip, trianglestrip, trianglefan) ([benaadams](https://github.com/benaadams))
@@ -25,7 +25,7 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
    ([carloslanderas](https://github.com/carloslanderas))
-- `AssetsManager` will now clear its `tasks` lsit from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))tasks ([deltakosh](https://github.com/deltakosh))
+- `AssetsManager` will now clear its `tasks` lsit from all successfully loaded tasks ([deltakosh](https://github.com/deltakosh))
 - Added documentation to WebVRCamera and VRExperienceHelper ([trevordev](https://github.com/trevordev))
 - Introduced `isStroke` on `HighlightLayerOptions` which makes the highlight solid ([PixelsCommander](https://github.com/pixelscommander))
 - (Viewer) There is now an option to paste payload instead of a URL for configuration ([RaananW](https://github.com/RaananW))
@@ -41,10 +41,13 @@
 - Gulp process now supports multiple outputs when using webpack. ([RaananW](https://github.com/RaananW))
 - (Viewer) Scene Optimizer intergrated in viewer. ([RaananW](https://github.com/RaananW))
 - (Viewer) The viewer supports custom shaders in the configuration. ([RaananW](https://github.com/RaananW))
-- Documented PostProcessRenderEffect class ([trevordev](https://github.com/trevordev))
+- Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager classes ([trevordev](https://github.com/trevordev))
 - SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
+- (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
+- (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
+- `setPivotMatrix` ws not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 - Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
 
