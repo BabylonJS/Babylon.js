@@ -28,9 +28,7 @@ export interface ViewerConfiguration {
     skybox?: boolean | ISkyboxConfiguration;
 
     ground?: boolean | IGroundConfiguration;
-    lights?: {
-        [name: string]: ILightConfiguration
-    },
+    lights?: { [name: string]: boolean | ILightConfiguration },
     // engine configuration. optional!
     engine?: {
         antialiasing?: boolean;
@@ -75,6 +73,8 @@ export interface IModelConfiguration {
     rotation?: { x: number, y: number, z: number, w?: number };
     scaling?: { x: number, y: number, z: number };
     parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
+
+    castShadow?: boolean;
 
     title: string;
     subtitle?: string;
@@ -184,6 +184,7 @@ export interface ILightConfiguration {
     diffuse?: { r: number, g: number, b: number };
     specular?: { r: number, g: number, b: number };
     intensity?: number;
+    intensityMode?: number;
     radius?: number;
     shadownEnabled?: boolean; // only on specific lights!
     shadowConfig?: {
@@ -191,6 +192,10 @@ export interface ILightConfiguration {
         useKernelBlur?: boolean;
         blurKernel?: number;
         blurScale?: number;
+        minZ?: number;
+        maxZ?: number;
+        frustumSize?: number;
+        angleScale?: number;
         [propName: string]: any;
     }
     [propName: string]: any;

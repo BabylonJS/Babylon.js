@@ -1,8 +1,8 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion } from 'babylonjs';
-import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration } from '../configuration/configuration';
+import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags } from 'babylonjs';
+import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 
@@ -143,6 +143,11 @@ export abstract class AbstractViewer {
         // configure model
         if (newConfiguration.model && typeof newConfiguration.model === 'object') {
             this.configureModel(newConfiguration.model);
+        }
+
+        // lights
+        if (newConfiguration.lights) {
+            this.configureLights(newConfiguration.lights);
         }
 
         // environment
@@ -367,8 +372,79 @@ export abstract class AbstractViewer {
         }
     }
 
-    protected configureModel(modelConfiguration: Partial<IModelConfiguration>) {
-        let meshesWithNoParent: Array<AbstractMesh> = this.scene.meshes.filter(m => !m.parent);
+    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        // sanity check!
+        if (!Object.keys(lightsConfiguration).length) return;
+
+        let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
+
+        Object.keys(lightsConfiguration).forEach((name, idx) => {
+            let lightConfig: ILightConfiguration = { type: 0 };
+            if (typeof lightsConfiguration[name] === 'object') {
+                lightConfig = <ILightConfiguration>lightsConfiguration[name];
+            }
+
+            lightConfig.name = name;
+
+            let light;
+            // light is not already available
+            if (lightsAvailable.indexOf(name) === -1) {
+                let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                if (!constructor) return;
+                light = constructor();
+            } else {
+                // available? get it from the scene
+                light = this.scene.getLightByName(name);
+                lightsAvailable = lightsAvailable.filter(ln => ln !== name);
+            }
+
+            // if config set the light to false, dispose it.
+            if (lightsConfiguration[name] === false) {
+                light.dispose();
+                return;
+            }
+
+            //enabled
+            if (light.isEnabled() !== !lightConfig.disabled) {
+                light.setEnabled(!lightConfig.disabled);
+            }
+
+            this.extendClassWithConfig(light, lightConfig);
+
+            //position. Some lights don't support shadows
+            if (light instanceof ShadowLight) {
+                let shadowGenerator = light.getShadowGenerator();
+                if (lightConfig.shadowEnabled && this.maxShadows) {
+                    if (!shadowGenerator) {
+                        shadowGenerator = new ShadowGenerator(512, light);
+                    }
+                    this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
+                    // add the focues meshes to the shadow list
+                    let shadownMap = shadowGenerator.getShadowMap();
+                    if (!shadownMap) return;
+                    let renderList = shadownMap.renderList;
+                    for (var index = 0; index < focusMeshes.length; index++) {
+                        if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
+                            renderList && renderList.push(focusMeshes[index]);
+                        }
+                    }
+                } else if (shadowGenerator) {
+                    shadowGenerator.dispose();
+                }
+            }
+        });
+
+        // remove the unneeded lights
+        lightsAvailable.forEach(name => {
+            let light = this.scene.getLightByName(name);
+            if (light) {
+                light.dispose();
+            }
+        });
+    }
+
+    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        let meshesWithNoParent: Array<AbstractMesh> = focusMeshes.filter(m => !m.parent);
         let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach(mesh => {
                 if (param) {
@@ -410,6 +486,12 @@ export abstract class AbstractViewer {
         }
         if (modelConfiguration.scaling) {
             updateXYZ('scaling', modelConfiguration.scaling);
+        }
+
+        if (modelConfiguration.castShadow) {
+            focusMeshes.forEach(mesh => {
+                Tags.AddTagsTo(mesh, 'castShadow');
+            });
         }
     }
 
@@ -542,8 +624,14 @@ export abstract class AbstractViewer {
         let plugin = (typeof model === 'string') ? undefined : model.loader;
 
         return Promise.resolve(this.scene).then((scene) => {
-            if (!scene || clearScene) return this.initScene();
-            else return this.scene!;
+            if (!scene) return this.initScene();
+
+            if (clearScene) {
+                scene.meshes.forEach(mesh => {
+                    mesh.dispose();
+                });
+            }
+            return scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
                 this.lastUsedLoader = SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
@@ -562,7 +650,12 @@ export abstract class AbstractViewer {
             return this.onModelLoadedObservable.notifyObserversWithPromise(meshes)
                 .then(() => {
                     // update the models' configuration
-                    this.configureModel(model);
+                    this.configureModel(model, meshes);
+                    this.configureLights(this.configuration.lights);
+
+                    if (this.configuration.camera) {
+
+                    }
                     return this.initEnvironment();
                 }).then(() => {
                     return this.scene;
