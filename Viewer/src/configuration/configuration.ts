@@ -75,6 +75,11 @@ export interface IModelConfiguration {
     parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
 
     castShadow?: boolean;
+    normalize?: boolean | {
+        center?: boolean;
+        unitSize?: boolean;
+        parentIndex?: number;
+    }; // shoud the model be scaled to unit-size
 
     title: string;
     subtitle?: string;

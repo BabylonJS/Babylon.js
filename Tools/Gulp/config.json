@@ -1524,6 +1524,9 @@
             "distOutputDirectory": "/serializers/",
             "buildAsModule": true,
             "moduleName": "babylonjs-serializers",
+            "extraDeclarations": [
+                "../../dist/babylon.glTF2Interface.d.ts"
+            ],
             "outputFilename": "babylonjs.serializers",
             "moduleDeclaration": "BJSSerializers",
             "extendsRoot": true
