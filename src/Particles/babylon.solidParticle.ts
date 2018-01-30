@@ -41,6 +41,12 @@ module BABYLON {
          */
         public pivot: Vector3 = Vector3.Zero();
         /**
+         * Must the particle be translated from its pivot point in its local space ?
+         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.  
+         * Default : false
+         */
+        public translateFromPivot: boolean = false;
+        /**
          * Is the particle active or not ?
          */
         public alive: boolean = true;

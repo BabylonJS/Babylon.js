@@ -15,143 +15,20 @@ export interface ViewerConfiguration {
     };
 
     // names of functions in the window context.
-    observers?: {
-        onEngineInit?: string;
-        onSceneInit?: string;
-        onModelLoaded?: string;
-    }
+    observers?: IObserversConfiguration;
 
     canvasElement?: string; // if there is a need to override the standard implementation - ID of HTMLCanvasElement
 
-    model?: {
-        url?: string;
-        loader?: string; // obj, gltf?
-        position?: { x: number, y: number, z: number };
-        rotation?: { x: number, y: number, z: number, w: number };
-        scaling?: { x: number, y: number, z: number };
-        parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
+    model?: IModelConfiguration | string;
 
-        title: string;
-        subtitle?: string;
-        thumbnail?: string; // URL or data-url
-
-        [propName: string]: any; // further configuration, like title and creator
-    } | string;
-
-    scene?: {
-        debug?: boolean;
-        autoRotate?: boolean;
-        rotationSpeed?: number;
-        defaultCamera?: boolean;
-        defaultLight?: boolean;
-        clearColor?: { r: number, g: number, b: number, a: number };
-        imageProcessingConfiguration?: IImageProcessingConfiguration;
-        environmentTexture?: string;
-    },
-    optimizer?: {
-        targetFrameRate?: number;
-        trackerDuration?: number;
-        autoGeneratePriorities?: boolean;
-        improvementMode?: boolean;
-        degradation?: string; // low, moderate, high
-        types?: {
-            texture?: SceneOptimizerParameters;
-            hardwareScaling?: SceneOptimizerParameters;
-            shadow?: SceneOptimizerParameters;
-            postProcess?: SceneOptimizerParameters;
-            lensFlare?: SceneOptimizerParameters;
-            particles?: SceneOptimizerParameters;
-            renderTarget?: SceneOptimizerParameters;
-            mergeMeshes?: SceneOptimizerParameters;
-        }
-    },
+    scene?: ISceneConfiguration;
+    optimizer?: ISceneOptimizerConfiguration | boolean;
     // at the moment, support only a single camera.
-    camera?: {
-        position?: { x: number, y: number, z: number };
-        rotation?: { x: number, y: number, z: number, w: number };
-        fov?: number;
-        fovMode?: number;
-        minZ?: number;
-        maxZ?: number;
-        inertia?: number;
-        behaviors?: {
-            [name: string]: number | {
-                type: number;
-                [propName: string]: any;
-            };
-        };
+    camera?: ICameraConfiguration,
+    skybox?: boolean | ISkyboxConfiguration;
 
-        [propName: string]: any;
-    },
-    skybox?: {
-        cubeTexture?: {
-            noMipMap?: boolean;
-            gammaSpace?: boolean;
-            url?: string | Array<string>;
-        };
-        color?: { r: number, g: number, b: number };
-        pbr?: boolean; // deprecated
-        scale?: number;
-        blur?: number; // deprecated
-        material?: {
-            imageProcessingConfiguration?: IImageProcessingConfiguration;
-        };
-        infiniteDIstance?: boolean;
-
-    };
-
-    ground?: boolean | {
-        size?: number;
-        receiveShadows?: boolean;
-        shadowLevel?: number;
-        shadowOnly?: boolean; // deprecated
-        mirror?: boolean | {
-            sizeRatio?: number;
-            blurKernel?: number;
-            amount?: number;
-            fresnelWeight?: number;
-            fallOffDistance?: number;
-            textureType?: number;
-        };
-        texture?: string;
-        color?: { r: number, g: number, b: number };
-        opacity?: number;
-        material?: { // deprecated!
-            [propName: string]: any;
-        };
-
-    };
-    lights?: {
-        [name: string]: {
-            type: number;
-            name?: string;
-            disabled?: boolean;
-            position?: { x: number, y: number, z: number };
-            target?: { x: number, y: number, z: number };
-            direction?: { x: number, y: number, z: number };
-            diffuse?: { r: number, g: number, b: number };
-            specular?: { r: number, g: number, b: number };
-            intensity?: number;
-            radius?: number;
-            shadownEnabled?: boolean; // only on specific lights!
-            shadowConfig?: {
-                useBlurExponentialShadowMap?: boolean;
-                useKernelBlur?: boolean;
-                blurKernel?: number;
-                blurScale?: number;
-                [propName: string]: any;
-            }
-            [propName: string]: any;
-
-            // no behaviors for light at the moment, but allowing configuration for future reference.
-            behaviors?: {
-                [name: string]: number | {
-                    type: number;
-                    [propName: string]: any;
-                };
-            };
-        }
-    },
+    ground?: boolean | IGroundConfiguration;
+    lights?: { [name: string]: boolean | ILightConfiguration },
     // engine configuration. optional!
     engine?: {
         antialiasing?: boolean;
@@ -189,7 +66,150 @@ export interface ViewerConfiguration {
     }
 }
 
-export interface SceneOptimizerParameters {
+export interface IModelConfiguration {
+    url: string;
+    loader?: string; // obj, gltf?
+    position?: { x: number, y: number, z: number };
+    rotation?: { x: number, y: number, z: number, w?: number };
+    scaling?: { x: number, y: number, z: number };
+    parentObjectIndex?: number; // the index of the parent object of the model in the loaded meshes array.
+
+    castShadow?: boolean;
+
+    title: string;
+    subtitle?: string;
+    thumbnail?: string; // URL or data-url
+
+    // [propName: string]: any; // further configuration, like title and creator
+}
+
+export interface ISkyboxConfiguration {
+    cubeTexture?: {
+        noMipMap?: boolean;
+        gammaSpace?: boolean;
+        url?: string | Array<string>;
+    };
+    color?: { r: number, g: number, b: number };
+    pbr?: boolean; // deprecated
+    scale?: number;
+    blur?: number; // deprecated
+    material?: {
+        imageProcessingConfiguration?: IImageProcessingConfiguration;
+    };
+    infiniteDIstance?: boolean;
+
+}
+
+export interface IGroundConfiguration {
+    size?: number;
+    receiveShadows?: boolean;
+    shadowLevel?: number;
+    shadowOnly?: boolean; // deprecated
+    mirror?: boolean | {
+        sizeRatio?: number;
+        blurKernel?: number;
+        amount?: number;
+        fresnelWeight?: number;
+        fallOffDistance?: number;
+        textureType?: number;
+    };
+    texture?: string;
+    color?: { r: number, g: number, b: number };
+    opacity?: number;
+    material?: { // deprecated!
+        [propName: string]: any;
+    };
+}
+
+export interface ISceneConfiguration {
+    debug?: boolean;
+    autoRotate?: boolean; // deprecated
+    rotationSpeed?: number; // deprecated
+    defaultCamera?: boolean; // deprecated
+    defaultLight?: boolean; // deprecated
+    clearColor?: { r: number, g: number, b: number, a: number };
+    imageProcessingConfiguration?: IImageProcessingConfiguration;
+    environmentTexture?: string;
+}
+
+export interface ISceneOptimizerConfiguration {
+    targetFrameRate?: number;
+    trackerDuration?: number;
+    autoGeneratePriorities?: boolean;
+    improvementMode?: boolean;
+    degradation?: string; // low, moderate, high
+    types?: {
+        texture?: ISceneOptimizerParameters;
+        hardwareScaling?: ISceneOptimizerParameters;
+        shadow?: ISceneOptimizerParameters;
+        postProcess?: ISceneOptimizerParameters;
+        lensFlare?: ISceneOptimizerParameters;
+        particles?: ISceneOptimizerParameters;
+        renderTarget?: ISceneOptimizerParameters;
+        mergeMeshes?: ISceneOptimizerParameters;
+    }
+}
+
+export interface IObserversConfiguration {
+    onEngineInit?: string;
+    onSceneInit?: string;
+    onModelLoaded?: string;
+}
+
+export interface ICameraConfiguration {
+    position?: { x: number, y: number, z: number };
+    rotation?: { x: number, y: number, z: number, w: number };
+    fov?: number;
+    fovMode?: number;
+    minZ?: number;
+    maxZ?: number;
+    inertia?: number;
+    behaviors?: {
+        [name: string]: number | {
+            type: number;
+            [propName: string]: any;
+        };
+    };
+
+    [propName: string]: any;
+}
+
+export interface ILightConfiguration {
+    type: number;
+    name?: string;
+    disabled?: boolean;
+    position?: { x: number, y: number, z: number };
+    target?: { x: number, y: number, z: number };
+    direction?: { x: number, y: number, z: number };
+    diffuse?: { r: number, g: number, b: number };
+    specular?: { r: number, g: number, b: number };
+    intensity?: number;
+    intensityMode?: number;
+    radius?: number;
+    shadownEnabled?: boolean; // only on specific lights!
+    shadowConfig?: {
+        useBlurExponentialShadowMap?: boolean;
+        useKernelBlur?: boolean;
+        blurKernel?: number;
+        blurScale?: number;
+        minZ?: number;
+        maxZ?: number;
+        frustumSize?: number;
+        angleScale?: number;
+        [propName: string]: any;
+    }
+    [propName: string]: any;
+
+    // no behaviors for light at the moment, but allowing configuration for future reference.
+    behaviors?: {
+        [name: string]: number | {
+            type: number;
+            [propName: string]: any;
+        };
+    };
+}
+
+export interface ISceneOptimizerParameters {
     priority?: number;
     maximumSize?: number;
     step?: number;
