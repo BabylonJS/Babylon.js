@@ -1516,6 +1516,9 @@
                     "../../serializers/src/glTF/2.0/babylon.glTFData.ts",
                     "../../serializers/src/glTF/2.0/babylon.glTFMaterial.ts"
                 ],
+                "extraDeclarations": [
+                    "../../dist/babylon.glTF2Interface.d.ts"
+                ],
                 "output": "babylon.glTF2Serializer.js"
             }
         ],
