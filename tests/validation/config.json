@@ -200,6 +200,24 @@
       "referenceImage": "gltfMaterialAlpha.png"
     },
     {
+      "title": "GLTF Material Alpha (Back)",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialAlphaFlippedScene",
+      "referenceImage": "gltfMaterialAlphaBack.png"
+    },
+    {
+      "title": "GLTF Mesh Primitives",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitivesScene",
+      "referenceImage": "gltfMeshPrimitives.png"
+    },
+    {
+      "title": "GLTF Mesh Primitives UV",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitivesUVScene",
+      "referenceImage": "gltfMeshPrimitivesUV.png"
+    },
+    {
       "title": "GLTF Primitive Attribute",
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createPrimitiveAttributeScene",
