@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+    /**
+     * Manages the defines for the PBR Material.
+     */
     class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public PBR = true;
 
@@ -125,11 +128,17 @@
 
         public FORCENORMALFORWARD = false;
 
+        /**
+         * Initializes the PBR Material defines.
+         */
         constructor() {
             super();
             this.rebuild();
         }
 
+        /**
+         * Resets the PBR Material defines.
+         */
         public reset(): void {
             super.reset();
             this.ALPHATESTVALUE = 0.5;
@@ -170,6 +179,9 @@
          */
         protected _specularIntensity: number = 1.0;
 
+        /**
+         * This stores the direct, emissive, environment, and specular light intensities into a Vector4.
+         */
         private _lightingInfos: Vector4 = new Vector4(this._directIntensity, this._emissiveIntensity, this._environmentIntensity, this._specularIntensity);
 
         /**
@@ -192,12 +204,24 @@
          */
         protected _ambientTextureStrength: number = 1.0;
 
+        /**
+         * Stores the alpha values in a texture.
+         */
         protected _opacityTexture: BaseTexture;
 
+        /**
+         * Stores the reflection values in a texture.
+         */
         protected _reflectionTexture: BaseTexture;
 
+        /**
+         * Stores the refraction values in a texture.
+         */
         protected _refractionTexture: BaseTexture;
 
+        /**
+         * Stores the emissive values in a texture.
+         */
         protected _emissiveTexture: BaseTexture;
 
         /**
@@ -228,10 +252,19 @@
          */
         protected _microSurfaceTexture: BaseTexture;
 
+        /**
+         * Stores surface normal data used to displace a mesh in a texture.
+         */
         protected _bumpTexture: BaseTexture;
 
+        /**
+         * Stores the pre-calculated light information of a mesh in a texture.
+         */
         protected _lightmapTexture: BaseTexture;
 
+        /**
+         * The color of a material in ambient lighting.
+         */
         protected _ambientColor = new Color3(0, 0, 0);
 
         /**
@@ -244,8 +277,14 @@
          */
         protected _reflectivityColor = new Color3(1, 1, 1);
 
+        /**
+         * The color applied when light is reflected from a material.
+         */
         protected _reflectionColor = new Color3(1, 1, 1);
 
+        /**
+         * The color applied when light is emitted from a material.
+         */
         protected _emissiveColor = new Color3(0, 0, 0);
 
         /**
@@ -269,6 +308,9 @@
          */
         protected _linkRefractionWithTransparency = false;
 
+        /**
+         * Specifies that the material will use the light map as a show map.
+         */
         protected _useLightmapAsShadowmap = false;
 
         /**
@@ -471,8 +513,19 @@
             });
         }
 
+        /**
+         * Stores the available render targets.
+         */
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
+
+        /**
+         * Sets the global ambient color for the material used in lighting calculations.
+         */
         private _globalAmbientColor = new Color3(0, 0, 0);
+
+        /**
+         * Enables the use of logarithmic depth buffers, which is good for wide depth buffers.
+         */
         private _useLogarithmicDepth: boolean;
 
         /**
@@ -504,15 +557,24 @@
             this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
+        /**
+         * Gets the name of the material class.
+         */
         public getClassName(): string {
             return "PBRBaseMaterial";
         }
 
+        /**
+         * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
+         */
         @serialize()
         public get useLogarithmicDepth(): boolean {
             return this._useLogarithmicDepth;
         }
 
+        /**
+         * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
+         */
         public set useLogarithmicDepth(value: boolean) {
             this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
         }
@@ -561,7 +623,8 @@
         }
 
         /**
-         * Specifies whether or not this material should be rendered in alpha blend mode for the given mesh.
+         * Specifies if the mesh will require alpha blending.
+         * @param mesh - BJS mesh.
          */
         public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
             if (this._disableAlphaBlending) {
@@ -593,12 +656,25 @@
             return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE;
         }
 
+        /**
+         * Gets the texture used for the alpha test.
+         */
         public getAlphaTestTexture(): BaseTexture {
             return this._albedoTexture;
         }
 
+        /**
+         * Stores the reflectivity values based on metallic roughness workflow.
+         */
         private static _scaledReflectivity = new Color3();
 
+        /**
+         * Specifies that the submesh is ready to be used.
+         * @param mesh - BJS mesh.
+         * @param subMesh - A submesh of the BJS mesh.  Used to check if it is ready. 
+         * @param useInstances - Specifies that instances should be used.
+         * @returns - boolean indicating that the submesh is ready or not.
+         */
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
@@ -1121,6 +1197,9 @@
             return true;
         }
 
+        /**
+         * Initializes the uniform buffer layout for the shader.
+         */
         public buildUniformLayout(): void {
             // Order is important !
             this._uniformBuffer.addUniform("vAlbedoInfos", 2);
@@ -1158,7 +1237,9 @@
             this._uniformBuffer.create();
         }
 
-
+        /**
+         * Unbinds the textures.
+         */
         public unbind(): void {
             if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
                 this._uniformBuffer.setTexture("reflectionSampler", null);
@@ -1171,10 +1252,20 @@
             super.unbind();
         }
 
+        /**
+         * Binds to the world matrix.
+         * @param world - The world matrix.
+         */
         public bindOnlyWorldMatrix(world: Matrix): void {
             this._activeEffect.setMatrix("world", world);
         }
 
+        /**
+         * Binds the submesh data.
+         * @param world - The world matrix.
+         * @param mesh - The BJS mesh.
+         * @param subMesh - A submesh of the BJS mesh.
+         */
         public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
 
@@ -1449,6 +1540,10 @@
             this._afterBind(mesh);
         }
 
+        /**
+         * Returns the animatable textures.
+         * @returns - Array of animatable textures.
+         */
         public getAnimatables(): IAnimatable[] {
             var results = [];
 
@@ -1494,6 +1589,10 @@
             return results;
         }
 
+        /**
+         * Returns the texture used for reflections.
+         * @returns - Reflection texture if present.  Otherwise, returns the environment texture.
+         */
         private _getReflectionTexture(): BaseTexture {
             if (this._reflectionTexture) {
                 return this._reflectionTexture;
@@ -1502,6 +1601,11 @@
             return this.getScene().environmentTexture;
         }
 
+        /**
+         * Returns the texture used for refraction or null if none is used.
+         * @returns - Refection texture if present.  If no refraction texture and refraction 
+         * is linked with transparency, returns environment texture.  Otherwise, returns null.
+         */
         private _getRefractionTexture(): Nullable<BaseTexture> {
             if (this._refractionTexture) {
                 return this._refractionTexture;
@@ -1514,6 +1618,11 @@
             return null;
         }
 
+        /**
+         * Disposes the resources of the material.
+         * @param forceDisposeEffect - Forces the disposal of effects.
+         * @param forceDisposeTextures - Forces the disposal of all textures.
+         */
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             if (forceDisposeTextures) {
                 if (this._albedoTexture) {
