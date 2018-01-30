@@ -81,15 +81,16 @@ void main(void) {
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
     vDirectionW = normalize(vec3(finalWorld * vec4(position, 0.0)));
 
-    if (fFovMultiplier != 1.0) {
+
+    #ifdef EQUIRECTANGULAR_RELFECTION_FOV
         mat3 screenToWorld = inverseMat3(mat3(finalWorld * viewProjection));
         vec3 segment = mix(vDirectionW, screenToWorld * vec3(0.0,0.0, 1.0), abs(fFovMultiplier - 1.0));
-        if (fFovMultiplier < 1.0) {
+        if (fFovMultiplier <= 1.0) {
             vDirectionW = normalize(segment);
         } else {
             vDirectionW = normalize(vDirectionW + (vDirectionW - segment));
         }
-    }
+    #endif
 #endif
 
 #ifndef UV1

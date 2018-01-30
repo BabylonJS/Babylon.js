@@ -95,6 +95,7 @@
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
+        public EQUIRECTANGULAR_RELFECTION_FOV = false;
 
         // Default BJS.
         public MAINUV1 = false;
@@ -344,6 +345,14 @@
             }
             this._fovMultiplier = Math.max(0.0, Math.min(2.0, value));
         }
+        private _fovMultiplier: float = 1.0;
+
+        /**
+         * Enable the FOV adjustment feature controlled by fovMultiplier.
+         * @type {boolean}
+         */
+        public useEquirectangularFOV: boolean = false;
+
         @serialize()
         private _maxSimultaneousLights: int = 4;
         /**
@@ -625,6 +634,7 @@
                         defines.REFLECTIONBLUR = this._reflectionBlur > 0;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
+                        defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
 
                         if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             defines.INVERTCUBICMAP = true;

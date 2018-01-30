@@ -64,7 +64,7 @@ module BABYLON {
             // create
             let tempOptions:VideoTextureSettings = {loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true};
             let material = this._material = new BABYLON.BackgroundMaterial(name+"_material", scene);
-            this._videoTexture = new BABYLON.VideoTexture(name+"_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
+            let texture = this._videoTexture = new BABYLON.VideoTexture(name+"_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
             this._mesh = BABYLON.MeshBuilder.CreateIcoSphere(name+"_mesh", {
                 flat: false, // saves on vertex data
                 radius: options.size,
@@ -73,8 +73,10 @@ module BABYLON {
             }, scene);
 
             // configure material
-            this._videoTexture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches src
+            texture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
+            texture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down
             material.reflectionTexture = this._videoTexture;
+            material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
 
             // configure mesh
