@@ -70,12 +70,16 @@ module BABYLON {
             this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", scene, depthMap, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
             // Capture circle of confusion texture
             this._depthOfFieldPass = new PassPostProcess("depthOfFieldPass", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._depthOfFieldPass.autoClear = false;
             // Blur the image but do not blur on sharp far to near distance changes to avoid bleeding artifacts 
             // See section 2.6.2 http://fileadmin.cs.lth.se/cs/education/edan35/lectures/12dof.pdf
             this._depthOfFieldBlurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), 15, 1.0, null, depthMap, this._circleOfConfusion, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._depthOfFieldBlurY.autoClear = false;
             this._depthOfFieldBlurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), 15, 1.0, null,  depthMap, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._depthOfFieldBlurX.autoClear = false;
             // Merge blurred images with original image based on circleOfConfusion
             this._depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this._circleOfConfusion, this._depthOfFieldPass, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._depthOfFieldMerge.autoClear = false;
         }
 
         /**
