@@ -206,7 +206,8 @@ module BABYLON.GUI {
         }
 
         /**
-         * @param projectedPosition 
+         * Move one end of the line to a position in screen absolute space.
+         * @param projectedPosition Position in screen absolute space (X, Y)
          * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
          */
         public _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
