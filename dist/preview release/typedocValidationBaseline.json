@@ -1,7 +1,7 @@
 {
-  "errors": 7972,
+  "errors": 7689,
   "babylon.typedoc.json": {
-    "errors": 7972,
+    "errors": 7689,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -37857,36 +37857,6 @@
         }
       },
       "Method": {
-        "MaximizeInPlace": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "other": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "MinimizeInPlace": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "other": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "add": {
           "Comments": {
             "MissingReturn": true
@@ -37990,9 +37960,6 @@
           }
         },
         "divideInPlace": {
-          "Comments": {
-            "MissingReturn": true
-          },
           "Parameter": {
             "otherVector": {
               "Comments": {
