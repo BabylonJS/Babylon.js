@@ -405,7 +405,14 @@ var buildExternalLibrary = function (library, settings, watch) {
             .pipe(gulp.dest(outputDirectory));
         /*}*/
 
-        var dts = tsProcess.dts
+        let preDts;
+        if (library.extraDeclarations) {
+            preDts = merge2([tsProcess.dts, gulp.src(library.extraDeclarations)])
+        } else {
+            preDts = tsProcess.dts;
+        }
+
+        var dts = preDts
             .pipe(concat(library.output))
             .pipe(replace(referenceSearchRegex, ""))
             .pipe(rename({ extname: ".d.ts" }))
