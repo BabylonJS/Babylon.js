@@ -78,6 +78,11 @@
             return activeTextures;
         }
 
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
         public hasTexture(texture: BaseTexture): boolean {
             if (super.hasTexture(texture)) {
                 return true;
@@ -94,6 +99,10 @@
             return false;
         }
 
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
         public clone(name: string): PBRSpecularGlossinessMaterial {
             var clone = SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
 
