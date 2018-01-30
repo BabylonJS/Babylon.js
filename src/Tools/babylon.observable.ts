@@ -233,6 +233,7 @@
         }
 
         private _deferUnregister(observer: Observer<T>): void {
+            observer.unregisterOnNextCall = false;
             Tools.SetImmediate(() => {
                 this.remove(observer);
             })
