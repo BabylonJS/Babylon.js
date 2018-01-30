@@ -435,7 +435,7 @@
 
                 //calculate the new center using a pivot (since this.BJSCANNON.js doesn't center height maps)
                 var p = Matrix.Translation(boundingInfo.boundingBox.extendSizeWorld.x, 0, -boundingInfo.boundingBox.extendSizeWorld.z);
-                mesh.setPivotMatrix(p);
+                mesh.setPreTransformMatrix(p);
                 mesh.computeWorldMatrix(true);
 
                 //calculate the translation
@@ -448,7 +448,7 @@
                 //rotation is back
                 mesh.rotationQuaternion = rotationQuaternion;
 
-                mesh.setPivotMatrix(oldPivot);
+                mesh.setPreTransformMatrix(oldPivot);
                 mesh.computeWorldMatrix(true);
             } else if (impostor.type === PhysicsImpostor.MeshImpostor) {
                 this._tmpDeltaPosition.copyFromFloats(0, 0, 0);

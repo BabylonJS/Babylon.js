@@ -49,7 +49,6 @@
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
 - GUI.Line can have its world position set from one end or the other ([SvenFrankson](https://github.com/SvenFrankson))
 
-
 ## Bug fixes
 - `setPivotMatrix` ws not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
