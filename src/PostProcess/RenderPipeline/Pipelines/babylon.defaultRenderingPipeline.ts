@@ -268,6 +268,11 @@
             this._disposePostProcesses();
             this._reset();
 
+            if(this.depthOfFieldEnabled){
+                this.depthOfField = new DepthOfFieldEffect(this._scene, this._defaultPipelineTextureType);
+                this.addEffect(this.depthOfField);
+            }
+
             if (this.bloomEnabled) {
                 this.pass = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.PassPostProcessId, () => { return this.pass; }, true));
@@ -308,11 +313,6 @@
                     this.copyBack.alphaMode = Engine.ALPHA_SCREENMODE;
                 }
                 this.copyBack.autoClear = false;
-            }
-
-            if(this.depthOfFieldEnabled){
-                this.depthOfField = new DepthOfFieldEffect(this._scene, this._defaultPipelineTextureType);
-                this.addEffect(this.depthOfField);
             }
 
             if (this._imageProcessingEnabled) {
