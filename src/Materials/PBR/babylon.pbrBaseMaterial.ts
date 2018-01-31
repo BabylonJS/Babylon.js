@@ -798,15 +798,7 @@
                 }
             }
 
-            var onCompiled = (effect: Effect) => {
-                if (this.onCompiled) {
-                    this.onCompiled(effect);
-                }
-
-                this.bindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
-            };
-
-            const effect = this._prepareEffect(mesh, defines, onCompiled, this.onError, useInstances);
+            const effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
             if (effect) {
                 scene.resetCachedMaterial();
                 subMesh.setEffect(effect, defines);
