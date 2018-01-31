@@ -85,6 +85,7 @@
         // Values       
         private _bloomEnabled: boolean = false;
         private _depthOfFieldEnabled: boolean = false;
+        private _depthOfFieldQuality = DepthOfFieldEffectQuality.Low;
         private _fxaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
@@ -174,6 +175,22 @@
             }
             this._depthOfFieldEnabled = enabled;
             
+            this._buildPipeline();
+        }
+
+        /**
+         * Quality of the depth of field effect. (Higher quality will effect performance)
+         */
+        @serialize()
+        public get depthOfFieldQuality(): DepthOfFieldEffectQuality {
+            return this._depthOfFieldQuality;
+        }   
+        
+        public set depthOfFieldQuality(value: DepthOfFieldEffectQuality) {
+            if (this._depthOfFieldQuality === value) {
+                return;
+            }
+            this._depthOfFieldQuality = value;
             this._buildPipeline();
         }
 
@@ -269,7 +286,7 @@
             this._reset();
 
             if(this.depthOfFieldEnabled){
-                this.depthOfField = new DepthOfFieldEffect(this._scene, this._defaultPipelineTextureType);
+                this.depthOfField = new DepthOfFieldEffect(this._scene, this._depthOfFieldQuality, this._defaultPipelineTextureType);
                 this.addEffect(this.depthOfField);
             }
 
