@@ -10,7 +10,7 @@ module BABYLON {
         public count = 0;
         public target = 0;
         public rootPromise: InternalPromise<T>;
-        public results:any[] = [];
+        public results: any[] = [];
     }
 
     class InternalPromise<T> {
@@ -28,32 +28,32 @@ module BABYLON {
 
         public get isFulfilled(): boolean {
             return this._state === PromiseStates.Fulfilled;
-        }            
+        }
 
         public get isRejected(): boolean {
             return this._state === PromiseStates.Rejected;
         }
-    
+
         public get isPending(): boolean {
             return this._state === PromiseStates.Pending;
         }
-    
+
         public value(): Nullable<T> | undefined {
             if (!this.isFulfilled) {
                 throw new Error("Promise is not fulfilled");
             }
             return this._result;
-        }     
-        
+        }
+
         public reason(): any {
             if (!this.isRejected) {
                 throw new Error("Promise is not rejected");
             }
             return this._reason;
-        }            
+        }
 
         public constructor(resolver?: (
-            resolve:(value?: Nullable<T>) => void, 
+            resolve: (value?: Nullable<T>) => void,
             reject: (reason: any) => void
         ) => void) {
 
@@ -67,8 +67,8 @@ module BABYLON {
                 }, (reason: any) => {
                     this._reject(reason);
                 });
-            } catch(e) {
-                this._reject((<Error>e).message);
+            } catch (e) {
+                this._reject(e);
             }
         }
 
@@ -103,7 +103,7 @@ module BABYLON {
             }
 
             return newPromise;
-        }       
+        }
 
         private _moveChildren(children: InternalPromise<T>[]): void {
             this._children.push(...children.splice(0, children.length));
@@ -111,14 +111,14 @@ module BABYLON {
             if (this.isFulfilled) {
                 for (var child of this._children) {
                     child._resolve(this._result);
-                } 
+                }
             } else if (this.isRejected) {
                 for (var child of this._children) {
                     child._reject(this._reason);
-                }                 
+                }
             }
         }
-        
+
         private _resolve(value?: Nullable<T>): Nullable<InternalPromise<T>> | T {
             try {
                 this._state = PromiseStates.Fulfilled;
@@ -133,7 +133,7 @@ module BABYLON {
                     if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
                         // Transmit children
                         let returnedPromise = returnedValue as InternalPromise<T>;
-                        
+
                         returnedPromise._moveChildren(this._children);
                     } else {
                         value = <T>returnedValue;
@@ -142,11 +142,11 @@ module BABYLON {
 
                 for (var child of this._children) {
                     child._resolve(value);
-                }                
+                }
 
                 return returnedValue;
-            } catch(e) {
-                this._reject((<Error>e).message);
+            } catch (e) {
+                this._reject(e);
             }
 
             return null;
@@ -167,7 +167,7 @@ module BABYLON {
                 } else {
                     child._reject(reason);
                 }
-            }                
+            }
         }
 
         public static resolve<T>(value: T): InternalPromise<T> {
@@ -224,7 +224,7 @@ module BABYLON {
          */
         public static Apply(force = false): void {
             if (force || typeof Promise === 'undefined') {
-                let root:any = window;
+                let root: any = window;
                 root.Promise = InternalPromise;
             }
         }
