@@ -1,59 +1,85 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
+    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness
+
+    const NAME = "KHR_materials_pbrSpecularGlossiness";
+
     interface IKHRMaterialsPbrSpecularGlossiness {
         diffuseFactor: number[];
-        diffuseTexture: IGLTFTextureInfo;
+        diffuseTexture: ITextureInfo;
         specularFactor: number[];
         glossinessFactor: number;
-        specularGlossinessTexture: IGLTFTextureInfo;
+        specularGlossinessTexture: ITextureInfo;
     }
 
     export class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
-        public get name(): string {
-            return "KHR_materials_pbrSpecularGlossiness";
+        protected get _name(): string {
+            return NAME;
         }
 
-        protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-            return this._loadExtension<IKHRMaterialsPbrSpecularGlossiness>(context, material, (context, extension, onComplete) => {
-                loader._createPbrMaterial(material);
-                loader._loadMaterialBaseProperties(context, material);
-                this._loadSpecularGlossinessProperties(loader, context, material, extension);
-                assign(material.babylonMaterial, true);
-                onComplete();
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
+            return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (context, extension) => {
+                material._babylonMeshes = material._babylonMeshes || [];
+                material._babylonMeshes.push(babylonMesh);
+
+                if (material._loaded) {
+                    babylonMesh.material = material._babylonMaterial!;
+                    return material._loaded;
+                }
+
+                const promises = new Array<Promise<void>>();
+
+                const babylonMaterial = this._loader._createMaterial(material);
+                material._babylonMaterial = babylonMaterial;
+
+                promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material));
+                promises.push(this._loadSpecularGlossinessPropertiesAsync(this._loader, context, material, extension));
+
+                this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+
+                babylonMesh.material = babylonMaterial;
+
+                return (material._loaded = Promise.all(promises).then(() => {}));
             });
         }
 
-        private _loadSpecularGlossinessProperties(loader: GLTFLoader, context: string, material: IGLTFMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): void {
-            const babylonMaterial = material.babylonMaterial as PBRMaterial;
+        private _loadSpecularGlossinessPropertiesAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): Promise<void> {
+            const promises = new Array<Promise<void>>();
 
-            babylonMaterial.albedoColor = properties.diffuseFactor ? Color3.FromArray(properties.diffuseFactor) : new Color3(1, 1, 1);
-            babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : new Color3(1, 1, 1);
-            babylonMaterial.microSurface = properties.glossinessFactor == null ? 1 : properties.glossinessFactor;
+            const babylonMaterial = material._babylonMaterial as PBRMaterial;
+
+            if (properties.diffuseFactor) {
+                babylonMaterial.albedoColor = Color3.FromArray(properties.diffuseFactor);
+                babylonMaterial.alpha = properties.diffuseFactor[3];
+            }
+            else {
+                babylonMaterial.albedoColor = Color3.White();
+            }
+
+            babylonMaterial.reflectivityColor = properties.specularFactor ? Color3.FromArray(properties.specularFactor) : Color3.White();
+            babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                const texture = GLTFLoader._GetProperty(loader._gltf.textures, properties.diffuseTexture.index);
-                if (!texture) {
-                    throw new Error(context + ": Failed to find diffuse texture " + properties.diffuseTexture.index);
-                }
-
-                babylonMaterial.albedoTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.diffuseTexture.texCoord);
+                promises.push(loader._loadTextureAsync(context + "/diffuseTexture", properties.diffuseTexture, texture => {
+                    babylonMaterial.albedoTexture = texture;
+                }));
             }
 
             if (properties.specularGlossinessTexture) {
-                const texture = GLTFLoader._GetProperty(loader._gltf.textures, properties.specularGlossinessTexture.index);
-                if (!texture) {
-                    throw new Error(context + ": Failed to find diffuse texture " + properties.specularGlossinessTexture.index);
-                }
+                promises.push(loader._loadTextureAsync(context + "/specularGlossinessTexture", properties.specularGlossinessTexture, texture => {
+                    babylonMaterial.reflectivityTexture = texture;
+                }));
 
-                babylonMaterial.reflectivityTexture = loader._loadTexture("textures[" + texture.index + "]", texture, properties.specularGlossinessTexture.texCoord);
                 babylonMaterial.reflectivityTexture.hasAlpha = true;
                 babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
 
-            loader._loadMaterialAlphaProperties(context, material, properties.diffuseFactor);
+            loader._loadMaterialAlphaProperties(context, material);
+
+            return Promise.all(promises).then(() => {});
         }
     }
 
-    GLTFLoader.RegisterExtension(new KHRMaterialsPbrSpecularGlossiness());
+    GLTFLoader._Register(NAME, loader => new KHRMaterialsPbrSpecularGlossiness(loader));
 }

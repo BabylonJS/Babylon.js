@@ -1526,6 +1526,19 @@
             }
             return hash;
         }
+
+        /**
+         * Returns a promise that resolves after the given amount of time.
+         * @param delay Number of milliseconds to delay
+         * @returns Promise that resolves after the given amount of time
+         */
+        public static DelayAsync(delay: number): Promise<void> {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, delay);
+            });
+        }
     }
 
     /**

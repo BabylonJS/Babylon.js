@@ -84,12 +84,17 @@ module BABYLON {
          * @param engine defines the current engine
          * @param defines specifies the list of active defines
          * @param useInstances defines if instances have to be turned on
+         * @param useClipPlane defines if clip plane have to be turned on
          */
-        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean): void {
+        public static PrepareDefinesForFrameBoundValues(scene: Scene, engine: Engine, defines: any, useInstances: boolean, useClipPlane: Nullable<boolean> = null): void {
             var changed = false;
 
-            if (defines["CLIPPLANE"] !== (scene.clipPlane !== undefined && scene.clipPlane !== null)) {
-                defines["CLIPPLANE"] = !defines["CLIPPLANE"];
+            if (useClipPlane == null) {
+                useClipPlane = (scene.clipPlane !== undefined && scene.clipPlane !== null);
+            }
+
+            if (defines["CLIPPLANE"] !== useClipPlane) {
+                defines["CLIPPLANE"] = useClipPlane;
                 changed = true;
             }
 

@@ -2019,6 +2019,18 @@
             }, 150);
         }
 
+        /**
+         * Returns a promise that resolves when the scene is ready.
+         * @returns A promise that resolves when the scene is ready.
+         */
+        public whenReadyAsync(): Promise<void> {
+            return new Promise(resolve => {
+                this.executeWhenReady(() => {
+                    resolve();
+                });
+            });
+        }
+
         public _checkIsReady() {
             if (this.isReady()) {
                 this.onReadyObservable.notifyObservers(this);
