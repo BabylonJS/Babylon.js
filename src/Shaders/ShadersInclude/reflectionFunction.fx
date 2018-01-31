@@ -1,7 +1,7 @@
 ﻿vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-	vec3 direction = normalize(vDirectionW);
+	vec3 direction = vDirectionW;
 
 	float t = clamp(direction.y * -0.5 + 0.5, 0., 1.0);
 	float s = atan(direction.z, direction.x) * RECIPROCAL_PI2 + 0.5;
