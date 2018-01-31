@@ -52,6 +52,7 @@
 
 ## Bug fixes
 - `setPivotMatrix` ws not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
+- SPS solid particle `.pivot` property now also behaves like the standard mesh pivot. Former behavior (particle translation) can be kept with the particle property `.translateFromPivot` set to true ([jbousquie](https://github.com/jbousquie))  
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 - Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
 
