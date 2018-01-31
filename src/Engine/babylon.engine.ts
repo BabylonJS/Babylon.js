@@ -5007,7 +5007,7 @@
 
                 if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                     internalTexture._cachedWrapR = texture.wrapR;
-                    switch (texture.wrapV) {
+                    switch (texture.wrapR) {
                         case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.REPEAT);
                             break;
