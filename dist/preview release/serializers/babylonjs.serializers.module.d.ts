@@ -28,7 +28,7 @@ declare module BABYLON.GLTF2 {
         SCALE = "scale",
         WEIGHTS = "weights",
     }
-    const enum AnimationInterpolation {
+    const enum AnimationSamplerInterpolation {
         LINEAR = "LINEAR",
         STEP = "STEP",
         CUBICSPLINE = "CUBICSPLINE",
@@ -116,7 +116,7 @@ declare module BABYLON.GLTF2 {
     }
     interface IAnimationSampler extends IProperty {
         input: number;
-        interpolation?: AnimationInterpolation;
+        interpolation?: AnimationSamplerInterpolation;
         output: number;
     }
     interface IAnimation extends IChildRootProperty {

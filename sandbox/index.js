@@ -36,10 +36,6 @@ if (BABYLON.Engine.isSupported()) {
     BABYLON.GLTFFileLoader.IncrementalLoading = false;
     BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
         currentPluginName = plugin.name;
-
-        if (plugin.name === "gltf" && plugin instanceof BABYLON.GLTFFileLoader) {
-            plugin.compileMaterials = true;
-        }
     });
 
     // Resize
