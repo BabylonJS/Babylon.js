@@ -10,6 +10,7 @@ uniform Material
 	uniform mat4 diffuseMatrix;
 	uniform mat4 reflectionMatrix;
 	uniform vec3 vReflectionMicrosurfaceInfos;
+	uniform float fFovMultiplier;
 
 	uniform float pointSize;
 	uniform float shadowLevel;

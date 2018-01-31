@@ -6,6 +6,8 @@ precision highp float;
 
 #include<__decl__backgroundFragment>
 
+#define RECIPROCAL_PI2 0.15915494
+
 // Constants
 uniform vec3 vEyePosition;
 
