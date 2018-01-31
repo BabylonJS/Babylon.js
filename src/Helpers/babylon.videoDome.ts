@@ -75,6 +75,7 @@ module BABYLON {
             // configure material
             texture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
             texture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down
+            texture.video.crossOrigin = "anonymous";
             material.reflectionTexture = this._videoTexture;
             material.useEquirectangularFOV = true;
             material.fovMultiplier = 1.0;
