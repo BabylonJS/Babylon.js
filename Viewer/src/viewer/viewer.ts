@@ -816,12 +816,14 @@ export abstract class AbstractViewer {
         if (!config) return;
         Object.keys(config).forEach(key => {
             if (key in object && typeof object[key] !== 'function') {
-                if (typeof object[key] === 'function') return;
+                // if (typeof object[key] === 'function') return;
                 // if it is an object, iterate internally until reaching basic types
                 if (typeof object[key] === 'object') {
                     this.extendClassWithConfig(object[key], config[key]);
                 } else {
-                    object[key] = config[key];
+                    if (config[key] !== undefined) {
+                        object[key] = config[key];
+                    }
                 }
             }
         });
