@@ -481,12 +481,16 @@
                                                 var subMatId = parsedMultiMaterial.materials[matIndex];
                                                 loadedMaterialsIds.push(subMatId);
                                                 var mat = parseMaterialById(subMatId, parsedData, scene, rootUrl);
-                                                log += "\n\tMaterial " + mat.toString(fullDetails);
+                                                if (mat) {
+                                                    log += "\n\tMaterial " + mat.toString(fullDetails);
+                                                }
                                             }
                                             loadedMaterialsIds.push(parsedMultiMaterial.id);
                                             var mmat = Material.ParseMultiMaterial(parsedMultiMaterial, scene);
-                                            materialFound = true;
-                                            log += "\n\tMulti-Material " + mmat.toString(fullDetails);
+                                            if (mmat) {
+                                                materialFound = true;
+                                                log += "\n\tMulti-Material " + mmat.toString(fullDetails);
+                                            }
                                             break;
                                         }
                                     }
