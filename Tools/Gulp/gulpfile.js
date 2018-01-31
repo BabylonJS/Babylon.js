@@ -325,7 +325,9 @@ var buildExternalLibraries = function (settings) {
             let dtsFiles = files.map(function (filename) {
                 return filename.replace(".js", ".d.ts");
             });
-
+            if (settings.build.extraDeclarations) {
+                settings.build.extraDeclarations.forEach(file => { dtsFiles.unshift(file) })
+            }
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat(settings.build.outputFilename + ".module.d.ts"))
                 .pipe(replace(referenceSearchRegex, ""))
@@ -405,14 +407,9 @@ var buildExternalLibrary = function (library, settings, watch) {
             .pipe(gulp.dest(outputDirectory));
         /*}*/
 
-        let preDts;
-        if (library.extraDeclarations) {
-            preDts = merge2([tsProcess.dts, gulp.src(library.extraDeclarations)])
-        } else {
-            preDts = tsProcess.dts;
-        }
 
-        var dts = preDts
+
+        var dts = tsProcess.dts
             .pipe(concat(library.output))
             .pipe(replace(referenceSearchRegex, ""))
             .pipe(rename({ extname: ".d.ts" }))
@@ -439,22 +436,42 @@ var buildExternalLibrary = function (library, settings, watch) {
                 let build = wpBuild
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true));
 
+                let unminifiedOutpus = [];
+                let minifiedOutputs = [];
                 settings.build.outputs.forEach(out => {
-                    let outBuild = build;
                     if (out.minified) {
-                        outBuild = build
-                            .pipe(uglify())
-                            .pipe(optimisejs())
+                        out.destination.forEach(dest => {
+                            minifiedOutputs.push(dest);
+                        });
+                    } else {
+                        out.destination.forEach(dest => {
+                            unminifiedOutpus.push(dest);
+                        });
                     }
+                });
 
-                    out.destination.forEach(dest => {
-                        var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
-                        let destBuild = outBuild
-                            .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                            .pipe(gulp.dest(outputDirectory));
-                        sequence.push(destBuild);
-                    });
-                })
+                function processDestination(dest) {
+                    var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
+                    build = build
+                        .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                        .pipe(gulp.dest(outputDirectory));
+                }
+
+                unminifiedOutpus.forEach(dest => {
+                    processDestination(dest);
+                });
+
+                if (minifiedOutputs.length) {
+                    build = build
+                        .pipe(uglify())
+                        .pipe(optimisejs())
+                }
+
+                minifiedOutputs.forEach(dest => {
+                    processDestination(dest);
+                });
+
+                sequence.push(build);
             } else {
                 sequence.push(
                     wpBuild

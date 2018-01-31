@@ -43,9 +43,34 @@
         public get coordinatesMode(): number {
             return this._coordinatesMode;
         }
+        
+        /*
+        * How a texture is mapped.
+        *
+        * | Value | Type                                | Description |
+        * | ----- | ----------------------------------- | ----------- |
+        * | 0     | EXPLICIT_MODE                       |             |
+        * | 1     | SPHERICAL_MODE                      |             |
+        * | 2     | PLANAR_MODE                         |             |
+        * | 3     | CUBIC_MODE                          |             |
+        * | 4     | PROJECTION_MODE                     |             |
+        * | 5     | SKYBOX_MODE                         |             |
+        * | 6     | INVCUBIC_MODE                       |             |
+        * | 7     | EQUIRECTANGULAR_MODE                |             |
+        * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
+        * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
+        */
 
         @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;
+        
+        /* 
+        * | Value | Type               | Description |
+        * | ----- | ------------------ | ----------- |
+        * | 0     | CLAMP_ADDRESSMODE  |             |
+        * | 1     | WRAP_ADDRESSMODE   |             |
+        * | 2     | MIRROR_ADDRESSMODE |             |
+        */
 
         @serialize()
         public wrapV = Texture.WRAP_ADDRESSMODE;

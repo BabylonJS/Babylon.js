@@ -425,7 +425,7 @@ module BABYLON {
                 point = Vector3.TransformCoordinates(point, tmat);
             }
 
-            return this.setPivotMatrix(Matrix.Translation(point.x, point.y, point.z), true);
+            return this.setPivotMatrix(Matrix.Translation(-point.x, -point.y, -point.z), true);
         }
 
         /**
