@@ -362,8 +362,8 @@
             // Particles
             var activeCamera = this._scene.activeCamera;
             this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
-            for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
-                var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
+            for (var particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
+                var particleSystem = this._particleSystems.data[particleIndex];
 
                 if ((activeCamera && activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
