@@ -95,6 +95,7 @@
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
+        public EQUIRECTANGULAR_RELFECTION_FOV = false;
 
         // Default BJS.
         public MAINUV1 = false;
@@ -329,6 +330,28 @@
          */
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public enableNoise: boolean = false;
+
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Best used when trying to implement visual zoom effects like fish-eye or binoculars while not adjusting camera fov.
+         * Recommended to be keep at 1.0 except for special cases.
+         */
+        public get fovMultiplier(): number {
+            return this._fovMultiplier;
+        }
+        public set fovMultiplier(value: number) {
+            if (isNaN(value)) {
+                value = 1.0;
+            }
+            this._fovMultiplier = Math.max(0.0, Math.min(2.0, value));
+        }
+        private _fovMultiplier: float = 1.0;
+
+        /**
+         * Enable the FOV adjustment feature controlled by fovMultiplier.
+         * @type {boolean}
+         */
+        public useEquirectangularFOV: boolean = false;
 
         @serialize()
         private _maxSimultaneousLights: int = 4;
@@ -611,6 +634,7 @@
                         defines.REFLECTIONBLUR = this._reflectionBlur > 0;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
+                        defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
 
                         if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             defines.INVERTCUBICMAP = true;
@@ -756,7 +780,7 @@
                     "vClipPlane", "mBones",
 
                     "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
-                    "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
+                    "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",
 
                     "shadowLevel", "alpha",
 
@@ -826,6 +850,7 @@
             this._uniformBuffer.addUniform("diffuseMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
             this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+            this._uniformBuffer.addUniform("fFovMultiplier", 1);
             this._uniformBuffer.addUniform("pointSize", 1);
             this._uniformBuffer.addUniform("shadowLevel", 1);
             this._uniformBuffer.addUniform("alpha", 1);
@@ -924,6 +949,8 @@
                     this._uniformBuffer.updateColor4("vSecondaryColor", this._secondaryColor, this._secondaryLevel);
                     this._uniformBuffer.updateColor4("vTertiaryColor", this._tertiaryColor, this._tertiaryLevel);
                 }
+
+                this._uniformBuffer.updateFloat("fFovMultiplier", this._fovMultiplier);
 
                 // Textures
                 if (scene.texturesEnabled) {
