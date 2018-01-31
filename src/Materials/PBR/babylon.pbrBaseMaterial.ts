@@ -686,15 +686,15 @@
                 subMesh._materialDefines = new PBRMaterialDefines();
             }
 
-            const scene = this.getScene();
-            const engine = scene.getEngine();
-
             const defines = <PBRMaterialDefines>subMesh._materialDefines;
             if (!this.checkReadyOnEveryCall && subMesh.effect) {
-                if (defines._renderId === scene.getRenderId()) {
+                if (defines._renderId === this.getScene().getRenderId()) {
                     return true;
                 }
             }
+
+            const scene = this.getScene();
+            const engine = scene.getEngine();
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -785,7 +785,7 @@
 
             if (!engine.getCaps().standardDerivatives) {
                 let bufferMesh = null;
-                if (mesh instanceof InstancedMesh) {
+                if (mesh.getClassName() === "InstancedMesh") {
                     bufferMesh = (mesh as InstancedMesh).sourceMesh;
                 }
                 else if (mesh instanceof Mesh) {
