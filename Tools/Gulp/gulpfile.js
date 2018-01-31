@@ -13,7 +13,6 @@ var dtsModuleSupport = require("./gulp-dtsModuleSupport");
 let calculateDependencies = require("./gulp-calculateDependencies");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
-var clone = require("gulp-clone");
 var rename = require("gulp-rename");
 var cleants = require("gulp-clean-ts-extends");
 var changedInPlace = require("gulp-changed-in-place");
