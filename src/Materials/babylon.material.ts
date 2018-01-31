@@ -1020,7 +1020,7 @@
         }
 
         /**
-         * Force shader compilation including textures ready check
+         * Force shader compilation
          * @param mesh - BJS mesh.
          * @param onCompiled - function to execute once the material is compiled.
          * @param options - options to pass to this function.
@@ -1069,12 +1069,26 @@
                     }
                 }
 
-                if (options && options.clipPlane) {
+                if (localOptions.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };
 
             checkReady();
+        }
+
+        /**
+         * Force shader compilation.
+         * @param mesh The mesh that will use this material
+         * @param options Additional options for compiling the shaders
+         * @returns A promise that resolves when the compilation completes
+         */
+        public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
+            return new Promise(resolve => {
+                this.forceCompilation(mesh, () => {
+                    resolve();
+                }, options);
+            });
         }
 
         /**
