@@ -462,7 +462,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                 });
 
                 if (minifiedOutputs.length) {
-                    build = build.pipe(clone())
+                    build = build
                         .pipe(uglify())
                         .pipe(optimisejs())
                 }
