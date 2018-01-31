@@ -158,15 +158,19 @@
   ],
   "textures": [
     {
+      "name": "baseColor",
       "source": 0
     },
     {
+      "name": "occlusionRoughnessMetallic",
       "source": 1
     },
     {
+      "name": "normal",
       "source": 2
     },
     {
+      "name": "emissive",
       "source": 3
     }
   ]
