@@ -123,10 +123,10 @@
             private _sinYaw: number = 0.0;
             private _cosYaw: number = 0.0;
             private _mustUnrotateFixedNormals = false;
-            private _minimum: Vector3 = Tmp.Vector3[0];
-            private _maximum: Vector3 = Tmp.Vector3[1];
-            private _minBbox: Vector3 = Tmp.Vector3[4];
-            private _maxBbox: Vector3 = Tmp.Vector3[5];
+            private _minimum: Vector3 = Vector3.Zero();
+            private _maximum: Vector3 = Vector3.Zero();
+            private _minBbox: Vector3 = Vector3.Zero();
+            private _maxBbox: Vector3 = Vector3.Zero();
             private _particlesIntersect: boolean = false;
             private _depthSortFunction: (p1: DepthSortedParticle, p2: DepthSortedParticle) => number = 
                 function(p1, p2) {
@@ -259,7 +259,7 @@
                 var facetInd: number[] = [];      // submesh indices
                 var facetUV: number[] = [];       // submesh UV
                 var facetCol: number[] = [];      // submesh colors
-                var barycenter: Vector3 = Tmp.Vector3[0];
+                var barycenter: Vector3 = Vector3.Zero();
                 var sizeO: number = size;
     
                 while (f < totalFacets) {
