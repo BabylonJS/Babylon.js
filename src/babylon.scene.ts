@@ -4674,6 +4674,11 @@
 
                 var camera: TargetCamera;
                 var radius = worldSize.length() * 1.5;
+                // empty scene scenario!
+                if (!isFinite(radius)) {
+                    radius = 1;
+                    worldCenter.copyFromFloats(0, 0, 0);
+                }
                 if (createArcRotateCamera) {
                     var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
                     arcRotateCamera.lowerRadiusLimit = radius * 0.01;
