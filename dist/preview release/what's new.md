@@ -49,11 +49,16 @@
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
 - (Viewer) Model can be normalized using configuration. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final NPM declarations during build. ([RaananW](https://github.com/RaananW))
+- Improved glTF loader by using promises for asynchronous operations. ([bghgary](https://github.com/bghgary)]
+- Improved glTF loader performance by compiling materials in parallel with downloading external resources. ([bghgary](https://github.com/bghgary)]
+- Added unit tests for the glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Added promise-based async functions to the SceneLoader, Scene.whenReadyAsync, and material.forceCompilationAsync. ([bghgary](https://github.com/bghgary)]
+- Added checks to VertexData.merge to ensure data is valid before merging. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
 - `setPivotMatrix` ws not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
-- Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
 
 ## Breaking changes
 - Removed unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
+- VertexData.merge no longer supports merging of data that do not have the same set of attributes.
