@@ -45,7 +45,7 @@ module BABYLON.GLTF2.Extensions {
                     throw new Error(context + ": Only ambient lights are allowed on a scene");
                 }
 
-                this._loader._babylonScene.ambientColor = light.color ? Color3.FromArray(light.color) : Color3.White();
+                this._loader._babylonScene.ambientColor = light.color ? Color3.FromArray(light.color) : Color3.Black();
 
                 return promise;
             });
