@@ -788,7 +788,7 @@
                 if (mesh.getClassName() === "InstancedMesh") {
                     bufferMesh = (mesh as InstancedMesh).sourceMesh;
                 }
-                else if (mesh instanceof Mesh) {
+                else if (mesh.getClassName() === "Mesh") {
                     bufferMesh = mesh as Mesh;
                 }
 
