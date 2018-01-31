@@ -13,6 +13,7 @@ var dtsModuleSupport = require("./gulp-dtsModuleSupport");
 let calculateDependencies = require("./gulp-calculateDependencies");
 var merge2 = require("merge2");
 var concat = require("gulp-concat");
+var clone = require("gulp-clone");
 var rename = require("gulp-rename");
 var cleants = require("gulp-clean-ts-extends");
 var changedInPlace = require("gulp-changed-in-place");
@@ -436,22 +437,42 @@ var buildExternalLibrary = function (library, settings, watch) {
                 let build = wpBuild
                     .pipe(addModuleExports(library.moduleDeclaration, false, false, true));
 
+                let unminifiedOutpus = [];
+                let minifiedOutputs = [];
                 settings.build.outputs.forEach(out => {
-                    let outBuild = build;
                     if (out.minified) {
-                        outBuild = build
-                            .pipe(uglify())
-                            .pipe(optimisejs())
+                        out.destination.forEach(dest => {
+                            minifiedOutputs.push(dest);
+                        });
+                    } else {
+                        out.destination.forEach(dest => {
+                            unminifiedOutpus.push(dest);
+                        });
                     }
+                });
 
-                    out.destination.forEach(dest => {
-                        var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
-                        let destBuild = outBuild
-                            .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                            .pipe(gulp.dest(outputDirectory));
-                        sequence.push(destBuild);
-                    });
-                })
+                function processDestination(dest) {
+                    var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
+                    build = build
+                        .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                        .pipe(gulp.dest(outputDirectory));
+                }
+
+                unminifiedOutpus.forEach(dest => {
+                    processDestination(dest);
+                });
+
+                if (minifiedOutputs.length) {
+                    build = build.pipe(clone())
+                        .pipe(uglify())
+                        .pipe(optimisejs())
+                }
+
+                minifiedOutputs.forEach(dest => {
+                    processDestination(dest);
+                });
+
+                sequence.push(build);
             } else {
                 sequence.push(
                     wpBuild
