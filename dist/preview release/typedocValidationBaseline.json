@@ -1,7 +1,7 @@
 {
-  "errors": 7550,
+  "errors": 7521,
   "babylon.typedoc.json": {
-    "errors": 7550,
+    "errors": 7521,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -29338,18 +29338,6 @@
         }
       },
       "Method": {
-        "Append": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "pluginExtension": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "GetPluginForExtension": {
           "Comments": {
             "MissingText": true
@@ -29362,78 +29350,12 @@
             }
           }
         },
-        "ImportMesh": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "pluginExtension": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "IsPluginForExtensionAvailable": {
           "Comments": {
             "MissingText": true
           },
           "Parameter": {
             "extension": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "Load": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "pluginExtension": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "LoadAssetContainer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "rootUrl": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "sceneFilename": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onSuccess": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onProgress": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onError": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "pluginExtension": {
               "Comments": {
                 "MissingText": true
               }
@@ -38212,11 +38134,6 @@
               "Comments": {
                 "MissingText": true
               }
-            },
-            "options": {
-              "Comments": {
-                "MissingText": true
-              }
             }
           }
         },
@@ -41279,86 +41196,12 @@
         "Comments": {
           "MissingText": true
         }
-      },
-      "Property": {
-        "canDirectLoad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "extensions": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "importMesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "load": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "loadAssets": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rewriteRootURL": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
       }
     },
     "ISceneLoaderPluginAsync": {
       "Interface": {
         "Comments": {
           "MissingText": true
-        }
-      },
-      "Property": {
-        "canDirectLoad": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "extensions": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "importMeshAsync": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "loadAssetsAsync": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "loadAsync": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rewriteRootURL": {
-          "Comments": {
-            "MissingText": true
-          }
         }
       }
     },
