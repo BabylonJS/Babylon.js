@@ -103,10 +103,10 @@
             }
             const video: HTMLVideoElement = document.createElement("video");
             if (typeof src === "string") {
-				Tools.SetCorsBehavior(src, video);
+                Tools.SetCorsBehavior(src, video);
                 video.src = src;
             } else {
-				Tools.SetCorsBehavior(src[0], video);
+                Tools.SetCorsBehavior(src[0], video);
                 src.forEach(url => {
                     const source = document.createElement("source");
                     source.src = url;
