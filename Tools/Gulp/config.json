@@ -86,7 +86,8 @@
             "nullEngine",
             "instrumentation",
             "backgroundMaterial",
-            "environmentHelper"
+            "environmentHelper",
+            "videoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -178,6 +179,7 @@
                 "../../src/babylon.mixins.js",
                 "../../src/Engine/babylon.webgl2.js",
                 "../../src/Tools/babylon.decorators.js",
+                "../../src/Tools/babylon.deferred.js",
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
                 "../../src/Tools/babylon.tools.js",
@@ -1120,6 +1122,16 @@
                 "backgroundMaterial",
                 "additionalTextures"
             ]
+        },
+        "videoDome": {
+            "files": [
+                "../../src/Helpers/babylon.videoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
+                "additionalTextures"
+            ]
         }
     },
     "typescript": [
@@ -1460,9 +1472,9 @@
             {
                 "files": [
                     "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtilities.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
@@ -1480,9 +1492,9 @@
                     "../../loaders/src/glTF/1.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFBinaryExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFMaterialsCommonExtension.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtilities.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",

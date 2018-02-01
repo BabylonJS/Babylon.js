@@ -1,119 +1,107 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    interface IGLTFLight {
-        type: "directional" | "point" | "spot";
-        color: [number, number, number];
-        intensity: number;
-        // Runtime values
-        index: number;
+    // https://github.com/MiiBond/glTF/tree/khr_lights_v1/extensions/Khronos/KHR_lights
+
+    const NAME = "KHR_lights";
+
+    enum LightType {
+        AMBIENT = "ambient",
+        DIRECTIONAL = "directional",
+        POINT = "point",
+        SPOT = "spot"
     }
 
-    interface IKHRLights {
-        lights: IGLTFLight[];
-    }
-
-    interface IGLTFLightReference {
+    interface ILightReference {
         light: number;
-        // Runtime values
-        babylonLight: Light;
+    }
+
+    interface ILight {
+        type: LightType;
+        color?: number[];
+        intensity?: number;
+    }
+
+    interface ISpotLight extends ILight {
+        innerConeAngle?: number;
+        outerConeAngle?: number;
+    }
+
+    interface ILights {
+        lights: ILight[];
     }
 
     export class KHRLights extends GLTFLoaderExtension {
-        public get name(): string {
-            return "KHR_lights";
+        protected get _name(): string {
+            return NAME;
         }
 
-        private applyCommonProperties(light: Light, lightInfo: IGLTFLight): void {
-            if (lightInfo.color) {
-                light.diffuse.copyFromFloats(lightInfo.color[0], lightInfo.color[1], lightInfo.color[2]);
-            } else {
-                light.diffuse.copyFromFloats(1, 1, 1);
-            }
+        protected _loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> { 
+            return this._loadExtensionAsync<ILightReference>(context, scene, (context, extension) => {
+                const promise = this._loader._loadSceneAsync(context, scene);
 
-            if (lightInfo.intensity !== undefined) {
-                light.intensity = lightInfo.intensity;
-            } else {
-                light.intensity = 1;
-            }
-        }
-
-        protected _loadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean { 
-            return this._loadExtension<IGLTFLightReference>(context, scene, (context, extension, onComplete) => {
-                if (extension.light >= 0 && loader._gltf.extensions) {
-                    const lightInfo = loader._gltf.extensions.KHR_lights.lights[extension.light];
-                    if (lightInfo.type !== 'ambient') {
-                        return;
-                    }
-
-                    const lightColor = lightInfo.color ? lightInfo.color : [1, 1, 1];
-                    loader._babylonScene.ambientColor.copyFromFloats(lightColor[0], lightColor[1], lightColor[2]);
+                const light = GLTFLoader._GetProperty(context, this._lights, extension.light);
+                if (light.type !== LightType.AMBIENT) {
+                    throw new Error(context + ": Only ambient lights are allowed on a scene");
                 }
-                
-                onComplete();
+
+                this._loader._babylonScene.ambientColor = light.color ? Color3.FromArray(light.color) : Color3.Black();
+
+                return promise;
             });
         }
 
-        protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { 
-            return this._loadExtension<IGLTFLightReference>(context, node, (context, extension, onComplete) => {
-                if (extension.light >= 0 && loader._gltf.extensions) {
-                    const lightInfo = loader._gltf.extensions.KHR_lights.lights[extension.light];
-                    const name = node.name || 'Light';
-                    let matrix: Matrix;
-                    if (node.matrix) {
-                        matrix = Matrix.FromArray(node.matrix);
-                    } else {
-                        matrix = Matrix.Identity();
+        protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { 
+            return this._loadExtensionAsync<ILightReference>(context, node, (context, extension) => {
+                const promise = this._loader._loadNodeAsync(context, node);
+
+                let babylonLight: Light;
+
+                const light = GLTFLoader._GetProperty(context, this._lights, extension.light);
+                const name = node._babylonMesh!.name;
+                switch (light.type) {
+                    case LightType.AMBIENT: {
+                        throw new Error(context + ": Ambient lights are not allowed on a node");
                     }
-
-                    const direction = new Vector3(0, 0, 1);
-                    if (lightInfo.type == 'directional' || lightInfo.type == 'spot') {
-                        const rotationMatrix = matrix.getRotationMatrix();
-                        Vector3.TransformCoordinatesToRef(direction, rotationMatrix, direction);
+                    case LightType.DIRECTIONAL: {
+                        babylonLight = new DirectionalLight(name, Vector3.Forward(), this._loader._babylonScene);
+                        break;
                     }
-
-                    let light: Light;
-                    if (lightInfo.type == 'directional') {
-                        light = new DirectionalLight(name, direction, loader._babylonScene);
-                    } else {
-                        const position = matrix.getTranslation();
-                        if (lightInfo.type == 'spot') {
-                            const angle = lightInfo.spot && lightInfo.spot.outerConeAngle ? lightInfo.spot.outerConeAngle : Math.PI / 2;
-                            light = new SpotLight(name, position, direction, angle, 2, loader._babylonScene);
-                        } else {
-                            light = new PointLight(name, position, loader._babylonScene);
-                        }
-                    } 
-
-                    this.applyCommonProperties(light, lightInfo);
-                    
-                    extension.babylonLight = light;
-                    extension.babylonLight.parent = node.parent ? node.parent.babylonMesh : null;
-                    
-                    if (node.children) {
-                        for (const index of node.children) {
-                            const childNode = GLTFLoader._GetProperty(loader._gltf.nodes, index);
-                            if (!childNode) {
-                                throw new Error(context + ": Failed to find child node " + index);
-                            }
-        
-                            loader._loadNode("#/nodes/" + index, childNode);
-                        }
+                    case LightType.POINT: {
+                        babylonLight = new PointLight(name, Vector3.Zero(), this._loader._babylonScene);
+                        break;
+                    }
+                    case LightType.SPOT: {
+                        const spotLight = light as ISpotLight;
+                        // TODO: support inner and outer cone angles
+                        //const innerConeAngle = spotLight.innerConeAngle || 0;
+                        const outerConeAngle = spotLight.outerConeAngle || Math.PI / 4;
+                        babylonLight = new SpotLight(name, Vector3.Zero(), Vector3.Forward(), outerConeAngle, 2, this._loader._babylonScene);
+                        break;
+                    }
+                    default: {
+                        throw new Error(context + ": Invalid light type " + light.type);
                     }
                 }
-                onComplete();
+
+                babylonLight.diffuse = light.color ? Color3.FromArray(light.color) : Color3.White();
+                babylonLight.intensity = light.intensity == undefined ? 1 : light.intensity;
+                babylonLight.parent = node._babylonMesh!;
+
+                return promise;
             });
         }
 
-        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean {
-            return this._loadExtension<IKHRLights>(context, root, (context, extension, onComplete) => {
-                extension.lights.forEach((light: IGLTFLight, idx: number) => {
-                    light.index = idx;
-                });
-                onComplete();
-            });
+        private get _lights(): Array<ILight> {
+            const extensions = this._loader._gltf.extensions;
+            if (!extensions || !extensions[this._name]) {
+                throw new Error("#/extensions: " + this._name + " not found");
+            }
+
+            const extension = extensions[this._name] as ILights;
+            return extension.lights;
         }
     }
 
-    GLTFLoader.RegisterExtension(new KHRLights());
+    GLTFLoader._Register(NAME, loader => new KHRLights(loader));
 }

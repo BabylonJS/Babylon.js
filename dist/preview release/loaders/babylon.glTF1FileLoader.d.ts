@@ -28,6 +28,17 @@ declare module BABYLON {
         json: Object;
         bin: Nullable<ArrayBufferView>;
     }
+    enum GLTFLoaderState {
+        Loading = 0,
+        Ready = 1,
+        Complete = 2,
+    }
+    interface IGLTFLoaderExtension {
+        enabled: boolean;
+    }
+    interface IGLTFLoaderExtensions {
+        [name: string]: IGLTFLoaderExtension;
+    }
     interface IGLTFLoader extends IDisposable {
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
         animationStartMode: GLTFLoaderAnimationStartMode;
@@ -39,8 +50,14 @@ declare module BABYLON {
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+        state: Nullable<GLTFLoaderState>;
+        extensions: Nullable<IGLTFLoaderExtensions>;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+        }>;
+        loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
     class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
         static CreateGLTFLoaderV1: () => IGLTFLoader;
@@ -78,19 +95,19 @@ declare module BABYLON {
         /**
          * Raised when the loader creates a mesh after parsing the glTF properties of the mesh.
          */
-        onMeshLoadedObservable: Observable<AbstractMesh>;
+        readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         private _onMeshLoadedObserver;
         onMeshLoaded: (mesh: AbstractMesh) => void;
         /**
          * Raised when the loader creates a texture after parsing the glTF properties of the texture.
          */
-        onTextureLoadedObservable: Observable<BaseTexture>;
+        readonly onTextureLoadedObservable: Observable<BaseTexture>;
         private _onTextureLoadedObserver;
         onTextureLoaded: (Texture: BaseTexture) => void;
         /**
          * Raised when the loader creates a material after parsing the glTF properties of the material.
          */
-        onMaterialLoadedObservable: Observable<Material>;
+        readonly onMaterialLoadedObservable: Observable<Material>;
         private _onMaterialLoadedObserver;
         onMaterialLoaded: (Material: Material) => void;
         /**
@@ -98,15 +115,23 @@ declare module BABYLON {
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after onSuccess.
          */
-        onCompleteObservable: Observable<GLTFFileLoader>;
+        readonly onCompleteObservable: Observable<GLTFFileLoader>;
         private _onCompleteObserver;
         onComplete: () => void;
         /**
         * Raised when the loader is disposed.
         */
-        onDisposeObservable: Observable<GLTFFileLoader>;
+        readonly onDisposeObservable: Observable<GLTFFileLoader>;
         private _onDisposeObserver;
         onDispose: () => void;
+        /**
+         * The loader state or null if not active.
+         */
+        readonly loaderState: Nullable<GLTFLoaderState>;
+        /**
+         * The loader extensions or null if not active.
+         */
+        readonly loaderExtensions: Nullable<IGLTFLoaderExtensions>;
         private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
@@ -114,9 +139,13 @@ declare module BABYLON {
          * Disposes the loader, releases resources during load, and cancels any outstanding requests.
          */
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
-        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
-        loadAssetsAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onSuccess: (assets: AssetContainer) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void): void;
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+        }>;
+        loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
         canDirectLoad(data: string): boolean;
         rewriteRootURL: (rootUrl: string, responseURL?: string) => string;
         createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -534,9 +563,17 @@ declare module BABYLON.GLTF1 {
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
+        state: Nullable<GLTFLoaderState>;
+        extensions: Nullable<IGLTFLoaderExtensions>;
         dispose(): void;
-        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): boolean;
-        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): void;
+        private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError);
+        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+        }>;
+        private _loadAsync(scene, data, rootUrl, onSuccess, onProgress, onError);
+        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         private _loadShadersAsync(gltfRuntime, onload);
         private _loadBuffersAsync(gltfRuntime, onLoad, onProgress?);
         private _createNodes(gltfRuntime);
@@ -566,16 +603,6 @@ declare module BABYLON.GLTF1 {
          * @param type: the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
          */
         static SetUniform(shaderMaterial: ShaderMaterial | Effect, uniform: string, value: any, type: number): boolean;
-        /**
-        * If the uri is a base64 string
-        * @param uri: the uri to test
-        */
-        static IsBase64(uri: string): boolean;
-        /**
-        * Decode the base64 uri
-        * @param uri: the uri to decode
-        */
-        static DecodeBase64(uri: string): ArrayBuffer;
         /**
         * Returns the wrap mode of the texture
         * @param mode: the mode value

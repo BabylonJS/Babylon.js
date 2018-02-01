@@ -1,6 +1,7 @@
 # 3.2.0
 
 ## Major updates
+
 - Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments and what's new updates are now mandatory ([sebavan](https://github.com/sebavan))
 - Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
@@ -10,6 +11,7 @@
 - Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
 
 ## Updates
+
 - Tons of functions and classes received the code comments they deserved (All the community)
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
 - Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adaptability ([deltakosh](https://github.com/deltakosh))
@@ -45,17 +47,29 @@
 - SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
 - AssetContainer Class and loading methods. ([trevordev](https://github.com/trevordev))
-- KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/), [trevordev](https://github.com/trevordev))
+- KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
 - (Viewer) Model can be normalized using configuration. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final NPM declarations during build. ([RaananW](https://github.com/RaananW))
 - GUI.Line can have its world position set from one end or the other ([SvenFrankson](https://github.com/SvenFrankson))
+- Added FOV system to background material for zoom effects in skyboxes without adjusting camera FOV ([DavidHGillen](https://github.com/DavidHGillen))
+- Added VideoDomeHelper class to provide a template for a common scenario, and gave it FOV control ([DavidHGillen](https://github.com/DavidHGillen))
+- Improved glTF loader by using promises for asynchronous operations. ([bghgary](https://github.com/bghgary)]
+- Improved glTF loader performance by compiling materials in parallel with downloading external resources. ([bghgary](https://github.com/bghgary)]
+- Added unit tests for the glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Added promise-based async functions to the SceneLoader, Scene.whenReadyAsync, and material.forceCompilationAsync. ([bghgary](https://github.com/bghgary)]
+- Added checks to VertexData.merge to ensure data is valid before merging. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
+
 - `setPivotMatrix` ws not setting pivot correctly. This is now fixed. We also introduced a new `setPreTransformMatrix` to reproduce the sometimes needed behavior of the previous `setPivotMatrix` function ([deltakosh](https://github.com/deltakosh))
+- SPS solid particle `.pivot` property now also behaves like the standard mesh pivot. Former behavior (particle translation) can be kept with the particle property `.translateFromPivot` set to true ([jbousquie](https://github.com/jbousquie))
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
-- Fixed a bug with merging vertex data ([bghgary](https://github.com/bghgary))
+- SPS internal temporary vector3 instead of Tmp.Vector3 to avoid possible concurrent uses ([jbousquie](https://github.com/jbousquie))
 
 ## Breaking changes
+
 - Removed unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
+- VertexData.merge no longer supports merging of data that do not have the same set of attributes. ([bghgary](https://github.com/bghgary)]
+- glTF 2.0 loader will now create a mesh for each primitive instead of merging the primitives together into one mesh. ([bghgary](https://github.com/bghgary)]
