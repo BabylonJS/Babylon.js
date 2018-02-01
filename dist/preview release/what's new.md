@@ -10,6 +10,7 @@
 - Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 - Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
 - Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
+- Added VideoDome class to provide a template for a common scenario, and gave it FOV control ([DavidHGillen](https://github.com/DavidHGillen))
 
 ## Updates
 
@@ -55,7 +56,6 @@
 - (Gulp) extra/external declarations can be prepended to final NPM declarations during build. ([RaananW](https://github.com/RaananW))
 - GUI.Line can have its world position set from one end or the other ([SvenFrankson](https://github.com/SvenFrankson))
 - Added FOV system to background material for zoom effects in skyboxes without adjusting camera FOV ([DavidHGillen](https://github.com/DavidHGillen))
-- Added VideoDomeHelper class to provide a template for a common scenario, and gave it FOV control ([DavidHGillen](https://github.com/DavidHGillen))
 - Improved glTF loader by using promises for asynchronous operations. ([bghgary](https://github.com/bghgary)]
 - Improved glTF loader performance by compiling materials in parallel with downloading external resources. ([bghgary](https://github.com/bghgary)]
 - Added unit tests for the glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
