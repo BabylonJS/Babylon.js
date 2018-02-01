@@ -70,6 +70,7 @@
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
         public REFLECTIONMAP_CUBIC = false;
+        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;        
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
@@ -928,7 +929,8 @@
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vAlbedoColor", "vReflectivityColor", "vEmissiveColor", "vReflectionColor",
                 "vFogInfos", "vFogColor", "pointSize",
-                "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
+                "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", 
+                "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
                 "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                 "vLightingIntensity",
@@ -1025,6 +1027,7 @@
                             case Texture.CUBIC_MODE:
                             case Texture.INVCUBIC_MODE:
                                 defines.REFLECTIONMAP_CUBIC = true;
+                                defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>reflectionTexture).boundingBoxSize ? true : false;
                                 break;
                             case Texture.EXPLICIT_MODE:
                                 defines.REFLECTIONMAP_EXPLICIT = true;
@@ -1069,6 +1072,7 @@
                         defines.REFLECTIONMAP_SPHERICAL = false;
                         defines.REFLECTIONMAP_PLANAR = false;
                         defines.REFLECTIONMAP_CUBIC = false;
+                        defines.USE_LOCAL_REFLECTIONMAP_CUBIC = false;
                         defines.REFLECTIONMAP_PROJECTION = false;
                         defines.REFLECTIONMAP_SKYBOX = false;
                         defines.REFLECTIONMAP_EXPLICIT = false;
@@ -1243,6 +1247,8 @@
             this._uniformBuffer.addUniform("vMicroSurfaceSamplerInfos", 2);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vReflectionInfos", 2);
+            this._uniformBuffer.addUniform("vReflectionPosition", 3);
+            this._uniformBuffer.addUniform("vReflectionSize", 3);
             this._uniformBuffer.addUniform("vBumpInfos", 3);
             this._uniformBuffer.addUniform("albedoMatrix", 16);
             this._uniformBuffer.addUniform("ambientMatrix", 16);
@@ -1352,6 +1358,13 @@
                         if (reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, 0);
+
+                            if ((<any>reflectionTexture).boundingBoxSize) {
+                                let cubeTexture = <CubeTexture>reflectionTexture;
+
+                                this._uniformBuffer.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                                this._uniformBuffer.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+                            }                            
 
                             var polynomials = reflectionTexture.sphericalPolynomial;
                             if (defines.USESPHERICALFROMREFLECTIONMAP && polynomials) {

@@ -11,6 +11,8 @@ uniform Material
 	uniform vec2 vMicroSurfaceSamplerInfos;
 	uniform vec4 vRefractionInfos;
 	uniform vec2 vReflectionInfos;
+	uniform vec3 vReflectionPosition;
+	uniform vec3 vReflectionSize;	
 	uniform vec3 vBumpInfos;
 	uniform mat4 albedoMatrix;
 	uniform mat4 ambientMatrix;
