@@ -1279,31 +1279,54 @@
         }
     }
 
+    /**
+     * Classed used to store (x,y,z) vector representation
+     * A Vector3 is the main object used in 3D geometry
+     * It can represent etiher the coordinates of a point the space, either a direction
+     * Reminder: Babylon.js uses a left handed forward facing system
+     */
     export class Vector3 {
         /**
          * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.  
-         * A Vector3 is the main object used in 3D geometry.  
-         * It can represent etiher the coordinates of a point the space, either a direction.  
+         * @param x defines the first coordinates (on X axis)
+         * @param y defines the second coordinates (on Y axis)
+         * @param z defines the third coordinates (on Z axis)
          */
-        constructor(public x: number, public y: number, public z: number) {
+        constructor(
+            /**
+             * Defines the first coordinates (on X axis)
+             */
+            public x: number, 
+            /**
+             * Defines the second coordinates (on Y axis)
+             */
+            public y: number, 
+            /**
+             * Defines the third coordinates (on Z axis)
+             */
+            public z: number
+        ) {
         }
 
         /**
-         * Returns a string with the Vector3 coordinates.  
+         * Creates a string representation of the Vector3
+         * @returns a string with the Vector3 coordinates.  
          */
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
         }
 
         /**
-         * Returns the string "Vector3"
+         * Gets the class name
+         * @returns the string "Vector3"
          */
         public getClassName(): string {
             return "Vector3";
         }
 
         /**
-         * Returns the Vector hash code.  
+         * Creates the Vector3 hash code
+         * @returns a number which tends to be unique between Vector3 instances
          */
         public getHashCode(): number {
             let hash = this.x || 0;
@@ -1314,7 +1337,8 @@
 
         // Operators
         /**
-         * Returns a new array with three elements : the coordinates the Vector3.  
+         * Creates an array containing three elements : the coordinates of the Vector3
+         * @returns a new array of numbers
          */
         public asArray(): number[] {
             var result: number[] = [];
@@ -1323,8 +1347,10 @@
         }
 
         /**
-         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
-         * Returns the Vector3.  
+         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3
+         * @param array defines the destination array
+         * @param index defines the offset in the destination array
+         * @returns the current Vector3
          */
         public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
@@ -1334,7 +1360,8 @@
         }
 
         /**
-         * Returns a new Quaternion object, computed from the Vector3 coordinates.  
+         * Converts the current Vector3 into a quaternion (considering that the Vector3 contains Euler angles representation of a rotation)
+         * @returns a new Quaternion object, computed from the Vector3 coordinates
          */
         public toQuaternion(): Quaternion {
             var result = new Quaternion(0.0, 0.0, 0.0, 1.0);
@@ -1354,8 +1381,9 @@
         }
 
         /**
-         * Adds the passed vector to the current Vector3.  
-         * Returns the updated Vector3.  
+         * Adds the passed vector to the current Vector3 
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
          */
         public addInPlace(otherVector: Vector3): Vector3 {
             this.x += otherVector.x;
@@ -1365,15 +1393,19 @@
         }
 
         /**
-         * Returns a new Vector3, result of the addition the current Vector3 and the passed vector.  
+         * Gets a new Vector3, result of the addition the current Vector3 and the passed vector
+         * @param otherVector defines the second operand
+         * @returns the resulting Vector3
          */
         public add(otherVector: Vector3): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
         /**
-         * Adds the current Vector3 to the passed one and stores the result in the vector "result".  
-         * Returns the current Vector3.  
+         * Adds the current Vector3 to the passed one and stores the result in the vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x + otherVector.x;
@@ -1383,8 +1415,9 @@
         }
 
         /**
-         * Subtract the passed vector from the current Vector3.  
-         * Returns the updated Vector3.  
+         * Subtract the passed vector from the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
          */
         public subtractInPlace(otherVector: Vector3): Vector3 {
             this.x -= otherVector.x;
@@ -1394,7 +1427,9 @@
         }
 
         /**
-         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3.  
+         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the resulting Vector3
          */
         public subtract(otherVector: Vector3): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
@@ -1402,7 +1437,9 @@
 
         /**
          * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".  
-         * Returns the current Vector3.  
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3  
          */
         public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x - otherVector.x;
@@ -1412,15 +1449,23 @@
         }
 
         /**
-         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates.  
+         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the resulting Vector3
          */
         public subtractFromFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x - x, this.y - y, this.z - z);
         }
 
         /**
-         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result.  
-         * Returns the current Vector3.  
+         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3  
          */
         public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
             result.x = this.x - x;
@@ -1430,15 +1475,17 @@
         }
 
         /**
-         * Returns a new Vector3 set with the current Vector3 negated coordinates.  
+         * Gets a new Vector3 set with the current Vector3 negated coordinates
+         * @returns a new Vector3
          */
         public negate(): Vector3 {
             return new Vector3(-this.x, -this.y, -this.z);
         }
 
         /**
-         * Multiplies the Vector3 coordinates by the float "scale".  
-         * Returns the updated Vector3.  
+         * Multiplies the Vector3 coordinates by the float "scale"
+         * @param scale defines the multiplier factor
+         * @returns the current updated Vector3
          */
         public scaleInPlace(scale: number): Vector3 {
             this.x *= scale;
@@ -1448,15 +1495,19 @@
         }
 
         /**
-         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale".  
+         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale"
+         * @param scale defines the multiplier factor
+         * @returns a new Vector3
          */
         public scale(scale: number): Vector3 {
             return new Vector3(this.x * scale, this.y * scale, this.z * scale);
         }
 
         /**
-         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates.  
-         * Returns the current Vector3.  
+         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates
+         * @param scale defines the multiplier factor 
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public scaleToRef(scale: number, result: Vector3): Vector3 {
             result.x = this.x * scale;
@@ -1466,29 +1517,39 @@
         }
 
         /**
-         * Boolean : True if the current Vector3 and the passed vector coordinates are strictly equal.  
+         * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
+         * @param otherVector defines the second operand
+         * @returns true if both vectors are equals
          */
         public equals(otherVector: Vector3): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
         /**
-         * Boolean : True if the current Vector3 and the passed vector coordinates are distant less than epsilon.
+         * Returns true if the current Vector3 and the passed vector coordinates are distant less than epsilon
+         * @param otherVector defines the second operand
+         * @param epsilon defines the minimal distance to define values as equals
+         * @returns true if both vectors are distant less than epsilon
          */
         public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
         /**
-         * Boolean : True if the current Vector3 coordinate equal the passed floats.  
+         * Returns true if the current Vector3 coordinates equals the passed floats
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns true if both vectors are equals          
          */
         public equalsToFloats(x: number, y: number, z: number): boolean {
             return this.x === x && this.y === y && this.z === z;
         }
 
         /**
-         * Muliplies the current Vector3 coordinates by the passed ones.  
-         * Returns the updated Vector3.  
+         * Multiplies the current Vector3 coordinates by the passed ones 
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
          */
         public multiplyInPlace(otherVector: Vector3): Vector3 {
             this.x *= otherVector.x;
@@ -1498,15 +1559,19 @@
         }
 
         /**
-         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector.  
+         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector
+         * @param otherVector defines the second operand
+         * @returns the new Vector3
          */
         public multiply(otherVector: Vector3): Vector3 {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
         /**
-         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result".  
-         * Returns the current Vector3.  
+         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x * otherVector.x;
@@ -1516,22 +1581,30 @@
         }
 
         /**
-         * Returns a new Vector3 set witth the result of the mulliplication of the current Vector3 coordinates by the passed floats.  
+         * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the passed floats  
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the new Vector3
          */
         public multiplyByFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x * x, this.y * y, this.z * z);
         }
 
         /**
-         * Returns a new Vector3 set witth the result of the division of the current Vector3 coordinates by the passed ones.  
+         * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the passed ones
+         * @param otherVector defines the second operand
+         * @returns the new Vector3
          */
         public divide(otherVector: Vector3): Vector3 {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
         /**
-         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result".  
-         * Returns the current Vector3.  
+         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x / otherVector.x;
@@ -1542,17 +1615,19 @@
 
         /**
          * Divides the current Vector3 coordinates by the passed ones.  
-         * Returns the updated Vector3.  
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3  
          */
         public divideInPlace(otherVector: Vector3): Vector3 {
             return this.divideToRef(otherVector, this);
         }
 
         /**
-         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.  
-         * Returns the updated Vector3.  
+         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones  
+         * @param other defines the second operand
+         * @returns the current updated Vector3  
          */
-        public MinimizeInPlace(other: Vector3): Vector3 {
+        public minimizeInPlace(other: Vector3): Vector3 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
@@ -1561,9 +1636,10 @@
 
         /**
          * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.  
-         * Returns the updated Vector3.  
+         * @param other defines the second operand
+         * @returns the current updated Vector3
          */
-        public MaximizeInPlace(other: Vector3): Vector3 {
+        public maximizeInPlace(other: Vector3): Vector3 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
@@ -1571,7 +1647,7 @@
         }
 
         /**
-         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
          */
         public get isNonUniform(): boolean {
             let absX = Math.abs(this.x);
@@ -1594,14 +1670,16 @@
 
         // Properties
         /**
-         * Returns the length of the Vector3 (float).  
+         * Gets the length of the Vector3
+         * @returns the length of the Vecto3
          */
         public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
         /**
-         * Returns the squared length of the Vector3 (float).  
+         * Gets the squared length of the Vector3
+         * @returns squared length of the Vector3
          */
         public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y + this.z * this.z);
@@ -1609,8 +1687,8 @@
 
         /**
          * Normalize the current Vector3.  
-         * Returns the updated Vector3.  
-         * /!\ In place operation.
+         * Please note that this is an in place operation.
+         * @returns the current updated Vector3 
          */
         public normalize(): Vector3 {
             var len = this.length();
@@ -1625,8 +1703,8 @@
         }
 
         /**
-         * Normalize the current Vector3 to a new vector.
-         * @returns the new Vector3.
+         * Normalize the current Vector3 to a new vector
+         * @returns the new Vector3
          */
         public normalizeToNew(): Vector3 {
             const normalized = new Vector3(0, 0, 0);
@@ -1635,9 +1713,9 @@
         }
 
         /**
-         * Normalize the current Vector3 to the reference.
-         * @param the reference to update.
-         * @returns the updated Vector3.
+         * Normalize the current Vector3 to the reference
+         * @param reference define the Vector3 to update
+         * @returns the updated Vector3
          */
         public normalizeToRef(reference: Vector3): Vector3 {
             var len = this.length();
@@ -1652,15 +1730,17 @@
         }
 
         /**
-         * Returns a new Vector3 copied from the current Vector3.  
+         * Creates a new Vector3 copied from the current Vector3
+         * @returns the new Vector3  
          */
         public clone(): Vector3 {
             return new Vector3(this.x, this.y, this.z);
         }
 
         /**
-         * Copies the passed vector coordinates to the current Vector3 ones.   
-         * Returns the updated Vector3.  
+         * Copies the passed vector coordinates to the current Vector3 ones 
+         * @param source defines the source Vector3 
+         * @returns the current updated Vector3
          */
         public copyFrom(source: Vector3): Vector3 {
             this.x = source.x;
@@ -1670,8 +1750,11 @@
         }
 
         /**
-         * Copies the passed floats to the current Vector3 coordinates.  
-         * Returns the updated Vector3.  
+         * Copies the passed floats to the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3  
          */
         public copyFromFloats(x: number, y: number, z: number): Vector3 {
             this.x = x;
@@ -1681,16 +1764,25 @@
         }
 
         /**
-         * Copies the passed floats to the current Vector3 coordinates.  
-         * Returns the updated Vector3.  
+         * Copies the passed floats to the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
          */
         public set(x: number, y: number, z: number): Vector3 {
             return this.copyFromFloats(x, y, z);
         }
 
         // Statics
+
         /**
-         * 
+         * Get the clip factor between two vectors
+         * @param vector0 defines the first operand
+         * @param vector1 defines the second operand
+         * @param axis defines the axis to use
+         * @param size defines the size along the axis
+         * @returns the clip factor
          */
         public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
@@ -1702,11 +1794,11 @@
         }
 
         /**
-         * Get angle between two vectors.
+         * Get angle between two vectors
          * @param vector0 angle between vector0 and vector1
          * @param vector1 angle between vector0 and vector1
-         * @param normal direction of the normal.
-         * @return the angle between vector0 and vector1.
+         * @param normal direction of the normal
+         * @return the angle between vector0 and vector1
          */
         public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
             var v0:Vector3 = vector0.clone().normalize();
@@ -1720,7 +1812,10 @@
         }
 
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed array.
+         * Returns a new Vector3 set from the index "offset" of the passed array
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @returns the new Vector3
          */
         public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
             if (!offset) {
@@ -1730,15 +1825,21 @@
         }
 
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed Float32Array.
-         * This function is deprecated.  Use FromArray instead.
+         * Returns a new Vector3 set from the index "offset" of the passed Float32Array
+         * This function is deprecated.  Use FromArray instead
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @returns the new Vector3
          */
         public static FromFloatArray(array: Float32Array, offset?: number): Vector3 {
             return Vector3.FromArray(array, offset);
         }
 
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array.
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed array
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param result defines the Vector3 where to store the result
          */
         public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void {
             result.x = array[offset];
@@ -1747,15 +1848,23 @@
         }
 
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array.
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array
          * This function is deprecated.  Use FromArrayToRef instead.
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param result defines the Vector3 where to store the result
          */
         public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void {
             return Vector3.FromArrayToRef(array, offset, result);
         }
 
+
         /**
          * Sets the passed vector "result" with the passed floats.
+         * @param x defines the x coordinate of the source
+         * @param y defines the y coordinate of the source
+         * @param z defines the z coordinate of the source
+         * @param result defines the Vector3 where to store the result
          */
         public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
             result.x = x;
@@ -1764,37 +1873,43 @@
         }
 
         /**
-         * Returns a new Vector3 set to (0.0, 0.0, 0.0).
+         * Returns a new Vector3 set to (0.0, 0.0, 0.0)
+         * @returns a new empty Vector3
          */
         public static Zero(): Vector3 {
             return new Vector3(0.0, 0.0, 0.0);
         }
         /**
-         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0)
+         * @returns a new unit Vector3
          */
         public static One(): Vector3 {
             return new Vector3(1.0, 1.0, 1.0);
         }
         /**
          * Returns a new Vector3 set to (0.0, 1.0, 0.0)
+         * @returns a new up Vector3
          */
         public static Up(): Vector3 {
             return new Vector3(0.0, 1.0, 0.0);
         }
         /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         * @returns a new forward Vector3
          */
         public static Forward(): Vector3 {
             return new Vector3(0.0, 0.0, 1.0);
         }
         /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
+         * @returns a new right Vector3
          */
         public static Right(): Vector3 {
             return new Vector3(1.0, 0.0, 0.0);
         }
         /**
          * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
+         * @returns a new left Vector3
          */
         public static Left(): Vector3 {
             return new Vector3(-1.0, 0.0, 0.0);
@@ -1802,7 +1917,10 @@
 
         /**
          * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.  
-         * This method computes tranformed coordinates only, not transformed direction vectors. 
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the transformed Vector3 
          */
         public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
@@ -1811,8 +1929,11 @@
         }
 
         /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector.  
-         * This method computes tranformed coordinates only, not transformed direction vectors. 
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]) + transformation.m[12];
@@ -1826,8 +1947,13 @@
         }
 
         /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z).  
-         * This method computes tranformed coordinates only, not transformed direction vectors.  
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z)
+         * This method computes tranformed coordinates only, not transformed direction vectors
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
             var rx = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]) + transformation.m[12];
@@ -1841,8 +1967,11 @@
         }
 
         /**
-         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector.  
-         * This methods computes transformed normalized direction vectors only.  
+         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector  
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the new Vector3
          */
         public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
@@ -1851,8 +1980,11 @@
         }
 
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.  
-         * This methods computes transformed normalized direction vectors only. 
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
@@ -1864,8 +1996,13 @@
         }
 
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z).  
-         * This methods computes transformed normalized direction vectors only. 
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z)
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
             result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
@@ -1874,7 +2011,13 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4".  
+         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4"
+         * @param value1 defines the first control point
+         * @param value2 defines the second control point
+         * @param value3 defines the third control point
+         * @param value4 defines the fourth control point
+         * @param amount defines the amount on the spline to use
+         * @returns the new Vector3
          */
         public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
@@ -1896,9 +2039,13 @@
         }
 
         /**
-         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max".  
-         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one.  
-         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one. 
+         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+         * @param value defines the current value
+         * @param min defines the lower range value
+         * @param max defines the upper range value
+         * @returns the new Vector3
          */
         public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
             var x = value.x;
@@ -1917,7 +2064,13 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent vector
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent vector
+         * @param amount defines the amount on the interpolation spline (between 0 and 1)
+         * @returns the new Vector3
          */
         public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
@@ -1934,7 +2087,11 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end".  
+         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
+         * @param start defines the start value
+         * @param end defines the end value
+         * @param amount max defines amount between both (between 0 and 1)
+         * @returns the new Vector3
          */
         public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
             var result = new Vector3(0, 0, 0);
@@ -1943,7 +2100,11 @@
         }
 
         /**
-         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end".
+         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
+         * @param start defines the start value
+         * @param end defines the end value
+         * @param amount max defines amount between both (between 0 and 1)
+         * @param result defines the Vector3 where to store the result
          */
         public static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void {
             result.x = start.x + ((end.x - start.x) * amount);
@@ -1952,15 +2113,21 @@
         }
 
         /**
-         * Returns the dot product (float) between the vectors "left" and "right".  
+         * Returns the dot product (float) between the vectors "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the dot product
          */
         public static Dot(left: Vector3, right: Vector3): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z);
         }
 
         /**
-         * Returns a new Vector3 as the cross product of the vectors "left" and "right".    
-         * The cross product is then orthogonal to both "left" and "right".  
+         * Returns a new Vector3 as the cross product of the vectors "left" and "right" 
+         * The cross product is then orthogonal to both "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the cross product
          */
         public static Cross(left: Vector3, right: Vector3): Vector3 {
             var result = Vector3.Zero();
@@ -1969,8 +2136,11 @@
         }
 
         /**
-         * Sets the passed vector "result" with the cross product of "left" and "right".  
-         * The cross product is then orthogonal to both "left" and "right". 
+         * Sets the passed vector "result" with the cross product of "left" and "right"
+         * The cross product is then orthogonal to both "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @param result defines the Vector3 where to store the result
          */
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
             MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
@@ -1980,7 +2150,9 @@
         }
 
         /**
-         * Returns a new Vector3 as the normalization of the passed vector.  
+         * Returns a new Vector3 as the normalization of the passed vector
+         * @param vector defines the Vector3 to normalize
+         * @returns the new Vector3
          */
         public static Normalize(vector: Vector3): Vector3 {
             var result = Vector3.Zero();
@@ -1989,7 +2161,9 @@
         }
 
         /**
-         * Sets the passed vector "result" with the normalization of the passed first vector.  
+         * Sets the passed vector "result" with the normalization of the passed first vector
+         * @param vector defines the Vector3 to normalize
+         * @param result defines the Vector3 where to store the result
          */
         public static NormalizeToRef(vector: Vector3, result: Vector3): void {
             result.copyFrom(vector);
@@ -1997,6 +2171,14 @@
         }
 
         private static _viewportMatrixCache: Matrix;
+        /**
+         * Project a Vector3 onto screen space
+         * @param vector defines the Vector3 to project
+         * @param world defines the world matrix to use
+         * @param transform defines the transform (view x projection) matrix to use
+         * @param viewport defines the screen viewport to use
+         * @returns the new Vector3
+         */
         public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
@@ -2018,6 +2200,15 @@
             return Vector3.TransformCoordinates(vector, matrix);
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param transform defines the transform (view x projection) matrix to use
+         * @returns the new Vector3
+         */
         public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
@@ -2034,6 +2225,16 @@
             return vector;
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport 
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @returns the new Vector3
+         */
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
             let result = Vector3.Zero();
 
@@ -2042,10 +2243,32 @@
             return result;
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport 
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param result defines the Vector3 where to store the result
+         */
         public static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
             Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param sourceX defines the screen space x coordinate to use
+         * @param sourceY defines the screen space y coordinate to use
+         * @param sourceZ defines the screen space z coordinate to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport 
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param result defines the Vector3 where to store the result
+         */
         public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix)
@@ -2063,25 +2286,45 @@
             }
         }
 
+        /**
+         * Gets the minimal coordinate values between two Vector3  
+         * @param left defines the first operand
+         * @param right defines the second operand
+         * @returns the new Vector3
+         */
         public static Minimize(left: Vector3, right: Vector3): Vector3 {
             var min = left.clone();
-            min.MinimizeInPlace(right);
+            min.minimizeInPlace(right);
             return min;
         }
 
+        /**
+         * Gets the maximal coordinate values between two Vector3  
+         * @param left defines the first operand
+         * @param right defines the second operand
+         * @returns the new Vector3
+         */        
         public static Maximize(left: Vector3, right: Vector3): Vector3 {
             var max = left.clone();
-            max.MaximizeInPlace(right);
+            max.maximizeInPlace(right);
             return max;
         }
+
         /**
-         * Returns the distance (float) between the vectors "value1" and "value2".  
+         * Returns the distance between the vectors "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the distance
          */
         public static Distance(value1: Vector3, value2: Vector3): number {
             return Math.sqrt(Vector3.DistanceSquared(value1, value2));
         }
+
         /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".  
+         * Returns the squared distance between the vectors "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the squared distance
          */
         public static DistanceSquared(value1: Vector3, value2: Vector3): number {
             var x = value1.x - value2.x;
@@ -2092,7 +2335,10 @@
         }
 
         /**
-         * Returns a new Vector3 located at the center between "value1" and "value2".  
+         * Returns a new Vector3 located at the center between "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the new Vector3
          */
         public static Center(value1: Vector3, value2: Vector3): Vector3 {
             var center = value1.add(value2);
@@ -2103,9 +2349,12 @@
         /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
-         * to something in order to rotate it from its local system to the given target system.  
-         * Note : axis1, axis2 and axis3 are normalized during this operation.   
-         * Returns a new Vector3.  
+         * to something in order to rotate it from its local system to the given target system
+         * Note: axis1, axis2 and axis3 are normalized during this operation
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @returns a new Vector3
          */
         public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
             var rotation = Vector3.Zero();
@@ -2114,7 +2363,11 @@
         }
 
         /**
-         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3.  
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @param ref defines the Vector3 where to store the result
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
             var quat = MathTmp.Quaternion[0];
@@ -2381,17 +2634,19 @@
         }
 
         /**
-         * Divides the current Vector3 coordinates by the passed ones.  
-         * Returns the updated Vector3.  
+         * Divides the current Vector3 coordinates by the passed ones. 
+         * @returns the updated Vector3.  
          */
         public divideInPlace(otherVector: Vector4): Vector4 {
             return this.divideToRef(otherVector, this);
         }
 
         /**
-         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones.  
+         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector4
          */
-        public MinimizeInPlace(other: Vector4): Vector4 {
+        public minimizeInPlace(other: Vector4): Vector4 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
@@ -2399,9 +2654,11 @@
             return this;
         }
         /**
-         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones.  
+         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector4
          */
-        public MaximizeInPlace(other: Vector4): Vector4 {
+        public maximizeInPlace(other: Vector4): Vector4 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
@@ -2550,13 +2807,13 @@
 
         public static Minimize(left: Vector4, right: Vector4): Vector4 {
             var min = left.clone();
-            min.MinimizeInPlace(right);
+            min.minimizeInPlace(right);
             return min;
         }
 
         public static Maximize(left: Vector4, right: Vector4): Vector4 {
             var max = left.clone();
-            max.MaximizeInPlace(right);
+            max.maximizeInPlace(right);
             return max;
         }
         /**
