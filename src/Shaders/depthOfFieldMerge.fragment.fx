@@ -3,10 +3,10 @@ uniform sampler2D textureSampler;
 uniform sampler2D originalSampler;
 uniform sampler2D circleOfConfusionSampler;
 
-#if QUALITY > 0
+#if BLUR_LEVEL > 0
 uniform sampler2D blurStep1;
 #endif
-#if QUALITY > 1
+#if BLUR_LEVEL > 1
 uniform sampler2D blurStep2;
 #endif
 // varyings
@@ -16,11 +16,11 @@ void main(void)
 {
     float coc = texture2D(circleOfConfusionSampler, vUV).r;
     vec4 original = texture2D(originalSampler, vUV);
-#if QUALITY == 0
+#if BLUR_LEVEL == 0
     vec4 blurred1 = texture2D(textureSampler, vUV);
     gl_FragColor = mix(original, blurred1, coc);
 #endif
-#if QUALITY == 1
+#if BLUR_LEVEL == 1
     vec4 blurred1 = texture2D(blurStep1, vUV);
     vec4 blurred2 = texture2D(textureSampler, vUV);    
     if(coc < 0.5){
@@ -29,7 +29,7 @@ void main(void)
         gl_FragColor = mix(blurred1, blurred2, (coc-0.5)/0.5);
     }
 #endif
-#if QUALITY == 2
+#if BLUR_LEVEL == 2
     vec4 blurred1 = texture2D(blurStep1, vUV);
     vec4 blurred2 = texture2D(blurStep2, vUV);
     vec4 blurred3 = texture2D(textureSampler, vUV);

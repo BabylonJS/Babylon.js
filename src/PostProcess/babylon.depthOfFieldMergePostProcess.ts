@@ -17,7 +17,7 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
         constructor(name: string, original: PostProcess, circleOfConfusion: PostProcess, blurSteps: Array<PostProcess>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "originalSampler", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, "#define QUALITY "+blurSteps.length+"\n", textureType);
+            super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "originalSampler", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, "#define BLUR_LEVEL "+blurSteps.length+"\n", textureType);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setTextureFromPostProcess("circleOfConfusionSampler", circleOfConfusion);
                 effect.setTextureFromPostProcess("originalSampler", original);
