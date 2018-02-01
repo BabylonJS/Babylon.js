@@ -2600,11 +2600,48 @@ var BABYLON;
                 this._currentMeasure.left = Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
                 this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
             };
-            Line.prototype._moveToProjectedPosition = function (projectedPosition) {
-                this.x1 = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
-                this.y1 = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
-                this._x1.ignoreAdaptiveScaling = true;
-                this._y1.ignoreAdaptiveScaling = true;
+            /**
+             * Move one end of the line given 3D cartesian coordinates.
+             * @param position Targeted world position
+             * @param scene Scene
+             * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
+             */
+            Line.prototype.moveToVector3 = function (position, scene, end) {
+                if (end === void 0) { end = false; }
+                if (!this._host || this._root !== this._host._rootContainer) {
+                    BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
+                    return;
+                }
+                var globalViewport = this._host._getGlobalViewport(scene);
+                var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+                this._moveToProjectedPosition(projectedPosition, end);
+                if (projectedPosition.z < 0 || projectedPosition.z > 1) {
+                    this.notRenderable = true;
+                    return;
+                }
+                this.notRenderable = false;
+            };
+            /**
+             * Move one end of the line to a position in screen absolute space.
+             * @param projectedPosition Position in screen absolute space (X, Y)
+             * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
+             */
+            Line.prototype._moveToProjectedPosition = function (projectedPosition, end) {
+                if (end === void 0) { end = false; }
+                var x = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
+                var y = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
+                if (end) {
+                    this.x2 = x;
+                    this.y2 = y;
+                    this._x2.ignoreAdaptiveScaling = true;
+                    this._y2.ignoreAdaptiveScaling = true;
+                }
+                else {
+                    this.x1 = x;
+                    this.y1 = y;
+                    this._x1.ignoreAdaptiveScaling = true;
+                    this._y1.ignoreAdaptiveScaling = true;
+                }
             };
             return Line;
         }(GUI.Control));

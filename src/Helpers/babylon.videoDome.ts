@@ -44,7 +44,7 @@ module BABYLON {
          * @param options **loop=true** Automatically loop video on end.
          * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
          */
-        constructor(name: string, urlsOrVideo: string[] | HTMLVideoElement, options: {
+        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
             resolution?: number,
             clickToPlay?: boolean,
             autoPlay?: boolean,
