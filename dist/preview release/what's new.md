@@ -71,6 +71,6 @@
 
 ## Breaking changes
 
-- Removed unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
+- Removed the unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
 - VertexData.merge no longer supports merging of data that do not have the same set of attributes. ([bghgary](https://github.com/bghgary)]
 - glTF 2.0 loader will now create a mesh for each primitive instead of merging the primitives together into one mesh. ([bghgary](https://github.com/bghgary)]
