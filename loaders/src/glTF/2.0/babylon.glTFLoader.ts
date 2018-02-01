@@ -54,21 +54,11 @@ module BABYLON.GLTF2 {
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
         public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
         public readonly onMaterialLoadedObservable = new Observable<Material>();
+        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
         public readonly onCompleteObservable = new Observable<IGLTFLoader>();
 
         public get state(): Nullable<GLTFLoaderState> {
             return this._state;
-        }
-
-        public get extensions(): IGLTFLoaderExtensions {
-            return this.extensions;
-        }
-
-        constructor() {
-            for (const name of GLTFLoader._Names) {
-                const extension = GLTFLoader._Factories[name](this);
-                this._extensions[name] = extension;
-            }
         }
 
         public dispose(): void {
@@ -125,6 +115,12 @@ module BABYLON.GLTF2 {
 
         private _loadAsync(nodes: Nullable<Array<ILoaderNode>>, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return Promise.resolve().then(() => {
+                for (const name of GLTFLoader._Names) {
+                    const extension = GLTFLoader._Factories[name](this);
+                    this._extensions[name] = extension;
+                    this.onExtensionLoadedObservable.notifyObservers(extension);
+                }
+
                 this._babylonScene = scene;
                 this._rootUrl = rootUrl;
                 this._progressCallback = onProgress;
@@ -155,20 +151,22 @@ module BABYLON.GLTF2 {
                     this._startAnimations();
 
                     Tools.SetImmediate(() => {
-                        Promise.all(this._completePromises).then(() => {
-                            this._releaseResources();
-                            this._state = GLTFLoaderState.Complete;
-                            this.onCompleteObservable.notifyObservers(this);
-                        }).catch(error => {
-                            Tools.Error("glTF Loader: " + error.message);
-                            this.dispose();
-                        });
+                        if (!this._disposed) {
+                            Promise.all(this._completePromises).then(() => {
+                                this._releaseResources();
+                                this._state = GLTFLoaderState.Complete;
+                                this.onCompleteObservable.notifyObservers(this);
+                            }).catch(error => {
+                                Tools.Error("glTF Loader: " + error.message);
+                                this.dispose();
+                            });
+                        }
                     });
-                }).catch(error => {
-                    Tools.Error("glTF Loader: " + error.message);
-                    this.dispose();
-                    throw error;
                 });
+            }).catch(error => {
+                Tools.Error("glTF Loader: " + error.message);
+                this.dispose();
+                throw error;
             });
         }
 
@@ -1279,9 +1277,13 @@ module BABYLON.GLTF2 {
 
             const deferred = new Deferred<void>();
             const babylonTexture = new Texture(null, this._babylonScene, samplerData.noMipMaps, false, samplerData.samplingMode, () => {
-                deferred.resolve();
+                if (!this._disposed) {
+                    deferred.resolve();
+                }
             }, (message, exception) => {
-                deferred.reject(new Error(context + ": " + (exception && exception.message) ? exception.message : message || "Failed to load texture"));
+                if (!this._disposed) {
+                    deferred.reject(new Error(context + ": " + (exception && exception.message) ? exception.message : message || "Failed to load texture"));
+                }
             });
             promises.push(deferred.promise);
 
@@ -1336,7 +1338,7 @@ module BABYLON.GLTF2 {
         }
 
         public _loadUriAsync(context: string, uri: string): Promise<ArrayBufferView> {
-            const promise = GLTFLoaderExtension._LoadUriAsync(this, context, uri); 
+            const promise = GLTFLoaderExtension._LoadUriAsync(this, context, uri);
             if (promise) {
                 return promise;
             }
@@ -1351,21 +1353,27 @@ module BABYLON.GLTF2 {
 
             return new Promise((resolve, reject) => {
                 const request = Tools.LoadFile(this._rootUrl + uri, data => {
-                    resolve(new Uint8Array(data as ArrayBuffer));
+                    if (!this._disposed) {
+                        resolve(new Uint8Array(data as ArrayBuffer));
+                    }
                 }, event => {
-                    try {
-                        if (request && this._state === GLTFLoaderState.Loading) {
-                            request._lengthComputable = event.lengthComputable;
-                            request._loaded = event.loaded;
-                            request._total = event.total;
-                            this._onProgress();
+                    if (!this._disposed) {
+                        try {
+                            if (request && this._state === GLTFLoaderState.Loading) {
+                                request._lengthComputable = event.lengthComputable;
+                                request._loaded = event.loaded;
+                                request._total = event.total;
+                                this._onProgress();
+                            }
+                        }
+                        catch (e) {
+                            reject(e);
                         }
                     }
-                    catch (e) {
-                        reject(e);
-                    }
                 }, this._babylonScene.database, true, (request, exception) => {
-                    reject(new LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request));
+                    if (!this._disposed) {
+                        reject(new LoadFileError(context + ": Failed to load '" + uri + "'" + (request ? ": " + request.status + " " + request.statusText : ""), request));
+                    }
                 }) as IFileRequestInfo;
 
                 this._requests.push(request);
