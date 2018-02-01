@@ -13,19 +13,6 @@ vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cu
 	vec3 intersectPositionWS = vertexPos + origVec * distance;
 	// Get corrected vector
 	return intersectPositionWS - cubePos;
-    // vec3 nDir = normalize(v);
-    // vec3 rbmax = ( 0.5 * ( cubeSize - cubePos ) - pos) / nDir;
-    // vec3 rbmin = (- 0.5 * ( cubeSize - cubePos ) - pos) / nDir;
-    
-    // vec3 rbminmax;
-    // rbminmax.x = (nDir.x > 0.) ? rbmax.x : rbmin.x;
-    // rbminmax.y = (nDir.y > 0.) ? rbmax.y : rbmin.y;
-    // rbminmax.z = (nDir.z > 0.) ? rbmax.z : rbmin.z;
-
-    // float correction = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-    // vec3 boxIntersection = pos + nDir * correction;
-    
-    // return boxIntersection - cubePos;
 }
 #endif
 
