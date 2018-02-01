@@ -1,5 +1,5 @@
 module BABYLON {
-    export enum DepthOfFieldEffectQuality {
+    export enum DepthOfFieldEffectBlurLevel {
         Low,
         Medium,
         High
@@ -56,7 +56,7 @@ module BABYLON {
          * @param scene The scene the effect belongs to.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
-        constructor(scene: Scene, quality: DepthOfFieldEffectQuality = DepthOfFieldEffectQuality.Low, pipelineTextureType = 0) {
+        constructor(scene: Scene, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
             super(scene.getEngine(), "depth of field", ()=>{
                 // Enable and get current depth map
                 var depthMap = scene.enableDepthRenderer().getDepthMap();
@@ -73,13 +73,13 @@ module BABYLON {
                 this._depthOfFieldBlurX = []
                 var blurCount = 1;
                 var kernelSize = 15;
-                switch(quality){
-                    case DepthOfFieldEffectQuality.High: {
+                switch(blurLevel){
+                    case DepthOfFieldEffectBlurLevel.High: {
                         blurCount = 3;
                         kernelSize = 51;
                         break;
                     }
-                    case DepthOfFieldEffectQuality.Medium: {
+                    case DepthOfFieldEffectBlurLevel.Medium: {
                         blurCount = 2;
                         kernelSize = 31;
                         break;
