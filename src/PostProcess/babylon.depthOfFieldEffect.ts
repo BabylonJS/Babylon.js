@@ -92,9 +92,9 @@ module BABYLON {
                 }
                 var adjustedKernelSize = kernelSize/Math.pow(2, blurCount-1);
                 for(var i = 0;i<blurCount;i++){
-                    var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, 1.0/Math.pow(2, i), null, depthMap, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+                    var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, 1.0/Math.pow(2, i), null, this._depthOfFieldPass, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
                     blurY.autoClear = false;
-                    var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, 1.0/Math.pow(2, i), null,  depthMap, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+                    var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, 1.0/Math.pow(2, i), null,  this._depthOfFieldPass, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
                     blurX.autoClear = false;
                     this._depthOfFieldBlurY.push(blurY);
                     this._depthOfFieldBlurX.push(blurX);
