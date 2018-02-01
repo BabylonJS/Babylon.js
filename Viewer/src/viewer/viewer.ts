@@ -26,7 +26,7 @@ export abstract class AbstractViewer {
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     protected configuration: ViewerConfiguration;
-    protected environmentHelper: EnvironmentHelper;
+    public environmentHelper: EnvironmentHelper;
 
     protected defaultHighpTextureType: number;
     protected shadowGeneratorBias: number;
@@ -43,7 +43,7 @@ export abstract class AbstractViewer {
     public onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     public onInitDoneObservable: Observable<AbstractViewer>;
 
-    protected canvas: HTMLCanvasElement;
+    public canvas: HTMLCanvasElement;
 
     protected registeredOnBeforerenderFunctions: Array<() => void>;
 
@@ -699,6 +699,10 @@ export abstract class AbstractViewer {
     }
 
     public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
+        // no model was provided? Do nothing!
+        if (!model.url) {
+            return Promise.resolve(this.scene);
+        }
         this.configuration.model = model;
         let modelUrl = (typeof model === 'string') ? model : model.url;
         let parts = modelUrl.split('/');
