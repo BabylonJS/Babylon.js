@@ -49,8 +49,10 @@
 - AssetContainer Class and loading methods. ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
+- (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
 - (Viewer) Model can be normalized using configuration. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final NPM declarations during build. ([RaananW](https://github.com/RaananW))
+- GUI.Line can have its world position set from one end or the other ([SvenFrankson](https://github.com/SvenFrankson))
 - Added FOV system to background material for zoom effects in skyboxes without adjusting camera FOV ([DavidHGillen](https://github.com/DavidHGillen))
 - Added VideoDomeHelper class to provide a template for a common scenario, and gave it FOV control ([DavidHGillen](https://github.com/DavidHGillen))
 - Improved glTF loader by using promises for asynchronous operations. ([bghgary](https://github.com/bghgary)]
