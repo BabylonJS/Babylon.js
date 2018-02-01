@@ -31,10 +31,8 @@ module BABYLON.GLTF2.Extensions {
         lights: ILight[];
     }
 
-    export class KHRLights extends GLTFLoaderExtension {
-        protected get _name(): string {
-            return NAME;
-        }
+    export class KHR_lights extends GLTFLoaderExtension {
+        public readonly name = NAME;
 
         protected _loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> { 
             return this._loadExtensionAsync<ILightReference>(context, scene, (context, extension) => {
@@ -94,14 +92,14 @@ module BABYLON.GLTF2.Extensions {
 
         private get _lights(): Array<ILight> {
             const extensions = this._loader._gltf.extensions;
-            if (!extensions || !extensions[this._name]) {
-                throw new Error("#/extensions: " + this._name + " not found");
+            if (!extensions || !extensions[this.name]) {
+                throw new Error("#/extensions: " + this.name + " not found");
             }
 
-            const extension = extensions[this._name] as ILights;
+            const extension = extensions[this.name] as ILights;
             return extension.lights;
         }
     }
 
-    GLTFLoader._Register(NAME, loader => new KHRLights(loader));
+    GLTFLoader._Register(NAME, loader => new KHR_lights(loader));
 }

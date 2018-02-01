@@ -1222,11 +1222,19 @@
             };
 
             const defines = new PBRMaterialDefines();
-            this._prepareEffect(mesh, defines, () => {
+            const effect = this._prepareEffect(mesh, defines, undefined, undefined, undefined, localOptions.clipPlane)!;
+            if (effect.isReady()) {
                 if (onCompiled) {
                     onCompiled(this);
                 }
-            }, undefined, undefined, localOptions.clipPlane);
+            }
+            else {
+                effect.onCompileObservable.add(() => {
+                    if (onCompiled) {
+                        onCompiled(this);
+                    }
+                });
+            }
         }
 
         /**
