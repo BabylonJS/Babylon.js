@@ -1,4 +1,22 @@
-﻿vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
+﻿#ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+vec3 parallaxCorrectNormal( vec3 vertexPos, vec3 origVec, vec3 cubeSize, vec3 cubePos ) {
+	// Find the ray intersection with box plane
+	vec3 invOrigVec = vec3(1.0,1.0,1.0) / origVec;
+	vec3 halfSize = cubeSize * 0.5;
+	vec3 intersecAtMaxPlane = (cubePos + halfSize - vertexPos) * invOrigVec;
+	vec3 intersecAtMinPlane = (cubePos - halfSize - vertexPos) * invOrigVec;
+	// Get the largest intersection values (we are not intersted in negative values)
+	vec3 largestIntersec = max(intersecAtMaxPlane, intersecAtMinPlane);
+	// Get the closest of all solutions
+	float distance = min(min(largestIntersec.x, largestIntersec.y), largestIntersec.z);
+	// Get the intersection position
+	vec3 intersectPositionWS = vertexPos + origVec * distance;
+	// Get corrected vector
+	return intersectPositionWS - cubePos;
+}
+#endif
+
+vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 {
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
 	vec3 direction = vDirectionW;
@@ -48,6 +66,12 @@
 #ifdef INVERTCUBICMAP
 	coords.y = 1.0 - coords.y;
 #endif
+
+#ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+	coords = parallaxCorrectNormal(worldPos.xyz, coords, vReflectionSize, vReflectionPosition );
+#endif
+
+
 	return vec3(reflectionMatrix * vec4(coords, 0));
 #endif
 
