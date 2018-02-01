@@ -84,20 +84,6 @@
             }
         }
 
-        private _setCORS(src: string, element: HTMLVideoElement): void {
-            if(Tools.CorsBehavior != null) {
-                if (typeof (Tools.CorsBehavior) === 'string') {
-                    element.crossOrigin = <string>Tools.CorsBehavior;
-                }
-                else {
-                    var result = Tools.CorsBehavior(src);
-                    if (result) {
-                        element.crossOrigin = result;
-                    }
-                }
-            }
-        }
-
         private _getName(src: string | string[] | HTMLVideoElement): string {
             if (src instanceof HTMLVideoElement) {
                 return src.currentSrc;
@@ -112,15 +98,15 @@
     
         private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
             if (src instanceof HTMLVideoElement) {
-                this._setCORS(src.currentSrc, src);
+                Tools.SetCorsBehavior(src.currentSrc, src);
                 return src;
             }
             const video: HTMLVideoElement = document.createElement("video");
             if (typeof src === "string") {
-                this._setCORS(src, video);
+				Tools.SetCorsBehavior(src, video);
                 video.src = src;
             } else {
-                this._setCORS(src[0], video);
+				Tools.SetCorsBehavior(src[0], video);
                 src.forEach(url => {
                     const source = document.createElement("source");
                     source.src = url;
