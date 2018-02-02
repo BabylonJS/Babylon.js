@@ -49,7 +49,7 @@
 - Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager, Effect classes ([trevordev](https://github.com/trevordev))
 - SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
-- AssetContainer Class and loading methods. ([trevordev](https://github.com/trevordev))
+- AssetContainer Class and loading methods ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
