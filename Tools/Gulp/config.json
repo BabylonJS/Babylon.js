@@ -1041,7 +1041,9 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
-                "../../src/Layer/babylon.highlightlayer.js"
+                "../../src/Layer/babylon.effectlayer.js",
+                "../../src/Layer/babylon.highlightlayer.js",
+                "../../src/Layer/babylon.glowlayer.js"
             ],
             "dependUpon": [
                 "shaderMaterial"
