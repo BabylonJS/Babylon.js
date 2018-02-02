@@ -1,7 +1,7 @@
 {
-  "errors": 7349,
+  "errors": 7341,
   "babylon.typedoc.json": {
-    "errors": 7349,
+    "errors": 7341,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -27396,11 +27396,6 @@
           }
         },
         "lastFramePerfCounter": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "layers": {
           "Comments": {
             "MissingText": true
           }
