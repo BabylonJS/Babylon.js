@@ -365,6 +365,11 @@
       "title": "Light Projection Texture",
       "playgroundId": "#CQNGRK",
       "referenceImage": "LightProjectionTexture.png"
+    },
+    {
+      "title": "GlowLayer",
+      "playgroundId": "#LRFB2D#1",
+      "referenceImage": "GlowLayer.png"
     }
   ]
 }
