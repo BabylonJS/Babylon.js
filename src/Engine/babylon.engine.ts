@@ -540,7 +540,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha6";
+            return "3.2.0-alpha7";
         }
 
         // Updatable statics so stick with vars here
@@ -2626,8 +2626,13 @@
             var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
             if (this._compiledEffects[name]) {
                 var compiledEffect = <Effect>this._compiledEffects[name];
-                if (onCompiled && compiledEffect.isReady()) {
-                    onCompiled(compiledEffect);
+                if (onCompiled) {
+                    if (compiledEffect.isReady()) {
+                        onCompiled(compiledEffect);
+                    }
+                    else {
+                        compiledEffect.onCompileObservable.add(onCompiled, undefined, undefined, true);
+                    }
                 }
                 return compiledEffect;
             }

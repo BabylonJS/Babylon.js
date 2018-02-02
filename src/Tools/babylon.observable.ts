@@ -63,6 +63,8 @@
      * Represent an Observer registered to a given Observable object.
      */
     export class Observer<T> {
+        /** @ignore */
+        public _willBeUnregistered = false;
         /**
          * Gets or sets a property defining that the observer as to be unregistered after the next notification
          */
@@ -233,6 +235,8 @@
         }
 
         private _deferUnregister(observer: Observer<T>): void {
+            observer.unregisterOnNextCall = false;
+            observer._willBeUnregistered = true;
             Tools.SetImmediate(() => {
                 this.remove(observer);
             })
@@ -260,6 +264,10 @@
             state.lastReturnValue = eventData;
 
             for (var obs of this._observers) {
+                if (obs._willBeUnregistered) {
+                    continue;
+                }
+
                 if (obs.mask & mask) {
                     if (obs.scope) {
                         state.lastReturnValue = obs.callback.apply(obs.scope, [eventData, state])
@@ -312,6 +320,9 @@
                 if (state.skipNextObservers) {
                     return;
                 }
+                if (obs._willBeUnregistered) {
+                    return;
+                }                
                 if (obs.mask & mask) {
                     if (obs.scope) {
                         p = p.then((lastReturnedValue) => {
