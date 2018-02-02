@@ -11,6 +11,7 @@
 - Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
 - Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
+- Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 
 ## Updates
 
