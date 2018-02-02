@@ -1784,37 +1784,58 @@
             return this._vrDisplay;
         }
 
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns The onVRDisplayChangedObservable.
+         */
         public initWebVR(): Observable<{ vrDisplay: any, vrSupported: any }> {
-            var notifyObservers = () => {
-                var eventArgs = {
-                    vrDisplay: this._vrDisplay,
-                    vrSupported: this._vrSupported
-                };
-                this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-            }
-
-            if (!this._onVrDisplayConnect) {
-                this._onVrDisplayConnect = (event) => {
-                    this._vrDisplay = event.display;
-                    notifyObservers();
-                };
-                this._onVrDisplayDisconnect = () => {
-                    this._vrDisplay.cancelAnimationFrame(this._frameHandler);
-                    this._vrDisplay = undefined;
-                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
-                    notifyObservers();
-                };
-                this._onVrDisplayPresentChange = () => {
-                    this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
-                }
-                window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-            }
-
-            this._getVRDisplays(notifyObservers);
-
+            this.initWebVRAsync();
             return this.onVRDisplayChangedObservable;
+        }
+
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns A promise containing a VRDisplay and if vr is supported.
+         */
+        public initWebVRAsync(): Promise<{ vrDisplay: Nullable<any>, vrSupported: boolean }> {
+            return new Promise((res, rej)=>{
+                var notifyObservers = () => {
+                    var eventArgs = {
+                        vrDisplay: this._vrDisplay,
+                        vrSupported: this._vrSupported
+                    };
+                    this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+                }
+    
+                if (!this._onVrDisplayConnect) {
+                    this._onVrDisplayConnect = (event) => {
+                        this._vrDisplay = event.display;
+                        notifyObservers();
+                    };
+                    this._onVrDisplayDisconnect = () => {
+                        this._vrDisplay.cancelAnimationFrame(this._frameHandler);
+                        this._vrDisplay = undefined;
+                        this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+                        notifyObservers();
+                    };
+                    this._onVrDisplayPresentChange = () => {
+                        this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
+                    }
+                    window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+                    window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                    window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+                }
+    
+                this._getVRDisplays(()=>{
+                    notifyObservers();
+                    res({
+                        vrDisplay: this._vrDisplay,
+                        vrSupported: this._vrSupported
+                    });
+                });
+            });
         }
 
         public enableVR() {

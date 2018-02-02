@@ -207,15 +207,14 @@ module BABYLON {
         }
 
         /**
-         * The mesh used to display where the user is selecting.
+         * The mesh used to display where the user is selecting, 
+         * when set bakeCurrentTransformIntoVertices will be called on the mesh.
+         * See http://doc.babylonjs.com/resources/baking_transformations 
          */
         public get gazeTrackerMesh(): Mesh {
             return this._gazeTracker;
         }
 
-        /**
-         * Sets the mesh to be used to display where the user is selecting.
-         */
         public set gazeTrackerMesh(value: Mesh) {
             if (value) {
                 this._gazeTracker = value;
