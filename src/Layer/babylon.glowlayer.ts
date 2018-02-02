@@ -16,7 +16,7 @@
         mainTextureFixedSize?: number;
 
         /**
-         * How big is the kernem of the blur texture.
+         * How big is the kernel of the blur texture.
          */
         blurKernelSize: number;
 
@@ -36,10 +36,12 @@
      * 
      * Once instantiated in a scene, simply use the pushMesh or removeMesh method to add or remove
      * glowy meshes to your scene.
+     * 
+     * Documentation: https://doc.babylonjs.com/how_to/glow_layer
      */
     export class GlowLayer extends EffectLayer {
         /**
-         * Effect Name of the highlight layer.
+         * Effect Name of the layer.
          */
         public static readonly EffectName = "GlowLayer";
 
@@ -150,7 +152,7 @@
         }
 
         /**
-         * Creates the render target textures and post processes used in the highlight layer.
+         * Creates the render target textures and post processes used in the glow layer.
          */
         protected _createTextureAndPostProcesses(): void {
             var blurTextureWidth = this._mainTextureDesiredSize.width;
@@ -158,7 +160,7 @@
             blurTextureWidth = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
             blurTextureHeight = this._engine.needPOTTextures ? Tools.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
-            this._blurTexture1 = new RenderTargetTexture("HighlightLayerBlurRTT",
+            this._blurTexture1 = new RenderTargetTexture("GlowLayerBlurRTT",
                 {
                     width: blurTextureWidth,
                     height: blurTextureHeight
@@ -176,7 +178,7 @@
             var blurTextureWidth2 = Math.floor(blurTextureWidth / 2);
             var blurTextureHeight2 = Math.floor(blurTextureHeight / 2);
 
-            this._blurTexture2 = new RenderTargetTexture("HighlightLayerBlurRTT2",
+            this._blurTexture2 = new RenderTargetTexture("GlowLayerBlurRTT2",
                 {
                     width: blurTextureWidth2,
                     height: blurTextureHeight2
@@ -193,7 +195,7 @@
 
             this._textures = [ this._blurTexture1, this._blurTexture2 ];
 
-            this._horizontalBlurPostprocess1 = new BlurPostProcess("HighlightLayerHBP1", new Vector2(1.0, 0), this._options.blurKernelSize / 2, {
+            this._horizontalBlurPostprocess1 = new BlurPostProcess("GlowLayerHBP1", new Vector2(1.0, 0), this._options.blurKernelSize / 2, {
                     width:  blurTextureWidth,
                     height: blurTextureHeight
                 },
@@ -204,13 +206,13 @@
                 effect.setTexture("textureSampler", this._mainTexture);
             });
 
-            this._verticalBlurPostprocess1 = new BlurPostProcess("HighlightLayerVBP1", new Vector2(0, 1.0), this._options.blurKernelSize / 2, {
+            this._verticalBlurPostprocess1 = new BlurPostProcess("GlowLayerVBP1", new Vector2(0, 1.0), this._options.blurKernelSize / 2, {
                     width:  blurTextureWidth,
                     height: blurTextureHeight
                 },
                 null, Texture.BILINEAR_SAMPLINGMODE, this._scene.getEngine(), false, Engine.TEXTURETYPE_HALF_FLOAT);
 
-            this._horizontalBlurPostprocess2 = new BlurPostProcess("HighlightLayerHBP2", new Vector2(1.0, 0), this._options.blurKernelSize / 2, {
+            this._horizontalBlurPostprocess2 = new BlurPostProcess("GlowLayerHBP2", new Vector2(1.0, 0), this._options.blurKernelSize / 2, {
                     width:  blurTextureWidth2,
                     height: blurTextureHeight2
                 },
@@ -221,7 +223,7 @@
                 effect.setTexture("textureSampler", this._blurTexture1);
             });
 
-            this._verticalBlurPostprocess2 = new BlurPostProcess("HighlightLayerVBP2", new Vector2(0, 1.0), this._options.blurKernelSize / 2, {
+            this._verticalBlurPostprocess2 = new BlurPostProcess("GlowLayerVBP2", new Vector2(0, 1.0), this._options.blurKernelSize / 2, {
                     width:  blurTextureWidth2,
                     height: blurTextureHeight2
                 },
