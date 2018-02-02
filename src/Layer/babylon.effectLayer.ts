@@ -104,9 +104,8 @@
             /** The Friendly of the effect in the scene */
             public name: string, 
             scene: Scene) {
-            var engine = scene.getEngine();
-            this._engine = engine;
             this._scene = scene || Engine.LastCreatedScene;
+            this._engine = scene.getEngine();
             this._maxSize = this._engine.getCaps().maxTextureSize;
             this._scene.effectLayers.push(this);
 
@@ -430,9 +429,6 @@
 
             // Blends the map on the main canvas.
             this._internalRender(currentEffect);
-
-            // Restore stencil state.
-            (<any>engine)._stencilState.reset();
 
             // Restore Alpha
             engine.setAlphaMode(previousAlphaMode);
