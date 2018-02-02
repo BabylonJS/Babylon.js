@@ -1,7 +1,7 @@
 {
-  "errors": 7933,
+  "errors": 7349,
   "babylon.typedoc.json": {
-    "errors": 7933,
+    "errors": 7349,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
