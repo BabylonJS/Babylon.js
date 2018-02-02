@@ -1572,9 +1572,9 @@ module BABYLON.GLTF1 {
         public onTextureLoadedObservable = new Observable<BaseTexture>();
         public onMaterialLoadedObservable = new Observable<Material>();
         public onCompleteObservable = new Observable<IGLTFLoader>();
+        public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
         public state: Nullable<GLTFLoaderState> = null;
-        public extensions: Nullable<IGLTFLoaderExtensions> = null;
 
         public dispose(): void {}
         // #endregion

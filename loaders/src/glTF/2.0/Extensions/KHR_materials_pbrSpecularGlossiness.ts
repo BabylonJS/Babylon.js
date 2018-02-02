@@ -13,10 +13,8 @@ module BABYLON.GLTF2.Extensions {
         specularGlossinessTexture: ITextureInfo;
     }
 
-    export class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
-        protected get _name(): string {
-            return NAME;
-        }
+    export class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
+        public readonly name = NAME;
 
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (context, extension) => {
@@ -81,5 +79,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    GLTFLoader._Register(NAME, loader => new KHRMaterialsPbrSpecularGlossiness(loader));
+    GLTFLoader._Register(NAME, loader => new KHR_materials_pbrSpecularGlossiness(loader));
 }
