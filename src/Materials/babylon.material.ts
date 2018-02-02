@@ -22,7 +22,6 @@
 
         /**
          * Specifies if the material needs to be re-calculated.
-         * @returns - Boolean indicating if the material is dirty or not.
          */
         public get isDirty(): boolean {
             return this._isDirty;
@@ -221,7 +220,6 @@
 
         /**
          * Returns the triangle fill mode.
-         * @returns - Number indicating the triangle fill mode.
          */
         public static get TriangleFillMode(): number {
             return Material._TriangleFillMode;
@@ -229,7 +227,6 @@
 
         /**
          * Returns the wireframe mode.
-         * @returns - Number indicating the wireframe mode.
          */
         public static get WireFrameFillMode(): number {
             return Material._WireFrameFillMode;
@@ -237,7 +234,6 @@
 
         /**
          * Returns the point fill mode.
-         * @returns - Number indicating the point fill mode.
          */
         public static get PointFillMode(): number {
             return Material._PointFillMode;
@@ -245,7 +241,6 @@
 
         /**
          * Returns the point list draw mode.
-         * @returns - Number indicating the point list draw mode.
          */
         public static get PointListDrawMode(): number {
             return Material._PointListDrawMode;
@@ -253,7 +248,6 @@
 
         /**
          * Returns the line list draw mode.
-         * @returns - Number indicating the line list draw mode.
          */
         public static get LineListDrawMode(): number {
             return Material._LineListDrawMode;
@@ -261,7 +255,6 @@
 
         /**
          * Returns the line loop draw mode.
-         * @returns - Number indicating the line loop draw mode.
          */
         public static get LineLoopDrawMode(): number {
             return Material._LineLoopDrawMode;
@@ -269,7 +262,6 @@
 
         /**
          * Returns the line strip draw mode.
-         * @returns - Number indicating the line strip draw mode.
          */
         public static get LineStripDrawMode(): number {
             return Material._LineStripDrawMode;
@@ -277,7 +269,6 @@
 
         /**
          * Returns the triangle strip draw mode.
-         * @returns - Number indicating the triangle strip draw mode.
          */
         public static get TriangleStripDrawMode(): number {
             return Material._TriangleStripDrawMode;
@@ -285,7 +276,6 @@
 
         /**
          * Returns the triangle fan draw mode.
-         * @returns - Number indicating the triangle fan draw mode.
          */
         public static get TriangleFanDrawMode(): number {
             return Material._TriangleFanDrawMode;
@@ -303,7 +293,6 @@
 
         /**
          * Returns the clock-wise side orientation.
-         * @returns - Number indicating the clock-wise side orientation.
          */
         public static get ClockWiseSideOrientation(): number {
             return Material._ClockWiseSideOrientation;
@@ -311,7 +300,6 @@
 
         /**
          * Returns the counter clock-wise side orientation.
-         * @returns - Number indicating the counter clock-wise side orientation.
          */
         public static get CounterClockWiseSideOrientation(): number {
             return Material._CounterClockWiseSideOrientation;
@@ -344,7 +332,6 @@
 
         /**
          * Returns the dirty texture flag value.
-         * @returns - Number for the dirty texture flag value.
          */
         public static get TextureDirtyFlag(): number {
             return Material._TextureDirtyFlag;
@@ -352,7 +339,6 @@
 
         /**
          * Returns the dirty light flag value.
-         * @returns - Number for the dirty light flag value.
          */
         public static get LightDirtyFlag(): number {
             return Material._LightDirtyFlag;
@@ -360,7 +346,6 @@
 
         /**
          * Returns the dirty fresnel flag value.
-         * @returns - Number for the dirsty fresnel flag value.
          */
         public static get FresnelDirtyFlag(): number {
             return Material._FresnelDirtyFlag;
@@ -368,7 +353,6 @@
 
         /**
          * Returns the dirty attributes flag value.
-         * @returns - Number for the dirty attribute flag value.
          */
         public static get AttributesDirtyFlag(): number {
             return Material._AttributesDirtyFlag;
@@ -376,7 +360,6 @@
 
         /**
          * Returns the dirty misc flag value.
-         * @returns - Number for the dirty misc flag value.
          */
         public static get MiscDirtyFlag(): number {
             return Material._MiscDirtyFlag;
@@ -431,7 +414,6 @@
 
         /**
          * Gets the alpha value of the material.
-         * @returns - Number of the alpha value.
          */
         public get alpha(): number {
             return this._alpha;
@@ -445,7 +427,6 @@
 
         /**
          * Sets the back-face culling state.
-         * @param value - Booleean specifying if back face culling should be enabled.
          */
         public set backFaceCulling(value: boolean) {
             if (this._backFaceCulling === value) {
@@ -457,7 +438,6 @@
 
         /**
          * Gets the back-face culling state.
-         * @returns - Boolean specifiying if back face culling is enabled.
          */
         public get backFaceCulling(): boolean {
             return this._backFaceCulling;
@@ -557,7 +537,6 @@
 
         /**
          * Sets the value of the alpha mode.
-         * @param value - Number representing the alpha mode.
          */
         public set alphaMode(value: number) {
             if (this._alphaMode === value) {
@@ -569,7 +548,6 @@
 
         /**
          * Gets the value of the alpha mode.
-         * @returns - Number of the alpha mode.
          */
         public get alphaMode(): number {
             return this._alphaMode;
@@ -583,7 +561,6 @@
 
         /**
          * Sets the need depth pre-pass value.
-         * @param value - Boolean specifying if the depth pre-pass is needed.
          */
         public set needDepthPrePass(value: boolean) {
             if (this._needDepthPrePass === value) {
@@ -597,7 +574,6 @@
 
         /**
          * Gets the depth pre-pass value.
-         * @returns - Boolean specifying if the depth pre-pass is needed.
          */
         public get needDepthPrePass(): boolean {
             return this._needDepthPrePass;
@@ -629,7 +605,6 @@
 
         /**
          * Sets the state for enabling fog.
-         * @param value - Boolean specifying if fog should be enabled.
          */
         public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
@@ -641,7 +616,6 @@
 
         /**
          * Gets the value of the fog enabled state.
-         * @returns - Boolean indicating the fog enabled state.
          */
         public get fogEnabled(): boolean {
             return this._fogEnabled;
@@ -661,7 +635,6 @@
 
         /**
          * Gets a value specifying if wireframe mode is enabled.
-         * @returns - Boolean specifying if wireframe is enabled. 
          */
         @serialize()
         public get wireframe(): boolean {
@@ -670,7 +643,6 @@
 
         /**
          * Sets the state of wireframe mode.
-         * @param value - Boolean specifying if wireframe is enabled.
          */
         public set wireframe(value: boolean) {
             this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
@@ -678,7 +650,6 @@
 
         /**
          * Gets the value specifying if point clouds are enabled.
-         * @returns - Boolean specifying if point clouds are enabled.
          */
         @serialize()
         public get pointsCloud(): boolean {
@@ -687,7 +658,6 @@
 
         /**
          * Sets the state of point cloud mode.
-         * @param value - Boolean specifying if point clouds are enabled.
          */
         public set pointsCloud(value: boolean) {
             this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
@@ -695,7 +665,6 @@
 
         /**
          * Gets the material fill mode.
-         * @returns - Number specifying the fill mode.
          */
         @serialize()
         public get fillMode(): number {
@@ -704,7 +673,6 @@
 
         /**
          * Sets the material fill mode.
-         * @param value - Number specifying the material fill mode.
          */
         public set fillMode(value: number) {
             if (this._fillMode === value) {
@@ -1052,7 +1020,7 @@
         }
 
         /**
-         * Force shader compilation including textures ready check
+         * Force shader compilation
          * @param mesh - BJS mesh.
          * @param onCompiled - function to execute once the material is compiled.
          * @param options - options to pass to this function.
@@ -1101,12 +1069,26 @@
                     }
                 }
 
-                if (options && options.clipPlane) {
+                if (localOptions.clipPlane) {
                     scene.clipPlane = clipPlaneState;
                 }
             };
 
             checkReady();
+        }
+
+        /**
+         * Force shader compilation.
+         * @param mesh The mesh that will use this material
+         * @param options Additional options for compiling the shaders
+         * @returns A promise that resolves when the compilation completes
+         */
+        public forceCompilationAsync(mesh: AbstractMesh, options?: Partial<{ clipPlane: boolean }>): Promise<void> {
+            return new Promise(resolve => {
+                this.forceCompilation(mesh, () => {
+                    resolve();
+                }, options);
+            });
         }
 
         /**

@@ -3309,8 +3309,8 @@
                     minVector = boundingBox.minimumWorld;
                     maxVector = boundingBox.maximumWorld;
                 } else {
-                    minVector.MinimizeInPlace(boundingBox.minimumWorld);
-                    maxVector.MaximizeInPlace(boundingBox.maximumWorld);
+                    minVector.minimizeInPlace(boundingBox.minimumWorld);
+                    maxVector.maximizeInPlace(boundingBox.maximumWorld);
                 }
             });
 

@@ -529,6 +529,52 @@ export abstract class AbstractViewer {
                 Tags.AddTagsTo(mesh, 'castShadow');
             });
         }
+
+        if (modelConfiguration.normalize) {
+            let center = false;
+            let unitSize = false;
+            let parentIndex;
+            if (modelConfiguration.normalize === true) {
+                center = true;
+                unitSize = true;
+                parentIndex = 0;
+            } else {
+                center = !!modelConfiguration.normalize.center;
+                unitSize = !!modelConfiguration.normalize.unitSize;
+                parentIndex = modelConfiguration.normalize.parentIndex;
+            }
+
+            let meshesToNormalize: Array<AbstractMesh> = [];
+            if (parentIndex !== undefined) {
+                meshesToNormalize.push(focusMeshes[parentIndex]);
+            } else {
+                meshesToNormalize = meshesWithNoParent;
+            }
+
+            if (unitSize) {
+                meshesToNormalize.forEach(mesh => {
+                    console.log(mesh.scaling.x)
+                    mesh.normalizeToUnitCube(true);
+                    mesh.computeWorldMatrix(true);
+                    console.log(mesh.scaling.x)
+                });
+            }
+            if (center) {
+                meshesToNormalize.forEach(mesh => {
+                    const boundingInfo = mesh.getHierarchyBoundingVectors(true);
+                    const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+                    const halfSizeVec = sizeVec.scale(0.5);
+                    const center = boundingInfo.min.add(halfSizeVec);
+                    mesh.position = center.scale(-1);
+
+                    // Set on ground.
+                    mesh.position.y += halfSizeVec.y;
+
+                    // Recompute Info.
+                    mesh.computeWorldMatrix(true);
+                });
+            }
+        }
     }
 
     public dispose() {
