@@ -207,6 +207,25 @@ module BABYLON {
         }
 
         /**
+         * The mesh used to display where the user is selecting.
+         */
+        public get gazeTrackerMesh(): Mesh {
+            return this._gazeTracker;
+        }
+
+        /**
+         * Sets the mesh to be used to display where the user is selecting.
+         */
+        public set gazeTrackerMesh(value: Mesh) {
+            if (value) {
+                this._gazeTracker = value;
+                this._gazeTracker.bakeCurrentTransformIntoVertices();
+                this._gazeTracker.isPickable = false;
+                this._gazeTracker.isVisible = false;
+            }
+        }
+
+        /**
          * If the ray of the gaze should be displayed.
          */
         public get displayGaze(): boolean {
@@ -670,7 +689,9 @@ module BABYLON {
                     this._enableInteractionOnController(this._webVRCamera.rightController)
                 }
 
-                this._createGazeTracker();
+                if(!this._gazeTracker){
+                    this._createGazeTracker();
+                }                
 
                 this.raySelectionPredicate = (mesh) => {
                     return mesh.isVisible;
@@ -681,7 +702,7 @@ module BABYLON {
                 }
 
                 this._raySelectionPredicate = (mesh) => {
-                    if (this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
+                    if (this._isTeleportationFloor(mesh) || (mesh != this._gazeTracker
                         && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
