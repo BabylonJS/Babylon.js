@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    export abstract class GLTFLoaderExtension {
+    export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension {
         public enabled = true;
 
         protected _loader: GLTFLoader;
@@ -10,7 +10,7 @@ module BABYLON.GLTF2 {
             this._loader = loader;
         }
 
-        protected abstract get _name(): string;
+        public abstract readonly name: string;
 
         // #region Overridable Methods
 
@@ -36,17 +36,17 @@ module BABYLON.GLTF2 {
 
             const extensions = property.extensions;
 
-            const extension = extensions[this._name] as T;
+            const extension = extensions[this.name] as T;
             if (!extension) {
                 return null;
             }
 
             // Clear out the extension before executing the action to avoid recursing into the same property.
-            delete extensions[this._name];
+            delete extensions[this.name];
 
-            return actionAsync(context + "extensions/" + this._name, extension).then(() => {
+            return actionAsync(context + "/extensions/" + this.name, extension).then(() => {
                 // Restore the extension after completing the action.
-                extensions[this._name] = extension;
+                extensions[this.name] = extension;
             });
         }
 
