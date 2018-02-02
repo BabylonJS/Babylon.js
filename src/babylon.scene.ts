@@ -748,8 +748,14 @@
         public spritesEnabled = true;
         public spriteManagers = new Array<SpriteManager>();
 
-        // Layers
+        /**
+         * The list of layers (background and foreground) of the scene.
+         */
         public layers = new Array<Layer>();
+
+        /**
+         * The list of effect layers (highlights/glow) contained in the scene.
+         */
         public effectLayers = new Array<EffectLayer>();
 
         // Skeletons
