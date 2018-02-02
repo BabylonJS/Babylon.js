@@ -1740,13 +1740,12 @@
                 this.instances[0].dispose();
             }
 
-            // Highlight layers.
-            let highlightLayers = this.getScene().highlightLayers;
-            for (let i = 0; i < highlightLayers.length; i++) {
-                let highlightLayer = highlightLayers[i];
-                if (highlightLayer) {
-                    highlightLayer.removeMesh(this);
-                    highlightLayer.removeExcludedMesh(this);
+            // Effect layers.
+            let effectLayers = this.getScene().effectLayers;
+            for (let i = 0; i < effectLayers.length; i++) {
+                let effectLayer = effectLayers[i];
+                if (effectLayer) {
+                    effectLayer._disposeMesh(this);
                 }
             }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
