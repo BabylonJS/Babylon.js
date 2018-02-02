@@ -14674,42 +14674,6 @@
         }
       }
     },
-    "HighlightLayer": {
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "glowingMeshStencilReference": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "neutralColor": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "normalMeshStencilReference": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      },
-      "Method": {
-        "_rebuild": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "shouldRender": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "HighlightsPostProcess": {
       "Class": {
         "Comments": {
@@ -27402,11 +27366,6 @@
           }
         },
         "headphone": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "highlightLayers": {
           "Comments": {
             "MissingText": true
           }
