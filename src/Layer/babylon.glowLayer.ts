@@ -350,7 +350,7 @@
          * @param mesh The mesh to exclude from the glow layer
          */
         public addExcludedMesh(mesh: Mesh): void {
-            if (this._excludedMeshes.indexOf(mesh.uniqueId) !== -1) {
+            if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
                 this._excludedMeshes.push(mesh.uniqueId);
             }
         }
@@ -371,7 +371,7 @@
          * @param mesh The mesh to include in the glow layer
          */
         public addIncludedOnlyMesh(mesh: Mesh): void {
-            if (this._includedOnlyMeshes.indexOf(mesh.uniqueId) !== -1) {
+            if (this._includedOnlyMeshes.indexOf(mesh.uniqueId) === -1) {
                 this._includedOnlyMeshes.push(mesh.uniqueId);
             }
         }
