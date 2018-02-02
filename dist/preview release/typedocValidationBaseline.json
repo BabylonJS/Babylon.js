@@ -1,7 +1,7 @@
 {
-  "errors": 7349,
+  "errors": 7341,
   "babylon.typedoc.json": {
-    "errors": 7349,
+    "errors": 7341,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -14674,42 +14674,6 @@
         }
       }
     },
-    "HighlightLayer": {
-      "Property": {
-        "name": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "glowingMeshStencilReference": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "neutralColor": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        },
-        "normalMeshStencilReference": {
-          "Naming": {
-            "NotPascalCase": true
-          }
-        }
-      },
-      "Method": {
-        "_rebuild": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "shouldRender": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        }
-      }
-    },
     "HighlightsPostProcess": {
       "Class": {
         "Comments": {
@@ -27406,11 +27370,6 @@
             "MissingText": true
           }
         },
-        "highlightLayers": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "hoverCursor": {
           "Comments": {
             "MissingText": true
@@ -27437,11 +27396,6 @@
           }
         },
         "lastFramePerfCounter": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "layers": {
           "Comments": {
             "MissingText": true
           }

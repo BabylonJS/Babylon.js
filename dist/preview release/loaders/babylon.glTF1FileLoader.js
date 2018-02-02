@@ -86,6 +86,11 @@ var BABYLON;
             * Raised when the loader is disposed.
             */
             this.onDisposeObservable = new BABYLON.Observable();
+            /**
+             * Raised after a loader extension is created.
+             * Set additional options for a loader extension in this event.
+             */
+            this.onExtensionLoadedObservable = new BABYLON.Observable();
             // #endregion
             this._loader = null;
             this.name = "gltf";
@@ -154,22 +159,22 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GLTFFileLoader.prototype, "onExtensionLoaded", {
+            set: function (callback) {
+                if (this._onExtensionLoadedObserver) {
+                    this.onExtensionLoadedObservable.remove(this._onExtensionLoadedObserver);
+                }
+                this._onExtensionLoadedObserver = this.onExtensionLoadedObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
             /**
              * The loader state or null if not active.
              */
             get: function () {
                 return this._loader ? this._loader.state : null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GLTFFileLoader.prototype, "loaderExtensions", {
-            /**
-             * The loader extensions or null if not active.
-             */
-            get: function () {
-                return this._loader ? this._loader.extensions : null;
             },
             enumerable: true,
             configurable: true
@@ -276,6 +281,7 @@ var BABYLON;
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
             loader.onCompleteObservable.add(function () { return _this.onCompleteObservable.notifyObservers(_this); });
+            loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
             return loader;
         };
         GLTFFileLoader._parseBinary = function (data) {
@@ -1827,8 +1833,8 @@ var BABYLON;
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
+                this.onExtensionLoadedObservable = new BABYLON.Observable();
                 this.state = null;
-                this.extensions = null;
             }
             GLTFLoader.RegisterExtension = function (extension) {
                 if (GLTFLoader.Extensions[extension.name]) {

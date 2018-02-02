@@ -2626,14 +2626,10 @@
             var name = vertex + "+" + fragment + "@" + (defines ? defines : (<EffectCreationOptions>attributesNamesOrOptions).defines);
             if (this._compiledEffects[name]) {
                 var compiledEffect = <Effect>this._compiledEffects[name];
-                if (onCompiled) {
-                    if (compiledEffect.isReady()) {
-                        onCompiled(compiledEffect);
-                    }
-                    else {
-                        compiledEffect.onCompileObservable.add(onCompiled, undefined, undefined, true);
-                    }
+                if (onCompiled && compiledEffect.isReady()) {
+                    onCompiled(compiledEffect);
                 }
+
                 return compiledEffect;
             }
             var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
@@ -5012,7 +5008,7 @@
 
                 if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                     internalTexture._cachedWrapR = texture.wrapR;
-                    switch (texture.wrapV) {
+                    switch (texture.wrapR) {
                         case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.REPEAT);
                             break;
