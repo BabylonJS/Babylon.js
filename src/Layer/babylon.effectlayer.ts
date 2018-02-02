@@ -100,7 +100,10 @@
          * @param name The name of the layer
          * @param scene The scene to use the layer in
          */
-        constructor(public name: string, scene: Scene) {
+        constructor(
+            /** The Friendly of the effect in the scene */
+            public name: string, 
+            scene: Scene) {
             var engine = scene.getEngine();
             this._engine = engine;
             this._scene = scene || Engine.LastCreatedScene;
@@ -128,12 +131,14 @@
 
         /**
          * Returns wether or nood the layer needs stencil enabled during the mesh rendering.
+         * @returns true if the effect requires stencil during the main canvas render pass.
          */
         public abstract needStencil(): boolean;
 
         /**
          * Create the merge effect. This is the shader use to blit the information back
          * to the main canvas at the end of the scene rendering.
+         * @returns The effect containing the shader used to merge the effect on the  main canvas
          */
         protected abstract _createMergeEffect(): Effect;
         
@@ -457,6 +462,7 @@
 
         /**
          * Returns true if the layer contains information to display, otherwise false.
+         * @returns true if the glow layer should be rendered
          */
         public shouldRender(): boolean {
             return this.isEnabled && this._shouldRender;
