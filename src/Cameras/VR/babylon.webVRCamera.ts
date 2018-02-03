@@ -286,7 +286,7 @@ module BABYLON {
          * @returns the distance from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
          */
         public deviceDistanceToRoomGround(): number {
-            if (this._standingMatrix && this._defaultHeight === undefined) {
+            if (this._standingMatrix) {
                 // Add standing matrix offset to get real offset from ground in room
                 this._standingMatrix.getTranslationToRef(this._workingVector);
                 return this._deviceRoomPosition.y + this._workingVector.y
