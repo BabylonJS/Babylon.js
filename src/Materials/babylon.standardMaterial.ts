@@ -106,8 +106,212 @@ module BABYLON {
             }
         }
     }
+    
+     export class StandarMaterialShaderBaseFragmentTerms{
+
+        public worldPosition  = "vPositionW"; 
+        public position  = "localPosition"; 
+        public worldNormal  = "vNormalW"; 
+        public normal  = "localNormal"; 
+        public uv  = "vDiffuseUV";  
+        public fragColor  = "color";  
+        public diffuse   = "diffuseColor";  
+        public diffuseTexture  = "baseColor"; 
+        public finalDiffuse  = "finalDiffuse";     
+        public finalSpecular  = "finalSpecular";     
+        public alpha  = "alpha";     
+        public ambientColor  = "baseAmbientColor";     
+        public reflect  = "reflectionColor";  
+        /* terms for replace shader part  */
+        public definiation  = "#define Custom_Fragment_Definiation";
+        public beforeLightMap  = "#define Custom_Fragment_Before_LightMap"; 
+        public beforeMain  = "#define Custom_Fragment_Before_Main"; 
+        public beginMain  = "#define Custom_Fragment_Begin_Main"; 
+        public updateDiffuseColor  = "#define Custom_Fragment_Update_Diffuse_Color"; 
+        public updateDiffuseTexture  = "#define Custom_Fragment_Update_Diffuse_Texture";  
+        public updateAlpha = "#define Custom_Fragment_Update_Alpha"; 
+        public beforeFragColor  = "#define Custom_Fragment_Before_Frag_Color";   
+    }
+
+    export class StandarMaterialShaderBaseVertexTerms{
+
+         public position  = "position"; 
+         public normal  = "normal"; 
+         public uv  = "uv";   
+         public positionUpdated   = "positionUpdated";  
+         public normalUpdated  = "normalUpdated";  
+        /* terms for replace shader part  */
+         public definiation = "#define Custom_Vertex_Definiation"; 
+         public beforeMain = "#define Custom_Vertex_Before_Main"; 
+         public beginMain = "#define Custom_Vertex_Begin_Main"; 
+         public updatePosition = "#define Custom_Vertex_Update_Position */"; 
+         public updateNormal = "#define Custom_Vertex_Update_Normal"; 
+         public beforeGlPosition = "#define Custom_Vertex_Before_Gl_Position";  
+         public endMain = "#define Custom_Vertex_End_Main"; 
+      
+    }
+
+    export class MaterialShaderFragmentParts{
+        constructor(){ 
+            this.terms = new StandarMaterialShaderBaseFragmentTerms();
+        } 
+
+        public terms  : StandarMaterialShaderBaseFragmentTerms;
+
+        public beforeLightMap :Nullable<string>;  
+        public definiation :Nullable<string>;  
+        public beforeMain :Nullable<string>;  
+        public beginMain :Nullable<string>;       
+        public updateDiffuseColor :Nullable<string>;  
+        public updateDiffuseTexture :Nullable<string>;  
+        public updateAlpha :Nullable<string>;  
+        public beforeFragColor :Nullable<string>;  
+        
+    } 
+
+    
+    export class MaterialShaderVertexParts{
+        constructor(){ 
+            this.terms = new StandarMaterialShaderBaseVertexTerms();
+        } 
+
+        public terms  : StandarMaterialShaderBaseVertexTerms;
+
+        public definiation :Nullable<string>; 
+        public beforeMain :Nullable<string>; 
+        public beginMain :Nullable<string>; 
+        public updatePosition :Nullable<string>; 
+        public updateNormal :Nullable<string>;  
+        public beforeGlPosition :Nullable<string>;  
+        public endMain :Nullable<string>;  
+      
+    }  
+    
+    export class MaterialShaderParts{
+        public fragment : MaterialShaderFragmentParts ;
+        public vertex :  MaterialShaderVertexParts ;   
+        
+        constructor(){
+            this.fragment = new MaterialShaderFragmentParts();
+            this.vertex = new MaterialShaderVertexParts();
+        }
+    }    
 
     export class StandardMaterial extends PushMaterial {
+        
+          private _isCreatedShader: boolean;
+        private _createdShaderName: string;
+        private _customUniform: string[];
+        private _newUniforms: string[];
+        private _newUniformInstances: any[];
+        private _newSamplerInstances: Texture[];
+
+        public custom : MaterialShaderParts;
+
+        public customizableShader(){ 
+            this.customShaderNameResolve = this._builder;
+        }
+
+        public AttachAfterBind(mesh: Mesh, effect: Effect) {
+            for (var el in this._newUniformInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'vec2') effect.setVector2(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'vec3') effect.setVector3(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'vec4') effect.setVector4(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'mat4') effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                else if (ea[0] == 'float') effect.setFloat(ea[1], this._newUniformInstances[el]);
+            }
+
+            for (var el in this._newSamplerInstances) {
+                var ea = el.toString().split('-');
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
+                    effect.setTexture(ea[1], this._newSamplerInstances[el]);
+            }
+        }
+
+        public ReviewUniform(name: string, arr: string[]): string[] {
+            if (name == "uniform") {
+                for (var ind in this._newUniforms)
+                    if (this._customUniform[ind].indexOf('sampler') == -1)
+                        arr.push(this._newUniforms[ind]);
+            }
+
+            if (name == "sampler") {
+                for (var ind in this._newUniforms)
+                    if (this._customUniform[ind].indexOf('sampler') != -1)
+                        arr.push(this._newUniforms[ind]);
+            }
+
+            return arr;
+        }
+
+        private _builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[] ): string {
+
+            if (this._isCreatedShader) return this._createdShaderName;
+            this._isCreatedShader = false;
+ 
+            var name: string = "custom_" + this.name;
+
+            this.ReviewUniform("uniform", uniforms);
+            this.ReviewUniform("sampler", samplers);
+
+
+            var fn_afterBind = this._afterBind.bind(this);
+            this._afterBind = (m, e) => {
+                if (!e) {
+                    return;
+                }
+                this.AttachAfterBind(m, e);
+                try { fn_afterBind(m, e); } catch (e) { };
+            };
+
+            BABYLON.Effect.ShadersStore[name + "VertexShader"] = BABYLON.Effect.ShadersStore["defaultVertexShader"]
+            .replace(this.custom.vertex.terms.definiation, (this._customUniform ? this._customUniform.join("\n") : "") + (this.custom.vertex.definiation ? this.custom.vertex.definiation : ""))
+            .replace(this.custom.vertex.terms.beforeMain,  (this.custom.vertex.beforeMain ? this.custom.vertex.beforeMain : ""))
+            .replace(this.custom.vertex.terms.beginMain,  (this.custom.vertex.beginMain ? this.custom.vertex.beginMain : ""))
+            .replace(this.custom.vertex.terms.updatePosition,  (this.custom.vertex.updatePosition ? this.custom.vertex.updatePosition : ""))
+            .replace(this.custom.vertex.terms.updateNormal,  (this.custom.vertex.updateNormal ? this.custom.vertex.updateNormal : ""))
+            .replace(this.custom.vertex.terms.beforeGlPosition,  (this.custom.vertex.beforeGlPosition ? this.custom.vertex.beforeGlPosition : ""))
+            .replace(this.custom.vertex.terms.endMain,  (this.custom.vertex.endMain ? this.custom.vertex.endMain : "")) ;
+            
+            
+            BABYLON.Effect.ShadersStore[name + "PixelShader"] =  BABYLON.Effect.ShadersStore["defaultPixelShader"]
+            .replace(this.custom.fragment.terms.definiation, (this._customUniform ? this._customUniform.join("\n") : "") + (this.custom.fragment.definiation ? this.custom.fragment.definiation : ""))
+            .replace(this.custom.fragment.terms.beforeMain,  (this.custom.fragment.beforeMain ? this.custom.fragment.beforeMain : "")) 
+            .replace(this.custom.fragment.terms.beginMain,  (this.custom.fragment.beginMain ? this.custom.fragment.beginMain : "")) 
+            .replace(this.custom.fragment.terms.updateDiffuseColor,  (this.custom.fragment.updateDiffuseColor ? this.custom.fragment.updateDiffuseColor : "")) 
+            .replace(this.custom.fragment.terms.updateAlpha,  (this.custom.fragment.updateAlpha ? this.custom.fragment.updateAlpha : "")) 
+            .replace(this.custom.fragment.terms.updateDiffuseTexture,  (this.custom.fragment.updateDiffuseTexture ? this.custom.fragment.updateDiffuseTexture : "")) 
+            .replace(this.custom.fragment.terms.beforeLightMap,  (this.custom.fragment.beforeLightMap ? this.custom.fragment.beforeLightMap : ""))  
+            .replace(this.custom.fragment.terms.beforeFragColor,  (this.custom.fragment.beforeFragColor ? this.custom.fragment.beforeFragColor : ""))  ;  
+
+            this._isCreatedShader = true;
+            this._createdShaderName = name;
+
+            return name;
+        }
+
+        public AddCustomUniform(name: string, kind: string )  {
+
+            if (!this._customUniform) {
+                this._customUniform = new Array();
+                this._newUniforms = new Array();
+                this._newSamplerInstances = new Array();
+                this._newUniformInstances = new Array();
+            } 
+            var arrayPart = "";
+            if(name.indexOf('[') != -1)
+              {
+                  name = name.split("[")[0];
+                  arrayPart = "["+name.split("[")[1];
+              }
+
+            this._customUniform.push("uniform " + kind + " " + name + arrayPart+";");
+            this._newUniforms.push(name); 
+        } 
+
+        
+        
         @serializeAsTexture("diffuseTexture")
         private _diffuseTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
@@ -462,6 +666,9 @@ module BABYLON {
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
+           
+            this.custom = new MaterialShaderParts();
+
 
             // Setup the default processing configuration to the scene.
             this._attachImageProcessingConfiguration(null);
