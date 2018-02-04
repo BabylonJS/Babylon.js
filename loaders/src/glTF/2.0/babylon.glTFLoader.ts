@@ -1528,7 +1528,7 @@ module BABYLON.GLTF2 {
 
             this._requests.length = 0;
 
-            if (this._gltf.images) {
+            if (this._gltf && this._gltf.images) {
                 for (const image of this._gltf.images) {
                     if (image._objectURL) {
                         image._objectURL.then(value => {
