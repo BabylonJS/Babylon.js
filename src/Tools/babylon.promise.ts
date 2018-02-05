@@ -22,36 +22,6 @@ module BABYLON {
         private _onRejected?: (reason: any) => void;
         private _rejectWasConsumed = false;
 
-        public get state(): PromiseStates {
-            return this._state;
-        }
-
-        public get isFulfilled(): boolean {
-            return this._state === PromiseStates.Fulfilled;
-        }
-
-        public get isRejected(): boolean {
-            return this._state === PromiseStates.Rejected;
-        }
-
-        public get isPending(): boolean {
-            return this._state === PromiseStates.Pending;
-        }
-
-        public value(): Nullable<T> | undefined {
-            if (!this.isFulfilled) {
-                throw new Error("Promise is not fulfilled");
-            }
-            return this._result;
-        }
-
-        public reason(): any {
-            if (!this.isRejected) {
-                throw new Error("Promise is not rejected");
-            }
-            return this._reason;
-        }
-
         public constructor(resolver?: (
             resolve: (value?: Nullable<T>) => void,
             reject: (reason: any) => void
@@ -110,11 +80,11 @@ module BABYLON {
         private _moveChildren(children: InternalPromise<T>[]): void {
             this._children.push(...children.splice(0, children.length));
 
-            if (this.isFulfilled) {
+            if (this._state === PromiseStates.Fulfilled) {
                 for (var child of this._children) {
                     child._resolve(this._result);
                 }
-            } else if (this.isRejected) {
+            } else if (this._state === PromiseStates.Rejected) {
                 for (var child of this._children) {
                     child._reject(this._reason);
                 }
@@ -146,6 +116,10 @@ module BABYLON {
                     child._resolve(value);
                 }
 
+                this._children.length = 0;
+                delete this._onFulfilled;
+                delete this._onRejected;
+
                 return returnedValue;
             } catch (e) {
                 this._reject(e);
@@ -175,6 +149,10 @@ module BABYLON {
                     child._reject(reason);
                 }
             }
+
+            this._children.length = 0;
+            delete this._onFulfilled;
+            delete this._onRejected;
         }
 
         public static resolve<T>(value: T): InternalPromise<T> {
@@ -195,7 +173,7 @@ module BABYLON {
                 }
                 return null;
             }, (reason: any) => {
-                if (!agregator.rootPromise.isRejected) {
+                if (agregator.rootPromise._state !== PromiseStates.Rejected) {
                     agregator.rootPromise._reject(reason);
                 }
             })
