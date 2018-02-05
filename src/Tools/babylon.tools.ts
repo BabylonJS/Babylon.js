@@ -494,17 +494,25 @@
             var img = new Image();
             Tools.SetCorsBehavior(url, img);
 
-            img.onload = () => {
+            const loadHandler = () => {
+                img.removeEventListener("load", loadHandler);
+                img.removeEventListener("error", errorHandler);
                 onLoad(img);
             };
 
-            img.onerror = err => {
+            const errorHandler = (err: any) => {
+                img.removeEventListener("load", loadHandler);
+                img.removeEventListener("error", errorHandler);
+
                 Tools.Error("Error while trying to load image: " + url);
 
                 if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
+
+            img.addEventListener("load", loadHandler);
+            img.addEventListener("error", errorHandler);
 
             var noIndexedDB = () => {
                 img.src = url;
@@ -599,7 +607,9 @@
                     }
 
                     const onLoadEnd = () => {
+                        request.removeEventListener("loadend", onLoadEnd);
                         fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        fileRequest.onCompleteObservable.clear();
                     };
 
                     request.addEventListener("loadend", onLoadEnd);
@@ -1525,6 +1535,19 @@
                 chr = feeder(index++);
             }
             return hash;
+        }
+
+        /**
+         * Returns a promise that resolves after the given amount of time.
+         * @param delay Number of milliseconds to delay
+         * @returns Promise that resolves after the given amount of time
+         */
+        public static DelayAsync(delay: number): Promise<void> {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, delay);
+            });
         }
     }
 

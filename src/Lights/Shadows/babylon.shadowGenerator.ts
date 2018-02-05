@@ -57,6 +57,13 @@
         forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
 
         /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes 
+         * @returns A promise that resolves when the compilation completes
+         */
+        forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void>;
+
+        /**
          * Serializes the shadow generator setup to a json object.
          * @returns The serialized JSON object 
          */
@@ -843,6 +850,19 @@
             };
 
             checkReady();
+        }
+
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes 
+         * @returns A promise that resolves when the compilation completes
+         */
+        public forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
+            return new Promise(resolve => {
+                this.forceCompilation(() => {
+                    resolve();
+                }, options);
+            });
         }
 
         /**
