@@ -187,11 +187,9 @@ var BABYLON;
                 this._loader.dispose();
                 this._loader = null;
             }
-            this.onParsedObservable.clear();
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
-            this.onCompleteObservable.clear();
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         };
@@ -244,6 +242,7 @@ var BABYLON;
                 };
             }
             this.onParsedObservable.notifyObservers(parsedData);
+            this.onParsedObservable.clear();
             return parsedData;
         };
         GLTFFileLoader.prototype._getLoader = function (loaderData) {
@@ -280,8 +279,14 @@ var BABYLON;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
-            loader.onCompleteObservable.add(function () { return _this.onCompleteObservable.notifyObservers(_this); });
             loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
+            loader.onCompleteObservable.add(function () {
+                _this.onMeshLoadedObservable.clear();
+                _this.onTextureLoadedObservable.clear();
+                _this.onMaterialLoadedObservable.clear();
+                _this.onCompleteObservable.notifyObservers(_this);
+                _this.onCompleteObservable.clear();
+            });
             return loader;
         };
         GLTFFileLoader._parseBinary = function (data) {

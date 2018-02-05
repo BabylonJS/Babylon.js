@@ -45,13 +45,16 @@ describe('Babylon.Promise', function () {
             }).catch(() => {
                 tempString += " to check promises";
             }).then(() => {
-                expect(tempString).to.eq("Initial message to check promises");
-                done();
+                try {
+                    expect(tempString).to.eq("Initial message to check promises");
+                    done();
+                }
+                catch (error) {
+                    done(error);
+                }
             });
         });
-    });
 
-    describe('#Composition', () => {
         it('should chain promises correctly #2', (done) => {
             var tempString = "";
             var p1 = new Promise((resolve, reject) => {
@@ -64,13 +67,16 @@ describe('Babylon.Promise', function () {
             }).catch(() => {
                 tempString += " wrong!";
             }).then(() => {
-                expect(tempString).to.eq("Initial message to check promises");
-                done();
+                try {
+                    expect(tempString).to.eq("Initial message to check promises");
+                    done();
+                }
+                catch (error) {
+                    done(error);
+                }
             });
         });
-    });
 
-    describe('#Delayed', () => {
         it('should chain promises correctly #3', (done) => {
             var tempString = "";
             function resolveLater(resolve, reject) {
@@ -105,9 +111,31 @@ describe('Babylon.Promise', function () {
                 tempString += 'resolved ' + v;
             }, function (e) {
                 tempString += 'rejected ' + e; // "rejected", 20
-                expect(tempString).to.eq("resolved 10rejected 20");
-                done();
+                try {
+                    expect(tempString).to.eq("resolved 10rejected 20");
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
             });
+        });
+
+        it('should chain promises correctly #4', (done) => {
+            var tempString = "first";
+            var promise = Promise.resolve().then(() => {
+                tempString += " third";
+            }).then(() => {
+                try {
+                    expect(tempString).to.eq("first second third");
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
+            });
+
+            tempString += " second";
         });
     });
 
@@ -120,8 +148,13 @@ describe('Babylon.Promise', function () {
             var promise3 = Promise.resolve(42);
 
             Promise.all([promise1, promise2, promise3]).then(function (values) {
-                values.should.deep.equal([3, "foo", 42]);
-                done();
+                try {
+                    values.should.deep.equal([3, "foo", 42]);
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
             });
         });
     });
@@ -132,8 +165,13 @@ describe('Babylon.Promise', function () {
                 .then(number => { return number + 1; })
                 .then(number => { return number + 1; })
                 .then(number => {
-                    number.should.be.equal(3);
-                    done();
+                    try {
+                        number.should.be.equal(3);
+                        done();
+                    }
+                    catch(error) {
+                        done(error);
+                    }
                 });
         });
     });
@@ -144,21 +182,21 @@ describe('Babylon.Promise', function () {
             var promise1 = BABYLON.Tools.DelayAsync(500).then(() => successValue);
 
             var sum = 0;
-            promise1.then(function (value) {
+            var checkDone = (value: string) => {
                 sum++;
                 if (sum === 2) {
-                    expect(value).to.equal(successValue);
-                    done();
+                    try {
+                        expect(value).to.equal(successValue);
+                        done();
+                    }
+                    catch (error) {
+                        done(error);
+                    }
                 }
-            });
+            };
 
-            promise1.then(function (value) {
-                sum++;
-                if (sum === 2) {
-                    expect(value).to.equal(successValue);
-                    done();
-                }
-            });
+            promise1.then(checkDone);
+            promise1.then(checkDone);
         });
     });
 
@@ -169,8 +207,13 @@ describe('Babylon.Promise', function () {
             });
 
             promise.then(function (value) {
-                expect(value).to.equal(1);
-                done();
+                try {
+                    expect(value).to.equal(1);
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
             });
         });
     });
@@ -188,9 +231,14 @@ describe('Babylon.Promise', function () {
                 });
                 return promise;
             }).then(function () {
-                expect(callback1Count).to.equal(1);
-                expect(callback2Count).to.equal(1);
-                done();
+                try {
+                    expect(callback1Count).to.equal(1);
+                    expect(callback2Count).to.equal(1);
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
             });
         });
     });
@@ -201,9 +249,32 @@ describe('Babylon.Promise', function () {
             var promise = new Promise((resolve, reject) => {
                 throw new Error(errorValue);
             }).catch(error => {
-                expect(error.constructor).to.equal(Error);
-                expect(error.message).to.equal(errorValue);
-                done();
+                try {
+                    expect(error.constructor).to.equal(Error);
+                    expect(error.message).to.equal(errorValue);
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
+            });
+        });
+
+        it('should correctly handle exceptions in a reject handler', (done) => {
+            var errorValue = 'Failed!';
+            var promise = new Promise((resolve, reject) => {
+                throw new Error(errorValue);
+            }).catch(error => {
+                throw error;
+            }).catch(error => {
+                try {
+                    expect(error.constructor).to.equal(Error);
+                    expect(error.message).to.equal(errorValue);
+                    done();
+                }
+                catch(error) {
+                    done(error);
+                }
             });
         });
     });

@@ -383,7 +383,7 @@ var INSPECTOR;
         },
         'Color3': {
             type: BABYLON.Color3,
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            format: function (color) { return "R:" + color.r.toPrecision(2) + ", G:" + color.g.toPrecision(2) + ", B:" + color.b.toPrecision(2); },
             slider: {
                 r: { min: 0, max: 1, step: 0.01 },
                 g: { min: 0, max: 1, step: 0.01 },
@@ -4568,7 +4568,18 @@ var INSPECTOR;
         };
         /** Build the HTML of this item */
         TreeItem.prototype._build = function () {
-            this._div.className = 'line';
+            /**
+             *  Hide the debug objects :
+             * - Axis : xline, yline, zline
+             * */
+            var adapterId = this._adapter.id();
+            if (adapterId == "xline"
+                || adapterId == "yline"
+                || adapterId == "zline") {
+                this._div.className = "line_invisible";
+            }
+            else
+                this._div.className = 'line';
             // special class for transform node ONLY
             if (this.adapter instanceof INSPECTOR.MeshAdapter) {
                 var obj = this.adapter.object;

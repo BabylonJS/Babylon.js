@@ -957,6 +957,7 @@ declare module BABYLON.GLTF2 {
         }>;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         private _loadAsync(nodes, scene, data, rootUrl, onProgress?);
+        private _loadExtensions();
         private _loadData(data);
         private _setupData();
         private _createRootNode();
@@ -1007,8 +1008,7 @@ declare module BABYLON.GLTF2 {
         private static _ValidateUri(uri);
         private _compileMaterialsAsync();
         private _compileShadowGeneratorsAsync();
-        private _abortRequests();
-        private _releaseResources();
+        private _clear();
         _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>): Nullable<Promise<T>>;
     }
 }
@@ -1017,9 +1017,9 @@ declare module BABYLON.GLTF2 {
 declare module BABYLON.GLTF2 {
     abstract class GLTFLoaderExtension implements IGLTFLoaderExtension {
         enabled: boolean;
+        readonly abstract name: string;
         protected _loader: GLTFLoader;
         constructor(loader: GLTFLoader);
-        readonly abstract name: string;
         /** Override this method to modify the default behavior for loading scenes. */
         protected _loadSceneAsync(context: string, node: ILoaderScene): Nullable<Promise<void>>;
         /** Override this method to modify the default behavior for loading nodes. */
