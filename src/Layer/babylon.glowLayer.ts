@@ -101,6 +101,15 @@
         private _excludedMeshes: number[] = [];
 
         /**
+         * Callback used to let the user override the color selection on a per mesh basis
+         */
+        public customEmissiveColorSelector: (mesh: Mesh, subMesh: SubMesh, material: Material, result: Color4) => void;
+        /**
+         * Callback used to let the user override the texture selection on a per mesh basis
+         */
+        public customEmissiveTextureSelector: (mesh: Mesh, subMesh: SubMesh, material: Material) => Texture;
+
+        /**
          * Instantiates a new glow Layer and references it to the scene.
          * @param name The name of the layer
          * @param scene The scene to use the layer in
@@ -310,29 +319,38 @@
          */
         protected _setEmissiveTextureAndColor(mesh: Mesh, subMesh: SubMesh, material: Material): void {
             var textureLevel = 1.0;
-            if (material) {
-                this._emissiveTextureAndColor.texture = (<any>material).emissiveTexture;
-                if (this._emissiveTextureAndColor.texture) {
-                    textureLevel = this._emissiveTextureAndColor.texture.level;
+
+            if (this.customEmissiveTextureSelector) {
+                this._emissiveTextureAndColor.texture = this.customEmissiveTextureSelector(mesh, subMesh, material);
+            } else {
+                if (material) {
+                    this._emissiveTextureAndColor.texture = (<any>material).emissiveTexture;
+                    if (this._emissiveTextureAndColor.texture) {
+                        textureLevel = this._emissiveTextureAndColor.texture.level;
+                    }
+                }
+                else {
+                    this._emissiveTextureAndColor.texture = null;
                 }
             }
-            else {
-                this._emissiveTextureAndColor.texture = null;
-            }
 
-            if ((<any>material).emissiveColor) {
-                this._emissiveTextureAndColor.color.set(
-                    (<any>material).emissiveColor.r * textureLevel,
-                    (<any>material).emissiveColor.g * textureLevel,
-                    (<any>material).emissiveColor .b * textureLevel,
-                    1.0);
-            }
-            else {
-                this._emissiveTextureAndColor.color.set(
-                    this.neutralColor.r,
-                    this.neutralColor.g,
-                    this.neutralColor.b,
-                    this.neutralColor.a);
+            if (this.customEmissiveColorSelector) {
+                this.customEmissiveColorSelector(mesh, subMesh, material, this._emissiveTextureAndColor.color);
+            } else {
+                if ((<any>material).emissiveColor) {
+                    this._emissiveTextureAndColor.color.set(
+                        (<any>material).emissiveColor.r * textureLevel,
+                        (<any>material).emissiveColor.g * textureLevel,
+                        (<any>material).emissiveColor .b * textureLevel,
+                        1.0);
+                }
+                else {
+                    this._emissiveTextureAndColor.color.set(
+                        this.neutralColor.r,
+                        this.neutralColor.g,
+                        this.neutralColor.b,
+                        this.neutralColor.a);
+                }
             }
         }
 
