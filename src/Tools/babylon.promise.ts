@@ -122,17 +122,17 @@ module BABYLON {
 
                 return returnedValue;
             } catch (e) {
-                this._reject(e);
+                this._reject(e, true);
             }
 
             return null;
         }
 
-        private _reject(reason: any): void {
+        private _reject(reason: any, onLocalThrow = false): void {
             this._state = PromiseStates.Rejected;
             this._reason = reason;
 
-            if (this._onRejected) {
+            if (this._onRejected && !onLocalThrow) {
                 try {
                     this._onRejected(reason);
                     this._rejectWasConsumed = true;
