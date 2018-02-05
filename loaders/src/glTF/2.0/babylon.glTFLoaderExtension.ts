@@ -3,14 +3,13 @@
 module BABYLON.GLTF2 {
     export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension {
         public enabled = true;
+        public abstract readonly name: string;
 
         protected _loader: GLTFLoader;
 
         constructor(loader: GLTFLoader) {
             this._loader = loader;
         }
-
-        public abstract readonly name: string;
 
         // #region Overridable Methods
 

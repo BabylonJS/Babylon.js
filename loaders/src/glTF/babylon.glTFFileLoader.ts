@@ -239,11 +239,9 @@ module BABYLON {
                 this._loader = null;
             }
 
-            this.onParsedObservable.clear();
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
-            this.onCompleteObservable.clear();
 
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
@@ -303,6 +301,8 @@ module BABYLON {
             }
 
             this.onParsedObservable.notifyObservers(parsedData);
+            this.onParsedObservable.clear();
+
             return parsedData;
         }
 
@@ -346,8 +346,17 @@ module BABYLON {
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
-            loader.onCompleteObservable.add(() => this.onCompleteObservable.notifyObservers(this));
             loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
+
+            loader.onCompleteObservable.add(() => {
+                this.onMeshLoadedObservable.clear();
+                this.onTextureLoadedObservable.clear();
+                this.onMaterialLoadedObservable.clear();
+
+                this.onCompleteObservable.notifyObservers(this);
+                this.onCompleteObservable.clear();
+            });
+
             return loader;
         }
 
