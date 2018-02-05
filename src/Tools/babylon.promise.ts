@@ -85,21 +85,23 @@ module BABYLON {
             this._children.push(newPromise);
 
             if (this._state !== PromiseStates.Pending) {
-                if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
-                    let returnedValue = newPromise._resolve(this._result);
+                Tools.SetImmediate(() => {
+                    if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
+                        let returnedValue = newPromise._resolve(this._result);
 
-                    if (returnedValue !== undefined && returnedValue !== null) {
-                        if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
-                            let returnedPromise = returnedValue as InternalPromise<T>;
-                            newPromise._children.push(returnedPromise);
-                            newPromise = returnedPromise;
-                        } else {
-                            newPromise._result = (<T>returnedValue);
+                        if (returnedValue !== undefined && returnedValue !== null) {
+                            if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
+                                let returnedPromise = returnedValue as InternalPromise<T>;
+                                newPromise._children.push(returnedPromise);
+                                newPromise = returnedPromise;
+                            } else {
+                                newPromise._result = (<T>returnedValue);
+                            }
                         }
+                    } else {
+                        newPromise._reject(this._reason);
                     }
-                } else {
-                    newPromise._reject(this._reason);
-                }
+                });
             }
 
             return newPromise;
@@ -157,8 +159,13 @@ module BABYLON {
             this._reason = reason;
 
             if (this._onRejected) {
-                this._onRejected(reason);
-                this._rejectWasConsumed = true;
+                try {
+                    this._onRejected(reason);
+                    this._rejectWasConsumed = true;
+                }
+                catch (e) {
+                    reason = e;
+                }
             }
 
             for (var child of this._children) {
