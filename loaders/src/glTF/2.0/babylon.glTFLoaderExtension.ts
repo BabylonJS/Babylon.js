@@ -1,81 +1,72 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    export abstract class GLTFLoaderExtension {
-        public enabled: boolean = true;
+    export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension {
+        public enabled = true;
+        public abstract readonly name: string;
 
-        public abstract get name(): string;
+        protected _loader: GLTFLoader;
 
-        protected _traverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean { return false; }
+        constructor(loader: GLTFLoader) {
+            this._loader = loader;
+        }
 
-        protected _loadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean { return false; }
+        // #region Overridable Methods
 
-        protected _loadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean { return false; }
+        /** Override this method to modify the default behavior for loading scenes. */
+        protected _loadSceneAsync(context: string, node: ILoaderScene): Nullable<Promise<void>> { return null; }
 
-        protected _loadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean { return false; }
+        /** Override this method to modify the default behavior for loading nodes. */
+        protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { return null; }
 
-        protected _loadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean { return false; }
+        /** Override this method to modify the default behavior for loading materials. */
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> { return null; }
 
-        protected _loadExtension<T>(context: string, property: IGLTFProperty, action: (context: string, extension: T, onComplete: () => void) => void): boolean {
+        /** Override this method to modify the default behavior for loading uris. */
+        protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> { return null; }
+
+        // #endregion
+
+        /** Helper method called by a loader extension to load an glTF extension. */
+        protected _loadExtensionAsync<T>(context: string, property: IProperty, actionAsync: (context: string, extension: T) => Promise<void>): Nullable<Promise<void>> {
             if (!property.extensions) {
-                return false;
+                return null;
             }
 
-            const extension = property.extensions[this.name] as T;
+            const extensions = property.extensions;
+
+            const extension = extensions[this.name] as T;
             if (!extension) {
-                return false;
+                return null;
             }
 
             // Clear out the extension before executing the action to avoid recursing into the same property.
-            property.extensions[this.name] = undefined;
+            delete extensions[this.name];
 
-            action(context + "extensions/" + this.name, extension, () => {
+            return actionAsync(context + "/extensions/" + this.name, extension).then(() => {
                 // Restore the extension after completing the action.
-                property.extensions![this.name] = extension;
+                extensions[this.name] = extension;
             });
-
-            return true;
         }
 
-        //
-        // Utilities
-        //
-
-        public static _Extensions: GLTFLoaderExtension[] = [];
-
-        public static TraverseNode(loader: GLTFLoader, context: string, node: IGLTFNode, action: (node: IGLTFNode, parentNode: IGLTFNode) => boolean, parentNode: IGLTFNode): boolean {
-            return this._ApplyExtensions(extension => extension._traverseNode(loader, context, node, action, parentNode));
+        /** Helper method called by the loader to allow extensions to override loading scenes. */
+        public static _LoadSceneAsync(loader: GLTFLoader, context: string, scene: ILoaderScene): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadSceneAsync(context, scene));
         }
 
-        public static LoadRoot(loader: GLTFLoader, context: string, root: BABYLON.GLTF2._IGLTF): boolean {
-            return this._ApplyExtensions(extension => extension._loadRoot(loader, context, root));
+        /** Helper method called by the loader to allow extensions to override loading nodes. */
+        public static _LoadNodeAsync(loader: GLTFLoader, context: string, node: ILoaderNode): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadNodeAsync(context, node));
         }
 
-        public static LoadScene(loader: GLTFLoader, context: string, scene: IGLTFScene): boolean {
-            return this._ApplyExtensions(extension => extension._loadScene(loader, context, scene));
+        /** Helper method called by the loader to allow extensions to override loading materials. */
+        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, babylonMesh));
         }
 
-        public static LoadNode(loader: GLTFLoader, context: string, node: IGLTFNode): boolean {
-            return this._ApplyExtensions(extension => extension._loadNode(loader, context, node));
-        }
-
-        public static LoadMaterial(loader: GLTFLoader, context: string, material: IGLTFMaterial, assign: (babylonMaterial: Material, isNew: boolean) => void): boolean {
-            return this._ApplyExtensions(extension => extension._loadMaterial(loader, context, material, assign));
-        }
-
-        private static _ApplyExtensions(action: (extension: GLTFLoaderExtension) => boolean) {
-            const extensions = GLTFLoaderExtension._Extensions;
-            if (!extensions) {
-                return false;
-            }
-
-            for (const extension of extensions) {
-                if (extension.enabled && action(extension)) {
-                    return true;
-                }
-            }
-
-            return false;
+        /** Helper method called by the loader to allow extensions to override loading uris. */
+        public static _LoadUriAsync(loader: GLTFLoader, context: string, uri: string): Nullable<Promise<ArrayBufferView>> {
+            return loader._applyExtensions(extension => extension._loadUriAsync(context, uri));
         }
     }
 }

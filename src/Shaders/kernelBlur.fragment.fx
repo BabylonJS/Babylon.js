@@ -6,12 +6,12 @@ uniform vec2 delta;
 varying vec2 sampleCenter;
 
 #ifdef DOF
-	uniform sampler2D depthSampler;
+	uniform sampler2D circleOfConfusionSampler;
 
 	uniform vec2 cameraMinMaxZ;
 
 	float sampleDistance(const in vec2 offset) {
-		float depth = texture2D(depthSampler, offset).r; // depth value from DepthRenderer: 0 to 1 
+		float depth = texture2D(circleOfConfusionSampler, offset).g; // depth value from DepthRenderer: 0 to 1 
 		return cameraMinMaxZ.x + (cameraMinMaxZ.y - cameraMinMaxZ.x)*depth; // actual distance from the lens 
 	}
 #endif
