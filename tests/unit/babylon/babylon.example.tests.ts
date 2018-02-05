@@ -1,7 +1,14 @@
 /**
  * Describes the test suite.
  */
-describe('Babylon Tools', () => {
+describe('Example', function () {
+    /**
+     * Sets the timeout of all the tests to 10 seconds.
+     * Note the JavaScript function syntax in the describe callback.
+     * See https://mochajs.org/#arrow-functions
+     */
+    this.timeout(10000);
+
     /**
      * Loads the dependencies.
      */
@@ -10,6 +17,8 @@ describe('Babylon Tools', () => {
         (BABYLONDEVTOOLS).Loader
             .useDist()
             .load(function () {
+                // Force apply promise polyfill for consistent behavior between PhantomJS, IE11, and other browsers.
+                BABYLON.PromisePolyfill.Apply(true);
                 done();
             });
     });
@@ -22,7 +31,7 @@ describe('Babylon Tools', () => {
         it('should be expoent of two', () => {
             var result : boolean = BABYLON.Tools.IsExponentOfTwo(2);
             expect(result).to.be.true; 
-            
+
             result = BABYLON.Tools.IsExponentOfTwo(4);
             result.should.be.true; 
             
@@ -39,6 +48,15 @@ describe('Babylon Tools', () => {
 
             result = BABYLON.Tools.IsExponentOfTwo(12);
             assert.isFalse(result);
+        });
+    });
+
+    /**
+     * This test shows how to return an asynchronous operation with promises.
+     */
+    describe('#Promise', () => {
+        it('delay', () => {
+            return BABYLON.Tools.DelayAsync(100);
         });
     });
 });

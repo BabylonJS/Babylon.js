@@ -291,8 +291,26 @@
          * Merges the passed VertexData into the current one.  
          * Returns the modified VertexData.  
          */
-        public merge(other: VertexData, options?: { tangentLength?: number }): VertexData {
-            options = options || {};
+        public merge(other: VertexData): VertexData {
+            this._validate();
+            other._validate();
+
+            if (!this.normals !== !other.normals ||
+                !this.tangents !== !other.tangents ||
+                !this.uvs !== !other.uvs ||
+                !this.uvs2 !== !other.uvs2 ||
+                !this.uvs3 !== !other.uvs3 ||
+                !this.uvs4 !== !other.uvs4 ||
+                !this.uvs5 !== !other.uvs5 ||
+                !this.uvs6 !== !other.uvs6 ||
+                !this.colors !== !other.colors ||
+                !this.matricesIndices !== !other.matricesIndices ||
+                !this.matricesWeights !== !other.matricesWeights ||
+                !this.matricesIndicesExtra !== !other.matricesIndicesExtra ||
+                !this.matricesWeightsExtra !== !other.matricesWeightsExtra)
+            {
+                throw new Error("Cannot merge vertex data that do not have the same set of attributes");
+            }
 
             if (other.indices) {
                 if (!this.indices) {
@@ -307,48 +325,29 @@
             }
 
             this.positions = this._mergeElement(this.positions, other.positions);
-
-            if (!this.positions) {
-                return this;
-            }
-
-            var count = this.positions.length / 3;
-
-            this.normals = this._mergeElement(this.normals, other.normals, count * 3);
-            this.tangents = this._mergeElement(this.tangents, other.tangents, count * (options.tangentLength || 4));
-            this.uvs = this._mergeElement(this.uvs, other.uvs, count * 2);
-            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2, count * 2);
-            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3, count * 2);
-            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4, count * 2);
-            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5, count * 2);
-            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6, count * 2);
-            this.colors = this._mergeElement(this.colors, other.colors, count * 4, 1);
-            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices, count * 4);
-            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights, count * 4);
-            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra, count * 4);
-            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra, count * 4);
+            this.normals = this._mergeElement(this.normals, other.normals);
+            this.tangents = this._mergeElement(this.tangents, other.tangents);
+            this.uvs = this._mergeElement(this.uvs, other.uvs);
+            this.uvs2 = this._mergeElement(this.uvs2, other.uvs2);
+            this.uvs3 = this._mergeElement(this.uvs3, other.uvs3);
+            this.uvs4 = this._mergeElement(this.uvs4, other.uvs4);
+            this.uvs5 = this._mergeElement(this.uvs5, other.uvs5);
+            this.uvs6 = this._mergeElement(this.uvs6, other.uvs6);
+            this.colors = this._mergeElement(this.colors, other.colors);
+            this.matricesIndices = this._mergeElement(this.matricesIndices, other.matricesIndices);
+            this.matricesWeights = this._mergeElement(this.matricesWeights, other.matricesWeights);
+            this.matricesIndicesExtra = this._mergeElement(this.matricesIndicesExtra, other.matricesIndicesExtra);
+            this.matricesWeightsExtra = this._mergeElement(this.matricesWeightsExtra, other.matricesWeightsExtra);
             return this;
         }
 
-        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>, length = 0, defaultValue = 0): Nullable<FloatArray> {
-            if (!other && !source) {
-                return null;
+        private _mergeElement(source: Nullable<FloatArray>, other: Nullable<FloatArray>): Nullable<FloatArray> {
+            if (!source) {
+                return other;
             }
 
             if (!other) {
-                var padding = new Float32Array((<FloatArray>source).length);
-                padding.fill(defaultValue);
-                return this._mergeElement(source, padding, length);
-            }
-
-            if (!source) {
-                if (length === 0 || length === other.length) {
-                    return other;
-                }
-
-                var padding = new Float32Array(length - other.length);
-                padding.fill(defaultValue);
-                return this._mergeElement(padding, other, length);
+                return source;
             }
 
             var len = other.length + source.length;
@@ -374,6 +373,44 @@
                 }
                 return ret;
             }
+        }
+
+        private _validate(): void {
+            if (!this.positions) {
+                throw new Error("Positions are required");
+            }
+
+            const getElementCount = (kind: string, values: FloatArray) => {
+                const stride = VertexBuffer.DeduceStride(kind);
+                if ((values.length % stride) !== 0) {
+                    throw new Error("The " + kind + "s array count must be a multiple of " + stride);
+                }
+
+                return values.length / stride;
+            };
+
+            const positionsElementCount = getElementCount(VertexBuffer.PositionKind, this.positions);
+
+            const validateElementCount = (kind: string, values: FloatArray) => {
+                const elementCount = getElementCount(kind, values);
+                if (elementCount !== positionsElementCount) {
+                    throw new Error("The " + kind + "s element count (" + elementCount + ") does not match the positions count (" + positionsElementCount + ")");
+                }
+            };
+
+            if (this.normals) validateElementCount(VertexBuffer.NormalKind, this.normals);
+            if (this.tangents) validateElementCount(VertexBuffer.TangentKind, this.tangents);
+            if (this.uvs) validateElementCount(VertexBuffer.UVKind, this.uvs);
+            if (this.uvs2) validateElementCount(VertexBuffer.UV2Kind, this.uvs2);
+            if (this.uvs3) validateElementCount(VertexBuffer.UV3Kind, this.uvs3);
+            if (this.uvs4) validateElementCount(VertexBuffer.UV4Kind, this.uvs4);
+            if (this.uvs5) validateElementCount(VertexBuffer.UV5Kind, this.uvs5);
+            if (this.uvs6) validateElementCount(VertexBuffer.UV6Kind, this.uvs6);
+            if (this.colors) validateElementCount(VertexBuffer.ColorKind, this.colors);
+            if (this.matricesIndices) validateElementCount(VertexBuffer.MatricesIndicesKind, this.matricesIndices);
+            if (this.matricesWeights) validateElementCount(VertexBuffer.MatricesWeightsKind, this.matricesWeights);
+            if (this.matricesIndicesExtra) validateElementCount(VertexBuffer.MatricesIndicesExtraKind, this.matricesIndicesExtra);
+            if (this.matricesWeightsExtra) validateElementCount(VertexBuffer.MatricesWeightsExtraKind, this.matricesWeightsExtra);
         }
 
         /**

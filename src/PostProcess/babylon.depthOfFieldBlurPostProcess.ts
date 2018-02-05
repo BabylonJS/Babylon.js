@@ -14,23 +14,21 @@ module BABYLON {
          * @param kernel The size of the kernel used to blur.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.
-         * @param depthMap The depth map to be used to avoid blurring accross edges
+         * @param circleOfConfusion The circle of confusion + depth map to be used to avoid blurring accross edges
          * @param imageToBlur The image to apply the blur to (default: Current rendered frame)
          * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
-        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, depthMap:RenderTargetTexture, imageToBlur:Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT);
-            this._staticDefines += `#define DOF 1\r\n`;
+        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion:PostProcess, imageToBlur:Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+            super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`);
 			
 			this.onApplyObservable.add((effect: Effect) => {
-                // TODO: setTextureFromPostProcess seems to be setting the input texture instead of output of the post process passed in 
                 if(imageToBlur != null){
                     effect.setTextureFromPostProcess("textureSampler", imageToBlur);
                 }
-                effect.setTexture("depthSampler", depthMap);
+                effect.setTextureFromPostProcess("circleOfConfusionSampler", circleOfConfusion);
                 if(scene.activeCamera){
                     effect.setFloat2('cameraMinMaxZ', scene.activeCamera.minZ, scene.activeCamera.maxZ);
                 }
