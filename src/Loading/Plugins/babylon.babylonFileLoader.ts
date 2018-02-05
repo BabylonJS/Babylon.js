@@ -644,7 +644,7 @@
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
 
-                var container = loadAssetContainer(scene, data, rootUrl, onerror, true);
+                var container = loadAssetContainer(scene, data, rootUrl, onError, true);
                 if (!container) {
                     return false;
                 }
@@ -684,7 +684,7 @@
             return false;
         },
         loadAssetContainer: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer => {
-            var container = loadAssetContainer(scene, data, rootUrl, onerror);
+            var container = loadAssetContainer(scene, data, rootUrl, onError);
             return container;
         }
     });
