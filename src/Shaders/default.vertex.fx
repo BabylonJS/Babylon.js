@@ -1,4 +1,4 @@
-﻿#include<__decl__defaultVertex>
+#include<__decl__defaultVertex>
 // Attributes
 attribute vec3 position;
 #ifdef NORMAL
@@ -16,6 +16,8 @@ attribute vec2 uv2;
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
+
+#define Custom_Vertex_Definiation 
 
 #include<helperFunctions>
 
@@ -61,9 +63,14 @@ varying vec2 vBumpUV;
 #endif
 
 // Output
+
+varying vec3 localPosition;
+
 varying vec3 vPositionW;
 #ifdef NORMAL
-varying vec3 vNormalW;
+
+varying vec3 vNormalW_helper; 
+varying vec3 localNormal; 
 #endif
 
 #ifdef VERTEXCOLOR
@@ -90,10 +97,21 @@ varying vec3 vDirectionW;
 
 #include<logDepthDeclaration>
 
+#define Custom_Vertex_Before_Main
+
 void main(void) {
+
+#define Custom_Vertex_Begin_Main
+
 	vec3 positionUpdated = position;
+
+#define Custom_Vertex_Update_Position 
+
 #ifdef NORMAL	
 	vec3 normalUpdated = normal;
+
+	#define Custom_Vertex_Update_Normal 
+
 #endif
 #ifdef TANGENT
 	vec4 tangentUpdated = tangent;
@@ -108,7 +126,11 @@ void main(void) {
 #include<instancesVertex>
 #include<bonesVertex>
 
+	#define Custom_Vertex_Before_Gl_Position 
+
 	gl_Position = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
+
+	localPosition = positionUpdated;
 
 	vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 	vPositionW = vec3(worldPos);
@@ -120,7 +142,9 @@ void main(void) {
 		normalWorld = transposeMat3(inverseMat3(normalWorld));
 	#endif
 
-	vNormalW = normalize(normalWorld * normalUpdated);
+	localNormal = normalUpdated;
+
+	vNormalW_helper = normalize(normalWorld * normalUpdated);
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
@@ -232,5 +256,7 @@ void main(void) {
 
 #include<pointCloudVertex>
 #include<logDepthVertex>
+
+#define Custom_Vertex_End_Main
 
 }

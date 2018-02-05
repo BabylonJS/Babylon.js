@@ -1,4 +1,4 @@
-﻿#include<__decl__defaultFragment>
+#include<__decl__defaultFragment>
 
 #if defined(BUMP) || !defined(NORMAL)
 #extension GL_OES_standard_derivatives : enable
@@ -8,6 +8,8 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
+#define Custom Fragment Definiation 
+
 // Constants
 #define RECIPROCAL_PI2 0.15915494
 
@@ -15,10 +17,19 @@ uniform vec3 vEyePosition;
 uniform vec3 vAmbientColor;
 
 // Input
+
+varying vec3 localPosition;
 varying vec3 vPositionW;
 
 #ifdef NORMAL
-varying vec3 vNormalW;
+
+/* change vNormalW definition and add local position and Normal parameter */
+
+varying vec3 vNormalW_helper;
+varying vec3 localNormal;
+
+vec3 vNormalW;
+
 #endif
 
 #ifdef VERTEXCOLOR
@@ -152,17 +163,18 @@ varying vec3 vDirectionW;
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
 
+#define Custom_Fragment_Before_Main  
+
 void main(void) {
+	
+/* use normal helper that let we can customized vNormalW in fragmentShader */
+vNormalW = vNormalW_helper; 
+
+#define Custom_Fragment_Begin_Main 
+
 #include<clipPlaneFragment>
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
-
-	// Base color
-	vec4 baseColor = vec4(1., 1., 1., 1.);
-	vec3 diffuseColor = vDiffuseColor.rgb;
-
-	// Alpha
-	float alpha = vDiffuseColor.a;
 
 	// Bump
 #ifdef NORMAL
@@ -177,8 +189,21 @@ void main(void) {
 	normalW = gl_FrontFacing ? normalW : -normalW;
 #endif
 
+	// Base color
+	vec4 baseColor = vec4(1., 1., 1., 1.);
+	vec3 diffuseColor = vDiffuseColor.rgb;
+
+	#define Custom_Fragment_Update_Diffuse_Color 
+
+	// Alpha
+	float alpha = vDiffuseColor.a;
+
+	#define Custom_Fragment_Update_Alpha  
+ 
 #ifdef DIFFUSE
-	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
+	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);  
+
+	#define  Custom_Fragment_Update_Diffuse_Texture  
 
 	#ifdef ALPHATEST
 		if (baseColor.a < 0.4)
@@ -187,7 +212,7 @@ void main(void) {
 
 	#ifdef ALPHAFROMDIFFUSE
 		alpha *= baseColor.a;
-	#endif
+	#endif 
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
@@ -387,6 +412,8 @@ void main(void) {
 	vec4 color = vec4(finalDiffuse * baseAmbientColor + finalSpecular + reflectionColor + refractionColor, alpha);
 #endif
 
+#define Custom_Fragment_Before_LightMap
+
 //Old lightmap calculation method
 #ifdef LIGHTMAP
     #ifndef LIGHTMAPEXCLUDED
@@ -416,6 +443,8 @@ void main(void) {
 	// Convert to associative (premultiplied) format if needed.
 	color.rgb *= color.a;
 #endif
+
+   #define Custom_Fragment_Before_Frag_Color  
 
 	gl_FragColor = color;
 }
