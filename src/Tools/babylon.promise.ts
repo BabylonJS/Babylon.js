@@ -10,7 +10,7 @@ module BABYLON {
         public count = 0;
         public target = 0;
         public rootPromise: InternalPromise<T>;
-        public results:any[] = [];
+        public results: any[] = [];
     }
 
     class InternalPromise<T> {
@@ -22,38 +22,8 @@ module BABYLON {
         private _onRejected?: (reason: any) => void;
         private _rejectWasConsumed = false;
 
-        public get state(): PromiseStates {
-            return this._state;
-        }
-
-        public get isFulfilled(): boolean {
-            return this._state === PromiseStates.Fulfilled;
-        }            
-
-        public get isRejected(): boolean {
-            return this._state === PromiseStates.Rejected;
-        }
-    
-        public get isPending(): boolean {
-            return this._state === PromiseStates.Pending;
-        }
-    
-        public value(): Nullable<T> | undefined {
-            if (!this.isFulfilled) {
-                throw new Error("Promise is not fulfilled");
-            }
-            return this._result;
-        }     
-        
-        public reason(): any {
-            if (!this.isRejected) {
-                throw new Error("Promise is not rejected");
-            }
-            return this._reason;
-        }            
-
         public constructor(resolver?: (
-            resolve:(value?: Nullable<T>) => void, 
+            resolve: (value?: Nullable<T>) => void,
             reject: (reason: any) => void
         ) => void) {
 
@@ -67,8 +37,8 @@ module BABYLON {
                 }, (reason: any) => {
                     this._reject(reason);
                 });
-            } catch(e) {
-                this._reject((<Error>e).message);
+            } catch (e) {
+                this._reject(e);
             }
         }
 
@@ -85,40 +55,42 @@ module BABYLON {
             this._children.push(newPromise);
 
             if (this._state !== PromiseStates.Pending) {
-                if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
-                    let returnedValue = newPromise._resolve(this._result);
+                Tools.SetImmediate(() => {
+                    if (this._state === PromiseStates.Fulfilled || this._rejectWasConsumed) {
+                        let returnedValue = newPromise._resolve(this._result);
 
-                    if (returnedValue !== undefined && returnedValue !== null) {
-                        if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
-                            let returnedPromise = returnedValue as InternalPromise<T>;
-                            newPromise._children.push(returnedPromise);
-                            newPromise = returnedPromise;
-                        } else {
-                            newPromise._result = (<T>returnedValue);
+                        if (returnedValue !== undefined && returnedValue !== null) {
+                            if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
+                                let returnedPromise = returnedValue as InternalPromise<T>;
+                                newPromise._children.push(returnedPromise);
+                                newPromise = returnedPromise;
+                            } else {
+                                newPromise._result = (<T>returnedValue);
+                            }
                         }
+                    } else {
+                        newPromise._reject(this._reason);
                     }
-                } else {
-                    newPromise._reject(this._reason);
-                }
+                });
             }
 
             return newPromise;
-        }       
+        }
 
         private _moveChildren(children: InternalPromise<T>[]): void {
             this._children.push(...children.splice(0, children.length));
 
-            if (this.isFulfilled) {
+            if (this._state === PromiseStates.Fulfilled) {
                 for (var child of this._children) {
                     child._resolve(this._result);
-                } 
-            } else if (this.isRejected) {
+                }
+            } else if (this._state === PromiseStates.Rejected) {
                 for (var child of this._children) {
                     child._reject(this._reason);
-                }                 
+                }
             }
         }
-        
+
         private _resolve(value?: Nullable<T>): Nullable<InternalPromise<T>> | T {
             try {
                 this._state = PromiseStates.Fulfilled;
@@ -133,7 +105,7 @@ module BABYLON {
                     if ((<InternalPromise<T>>returnedValue)._state !== undefined) {
                         // Transmit children
                         let returnedPromise = returnedValue as InternalPromise<T>;
-                        
+
                         returnedPromise._moveChildren(this._children);
                     } else {
                         value = <T>returnedValue;
@@ -142,11 +114,15 @@ module BABYLON {
 
                 for (var child of this._children) {
                     child._resolve(value);
-                }                
+                }
+
+                this._children.length = 0;
+                delete this._onFulfilled;
+                delete this._onRejected;
 
                 return returnedValue;
-            } catch(e) {
-                this._reject((<Error>e).message);
+            } catch (e) {
+                this._reject(e);
             }
 
             return null;
@@ -157,8 +133,13 @@ module BABYLON {
             this._reason = reason;
 
             if (this._onRejected) {
-                this._onRejected(reason);
-                this._rejectWasConsumed = true;
+                try {
+                    this._onRejected(reason);
+                    this._rejectWasConsumed = true;
+                }
+                catch (e) {
+                    reason = e;
+                }
             }
 
             for (var child of this._children) {
@@ -167,7 +148,11 @@ module BABYLON {
                 } else {
                     child._reject(reason);
                 }
-            }                
+            }
+
+            this._children.length = 0;
+            delete this._onFulfilled;
+            delete this._onRejected;
         }
 
         public static resolve<T>(value: T): InternalPromise<T> {
@@ -188,7 +173,7 @@ module BABYLON {
                 }
                 return null;
             }, (reason: any) => {
-                if (!agregator.rootPromise.isRejected) {
+                if (agregator.rootPromise._state !== PromiseStates.Rejected) {
                     agregator.rootPromise._reject(reason);
                 }
             })
@@ -224,7 +209,7 @@ module BABYLON {
          */
         public static Apply(force = false): void {
             if (force || typeof Promise === 'undefined') {
-                let root:any = window;
+                let root: any = window;
                 root.Promise = InternalPromise;
             }
         }

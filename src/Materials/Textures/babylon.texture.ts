@@ -182,7 +182,7 @@
             if (!scene) {
                 return;
             }
-            
+
             this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
@@ -192,19 +192,17 @@
                     delete this._buffer;
                 }
             } else {
-                if (this._texture.isReady) {
-                    Tools.SetImmediate(() => {
-                        if (!this._delayedOnLoad) {
-                            return;
-                        }
-                        this._delayedOnLoad();
-                    });
-                } else {
-                    if (this._delayedOnLoad) {
+                if (this._delayedOnLoad) {
+                    if (this._texture.isReady) {
+                        Tools.SetImmediate(this._delayedOnLoad);
+                    } else {
                         this._texture.onLoadedObservable.add(this._delayedOnLoad);
                     }
                 }
             }
+
+            this._delayedOnLoad = null;
+            this._delayedOnError = null;
         }
 
         public updateSamplingMode(samplingMode: number): void {

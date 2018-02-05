@@ -15,6 +15,8 @@ uniform Material
 	vec2 vAmbientInfos;
 	vec2 vOpacityInfos;
 	vec2 vReflectionInfos;
+	vec3 vReflectionPosition;
+	vec3 vReflectionSize;
 	vec2 vEmissiveInfos;
 	vec2 vLightmapInfos;
 	vec2 vSpecularInfos;

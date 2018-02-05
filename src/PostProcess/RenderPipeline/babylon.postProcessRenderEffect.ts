@@ -5,7 +5,7 @@ module BABYLON {
      * @example https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
      */
     export class PostProcessRenderEffect {
-        private _postProcesses: any;
+        private _postProcesses: {[Key:string]:Array<PostProcess>};
         private _getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>;
 
         private _singleInstance: boolean;
@@ -166,7 +166,7 @@ module BABYLON {
          * @param cameras The camera to enable.
          */
         public _enable(cameras: any): void {
-            var cams = Tools.MakeArray(cameras || this._cameras);
+            var cams:Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
             if (!cams) {
                 return;
@@ -178,7 +178,9 @@ module BABYLON {
 
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                     if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined) {
-                        cameras[i].attachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName][j]);
+                        this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess)=>{
+                            cams![i].attachPostProcess(postProcess, this._indicesForCamera[cameraName][j]);
+                        });
                     }
                 }
             }
@@ -199,7 +201,7 @@ module BABYLON {
          * @param cameras The camera to disable.
          */
         public _disable(cameras: any): void {
-            var cams = Tools.MakeArray(cameras || this._cameras);
+            var cams:Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
             if (!cams) {
                 return;
@@ -207,9 +209,10 @@ module BABYLON {
 
             for (var i = 0; i < cams.length; i++) {
                 var camera = cams[i];
-                var cameraName = camera.Name;
-
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName]);
+                var cameraName = camera.name;
+                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess)=>{
+                    camera.detachPostProcess(postProcess);
+                });
             }
         }
 
