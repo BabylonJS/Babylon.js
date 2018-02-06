@@ -549,6 +549,8 @@ declare module BABYLON.GUI {
         private _lines;
         private _resizeToFit;
         private _lineSpacing;
+        private _outlineWidth;
+        private _outlineColor;
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
@@ -606,6 +608,20 @@ declare module BABYLON.GUI {
          */
         lineSpacing: string | number;
         /**
+         * Gets or sets outlineWidth of the text to display
+         */
+        /**
+         * Gets or sets outlineWidth of the text to display
+         */
+        outlineWidth: number;
+        /**
+         * Gets or sets outlineColor of the text to display
+         */
+        /**
+         * Gets or sets outlineColor of the text to display
+         */
+        outlineColor: string;
+        /**
          * Creates a new TextBlock object
          * @param name defines the name of the control
          * @param text defines the text to display (emptry string by default)
@@ -619,6 +635,7 @@ declare module BABYLON.GUI {
         private _drawText(text, textWidth, y, context);
         /** @ignore */
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
+        protected _applyStates(context: CanvasRenderingContext2D): void;
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         protected _parseLine(line: string | undefined, context: CanvasRenderingContext2D): object;
         protected _parseLineWithTextWrapping(line: string | undefined, context: CanvasRenderingContext2D): object;

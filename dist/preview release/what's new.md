@@ -11,6 +11,7 @@
 - Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
 - Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
+- Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 
 ## Updates
 
@@ -48,7 +49,7 @@
 - Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager, Effect classes ([trevordev](https://github.com/trevordev))
 - SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
-- AssetContainer Class and loading methods. ([trevordev](https://github.com/trevordev))
+- AssetContainer Class and loading methods ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
@@ -63,6 +64,7 @@
 - Added checks to VertexData.merge to ensure data is valid before merging. ([bghgary](https://github.com/bghgary)]
 - Ability to set a mesh to customize the webVR gaze tracker ([trevordev](https://github.com/trevordev))
 - Added promise-based async functions for initWebVRAsync and useStandingMatrixAsync ([trevordev](https://github.com/trevordev))
+- Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
 
 ## Bug fixes
 

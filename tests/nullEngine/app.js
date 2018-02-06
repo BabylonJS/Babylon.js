@@ -129,6 +129,8 @@ var engine = new BABYLON.NullEngine();
 //     scene.render();
 // })
 
+new BABYLON.Scene(engine).dispose()
+
 BABYLON.SceneLoader.Load("https://playground.babylonjs.com/scenes/", "skull.babylon", engine, (scene) => {
     console.log('scene loaded!');
     for (var index = 0; index < scene.meshes.length; index++) {
