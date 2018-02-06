@@ -114,7 +114,7 @@ module BABYLON {
         rayLength?: number;
 
         /**
-         * To change the default offset from the ground to account for user's height. (default: 1.7)
+         * To change the default offset from the ground to account for user's height in meters. (default: 1.7)
          */
         defaultHeight?: number;
 
@@ -282,8 +282,8 @@ module BABYLON {
         }
 
         /**
-         * Gets the device distance from the ground.
-         * @returns the distance from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
+         * Gets the device distance from the ground in meters.
+         * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
          */
         public deviceDistanceToRoomGround(): number {
             if (this._standingMatrix && this._defaultHeight === undefined) {
