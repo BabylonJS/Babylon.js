@@ -27,6 +27,32 @@ module BABYLON {
         createFallbackVRDeviceOrientationFreeCamera?: boolean;
     }
 
+    class VRExperienceHelperController {
+        public laserPointer: Mesh;
+        public gazeTracker: Nullable<Mesh>;
+        public teleportationTarget: Mesh;
+        public teleportationEnabled: boolean;
+        public interactionsEnabled: boolean;
+
+        constructor(public webVRController: WebVRController, scene: Scene){
+            this.laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.004, 0.0002, 20, 1, scene, false);
+            var laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
+            laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
+            laserPointerMaterial.alpha = 0.6;
+            this.laserPointer.material = laserPointerMaterial;
+            this.laserPointer.rotation.x = Math.PI / 2;
+            this.laserPointer.parent = webVRController.mesh;
+            this.laserPointer.position.z = -0.5;
+            this.laserPointer.isVisible = false;
+        }
+
+        dispose(){
+            this.interactionsEnabled = false;
+            this.teleportationEnabled = false;
+            this.laserPointer.dispose();
+        }
+    }
+
     /**
      * Helps to quickly add VR support to an existing scene.
      * See http://doc.babylonjs.com/how_to/webvr_helper
@@ -102,12 +128,6 @@ module BABYLON {
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
-        private _teleportationEnabledOnLeftController: boolean = false;
-        private _teleportationEnabledOnRightController: boolean = false;
-        private _interactionsEnabledOnLeftController: boolean = false;
-        private _interactionsEnabledOnRightController: boolean = false;
-        private _leftControllerReady: boolean = false;
-        private _rightControllerReady: boolean = false;
         private _floorMeshName: string;
         private _floorMeshesCollection: Mesh[] = [];
         private _teleportationAllowed: boolean = false;
@@ -128,9 +148,10 @@ module BABYLON {
         private _gazeTracker: Mesh;
         private _padSensibilityUp = 0.65;
         private _padSensibilityDown = 0.35;
-        private _leftLaserPointer: Nullable<Mesh>;
-        private _rightLaserPointer: Nullable<Mesh>;
         private _currentMeshSelected: Nullable<AbstractMesh>;
+
+        private leftController:Nullable<VRExperienceHelperController>;
+        private rightController:Nullable<VRExperienceHelperController>;
 
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
@@ -254,19 +275,19 @@ module BABYLON {
         public set displayLaserPointer(value: boolean) {
             this._displayLaserPointer = value;
             if (!value) {
-                if (this._rightLaserPointer) {
-                    this._rightLaserPointer.isVisible = false;
+                if (this.rightController) {
+                    this.rightController.laserPointer.isVisible = false;
                 }
-                if (this._leftLaserPointer) {
-                    this._leftLaserPointer.isVisible = false;
+                if (this.leftController) {
+                    this.leftController.laserPointer.isVisible = false;
                 }
             }
             else {
-                if (this._rightLaserPointer) {
-                    this._rightLaserPointer.isVisible = true;
+                if (this.rightController) {
+                    this.rightController.laserPointer.isVisible = true;
                 }
-                else if (this._leftLaserPointer) {
-                    this._leftLaserPointer.isVisible = true;
+                else if (this.leftController) {
+                    this.leftController.laserPointer.isVisible = true;
                 }
             }
         }
@@ -681,11 +702,11 @@ module BABYLON {
             if (!this._interactionsEnabled) {
                 this._interactionsRequested = true;
 
-                if (this._leftControllerReady && this._webVRCamera.leftController) {
-                    this._enableInteractionOnController(this._webVRCamera.leftController)
+                if (this.leftController) {
+                    this._enableInteractionOnController(this.leftController)
                 }
-                if (this._rightControllerReady && this._webVRCamera.rightController) {
-                    this._enableInteractionOnController(this._webVRCamera.rightController)
+                if (this.rightController) {
+                    this._enableInteractionOnController(this.rightController)
                 }
 
                 if(!this._gazeTracker){
@@ -778,11 +799,11 @@ module BABYLON {
                     this._floorMeshesCollection = vrTeleportationOptions.floorMeshes;
                 }
 
-                if (this._leftControllerReady && this._webVRCamera.leftController) {
-                    this._enableTeleportationOnController(this._webVRCamera.leftController)
+                if (this.leftController != null) {
+                    this._enableTeleportationOnController(this.leftController)
                 }
-                if (this._rightControllerReady && this._webVRCamera.rightController) {
-                    this._enableTeleportationOnController(this._webVRCamera.rightController)
+                if (this.rightController != null) {
+                    this._enableTeleportationOnController(this.rightController)
                 }
 
                 // Creates an image processing post process for the vignette not relying
@@ -845,55 +866,44 @@ module BABYLON {
                 }
             } else {
                 var webVRController = <WebVRController>gamepad;
-                this._tryEnableInteractionOnController(webVRController);
+                var controller = new VRExperienceHelperController(webVRController, this._scene);
+                if (webVRController.hand === "left") {
+                    this.leftController = controller;
+                }
+                if (webVRController.hand === "right") {
+                    this.rightController = controller;
+                }
+                
+                this._tryEnableInteractionOnController(controller);
             }
         }
 
         // This only succeeds if the controller's mesh exists for the controller so this must be called whenever new controller is connected or when mesh is loaded
-        private _tryEnableInteractionOnController = (webVRController: WebVRController) => {
-            if (webVRController.hand === "left") {
-                this._leftControllerReady = true;
-                if (this._interactionsRequested && !this._interactionsEnabledOnLeftController) {
-                    this._enableInteractionOnController(webVRController);
-                }
-                if (this._teleportationRequested && !this._teleportationEnabledOnLeftController) {
-                    this._enableTeleportationOnController(webVRController);
-                }
+        private _tryEnableInteractionOnController = (controller: VRExperienceHelperController) => {
+            if (this._interactionsRequested && !controller.interactionsEnabled) {
+                this._enableInteractionOnController(controller);
             }
-            if (webVRController.hand === "right") {
-                this._rightControllerReady = true;
-                if (this._interactionsRequested && !this._interactionsEnabledOnRightController) {
-                    this._enableInteractionOnController(webVRController);
-                }
-                if (this._teleportationRequested && !this._teleportationEnabledOnRightController) {
-                    this._enableTeleportationOnController(webVRController);
-                }
+            if (this._teleportationRequested && !controller.teleportationEnabled) {
+                this._enableTeleportationOnController(controller);
             }
         }
 
         private _onNewGamepadDisconnected = (gamepad: Gamepad) => {
             if (gamepad instanceof WebVRController) {
-                if (gamepad.hand === "left") {
-                    this._interactionsEnabledOnLeftController = false;
-                    this._teleportationEnabledOnLeftController = false;
-                    this._leftControllerReady = false;
-                    if (this._leftLaserPointer) {
-                        this._leftLaserPointer.dispose();
-                    }
+                
+                if (gamepad.hand === "left" && this.leftController != null) {
+                    this.leftController.dispose();
+                    this.leftController = null;
                 }
-                if (gamepad.hand === "right") {
-                    this._interactionsEnabledOnRightController = false;
-                    this._teleportationEnabledOnRightController = false;
-                    this._rightControllerReady = false;
-                    if (this._rightLaserPointer) {
-                        this._rightLaserPointer.dispose();
-                    }
+                if (gamepad.hand === "right" && this.rightController != null) {
+                    this.rightController.dispose();
+                    this.rightController = null;
                 }
             }
         }
 
-        private _enableInteractionOnController(webVRController: WebVRController) {
-            var controllerMesh = webVRController.mesh;
+        private _enableInteractionOnController(controller: VRExperienceHelperController) {
+            var controllerMesh = controller.webVRController.mesh;
             if (controllerMesh) {
                 var makeNotPick = (root: AbstractMesh) => {
                     root.name += " laserPointer";
@@ -910,43 +920,16 @@ module BABYLON {
                         break;
                     }
                 }
-                var laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.004, 0.0002, 20, 1, this._scene, false);
-                var laserPointerMaterial = new StandardMaterial("laserPointerMat", this._scene);
-                laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
-                laserPointerMaterial.alpha = 0.6;
-                laserPointer.material = laserPointerMaterial;
-                laserPointer.rotation.x = Math.PI / 2;
-                laserPointer.parent = controllerMesh;
-                laserPointer.position.z = -0.5;
-                laserPointer.isVisible = false;
-                if (webVRController.hand === "left") {
-                    this._leftLaserPointer = laserPointer;
-                    this._interactionsEnabledOnLeftController = true;
-                    if (!this._rightLaserPointer) {
-                        this._leftLaserPointer.isVisible = true;
-                    }
-                }
-                else {
-                    this._rightLaserPointer = laserPointer;
-                    this._interactionsEnabledOnRightController = true;
-                    if (!this._leftLaserPointer) {
-                        this._rightLaserPointer.isVisible = true;
-                    }
-                }
-                webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
+                controller.laserPointer.isVisible = true;
+                controller.interactionsEnabled = true;
+                controller.laserPointer.isVisible = true;
+                controller.webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
                     // Enabling / disabling laserPointer 
                     if (this._displayLaserPointer && stateObject.value === 1) {
-                        laserPointer.isVisible = !laserPointer.isVisible;
-                        // Laser pointer can only be active on left or right, not both at the same time
-                        if (webVRController.hand === "left" && this._rightLaserPointer) {
-                            this._rightLaserPointer.isVisible = false;
-                        }
-                        else if (this._leftLaserPointer) {
-                            this._leftLaserPointer.isVisible = false;
-                        }
+                        controller.laserPointer.isVisible = !controller.laserPointer.isVisible;
                     }
                 });
-                webVRController.onTriggerStateChangedObservable.add((stateObject) => {
+                controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
                     if (!this._pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
                             this._selectionPointerDown();
@@ -1083,24 +1066,17 @@ module BABYLON {
 
         }
 
-        private _enableTeleportationOnController(webVRController: WebVRController) {
-            var controllerMesh = webVRController.mesh;
+        private _enableTeleportationOnController(controller: VRExperienceHelperController) {
+            var controllerMesh = controller.webVRController.mesh;
             if (controllerMesh) {
-                if (webVRController.hand === "left") {
-                    if (!this._interactionsEnabledOnLeftController) {
-                        this._enableInteractionOnController(webVRController);
-                    }
-                    this._teleportationEnabledOnLeftController = true;
+                if (!controller.interactionsEnabled) {
+                    this._enableInteractionOnController(controller);
                 }
-                else {
-                    if (!this._interactionsEnabledOnRightController) {
-                        this._enableInteractionOnController(webVRController);
-                    }
-                    this._teleportationEnabledOnRightController = true;
-                }
-                if (webVRController.controllerType === PoseEnabledControllerType.VIVE) {
+                controller.interactionsEnabled = true;
+                controller.teleportationEnabled = true;
+                if (controller.webVRController.controllerType === PoseEnabledControllerType.VIVE) {
                     this._dpadPressed = false;
-                    webVRController.onPadStateChangedObservable.add((stateObject) => {
+                    controller.webVRController.onPadStateChangedObservable.add((stateObject) => {
                         this._dpadPressed = stateObject.pressed;
                         if (!this._dpadPressed) {
                             this._rotationLeftAsked = false;
@@ -1109,10 +1085,10 @@ module BABYLON {
                         }
                     });
                 }
-                webVRController.onPadValuesChangedObservable.add((stateObject) => {
+                controller.webVRController.onPadValuesChangedObservable.add((stateObject) => {
                     if (this.teleportationEnabled) {
                         this._checkTeleportBackwards(stateObject);
-                        this._checkTeleportWithRay(stateObject, webVRController);
+                        this._checkTeleportWithRay(stateObject, controller.webVRController);
                     }
                     this._checkRotate(stateObject);
                 });
@@ -1570,11 +1546,11 @@ module BABYLON {
          * @param color new color for the ray.
          */
         public changeLaserColor(color: Color3) {
-            if (this._leftLaserPointer && this._leftLaserPointer.material) {
-                (<StandardMaterial>this._leftLaserPointer.material).emissiveColor = color;
+            if (this.leftController) {
+                (<StandardMaterial>this.leftController.laserPointer.material).emissiveColor = color;
             }
-            if (this._rightLaserPointer && this._rightLaserPointer.material) {
-                (<StandardMaterial>this._rightLaserPointer.material).emissiveColor = color;
+            if (this.rightController) {
+                (<StandardMaterial>this.rightController.laserPointer.material).emissiveColor = color;
             }
         }
 
