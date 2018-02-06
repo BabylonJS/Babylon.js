@@ -35,7 +35,7 @@ uniform mat4 view;
 #endif
 
 #ifdef OBJECTSPACE_NORMALMAP
-uniform mat4 normalMat;
+uniform mat4 normalMatrix;
 #endif
 
 #ifdef REFRACTION
