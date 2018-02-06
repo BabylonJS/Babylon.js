@@ -28,6 +28,10 @@
             this._activeEffect.setMatrix("world", world);
         }
 
+        public bindOnlyNormalMatrix(normalMatrix: Matrix): void {                        
+            this._activeEffect.setMatrix("normalMatrix", normalMatrix);
+        }
+
         public bind(world: Matrix, mesh?: Mesh): void {
             if (!mesh) {
                 return;
