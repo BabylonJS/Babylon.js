@@ -47,6 +47,7 @@ module BABYLON {
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
         public LIGHTMAPDIRECTUV = 0;
+        public OBJECTSPACE_NORMALMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
@@ -195,6 +196,11 @@ module BABYLON {
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
+
+        @serialize("useObjectSpaceNormalMap")
+        private _useObjectSpaceNormalMap = false;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useObjectSpaceNormalMap: boolean;
 
         @serialize("useParallax")
         private _useParallax = false;
@@ -663,6 +669,8 @@ module BABYLON {
                             defines.PARALLAX = this._useParallax;
                             defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                         }
+
+                        defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
                     }
@@ -966,6 +974,13 @@ module BABYLON {
             // Matrices        
             this.bindOnlyWorldMatrix(world);
 
+            // Normal Matrix
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
+                var normalMatrix = world.toNormalMatrix();
+                this.bindOnlyNormalMatrix(normalMatrix);                
+            }
+
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
             // Bones
@@ -1146,7 +1161,7 @@ module BABYLON {
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
                     this.bindView(effect);
-                }
+                }              
 
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);

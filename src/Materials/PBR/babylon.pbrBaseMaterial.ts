@@ -54,6 +54,7 @@
         public TANGENT = false;
         public BUMP = false;
         public BUMPDIRECTUV = 0;
+        public OBJECTSPACE_NORMALMAP = false;
         public PARALLAX = false;
         public PARALLAXOCCLUSION = false;
         public NORMALXYSCALE = true;
@@ -342,6 +343,11 @@
          * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
          */
         protected _useRadianceOverAlpha = true;
+
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        protected _useObjectSpaceNormalMap = false;
 
         /**
          * Allows using the bump map in parallax mode.
@@ -815,9 +821,11 @@
                         else {
                             defines.PARALLAX = false;
                         }
+                        
+                        defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
-                    }
+                    }                
 
                     var refractionTexture = this._getRefractionTexture();
                     if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1054,7 +1062,7 @@
                     "vFogInfos", "vFogColor", "pointSize",
                     "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vReflectivityInfos", "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
-                    "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                     "vLightingIntensity",
                     "logarithmicDepthConstant",
                     "vSphericalX", "vSphericalY", "vSphericalZ",
@@ -1165,11 +1173,7 @@
 
             super.unbind();
         }
-
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._activeEffect.setMatrix("world", world);
-        }
-
+        
         public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
 
@@ -1188,6 +1192,13 @@
 
             // Matrices
             this.bindOnlyWorldMatrix(world);
+
+            // Normal Matrix
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
+                var normalMatrix = world.toNormalMatrix();
+                this.bindOnlyNormalMatrix(normalMatrix);                
+            }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
