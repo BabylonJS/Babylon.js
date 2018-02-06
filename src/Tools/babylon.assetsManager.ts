@@ -311,7 +311,7 @@ module BABYLON {
             scene._loadFile(this.url, (data) => {
                 this.text = data as string;
                 onSuccess();
-            }, undefined, false, true, (request, exception) => {
+            }, undefined, false, false, (request, exception) => {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
