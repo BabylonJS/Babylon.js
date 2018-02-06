@@ -75,7 +75,7 @@ export abstract class AbstractViewer {
 
         // extend the configuration
         configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
-            this.configuration = configuration;
+            this.configuration = deepmerge(this.configuration || {}, configuration);
             if (this.configuration.observers) {
                 this.configureObservers(this.configuration.observers);
             }
@@ -131,6 +131,9 @@ export abstract class AbstractViewer {
      * @param newConfiguration 
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this.configuration) {
+        // update this.configuration with the new data
+        this.configuration = deepmerge(this.configuration || {}, newConfiguration);
+
         // update scene configuration
         if (newConfiguration.scene) {
             this.configureScene(newConfiguration.scene);
@@ -160,14 +163,17 @@ export abstract class AbstractViewer {
             this.configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
         }
 
-        // update this.configuration with the new data
-        this.configuration = deepmerge(this.configuration || {}, newConfiguration);
+        // camera
+        if (newConfiguration.camera) {
+            this.configureCamera(newConfiguration.camera);
+        }
     }
 
     protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
         if (!skyboxConifguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
+                delete this.environmentHelper;
             };
             return Promise.resolve(this.scene);
         }
@@ -405,7 +411,10 @@ export abstract class AbstractViewer {
         const sceneExtends = this.scene.getWorldExtends();
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
         const sceneDiagonalLenght = sceneDiagonal.length();
-        this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
+        if (isFinite(sceneDiagonalLenght))
+            this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
+
+
     }
 
     protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
@@ -441,14 +450,20 @@ export abstract class AbstractViewer {
             }
 
             //enabled
-            if (light.isEnabled() !== !lightConfig.disabled) {
-                light.setEnabled(!lightConfig.disabled);
-            }
+            var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
+            light.setEnabled(enabled);
+
 
             this.extendClassWithConfig(light, lightConfig);
 
             //position. Some lights don't support shadows
             if (light instanceof ShadowLight) {
+                if (lightConfig.target) {
+                    if (light.setDirectionToTarget) {
+                        let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
+                        light.setDirectionToTarget(target);
+                    }
+                }
                 let shadowGenerator = light.getShadowGenerator();
                 if (lightConfig.shadowEnabled && this.maxShadows) {
                     if (!shadowGenerator) {
@@ -579,9 +594,10 @@ export abstract class AbstractViewer {
 
     public dispose() {
         window.removeEventListener('resize', this.resize);
-
-        this.sceneOptimizer.stop();
-        this.sceneOptimizer.dispose();
+        if (this.sceneOptimizer) {
+            this.sceneOptimizer.stop();
+            this.sceneOptimizer.dispose();
+        }
 
         if (this.scene.activeCamera) {
             this.scene.activeCamera.detachControl(this.canvas);
@@ -846,13 +862,16 @@ export abstract class AbstractViewer {
         // constructing behavior
         switch (type) {
             case CameraBehavior.AUTOROTATION:
-                behavior = new AutoRotationBehavior();
+                this.camera.useAutoRotationBehavior = true;
+                behavior = this.camera.autoRotationBehavior;
                 break;
             case CameraBehavior.BOUNCING:
-                behavior = new BouncingBehavior();
+                this.camera.useBouncingBehavior = true;
+                behavior = this.camera.bouncingBehavior;
                 break;
             case CameraBehavior.FRAMING:
-                behavior = new FramingBehavior();
+                this.camera.useFramingBehavior = true;
+                behavior = this.camera.framingBehavior;
                 break;
             default:
                 behavior = null;
@@ -863,7 +882,7 @@ export abstract class AbstractViewer {
             if (typeof behaviorConfig === "object") {
                 this.extendClassWithConfig(behavior, behaviorConfig);
             }
-            this.camera.addBehavior(behavior);
+            //this.camera.addBehavior(behavior);
         }
 
         // post attach configuration. Some functionalities require the attached camera.
