@@ -318,6 +318,13 @@
         public useRadianceOverAlpha = true;
 
         /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useObjectSpaceNormalMap = false;
+        
+        /**
          * Allows using the bump map in parallax mode.
          */
         @serialize()

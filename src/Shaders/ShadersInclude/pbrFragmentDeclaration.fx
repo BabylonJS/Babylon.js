@@ -46,6 +46,10 @@ uniform vec2 vMicroSurfaceSamplerInfos;
 uniform mat4 view;
 #endif
 
+#ifdef OBJECTSPACE_NORMALMAP
+uniform mat4 normalMatrix;
+#endif
+
 // Refraction
 #ifdef REFRACTION
     uniform vec4 vRefractionInfos;
