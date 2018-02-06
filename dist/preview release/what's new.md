@@ -63,6 +63,7 @@
 - Added promise-based async functions to the SceneLoader, Scene.whenReadyAsync, and material.forceCompilationAsync. ([bghgary](https://github.com/bghgary)]
 - Added checks to VertexData.merge to ensure data is valid before merging. ([bghgary](https://github.com/bghgary)]
 - Ability to set a mesh to customize the webVR gaze tracker ([trevordev](https://github.com/trevordev))
+- Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
 
 ## Bug fixes
 
