@@ -3352,6 +3352,23 @@
 
             return true;
         }
+
+        /**
+         * Returns a new Matrix which is the normal matrix computed from the current one (using values from identity matrix for fourth row and column).  
+         */
+        public toNormalMatrix(): Matrix {
+            var result = Matrix.Identity();
+            this.invertToRef(result)
+            result.transpose();
+            var m = result.m;
+            Matrix.FromValuesToRef(
+                m[0], m[1], m[2],  0,
+                m[4], m[5], m[6],  0,
+                m[8], m[9], m[10], 0,
+                0,    0,    0,     1, result);
+            return result;
+        }
+
         /**
          * Returns a new Matrix as the extracted rotation matrix from the current one.  
          */
@@ -3360,6 +3377,7 @@
             this.getRotationMatrixToRef(result);
             return result;
         }
+       
         /**
          * Extracts the rotation matrix from the current one and sets it as the passed "result".  
          * Returns the current Matrix.  
