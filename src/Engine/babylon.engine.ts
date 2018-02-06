@@ -1800,42 +1800,36 @@
          * @returns A promise containing a VRDisplay and if vr is supported.
          */
         public initWebVRAsync(): Promise<{ vrDisplay: Nullable<any>, vrSupported: boolean }> {
-            return new Promise((res, rej)=>{
-                var notifyObservers = () => {
-                    var eventArgs = {
-                        vrDisplay: this._vrDisplay,
-                        vrSupported: this._vrSupported
-                    };
-                    this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
-                }
-    
-                if (!this._onVrDisplayConnect) {
-                    this._onVrDisplayConnect = (event) => {
-                        this._vrDisplay = event.display;
-                        notifyObservers();
-                    };
-                    this._onVrDisplayDisconnect = () => {
-                        this._vrDisplay.cancelAnimationFrame(this._frameHandler);
-                        this._vrDisplay = undefined;
-                        this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
-                        notifyObservers();
-                    };
-                    this._onVrDisplayPresentChange = () => {
-                        this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
-                    }
-                    window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
-                    window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
-                    window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
-                }
-    
-                this._getVRDisplays(()=>{
+            var notifyObservers = () => {
+                var eventArgs = {
+                    vrDisplay: this._vrDisplay,
+                    vrSupported: this._vrSupported
+                };
+                this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+            }
+
+            if (!this._onVrDisplayConnect) {
+                this._onVrDisplayConnect = (event) => {
+                    this._vrDisplay = event.display;
                     notifyObservers();
-                    res({
-                        vrDisplay: this._vrDisplay,
-                        vrSupported: this._vrSupported
-                    });
-                });
-            });
+                };
+                this._onVrDisplayDisconnect = () => {
+                    this._vrDisplay.cancelAnimationFrame(this._frameHandler);
+                    this._vrDisplay = undefined;
+                    this._frameHandler = Tools.QueueNewFrame(this._bindedRenderFunction);
+                    notifyObservers();
+                };
+                this._onVrDisplayPresentChange = () => {
+                    this._vrExclusivePointerMode = this._vrDisplay && this._vrDisplay.isPresenting;
+                }
+                window.addEventListener('vrdisplayconnect', this._onVrDisplayConnect);
+                window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
+                window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
+            }
+
+            var returnPromise = this._getVRDisplaysAsync();
+            returnPromise.then(notifyObservers);
+            return returnPromise;
         }
 
         public enableVR() {
@@ -1875,26 +1869,28 @@
             }
         }
 
-        private _getVRDisplays(callback: () => void) {
-            var getWebVRDevices = (devices: Array<any>) => {
-                this._vrSupported = true;
-                // note that devices may actually be an empty array. This is fine;
-                // we expect this._vrDisplay to be undefined in this case.
-                return this._vrDisplay = devices[0];
-            }
-
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch((error: () => void) => {
-                    // TODO: System CANNOT support WebVR, despite API presence.
+        private _getVRDisplaysAsync():Promise<{vrDisplay: any, vrSupported: boolean}> {
+            return new Promise((res, rej)=>{    
+                if (navigator.getVRDisplays) {
+                    navigator.getVRDisplays().then((devices: Array<any>)=>{
+                        this._vrSupported = true;
+                        // note that devices may actually be an empty array. This is fine;
+                        // we expect this._vrDisplay to be undefined in this case.
+                        this._vrDisplay = devices[0];
+                        res({
+                            vrDisplay: this._vrDisplay,
+                            vrSupported: this._vrSupported
+                        });
+                    });
+                } else {
+                    this._vrDisplay = undefined;
                     this._vrSupported = false;
-                    callback();
-                });
-            } else {
-                // TODO: Browser does not support WebVR
-                this._vrDisplay = undefined;
-                this._vrSupported = false;
-                callback();
-            }
+                    res({
+                        vrDisplay: this._vrDisplay,
+                        vrSupported: this._vrSupported
+                    });
+                }
+            });
         }
 
         public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
