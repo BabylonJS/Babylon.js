@@ -256,7 +256,7 @@
     },
     {
       "title": "Depth of field",
-      "playgroundId": "#IDSQK2#16",
+      "playgroundId": "#IDSQK2#21",
       "renderCount": 20,
       "referenceImage": "depthOfField.png"
     },
@@ -365,6 +365,16 @@
       "title": "Light Projection Texture",
       "playgroundId": "#CQNGRK",
       "referenceImage": "LightProjectionTexture.png"
+    },
+    {
+      "title": "GlowLayer",
+      "playgroundId": "#LRFB2D#1",
+      "referenceImage": "GlowLayer.png"
+    },
+    {
+      "title": "Local cubemaps",
+      "playgroundId": "#RNASML#4",
+      "referenceImage": "local cubemaps.png"
     }
   ]
 }

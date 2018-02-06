@@ -35,7 +35,7 @@
         }
 
         public dispose() {
-            if (Engine.audioEngine.canUseWebAudio) {
+            if (Engine.audioEngine && Engine.audioEngine.canUseWebAudio) {
                 if (this._connectedAnalyser) {
                     this._connectedAnalyser.stopDebugCanvas();
                 }
