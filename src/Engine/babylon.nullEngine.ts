@@ -265,7 +265,6 @@
 
                 this._stencilState.reset();
                 this._depthCullingState.reset();
-                this.setDepthFunctionToLessOrEqual();
                 this._alphaState.reset();
             }
 
