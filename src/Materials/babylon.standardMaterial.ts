@@ -984,8 +984,8 @@ module BABYLON {
             // Normal Matrix
             if (defines.OBJECTSPACE_NORMALMAP)
             {
-                var normalMatrix = world.toNormalMatrix();
-                this.bindOnlyNormalMatrix(normalMatrix);                
+                world.toNormalMatrix(this._normalMatrix);
+                this.bindOnlyNormalMatrix(this._normalMatrix);               
             }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);

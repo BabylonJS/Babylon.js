@@ -3898,17 +3898,15 @@
         /**
          * Returns a new Matrix which is the normal matrix computed from the current one (using values from identity matrix for fourth row and column).  
          */
-        public toNormalMatrix(): Matrix {
-            var result = Matrix.Identity();
-            this.invertToRef(result)
-            result.transpose();
-            var m = result.m;
+        public toNormalMatrix(ref : Matrix): void {            
+            this.invertToRef(ref)
+            ref.transpose();
+            var m = ref.m;
             Matrix.FromValuesToRef(
                 m[0], m[1], m[2],  0,
                 m[4], m[5], m[6],  0,
                 m[8], m[9], m[10], 0,
-                0,    0,    0,     1, result);
-            return result;
+                0,    0,    0,     1, ref);
         }
 
         /**

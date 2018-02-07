@@ -1271,7 +1271,7 @@
             this._uniformBuffer.addUniform("opacityMatrix", 16);
             this._uniformBuffer.addUniform("emissiveMatrix", 16);
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
-            this._uniformBuffer.addUniform("reflectivityMatrix", 16);            
+            this._uniformBuffer.addUniform("reflectivityMatrix", 16);
             this._uniformBuffer.addUniform("microSurfaceSamplerMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
             this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
@@ -1334,8 +1334,8 @@
             // Normal Matrix
             if (defines.OBJECTSPACE_NORMALMAP)
             {
-                var normalMatrix = world.toNormalMatrix();
-                this.bindOnlyNormalMatrix(normalMatrix);                
+                world.toNormalMatrix(this._normalMatrix);
+                this.bindOnlyNormalMatrix(this._normalMatrix);                
             }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
