@@ -68,10 +68,10 @@ module BABYLON.GLTF2 {
 
             this._disposed = true;
 
-            this._abortRequests();
-            this._releaseResources();
-
             this.onDisposeObservable.notifyObservers(this);
+            this.onDisposeObservable.clear();
+
+            this._clear();
         }
 
         public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
@@ -115,11 +115,7 @@ module BABYLON.GLTF2 {
 
         private _loadAsync(nodes: Nullable<Array<ILoaderNode>>, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return Promise.resolve().then(() => {
-                for (const name of GLTFLoader._Names) {
-                    const extension = GLTFLoader._Factories[name](this);
-                    this._extensions[name] = extension;
-                    this.onExtensionLoadedObservable.notifyObservers(extension);
-                }
+                this._loadExtensions();
 
                 this._babylonScene = scene;
                 this._rootUrl = rootUrl;
@@ -153,21 +149,33 @@ module BABYLON.GLTF2 {
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
                             Promise.all(this._completePromises).then(() => {
-                                this._releaseResources();
                                 this._state = GLTFLoaderState.Complete;
                                 this.onCompleteObservable.notifyObservers(this);
+                                this.onCompleteObservable.clear();
+                                this._clear();
                             }).catch(error => {
                                 Tools.Error("glTF Loader: " + error.message);
-                                this.dispose();
+                                this._clear();
                             });
                         }
                     });
                 });
             }).catch(error => {
                 Tools.Error("glTF Loader: " + error.message);
-                this.dispose();
+                this._clear();
                 throw error;
             });
+        }
+
+        private _loadExtensions(): void {
+            for (const name of GLTFLoader._Names) {
+                const extension = GLTFLoader._Factories[name](this);
+                this._extensions[name] = extension;
+
+                this.onExtensionLoadedObservable.notifyObservers(extension);
+            }
+
+            this.onExtensionLoadedObservable.clear();
         }
 
         private _loadData(data: IGLTFLoaderData): void {
@@ -429,6 +437,8 @@ module BABYLON.GLTF2 {
                 const material = GLTFLoader._GetProperty(context + "/material", this._gltf.materials, primitive.material);
                 promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, babylonMesh));
             }
+
+            this.onMeshLoadedObservable.notifyObservers(babylonMesh);
 
             return Promise.all(promises).then(() => {
                 babylonMesh.setEnabled(true);
@@ -1513,16 +1523,14 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        private _abortRequests(): void {
+        private _clear(): void {
             for (const request of this._requests) {
                 request.abort();
             }
 
             this._requests.length = 0;
-        }
 
-        private _releaseResources(): void {
-            if (this._gltf.images) {
+            if (this._gltf && this._gltf.images) {
                 for (const image of this._gltf.images) {
                     if (image._objectURL) {
                         image._objectURL.then(value => {
@@ -1533,6 +1541,17 @@ module BABYLON.GLTF2 {
                     }
                 }
             }
+
+            delete this._gltf;
+            delete this._babylonScene;
+            this._completePromises.length = 0;
+            this._extensions = {};
+            delete this._rootBabylonMesh;
+            delete this._progressCallback;
+
+            this.onMeshLoadedObservable.clear();
+            this.onTextureLoadedObservable.clear();
+            this.onMaterialLoadedObservable.clear();
         }
 
         public _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>) {

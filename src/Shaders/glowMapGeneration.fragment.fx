@@ -18,7 +18,7 @@ void main(void)
 #endif
 
 #ifdef EMISSIVE
-	gl_FragColor = texture2D(emissiveSampler, vUVEmissive);
+	gl_FragColor = texture2D(emissiveSampler, vUVEmissive) * color;
 #else
 	gl_FragColor = color;
 #endif
