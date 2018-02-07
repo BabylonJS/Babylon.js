@@ -230,6 +230,9 @@
                 mainTextureFixedSize: this._options.mainTextureFixedSize,
                 mainTextureRatio: this._options.mainTextureRatio
             });
+
+            // Do not render as long as no meshes have been added
+            this._shouldRender = false;
         }
 
         /**
@@ -388,6 +391,7 @@
             var previousStencilOperationPass = engine.getStencilOperationPass();
             var previousStencilOperationFail = engine.getStencilOperationFail();
             var previousStencilOperationDepthFail = engine.getStencilOperationDepthFail();
+            var previousStencilReference = engine.getStencilFunctionReference();
 
             // Stencil operations
             engine.setStencilOperationPass(Engine.REPLACE);
@@ -418,6 +422,7 @@
             engine.setStencilOperationPass(previousStencilOperationPass);
             engine.setStencilOperationFail(previousStencilOperationFail);
             engine.setStencilOperationDepthFail(previousStencilOperationDepthFail);
+            engine.setStencilFunctionReference(previousStencilReference);
         }
 
         /**
