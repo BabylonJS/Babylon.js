@@ -494,6 +494,14 @@
         }
 
         /**
+         * Remove all active particles
+         */
+        public reset(): void {
+            this._stockParticles = [];
+            this._particles = [];
+        }
+
+        /**
          * @ignore (for internal use only)
          */
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
