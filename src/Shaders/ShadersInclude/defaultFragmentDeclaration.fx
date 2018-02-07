@@ -34,10 +34,6 @@ uniform vec2 vTangentSpaceParams;
 uniform mat4 view;
 #endif
 
-#ifdef OBJECTSPACE_NORMALMAP
-uniform mat4 normalMatrix;
-#endif
-
 #ifdef REFRACTION
 uniform vec4 vRefractionInfos;
 
