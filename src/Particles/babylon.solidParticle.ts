@@ -94,6 +94,15 @@ module BABYLON {
          * Last computed particle rotation matrix
          */
         public _rotationMatrix: number[] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
+        /**
+         * Parent particle Id, if any.
+         * Default null.
+         */
+        public parentId: Nullable<number> = null;
+        /**
+         * Internal global position in the SPS.
+         */
+        public _globalPosition: Vector3 = Vector3.Zero();
 
         /**
          * Creates a Solid Particle object.
