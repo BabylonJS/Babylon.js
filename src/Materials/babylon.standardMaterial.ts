@@ -48,6 +48,7 @@ module BABYLON {
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
         public LIGHTMAPDIRECTUV = 0;
+        public OBJECTSPACE_NORMALMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
@@ -197,6 +198,14 @@ module BABYLON {
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
+
+        @serialize("useObjectSpaceNormalMap")
+        private _useObjectSpaceNormalMap = false;
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        public useObjectSpaceNormalMap: boolean;
 
         @serialize("useParallax")
         private _useParallax = false;
@@ -667,6 +676,8 @@ module BABYLON {
                             defines.PARALLAX = this._useParallax;
                             defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                         }
+
+                        defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
                     }
@@ -849,7 +860,7 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
                     "vReflectionPosition", "vReflectionSize",
                     "logarithmicDepthConstant", "vTangentSpaceParams"
@@ -972,6 +983,13 @@ module BABYLON {
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
+
+            // Normal Matrix
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
+                world.toNormalMatrix(this._normalMatrix);
+                this.bindOnlyNormalMatrix(this._normalMatrix);               
+            }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
@@ -1160,7 +1178,7 @@ module BABYLON {
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
                     this.bindView(effect);
-                }
+                }              
 
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
