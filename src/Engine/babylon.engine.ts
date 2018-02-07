@@ -3988,52 +3988,61 @@
         }
 
         public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): InternalTexture {
-            var gl = this._gl;
+            let fullOptions = new RenderTargetCreationOptions();
 
-            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
-
-            var generateMipMaps = true;
-            var generateDepthBuffer = true;
-            var generateStencilBuffer = false;
-
-            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
-            if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
-                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
-
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
-                }
+            if (options !== undefined && typeof options === "object") {
+              fullOptions.generateMipMaps = options.generateMipMaps;
+              fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+              fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
+              fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
+              fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+            } else {
+              fullOptions.generateMipMaps = false;
+              fullOptions.generateDepthBuffer = true;
+              fullOptions.generateStencilBuffer = false;
+              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+              fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
             }
 
-            texture.isCube = true;
-            texture.generateMipMaps = generateMipMaps;
-            texture.samples = 1;
-            texture.samplingMode = samplingMode;
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+              // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+              // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            var gl = this._gl
 
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-
+            var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            for (var face = 0; face < 6; face++) {
-                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
+
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+              Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+
+            for (var face = 0; face < 6; face++) {
+                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), size, size, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
+            }
 
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, size, size);
 
-            // Mipmaps
-            if (texture.generateMipMaps) {
-                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            // MipMaps
+            if (fullOptions.generateMipMaps) {
+              gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
             // Unbind
@@ -4045,12 +4054,86 @@
             texture.width = size;
             texture.height = size;
             texture.isReady = true;
-
-            //this.resetTextureCache();
+            texture.isCube = true;
+            texture.samples = 1;
+            texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
 
             this._internalTexturesCache.push(texture);
 
             return texture;
+
+
+
+
+
+            // var gl = this._gl;
+            //
+            // var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
+            //
+            // var generateMipMaps = true;
+            // var generateDepthBuffer = true;
+            // var generateStencilBuffer = false;
+            //
+            // var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+            // if (options !== undefined) {
+            //     generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
+            //     generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
+            //     generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
+            //
+            //     if (options.samplingMode !== undefined) {
+            //         samplingMode = options.samplingMode;
+            //     }
+            // }
+            //
+            // texture.isCube = true;
+            // texture.generateMipMaps = generateMipMaps;
+            // texture.samples = 1;
+            // texture.samplingMode = samplingMode;
+            //
+            // var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
+            //
+            // this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
+            //
+            // for (var face = 0; face < 6; face++) {
+            //     gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            //     // gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA16F, size, size, 0, gl.RGBA, gl.HALF_FLOAT_OES, null);
+            // }
+            //
+            // gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
+            // gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, filters.min);
+            // gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            // gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            //
+            // // Create the framebuffer
+            // var framebuffer = gl.createFramebuffer();
+            // this.bindUnboundFramebuffer(framebuffer);
+            //
+            // texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
+            //
+            // // Mipmaps
+            // if (texture.generateMipMaps) {
+            //     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            // }
+            //
+            // // Unbind
+            // this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+            // gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+            // this.bindUnboundFramebuffer(null);
+            //
+            // texture._framebuffer = framebuffer;
+            // texture.width = size;
+            // texture.height = size;
+            // texture.isReady = true;
+            //
+            // //this.resetTextureCache();
+            //
+            // this._internalTexturesCache.push(texture);
+            //
+            // return texture;
         }
 
         public createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number,
@@ -4814,7 +4897,7 @@
             if (this.disableTextureBindingOptimization) {
                 return -1;
             }
-            
+
             // Remove from bound list
             this._linkTrackers(internalTexture.previous, internalTexture.next);
 
