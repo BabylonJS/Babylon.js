@@ -20,7 +20,6 @@ if (BABYLON.Engine.isSupported()) {
     var currentSkybox;
     var enableDebugLayer = false;
     var currentPluginName;
-    var toExecuteAfterSceneCreation;
 
     canvas.addEventListener("contextmenu", function (evt) {
         evt.preventDefault();
@@ -129,10 +128,6 @@ if (BABYLON.Engine.isSupported()) {
             }
         }
 
-        if (toExecuteAfterSceneCreation) {
-            toExecuteAfterSceneCreation();
-        }
-
     };
 
     var sceneError = function (sceneFile, babylonScene, message) {
@@ -152,29 +147,6 @@ if (BABYLON.Engine.isSupported()) {
     };
 
     filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
-    filesInput.onProcessFileCallback = (function (file, name, extension) {
-        if (extension === "dds") {
-            BABYLON.FilesInput.FilesToLoad[name] = file;
-            var loadTexture = () => {
-                if (currentPluginName === "gltf") { // currentPluginName is updated only once scene is loaded
-                    var newHdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("file:" + file.correctName, currentScene);
-                    if (currentSkybox) {
-                        currentSkybox.dispose();
-                    }
-                    currentSkybox = currentScene.createDefaultSkybox(newHdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
-                }
-            }
-            if (currentScene) {
-                loadTexture();
-            }
-            else {
-                // Postpone texture loading until scene is loaded
-                toExecuteAfterSceneCreation = loadTexture;
-            }
-            return false;
-        }
-        return true;
-    }).bind(this);
     filesInput.monitorElementForDragNDrop(canvas);
 
     window.addEventListener("keydown", function (evt) {
