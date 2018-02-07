@@ -10,6 +10,8 @@ module BABYLON.GUI {
         private _lines: any[];
         private _resizeToFit: boolean = false;
         private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
+        private _outlineWidth: number = 0;
+        private _outlineColor: string = "white";
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
@@ -141,6 +143,42 @@ module BABYLON.GUI {
         }
 
         /**
+         * Gets or sets outlineWidth of the text to display
+         */
+        public get outlineWidth(): number {
+            return this._outlineWidth;
+        }
+
+        /**
+         * Gets or sets outlineWidth of the text to display
+         */
+        public set outlineWidth(value: number) {
+            if (this._outlineWidth === value) {
+                return;
+            }
+            this._outlineWidth = value;
+            this._markAsDirty();
+        }
+
+        /**
+         * Gets or sets outlineColor of the text to display
+         */
+        public get outlineColor(): string {
+            return this._outlineColor;
+        }
+
+        /**
+         * Gets or sets outlineColor of the text to display
+         */
+        public set outlineColor(value: string) {
+            if (this._outlineColor === value) {
+                return;
+            }
+            this._outlineColor = value;
+            this._markAsDirty();
+        }
+
+        /**
          * Creates a new TextBlock object
          * @param name defines the name of the control
          * @param text defines the text to display (emptry string by default)
@@ -182,6 +220,9 @@ module BABYLON.GUI {
                 context.shadowOffsetY = this.shadowOffsetY;
             }
 
+            if (this.outlineWidth) {
+                context.strokeText(text, this._currentMeasure.left + x, y);
+            }
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
@@ -196,6 +237,14 @@ module BABYLON.GUI {
                 this._renderLines(context);
             }
             context.restore();
+        }
+
+        protected _applyStates(context: CanvasRenderingContext2D): void {
+            super._applyStates(context);
+            if (this.outlineWidth) {
+                context.lineWidth = this.outlineWidth;
+                context.strokeStyle = this.outlineColor;
+            }
         }
 
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {

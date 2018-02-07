@@ -438,6 +438,8 @@ module BABYLON.GLTF2 {
                 promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, babylonMesh));
             }
 
+            this.onMeshLoadedObservable.notifyObservers(babylonMesh);
+
             return Promise.all(promises).then(() => {
                 babylonMesh.setEnabled(true);
             });

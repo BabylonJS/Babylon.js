@@ -3241,6 +3241,8 @@ var BABYLON;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
                 _this._lineSpacing = new GUI.ValueAndUnit(0);
+                _this._outlineWidth = 0;
+                _this._outlineColor = "white";
                 /**
                 * An event triggered after the text is changed
                 * @type {BABYLON.Observable}
@@ -3383,6 +3385,46 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(TextBlock.prototype, "outlineWidth", {
+                /**
+                 * Gets or sets outlineWidth of the text to display
+                 */
+                get: function () {
+                    return this._outlineWidth;
+                },
+                /**
+                 * Gets or sets outlineWidth of the text to display
+                 */
+                set: function (value) {
+                    if (this._outlineWidth === value) {
+                        return;
+                    }
+                    this._outlineWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "outlineColor", {
+                /**
+                 * Gets or sets outlineColor of the text to display
+                 */
+                get: function () {
+                    return this._outlineColor;
+                },
+                /**
+                 * Gets or sets outlineColor of the text to display
+                 */
+                set: function (value) {
+                    if (this._outlineColor === value) {
+                        return;
+                    }
+                    this._outlineColor = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             TextBlock.prototype._getTypeName = function () {
                 return "TextBlock";
             };
@@ -3406,6 +3448,9 @@ var BABYLON;
                     context.shadowOffsetX = this.shadowOffsetX;
                     context.shadowOffsetY = this.shadowOffsetY;
                 }
+                if (this.outlineWidth) {
+                    context.strokeText(text, this._currentMeasure.left + x, y);
+                }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
             /** @ignore */
@@ -3417,6 +3462,13 @@ var BABYLON;
                     this._renderLines(context);
                 }
                 context.restore();
+            };
+            TextBlock.prototype._applyStates = function (context) {
+                _super.prototype._applyStates.call(this, context);
+                if (this.outlineWidth) {
+                    context.lineWidth = this.outlineWidth;
+                    context.strokeStyle = this.outlineColor;
+                }
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
                 this._lines = [];
