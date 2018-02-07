@@ -422,6 +422,15 @@ export abstract class AbstractViewer {
         if (!Object.keys(lightsConfiguration).length) return;
 
         let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
+        // compare to the global (!) configuration object and dispose unneeded:
+        let lightsToConfigure = Object.keys(this.configuration.lights || []);
+        if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
+            lightsAvailable.forEach(lName => {
+                if (lightsToConfigure.indexOf(lName) === -1) {
+                    this.scene.getLightByName(lName)!.dispose()
+                }
+            });
+        }
 
         Object.keys(lightsConfiguration).forEach((name, idx) => {
             let lightConfig: ILightConfiguration = { type: 0 };
@@ -431,7 +440,7 @@ export abstract class AbstractViewer {
 
             lightConfig.name = name;
 
-            let light;
+            let light: Light;
             // light is not already available
             if (lightsAvailable.indexOf(name) === -1) {
                 let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
@@ -439,8 +448,14 @@ export abstract class AbstractViewer {
                 light = constructor();
             } else {
                 // available? get it from the scene
-                light = this.scene.getLightByName(name);
+                light = <Light>this.scene.getLightByName(name);
                 lightsAvailable = lightsAvailable.filter(ln => ln !== name);
+                if (light.getTypeID() !== lightConfig.type) {
+                    light.dispose();
+                    let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                    if (!constructor) return;
+                    light = constructor();
+                }
             }
 
             // if config set the light to false, dispose it.
@@ -463,11 +478,15 @@ export abstract class AbstractViewer {
                         let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
                         light.setDirectionToTarget(target);
                     }
+                } else if (lightConfig.direction) {
+                    let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
+                    light.direction = direction;
                 }
                 let shadowGenerator = light.getShadowGenerator();
                 if (lightConfig.shadowEnabled && this.maxShadows) {
                     if (!shadowGenerator) {
                         shadowGenerator = new ShadowGenerator(512, light);
+                        // TODO blur kernel definition
                     }
                     this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                     // add the focues meshes to the shadow list
@@ -488,7 +507,7 @@ export abstract class AbstractViewer {
         // remove the unneeded lights
         /*lightsAvailable.forEach(name => {
             let light = this.scene.getLightByName(name);
-            if (light) {
+            if (light && !Tags.MatchesQuery(light, "fixed")) {
                 light.dispose();
             }
         });*/

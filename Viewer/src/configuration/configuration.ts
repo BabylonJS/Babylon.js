@@ -100,6 +100,7 @@ export interface ISkyboxConfiguration {
     blur?: number; // deprecated
     material?: {
         imageProcessingConfiguration?: IImageProcessingConfiguration;
+        [propName: string]: any;
     };
     infiniteDIstance?: boolean;
 
