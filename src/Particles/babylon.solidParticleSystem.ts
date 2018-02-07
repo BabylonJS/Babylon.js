@@ -792,7 +792,6 @@
                                 this._quaternionRotationYPR();
                             }
                             this._quaternionToRotationMatrix();
-
                         }
 
                         if (this._particleHasParent) {
@@ -805,30 +804,34 @@
                             this._particle._globalPosition.y = this._parent._globalPosition.y + this._rotated.y;
                             this._particle._globalPosition.z = this._parent._globalPosition.z + this._rotated.z;
 
-                            this._particle._rotationMatrix[0] = this._rotMatrix.m[0] * this._parent._rotationMatrix[0] + this._rotMatrix.m[1] * this._parent._rotationMatrix[3] + this._rotMatrix.m[2] * this._parent._rotationMatrix[6];
-                            this._particle._rotationMatrix[1] = this._rotMatrix.m[0] * this._parent._rotationMatrix[1] + this._rotMatrix.m[1] * this._parent._rotationMatrix[4] + this._rotMatrix.m[2] * this._parent._rotationMatrix[7];
-                            this._particle._rotationMatrix[2] = this._rotMatrix.m[0] * this._parent._rotationMatrix[2] + this._rotMatrix.m[1] * this._parent._rotationMatrix[5] + this._rotMatrix.m[2] * this._parent._rotationMatrix[8];
-                            this._particle._rotationMatrix[3] = this._rotMatrix.m[4] * this._parent._rotationMatrix[0] + this._rotMatrix.m[5] * this._parent._rotationMatrix[3] + this._rotMatrix.m[6] * this._parent._rotationMatrix[6];
-                            this._particle._rotationMatrix[4] = this._rotMatrix.m[4] * this._parent._rotationMatrix[1] + this._rotMatrix.m[5] * this._parent._rotationMatrix[4] + this._rotMatrix.m[6] * this._parent._rotationMatrix[7];
-                            this._particle._rotationMatrix[5] = this._rotMatrix.m[4] * this._parent._rotationMatrix[2] + this._rotMatrix.m[5] * this._parent._rotationMatrix[5] + this._rotMatrix.m[6] * this._parent._rotationMatrix[8];
-                            this._particle._rotationMatrix[6] = this._rotMatrix.m[8] * this._parent._rotationMatrix[0] + this._rotMatrix.m[9] * this._parent._rotationMatrix[3] + this._rotMatrix.m[10] * this._parent._rotationMatrix[6];
-                            this._particle._rotationMatrix[7] = this._rotMatrix.m[8] * this._parent._rotationMatrix[1] + this._rotMatrix.m[9] * this._parent._rotationMatrix[4] + this._rotMatrix.m[10] * this._parent._rotationMatrix[7];
-                            this._particle._rotationMatrix[8] = this._rotMatrix.m[8] * this._parent._rotationMatrix[2] + this._rotMatrix.m[9] * this._parent._rotationMatrix[5] + this._rotMatrix.m[10] * this._parent._rotationMatrix[8];
+                            if (this._computeParticleRotation || this.billboard) {
+                                this._particle._rotationMatrix[0] = this._rotMatrix.m[0] * this._parent._rotationMatrix[0] + this._rotMatrix.m[1] * this._parent._rotationMatrix[3] + this._rotMatrix.m[2] * this._parent._rotationMatrix[6];
+                                this._particle._rotationMatrix[1] = this._rotMatrix.m[0] * this._parent._rotationMatrix[1] + this._rotMatrix.m[1] * this._parent._rotationMatrix[4] + this._rotMatrix.m[2] * this._parent._rotationMatrix[7];
+                                this._particle._rotationMatrix[2] = this._rotMatrix.m[0] * this._parent._rotationMatrix[2] + this._rotMatrix.m[1] * this._parent._rotationMatrix[5] + this._rotMatrix.m[2] * this._parent._rotationMatrix[8];
+                                this._particle._rotationMatrix[3] = this._rotMatrix.m[4] * this._parent._rotationMatrix[0] + this._rotMatrix.m[5] * this._parent._rotationMatrix[3] + this._rotMatrix.m[6] * this._parent._rotationMatrix[6];
+                                this._particle._rotationMatrix[4] = this._rotMatrix.m[4] * this._parent._rotationMatrix[1] + this._rotMatrix.m[5] * this._parent._rotationMatrix[4] + this._rotMatrix.m[6] * this._parent._rotationMatrix[7];
+                                this._particle._rotationMatrix[5] = this._rotMatrix.m[4] * this._parent._rotationMatrix[2] + this._rotMatrix.m[5] * this._parent._rotationMatrix[5] + this._rotMatrix.m[6] * this._parent._rotationMatrix[8];
+                                this._particle._rotationMatrix[6] = this._rotMatrix.m[8] * this._parent._rotationMatrix[0] + this._rotMatrix.m[9] * this._parent._rotationMatrix[3] + this._rotMatrix.m[10] * this._parent._rotationMatrix[6];
+                                this._particle._rotationMatrix[7] = this._rotMatrix.m[8] * this._parent._rotationMatrix[1] + this._rotMatrix.m[9] * this._parent._rotationMatrix[4] + this._rotMatrix.m[10] * this._parent._rotationMatrix[7];
+                                this._particle._rotationMatrix[8] = this._rotMatrix.m[8] * this._parent._rotationMatrix[2] + this._rotMatrix.m[9] * this._parent._rotationMatrix[5] + this._rotMatrix.m[10] * this._parent._rotationMatrix[8];
+                            }
                         }
                         else {
                             this._particle._globalPosition.x = this._particle.position.x;
                             this._particle._globalPosition.y = this._particle.position.y;
                             this._particle._globalPosition.z = this._particle.position.z;
 
-                            this._particle._rotationMatrix[0] = this._rotMatrix.m[0];
-                            this._particle._rotationMatrix[1] = this._rotMatrix.m[1];
-                            this._particle._rotationMatrix[2] = this._rotMatrix.m[2];
-                            this._particle._rotationMatrix[3] = this._rotMatrix.m[4];
-                            this._particle._rotationMatrix[4] = this._rotMatrix.m[5];
-                            this._particle._rotationMatrix[5] = this._rotMatrix.m[6];
-                            this._particle._rotationMatrix[6] = this._rotMatrix.m[8];
-                            this._particle._rotationMatrix[7] = this._rotMatrix.m[9];
-                            this._particle._rotationMatrix[8] = this._rotMatrix.m[10];
+                            if (this._computeParticleRotation || this.billboard) {
+                                this._particle._rotationMatrix[0] = this._rotMatrix.m[0];
+                                this._particle._rotationMatrix[1] = this._rotMatrix.m[1];
+                                this._particle._rotationMatrix[2] = this._rotMatrix.m[2];
+                                this._particle._rotationMatrix[3] = this._rotMatrix.m[4];
+                                this._particle._rotationMatrix[4] = this._rotMatrix.m[5];
+                                this._particle._rotationMatrix[5] = this._rotMatrix.m[6];
+                                this._particle._rotationMatrix[6] = this._rotMatrix.m[8];
+                                this._particle._rotationMatrix[7] = this._rotMatrix.m[9];
+                                this._particle._rotationMatrix[8] = this._rotMatrix.m[10];
+                            }
                         }
        
                         if (this._particle.translateFromPivot) {
