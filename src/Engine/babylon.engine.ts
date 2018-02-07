@@ -3988,21 +3988,15 @@
         }
 
         public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
-            let fullOptions = new RenderTargetCreationOptions();
-
-            if (options !== undefined && typeof options === "object") {
-              fullOptions.generateMipMaps = options.generateMipMaps;
-              fullOptions.generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-              fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
-              fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
-              fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
-            } else {
-              fullOptions.generateMipMaps = false;
-              fullOptions.generateDepthBuffer = true;
-              fullOptions.generateStencilBuffer = false;
-              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
-              fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
-            }
+            let fullOptions = {
+              generateMipMaps: false,
+              generateDepthBuffer: true,
+              generateStencilBuffer: false,
+              type: Engine.TEXTURETYPE_UNSIGNED_INT,
+              samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+              ...options
+            };
+            fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
               // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
