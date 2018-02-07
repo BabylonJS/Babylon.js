@@ -203,6 +203,11 @@ var BABYLON;
             };
             AdvancedDynamicTexture.prototype.markAsDirty = function () {
                 this._isDirty = true;
+                this.executeOnAllControls(function (control) {
+                    if (control._isFontSizeInPercentage) {
+                        control._resetFontCache();
+                    }
+                });
             };
             AdvancedDynamicTexture.prototype.addControl = function (control) {
                 this._rootContainer.addControl(control);
@@ -826,6 +831,7 @@ var BABYLON;
                 this._horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
                 this._verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
                 this._isDirty = true;
+                this._tempParentMeasure = GUI.Measure.Empty();
                 this._cachedParentMeasure = GUI.Measure.Empty();
                 this._paddingLeft = new GUI.ValueAndUnit(0);
                 this._paddingRight = new GUI.ValueAndUnit(0);
@@ -1091,9 +1097,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Control.prototype, "_isFontSizeInPercentage", {
+                /** @ignore */
+                get: function () {
+                    return this._fontSize.isPercentage;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Control.prototype, "fontSizeInPixels", {
                 get: function () {
-                    return this._fontSize.getValueInPixel(this._host, 100);
+                    if (this._fontSize.isPixel) {
+                        return this._fontSize.getValue(this._host);
+                    }
+                    return this._fontSize.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
                 },
                 enumerable: true,
                 configurable: true
@@ -1347,6 +1364,10 @@ var BABYLON;
             });
             Control.prototype._getTypeName = function () {
                 return "Control";
+            };
+            /** @ignore */
+            Control.prototype._resetFontCache = function () {
+                this._fontSet = true;
             };
             Control.prototype.getLocalCoordinates = function (globalCoordinates) {
                 var result = BABYLON.Vector2.Zero();
@@ -1721,7 +1742,7 @@ var BABYLON;
                 if (!this._font && !this._fontSet) {
                     return;
                 }
-                this._font = this._fontStyle + " " + this._fontSize.getValue(this._host) + "px " + this._fontFamily;
+                this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
                 this._fontOffset = Control._GetFontOffset(this._font);
             };
             Control.prototype.dispose = function () {
@@ -2009,6 +2030,7 @@ var BABYLON;
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var child = _a[_i];
                         if (child.isVisible && !child.notRenderable) {
+                            child._tempParentMeasure.copyFrom(this._measureForChildren);
                             child._draw(this._measureForChildren, context);
                             if (child.onAfterDrawObservable.hasObservers()) {
                                 child.onAfterDrawObservable.notifyObservers(child);

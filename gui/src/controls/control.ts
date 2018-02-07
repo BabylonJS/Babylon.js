@@ -20,6 +20,7 @@ module BABYLON.GUI {
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
+        public _tempParentMeasure = Measure.Empty();
         protected _cachedParentMeasure = Measure.Empty();
         private _paddingLeft = new ValueAndUnit(0);
         private _paddingRight = new ValueAndUnit(0);
@@ -277,8 +278,17 @@ module BABYLON.GUI {
             this._fontSet = true;
         }
 
+        /** @ignore */
+        public get _isFontSizeInPercentage(): boolean {
+            return this._fontSize.isPercentage;
+        }
+
         public get fontSizeInPixels(): number {
-            return this._fontSize.getValueInPixel(this._host, 100);
+            if (this._fontSize.isPixel) {
+                return this._fontSize.getValue(this._host);
+            }
+
+            return this._fontSize.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
         }
 
         public get fontSize(): string | number {
@@ -481,6 +491,11 @@ module BABYLON.GUI {
 
         protected _getTypeName(): string {
             return "Control";
+        }
+
+        /** @ignore */
+        public _resetFontCache(): void {
+            this._fontSet = true;
         }
 
         public getLocalCoordinates(globalCoordinates: Vector2): Vector2 {
@@ -948,12 +963,13 @@ module BABYLON.GUI {
             return false;
         }
 
+
         private _prepareFont() {
             if (!this._font && !this._fontSet) {
                 return;
             }
 
-            this._font = this._fontStyle + " " + this._fontSize.getValue(this._host) + "px " + this._fontFamily;
+            this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
 
             this._fontOffset = Control._GetFontOffset(this._font);
         }
