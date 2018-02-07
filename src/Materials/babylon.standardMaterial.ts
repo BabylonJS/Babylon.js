@@ -202,6 +202,9 @@ module BABYLON {
         @serialize("useObjectSpaceNormalMap")
         private _useObjectSpaceNormalMap = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
         public useObjectSpaceNormalMap: boolean;
 
         @serialize("useParallax")

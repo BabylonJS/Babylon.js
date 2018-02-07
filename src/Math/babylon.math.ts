@@ -3896,7 +3896,8 @@
         }
 
         /**
-         * Returns a new Matrix which is the normal matrix computed from the current one (using values from identity matrix for fourth row and column).  
+         * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).  
+         * @param ref matrix to store the result
          */
         public toNormalMatrix(ref : Matrix): void {            
             this.invertToRef(ref)
