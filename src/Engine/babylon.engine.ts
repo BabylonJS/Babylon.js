@@ -3987,7 +3987,7 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
         }
 
-        public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): InternalTexture {
+        public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
             let fullOptions = new RenderTargetCreationOptions();
 
             if (options !== undefined && typeof options === "object") {
