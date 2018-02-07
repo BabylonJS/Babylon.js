@@ -290,10 +290,9 @@ module BABYLON.GUI {
                 return;
             }
 
-            if (this._fontSize.fromString(value)) {
-                this._markAsDirty();
-                this._fontSet = true;
-            }
+            this.localFromString(value);
+            this._markAsDirty();
+            this._fontSet = true;
         }
 
         public get color(): string {
@@ -1012,6 +1011,31 @@ module BABYLON.GUI {
         }
 
         private static _FontHeightSizes: { [key: string]: { ascent: number, height: number, descent: number } } = {};
+        private localFromString(source: string | number): void {
+            var _regex = /(^-?\d*(\.\d+)?)(%|px)?/;
+            var match = _regex.exec(source.toString());
+
+            if (!match || match.length === 0) {
+                return;
+            }
+
+            var sourceValue = parseFloat(match[1]);
+            if (sourceValue < 0) {
+                sourceValue = 0;
+            }
+
+            if (match.length === 4) {
+
+                if (sourceValue === this._fontSize.getValue(this._host)
+                    && (typeof match[3] === "undefined" || match[3] === "px")) {
+                    return;
+                }
+                if (match[3] === "%") {
+                    sourceValue = (sourceValue / 100.0) * 16;
+                }
+                this._fontSize = new ValueAndUnit(sourceValue, ValueAndUnit.UNITMODE_PIXEL, false);
+            }
+        }
 
         public static _GetFontOffset(font: string): { ascent: number, height: number, descent: number } {
 
