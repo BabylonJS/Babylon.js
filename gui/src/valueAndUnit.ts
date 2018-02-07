@@ -77,7 +77,7 @@ module BABYLON.GUI {
                         break;
                     case "%":
                         sourceUnit = ValueAndUnit.UNITMODE_PERCENTAGE;
-                        sourceValue = (sourceValue /100.0) * 16;
+                        sourceValue /= 100.0;
                         break;
                 }
             }
