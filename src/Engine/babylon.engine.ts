@@ -270,7 +270,7 @@
     }
 
     export interface IDisplayChangedEventArgs {
-        vrDisplay: any;
+        vrDisplay: Nullable<any>;
         vrSupported: boolean;
     }
 
@@ -594,6 +594,7 @@
         private _oldSize: Size;
         private _oldHardwareScaleFactor: number;
         private _vrExclusivePointerMode = false;
+        private _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
 
         public get isInVRExclusivePointerMode(): boolean {
             return this._vrExclusivePointerMode;
@@ -1789,7 +1790,7 @@
          * The onVRDisplayChangedObservable will be notified upon these changes.
          * @returns The onVRDisplayChangedObservable.
          */
-        public initWebVR(): Observable<{ vrDisplay: any, vrSupported: any }> {
+        public initWebVR(): Observable<IDisplayChangedEventArgs> {
             this.initWebVRAsync();
             return this.onVRDisplayChangedObservable;
         }
@@ -1799,13 +1800,14 @@
          * The onVRDisplayChangedObservable will be notified upon these changes.
          * @returns A promise containing a VRDisplay and if vr is supported.
          */
-        public initWebVRAsync(): Promise<{ vrDisplay: Nullable<any>, vrSupported: boolean }> {
+        public initWebVRAsync(): Promise<IDisplayChangedEventArgs> {
             var notifyObservers = () => {
                 var eventArgs = {
                     vrDisplay: this._vrDisplay,
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+                this._webVRInitPromise = new Promise((res)=>{res(eventArgs)});
             }
 
             if (!this._onVrDisplayConnect) {
@@ -1826,10 +1828,9 @@
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             }
-
-            var returnPromise = this._getVRDisplaysAsync();
-            returnPromise.then(notifyObservers);
-            return returnPromise;
+            this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
+            this._webVRInitPromise.then(notifyObservers);
+            return this._webVRInitPromise;
         }
 
         public enableVR() {
@@ -1869,7 +1870,7 @@
             }
         }
 
-        private _getVRDisplaysAsync():Promise<{vrDisplay: any, vrSupported: boolean}> {
+        private _getVRDisplaysAsync():Promise<IDisplayChangedEventArgs> {
             return new Promise((res, rej)=>{    
                 if (navigator.getVRDisplays) {
                     navigator.getVRDisplays().then((devices: Array<any>)=>{
