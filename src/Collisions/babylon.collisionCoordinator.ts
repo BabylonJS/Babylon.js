@@ -44,12 +44,26 @@ module BABYLON {
         boxMaximum: Array<number>;
     }
 
+    /**
+     * Interface describing the value associated with a geometry
+     */
     export interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
         id: string;
+        /**
+         * Defines the array containing the positions
+         */
         positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */        
         indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */        
         normals: Float32Array;
-        //uvs?: Float32Array;
     }
 
     export interface BabylonMessage {
@@ -220,7 +234,7 @@ module BABYLON {
         public init(scene: Scene): void {
             this._scene = scene;
             this._scene.registerAfterRender(this._afterRender);
-            var workerUrl = BABYLON.WorkerIncluded ? Engine.CodeRepository + "Collisions/babylon.collisionWorker.js" : URL.createObjectURL(new Blob([BABYLON.CollisionWorker], { type: 'application/javascript' }));
+            var workerUrl = WorkerIncluded ? Engine.CodeRepository + "Collisions/babylon.collisionWorker.js" : URL.createObjectURL(new Blob([CollisionWorker], { type: 'application/javascript' }));
             this._worker = new Worker(workerUrl);
             this._worker.onmessage = this._onMessageFromWorker;
             var message: BabylonMessage = {

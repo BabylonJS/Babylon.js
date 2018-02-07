@@ -97,7 +97,7 @@
         public instances = new Array<InstancedMesh>();
         public delayLoadingFile: string;
         public _binaryInfo: any;
-        private _LODLevels = new Array<Internals.MeshLODLevel>();
+        private _LODLevels = new Array<MeshLODLevel>();
         public onLODLevelSelection: (distance: number, mesh: Mesh, selectedLevel: Mesh) => void;
 
         // Morph
@@ -149,6 +149,17 @@
             return this._source;
         }
 
+        public get isUnIndexed(): boolean {
+            return this._unIndexed;
+        }
+
+        public set isUnIndexed(value: boolean) {
+            if (this._unIndexed !== value) {
+                this._unIndexed = value;
+                this._markSubMeshesAsAttributesDirty();
+            }
+        }
+
         /**
          * @constructor
          * @param {string} name The value used by scene.getMeshByName() to do a lookup.
@@ -175,14 +186,19 @@
                 }
 
                 // Deep copy
-                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source"], ["_poseMatrix", "_source"]);
+                Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", "source", "metadata"], ["_poseMatrix", "_source"]);
+
+                // Metadata
+                if (source.metadata && source.metadata.clone) {
+                    this.metadata = source.metadata.clone();
+                } else {
+                    this.metadata = source.metadata;
+                }
 
                 // Tags
                 if (Tags && Tags.HasTags(source)) {
                     Tags.AddTagsTo(this, Tags.GetTags(source, true));
                 }
-
-                this.metadata = source.metadata;
 
                 // Parent
                 this.parent = source.parent;
@@ -281,6 +297,14 @@
             return this._LODLevels.length > 0;
         }
 
+        /**
+         * Gets the list of {BABYLON.MeshLODLevel} associated with the current mesh
+         * @returns an array of {BABYLON.MeshLODLevel} 
+         */
+        public getLODLevels(): MeshLODLevel[] {
+            return this._LODLevels;
+        }
+
         private _sortLODLevels(): void {
             this._LODLevels.sort((a, b) => {
                 if (a.distance < b.distance) {
@@ -307,7 +331,7 @@
                 return this;
             }
 
-            var level = new Internals.MeshLODLevel(distance, mesh);
+            var level = new MeshLODLevel(distance, mesh);
             this._LODLevels.push(level);
 
             if (mesh) {
@@ -416,7 +440,7 @@
          * Returns a positive integer : the total number of vertices within the mesh geometry or zero if the mesh has no geometry.
          */
         public getTotalVertices(): number {
-            if (!this._geometry) {
+            if (this._geometry === null || this._geometry === undefined) {
                 return 0;
             }
             return this._geometry.getTotalVertices();
@@ -582,14 +606,68 @@
         }
 
         /**
-         * Boolean : true once the mesh is ready after all the delayed process (loading, etc) are complete.
+         * Determine if the current mesh is ready to be rendered
+         * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
+         * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        public isReady(): boolean {
+        public isReady(forceInstanceSupport = false): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            return super.isReady();
+            if (!super.isReady()) {
+                return false;
+            }
+
+            if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
+            let engine = this.getEngine();
+            let scene = this.getScene();
+            let hardwareInstancedRendering = forceInstanceSupport || engine.getCaps().instancedArrays && this.instances.length > 0;
+
+            this.computeWorldMatrix();
+
+            let mat = this.material || scene.defaultMaterial;
+            if (mat) {
+                if (mat.storeEffectOnSubMeshes) {
+                    for (var subMesh of this.subMeshes) {
+                        let effectiveMaterial = subMesh.getMaterial();
+                        if (effectiveMaterial) {
+                            if (!effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
+                                return false;
+                            }
+                        }
+                    }
+                } else {
+                    if (!mat.isReady(this, hardwareInstancedRendering)) {
+                        return false;
+                    }
+                }
+            }
+
+            // Shadows
+            for (var light of this._lightSources) {
+                let generator = light.getShadowGenerator();
+
+                if (generator) {
+                    for (var subMesh of this.subMeshes) {
+                        if (!generator.isReady(subMesh, hardwareInstancedRendering)) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // LOD
+            for (var lod of this._LODLevels) {
+                if (lod.mesh && !lod.mesh.isReady(hardwareInstancedRendering)) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /**
@@ -697,7 +775,7 @@
             var data = this.getVerticesData(VertexBuffer.PositionKind);
 
             if (data && applySkeleton && this.skeleton) {
-                data = data.slice();
+                data = Tools.Slice(data);
 
                 var matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
                 var matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
@@ -1050,25 +1128,14 @@
             let scene = this.getScene();
             let engine = scene.getEngine();
 
-            // Draw order
-            switch (fillMode) {
-                case Material.PointFillMode:
-                    engine.drawPointClouds(subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    break;
-                case Material.WireFrameFillMode:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(false, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(false, 0, subMesh.linesIndexCount, instancesCount);
-                    }
-                    break;
-
-                default:
-                    if (this._unIndexed) {
-                        engine.drawUnIndexed(true, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
-                    } else {
-                        engine.draw(true, subMesh.indexStart, subMesh.indexCount, instancesCount);
-                    }
+            if (this._unIndexed || fillMode == Material.PointFillMode) {
+                // or triangles as points
+                engine.drawArraysType(fillMode, subMesh.verticesStart, subMesh.verticesCount, instancesCount);
+            } else if (fillMode == Material.WireFrameFillMode) {
+                // Triangles as wireframe
+                engine.drawElementsType(fillMode, 0, subMesh.linesIndexCount, instancesCount);
+            } else {
+                engine.drawElementsType(fillMode, subMesh.indexStart, subMesh.indexCount, instancesCount);
             }
 
             if (scene._isAlternateRenderingEnabled && !alternate) {
@@ -1304,7 +1371,7 @@
                 return this;
             }
 
-            this._effectiveMaterial = material
+            this._effectiveMaterial = material;
 
             if (this._effectiveMaterial.storeEffectOnSubMeshes) {
                 if (!this._effectiveMaterial.isReadyForSubMesh(this, subMesh, hardwareInstancedRendering)) {
@@ -1338,7 +1405,15 @@
                 return this;
             }
 
-            var reverse = this._effectiveMaterial._preBind(effect, this.overrideMaterialSideOrientation);
+            var sideOrientation = this.overrideMaterialSideOrientation;
+            if (sideOrientation == null) {
+                sideOrientation = this._effectiveMaterial.sideOrientation;
+                if (this._getWorldMatrixDeterminant() < 0) {
+                    sideOrientation = (sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation);
+                }
+            }
+
+            var reverse = this._effectiveMaterial._preBind(effect, sideOrientation);
 
             if (this._effectiveMaterial.forceDepthWrite) {
                 engine.setDepthWrite(true);
@@ -1665,13 +1740,12 @@
                 this.instances[0].dispose();
             }
 
-            // Highlight layers.
-            let highlightLayers = this.getScene().highlightLayers;
-            for (let i = 0; i < highlightLayers.length; i++) {
-                let highlightLayer = highlightLayers[i];
-                if (highlightLayer) {
-                    highlightLayer.removeMesh(this);
-                    highlightLayer.removeExcludedMesh(this);
+            // Effect layers.
+            let effectLayers = this.getScene().effectLayers;
+            for (let i = 0; i < effectLayers.length; i++) {
+                let effectLayer = effectLayers[i];
+                if (effectLayer) {
+                    effectLayer._disposeMesh(this);
                 }
             }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -2096,7 +2170,7 @@
             serializationObject.scaling = this.scaling.asArray();
             serializationObject.localMatrix = this.getPivotMatrix().asArray();
 
-            serializationObject.isEnabled = this.isEnabled();
+            serializationObject.isEnabled = this.isEnabled(false);
             serializationObject.isVisible = this.isVisible;
             serializationObject.infiniteDistance = this.infiniteDistance;
             serializationObject.pickable = this.isPickable;
@@ -2115,6 +2189,7 @@
             }
 
             // Geometry
+            serializationObject.isUnIndexed = this.isUnIndexed;
             var geometry = this._geometry;
             if (geometry) {
                 var geometryId = geometry.id;
@@ -2306,7 +2381,7 @@
             mesh.scaling = Vector3.FromArray(parsedMesh.scaling);
 
             if (parsedMesh.localMatrix) {
-                mesh.setPivotMatrix(Matrix.FromArray(parsedMesh.localMatrix));
+                mesh.setPreTransformMatrix(Matrix.FromArray(parsedMesh.localMatrix));
             } else if (parsedMesh.pivotMatrix) {
                 mesh.setPivotMatrix(Matrix.FromArray(parsedMesh.pivotMatrix));
             }
@@ -2375,6 +2450,7 @@
             }
 
             // Geometry
+            mesh.isUnIndexed = !!parsedMesh.isUnIndexed;
             mesh.hasVertexAlpha = parsedMesh.hasVertexAlpha;
 
             if (parsedMesh.delayLoadingFile) {
@@ -2423,14 +2499,14 @@
                     mesh._delayInfo.push(VertexBuffer.MatricesWeightsKind);
                 }
 
-                mesh._delayLoadingFunction = Geometry.ImportGeometry;
+                mesh._delayLoadingFunction = Geometry._ImportGeometry;
 
                 if (SceneLoader.ForceFullSceneLoadingForIncremental) {
                     mesh._checkDelayState();
                 }
 
             } else {
-                Geometry.ImportGeometry(parsedMesh, mesh);
+                Geometry._ImportGeometry(parsedMesh, mesh);
             }
 
             // Material
@@ -2476,7 +2552,7 @@
 
             // Physics
             if (parsedMesh.physicsImpostor) {
-                mesh.physicsImpostor = new BABYLON.PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
+                mesh.physicsImpostor = new PhysicsImpostor(mesh, parsedMesh.physicsImpostor, {
                     mass: parsedMesh.physicsMass,
                     friction: parsedMesh.physicsFriction,
                     restitution: parsedMesh.physicsRestitution
@@ -3233,8 +3309,8 @@
                     minVector = boundingBox.minimumWorld;
                     maxVector = boundingBox.maximumWorld;
                 } else {
-                    minVector.MinimizeInPlace(boundingBox.minimumWorld);
-                    maxVector.MaximizeInPlace(boundingBox.maximumWorld);
+                    minVector.minimizeInPlace(boundingBox.minimumWorld);
+                    maxVector.maximizeInPlace(boundingBox.maximumWorld);
                 }
             });
 
@@ -3254,7 +3330,7 @@
          * Returns a Vector3, the center of the `{min:` Vector3`, max:` Vector3`}` or the center of MinMax vector3 computed from a mesh array.
          */
         public static Center(meshesOrMinMaxVector: { min: Vector3; max: Vector3 } | AbstractMesh[]): Vector3 {
-            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? BABYLON.Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
+            var minMaxVector = (meshesOrMinMaxVector instanceof Array) ? Mesh.MinMax(meshesOrMinMaxVector) : meshesOrMinMaxVector;
             return Vector3.Center(minMaxVector.min, minMaxVector.max);
         }
 
@@ -3339,7 +3415,7 @@
 
                 //-- aplique la subdivision en fonction du tableau d'indices
                 while (index < indiceArray.length) {
-                    BABYLON.SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
+                    SubMesh.CreateFromIndices(0, offset, indiceArray[index], meshSubclass);
                     offset += indiceArray[index];
                     index++;
                 }

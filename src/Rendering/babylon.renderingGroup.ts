@@ -6,12 +6,12 @@
         private _alphaTestSubMeshes = new SmartArray<SubMesh>(256);
         private _depthOnlySubMeshes = new SmartArray<SubMesh>(256);
         private _particleSystems = new SmartArray<IParticleSystem>(256);
-        private _spriteManagers = new SmartArray<SpriteManager>(256);        
+        private _spriteManagers = new SmartArray<SpriteManager>(256);
 
         private _opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
         private _alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
         private _transparentSortCompareFn: (a: SubMesh, b: SubMesh) => number;
-        
+
         private _renderOpaque: (subMeshes: SmartArray<SubMesh>) => void;
         private _renderAlphaTest: (subMeshes: SmartArray<SubMesh>) => void;
         private _renderTransparent: (subMeshes: SmartArray<SubMesh>) => void;
@@ -77,7 +77,7 @@
 
             this.opaqueSortCompareFn = opaqueSortCompareFn;
             this.alphaTestSortCompareFn = alphaTestSortCompareFn;
-            this.transparentSortCompareFn = transparentSortCompareFn;            
+            this.transparentSortCompareFn = transparentSortCompareFn;
         }
 
         /**
@@ -95,13 +95,11 @@
 
             // Depth only
             if (this._depthOnlySubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 engine.setColorWrite(false);
                 this._renderAlphaTest(this._depthOnlySubMeshes);
-                engine.setAlphaTesting(false);
                 engine.setColorWrite(true);
-            }            
-            
+            }
+
             // Opaque
             if (this._opaqueSubMeshes.length !== 0) {
                 this._renderOpaque(this._opaqueSubMeshes);
@@ -109,9 +107,7 @@
 
             // Alpha test
             if (this._alphaTestSubMeshes.length !== 0) {
-                engine.setAlphaTesting(true);
                 this._renderAlphaTest(this._alphaTestSubMeshes);
-                engine.setAlphaTesting(false);
             }
 
             var stencilState = engine.getStencilBuffer();
@@ -121,7 +117,7 @@
             if (renderSprites) {
                 this._renderSprites();
             }
-            
+
             // Particles
             if (renderParticles) {
                 this._renderParticles(activeMeshes);
@@ -205,10 +201,8 @@
                     if (material && material.needDepthPrePass) {
                         let engine = material.getScene().getEngine();
                         engine.setColorWrite(false);
-                        engine.setAlphaTesting(true);
                         engine.setAlphaMode(Engine.ALPHA_DISABLE);
                         subMesh.render(false);
-                        engine.setAlphaTesting(false);
                         engine.setColorWrite(true);
                     }
                 }
@@ -236,7 +230,7 @@
          * @param b The second submesh
          * @returns The result of the comparison
          */
-        public static defaultTransparentSortCompare(a: SubMesh, b:SubMesh) : number {
+        public static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number {
             // Alpha index first
             if (a._alphaIndex > b._alphaIndex) {
                 return 1;
@@ -257,7 +251,7 @@
          * @param b The second submesh
          * @returns The result of the comparison
          */
-        public static backToFrontSortCompare(a: SubMesh, b:SubMesh) : number {
+        public static backToFrontSortCompare(a: SubMesh, b: SubMesh): number {
             // Then distance to camera
             if (a._distanceToCamera < b._distanceToCamera) {
                 return 1;
@@ -277,7 +271,7 @@
          * @param b The second submesh
          * @returns The result of the comparison
          */
-        public static frontToBackSortCompare(a: SubMesh, b:SubMesh) : number {
+        public static frontToBackSortCompare(a: SubMesh, b: SubMesh): number {
             // Then distance to camera
             if (a._distanceToCamera < b._distanceToCamera) {
                 return -1;
@@ -298,7 +292,7 @@
             this._alphaTestSubMeshes.reset();
             this._depthOnlySubMeshes.reset();
             this._particleSystems.reset();
-            this._spriteManagers.reset();            
+            this._spriteManagers.reset();
             this._edgesRenderers.reset();
         }
 
@@ -308,19 +302,26 @@
             this._alphaTestSubMeshes.dispose();
             this._depthOnlySubMeshes.dispose();
             this._particleSystems.dispose();
-            this._spriteManagers.dispose();                      
+            this._spriteManagers.dispose();
             this._edgesRenderers.dispose();
         }
 
         /**
          * Inserts the submesh in its correct queue depending on its material.
          * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
          */
-        public dispatch(subMesh: SubMesh): void {
-            var material = subMesh.getMaterial();
-            var mesh = subMesh.getMesh();
+        public dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void {
+            // Get mesh and materials if not provided
+            if (mesh === undefined) {
+                mesh = subMesh.getMesh();
+            }
+            if (material === undefined) {
+                material = subMesh.getMaterial();
+            }
 
-            if (!material) {
+            if (material === null || material === undefined) {
                 return;
             }
 
@@ -330,17 +331,17 @@
                 if (material.needDepthPrePass) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
-                
+
                 this._alphaTestSubMeshes.push(subMesh);
             } else {
                 if (material.needDepthPrePass) {
                     this._depthOnlySubMeshes.push(subMesh);
                 }
-                
+
                 this._opaqueSubMeshes.push(subMesh); // Opaque
             }
 
-            if (mesh._edgesRenderer) {
+            if (mesh._edgesRenderer !== null && mesh._edgesRenderer !== undefined) {
                 this._edgesRenderers.push(mesh._edgesRenderer);
             }
         }
@@ -361,8 +362,8 @@
             // Particles
             var activeCamera = this._scene.activeCamera;
             this._scene.onBeforeParticlesRenderingObservable.notifyObservers(this._scene);
-            for (var particleIndex = 0; particleIndex < this._scene._activeParticleSystems.length; particleIndex++) {
-                var particleSystem = this._scene._activeParticleSystems.data[particleIndex];
+            for (var particleIndex = 0; particleIndex < this._particleSystems.length; particleIndex++) {
+                var particleSystem = this._particleSystems.data[particleIndex];
 
                 if ((activeCamera && activeCamera.layerMask & particleSystem.layerMask) === 0) {
                     continue;
@@ -374,7 +375,7 @@
                 }
             }
             this._scene.onAfterParticlesRenderingObservable.notifyObservers(this._scene);
-            
+
         }
 
         private _renderSprites(): void {

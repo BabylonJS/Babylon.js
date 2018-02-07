@@ -62,4 +62,9 @@ uniform mat4 normalMatrix;
     uniform vec2 vReflectionInfos;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
+
+    #if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
+	    uniform vec3 vReflectionPosition;
+	    uniform vec3 vReflectionSize; 
+    #endif
 #endif

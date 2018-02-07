@@ -9,36 +9,7 @@
 
         constructor(engine: any, data: FloatArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
             if (!stride) {
-                // Deduce stride from kind
-                switch (kind) {
-                    case VertexBuffer.PositionKind:
-                        stride = 3;
-                        break;
-                    case VertexBuffer.NormalKind:
-                        stride = 3;
-                        break;
-                    case VertexBuffer.UVKind:
-                    case VertexBuffer.UV2Kind:
-                    case VertexBuffer.UV3Kind:
-                    case VertexBuffer.UV4Kind:
-                    case VertexBuffer.UV5Kind:
-                    case VertexBuffer.UV6Kind:
-                        stride = 2;
-                        break;
-                    case VertexBuffer.TangentKind:
-                    case VertexBuffer.ColorKind:
-                        stride = 4;
-                        break;
-                    case VertexBuffer.MatricesIndicesKind:
-                    case VertexBuffer.MatricesIndicesExtraKind:
-                        stride = 4;
-                        break;
-                    case VertexBuffer.MatricesWeightsKind:
-                    case VertexBuffer.MatricesWeightsExtraKind:
-                    default:
-                        stride = 4;
-                        break;
-                }
+                stride = VertexBuffer.DeduceStride(kind);
             }
 
             if (data instanceof Buffer) {
@@ -145,6 +116,7 @@
 
         /**
          * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * This function will create a new buffer if the current one is not updatable
          * Returns the updated WebGLBuffer.  
          */
         public update(data: FloatArray): void {
@@ -238,6 +210,38 @@
 
         public static get MatricesWeightsExtraKind(): string {
             return VertexBuffer._MatricesWeightsExtraKind;
+        }
+
+        /**
+         * Deduces the stride given a kind.
+         * @param kind The kind string to deduce
+         * @returns The deduced stride
+         */
+        public static DeduceStride(kind: string): number {
+            switch (kind) {
+                case VertexBuffer.PositionKind:
+                    return 3;
+                case VertexBuffer.NormalKind:
+                    return 3;
+                case VertexBuffer.UVKind:
+                case VertexBuffer.UV2Kind:
+                case VertexBuffer.UV3Kind:
+                case VertexBuffer.UV4Kind:
+                case VertexBuffer.UV5Kind:
+                case VertexBuffer.UV6Kind:
+                    return 2;
+                case VertexBuffer.TangentKind:
+                case VertexBuffer.ColorKind:
+                    return 4;
+                case VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesExtraKind:
+                    return 4;
+                case VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsExtraKind:
+                    return 4;
+                default:
+                    throw new Error("Invalid kind '" + kind + "'");
+            }
         }
     }
 } 

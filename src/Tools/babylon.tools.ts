@@ -3,6 +3,45 @@
         animations: Array<Animation>;
     }
 
+    // See https://stackoverflow.com/questions/12915412/how-do-i-extend-a-host-object-e-g-error-in-typescript
+    // and https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+    export class LoadFileError extends Error {
+        // Polyfill for Object.setPrototypeOf if necessary.
+        private static _setPrototypeOf: (o: any, proto: object | null) => any =
+            (Object as any).setPrototypeOf || ((o, proto) => { o.__proto__ = proto; return o; });
+
+        constructor(message: string, public request?: XMLHttpRequest) {
+            super(message);
+            this.name = "LoadFileError";
+
+            LoadFileError._setPrototypeOf(this, LoadFileError.prototype);
+        }
+    }
+
+    export class RetryStrategy {
+        public static ExponentialBackoff(maxRetries = 3, baseInterval = 500) {
+            return (url: string, request: XMLHttpRequest, retryIndex: number): number => {
+                if (request.status !== 0 || retryIndex >= maxRetries || url.indexOf("file:") !== -1) {
+                    return -1;
+                }
+
+                return Math.pow(2, retryIndex) * baseInterval;
+            };
+        }
+    }
+
+    export interface IFileRequest {
+        /**
+         * Raised when the request is complete (success or error).
+         */
+        onCompleteObservable: Observable<IFileRequest>;
+
+        /**
+         * Aborts the request for a file.
+         */
+        abort: () => void;
+    }
+
     // Screenshots
     var screenshotCanvas: HTMLCanvasElement;
 
@@ -24,6 +63,7 @@
 
     export class Tools {
         public static BaseUrl = "";
+        public static DefaultRetryStrategy = RetryStrategy.ExponentialBackoff();
 
         /**
          * Default behaviour for cors in the application.
@@ -71,6 +111,19 @@
             }
 
             return fn;
+        }
+
+        /**
+         * Provides a slice function that will work even on IE
+         * @param data defines the array to slice
+         * @returns the new sliced array
+         */
+        public static Slice(data: FloatArray): FloatArray {
+            if (data.slice) {
+                return data.slice();
+            }
+
+            return Array.prototype.slice.call(data);
         }
 
         public static SetImmediate(action: () => void) {
@@ -159,10 +212,20 @@
             return path.substring(index + 1);
         }
 
-        public static GetFolderPath(uri: string): string {
+        /**
+         * Extracts the "folder" part of a path (everything before the filename).
+         * @param uri The URI to extract the info from
+         * @param returnUnchangedIfNoSlash Do not touch the URI if no slashes are present
+         * @returns The "folder" part of the path
+         */
+        public static GetFolderPath(uri: string, returnUnchangedIfNoSlash = false): string {
             var index = uri.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
+                if (returnUnchangedIfNoSlash) {
+                    return uri;
+                }
                 return "";
+            }
 
             return uri.substring(0, index + 1);
         }
@@ -397,7 +460,7 @@
             }
 
             if (Tools.CorsBehavior) {
-                if (typeof(Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
+                if (typeof (Tools.CorsBehavior) === 'string' || Tools.CorsBehavior instanceof String) {
                     element.crossOrigin = <string>Tools.CorsBehavior;
                 }
                 else {
@@ -431,17 +494,25 @@
             var img = new Image();
             Tools.SetCorsBehavior(url, img);
 
-            img.onload = () => {
+            const loadHandler = () => {
+                img.removeEventListener("load", loadHandler);
+                img.removeEventListener("error", errorHandler);
                 onLoad(img);
             };
 
-            img.onerror = err => {
+            const errorHandler = (err: any) => {
+                img.removeEventListener("load", loadHandler);
+                img.removeEventListener("error", errorHandler);
+
                 Tools.Error("Error while trying to load image: " + url);
 
                 if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
+
+            img.addEventListener("load", loadHandler);
+            img.addEventListener("error", errorHandler);
 
             var noIndexedDB = () => {
                 img.src = url;
@@ -486,72 +557,143 @@
             return img;
         }
 
-        public static LoadFile(url: string, callback: (data: string | ArrayBuffer, responseURL?: string) => void, progressCallBack?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): Nullable<XMLHttpRequest> {
+        public static LoadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest {
             url = Tools.CleanUrl(url);
 
             url = Tools.PreprocessUrl(url);
 
-            var request: Nullable<XMLHttpRequest> = null;
-
-            var noIndexedDB = () => {
-                request = new XMLHttpRequest();
-                var loadUrl = Tools.BaseUrl + url;
-                request.open('GET', loadUrl, true);
-
-                if (useArrayBuffer) {
-                    request.responseType = "arraybuffer";
+            // If file and file input are set
+            if (url.indexOf("file:") !== -1) {
+                const fileName = decodeURIComponent(url.substring(5).toLowerCase());
+                if (FilesInput.FilesToLoad[fileName]) {
+                    return Tools.ReadFile(FilesInput.FilesToLoad[fileName], onSuccess, onProgress, useArrayBuffer);
                 }
+            }
 
-                if (progressCallBack) {
-                    request.onprogress = progressCallBack;
-                }
+            const loadUrl = Tools.BaseUrl + url;
 
-                request.onreadystatechange = () => {
-                    let req = <XMLHttpRequest>request;
-                    // In case of undefined state in some browsers.
-                    if (req.readyState === (XMLHttpRequest.DONE || 4)) {
-                        req.onreadystatechange = () => { };//some browsers have issues where onreadystatechange can be called multiple times with the same value
+            let aborted = false;
+            const fileRequest: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => aborted = true,
+            };
 
-                        if (req.status >= 200 && req.status < 300 || (!Tools.IsWindowObjectExist() && (req.status === 0))) {
-                            callback(!useArrayBuffer ? req.responseText : <ArrayBuffer>req.response, req.responseURL);
-                        } else { // Failed
-                            let e = new Error("Error status: " + req.status + " - Unable to load " + loadUrl);
+            const requestFile = () => {
+                let request = new XMLHttpRequest();
+                let retryHandle: Nullable<number> = null;
+
+                fileRequest.abort = () => {
+                    aborted = true;
+
+                    if (request.readyState !== (XMLHttpRequest.DONE || 4)) {
+                        request.abort();
+                    }
+
+                    if (retryHandle !== null) {
+                        clearTimeout(retryHandle);
+                        retryHandle = null;
+                    }
+                };
+
+                const retryLoop = (retryIndex: number) => {
+                    request.open('GET', loadUrl, true);
+
+                    if (useArrayBuffer) {
+                        request.responseType = "arraybuffer";
+                    }
+
+                    if (onProgress) {
+                        request.addEventListener("progress", onProgress);
+                    }
+
+                    const onLoadEnd = () => {
+                        request.removeEventListener("loadend", onLoadEnd);
+                        fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        fileRequest.onCompleteObservable.clear();
+                    };
+
+                    request.addEventListener("loadend", onLoadEnd);
+
+                    const onReadyStateChange = () => {
+                        if (aborted) {
+                            return;
+                        }
+
+                        // In case of undefined state in some browsers.
+                        if (request.readyState === (XMLHttpRequest.DONE || 4)) {
+                            // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                            request.removeEventListener("readystatechange", onReadyStateChange);
+
+                            if (request.status >= 200 && request.status < 300 || (!Tools.IsWindowObjectExist() && (request.status === 0))) {
+                                onSuccess(!useArrayBuffer ? request.responseText : <ArrayBuffer>request.response, request.responseURL);
+                                return;
+                            }
+
+                            let retryStrategy = Tools.DefaultRetryStrategy;
+                            if (retryStrategy) {
+                                let waitTime = retryStrategy(loadUrl, request, retryIndex);
+                                if (waitTime !== -1) {
+                                    // Prevent the request from completing for retry.
+                                    request.removeEventListener("loadend", onLoadEnd);
+                                    request = new XMLHttpRequest();
+                                    retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
+                                    return;
+                                }
+                            }
+
+                            let e = new LoadFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
                             if (onError) {
-                                onError(req, e);
+                                onError(request, e);
                             } else {
                                 throw e;
                             }
                         }
-                    }
+                    };
+
+                    request.addEventListener("readystatechange", onReadyStateChange);
+
+                    request.send();
                 };
 
-                request.send(null);
+                retryLoop(0);
             };
-
-            var loadFromIndexedDB = () => {
-                if (database) {
-                    database.loadFileFromDB(url, callback, progressCallBack, noIndexedDB, useArrayBuffer);
-                }
-            };
-
-            // If file and file input are set
-            if (url.indexOf("file:") !== -1) {
-                var fileName = decodeURIComponent(url.substring(5).toLowerCase());
-                if (FilesInput.FilesToLoad[fileName]) {
-                    Tools.ReadFile(FilesInput.FilesToLoad[fileName], callback, progressCallBack, useArrayBuffer);
-                    return request;
-                }
-            }
 
             // Caching all files
             if (database && database.enableSceneOffline) {
+                const noIndexedDB = () => {
+                    if (!aborted) {
+                        requestFile();
+                    }
+                };
+
+                const loadFromIndexedDB = () => {
+                    // TODO: database needs to support aborting and should return a IFileRequest
+                    if (aborted) {
+                        return;
+                    }
+
+                    if (database) {
+                        database.loadFileFromDB(url, data => {
+                            if (!aborted) {
+                                onSuccess(data);
+                            }
+
+                            fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        }, onProgress ? event => {
+                            if (!aborted) {
+                                onProgress(event);
+                            }
+                        } : undefined, noIndexedDB, useArrayBuffer);
+                    }
+                };
+
                 database.openAsync(loadFromIndexedDB, noIndexedDB);
             }
             else {
-                noIndexedDB();
+                requestFile();
             }
 
-            return request;
+            return fileRequest;
         }
 
         /** 
@@ -579,18 +721,38 @@
             head.appendChild(script);
         }
 
-        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): void {
-            var reader = new FileReader();
+        public static ReadFileAsDataURL(fileToLoad: Blob, callback: (data: any) => void, progressCallback: (this: MSBaseReader, ev: ProgressEvent) => any): IFileRequest {
+            let reader = new FileReader();
+
+            let request: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => reader.abort(),
+            };
+
+            reader.onloadend = e => {
+                request.onCompleteObservable.notifyObservers(request);
+            };
+
             reader.onload = e => {
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
+
             reader.onprogress = progressCallback;
+
             reader.readAsDataURL(fileToLoad);
+
+            return request;
         }
 
-        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): void {
-            var reader = new FileReader();
+        public static ReadFile(fileToLoad: File, callback: (data: any) => void, progressCallBack?: (this: MSBaseReader, ev: ProgressEvent) => any, useArrayBuffer?: boolean): IFileRequest {
+            let reader = new FileReader();
+            let request: IFileRequest = {
+                onCompleteObservable: new Observable<IFileRequest>(),
+                abort: () => reader.abort(),
+            };
+
+            reader.onloadend = e => request.onCompleteObservable.notifyObservers(request);
             reader.onerror = e => {
                 Tools.Log("Error while reading file: " + fileToLoad.name);
                 callback(JSON.stringify({ autoClear: true, clearColor: [1, 0, 0], ambientColor: [0, 0, 0], gravity: [0, -9.807, 0], meshes: [], cameras: [], lights: [] }));
@@ -599,7 +761,6 @@
                 //target doesn't have result from ts 1.3
                 callback((<any>e.target)['result']);
             };
-
             if (progressCallBack) {
                 reader.onprogress = progressCallBack;
             }
@@ -610,6 +771,8 @@
             else {
                 reader.readAsArrayBuffer(fileToLoad);
             }
+
+            return request;
         }
 
         //returns a downloadable url to a file content.
@@ -884,6 +1047,26 @@
             Tools.EncodeScreenshotCanvasData(successCallback, mimeType);
         }
 
+        /**
+         * Generates an image screenshot from the specified camera.
+         *
+         * @param engine The engine to use for rendering
+         * @param camera The camera to use for rendering
+         * @param size This parameter can be set to a single number or to an object with the
+         * following (optional) properties: precision, width, height. If a single number is passed,
+         * it will be used for both width and height. If an object is passed, the screenshot size
+         * will be derived from the parameters. The precision property is a multiplier allowing
+         * rendering at a higher or lower resolution.
+         * @param successCallback The callback receives a single parameter which contains the
+         * screenshot as a string of base64-encoded characters. This string can be assigned to the
+         * src parameter of an <img> to display it.
+         * @param mimeType The MIME type of the screenshot image (default: image/png).
+         * Check your browser for supported MIME types.
+         * @param samples Texture samples (default: 1)
+         * @param antialiasing Whether antialiasing should be turned on or not (default: false)
+         * @param fileName A name for for the downloaded file.
+         * @constructor
+         */
         public static CreateScreenshotUsingRenderTarget(engine: Engine, camera: Camera, size: any, successCallback?: (data: string) => void, mimeType: string = "image/png", samples: number = 1, antialiasing: boolean = false, fileName?: string): void {
             var width: number;
             var height: number;
@@ -933,7 +1116,7 @@
             texture.renderList = null;
             texture.samples = samples;
             if (antialiasing) {
-                texture.addPostProcess(new BABYLON.FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
+                texture.addPostProcess(new FxaaPostProcess('antialiasing', 1.0, scene.activeCamera));
             }
             texture.onAfterRenderObservable.add(() => {
                 Tools.DumpFramebuffer(width, height, engine, successCallback, mimeType, fileName);
@@ -966,7 +1149,7 @@
 
                 if (dataType & 2) {
                     // Check header width and height since there is no "TGA" magic number
-                    var tgaHeader = Internals.TGATools.GetTGAHeader(xhr.response);
+                    var tgaHeader = TGATools.GetTGAHeader(xhr.response);
 
                     if (tgaHeader.width && tgaHeader.height && tgaHeader.width > 0 && tgaHeader.height > 0) {
                         return true;
@@ -1003,6 +1186,32 @@
                 var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
+        }
+
+        /**
+        * Test if the given uri is a base64 string.
+        * @param uri The uri to test
+        * @return True if the uri is a base64 string or false otherwise.
+        */
+        public static IsBase64(uri: string): boolean {
+            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        }
+
+        /**
+        * Decode the given base64 uri.
+        * @param uri The uri to decode
+        * @return The decoded base64 data.
+        */
+        public static DecodeBase64(uri: string): ArrayBuffer {
+            const decodedString = atob(uri.split(",")[1]);
+            const bufferLength = decodedString.length;
+            const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+            for (let i = 0; i < bufferLength; i++) {
+                bufferView[i] = decodedString.charCodeAt(i);
+            }
+
+            return bufferView.buffer;
         }
 
         // Logs
@@ -1326,6 +1535,19 @@
                 chr = feeder(index++);
             }
             return hash;
+        }
+
+        /**
+         * Returns a promise that resolves after the given amount of time.
+         * @param delay Number of milliseconds to delay
+         * @returns Promise that resolves after the given amount of time
+         */
+        public static DelayAsync(delay: number): Promise<void> {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, delay);
+            });
         }
     }
 

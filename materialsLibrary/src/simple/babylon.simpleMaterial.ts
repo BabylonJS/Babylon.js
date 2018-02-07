@@ -31,16 +31,16 @@ module BABYLON {
 
         @serializeAsColor3("diffuse")
         public diffuseColor = new Color3(1, 1, 1);
-        
+
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public disableLighting: boolean;   
-        
+        public disableLighting: boolean;
+
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number; 
+        public maxSimultaneousLights: number;
 
         private _renderId: number;
 
@@ -61,7 +61,7 @@ module BABYLON {
         }
 
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -94,19 +94,19 @@ module BABYLON {
                             defines._needUVs = true;
                             defines.DIFFUSE = true;
                         }
-                    }                
+                    }
                 }
             }
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            
+
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
@@ -116,13 +116,13 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
                 MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
-                
+
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -152,19 +152,19 @@ module BABYLON {
                 var shaderName = "simple";
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor",
-                                "vFogInfos", "vFogColor", "pointSize",
-                                "vDiffuseInfos", 
-                                "mBones",
-                                "vClipPlane", "diffuseMatrix"
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vDiffuseInfos",
+                    "mBones",
+                    "vClipPlane", "diffuseMatrix"
                 ];
                 var samplers = ["diffuseSampler"];
                 var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
@@ -220,7 +220,7 @@ module BABYLON {
                     this._activeEffect.setFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
                     this._activeEffect.setMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
                 }
-                
+
                 // Clip plane
                 MaterialHelper.BindClipPlane(this._activeEffect, scene);
 
@@ -229,14 +229,14 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                MaterialHelper.BindEyePosition(effect, scene);            
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
 
             // Lights
             if (scene.lightsEnabled && !this.disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);          
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
             }
 
             // View
@@ -277,10 +277,10 @@ module BABYLON {
 
             if (this.diffuseTexture === texture) {
                 return true;
-            } 
+            }
 
-            return false;    
-        }        
+            return false;
+        }
 
         public dispose(forceDisposeEffect?: boolean): void {
             if (this._diffuseTexture) {
@@ -293,7 +293,7 @@ module BABYLON {
         public clone(name: string): SimpleMaterial {
             return SerializationHelper.Clone<SimpleMaterial>(() => new SimpleMaterial(name, this.getScene()), this);
         }
-        
+
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.SimpleMaterial";
@@ -302,12 +302,12 @@ module BABYLON {
 
         public getClassName(): string {
             return "SimpleMaterial";
-        }               
-        
+        }
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SimpleMaterial {
             return SerializationHelper.Parse(() => new SimpleMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
+}
 

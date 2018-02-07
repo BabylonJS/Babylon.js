@@ -64,9 +64,9 @@ module BABYLON {
          * @param scene The scene the texture will be used in
          * @param size The cubemap desired size (the more it increases the longer the generation will be) If the size is omitted this implies you are using a preprocessed cubemap.
          * @param noMipmap Forces to not generate the mipmap if true
-         * @param generateHarmonics Specifies wether you want to extract the polynomial harmonics during the generation process
+         * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
          * @param useInGammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
-         * @param usePMREMGenerator Specifies wether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
+         * @param usePMREMGenerator Specifies whether or not to generate the CubeMap through CubeMapGen to avoid seams issue at run time.
          */
         constructor(url: string, scene: Scene, size?: number, noMipmap = false, generateHarmonics = true, useInGammaSpace = false, usePMREMGenerator = false, onLoad: Nullable<() => void> = null, onError: Nullable<(message?: string, exception?: any) => void> = null) {
             super(scene);
@@ -216,9 +216,9 @@ module BABYLON {
 
                             // Put in gamma space if requested.
                             if (this._useInGammaSpace) {
-                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], BABYLON.ToGammaSpace);
+                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], ToGammaSpace);
+                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], ToGammaSpace);
+                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], ToGammaSpace);
                             }
 
                             // Convert to int texture for fallback.
@@ -259,7 +259,7 @@ module BABYLON {
             if (scene) {
                 this._texture = (<any>scene.getEngine()).createRawCubeTextureFromUrl(this.url, scene, this._size,
                     Engine.TEXTUREFORMAT_RGB,
-                    scene.getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                    scene.getEngine().getCaps().textureFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT,
                     this._noMipmap,
                     callback,
                     mipmapGenerator, this._onLoad, this._onError);
@@ -277,11 +277,11 @@ module BABYLON {
                     return null;
                 }
                 // Extract the raw linear data.
-                var data = BABYLON.Internals.HDRTools.GetCubeMapTextureData(buffer, this._size);
+                var data = HDRTools.GetCubeMapTextureData(buffer, this._size);
 
                 // Generate harmonics if needed.
                 if (this._generateHarmonics) {
-                    var sphericalPolynomial = BABYLON.Internals.CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
+                    var sphericalPolynomial = CubeMapToSphericalPolynomialTools.ConvertCubeMapToSphericalPolynomial(data);
                     this.sphericalPolynomial = sphericalPolynomial;
                 }
 
@@ -306,9 +306,9 @@ module BABYLON {
 
                             // Put in gamma space if requested.
                             if (this._useInGammaSpace) {
-                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], BABYLON.ToGammaSpace);
-                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], BABYLON.ToGammaSpace);
+                                dataFace[(i * 3) + 0] = Math.pow(dataFace[(i * 3) + 0], ToGammaSpace);
+                                dataFace[(i * 3) + 1] = Math.pow(dataFace[(i * 3) + 1], ToGammaSpace);
+                                dataFace[(i * 3) + 2] = Math.pow(dataFace[(i * 3) + 2], ToGammaSpace);
                             }
 
                             // Convert to int texture for fallback.
@@ -350,7 +350,7 @@ module BABYLON {
             //     this._usePMREMGenerator) {
             //     mipmapGenerator = (data: ArrayBufferView[]) => {
             //         // Custom setup of the generator matching with the PBR shader values.
-            //         var generator = new BABYLON.Internals.PMREMGenerator(data,
+            //         var generator = new BABYLON.PMREMGenerator(data,
             //             this._size,
             //             this._size,
             //             0,
@@ -369,7 +369,7 @@ module BABYLON {
             if (scene) {
                 this._texture = scene.getEngine().createRawCubeTextureFromUrl(this.url, scene, this._size,
                     Engine.TEXTUREFORMAT_RGB,
-                    scene.getEngine().getCaps().textureFloat ? BABYLON.Engine.TEXTURETYPE_FLOAT : BABYLON.Engine.TEXTURETYPE_UNSIGNED_INT,
+                    scene.getEngine().getCaps().textureFloat ? Engine.TEXTURETYPE_FLOAT : Engine.TEXTURETYPE_UNSIGNED_INT,
                     this._noMipmap,
                     callback,
                     mipmapGenerator, this._onLoad, this._onError);
@@ -434,7 +434,7 @@ module BABYLON {
             var texture = null;
             if (parsedTexture.name && !parsedTexture.isRenderTarget) {
                 var size = parsedTexture.isBABYLONPreprocessed ? null : parsedTexture.size;
-                texture = new BABYLON.HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap,
+                texture = new HDRCubeTexture(rootUrl + parsedTexture.name, scene, size, parsedTexture.noMipmap,
                     parsedTexture.generateHarmonics, parsedTexture.useInGammaSpace, parsedTexture.usePMREMGenerator);
                 texture.name = parsedTexture.name;
                 texture.hasAlpha = parsedTexture.hasAlpha;

@@ -39,15 +39,15 @@ module INSPECTOR {
         }) {
 
             // Load GUI library if not already done
-            if(!BABYLON.GUI){
-            	BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => { 
+            if (!BABYLON.GUI) {
+                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => {
                     //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
                     loadGUIProperties();
                 }, () => {
                     console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file")
                 });
             }
-            else{
+            else {
                 //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
                 loadGUIProperties();
             }
@@ -139,7 +139,7 @@ module INSPECTOR {
                             this._c2diwrapper.style.maxWidth = `${widthPx - leftPx}px`;
                         }
                     }
-                    
+
 
                     // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
                     let parent = this._getRelativeParent(canvas);
@@ -357,6 +357,7 @@ module INSPECTOR {
                     }
                 }
             }
+            Scheduler.getInstance().dispose();
         }
 
         /** Open the inspector in a new popup
@@ -412,8 +413,8 @@ module INSPECTOR {
             }
         }
 
-        public getActiveTabIndex():number {
-           return this._tabbar.getActiveTabIndex();
+        public getActiveTabIndex(): number {
+            return this._tabbar.getActiveTabIndex();
         }
     }
 }

@@ -128,6 +128,34 @@
             }
         }
 
+        /**
+         * Gets or sets the center of the bounding box associated with the texture (when in cube mode)
+         * It must define where the camera used to render the texture is set
+         */
+        public boundingBoxPosition = Vector3.Zero();
+
+        private _boundingBoxSize: Vector3;
+
+        /**
+         * Gets or sets the size of the bounding box associated with the texture (when in cube mode)
+         * When defined, the cubemap will switch to local mode
+         * @see https://community.arm.com/graphics/b/blog/posts/reflections-based-on-local-cubemaps-in-unity
+         * @example https://www.babylonjs-playground.com/#RNASML
+         */        
+        public set boundingBoxSize(value: Vector3) {
+            if (this._boundingBoxSize && this._boundingBoxSize.equals(value)) {
+                return;
+            }
+            this._boundingBoxSize = value;
+            let scene = this.getScene();
+            if (scene) {
+                scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            }
+        }
+        public get boundingBoxSize(): Vector3 {
+            return this._boundingBoxSize;
+        }
+
         constructor(name: string, size: number | {width: number, height: number} | {ratio: number}, scene: Nullable<Scene>, generateMipMaps?: boolean, doNotChangeAspectRatio: boolean = true, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, public isCube = false, samplingMode = Texture.TRILINEAR_SAMPLINGMODE, generateDepthBuffer = true, generateStencilBuffer = false, isMulti = false) {
             super(null, scene, !generateMipMaps);
             scene = this.getScene();
@@ -445,7 +473,7 @@
                         for (var subIndex = 0; subIndex < mesh.subMeshes.length; subIndex++) {
                             var subMesh = mesh.subMeshes[subIndex];
                             scene._activeIndices.addCount(subMesh.indexCount, false);
-                            this._renderingManager.dispatch(subMesh);
+                            this._renderingManager.dispatch(subMesh, mesh);
                         }
                     }
                 }
@@ -493,6 +521,15 @@
             
             // Ensure we don't exceed the render dimension (while staying POT)
             return Math.min(Tools.FloorPOT(renderDimension), curved);
+        }
+
+        protected unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+            if (!this._texture) {
+                return;
+            }
+            engine.unBindFramebuffer(this._texture, this.isCube, () => {
+                this.onAfterRenderObservable.notifyObservers(faceIndex);
+            });
         }
 
         private renderToTarget(faceIndex: number, currentRenderList: AbstractMesh[], currentRenderListLength: number, useCameraPostProcess: boolean, dumpForDebug: boolean): void {
@@ -559,9 +596,8 @@
                     }
                 }
 
-                engine.unBindFramebuffer(this._texture, this.isCube, () => {
-                    this.onAfterRenderObservable.notifyObservers(faceIndex);
-                });
+            this.unbindFrameBuffer(engine, faceIndex);
+
             } else {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
             }

@@ -37,6 +37,7 @@
         }
 
         public getFrontPosition(distance: number): Vector3 {
+            this.getWorldMatrix();
             var direction = this.getTarget().subtract(this.position);
             direction.normalize();
             direction.scaleInPlace(distance);
@@ -273,7 +274,7 @@
             }
 
             //update the up vector!
-            BABYLON.Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         }
 
         public _getViewMatrix(): Matrix {

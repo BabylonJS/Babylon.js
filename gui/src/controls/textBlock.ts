@@ -9,18 +9,39 @@ module BABYLON.GUI {
 
         private _lines: any[];
         private _resizeToFit: boolean = false;
-
+        private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
+        private _outlineWidth: number = 0;
+        private _outlineColor: string = "white";
         /**
         * An event triggered after the text is changed
         * @type {BABYLON.Observable}
         */
         public onTextChangedObservable = new Observable<TextBlock>();
 
-        get resizeToFit(): boolean {
+        /**
+        * An event triggered after the text was broken up into lines
+        * @type {BABYLON.Observable}
+        */
+        public onLinesReadyObservable = new Observable<TextBlock>();
+
+        /**
+         * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
+         */
+        public get lines(): any[] {
+            return this._lines;
+        }
+        
+        /**
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */
+        public get resizeToFit(): boolean {
             return this._resizeToFit;
         }
 
-        set resizeToFit(value: boolean) {
+        /**
+         * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+         */        
+        public set resizeToFit(value: boolean) {
             this._resizeToFit = value;
 
             if (this._resizeToFit) {
@@ -29,10 +50,16 @@ module BABYLON.GUI {
             }
         }
 
+        /**
+         * Gets or sets a boolean indicating if text must be wrapped
+         */
         public get textWrapping(): boolean {
             return this._textWrapping;
         }
 
+        /**
+         * Gets or sets a boolean indicating if text must be wrapped
+         */        
         public set textWrapping(value: boolean) {
             if (this._textWrapping === value) {
                 return;
@@ -41,10 +68,16 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets text to display
+         */
         public get text(): string {
             return this._text;
         }
 
+        /**
+         * Gets or sets text to display
+         */
         public set text(value: string) {
             if (this._text === value) {
                 return;
@@ -55,10 +88,16 @@ module BABYLON.GUI {
             this.onTextChangedObservable.notifyObservers(this);
         }
 
+        /**
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */
         public get textHorizontalAlignment(): number {
             return this._textHorizontalAlignment;
         }
 
+        /**
+         * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+         */        
         public set textHorizontalAlignment(value: number) {
             if (this._textHorizontalAlignment === value) {
                 return;
@@ -68,10 +107,16 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
+        /**
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */        
         public get textVerticalAlignment(): number {
             return this._textVerticalAlignment;
         }
 
+        /**
+         * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+         */           
         public set textVerticalAlignment(value: number) {
             if (this._textVerticalAlignment === value) {
                 return;
@@ -81,7 +126,69 @@ module BABYLON.GUI {
             this._markAsDirty();
         }
 
-        constructor(public name?: string, text: string = "") {
+        /**
+         * Gets or sets line spacing value
+         */
+        public set lineSpacing(value: string | number) {
+            if (this._lineSpacing.fromString(value)) {
+                this._markAsDirty();
+            }
+        }
+
+        /**
+         * Gets or sets line spacing value
+         */        
+        public get lineSpacing(): string | number {
+            return this._lineSpacing.toString(this._host);
+        }
+
+        /**
+         * Gets or sets outlineWidth of the text to display
+         */
+        public get outlineWidth(): number {
+            return this._outlineWidth;
+        }
+
+        /**
+         * Gets or sets outlineWidth of the text to display
+         */
+        public set outlineWidth(value: number) {
+            if (this._outlineWidth === value) {
+                return;
+            }
+            this._outlineWidth = value;
+            this._markAsDirty();
+        }
+
+        /**
+         * Gets or sets outlineColor of the text to display
+         */
+        public get outlineColor(): string {
+            return this._outlineColor;
+        }
+
+        /**
+         * Gets or sets outlineColor of the text to display
+         */
+        public set outlineColor(value: string) {
+            if (this._outlineColor === value) {
+                return;
+            }
+            this._outlineColor = value;
+            this._markAsDirty();
+        }
+
+        /**
+         * Creates a new TextBlock object
+         * @param name defines the name of the control
+         * @param text defines the text to display (emptry string by default)
+         */
+        constructor(
+            /**
+             * Defines the name of the control
+             */
+            public name?: string, 
+            text: string = "") {
             super(name);
 
             this.text = text;
@@ -106,16 +213,20 @@ module BABYLON.GUI {
                     break;
             }
 
-            if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+            if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                 context.shadowColor = this.shadowColor;
                 context.shadowBlur = this.shadowBlur;
                 context.shadowOffsetX = this.shadowOffsetX;
                 context.shadowOffsetY = this.shadowOffsetY;
             }
 
+            if (this.outlineWidth) {
+                context.strokeText(text, this._currentMeasure.left + x, y);
+            }
             context.fillText(text, this._currentMeasure.left + x, y);
         }
 
+        /** @ignore */
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             context.save();
 
@@ -128,46 +239,56 @@ module BABYLON.GUI {
             context.restore();
         }
 
+        protected _applyStates(context: CanvasRenderingContext2D): void {
+            super._applyStates(context);
+            if (this.outlineWidth) {
+                context.lineWidth = this.outlineWidth;
+                context.strokeStyle = this.outlineColor;
+            }
+        }
+
         protected _additionalProcessing(parentMeasure: Measure, context: CanvasRenderingContext2D): void {
             this._lines = [];
             var _lines = this.text.split("\n");
 
             if (this._textWrapping && !this._resizeToFit) {
-                for(var _line of _lines) {
+                for (var _line of _lines) {
                     this._lines.push(this._parseLineWithTextWrapping(_line, context));
                 }
             } else {
-                for(var _line of _lines) {
+                for (var _line of _lines) {
                     this._lines.push(this._parseLine(_line, context));
                 }
             }
+
+            this.onLinesReadyObservable.notifyObservers(this);
         }
 
-        protected _parseLine(line: string='', context: CanvasRenderingContext2D): object {
-          return {text: line, width: context.measureText(line).width};
+        protected _parseLine(line: string = '', context: CanvasRenderingContext2D): object {
+            return { text: line, width: context.measureText(line).width };
         }
 
-        protected _parseLineWithTextWrapping(line: string='', context: CanvasRenderingContext2D): object {
-          var words = line.split(' ');
-          var width = this._currentMeasure.width;
-          var lineWidth = 0;
+        protected _parseLineWithTextWrapping(line: string = '', context: CanvasRenderingContext2D): object {
+            var words = line.split(' ');
+            var width = this._currentMeasure.width;
+            var lineWidth = 0;
 
-          for(var n = 0; n < words.length; n++) {
-              var testLine = n > 0 ? line + " " + words[n] : words[0];
-              var metrics = context.measureText(testLine);
-              var testWidth = metrics.width;
-              if (testWidth > width && n > 0) {
-                  this._lines.push({text: line, width: lineWidth});
-                  line = words[n];
-                  lineWidth = context.measureText(line).width;
-              }
-              else {
-                  lineWidth = testWidth;
-                  line = testLine;
-              }
-          }
+            for (var n = 0; n < words.length; n++) {
+                var testLine = n > 0 ? line + " " + words[n] : words[0];
+                var metrics = context.measureText(testLine);
+                var testWidth = metrics.width;
+                if (testWidth > width && n > 0) {
+                    this._lines.push({ text: line, width: lineWidth });
+                    line = words[n];
+                    lineWidth = context.measureText(line).width;
+                }
+                else {
+                    lineWidth = testWidth;
+                    line = testLine;
+                }
+            }
 
-          return {text: line, width: lineWidth};
+            return { text: line, width: lineWidth };
         }
 
         protected _renderLines(context: CanvasRenderingContext2D): void {
@@ -193,7 +314,18 @@ module BABYLON.GUI {
 
             var maxLineWidth: number = 0;
 
-            for (var line of this._lines) {
+            for (let i = 0; i < this._lines.length; i++) {
+                const line = this._lines[i];
+
+                if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+
+                    if (this._lineSpacing.isPixel) {
+                        rootY += this._lineSpacing.getValue(this._host);
+                    } else {                        
+                        rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host,  this._cachedParentMeasure.height));
+                    }
+                }
+
                 this._drawText(line.text, line.width, rootY, context);
                 rootY += this._fontOffset.height;
 

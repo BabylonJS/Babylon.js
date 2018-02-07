@@ -264,6 +264,13 @@ module BABYLON {
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
         }
 
+        public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+            var container = new AssetContainer(scene);
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
+        }
+
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.

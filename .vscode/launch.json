@@ -1,5 +1,5 @@
 {
-    "version": "0.1.0",
+    "version": "2.0.0",
     "configurations": [
         {
             "name": "Launch Viewer (Chrome)",
@@ -123,6 +123,20 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
+        },
+        {
+            "name": "Launch Local Dev (Experimental Firefox)",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost:1338/localDev/index.html",
+            "pathMappings": [
+                {
+                    "url": "http://localhost:1338",
+                    "path": "${workspaceFolder}"
+                }
+            ],
+            "preLaunchTask": "run"
         },
         {
             "name": "Launch Build Validation (Chrome)",

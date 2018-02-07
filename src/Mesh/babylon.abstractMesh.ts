@@ -205,7 +205,24 @@
 
         private _occlusionQuery: Nullable<WebGLQuery>;
 
-        public visibility = 1.0;
+        private _visibility = 1.0;
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */
+        public get visibility(): number {
+            return this._visibility;
+        }
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */        
+        public set visibility(value: number) {
+            if (this._visibility === value) {
+                return;
+            }
+
+            this._visibility = value;
+            this._markSubMeshesAsMiscDirty();
+        }        
         public alphaIndex = Number.MAX_VALUE;
         public isVisible = true;
         public isPickable = true;
@@ -269,6 +286,7 @@
 
             this._hasVertexAlpha = value;
             this._markSubMeshesAsAttributesDirty();
+            this._markSubMeshesAsMiscDirty();
         }
 
         private _useVertexColors = true;
@@ -351,10 +369,10 @@
          * This scene's action manager
          * @type {BABYLON.ActionManager}
         */
-        public actionManager: Nullable<ActionManager>;
+        public actionManager: Nullable<ActionManager> = null;
 
         // Physics
-        public physicsImpostor: Nullable<PhysicsImpostor>;
+        public physicsImpostor: Nullable<PhysicsImpostor> = null;
 
         // Collisions
         private _checkCollisions = false;
@@ -394,7 +412,6 @@
         public _masterMesh: Nullable<AbstractMesh>;
 
         public _boundingInfo: Nullable<BoundingInfo>;
-        public _isDisposed = false;
         public _renderId = 0;
 
         public subMeshes: SubMesh[];
@@ -446,13 +463,6 @@
             this.getScene().addMesh(this);
 
             this._resyncLightSources();
-        }
-
-        /**
-         * Boolean : true if the mesh has been disposed.  
-         */
-        public isDisposed(): boolean {
-            return this._isDisposed;
         }
 
         /**
@@ -539,6 +549,8 @@
                 return;
             }
             this._lightSources.splice(index, 1);
+
+            this._markSubMeshesAsLightDirty();
         }
 
         private _markSubMeshesAsDirty(func: (defines: MaterialDefines) => void) {
@@ -803,6 +815,17 @@
             return super.getWorldMatrix();
         }
 
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            if (this._masterMesh) {
+                return this._masterMesh._getWorldMatrixDeterminant();
+            }
+
+            return super._getWorldMatrixDeterminant();
+        }
+
         // ================================== Point of View Movement =================================
         /**
          * Perform relative position change from the point of view of behind the front of the mesh.
@@ -894,11 +917,13 @@
                     let childMesh = <AbstractMesh>descendant;
 
                     childMesh.computeWorldMatrix(true);
-                    let childBoundingInfo = childMesh.getBoundingInfo();
 
-                    if (childMesh.getTotalVertices() === 0) {
+                    //make sure we have the needed params to get mix and max
+                    if (!childMesh.getBoundingInfo || childMesh.getTotalVertices() === 0) {
                         continue;
                     }
+
+                    let childBoundingInfo = childMesh.getBoundingInfo();
                     let boundingBox = childBoundingInfo.boundingBox;
 
                     var minBox = boundingBox.minimumWorld;
@@ -1309,7 +1334,7 @@
             var index: number;
 
             // Action manager
-            if (this.actionManager) {
+            if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
                 this.actionManager = null;
             }
@@ -1375,8 +1400,8 @@
             }
 
             // Octree
-            var sceneOctree = this.getScene().selectionOctree;
-            if (sceneOctree) {
+            const sceneOctree = this.getScene().selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
                 var index = sceneOctree.dynamicContent.indexOf(this);
 
                 if (index !== -1) {
@@ -1422,8 +1447,6 @@
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
-
-            this._isDisposed = true;
 
             super.dispose(doNotRecurse);
         }
@@ -1788,9 +1811,9 @@
          * Align the mesh with a normal.
          * Returns the mesh.  
          */
-        public alignWithNormal(normal: BABYLON.Vector3, upDirection?: BABYLON.Vector3): AbstractMesh {
+        public alignWithNormal(normal: Vector3, upDirection?: Vector3): AbstractMesh {
             if (!upDirection) {
-                upDirection = BABYLON.Axis.Y;
+                upDirection = Axis.Y;
             }
 
             var axisX = Tmp.Vector3[0];

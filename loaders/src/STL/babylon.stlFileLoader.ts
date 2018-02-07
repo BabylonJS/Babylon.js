@@ -86,6 +86,13 @@ module BABYLON {
             return result;
         }
 
+        public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+            var container = new AssetContainer(scene);
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
+        }
+
         private isBinary (data: any) {
 
             // check if file size is correct for binary stl

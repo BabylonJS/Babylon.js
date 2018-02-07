@@ -423,6 +423,10 @@ module BABYLON {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
+        protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
+            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
+        }
+
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines_OldVer) => string;
 
         protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
@@ -715,7 +719,7 @@ module BABYLON {
             }
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
