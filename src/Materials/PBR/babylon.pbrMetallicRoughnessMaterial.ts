@@ -5,7 +5,7 @@
      * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
      */
-    export class PBRMetallicRoughnessMaterial extends Internals.PBRBaseSimpleMaterial {
+    export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
         /**
          * The base color has two different interpretations depending on the value of metalness. 
@@ -16,7 +16,7 @@
         @serializeAsColor3()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public baseColor: Color3;
-        
+
         /**
          * Base texture of the metallic workflow. It contains both the baseColor information in RGB as
          * well as opacity information in the alpha channel.
@@ -60,6 +60,7 @@
             this._useRoughnessFromMetallicTextureAlpha = false;
             this._useRoughnessFromMetallicTextureGreen = true;
             this._useMetallnessFromMetallicTextureBlue = true;
+            this._forceMetallicWorkflow = true;
         }
 
         /**
@@ -86,6 +87,11 @@
             return activeTextures;
         }
 
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
         public hasTexture(texture: BaseTexture): boolean {
             if (super.hasTexture(texture)) {
                 return true;
@@ -97,14 +103,18 @@
 
             if (this.metallicRoughnessTexture === texture) {
                 return true;
-            }        
+            }
 
-            return false;    
-        }        
+            return false;
+        }
 
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
         public clone(name: string): PBRMetallicRoughnessMaterial {
             var clone = SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
-            
+
             clone.id = name;
             clone.name = name;
 

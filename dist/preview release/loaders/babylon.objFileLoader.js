@@ -260,6 +260,12 @@ var BABYLON;
             //Get the 3D model
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
         };
+        OBJFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
+            var container = new BABYLON.AssetContainer(scene);
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
+        };
         /**
          * Read the OBJ file and create an Array of meshes.
          * Each mesh contains all information given by the OBJ and the MTL file.

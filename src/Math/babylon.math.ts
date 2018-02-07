@@ -3,28 +3,51 @@
     export const ToLinearSpace = 2.2;
     export const Epsilon = 0.001;
 
+    /**
+     * Class used to hold a RBG color
+     */
     export class Color3 {
+
         /**
-         * Creates a new Color3 object from red, green, blue values, all between 0 and 1.  
+         * Creates a new Color3 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0) 
+         * @param b defines the blue component (between 0 and 1, default is 0)
          */
-        constructor(public r: number = 0, public g: number = 0, public b: number = 0) {
+        constructor(
+            /**
+             * Defines the red component (between 0 and 1, default is 0)
+             */
+            public r: number = 0, 
+            /**
+             * Defines the green component (between 0 and 1, default is 0) 
+             */
+            public g: number = 0, 
+            /**
+             * Defines the blue component (between 0 and 1, default is 0)
+             */
+            public b: number = 0) {
         }
 
         /**
-         * Returns a string with the Color3 current values.  
+         * Creates a string with the Color3 current values
+         * @returns the string representation of the Color3 object
          */
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + "}";
         }
 
         /**
-         * Returns the string "Color3".
+         * Returns the string "Color3"
+         * @returns "Color3"
          */
         public getClassName(): string {
             return "Color3";
         }
+
         /**
-         * Returns the Color3 hash code.  
+         * Compute the Color3 hash code
+         * @returns an unique number that can be used to hash Color3 objects
          */
         public getHashCode(): number {
             let hash = this.r || 0;
@@ -34,9 +57,12 @@
         }
 
         // Operators
+
         /**
-         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements.  
-         * Returns the Color3.  
+         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements  
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color3 object
          */
         public toArray(array: FloatArray, index?: number): Color3 {
             if (index === undefined) {
@@ -51,14 +77,17 @@
         }
 
         /**
-         * Returns a new Color4 object from the current Color3 and the passed alpha.  
+         * Returns a new {BABYLON.Color4} object from the current Color3 and the passed alpha 
+         * @param alpha defines the alpha component on the new {BABYLON.Color4} object (default is 1)
+         * @returns a new {BABYLON.Color4} object
          */
         public toColor4(alpha = 1): Color4 {
             return new Color4(this.r, this.g, this.b, alpha);
         }
 
         /**
-         * Returns a new array populated with 3 numeric elements : red, green and blue values.  
+         * Returns a new array populated with 3 numeric elements : red, green and blue values  
+         * @returns the new array
          */
         public asArray(): number[] {
             var result = new Array<number>();
@@ -67,23 +96,27 @@
         }
 
         /**
-         * Returns the luminance value (float).  
+         * Returns the luminance value
+         * @returns a float value
          */
         public toLuminance(): number {
             return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
         }
 
         /**
-         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object.  
-         * Returns this new object.  
+         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object 
+         * @param otherColor defines the second operand
+         * @returns the new Color3 object
          */
         public multiply(otherColor: Color3): Color3 {
             return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
         }
 
         /**
-         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result".  
-         * Returns the current Color3.  
+         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result"
+         * @param otherColor defines the second operand
+         * @param result defines the Color3 object where to store the result
+         * @returns the current Color3
          */
         public multiplyToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r * otherColor.r;
@@ -93,30 +126,39 @@
         }
 
         /**
-         * Boolean : True if the rgb values are equal to the passed ones.  
+         * Determines equality between Color3 objects
+         * @param otherColor defines the second operand
+         * @returns true if the rgb values are equal to the passed ones 
          */
         public equals(otherColor: Color3): boolean {
             return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
         }
 
         /**
-         * Boolean : True if the rgb values are equal to the passed ones.  
+         * Determines equality between the current Color3 object and a set of r,b,g values
+         * @param r defines the red component to check
+         * @param g defines the green component to check
+         * @param b defines the blue component to check
+         * @returns true if the rgb values are equal to the passed ones 
          */
         public equalsFloats(r: number, g: number, b: number): boolean {
             return this.r === r && this.g === g && this.b === b;
         }
 
         /**
-         * Multiplies in place each rgb value by scale.  
-         * Returns the updated Color3.  
+         * Multiplies in place each rgb value by scale 
+         * @param scale defines the scaling factor
+         * @returns the updated Color3.  
          */
         public scale(scale: number): Color3 {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
         }
 
         /**
-         * Multiplies the rgb values by scale and stores the result into "result".  
-         * Returns the unmodified current Color3.  
+         * Multiplies the rgb values by scale and stores the result into "result"
+         * @param scale defines the scaling factor 
+         * @param result defines the Color3 object where to store the result
+         * @returns the unmodified current Color3.  
          */
         public scaleToRef(scale: number, result: Color3): Color3 {
             result.r = this.r * scale;
@@ -126,15 +168,33 @@
         }
 
         /**
-         * Returns a new Color3 set with the added values of the current Color3 and of the passed one.  
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into
+         * @returns the original Color3
+         */
+        public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            return this;
+        }
+
+        /**
+         * Creates a new Color3 set with the added values of the current Color3 and of the passed one
+         * @param otherColor defines the second operand
+         * @returns the new Color3
          */
         public add(otherColor: Color3): Color3 {
             return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
         }
 
         /**
-         * Stores the result of the addition of the current Color3 and passed one rgb values into "result".  
-         * Returns the unmodified current Color3.  
+         * Stores the result of the addition of the current Color3 and passed one rgb values into "result"
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
          */
         public addToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r + otherColor.r;
@@ -144,15 +204,19 @@
         }
 
         /**
-         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3 .  
+         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3
+         * @param otherColor defines the second operand
+         * @returns the new Color3
          */
         public subtract(otherColor: Color3): Color3 {
             return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
         }
 
         /**
-         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result".  
-         * Returns the unmodified current Color3.  
+         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result"  
+         * @param otherColor defines the second operand
+         * @param result defines Color3 object to store the result into
+         * @returns the unmodified current Color3
          */
         public subtractToRef(otherColor: Color3, result: Color3): Color3 {
             result.r = this.r - otherColor.r;
@@ -162,15 +226,17 @@
         }
 
         /**
-         * Returns a new Color3 copied the current one.  
+         * Copy the current object
+         * @returns a new Color3 copied the current one
          */
         public clone(): Color3 {
             return new Color3(this.r, this.g, this.b);
         }
 
         /**
-         * Copies the rgb values from the source in the current Color3.  
-         * Returns the updated Color3.  
+         * Copies the rgb values from the source in the current Color3
+         * @param source defines the source Color3 object
+         * @returns the updated Color3 object
          */
         public copyFrom(source: Color3): Color3 {
             this.r = source.r;
@@ -178,9 +244,13 @@
             this.b = source.b;
             return this;
         }
+
         /**
-         * Updates the Color3 rgb values from the passed floats.  
-         * Returns the Color3.  
+         * Updates the Color3 rgb values from the passed floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
          */
         public copyFromFloats(r: number, g: number, b: number): Color3 {
             this.r = r;
@@ -190,15 +260,19 @@
         }
 
         /**
-         * Updates the Color3 rgb values from the passed floats.  
-         * Returns the Color3.  
+         * Updates the Color3 rgb values from the passed floats
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @returns the current Color3 object
          */
         public set(r: number, g: number, b: number): Color3 {
             return this.copyFromFloats(r, g, b);
         }
 
         /**
-         * Returns the Color3 hexadecimal code as a string.  
+         * Compute the Color3 hexadecimal code as a string  
+         * @returns a string containing the hexadecimal representation of the Color3 object
          */
         public toHexString(): string {
             var intR = (this.r * 255) | 0;
@@ -208,7 +282,8 @@
         }
 
         /**
-         * Returns a new Color3 converted to linear space.  
+         * Computes a new Color3 converted from the current one to linear space
+         * @returns a new Color3 object
          */
         public toLinearSpace(): Color3 {
             var convertedColor = new Color3();
@@ -217,8 +292,9 @@
         }
 
         /**
-         * Converts the Color3 values to linear space and stores the result in "convertedColor".  
-         * Returns the unmodified Color3.  
+         * Converts the Color3 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the linear space version 
+         * @returns the unmodified Color3
          */
         public toLinearSpaceToRef(convertedColor: Color3): Color3 {
             convertedColor.r = Math.pow(this.r, ToLinearSpace);
@@ -228,7 +304,8 @@
         }
 
         /**
-         * Returns a new Color3 converted to gamma space.  
+         * Computes a new Color3 converted from the current one to gamma space
+         * @returns a new Color3 object
          */
         public toGammaSpace(): Color3 {
             var convertedColor = new Color3();
@@ -237,8 +314,9 @@
         }
 
         /**
-         * Converts the Color3 values to gamma space and stores the result in "convertedColor".  
-         * Returns the unmodified Color3.  
+         * Converts the Color3 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color3 object where to store the gamma space version 
+         * @returns the unmodified Color3
          */
         public toGammaSpaceToRef(convertedColor: Color3): Color3 {
             convertedColor.r = Math.pow(this.r, ToGammaSpace);
@@ -248,8 +326,11 @@
         }
 
         // Statics
+
         /**
-         * Creates a new Color3 from the string containing valid hexadecimal values.  
+         * Creates a new Color3 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color3 object 
          */
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
@@ -265,21 +346,32 @@
         }
 
         /**
-         * Creates a new Vector3 from the startind index of the passed array.
+         * Creates a new Vector3 from the starting index of the passed array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns a new Color3 object
          */
         public static FromArray(array: ArrayLike<number>, offset: number = 0): Color3 {
             return new Color3(array[offset], array[offset + 1], array[offset + 2]);
         }
 
         /**
-         * Creates a new Color3 from integer values ( < 256).  
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @returns a new Color3 object
          */
         public static FromInts(r: number, g: number, b: number): Color3 {
             return new Color3(r / 255.0, g / 255.0, b / 255.0);
         }
 
         /**
-         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3.  
+         * Creates a new Color3 with values linearly interpolated of "amount" between the start Color3 and the end Color3
+         * @param start defines the start Color3 value
+         * @param end defines the end Color3 value
+         * @param amount defines the gradient value between start and end
+         * @returns a new Color3 object
          */
         public static Lerp(start: Color3, end: Color3, amount: number): Color3 {
             var r = start.r + ((end.r - start.r) * amount);
@@ -288,30 +380,99 @@
             return new Color3(r, g, b);
         }
 
+        /**
+         * Returns a Color3 value containing a red color
+         * @returns a new Color3 object
+         */
         public static Red(): Color3 { return new Color3(1, 0, 0); }
+        /**
+         * Returns a Color3 value containing a green color
+         * @returns a new Color3 object
+         */        
         public static Green(): Color3 { return new Color3(0, 1, 0); }
+        /**
+         * Returns a Color3 value containing a blue color
+         * @returns a new Color3 object
+         */        
         public static Blue(): Color3 { return new Color3(0, 0, 1); }
+        /**
+         * Returns a Color3 value containing a black color
+         * @returns a new Color3 object
+         */        
         public static Black(): Color3 { return new Color3(0, 0, 0); }
+        /**
+         * Returns a Color3 value containing a white color
+         * @returns a new Color3 object
+         */        
         public static White(): Color3 { return new Color3(1, 1, 1); }
+        /**
+         * Returns a Color3 value containing a purple color
+         * @returns a new Color3 object
+         */        
         public static Purple(): Color3 { return new Color3(0.5, 0, 0.5); }
+        /**
+         * Returns a Color3 value containing a magenta color
+         * @returns a new Color3 object
+         */        
         public static Magenta(): Color3 { return new Color3(1, 0, 1); }
+        /**
+         * Returns a Color3 value containing a yellow color
+         * @returns a new Color3 object
+         */        
         public static Yellow(): Color3 { return new Color3(1, 1, 0); }
+        /**
+         * Returns a Color3 value containing a gray color
+         * @returns a new Color3 object
+         */        
         public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
+        /**
+         * Returns a Color3 value containing a teal color
+         * @returns a new Color3 object
+         */        
         public static Teal(): Color3 { return new Color3(0, 1.0, 1.0); }
+        /**
+         * Returns a Color3 value containing a random color
+         * @returns a new Color3 object
+         */     
         public static Random(): Color3 { return new Color3(Math.random(), Math.random(), Math.random()); }
     }
 
+    /**
+     * Class used to hold a RBGA color
+     */    
     export class Color4 {
         /**
-         * Creates a new Color4 object from the passed float values ( < 1) : red, green, blue, alpha.  
+         * Creates a new Color4 object from red, green, blue values, all between 0 and 1
+         * @param r defines the red component (between 0 and 1, default is 0)
+         * @param g defines the green component (between 0 and 1, default is 0) 
+         * @param b defines the blue component (between 0 and 1, default is 0)
+         * @param a defines the alpha component (between 0 and 1, default is 1)
          */
-        constructor(public r: number = 0, public g: number = 0, public b: number = 0, public a: number = 1) {
+        constructor(
+            /**
+             * Defines the red component (between 0 and 1, default is 0)
+             */
+            public r: number = 0, 
+            /**
+             * Defines the green component (between 0 and 1, default is 0) 
+             */
+            public g: number = 0, 
+            /**
+             * Defines the blue component (between 0 and 1, default is 0)
+             */
+            public b: number = 0, 
+            /**
+             * Defines the alpha component (between 0 and 1, default is 1)
+             */
+            public a: number = 1) {
         }
 
         // Operators
+
         /**
-         * Adds in place the passed Color4 values to the current Color4.  
-         * Returns the updated Color4.  
+         * Adds in place the passed Color4 values to the current Color4 object
+         * @param right defines the second operand
+         * @returns the current updated Color4 object
          */
         public addInPlace(right: Color4): Color4 {
             this.r += right.r;
@@ -322,7 +483,8 @@
         }
 
         /**
-         * Returns a new array populated with 4 numeric elements : red, green, blue, alpha values.  
+         * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
+         * @returns the new array
          */
         public asArray(): number[] {
             var result = new Array<number>();
@@ -331,8 +493,10 @@
         }
 
         /**
-         * Stores from the starting index in the passed array the Color4 successive values.  
-         * Returns the Color4.  
+         * Stores from the starting index in the passed array the Color4 successive values 
+         * @param array defines the array where to store the r,g,b components
+         * @param index defines an optional index in the target array to define where to start storing values
+         * @returns the current Color4 object
          */
         public toArray(array: number[], index?: number): Color4 {
             if (index === undefined) {
@@ -346,21 +510,28 @@
         }
 
         /**
-         * Returns a new Color4 set with the added values of the current Color4 and of the passed one.  
+         * Creates a new Color4 set with the added values of the current Color4 and of the passed one 
+         * @param right defines the second operand
+         * @returns a new Color4 object
          */
         public add(right: Color4): Color4 {
             return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
         }
+
         /**
-         * Returns a new Color4 set with the subtracted values of the passed one from the current Color4.    
+         * Creates a new Color4 set with the subtracted values of the passed one from the current Color4   
+         * @param right defines the second operand
+         * @returns a new Color4 object
          */
         public subtract(right: Color4): Color4 {
             return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
         }
 
         /**
-         * Subtracts the passed ones from the current Color4 values and stores the results in "result".  
-         * Returns the Color4.  
+         * Subtracts the passed ones from the current Color4 values and stores the results in "result"
+         * @param right defines the second operand
+         * @param result defines the Color4 object where to store the result
+         * @returns the current Color4 object 
          */
         public subtractToRef(right: Color4, result: Color4): Color4 {
             result.r = this.r - right.r;
@@ -369,16 +540,21 @@
             result.a = this.a - right.a;
             return this;
         }
+
         /**
-         * Creates a new Color4 with the current Color4 values multiplied by scale.  
+         * Creates a new Color4 with the current Color4 values multiplied by scale
+         * @param scale defines the scaling factor to apply
+         * @returns a new Color4 object  
          */
         public scale(scale: number): Color4 {
             return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
         }
 
         /**
-         * Multiplies the current Color4 values by scale and stores the result in "result".  
-         * Returns the Color4.  
+         * Multiplies the current Color4 values by scale and stores the result in "result"
+         * @param scale defines the scaling factor to apply
+         * @param result defines the Color4 object where to store the result
+         * @returns the current Color4.  
          */
         public scaleToRef(scale: number, result: Color4): Color4 {
             result.r = this.r * scale;
@@ -389,19 +565,34 @@
         }
 
         /**
-          * Multipy an RGBA Color4 value by another and return a new Color4 object
-          * @param color The Color4 (RGBA) value to multiply by
-          * @returns A new Color4.
+         * Clamps the rgb values by the min and max values and stores the result into "result"
+         * @param min defines minimum clamping value (default is 0)
+         * @param max defines maximum clamping value (default is 1)
+         * @param result defines color to store the result into.
+         * @returns the cuurent Color4
+         */
+        public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
+            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
+            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
+            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            result.a = BABYLON.Scalar.Clamp(this.a, min, max);
+            return this;
+        }
+
+        /**
+          * Multipy an Color4 value by another and return a new Color4 object
+          * @param color defines the Color4 value to multiply by
+          * @returns a new Color4 object
           */
         public multiply(color: Color4): Color4 {
             return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
         }
 
         /**
-         * Multipy an RGBA Color4 value by another and push the result in a reference value
-         * @param color The Color4 (RGBA) value to multiply by
-         * @param result The Color4 (RGBA) to fill the result in 
-         * @returns the result Color4.
+         * Multipy a Color4 value by another and push the result in a reference value
+         * @param color defines the Color4 value to multiply by
+         * @param result defines the Color4 to fill the result in 
+         * @returns the result Color4
          */
         public multiplyToRef(color: Color4, result: Color4): Color4 {
             result.r = this.r * color.r;
@@ -410,20 +601,26 @@
             result.a = this.a * color.a;
             return result;
         }
+
         /**
-         * Returns a string with the Color4 values.  
+         * Creates a string with the Color4 current values
+         * @returns the string representation of the Color4 object
          */
         public toString(): string {
             return "{R: " + this.r + " G:" + this.g + " B:" + this.b + " A:" + this.a + "}";
         }
+
         /**
          * Returns the string "Color4"
+         * @returns "Color4"
          */
         public getClassName(): string {
             return "Color4";
         }
+
         /**
-         * Return the Color4 hash code as a number.  
+         * Compute the Color4 hash code
+         * @returns an unique number that can be used to hash Color4 objects
          */
         public getHashCode(): number {
             let hash = this.r || 0;
@@ -432,15 +629,19 @@
             hash = (hash * 397) ^ (this.a || 0);
             return hash;
         }
+
         /**
-         * Creates a new Color4 copied from the current one.  
+         * Creates a new Color4 copied from the current one
+         * @returns a new Color4 object
          */
         public clone(): Color4 {
             return new Color4(this.r, this.g, this.b, this.a);
         }
+
         /**
-         * Copies the passed Color4 values into the current one.  
-         * Returns the updated Color4.  
+         * Copies the passed Color4 values into the current one
+         * @param source defines the source Color4 object
+         * @returns the current updated Color4 object
          */
         public copyFrom(source: Color4): Color4 {
             this.r = source.r;
@@ -451,8 +652,12 @@
         }
 
         /**
-         * Copies the passed float values into the current one.  
-         * Returns the updated Color4.  
+         * Copies the passed float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object 
          */
         public copyFromFloats(r: number, g: number, b: number, a: number): Color4 {
             this.r = r;
@@ -463,14 +668,20 @@
         }
 
         /**
-         * Copies the passed float values into the current one.  
-         * Returns the updated Color4.  
+         * Copies the passed float values into the current one
+         * @param r defines the red component to read from
+         * @param g defines the green component to read from
+         * @param b defines the blue component to read from
+         * @param a defines the alpha component to read from
+         * @returns the current updated Color4 object 
          */
         public set(r: number, g: number, b: number, a: number): Color4 {
             return this.copyFromFloats(r, g, b, a);
         }
+
         /**
-         * Returns a string containing the hexadecimal Color4 code.  
+         * Compute the Color4 hexadecimal code as a string  
+         * @returns a string containing the hexadecimal representation of the Color4 object
          */
         public toHexString(): string {
             var intR = (this.r * 255) | 0;
@@ -481,7 +692,8 @@
         }
 
         /**
-         * Returns a new Color4 converted to linear space.  
+         * Computes a new Color4 converted from the current one to linear space
+         * @returns a new Color4 object
          */
         public toLinearSpace(): Color4 {
             var convertedColor = new Color4();
@@ -490,8 +702,9 @@
         }
 
         /**
-         * Converts the Color4 values to linear space and stores the result in "convertedColor".  
-         * Returns the unmodified Color4.  
+         * Converts the Color4 values to linear space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the linear space version 
+         * @returns the unmodified Color4
          */
         public toLinearSpaceToRef(convertedColor: Color4): Color4 {
             convertedColor.r = Math.pow(this.r, ToLinearSpace);
@@ -502,7 +715,8 @@
         }
 
         /**
-         * Returns a new Color4 converted to gamma space.  
+         * Computes a new Color4 converted from the current one to gamma space
+         * @returns a new Color4 object
          */
         public toGammaSpace(): Color4 {
             var convertedColor = new Color4();
@@ -511,8 +725,9 @@
         }
 
         /**
-         * Converts the Color4 values to gamma space and stores the result in "convertedColor".  
-         * Returns the unmodified Color4.  
+         * Converts the Color4 values to gamma space and stores the result in "convertedColor"
+         * @param convertedColor defines the Color4 object where to store the gamma space version 
+         * @returns the unmodified Color4
          */
         public toGammaSpaceToRef(convertedColor: Color4): Color4 {
             convertedColor.r = Math.pow(this.r, ToGammaSpace);
@@ -520,11 +735,14 @@
             convertedColor.b = Math.pow(this.b, ToGammaSpace);
             convertedColor.a = this.a;
             return this;
-        }        
+        }
 
         // Statics
+
         /**
-         * Creates a new Color4 from the valid hexadecimal value contained in the passed string.  
+         * Creates a new Color4 from the string containing valid hexadecimal values
+         * @param hex defines a string containing valid hexadecimal values
+         * @returns a new Color4 object 
          */
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
@@ -541,15 +759,24 @@
         }
 
         /**
-         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 and the right Color4.  
+         * Creates a new Color4 object set with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @returns a new Color4 object
          */
         public static Lerp(left: Color4, right: Color4, amount: number): Color4 {
             var result = new Color4(0.0, 0.0, 0.0, 0.0);
             Color4.LerpToRef(left, right, amount, result);
             return result;
         }
+
         /**
-         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 and the right Color4.
+         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * @param left defines the start value
+         * @param right defines the end value
+         * @param amount defines the gradient factor
+         * @param result defines the Color4 object where to store data
          */
         public static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void {
             result.r = left.r + (right.r - left.r) * amount;
@@ -559,19 +786,34 @@
         }
 
         /**
-         * Creates a new Color4 from the starting index element of the passed array.
+         * Creates a new Color4 from the starting index element of the passed array
+         * @param array defines the source array to read from
+         * @param offset defines the offset in the source array
+         * @returns a new Color4 object
          */
         public static FromArray(array: ArrayLike<number>, offset: number = 0): Color4 {
             return new Color4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
         }
 
         /**
-         * Creates a new Color4 from the passed integers ( < 256 ).
+         * Creates a new Color3 from integer values (< 256)
+         * @param r defines the red component to read from (value between 0 and 255)
+         * @param g defines the green component to read from (value between 0 and 255)
+         * @param b defines the blue component to read from (value between 0 and 255)
+         * @param a defines the alpha component to read from (value between 0 and 255)
+         * @returns a new Color3 object
          */
         public static FromInts(r: number, g: number, b: number, a: number): Color4 {
             return new Color4(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
         }
 
+        /**
+         * Check the content of a given array and convert it to an array containing RGBA data
+         * If the original array was already containing count * 4 values then it is returned directly
+         * @param colors defines the array to check
+         * @param count defines the number of RGBA data to expect
+         * @returns an array containing count * 4 values (RGBA)
+         */
         public static CheckColors4(colors: number[], count: number): number[] {
             // Check if color3 was used
             if (colors.length === count * 3) {
@@ -762,6 +1004,15 @@
             result.y = this.y / otherVector.y;
             return this;
         }
+
+        /**
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * Returns the updated Vector3.  
+         */
+        public divideInPlace(otherVector: Vector2): Vector2 {
+            return this.divideToRef(otherVector, this);
+        }
+
         /**
          * Returns a new Vector2 with current Vector2 negated coordinates.  
          */
@@ -1028,31 +1279,54 @@
         }
     }
 
+    /**
+     * Classed used to store (x,y,z) vector representation
+     * A Vector3 is the main object used in 3D geometry
+     * It can represent etiher the coordinates of a point the space, either a direction
+     * Reminder: Babylon.js uses a left handed forward facing system
+     */
     export class Vector3 {
         /**
          * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.  
-         * A Vector3 is the main object used in 3D geometry.  
-         * It can represent etiher the coordinates of a point the space, either a direction.  
+         * @param x defines the first coordinates (on X axis)
+         * @param y defines the second coordinates (on Y axis)
+         * @param z defines the third coordinates (on Z axis)
          */
-        constructor(public x: number, public y: number, public z: number) {
+        constructor(
+            /**
+             * Defines the first coordinates (on X axis)
+             */
+            public x: number, 
+            /**
+             * Defines the second coordinates (on Y axis)
+             */
+            public y: number, 
+            /**
+             * Defines the third coordinates (on Z axis)
+             */
+            public z: number
+        ) {
         }
 
         /**
-         * Returns a string with the Vector3 coordinates.  
+         * Creates a string representation of the Vector3
+         * @returns a string with the Vector3 coordinates.  
          */
         public toString(): string {
             return "{X: " + this.x + " Y:" + this.y + " Z:" + this.z + "}";
         }
 
         /**
-         * Returns the string "Vector3"
+         * Gets the class name
+         * @returns the string "Vector3"
          */
         public getClassName(): string {
             return "Vector3";
         }
 
         /**
-         * Returns the Vector hash code.  
+         * Creates the Vector3 hash code
+         * @returns a number which tends to be unique between Vector3 instances
          */
         public getHashCode(): number {
             let hash = this.x || 0;
@@ -1063,7 +1337,8 @@
 
         // Operators
         /**
-         * Returns a new array with three elements : the coordinates the Vector3.  
+         * Creates an array containing three elements : the coordinates of the Vector3
+         * @returns a new array of numbers
          */
         public asArray(): number[] {
             var result: number[] = [];
@@ -1072,8 +1347,10 @@
         }
 
         /**
-         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3.  
-         * Returns the Vector3.  
+         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3
+         * @param array defines the destination array
+         * @param index defines the offset in the destination array
+         * @returns the current Vector3
          */
         public toArray(array: FloatArray, index: number = 0): Vector3 {
             array[index] = this.x;
@@ -1083,7 +1360,8 @@
         }
 
         /**
-         * Returns a new Quaternion object, computed from the Vector3 coordinates.  
+         * Converts the current Vector3 into a quaternion (considering that the Vector3 contains Euler angles representation of a rotation)
+         * @returns a new Quaternion object, computed from the Vector3 coordinates
          */
         public toQuaternion(): Quaternion {
             var result = new Quaternion(0.0, 0.0, 0.0, 1.0);
@@ -1103,8 +1381,9 @@
         }
 
         /**
-         * Adds the passed vector to the current Vector3.  
-         * Returns the updated Vector3.  
+         * Adds the passed vector to the current Vector3 
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
          */
         public addInPlace(otherVector: Vector3): Vector3 {
             this.x += otherVector.x;
@@ -1114,15 +1393,19 @@
         }
 
         /**
-         * Returns a new Vector3, result of the addition the current Vector3 and the passed vector.  
+         * Gets a new Vector3, result of the addition the current Vector3 and the passed vector
+         * @param otherVector defines the second operand
+         * @returns the resulting Vector3
          */
         public add(otherVector: Vector3): Vector3 {
             return new Vector3(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z);
         }
 
         /**
-         * Adds the current Vector3 to the passed one and stores the result in the vector "result".  
-         * Returns the current Vector3.  
+         * Adds the current Vector3 to the passed one and stores the result in the vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public addToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x + otherVector.x;
@@ -1132,8 +1415,9 @@
         }
 
         /**
-         * Subtract the passed vector from the current Vector3.  
-         * Returns the updated Vector3.  
+         * Subtract the passed vector from the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
          */
         public subtractInPlace(otherVector: Vector3): Vector3 {
             this.x -= otherVector.x;
@@ -1143,7 +1427,9 @@
         }
 
         /**
-         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3.  
+         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3
+         * @param otherVector defines the second operand
+         * @returns the resulting Vector3
          */
         public subtract(otherVector: Vector3): Vector3 {
             return new Vector3(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z);
@@ -1151,7 +1437,9 @@
 
         /**
          * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".  
-         * Returns the current Vector3.  
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3  
          */
         public subtractToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x - otherVector.x;
@@ -1161,15 +1449,23 @@
         }
 
         /**
-         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates.  
+         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the resulting Vector3
          */
         public subtractFromFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x - x, this.y - y, this.z - z);
         }
 
         /**
-         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result.  
-         * Returns the current Vector3.  
+         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3  
          */
         public subtractFromFloatsToRef(x: number, y: number, z: number, result: Vector3): Vector3 {
             result.x = this.x - x;
@@ -1179,15 +1475,17 @@
         }
 
         /**
-         * Returns a new Vector3 set with the current Vector3 negated coordinates.  
+         * Gets a new Vector3 set with the current Vector3 negated coordinates
+         * @returns a new Vector3
          */
         public negate(): Vector3 {
             return new Vector3(-this.x, -this.y, -this.z);
         }
 
         /**
-         * Multiplies the Vector3 coordinates by the float "scale".  
-         * Returns the updated Vector3.  
+         * Multiplies the Vector3 coordinates by the float "scale"
+         * @param scale defines the multiplier factor
+         * @returns the current updated Vector3
          */
         public scaleInPlace(scale: number): Vector3 {
             this.x *= scale;
@@ -1197,15 +1495,19 @@
         }
 
         /**
-         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale".  
+         * Returns a new Vector3 set with the current Vector3 coordinates multiplied by the float "scale"
+         * @param scale defines the multiplier factor
+         * @returns a new Vector3
          */
         public scale(scale: number): Vector3 {
             return new Vector3(this.x * scale, this.y * scale, this.z * scale);
         }
 
         /**
-         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates.  
-         * Returns the current Vector3.  
+         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates
+         * @param scale defines the multiplier factor 
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public scaleToRef(scale: number, result: Vector3): Vector3 {
             result.x = this.x * scale;
@@ -1215,29 +1517,39 @@
         }
 
         /**
-         * Boolean : True if the current Vector3 and the passed vector coordinates are strictly equal.  
+         * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
+         * @param otherVector defines the second operand
+         * @returns true if both vectors are equals
          */
         public equals(otherVector: Vector3): boolean {
             return otherVector && this.x === otherVector.x && this.y === otherVector.y && this.z === otherVector.z;
         }
 
         /**
-         * Boolean : True if the current Vector3 and the passed vector coordinates are distant less than epsilon.
+         * Returns true if the current Vector3 and the passed vector coordinates are distant less than epsilon
+         * @param otherVector defines the second operand
+         * @param epsilon defines the minimal distance to define values as equals
+         * @returns true if both vectors are distant less than epsilon
          */
         public equalsWithEpsilon(otherVector: Vector3, epsilon: number = Epsilon): boolean {
             return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) && Scalar.WithinEpsilon(this.z, otherVector.z, epsilon);
         }
 
         /**
-         * Boolean : True if the current Vector3 coordinate equal the passed floats.  
+         * Returns true if the current Vector3 coordinates equals the passed floats
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns true if both vectors are equals          
          */
         public equalsToFloats(x: number, y: number, z: number): boolean {
             return this.x === x && this.y === y && this.z === z;
         }
 
         /**
-         * Muliplies the current Vector3 coordinates by the passed ones.  
-         * Returns the updated Vector3.  
+         * Multiplies the current Vector3 coordinates by the passed ones 
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3
          */
         public multiplyInPlace(otherVector: Vector3): Vector3 {
             this.x *= otherVector.x;
@@ -1247,15 +1559,19 @@
         }
 
         /**
-         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector.  
+         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector
+         * @param otherVector defines the second operand
+         * @returns the new Vector3
          */
         public multiply(otherVector: Vector3): Vector3 {
             return new Vector3(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z);
         }
 
         /**
-         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result".  
-         * Returns the current Vector3.  
+         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public multiplyToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x * otherVector.x;
@@ -1265,22 +1581,30 @@
         }
 
         /**
-         * Returns a new Vector3 set witth the result of the mulliplication of the current Vector3 coordinates by the passed floats.  
+         * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the passed floats  
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the new Vector3
          */
         public multiplyByFloats(x: number, y: number, z: number): Vector3 {
             return new Vector3(this.x * x, this.y * y, this.z * z);
         }
 
         /**
-         * Returns a new Vector3 set witth the result of the division of the current Vector3 coordinates by the passed ones.  
+         * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the passed ones
+         * @param otherVector defines the second operand
+         * @returns the new Vector3
          */
         public divide(otherVector: Vector3): Vector3 {
             return new Vector3(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z);
         }
 
         /**
-         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result".  
-         * Returns the current Vector3.  
+         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result"
+         * @param otherVector defines the second operand
+         * @param result defines the Vector3 object where to store the result
+         * @returns the current Vector3
          */
         public divideToRef(otherVector: Vector3, result: Vector3): Vector3 {
             result.x = this.x / otherVector.x;
@@ -1290,10 +1614,20 @@
         }
 
         /**
-         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones.  
-         * Returns the updated Vector3.  
+         * Divides the current Vector3 coordinates by the passed ones.  
+         * @param otherVector defines the second operand
+         * @returns the current updated Vector3  
          */
-        public MinimizeInPlace(other: Vector3): Vector3 {
+        public divideInPlace(otherVector: Vector3): Vector3 {
+            return this.divideToRef(otherVector, this);
+        }
+
+        /**
+         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones  
+         * @param other defines the second operand
+         * @returns the current updated Vector3  
+         */
+        public minimizeInPlace(other: Vector3): Vector3 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
@@ -1302,9 +1636,10 @@
 
         /**
          * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.  
-         * Returns the updated Vector3.  
+         * @param other defines the second operand
+         * @returns the current updated Vector3
          */
-        public MaximizeInPlace(other: Vector3): Vector3 {
+        public maximizeInPlace(other: Vector3): Vector3 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
@@ -1312,7 +1647,7 @@
         }
 
         /**
-         * Return true is the vector is non uniform meaning x, y or z are not all the same.
+         * Gets a boolean indicating that the vector is non uniform meaning x, y or z are not all the same
          */
         public get isNonUniform(): boolean {
             let absX = Math.abs(this.x);
@@ -1335,14 +1670,16 @@
 
         // Properties
         /**
-         * Returns the length of the Vector3 (float).  
+         * Gets the length of the Vector3
+         * @returns the length of the Vecto3
          */
         public length(): number {
             return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
         }
 
         /**
-         * Returns the squared length of the Vector3 (float).  
+         * Gets the squared length of the Vector3
+         * @returns squared length of the Vector3
          */
         public lengthSquared(): number {
             return (this.x * this.x + this.y * this.y + this.z * this.z);
@@ -1350,8 +1687,8 @@
 
         /**
          * Normalize the current Vector3.  
-         * Returns the updated Vector3.  
-         * /!\ In place operation.
+         * Please note that this is an in place operation.
+         * @returns the current updated Vector3 
          */
         public normalize(): Vector3 {
             var len = this.length();
@@ -1366,8 +1703,8 @@
         }
 
         /**
-         * Normalize the current Vector3 to a new vector.
-         * @returns the new Vector3.
+         * Normalize the current Vector3 to a new vector
+         * @returns the new Vector3
          */
         public normalizeToNew(): Vector3 {
             const normalized = new Vector3(0, 0, 0);
@@ -1376,9 +1713,9 @@
         }
 
         /**
-         * Normalize the current Vector3 to the reference.
-         * @param the reference to update.
-         * @returns the updated Vector3.
+         * Normalize the current Vector3 to the reference
+         * @param reference define the Vector3 to update
+         * @returns the updated Vector3
          */
         public normalizeToRef(reference: Vector3): Vector3 {
             var len = this.length();
@@ -1393,15 +1730,17 @@
         }
 
         /**
-         * Returns a new Vector3 copied from the current Vector3.  
+         * Creates a new Vector3 copied from the current Vector3
+         * @returns the new Vector3  
          */
         public clone(): Vector3 {
             return new Vector3(this.x, this.y, this.z);
         }
 
         /**
-         * Copies the passed vector coordinates to the current Vector3 ones.   
-         * Returns the updated Vector3.  
+         * Copies the passed vector coordinates to the current Vector3 ones 
+         * @param source defines the source Vector3 
+         * @returns the current updated Vector3
          */
         public copyFrom(source: Vector3): Vector3 {
             this.x = source.x;
@@ -1411,8 +1750,11 @@
         }
 
         /**
-         * Copies the passed floats to the current Vector3 coordinates.  
-         * Returns the updated Vector3.  
+         * Copies the passed floats to the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3  
          */
         public copyFromFloats(x: number, y: number, z: number): Vector3 {
             this.x = x;
@@ -1422,16 +1764,25 @@
         }
 
         /**
-         * Copies the passed floats to the current Vector3 coordinates.  
-         * Returns the updated Vector3.  
+         * Copies the passed floats to the current Vector3 coordinates
+         * @param x defines the x coordinate of the operand
+         * @param y defines the y coordinate of the operand
+         * @param z defines the z coordinate of the operand
+         * @returns the current updated Vector3
          */
         public set(x: number, y: number, z: number): Vector3 {
             return this.copyFromFloats(x, y, z);
         }
 
         // Statics
+
         /**
-         * 
+         * Get the clip factor between two vectors
+         * @param vector0 defines the first operand
+         * @param vector1 defines the second operand
+         * @param axis defines the axis to use
+         * @param size defines the size along the axis
+         * @returns the clip factor
          */
         public static GetClipFactor(vector0: Vector3, vector1: Vector3, axis: Vector3, size: number) {
             var d0 = Vector3.Dot(vector0, axis) - size;
@@ -1443,7 +1794,28 @@
         }
 
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed array.
+         * Get angle between two vectors
+         * @param vector0 angle between vector0 and vector1
+         * @param vector1 angle between vector0 and vector1
+         * @param normal direction of the normal
+         * @return the angle between vector0 and vector1
+         */
+        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
+            var v0:Vector3 = vector0.clone().normalize();
+            var v1:Vector3 = vector1.clone().normalize();
+            var dot:number = Vector3.Dot(v0, v1);
+            var n = Vector3.Cross(v0, v1);
+            if (Vector3.Dot(n, normal) > 0) {
+                return Math.acos(dot);
+            }
+            return -Math.acos(dot);
+        }
+
+        /**
+         * Returns a new Vector3 set from the index "offset" of the passed array
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @returns the new Vector3
          */
         public static FromArray(array: ArrayLike<number>, offset?: number): Vector3 {
             if (!offset) {
@@ -1453,15 +1825,21 @@
         }
 
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed Float32Array.
-         * This function is deprecated.  Use FromArray instead.
+         * Returns a new Vector3 set from the index "offset" of the passed Float32Array
+         * This function is deprecated.  Use FromArray instead
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @returns the new Vector3
          */
         public static FromFloatArray(array: Float32Array, offset?: number): Vector3 {
             return Vector3.FromArray(array, offset);
         }
 
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array.
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed array
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param result defines the Vector3 where to store the result
          */
         public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void {
             result.x = array[offset];
@@ -1470,15 +1848,23 @@
         }
 
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array.
+         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array
          * This function is deprecated.  Use FromArrayToRef instead.
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param result defines the Vector3 where to store the result
          */
         public static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void {
             return Vector3.FromArrayToRef(array, offset, result);
         }
 
+
         /**
          * Sets the passed vector "result" with the passed floats.
+         * @param x defines the x coordinate of the source
+         * @param y defines the y coordinate of the source
+         * @param z defines the z coordinate of the source
+         * @param result defines the Vector3 where to store the result
          */
         public static FromFloatsToRef(x: number, y: number, z: number, result: Vector3): void {
             result.x = x;
@@ -1487,37 +1873,43 @@
         }
 
         /**
-         * Returns a new Vector3 set to (0.0, 0.0, 0.0).
+         * Returns a new Vector3 set to (0.0, 0.0, 0.0)
+         * @returns a new empty Vector3
          */
         public static Zero(): Vector3 {
             return new Vector3(0.0, 0.0, 0.0);
         }
         /**
-         * Returns a new Vector3 set to (1.0, 1.0, 1.0).
+         * Returns a new Vector3 set to (1.0, 1.0, 1.0)
+         * @returns a new unit Vector3
          */
         public static One(): Vector3 {
             return new Vector3(1.0, 1.0, 1.0);
         }
         /**
          * Returns a new Vector3 set to (0.0, 1.0, 0.0)
+         * @returns a new up Vector3
          */
         public static Up(): Vector3 {
             return new Vector3(0.0, 1.0, 0.0);
         }
         /**
          * Returns a new Vector3 set to (0.0, 0.0, 1.0)
+         * @returns a new forward Vector3
          */
         public static Forward(): Vector3 {
             return new Vector3(0.0, 0.0, 1.0);
         }
         /**
          * Returns a new Vector3 set to (1.0, 0.0, 0.0)
+         * @returns a new right Vector3
          */
         public static Right(): Vector3 {
             return new Vector3(1.0, 0.0, 0.0);
         }
         /**
          * Returns a new Vector3 set to (-1.0, 0.0, 0.0)
+         * @returns a new left Vector3
          */
         public static Left(): Vector3 {
             return new Vector3(-1.0, 0.0, 0.0);
@@ -1525,7 +1917,10 @@
 
         /**
          * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.  
-         * This method computes tranformed coordinates only, not transformed direction vectors. 
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the transformed Vector3 
          */
         public static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
@@ -1534,8 +1929,11 @@
         }
 
         /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector.  
-         * This method computes tranformed coordinates only, not transformed direction vectors. 
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector
+         * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]) + transformation.m[12];
@@ -1549,8 +1947,13 @@
         }
 
         /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z).  
-         * This method computes tranformed coordinates only, not transformed direction vectors.  
+         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z)
+         * This method computes tranformed coordinates only, not transformed direction vectors
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
             var rx = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]) + transformation.m[12];
@@ -1564,8 +1967,11 @@
         }
 
         /**
-         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector.  
-         * This methods computes transformed normalized direction vectors only.  
+         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector  
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @returns the new Vector3
          */
         public static TransformNormal(vector: Vector3, transformation: Matrix): Vector3 {
             var result = Vector3.Zero();
@@ -1574,8 +1980,11 @@
         }
 
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.  
-         * This methods computes transformed normalized direction vectors only. 
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param vector defines the Vector3 to transform
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void {
             var x = (vector.x * transformation.m[0]) + (vector.y * transformation.m[4]) + (vector.z * transformation.m[8]);
@@ -1587,8 +1996,13 @@
         }
 
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z).  
-         * This methods computes transformed normalized direction vectors only. 
+         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z)
+         * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
+         * @param x define the x coordinate of the source vector
+         * @param y define the y coordinate of the source vector
+         * @param z define the z coordinate of the source vector
+         * @param transformation defines the transformation matrix
+         * @param result defines the Vector3 where to store the result
          */
         public static TransformNormalFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void {
             result.x = (x * transformation.m[0]) + (y * transformation.m[4]) + (z * transformation.m[8]);
@@ -1597,7 +2011,13 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4".  
+         * Returns a new Vector3 located for "amount" on the CatmullRom interpolation spline defined by the vectors "value1", "value2", "value3", "value4"
+         * @param value1 defines the first control point
+         * @param value2 defines the second control point
+         * @param value3 defines the third control point
+         * @param value4 defines the fourth control point
+         * @param amount defines the amount on the spline to use
+         * @returns the new Vector3
          */
         public static CatmullRom(value1: Vector3, value2: Vector3, value3: Vector3, value4: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
@@ -1619,9 +2039,13 @@
         }
 
         /**
-         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max".  
-         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one.  
-         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one. 
+         * Returns a new Vector3 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+         * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+         * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+         * @param value defines the current value
+         * @param min defines the lower range value
+         * @param max defines the upper range value
+         * @returns the new Vector3
          */
         public static Clamp(value: Vector3, min: Vector3, max: Vector3): Vector3 {
             var x = value.x;
@@ -1640,7 +2064,13 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         * Returns a new Vector3 located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2"
+         * @param value1 defines the first control point
+         * @param tangent1 defines the first tangent vector
+         * @param value2 defines the second control point
+         * @param tangent2 defines the second tangent vector
+         * @param amount defines the amount on the interpolation spline (between 0 and 1)
+         * @returns the new Vector3
          */
         public static Hermite(value1: Vector3, tangent1: Vector3, value2: Vector3, tangent2: Vector3, amount: number): Vector3 {
             var squared = amount * amount;
@@ -1657,7 +2087,11 @@
         }
 
         /**
-         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end".  
+         * Returns a new Vector3 located for "amount" (float) on the linear interpolation between the vectors "start" and "end"
+         * @param start defines the start value
+         * @param end defines the end value
+         * @param amount max defines amount between both (between 0 and 1)
+         * @returns the new Vector3
          */
         public static Lerp(start: Vector3, end: Vector3, amount: number): Vector3 {
             var result = new Vector3(0, 0, 0);
@@ -1666,7 +2100,11 @@
         }
 
         /**
-         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end".
+         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
+         * @param start defines the start value
+         * @param end defines the end value
+         * @param amount max defines amount between both (between 0 and 1)
+         * @param result defines the Vector3 where to store the result
          */
         public static LerpToRef(start: Vector3, end: Vector3, amount: number, result: Vector3): void {
             result.x = start.x + ((end.x - start.x) * amount);
@@ -1675,15 +2113,21 @@
         }
 
         /**
-         * Returns the dot product (float) between the vectors "left" and "right".  
+         * Returns the dot product (float) between the vectors "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the dot product
          */
         public static Dot(left: Vector3, right: Vector3): number {
             return (left.x * right.x + left.y * right.y + left.z * right.z);
         }
 
         /**
-         * Returns a new Vector3 as the cross product of the vectors "left" and "right".    
-         * The cross product is then orthogonal to both "left" and "right".  
+         * Returns a new Vector3 as the cross product of the vectors "left" and "right" 
+         * The cross product is then orthogonal to both "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @returns the cross product
          */
         public static Cross(left: Vector3, right: Vector3): Vector3 {
             var result = Vector3.Zero();
@@ -1692,8 +2136,11 @@
         }
 
         /**
-         * Sets the passed vector "result" with the cross product of "left" and "right".  
-         * The cross product is then orthogonal to both "left" and "right". 
+         * Sets the passed vector "result" with the cross product of "left" and "right"
+         * The cross product is then orthogonal to both "left" and "right"
+         * @param left defines the left operand
+         * @param right defines the right operand
+         * @param result defines the Vector3 where to store the result
          */
         public static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void {
             MathTmp.Vector3[0].x = left.y * right.z - left.z * right.y;
@@ -1703,7 +2150,9 @@
         }
 
         /**
-         * Returns a new Vector3 as the normalization of the passed vector.  
+         * Returns a new Vector3 as the normalization of the passed vector
+         * @param vector defines the Vector3 to normalize
+         * @returns the new Vector3
          */
         public static Normalize(vector: Vector3): Vector3 {
             var result = Vector3.Zero();
@@ -1712,7 +2161,9 @@
         }
 
         /**
-         * Sets the passed vector "result" with the normalization of the passed first vector.  
+         * Sets the passed vector "result" with the normalization of the passed first vector
+         * @param vector defines the Vector3 to normalize
+         * @param result defines the Vector3 where to store the result
          */
         public static NormalizeToRef(vector: Vector3, result: Vector3): void {
             result.copyFrom(vector);
@@ -1720,6 +2171,14 @@
         }
 
         private static _viewportMatrixCache: Matrix;
+        /**
+         * Project a Vector3 onto screen space
+         * @param vector defines the Vector3 to project
+         * @param world defines the world matrix to use
+         * @param transform defines the transform (view x projection) matrix to use
+         * @param viewport defines the screen viewport to use
+         * @returns the new Vector3
+         */
         public static Project(vector: Vector3, world: Matrix, transform: Matrix, viewport: Viewport): Vector3 {
             var cw = viewport.width;
             var ch = viewport.height;
@@ -1741,6 +2200,15 @@
             return Vector3.TransformCoordinates(vector, matrix);
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param transform defines the transform (view x projection) matrix to use
+         * @returns the new Vector3
+         */
         public static UnprojectFromTransform(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, transform: Matrix): Vector3 {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(transform, matrix);
@@ -1757,6 +2225,16 @@
             return vector;
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport 
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @returns the new Vector3
+         */
         public static Unproject(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Vector3 {
             let result = Vector3.Zero();
 
@@ -1765,10 +2243,32 @@
             return result;
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param source defines the screen space Vector3 to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport 
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param result defines the Vector3 where to store the result
+         */
         public static UnprojectToRef(source: Vector3, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
             Vector3.UnprojectFloatsToRef(source.x, source.y, source.z, viewportWidth, viewportHeight, world, view, projection, result);
         }
 
+        /**
+         * Unproject from screen space to object space
+         * @param sourceX defines the screen space x coordinate to use
+         * @param sourceY defines the screen space y coordinate to use
+         * @param sourceZ defines the screen space z coordinate to use
+         * @param viewportWidth defines the current width of the viewport
+         * @param viewportHeight defines the current height of the viewport 
+         * @param world defines the world matrix to use (can be set to Identity to go to world space)
+         * @param view defines the view matrix to use
+         * @param projection defines the projection matrix to use
+         * @param result defines the Vector3 where to store the result
+         */
         public static UnprojectFloatsToRef(sourceX: float, sourceY: float, sourceZ: float, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix, result: Vector3): void {
             var matrix = MathTmp.Matrix[0];
             world.multiplyToRef(view, matrix)
@@ -1776,7 +2276,7 @@
             matrix.invert();
             var screenSource = MathTmp.Vector3[0];
             screenSource.x = sourceX / viewportWidth * 2 - 1;
-            screenSource.y = -(sourceY/ viewportHeight * 2 - 1);
+            screenSource.y = -(sourceY / viewportHeight * 2 - 1);
             screenSource.z = 2 * sourceZ - 1.0;
             Vector3.TransformCoordinatesToRef(screenSource, matrix, result);
             var num = screenSource.x * matrix.m[3] + screenSource.y * matrix.m[7] + screenSource.z * matrix.m[11] + matrix.m[15];
@@ -1786,25 +2286,45 @@
             }
         }
 
+        /**
+         * Gets the minimal coordinate values between two Vector3  
+         * @param left defines the first operand
+         * @param right defines the second operand
+         * @returns the new Vector3
+         */
         public static Minimize(left: Vector3, right: Vector3): Vector3 {
             var min = left.clone();
-            min.MinimizeInPlace(right);
+            min.minimizeInPlace(right);
             return min;
         }
 
+        /**
+         * Gets the maximal coordinate values between two Vector3  
+         * @param left defines the first operand
+         * @param right defines the second operand
+         * @returns the new Vector3
+         */        
         public static Maximize(left: Vector3, right: Vector3): Vector3 {
             var max = left.clone();
-            max.MaximizeInPlace(right);
+            max.maximizeInPlace(right);
             return max;
         }
+
         /**
-         * Returns the distance (float) between the vectors "value1" and "value2".  
+         * Returns the distance between the vectors "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the distance
          */
         public static Distance(value1: Vector3, value2: Vector3): number {
             return Math.sqrt(Vector3.DistanceSquared(value1, value2));
         }
+
         /**
-         * Returns the squared distance (float) between the vectors "value1" and "value2".  
+         * Returns the squared distance between the vectors "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the squared distance
          */
         public static DistanceSquared(value1: Vector3, value2: Vector3): number {
             var x = value1.x - value2.x;
@@ -1815,7 +2335,10 @@
         }
 
         /**
-         * Returns a new Vector3 located at the center between "value1" and "value2".  
+         * Returns a new Vector3 located at the center between "value1" and "value2"
+         * @param value1 defines the first operand
+         * @param value2 defines the second operand
+         * @returns the new Vector3
          */
         public static Center(value1: Vector3, value2: Vector3): Vector3 {
             var center = value1.add(value2);
@@ -1826,9 +2349,12 @@
         /**
          * Given three orthogonal normalized left-handed oriented Vector3 axis in space (target system),
          * RotationFromAxis() returns the rotation Euler angles (ex : rotation.x, rotation.y, rotation.z) to apply
-         * to something in order to rotate it from its local system to the given target system.  
-         * Note : axis1, axis2 and axis3 are normalized during this operation.   
-         * Returns a new Vector3.  
+         * to something in order to rotate it from its local system to the given target system
+         * Note: axis1, axis2 and axis3 are normalized during this operation
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @returns a new Vector3
          */
         public static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3 {
             var rotation = Vector3.Zero();
@@ -1837,7 +2363,11 @@
         }
 
         /**
-         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3.  
+         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @param ref defines the Vector3 where to store the result
          */
         public static RotationFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Vector3): void {
             var quat = MathTmp.Quaternion[0];
@@ -2104,9 +2634,19 @@
         }
 
         /**
-         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones.  
+         * Divides the current Vector3 coordinates by the passed ones. 
+         * @returns the updated Vector3.  
          */
-        public MinimizeInPlace(other: Vector4): Vector4 {
+        public divideInPlace(otherVector: Vector4): Vector4 {
+            return this.divideToRef(otherVector, this);
+        }
+
+        /**
+         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector4
+         */
+        public minimizeInPlace(other: Vector4): Vector4 {
             if (other.x < this.x) this.x = other.x;
             if (other.y < this.y) this.y = other.y;
             if (other.z < this.z) this.z = other.z;
@@ -2114,9 +2654,11 @@
             return this;
         }
         /**
-         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones.  
+         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones
+         * @param other defines the second operand
+         * @returns the current updated Vector4
          */
-        public MaximizeInPlace(other: Vector4): Vector4 {
+        public maximizeInPlace(other: Vector4): Vector4 {
             if (other.x > this.x) this.x = other.x;
             if (other.y > this.y) this.y = other.y;
             if (other.z > this.z) this.z = other.z;
@@ -2265,13 +2807,13 @@
 
         public static Minimize(left: Vector4, right: Vector4): Vector4 {
             var min = left.clone();
-            min.MinimizeInPlace(right);
+            min.minimizeInPlace(right);
             return min;
         }
 
         public static Maximize(left: Vector4, right: Vector4): Vector4 {
             var max = left.clone();
-            max.MaximizeInPlace(right);
+            max.maximizeInPlace(right);
             return max;
         }
         /**
@@ -2880,8 +3422,8 @@
          */
         public static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void {
             var rotMat = MathTmp.Matrix[0];
-            BABYLON.Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
-            BABYLON.Quaternion.FromRotationMatrixToRef(rotMat, ref);
+            Matrix.FromXYZAxesToRef(axis1.normalize(), axis2.normalize(), axis3.normalize(), rotMat);
+            Quaternion.FromRotationMatrixToRef(rotMat, ref);
         }
 
         public static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion {
@@ -2950,7 +3492,7 @@
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
-        public updateFlag: number;        
+        public updateFlag: number;
         public m: Float32Array = new Float32Array(16);
 
         public _markAsUpdated() {
@@ -3319,7 +3861,7 @@
          * - a scale vector3 passed as a reference to update, 
          * - a rotation quaternion passed as a reference to update,
          * - a translation vector3 passed as a reference to update.  
-         * Returns the boolean `true`.  
+         * Returns the true if operation was successful.  
          */
         public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
             translation.x = this.m[12];
@@ -3493,7 +4035,7 @@
         /**
          * Compute the transpose of the matrix.  
          * Returns a new Matrix.  
-         */        
+         */
         public transpose(): Matrix {
             return Matrix.Transpose(this);
         }
@@ -3501,7 +4043,7 @@
         /**
          * Compute the transpose of the matrix.  
          * Returns the current matrix.  
-         */        
+         */
         public transposeToRef(result: Matrix): Matrix {
             Matrix.TransposeToRef(this, result);
 
@@ -3972,7 +4514,7 @@
             let c = 2.0 / (f - n);
             let d = -(f + n) / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 0.0,
@@ -4004,7 +4546,7 @@
             let i0 = (left + right) / (left - right);
             let i1 = (top + bottom) / (bottom - top);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 0.0,
@@ -4041,7 +4583,7 @@
             let c = (f + n) / (f - n);
             let d = -2.0 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 1.0,
@@ -4072,7 +4614,7 @@
             let c = (f + n) / (f - n);
             let d = -2.0 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, 1.0,
@@ -4106,7 +4648,7 @@
             let c = -(f + n) / (f - n);
             let d = -2 * f * n / (f - n);
 
-            BABYLON.Matrix.FromValuesToRef(
+            Matrix.FromValuesToRef(
                 a, 0.0, 0.0, 0.0,
                 0.0, b, 0.0, 0.0,
                 0.0, 0.0, c, -1.0,
@@ -4117,7 +4659,7 @@
         /**
          * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
          */
-        public static PerspectiveFovWebVRToRef(fov: {upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number}, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
+        public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
             var rightHandedFactor = rightHanded ? -1 : 1;
 
@@ -4549,31 +5091,31 @@
             frustumPlane.normal.z = transform.m[11] + transform.m[8];
             frustumPlane.d = transform.m[15] + transform.m[12];
             frustumPlane.normalize();
-        }       
-        
+        }
+
         public static GetRightPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[0];
             frustumPlane.normal.y = transform.m[7] - transform.m[4];
             frustumPlane.normal.z = transform.m[11] - transform.m[8];
             frustumPlane.d = transform.m[15] - transform.m[12];
             frustumPlane.normalize();
-        }     
-        
+        }
+
         public static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] - transform.m[1];
             frustumPlane.normal.y = transform.m[7] - transform.m[5];
             frustumPlane.normal.z = transform.m[11] - transform.m[9];
             frustumPlane.d = transform.m[15] - transform.m[13];
             frustumPlane.normalize();
-        }      
-        
+        }
+
         public static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void {
             frustumPlane.normal.x = transform.m[3] + transform.m[1];
             frustumPlane.normal.y = transform.m[7] + transform.m[5];
             frustumPlane.normal.z = transform.m[11] + transform.m[9];
             frustumPlane.d = transform.m[15] + transform.m[13];
             frustumPlane.normalize();
-        }           
+        }
 
         /**
          * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.  

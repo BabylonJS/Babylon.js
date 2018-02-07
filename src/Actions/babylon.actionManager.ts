@@ -142,7 +142,7 @@
             return ActionManager._OnKeyUpTrigger;
         }
 
-        public static Triggers: { [key: string]: number} = {};
+        public static Triggers: { [key: string]: number } = {};
 
         // Members
         public actions = new Array<Action>();
@@ -319,6 +319,25 @@
         }
 
         /**
+         * Unregisters an action to this action manager
+         * @param action The action to be unregistered
+         * @return whether the action has been unregistered
+         */
+        public unregisterAction(action: Action): Boolean {
+            var index = this.actions.indexOf(action);
+            if (index !== -1) {
+                this.actions.splice(index, 1);
+                ActionManager.Triggers[action.trigger] -= 1;
+                if (ActionManager.Triggers[action.trigger] === 0) {
+                    delete ActionManager.Triggers[action.trigger]
+                }
+                delete action._actionManager;
+                return true;
+            }
+            return false;
+        }
+
+        /**
          * Process a specific trigger
          * @param {number} trigger - the trigger to process
          * @param evt {BABYLON.ActionEvent} the event details to be processed
@@ -416,7 +435,7 @@
         }
 
         public static Parse(parsedActions: any, object: Nullable<AbstractMesh>, scene: Scene) {
-            var actionManager = new BABYLON.ActionManager(scene);
+            var actionManager = new ActionManager(scene);
             if (object === null)
                 scene.actionManager = actionManager;
             else
@@ -424,6 +443,7 @@
 
             // instanciate a new object
             var instanciate = (name: string, params: Array<any>): any => {
+                // TODO: We will need to find a solution for the next line when using commonjs / es6 .
                 var newInstance: Object = Object.create(Tools.Instantiate("BABYLON." + name).prototype);
                 newInstance.constructor.apply(newInstance, params);
                 return newInstance;

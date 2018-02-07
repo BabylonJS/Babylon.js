@@ -1,6 +1,7 @@
-﻿namespace BABYLON {
+﻿module BABYLON {
     /**
      * Background material defines definition.
+     * @ignore Mainly internal Use
      */
     class BackgroundMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         /**
@@ -94,6 +95,7 @@
         public REFLECTIONMAP_OPPOSITEZ = false;
         public LODINREFLECTIONALPHA = false;
         public GAMMAREFLECTION = false;
+        public EQUIRECTANGULAR_RELFECTION_FOV = false;
 
         // Default BJS.
         public MAINUV1 = false;
@@ -121,177 +123,177 @@
     /**
      * Background material used to create an efficient environement around your scene.
      */
-    export class BackgroundMaterial extends BABYLON.PushMaterial {
+    export class BackgroundMaterial extends PushMaterial {
 
         /**
          * Standard reflectance value at parallel view angle.
          */
-        public static standardReflectance0 = 0.05;
+        public static StandardReflectance0 = 0.05;
 
         /**
          * Standard reflectance value at grazing angle.
          */
-        public static standardReflectance90 = 0.5;
+        public static StandardReflectance90 = 0.5;
 
+        @serializeAsColor3()
+        protected _primaryColor: Color3;
         /**
          * Key light Color (multiply against the R channel of the environement texture)
          */
-        @serializeAsColor3()
-        protected _primaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public primaryColor = BABYLON.Color3.White();
+        public primaryColor = Color3.White();
 
+        @serialize()
+        protected _primaryLevel: float;
         /**
          * Key light Level (allowing HDR output of the background)
          */
-        @serialize()
-        protected _primaryLevel: float;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public primaryLevel: float = 1;
+        @serializeAsColor3()
+        protected _secondaryColor: Color3;
         /**
          * Secondary light Color (multiply against the G channel of the environement texture)
          */
-        @serializeAsColor3()
-        protected _secondaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public secondaryColor = BABYLON.Color3.Gray();
+        public secondaryColor = Color3.Gray();
 
+        @serialize()
+        protected _secondaryLevel: float;
         /**
          * Secondary light Level (allowing HDR output of the background)
          */
-        @serialize()
-        protected _secondaryLevel: float;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public secondaryLevel: float = 1;
 
+        @serializeAsColor3()
+        protected _tertiaryColor: Color3;
         /**
          * Tertiary light Color (multiply against the B channel of the environement texture)
          */
-        @serializeAsColor3()
-        protected _tertiaryColor: Color3;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public tertiaryColor = BABYLON.Color3.Black();
+        public tertiaryColor = Color3.Black();
 
+        @serialize()
+        protected _tertiaryLevel: float;
         /**
          * Tertiary light Level (allowing HDR output of the background)
          */
-        @serialize()
-        protected _tertiaryLevel: float;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public tertiaryLevel: float = 1;
 
+        @serializeAsTexture()
+        protected _reflectionTexture: Nullable<BaseTexture>;
         /**
          * Reflection Texture used in the material.
          * Should be author in a specific way for the best result (refer to the documentation).
          */
-        @serializeAsTexture()
-        protected _reflectionTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionTexture: Nullable<BaseTexture> = null;
 
+        @serialize()
+        protected _reflectionBlur: float;
         /**
          * Reflection Texture level of blur.
          * 
          * Can be use to reuse an existing HDR Texture and target a specific LOD to prevent authoring the 
          * texture twice.
          */
-        @serialize()
-        protected _reflectionBlur: float;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionBlur: float = 0;
-        
+
+        @serializeAsTexture()
+        protected _diffuseTexture: Nullable<BaseTexture>;
         /**
          * Diffuse Texture used in the material.
          * Should be author in a specific way for the best result (refer to the documentation).
          */
-        @serializeAsTexture()
-        protected _diffuseTexture: Nullable<BaseTexture>;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture: Nullable<BaseTexture> = null;
 
+        protected _shadowLights: Nullable<IShadowLight[]> = null;
         /**
          * Specify the list of lights casting shadow on the material.
          * All scene shadow lights will be included if null.
          */
-        protected _shadowLights: Nullable<IShadowLight[]> = null;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public shadowLights: Nullable<IShadowLight[]> = null;
 
+        @serialize()
+        protected _shadowBlurScale: int;
         /**
          * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
          * soft lighting on the background.
          */
-        @serialize()
-        protected _shadowBlurScale: int;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public shadowBlurScale: int = 1;
 
+        @serialize()
+        protected _shadowLevel: float;
         /**
          * Helps adjusting the shadow to a softer level if required.
          * 0 means black shadows and 1 means no shadows.
          */
-        @serialize()
-        protected _shadowLevel: float;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public shadowLevel: float = 0;
 
+        @serializeAsVector3()
+        protected _sceneCenter: Vector3;
         /**
          * In case of opacity Fresnel or reflection falloff, this is use as a scene center.
          * It is usually zero but might be interesting to modify according to your setup.
          */
-        @serializeAsVector3()
-        protected _sceneCenter: Vector3;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public sceneCenter: Vector3 = Vector3.Zero();
 
+        @serialize()
+        protected _opacityFresnel: boolean;
         /**
          * This helps specifying that the material is falling off to the sky box at grazing angle.
          * This helps ensuring a nice transition when the camera goes under the ground.
          */
-        @serialize()
-        protected _opacityFresnel: boolean;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public opacityFresnel: boolean = true;
 
+        @serialize()
+        protected _reflectionFresnel: boolean;
         /**
          * This helps specifying that the material is falling off from diffuse to the reflection texture at grazing angle. 
          * This helps adding a mirror texture on the ground.
          */
-        @serialize()
-        protected _reflectionFresnel: boolean;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionFresnel: boolean = false;
 
+        @serialize()
+        protected _reflectionFalloffDistance: number;
         /**
          * This helps specifying the falloff radius off the reflection texture from the sceneCenter.
          * This helps adding a nice falloff effect to the reflection if used as a mirror for instance.
          */
-        @serialize()
-        protected _reflectionFalloffDistance: number;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionFalloffDistance: number = 0.0;
 
+        @serialize()
+        protected _reflectionAmount: number;
         /**
          * This specifies the weight of the reflection against the background in case of reflection Fresnel.
          */
-        @serialize()
-        protected _reflectionAmount: number;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionAmount: number = 1.0;
 
+        @serialize()
+        protected _reflectionReflectance0: number;
         /**
          * This specifies the weight of the reflection at grazing angle.
          */
-        @serialize()
-        protected _reflectionReflectance0: number;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionReflectance0: number = 0.05;
 
+        @serialize()
+        protected _reflectionReflectance90: number;
         /**
          * This specifies the weight of the reflection at a perpendicular point of view.
          */
-        @serialize()
-        protected _reflectionReflectance90: number;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionReflectance90: number = 0.5;
 
@@ -301,40 +303,61 @@
          */
         public set reflectionStandardFresnelWeight(value: number) {
             let reflectionWeight = value;
-    
+
             if (reflectionWeight < 0.5) {
                 reflectionWeight = reflectionWeight * 2.0;
-                this.reflectionReflectance0 = BackgroundMaterial.standardReflectance0 * reflectionWeight;
-                this.reflectionReflectance90 = BackgroundMaterial.standardReflectance90 * reflectionWeight;
+                this.reflectionReflectance0 = BackgroundMaterial.StandardReflectance0 * reflectionWeight;
+                this.reflectionReflectance90 = BackgroundMaterial.StandardReflectance90 * reflectionWeight;
             } else {
                 reflectionWeight = reflectionWeight * 2.0 - 1.0;
-                this.reflectionReflectance0 = BackgroundMaterial.standardReflectance0 + (1.0 - BackgroundMaterial.standardReflectance0) * reflectionWeight;
-                this.reflectionReflectance90 = BackgroundMaterial.standardReflectance90 + (1.0 - BackgroundMaterial.standardReflectance90) * reflectionWeight;
+                this.reflectionReflectance0 = BackgroundMaterial.StandardReflectance0 + (1.0 - BackgroundMaterial.StandardReflectance0) * reflectionWeight;
+                this.reflectionReflectance90 = BackgroundMaterial.StandardReflectance90 + (1.0 - BackgroundMaterial.StandardReflectance90) * reflectionWeight;
             }
         }
 
+        @serialize()
+        protected _useRGBColor: boolean;
         /**
          * Helps to directly use the maps channels instead of their level.
          */
-        @serialize()
-        protected _useRGBColor: boolean;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useRGBColor: boolean = true;
 
+        @serialize()
+        protected _enableNoise: boolean;
         /**
          * This helps reducing the banding effect that could occur on the background.
          */
-        @serialize()
-        protected _enableNoise: boolean;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public enableNoise: boolean = false;
 
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Best used when trying to implement visual zoom effects like fish-eye or binoculars while not adjusting camera fov.
+         * Recommended to be keep at 1.0 except for special cases.
+         */
+        public get fovMultiplier(): number {
+            return this._fovMultiplier;
+        }
+        public set fovMultiplier(value: number) {
+            if (isNaN(value)) {
+                value = 1.0;
+            }
+            this._fovMultiplier = Math.max(0.0, Math.min(2.0, value));
+        }
+        private _fovMultiplier: float = 1.0;
 
+        /**
+         * Enable the FOV adjustment feature controlled by fovMultiplier.
+         * @type {boolean}
+         */
+        public useEquirectangularFOV: boolean = false;
+
+        @serialize()
+        private _maxSimultaneousLights: int = 4;
         /**
          * Number of Simultaneous lights allowed on the material.
          */
-        @serialize()
-        private _maxSimultaneousLights: int = 4;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public maxSimultaneousLights: int = 4;
 
@@ -451,7 +474,7 @@
         public set cameraExposure(value: float) {
             this._imageProcessingConfiguration.exposure = value;
         };
-        
+
         /**
          * Gets The camera contrast used on this material.
          */
@@ -465,7 +488,7 @@
         public set cameraContrast(value: float) {
             this._imageProcessingConfiguration.contrast = value;
         }
-        
+
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
@@ -500,14 +523,14 @@
 
         // Temp values kept as cache in the material.
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
-        private _reflectionControls = BABYLON.Vector4.Zero();
+        private _reflectionControls = Vector4.Zero();
 
         /**
-         * constructor
-         * @param name The name of the material
+         * Instantiates a Background Material in the given scene
+         * @param name The friendly name of the material
          * @param scene The scene to add the material to
          */
-        constructor(name: string, scene: BABYLON.Scene) {
+        constructor(name: string, scene: Scene) {
             super(name, scene);
 
             // Setup the default processing configuration to the scene.
@@ -549,8 +572,9 @@
          * @param mesh The mesh to render
          * @param subMesh The submesh to check against
          * @param useInstances Specify wether or not the material is used with instances
+         * @returns true if all the dependencies are ready (Textures, Effects...)
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean { 
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
             if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady) {
                     return true;
@@ -570,11 +594,11 @@
             }
 
             var engine = scene.getEngine();
-            
+
             // Lights
             MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights);
             defines._needNormals = true;
-            
+
             // Textures
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
@@ -604,12 +628,13 @@
                         if (!reflectionTexture.isReadyOrNotBlocking()) {
                             return false;
                         }
-                        
+
                         defines.REFLECTION = true;
                         defines.GAMMAREFLECTION = reflectionTexture.gammaSpace;
                         defines.REFLECTIONBLUR = this._reflectionBlur > 0;
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
+                        defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
 
                         if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             defines.INVERTCUBICMAP = true;
@@ -696,12 +721,12 @@
             }
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances, false);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
 
-             // Attribs
+            // Attribs
             if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
                 if (mesh) {
                     if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
@@ -750,18 +775,18 @@
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", 
-                        "vFogInfos", "vFogColor", "pointSize",
-                        "vClipPlane", "mBones", 
+                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
+                    "vFogInfos", "vFogColor", "pointSize",
+                    "vClipPlane", "mBones",
 
-                        "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
-                        "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos",
+                    "vPrimaryColor", "vSecondaryColor", "vTertiaryColor",
+                    "vReflectionInfos", "reflectionMatrix", "vReflectionMicrosurfaceInfos", "fFovMultiplier",
 
-                        "shadowLevel", "alpha",
+                    "shadowLevel", "alpha",
 
-                        "vBackgroundCenter", "vReflectionControl",
+                    "vBackgroundCenter", "vReflectionControl",
 
-                        "vDiffuseInfos", "diffuseMatrix",
+                    "vDiffuseInfos", "diffuseMatrix",
                 ];
 
                 var samplers = ["diffuseSampler", "reflectionSampler", "reflectionSamplerLow", "reflectionSamplerHigh"];
@@ -771,10 +796,10 @@
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
@@ -798,7 +823,7 @@
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights }
                 }, engine), defines);
-                
+
                 this.buildUniformLayout();
             }
 
@@ -825,12 +850,13 @@
             this._uniformBuffer.addUniform("diffuseMatrix", 16);
             this._uniformBuffer.addUniform("reflectionMatrix", 16);
             this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
+            this._uniformBuffer.addUniform("fFovMultiplier", 1);
             this._uniformBuffer.addUniform("pointSize", 1);
             this._uniformBuffer.addUniform("shadowLevel", 1);
             this._uniformBuffer.addUniform("alpha", 1);
             this._uniformBuffer.addUniform("vBackgroundCenter", 3);
             this._uniformBuffer.addUniform("vReflectionControl", 4);
-        
+
             this._uniformBuffer.create();
         }
 
@@ -873,7 +899,7 @@
             var effect = subMesh.effect;
             if (!effect) {
                 return;
-            }            
+            }
             this._activeEffect = effect;
 
             // Matrices
@@ -902,8 +928,8 @@
                             this._uniformBuffer.updateMatrix("reflectionMatrix", reflectionTexture.getReflectionTextureMatrix());
                             this._uniformBuffer.updateFloat2("vReflectionInfos", reflectionTexture.level, this._reflectionBlur);
 
-                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos", 
-                                reflectionTexture.getSize().width, 
+                            this._uniformBuffer.updateFloat3("vReflectionMicrosurfaceInfos",
+                                reflectionTexture.getSize().width,
                                 reflectionTexture.lodGenerationScale,
                                 reflectionTexture.lodGenerationOffset);
                         }
@@ -923,6 +949,8 @@
                     this._uniformBuffer.updateColor4("vSecondaryColor", this._secondaryColor, this._secondaryLevel);
                     this._uniformBuffer.updateColor4("vTertiaryColor", this._tertiaryColor, this._tertiaryLevel);
                 }
+
+                this._uniformBuffer.updateFloat("fFovMultiplier", this._fovMultiplier);
 
                 // Textures
                 if (scene.texturesEnabled) {
@@ -952,7 +980,7 @@
 
                 // Clip plane
                 MaterialHelper.BindClipPlane(this._activeEffect, scene);
-                
+
                 MaterialHelper.BindEyePosition(effect, scene);
             }
 
@@ -978,8 +1006,8 @@
 
         /**
          * Dispose the material.
-         * @forceDisposeEffect Force disposal of the associated effect.
-         * @forceDisposeTextures Force disposal of the associated textures.
+         * @param forceDisposeEffect Force disposal of the associated effect.
+         * @param forceDisposeTextures Force disposal of the associated textures.
          */
         public dispose(forceDisposeEffect: boolean = false, forceDisposeTextures: boolean = false): void {
             if (forceDisposeTextures) {
@@ -1002,7 +1030,7 @@
 
         /**
          * Clones the material.
-         * @name The cloned name.
+         * @param name The cloned name.
          * @returns The cloned material.
          */
         public clone(name: string): BackgroundMaterial {
@@ -1029,9 +1057,9 @@
 
         /**
          * Parse a JSON input to create back a background material.
-         * @param source 
-         * @param scene 
-         * @param rootUrl 
+         * @param source The JSON data to parse
+         * @param scene The scene to create the parsed material in 
+         * @param rootUrl The root url of the assets the material depends upon
          * @returns the instantiated BackgroundMaterial.
          */
         public static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial {

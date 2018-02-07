@@ -289,6 +289,7 @@ var INSPECTOR;
                     }
                 }
             }
+            INSPECTOR.Scheduler.getInstance().dispose();
         };
         /** Open the inspector in a new popup
          * Set 'firstTime' to true if there is no inspector created beforehands
@@ -382,7 +383,7 @@ var INSPECTOR;
         },
         'Color3': {
             type: BABYLON.Color3,
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            format: function (color) { return "R:" + color.r.toPrecision(2) + ", G:" + color.g.toPrecision(2) + ", B:" + color.b.toPrecision(2); },
             slider: {
                 r: { min: 0, max: 1, step: 0.01 },
                 g: { min: 0, max: 1, step: 0.01 },
@@ -2431,7 +2432,7 @@ var INSPECTOR;
             this.pause = false;
             /** The list of data to update */
             this._updatableProperties = [];
-            setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+            this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
         Scheduler.getInstance = function () {
             if (!Scheduler._instance) {
@@ -2458,6 +2459,9 @@ var INSPECTOR;
                     prop.update();
                 }
             }
+        };
+        Scheduler.prototype.dispose = function () {
+            window.clearInterval(this.interval);
         };
         /** All properties are refreshed every 250ms */
         Scheduler.REFRESH_TIME = 250;
@@ -3567,6 +3571,12 @@ var INSPECTOR;
                     elem: elemValue,
                     updateFct: function () { return _this._sceneInstrumentation.drawCallsCounter.current.toString(); }
                 });
+                _this._createStatLabel("Texture collisions", _this._panel);
+                elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
+                _this._updatableProperties.push({
+                    elem: elemValue,
+                    updateFct: function () { return _this._sceneInstrumentation.textureCollisionsCounter.current.toString(); }
+                });
                 _this._createStatLabel("Total lights", _this._panel);
                 elemValue = INSPECTOR.Helpers.CreateDiv('stat-value', _this._panel);
                 _this._updatableProperties.push({
@@ -4558,7 +4568,18 @@ var INSPECTOR;
         };
         /** Build the HTML of this item */
         TreeItem.prototype._build = function () {
-            this._div.className = 'line';
+            /**
+             *  Hide the debug objects :
+             * - Axis : xline, yline, zline
+             * */
+            var adapterId = this._adapter.id();
+            if (adapterId == "xline"
+                || adapterId == "yline"
+                || adapterId == "zline") {
+                this._div.className = "line_invisible";
+            }
+            else
+                this._div.className = 'line';
             // special class for transform node ONLY
             if (this.adapter instanceof INSPECTOR.MeshAdapter) {
                 var obj = this.adapter.object;

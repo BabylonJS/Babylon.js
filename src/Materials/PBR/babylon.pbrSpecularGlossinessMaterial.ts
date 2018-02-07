@@ -5,7 +5,7 @@
      * This fits to the PBR convention in the GLTF definition: 
      * https://github.com/KhronosGroup/glTF/tree/2.0/extensions/Khronos/KHR_materials_pbrSpecularGlossiness
      */
-    export class PBRSpecularGlossinessMaterial extends Internals.PBRBaseSimpleMaterial {
+    export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
 
         /**
          * Specifies the diffuse color of the material.
@@ -13,7 +13,7 @@
         @serializeAsColor3("diffuse")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_albedoColor")
         public diffuseColor: Color3;
-        
+
         /**
          * Specifies the diffuse texture of the material. This can also contains the opcity value in its alpha
          * channel.
@@ -35,7 +35,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_microSurface")
         public glossiness: number;
-        
+
         /**
          * Specifies both the specular color RGB and the glossiness A of the material per pixels.
          */
@@ -78,6 +78,11 @@
             return activeTextures;
         }
 
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
         public hasTexture(texture: BaseTexture): boolean {
             if (super.hasTexture(texture)) {
                 return true;
@@ -89,18 +94,22 @@
 
             if (this.specularGlossinessTexture === texture) {
                 return true;
-            }        
+            }
 
-            return false;    
+            return false;
         }
 
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
         public clone(name: string): PBRSpecularGlossinessMaterial {
             var clone = SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
 
             clone.id = name;
             clone.name = name;
 
-            return clone;            
+            return clone;
         }
 
         /**

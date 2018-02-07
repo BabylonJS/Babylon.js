@@ -15,7 +15,11 @@
             return this._PBRMATERIAL_OPAQUE;
         }
 
+        /**
+         * Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
         private static _PBRMATERIAL_ALPHATEST = 1;
+
         /**
          * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
          */
@@ -23,7 +27,11 @@
             return this._PBRMATERIAL_ALPHATEST;
         }
 
+        /**
+         * Represents the value for Alpha Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
         private static _PBRMATERIAL_ALPHABLEND = 2;
+
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          */
@@ -31,7 +39,12 @@
             return this._PBRMATERIAL_ALPHABLEND;
         }
 
+        /**
+         * Represents the value for Alpha Test and Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
         private static _PBRMATERIAL_ALPHATESTANDBLEND = 3;
+
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          * They are also discarded below the alpha cutoff threshold to improve performances.
@@ -100,14 +113,23 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientTextureStrength: number = 1.0;
 
+        /**
+         * Stores the alpha values in a texture.
+         */
         @serializeAsTexture()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public opacityTexture: BaseTexture;
 
+        /**
+         * Stores the reflection values in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionTexture: Nullable<BaseTexture>;
 
+        /**
+         * Stores the emissive values in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveTexture: BaseTexture;
@@ -150,18 +172,30 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public microSurfaceTexture: BaseTexture;
 
+        /**
+         * Stores surface normal data used to displace a mesh in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public bumpTexture: BaseTexture;
 
+        /**
+         * Stores the pre-calculated light information of a mesh in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
         public lightmapTexture: BaseTexture;
 
+        /**
+         * Stores the refracted light information in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public refractionTexture: BaseTexture;
 
+        /**
+         * The color of a material in ambient lighting.
+         */
         @serializeAsColor3("ambient")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientColor = new Color3(0, 0, 0);
@@ -180,10 +214,16 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectivityColor = new Color3(1, 1, 1);
 
+        /**
+         * The color reflected from the material.
+         */
         @serializeAsColor3("reflection")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionColor = new Color3(1.0, 1.0, 1.0);
 
+        /**
+         * The color emitted from the material.
+         */
         @serializeAsColor3("emissive")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveColor = new Color3(0, 0, 0);
@@ -225,21 +265,21 @@
          * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public useAlphaFromAlbedoTexture = false;
 
         /**
          * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public forceAlphaTest = false;
 
         /**
          * Defines the alpha limits in alpha test mode.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public alphaCutOff = 0.4;
 
         /**
@@ -567,10 +607,17 @@
             this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
+        /**
+         * Returns the name of this material class.
+         */
         public getClassName(): string {
             return "PBRMaterial";
         }
 
+        /**
+         * Returns an array of the actively used textures.
+         * @returns - Array of BaseTextures
+         */
         public getActiveTextures(): BaseTexture[] {
             var activeTextures = super.getActiveTextures();
 
@@ -621,6 +668,11 @@
             return activeTextures;
         }
 
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
         public hasTexture(texture: BaseTexture): boolean {
             if (super.hasTexture(texture)) {
                 return true;
@@ -669,6 +721,10 @@
             return false;
         }
 
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
         public clone(name: string): PBRMaterial {
             var clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
 
@@ -678,6 +734,10 @@
             return clone;
         }
 
+        /**
+         * Serializes this PBR Material.
+         * @returns - An object with the serialized material.
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.PBRMaterial";
@@ -685,6 +745,13 @@
         }
 
         // Statics
+        /**
+         * Parses a PBR Material from a serialized object.
+         * @param source - Serialized object.
+         * @param scene - BJS scene instance.
+         * @param rootUrl - url for the scene object
+         * @returns - PBRMaterial
+         */
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
             return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         }

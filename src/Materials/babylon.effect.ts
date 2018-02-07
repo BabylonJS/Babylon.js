@@ -1,4 +1,8 @@
 ﻿module BABYLON {
+    /**
+	 * EffectFallbacks can be used to add fallbacks (properties to disable) to certain properties when desired to improve performance.
+     * (Eg. Start at high quality with reflection and fog, if fps is low, remove reflection, if still low remove fog)
+     */
     export class EffectFallbacks {
         private _defines: { [key: string]: Array<String> } = {};
 
@@ -7,10 +11,18 @@
 
         private _mesh: Nullable<AbstractMesh>;
 
+        /**
+         * Removes the fallback from the bound mesh.
+         */
         public unBindMesh() {
             this._mesh = null;
         }
 
+        /**
+         * Adds a fallback on the specified property.
+         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+         * @param define The name of the define in the shader
+         */
         public addFallback(rank: number, define: string): void {
             if (!this._defines[rank]) {
                 if (rank < this._currentRank) {
@@ -27,7 +39,12 @@
             this._defines[rank].push(define);
         }
 
-        public addCPUSkinningFallback(rank: number, mesh: BABYLON.AbstractMesh) {
+        /**
+         * Sets the mesh to use CPU skinning when needing to fallback.
+         * @param rank The rank of the fallback (Lower ranks will be fallbacked to first)
+         * @param mesh The mesh to use the fallbacks.
+         */
+        public addCPUSkinningFallback(rank: number, mesh: AbstractMesh) {
             this._mesh = mesh;
 
             if (rank < this._currentRank) {
@@ -38,10 +55,18 @@
             }
         }
 
+        /**
+         * Checks to see if more fallbacks are still availible.
+         */
         public get isMoreFallbacks(): boolean {
             return this._currentRank <= this._maxRank;
         }
 
+        /**
+         * Removes the defines that shoould be removed when falling back.
+         * @param currentDefines The current define statements for the shader.
+         * @returns The resulting defines with defines of the current rank removed.
+         */
         public reduce(currentDefines: string): string {
             // First we try to switch to CPU skinning
             if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
@@ -73,29 +98,95 @@
         }
     }
 
+    /**
+	 * Options to be used when creating an effect.
+     */
     export class EffectCreationOptions {
+        /**
+         * Atrributes that will be used in the shader.
+         */
         public attributes: string[];
+        /**
+         * Uniform varible names that will be set in the shader.
+         */
         public uniformsNames: string[];
+        /**
+         * Uniform buffer varible names that will be set in the shader.
+         */
         public uniformBuffersNames: string[];
+        /**
+         * Sampler texture variable names that will be set in the shader.
+         */
         public samplers: string[];
+        /**
+         * Define statements that will be set in the shader.
+         */
         public defines: any;
+        /**
+         * Possible fallbacks for this effect to improve performance when needed.
+         */
         public fallbacks: Nullable<EffectFallbacks>;
+        /**
+         * Callback that will be called when the shader is compiled.
+         */
         public onCompiled: Nullable<(effect: Effect) => void>;
+        /**
+         * Callback that will be called if an error occurs during shader compilation.
+         */
         public onError: Nullable<(effect: Effect, errors: string) => void>;
+        /**
+         * Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+         */
         public indexParameters: any;
+        /**
+         * Max number of lights that can be used in the shader.
+         */
         public maxSimultaneousLights: number;
+        /**
+         * See https://developer.mozilla.org/en-US/docs/Web/API/WebGL2RenderingContext/transformFeedbackVaryings
+         */
         public transformFeedbackVaryings: Nullable<string[]>;
     }
 
+    /**
+     * Effect containing vertex and fragment shader that can be executed on an object.
+     */
     export class Effect {
+        /**
+         * Name of the effect.
+         */
         public name: any;
+        /**
+         * String container all the define statements that should be set on the shader.
+         */
         public defines: string;
+        /**
+         * Callback that will be called when the shader is compiled.
+         */
         public onCompiled: Nullable<(effect: Effect) => void>;
+        /**
+         * Callback that will be called if an error occurs during shader compilation.
+         */
         public onError: Nullable<(effect: Effect, errors: string) => void>;
+        /**
+         * Callback that will be called when effect is bound.
+         */
         public onBind: Nullable<(effect: Effect) => void>;
+        /**
+         * Unique ID of the effect.
+         */
         public uniqueId = 0;
+        /**
+         * Observable that will be called when the shader is compiled.
+         */
         public onCompileObservable = new Observable<Effect>();
+        /**
+         * Observable that will be called if an error occurs during shader compilation.
+         */
         public onErrorObservable = new Observable<Effect>();
+        /**
+         * Observable that will be called when effect is bound.
+         */
         public onBindObservable = new Observable<Effect>();
 
         private static _uniqueIdSeed = 0;
@@ -108,6 +199,9 @@
         private _attributesNames: string[];
         private _attributes: number[];
         private _uniforms: Nullable<WebGLUniformLocation>[];
+        /**
+         * Key for the effect.
+         */
         public _key: string;
         private _indexParameters: any;
         private _fallbacks: Nullable<EffectFallbacks>;
@@ -117,10 +211,27 @@
         private _fragmentSourceCodeOverride: string;
         private _transformFeedbackVaryings: Nullable<string[]>;
 
+        /**
+         * Compiled shader to webGL program.
+         */
         public _program: WebGLProgram;
         private _valueCache: { [key: string]: any };
         private static _baseCache: { [key: number]: WebGLBuffer } = {};
 
+        /**
+         * Instantiates an effect.
+         * An effect can be used to create/manage/execute vertex and fragment shaders.
+         * @param baseName Name of the effect.
+         * @param attributesNamesOrOptions List of attribute names that will be passed to the shader or set of all options to create the effect.
+         * @param uniformsNamesOrEngine List of uniform variable names that will be passed to the shader or the engine that will be used to render effect.
+         * @param samplers List of sampler variables that will be passed to the shader.
+         * @param engine Engine to be used to render the effect
+         * @param defines Define statements to be added to the shader.
+         * @param fallbacks Possible fallbacks for this effect to improve performance when needed.
+         * @param onCompiled Callback that will be called when the shader is compiled.
+         * @param onError Callback that will be called if an error occurs during shader compilation.
+         * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+         */
         constructor(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers: Nullable<string[]> = null, engine?: Engine, defines: Nullable<string> = null,
             fallbacks: Nullable<EffectFallbacks> = null, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, indexParameters?: any) {
             this.name = baseName;
@@ -183,83 +294,139 @@
                 fragmentSource = baseName.fragment || baseName;
             }
 
-            this._loadVertexShader(vertexSource, vertexCode => {
-                this._processIncludes(vertexCode, vertexCodeWithIncludes => {
-                    this._processShaderConversion(vertexCodeWithIncludes, false, migratedVertexCode => {
-                        this._loadFragmentShader(fragmentSource, (fragmentCode) => {
-                            this._processIncludes(fragmentCode, fragmentCodeWithIncludes => {
-                                this._processShaderConversion(fragmentCodeWithIncludes, true, migratedFragmentCode => {
-                                    if (baseName) {
-                                        var vertex = baseName.vertexElement || baseName.vertex || baseName;
-                                        var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+            let finalVertexCode: string;
 
-                                        this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-                                        this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
-                                    } else {
-                                        this._vertexSourceCode = migratedVertexCode;
-                                        this._fragmentSourceCode = migratedFragmentCode;
-                                    }
-                                    this._prepareEffect();
-                                });
-                            });
-                        });
-                    });
-                });
+            this._loadVertexShaderAsync(vertexSource)
+            .then((vertexCode) => {
+                return this._processIncludesAsync(vertexCode);
+            })
+            .then((vertexCodeWithIncludes) => {
+                finalVertexCode = this._processShaderConversion(vertexCodeWithIncludes, false);
+                return this._loadFragmentShaderAsync(fragmentSource);
+            })
+            .then((fragmentCode) => {
+                return this._processIncludesAsync(fragmentCode);
+            })
+            .then((fragmentCodeWithIncludes) => {
+                let migratedFragmentCode = this._processShaderConversion(fragmentCodeWithIncludes, true);
+                if (baseName) {
+                    var vertex = baseName.vertexElement || baseName.vertex || baseName;
+                    var fragment = baseName.fragmentElement || baseName.fragment || baseName;
+
+                    this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + finalVertexCode;
+                    this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
+                } else {
+                    this._vertexSourceCode = finalVertexCode;
+                    this._fragmentSourceCode = migratedFragmentCode;
+                }
+                this._prepareEffect(); 
             });
         }
 
+        /**
+         * Unique key for this effect
+         */
         public get key(): string {
             return this._key;
         }
 
-        // Properties
+        /**
+         * If the effect has been compiled and prepared.
+         * @returns if the effect is compiled and prepared.
+         */
         public isReady(): boolean {
             return this._isReady;
         }
 
+        /**
+         * The engine the effect was initialized with.
+         * @returns the engine.
+         */
         public getEngine(): Engine {
             return this._engine;
         }
 
+        /**
+         * The compiled webGL program for the effect
+         * @returns the webGL program.
+         */
         public getProgram(): WebGLProgram {
             return this._program;
         }
-
+        /**
+         * The set of names of attribute variables for the shader.
+         * @returns An array of attribute names.
+         */
         public getAttributesNames(): string[] {
             return this._attributesNames;
         }
 
+        /**
+         * Returns the attribute at the given index.
+         * @param index The index of the attribute.
+         * @returns The location of the attribute.
+         */
         public getAttributeLocation(index: number): number {
             return this._attributes[index];
         }
 
+        /**
+         * Returns the attribute based on the name of the variable.
+         * @param name of the attribute to look up.
+         * @returns the attribute location.
+         */
         public getAttributeLocationByName(name: string): number {
             var index = this._attributesNames.indexOf(name);
 
             return this._attributes[index];
         }
 
+        /**
+         * The number of attributes.
+         * @returns the numnber of attributes.
+         */
         public getAttributesCount(): number {
             return this._attributes.length;
         }
 
+        /**
+         * Gets the index of a uniform variable.
+         * @param uniformName of the uniform to look up.
+         * @returns the index.
+         */
         public getUniformIndex(uniformName: string): number {
             return this._uniformsNames.indexOf(uniformName);
         }
 
+        /**
+         * Returns the attribute based on the name of the variable.
+         * @param uniformName of the uniform to look up.
+         * @returns the location of the uniform.
+         */
         public getUniform(uniformName: string): Nullable<WebGLUniformLocation> {
             return this._uniforms[this._uniformsNames.indexOf(uniformName)];
         }
 
+        /**
+         * Returns an array of sampler variable names
+         * @returns The array of sampler variable neames.
+         */
         public getSamplers(): string[] {
             return this._samplers;
         }
 
+        /**
+         * The error from the last compilation.
+         * @returns the error string.
+         */
         public getCompilationError(): string {
             return this._compilationError;
         }
 
-        // Methods
+        /**
+         * Adds a callback to the onCompiled observable and call the callback imediatly if already ready.
+         * @param func The callback to be used.
+         */
         public executeWhenCompiled(func: (effect: Effect) => void): void {
             if (this.isReady()) {
                 func(this);
@@ -271,27 +438,25 @@
             });
         }
 
-        public _loadVertexShader(vertex: any, callback: (data: any) => void): void {
+        /** @ignore */
+        public _loadVertexShaderAsync(vertex: any): Promise<any> {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
                 if (vertex instanceof HTMLElement) {
                     var vertexCode = Tools.GetDOMTextContent(vertex);
-                    callback(vertexCode);
-                    return;
+                    return Promise.resolve(vertexCode);
                 }
             }
 
             // Base64 encoded ?
             if (vertex.substr(0, 7) === "base64:") {
                 var vertexBinary = window.atob(vertex.substr(7));
-                callback(vertexBinary);
-                return;
+                return Promise.resolve(vertexBinary);
             }
 
             // Is in local store ?
             if (Effect.ShadersStore[vertex + "VertexShader"]) {
-                callback(Effect.ShadersStore[vertex + "VertexShader"]);
-                return;
+                return Promise.resolve(Effect.ShadersStore[vertex + "VertexShader"]);
             }
 
             var vertexShaderUrl;
@@ -303,35 +468,32 @@
             }
 
             // Vertex shader
-            Tools.LoadFile(vertexShaderUrl + ".vertex.fx", callback);
+            return this._engine._loadFileAsync(vertexShaderUrl + ".vertex.fx");
         }
 
-        public _loadFragmentShader(fragment: any, callback: (data: any) => void): void {
+        /** @ignore */
+        public _loadFragmentShaderAsync(fragment: any): Promise<any>  {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
                 if (fragment instanceof HTMLElement) {
                     var fragmentCode = Tools.GetDOMTextContent(fragment);
-                    callback(fragmentCode);
-                    return;
+                    return Promise.resolve(fragmentCode);
                 }
             }
 
             // Base64 encoded ?
             if (fragment.substr(0, 7) === "base64:") {
                 var fragmentBinary = window.atob(fragment.substr(7));
-                callback(fragmentBinary);
-                return;
+                return Promise.resolve(fragmentBinary);
             }
 
             // Is in local store ?
             if (Effect.ShadersStore[fragment + "PixelShader"]) {
-                callback(Effect.ShadersStore[fragment + "PixelShader"]);
-                return;
+                return Promise.resolve(Effect.ShadersStore[fragment + "PixelShader"]);
             }
 
             if (Effect.ShadersStore[fragment + "FragmentShader"]) {
-                callback(Effect.ShadersStore[fragment + "FragmentShader"]);
-                return;
+                return Promise.resolve(Effect.ShadersStore[fragment + "FragmentShader"]);
             }
 
             var fragmentShaderUrl;
@@ -343,7 +505,7 @@
             }
 
             // Fragment shader
-            Tools.LoadFile(fragmentShaderUrl + ".fragment.fx", callback);
+            return this._engine._loadFileAsync(fragmentShaderUrl + ".fragment.fx");
         }
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
@@ -362,32 +524,29 @@
 
             // Dump shaders name and formatted source code
             if (this.name.vertexElement) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertexElement + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragmentElement + formattedFragmentCode);
             }
             else if (this.name.vertex) {
-                BABYLON.Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name.vertex + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name.fragment + formattedFragmentCode);
             }
             else {
-                BABYLON.Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
-                BABYLON.Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
+                Tools.Error("Vertex shader: " + this.name + formattedVertexCode);
+                Tools.Error("Fragment shader: " + this.name + formattedFragmentCode);
             }
         };
 
-        private _processShaderConversion(sourceCode: string, isFragment: boolean, callback: (data: any) => void): void {
-
+        private _processShaderConversion(sourceCode: string, isFragment: boolean): any {
             var preparedSourceCode = this._processPrecision(sourceCode);
 
             if (this._engine.webGLVersion == 1) {
-                callback(preparedSourceCode);
-                return;
+                return preparedSourceCode;
             }
 
             // Already converted
             if (preparedSourceCode.indexOf("#version 3") !== -1) {
-                callback(preparedSourceCode.replace("#version 300 es", ""));
-                return;
+                return preparedSourceCode.replace("#version 300 es", "");
             }
 
             var hasDrawBuffersExtension = preparedSourceCode.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
@@ -416,92 +575,97 @@
                 result = result.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "out vec4 glFragColor;\n") + "void main(");
             }
 
-            callback(result);
+            return result;
         }
 
-        private _processIncludes(sourceCode: string, callback: (data: any) => void): void {
-            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-            var match = regex.exec(sourceCode);
+        private _processIncludesAsync(sourceCode: string): Promise<any> {
+            return new Promise((resolve, reject) => {
+                var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+                var match = regex.exec(sourceCode);
 
-            var returnValue = new String(sourceCode);
+                var returnValue = sourceCode;
 
-            while (match != null) {
-                var includeFile = match[1];
+                while (match != null) {
+                    var includeFile = match[1];
 
-                // Uniform declaration
-                if (includeFile.indexOf("__decl__") !== -1) {
-                    includeFile = includeFile.replace(/__decl__/, "");
-                    if (this._engine.supportsUniformBuffers) {
-                        includeFile = includeFile.replace(/Vertex/, "Ubo");
-                        includeFile = includeFile.replace(/Fragment/, "Ubo");
-                    }
-                    includeFile = includeFile + "Declaration";
-                }
-
-                if (Effect.IncludesShadersStore[includeFile]) {
-                    // Substitution
-                    var includeContent = Effect.IncludesShadersStore[includeFile];
-                    if (match[2]) {
-                        var splits = match[3].split(",");
-
-                        for (var index = 0; index < splits.length; index += 2) {
-                            var source = new RegExp(splits[index], "g");
-                            var dest = splits[index + 1];
-
-                            includeContent = includeContent.replace(source, dest);
+                    // Uniform declaration
+                    if (includeFile.indexOf("__decl__") !== -1) {
+                        includeFile = includeFile.replace(/__decl__/, "");
+                        if (this._engine.supportsUniformBuffers) {
+                            includeFile = includeFile.replace(/Vertex/, "Ubo");
+                            includeFile = includeFile.replace(/Fragment/, "Ubo");
                         }
+                        includeFile = includeFile + "Declaration";
                     }
 
-                    if (match[4]) {
-                        var indexString = match[5];
+                    if (Effect.IncludesShadersStore[includeFile]) {
+                        // Substitution
+                        var includeContent = Effect.IncludesShadersStore[includeFile];
+                        if (match[2]) {
+                            var splits = match[3].split(",");
 
-                        if (indexString.indexOf("..") !== -1) {
-                            var indexSplits = indexString.split("..");
-                            var minIndex = parseInt(indexSplits[0]);
-                            var maxIndex = parseInt(indexSplits[1]);
-                            var sourceIncludeContent = includeContent.slice(0);
-                            includeContent = "";
+                            for (var index = 0; index < splits.length; index += 2) {
+                                var source = new RegExp(splits[index], "g");
+                                var dest = splits[index + 1];
 
-                            if (isNaN(maxIndex)) {
-                                maxIndex = this._indexParameters[indexSplits[1]];
+                                includeContent = includeContent.replace(source, dest);
                             }
+                        }
 
-                            for (var i = minIndex; i < maxIndex; i++) {
+                        if (match[4]) {
+                            var indexString = match[5];
+
+                            if (indexString.indexOf("..") !== -1) {
+                                var indexSplits = indexString.split("..");
+                                var minIndex = parseInt(indexSplits[0]);
+                                var maxIndex = parseInt(indexSplits[1]);
+                                var sourceIncludeContent = includeContent.slice(0);
+                                includeContent = "";
+
+                                if (isNaN(maxIndex)) {
+                                    maxIndex = this._indexParameters[indexSplits[1]];
+                                }
+
+                                for (var i = minIndex; i < maxIndex; i++) {
+                                    if (!this._engine.supportsUniformBuffers) {
+                                        // Ubo replacement
+                                        sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                            return p1 + "{X}";
+                                        });
+                                    }
+                                    includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
+                                }
+                            } else {
                                 if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
-                                    sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                    includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
+                                includeContent = includeContent.replace(/\{X\}/g, indexString);
                             }
-                        } else {
-                            if (!this._engine.supportsUniformBuffers) {
-                                // Ubo replacement
-                                includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
-                                    return p1 + "{X}";
-                                });
-                            }
-                            includeContent = includeContent.replace(/\{X\}/g, indexString);
                         }
+
+                        // Replace
+                        returnValue = returnValue.replace(match[0], includeContent);
+                    } else {
+                        var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+
+                        this._engine._loadFileAsync(includeShaderUrl)
+                            .then((fileContent) => {
+                                Effect.IncludesShadersStore[includeFile] = fileContent as string;
+                                return this._processIncludesAsync(returnValue);
+                            })
+                            .then((returnValue) => {
+                                resolve(returnValue);
+                            });
+                        return;
                     }
 
-                    // Replace
-                    returnValue = returnValue.replace(match[0], includeContent);
-                } else {
-                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
-
-                    Tools.LoadFile(includeShaderUrl, (fileContent) => {
-                        Effect.IncludesShadersStore[includeFile] = fileContent as string;
-                        this._processIncludes(<string>returnValue, callback);
-                    });
-                    return;
+                    match = regex.exec(sourceCode);
                 }
-
-                match = regex.exec(sourceCode);
-            }
-
-            callback(returnValue);
+                resolve(returnValue);
+            });            
         }
 
         private _processPrecision(source: string): string {
@@ -520,6 +684,13 @@
             return source;
         }
 
+        /**
+         * Recompiles the webGL program
+         * @param vertexSourceCode The source code for the vertex shader.
+         * @param fragmentSourceCode The source code for the fragment shader.
+         * @param onCompiled Callback called when completed.
+         * @param onError Callback called on error.
+         */
         public _rebuildProgram(vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (program: WebGLProgram) => void, onError: (message: string) => void) {
             this._isReady = false;
 
@@ -544,6 +715,19 @@
             this._prepareEffect();
         }
 
+        /**
+         * Gets the uniform locations of the the specified variable names
+         * @param names THe names of the variables to lookup.
+         * @returns Array of locations in the same order as variable names.
+         */
+        public getSpecificUniformLocations(names: string[]): Nullable<WebGLUniformLocation>[] {
+            let engine = this._engine;
+            return engine.getUniforms(this._program, names);
+        }
+
+        /**
+         * Prepares the effect
+         */
         public _prepareEffect() {
             let attributesNames = this._attributesNames;
             let defines = this.defines;
@@ -553,7 +737,7 @@
             var previousProgram = this._program;
 
             try {
-                var engine = this._engine;
+                let engine = this._engine;
 
                 if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                     this._program = engine.createRawShaderProgram(this._vertexSourceCodeOverride, this._fragmentSourceCodeOverride, undefined, this._transformFeedbackVaryings);
@@ -605,10 +789,10 @@
 
                 // Let's go through fallbacks then
                 Tools.Error("Unable to compile effect:");
-                BABYLON.Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
+                Tools.Error("Uniforms: " + this._uniformsNames.map(function (uniform) {
                     return " " + uniform;
                 }));
-                BABYLON.Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
+                Tools.Error("Attributes: " + attributesNames.map(function (attribute) {
                     return " " + attribute;
                 }));
                 this._dumpShadersSource(this._vertexSourceCode, this._fragmentSourceCode, defines);
@@ -642,18 +826,35 @@
             }
         }
 
+        /**
+         * Checks if the effect is supported. (Must be called after compilation)
+         */
         public get isSupported(): boolean {
             return this._compilationError === "";
         }
 
+        /**
+         * Binds a texture to the engine to be used as output of the shader.
+         * @param channel Name of the output variable.
+         * @param texture Texture to bind.
+         */
         public _bindTexture(channel: string, texture: InternalTexture): void {
             this._engine._bindTexture(this._samplers.indexOf(channel), texture);
         }
 
+        /**
+         * Sets a texture on the engine to be used in the shader.
+         * @param channel Name of the sampler variable.
+         * @param texture Texture to set.
+         */
         public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
             this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
-
+        /**
+         * Sets an array of textures on the engine to be used in the shader.
+         * @param channel Name of the variable.
+         * @param textures Textures to set.
+         */
         public setTextureArray(channel: string, textures: BaseTexture[]): void {
             if (this._samplers.indexOf(channel + "Ex") === -1) {
                 var initialPos = this._samplers.indexOf(channel);
@@ -665,10 +866,16 @@
             this._engine.setTextureArray(this._samplers.indexOf(channel), this.getUniform(channel), textures);
         }
 
+        /**
+         * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
+         * @param channel Name of the sampler variable.
+         * @param postProcess Post process to get the input texture from.
+         */
         public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
+        /** @ignore */
         public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
             var cache = this._valueCache[uniformName];
             var flag = matrix.updateFlag;
@@ -681,6 +888,7 @@
             return true;
         }
 
+        /** @ignore */
         public _cacheFloat2(uniformName: string, x: number, y: number): boolean {
             var cache = this._valueCache[uniformName];
             if (!cache) {
@@ -702,6 +910,7 @@
             return changed;
         }
 
+        /** @ignore */
         public _cacheFloat3(uniformName: string, x: number, y: number, z: number): boolean {
             var cache = this._valueCache[uniformName];
             if (!cache) {
@@ -727,6 +936,7 @@
             return changed;
         }
 
+        /** @ignore */
         public _cacheFloat4(uniformName: string, x: number, y: number, z: number, w: number): boolean {
             var cache = this._valueCache[uniformName];
             if (!cache) {
@@ -756,19 +966,53 @@
             return changed;
         }
 
+        /**
+         * Binds a buffer to a uniform.
+         * @param buffer Buffer to bind.
+         * @param name Name of the uniform variable to bind to.
+         */
         public bindUniformBuffer(buffer: WebGLBuffer, name: string): void {
             let bufferName = this._uniformBuffersNames[name];
-            if (Effect._baseCache[bufferName] === buffer) {
+            if (bufferName === undefined || Effect._baseCache[bufferName] === buffer) {
                 return;
             }
             Effect._baseCache[bufferName] = buffer;
             this._engine.bindUniformBufferBase(buffer, bufferName);
         }
 
+        /**
+         * Binds block to a uniform.
+         * @param blockName Name of the block to bind.
+         * @param index Index to bind.
+         */
         public bindUniformBlock(blockName: string, index: number): void {
             this._engine.bindUniformBlock(this._program, blockName, index);
         }
 
+        /**
+         * Sets an interger value on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value Value to be set.
+         * @returns this effect.
+         */
+        public setInt(uniformName: string, value: number): Effect {
+            var cache = this._valueCache[uniformName];
+            if (cache !== undefined && cache === value)
+                return this;
+
+            this._valueCache[uniformName] = value;
+
+            this._engine.setInt(this.getUniform(uniformName), value);
+
+            return this;
+        }
+
+        /**
+         * Sets an int array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setIntArray(uniformName: string, array: Int32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setIntArray(this.getUniform(uniformName), array);
@@ -776,6 +1020,12 @@
             return this;
         }
 
+        /**
+         * Sets an int array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setIntArray2(uniformName: string, array: Int32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setIntArray2(this.getUniform(uniformName), array);
@@ -783,6 +1033,12 @@
             return this;
         }
 
+        /**
+         * Sets an int array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setIntArray3(uniformName: string, array: Int32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setIntArray3(this.getUniform(uniformName), array);
@@ -790,6 +1046,12 @@
             return this;
         }
 
+        /**
+         * Sets an int array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setIntArray4(uniformName: string, array: Int32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setIntArray4(this.getUniform(uniformName), array);
@@ -797,6 +1059,12 @@
             return this;
         }
 
+        /**
+         * Sets an float array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setFloatArray(uniformName: string, array: Float32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setFloatArray(this.getUniform(uniformName), array);
@@ -804,6 +1072,12 @@
             return this;
         }
 
+        /**
+         * Sets an float array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setFloatArray2(uniformName: string, array: Float32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setFloatArray2(this.getUniform(uniformName), array);
@@ -811,6 +1085,12 @@
             return this;
         }
 
+        /**
+         * Sets an float array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setFloatArray3(uniformName: string, array: Float32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setFloatArray3(this.getUniform(uniformName), array);
@@ -818,6 +1098,12 @@
             return this;
         }
 
+        /**
+         * Sets an float array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setFloatArray4(uniformName: string, array: Float32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setFloatArray4(this.getUniform(uniformName), array);
@@ -825,6 +1111,12 @@
             return this;
         }
 
+        /**
+         * Sets an array on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setArray(uniformName: string, array: number[]): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setArray(this.getUniform(uniformName), array);
@@ -832,6 +1124,12 @@
             return this;
         }
 
+        /**
+         * Sets an array 2 on a uniform variable. (Array is specified as single array eg. [1,2,3,4] will result in [[1,2],[3,4]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setArray2(uniformName: string, array: number[]): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setArray2(this.getUniform(uniformName), array);
@@ -839,6 +1137,12 @@
             return this;
         }
 
+        /**
+         * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setArray3(uniformName: string, array: number[]): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setArray3(this.getUniform(uniformName), array);
@@ -846,6 +1150,12 @@
             return this;
         }
 
+        /**
+         * Sets an array 4 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6,7,8] will result in [[1,2,3,4],[5,6,7,8]] in the shader)
+         * @param uniformName Name of the variable.
+         * @param array array to be set.
+         * @returns this effect.
+         */
         public setArray4(uniformName: string, array: number[]): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setArray4(this.getUniform(uniformName), array);
@@ -853,6 +1163,12 @@
             return this;
         }
 
+        /**
+         * Sets matrices on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrices matrices to be set.
+         * @returns this effect.
+         */
         public setMatrices(uniformName: string, matrices: Float32Array): Effect {
             if (!matrices) {
                 return this;
@@ -864,6 +1180,12 @@
             return this;
         }
 
+        /**
+         * Sets matrix on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         * @returns this effect.
+         */
         public setMatrix(uniformName: string, matrix: Matrix): Effect {
             if (this._cacheMatrix(uniformName, matrix)) {
                 this._engine.setMatrix(this.getUniform(uniformName), matrix);
@@ -871,6 +1193,12 @@
             return this;
         }
 
+        /**
+         * Sets a 3x3 matrix on a uniform variable. (Speicified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         * @returns this effect.
+         */
         public setMatrix3x3(uniformName: string, matrix: Float32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setMatrix3x3(this.getUniform(uniformName), matrix);
@@ -878,6 +1206,12 @@
             return this;
         }
 
+        /**
+         * Sets a 2x2 matrix on a uniform variable. (Speicified as [1,2,3,4] will result in [1,2][3,4] matrix)
+         * @param uniformName Name of the variable.
+         * @param matrix matrix to be set.
+         * @returns this effect.
+         */
         public setMatrix2x2(uniformName: string, matrix: Float32Array): Effect {
             this._valueCache[uniformName] = null;
             this._engine.setMatrix2x2(this.getUniform(uniformName), matrix);
@@ -885,6 +1219,12 @@
             return this;
         }
 
+        /**
+         * Sets a float on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param value value to be set.
+         * @returns this effect.
+         */
         public setFloat(uniformName: string, value: number): Effect {
             var cache = this._valueCache[uniformName];
             if (cache !== undefined && cache === value)
@@ -897,6 +1237,12 @@
             return this;
         }
 
+        /**
+         * Sets a boolean on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param bool value to be set.
+         * @returns this effect.
+         */
         public setBool(uniformName: string, bool: boolean): Effect {
             var cache = this._valueCache[uniformName];
             if (cache !== undefined && cache === bool)
@@ -909,6 +1255,12 @@
             return this;
         }
 
+        /**
+         * Sets a Vector2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector2 vector2 to be set.
+         * @returns this effect.
+         */
         public setVector2(uniformName: string, vector2: Vector2): Effect {
             if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
                 this._engine.setFloat2(this.getUniform(uniformName), vector2.x, vector2.y);
@@ -916,6 +1268,13 @@
             return this;
         }
 
+        /**
+         * Sets a float2 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float2.
+         * @param y Second float in float2.
+         * @returns this effect.
+         */
         public setFloat2(uniformName: string, x: number, y: number): Effect {
             if (this._cacheFloat2(uniformName, x, y)) {
                 this._engine.setFloat2(this.getUniform(uniformName), x, y);
@@ -923,6 +1282,12 @@
             return this;
         }
 
+        /**
+         * Sets a Vector3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector3 Value to be set.
+         * @returns this effect.
+         */
         public setVector3(uniformName: string, vector3: Vector3): Effect {
             if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
                 this._engine.setFloat3(this.getUniform(uniformName), vector3.x, vector3.y, vector3.z);
@@ -930,6 +1295,14 @@
             return this;
         }
 
+        /**
+         * Sets a float3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float3.
+         * @param y Second float in float3.
+         * @param z Third float in float3.
+         * @returns this effect.
+         */
         public setFloat3(uniformName: string, x: number, y: number, z: number): Effect {
             if (this._cacheFloat3(uniformName, x, y, z)) {
                 this._engine.setFloat3(this.getUniform(uniformName), x, y, z);
@@ -937,6 +1310,12 @@
             return this;
         }
 
+        /**
+         * Sets a Vector4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param vector4 Value to be set.
+         * @returns this effect.
+         */
         public setVector4(uniformName: string, vector4: Vector4): Effect {
             if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
                 this._engine.setFloat4(this.getUniform(uniformName), vector4.x, vector4.y, vector4.z, vector4.w);
@@ -944,6 +1323,15 @@
             return this;
         }
 
+        /**
+         * Sets a float4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param x First float in float4.
+         * @param y Second float in float4.
+         * @param z Third float in float4.
+         * @param w Fourth float in float4.
+         * @returns this effect.
+         */
         public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
             if (this._cacheFloat4(uniformName, x, y, z, w)) {
                 this._engine.setFloat4(this.getUniform(uniformName), x, y, z, w);
@@ -951,6 +1339,12 @@
             return this;
         }
 
+        /**
+         * Sets a Color3 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @returns this effect.
+         */
         public setColor3(uniformName: string, color3: Color3): Effect {
 
             if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
@@ -959,6 +1353,13 @@
             return this;
         }
 
+        /**
+         * Sets a Color4 on a uniform variable.
+         * @param uniformName Name of the variable.
+         * @param color3 Value to be set.
+         * @param alpha Alpha value to be set.
+         * @returns this effect.
+         */
         public setColor4(uniformName: string, color3: Color3, alpha: number): Effect {
             if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
                 this._engine.setColor4(this.getUniform(uniformName), color3, alpha);
@@ -967,9 +1368,18 @@
         }
 
         // Statics
+        /**
+         * Store of each shader (The can be looked up using effect.key)
+         */
         public static ShadersStore: { [key: string]: string } = {};
+        /**
+         * Store of each included file for a shader (The can be looked up using effect.key)
+         */
         public static IncludesShadersStore: { [key: string]: string } = {};
 
+        /**
+         * Resets the cache of effects.
+         */
         public static ResetCache() {
             Effect._baseCache = {};
         }

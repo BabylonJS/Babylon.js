@@ -35,6 +35,7 @@ module BABYLON {
         public _poseMatrix: Matrix;
         private _localWorld = Matrix.Zero();
         public _worldMatrix = Matrix.Zero();
+        public _worldMatrixDeterminant = 0;
         private _absolutePosition = Vector3.Zero();
         private _pivotMatrix = Matrix.Identity();
         private _pivotMatrixInverse: Matrix;
@@ -111,6 +112,13 @@ module BABYLON {
                 this.computeWorldMatrix();
             }
             return this._worldMatrix;
+        }
+
+        /**
+         * Returns the latest update of the World matrix determinant.
+         */
+        protected _getWorldMatrixDeterminant(): number {
+            return this._worldMatrixDeterminant;
         }
 
         /**
@@ -200,17 +208,33 @@ module BABYLON {
         }
 
         /**
-         * Sets a new pivot matrix to the mesh.  
-         * Returns the AbstractMesh.
+         * Sets a new matrix to apply before all other transformation
+         * @param matrix defines the transform matrix
+         * @returns the current TransformNode
+         */
+        public setPreTransformMatrix(matrix: Matrix): TransformNode {
+            return this.setPivotMatrix(matrix, false);
+        }
+
+        /**
+         * Sets a new pivot matrix to the current node
+         * @param matrix defines the new pivot matrix to use
+         * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
+         * @returns the current TransformNode
         */
-        public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = false): TransformNode {
+        public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = true): TransformNode {
             this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
             if (this._postMultiplyPivotMatrix) {
-                this._pivotMatrixInverse = Matrix.Invert(matrix);
+                if (!this._pivotMatrixInverse) {
+                    this._pivotMatrixInverse = Matrix.Invert(this._pivotMatrix);
+                } else {
+                    this._pivotMatrix.invertToRef(this._pivotMatrixInverse);
+                }
             }
+
             return this;
         }
 
@@ -382,6 +406,12 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Sets a new pivot point to the current node
+         * @param point defines the new pivot point to use
+         * @param space defines if the point is in world or local space (local by default)
+         * @returns the current TransformNode
+        */        
         public setPivotPoint(point: Vector3, space: Space = Space.LOCAL): TransformNode {
             if (this.getScene().getRenderId() == 0) {
                 this.computeWorldMatrix(true);
@@ -395,12 +425,7 @@ module BABYLON {
                 point = Vector3.TransformCoordinates(point, tmat);
             }
 
-            Vector3.TransformCoordinatesToRef(point, wm, this.position);
-            this._pivotMatrix.m[12] = -point.x;
-            this._pivotMatrix.m[13] = -point.y;
-            this._pivotMatrix.m[14] = -point.z;
-            this._cache.pivotMatrixUpdated = true;
-            return this;
+            return this.setPivotMatrix(Matrix.Translation(-point.x, -point.y, -point.z), true);
         }
 
         /**
@@ -452,7 +477,7 @@ module BABYLON {
          */
         public setParent(node: Nullable<Node>): TransformNode {
 
-            if (node == null) {
+            if (node === null) {
                 var rotation = Tmp.Quaternion[0];
                 var position = Tmp.Vector3[0];
                 var scale = Tmp.Vector3[1];
@@ -650,7 +675,7 @@ module BABYLON {
                 rotationQuaternion = Tmp.Quaternion[1];
                 Quaternion.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, rotationQuaternion);
             }
-            var accumulation = BABYLON.Tmp.Quaternion[0];
+            var accumulation = Tmp.Quaternion[0];
             Quaternion.RotationYawPitchRollToRef(y, x, z, accumulation);
             rotationQuaternion.multiplyInPlace(accumulation);
             if (!this.rotationQuaternion) {
@@ -691,7 +716,7 @@ module BABYLON {
             if (this.rotationQuaternion) {
                 var len = this.rotation.length();
                 if (len) {
-                    this.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
+                    this.rotationQuaternion.multiplyInPlace(Quaternion.RotationYawPitchRoll(this.rotation.y, this.rotation.x, this.rotation.z))
                     this.rotation.copyFromFloats(0, 0, 0);
                 }
             }
@@ -824,6 +849,9 @@ module BABYLON {
                 this._poseMatrix = Matrix.Invert(this._worldMatrix);
             }
 
+            // Cache the determinant
+            this._worldMatrixDeterminant = this._worldMatrix.determinant();
+
             return this._worldMatrix;
         }
 
@@ -921,7 +949,7 @@ module BABYLON {
             }
 
             if (parsedTransformNode.localMatrix) {
-                transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
+                transformNode.setPreTransformMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
             } else if (parsedTransformNode.pivotMatrix) {
                 transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.pivotMatrix));
             }
@@ -947,8 +975,6 @@ module BABYLON {
 
             // Remove from scene
             this.getScene().removeTransformNode(this);
-
-            this._cache = {};
 
             if (!doNotRecurse) {
                 // Children

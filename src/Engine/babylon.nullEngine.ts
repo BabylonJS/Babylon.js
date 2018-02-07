@@ -265,7 +265,6 @@
 
                 this._stencilState.reset();
                 this._depthCullingState.reset();
-                this.setDepthFunctionToLessOrEqual();
                 this._alphaState.reset();
             }
 
@@ -275,6 +274,12 @@
         }
 
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
+        }
+
+        public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
+        }
+
+        public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         }
 
         public _createTexture(): WebGLTexture {
@@ -386,9 +391,9 @@
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
         }
 
-        public _bindTextureDirectly(target: number, texture: InternalTexture): void {
-            if (this._boundTexturesCache[this._activeTextureChannel] !== texture) {
-                this._boundTexturesCache[this._activeTextureChannel] = texture;
+        protected _bindTextureDirectly(target: number, texture: InternalTexture): void {
+            if (this._boundTexturesCache[this._activeChannel] !== texture) {
+                this._boundTexturesCache[this._activeChannel] = texture;
             }
         }
 

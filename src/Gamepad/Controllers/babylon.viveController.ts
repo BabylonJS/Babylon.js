@@ -1,8 +1,8 @@
 module BABYLON {
 
     export class ViveController extends WebVRController {
-        private static readonly MODEL_BASE_URL:string = 'https://controllers.babylonjs.com/vive/';
-        private static readonly MODEL_FILENAME:string = 'wand.babylon';
+        public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/vive/';
+        public static MODEL_FILENAME: string = 'wand.babylon';
 
         constructor(vrGamepad: any) {
             super(vrGamepad);

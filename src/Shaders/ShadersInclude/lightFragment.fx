@@ -23,6 +23,9 @@
 				info = computeLighting(viewDirectionW, normalW, light{X}.vLightData, light{X}.vLightDiffuse.rgb, light{X}.vLightSpecular, light{X}.vLightDiffuse.a, glossiness);
 			#endif
 		#endif
+		#ifdef PROJECTEDLIGHTTEXTURE{X}
+			info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightSampler{X}, textureProjectionMatrix{X});
+		#endif
     #endif
 	#ifdef SHADOW{X}
 		#ifdef SHADOWCLOSEESM{X}

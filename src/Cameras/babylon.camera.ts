@@ -25,10 +25,19 @@
             return Camera._ORTHOGRAPHIC_CAMERA;
         }
 
+        /**
+         * This is the default FOV mode for perspective cameras.
+         * This setting aligns the upper and lower bounds of the viewport to the upper and lower bounds of the camera frustum.
+         *
+         */
         public static get FOVMODE_VERTICAL_FIXED(): number {
             return Camera._FOVMODE_VERTICAL_FIXED;
         }
 
+        /**
+         * This setting aligns the left and right bounds of the viewport to the left and right bounds of the camera frustum.
+         *
+         */
         public static get FOVMODE_HORIZONTAL_FIXED(): number {
             return Camera._FOVMODE_HORIZONTAL_FIXED;
         }
@@ -69,6 +78,10 @@
         @serializeAsVector3()
         public position: Vector3;
 
+        /**
+         * The vector the camera should consider as up.
+         * (default is Vector3(0, 1, 0) aka Vector3.Up())
+         */
         @serializeAsVector3()
         public upVector = Vector3.Up();
 
@@ -84,6 +97,9 @@
         @serialize()
         public orthoTop: Nullable<number> = null;
 
+        /**
+         * FOV is set in Radians. (default is 0.8)
+         */
         @serialize()
         public fov = 0.8;
 
@@ -102,9 +118,16 @@
 
         public viewport = new Viewport(0, 0, 1.0, 1.0);
 
+        /**
+         * Restricts the camera to viewing objects with the same layerMask.
+         * A camera with a layerMask of 1 will render mesh.layerMask & camera.layerMask!== 0
+         */
         @serialize()
         public layerMask: number = 0x0FFFFFFF;
 
+        /**
+         * fovMode sets the camera frustum bounds to the viewport bounds. (default is FOVMODE_VERTICAL_FIXED)
+         */
         @serialize()
         public fovMode: number = Camera.FOVMODE_VERTICAL_FIXED;
 
@@ -340,7 +363,7 @@
                 var cam = this._rigCameras[i];
                 var rigPostProcess = cam._rigPostProcess;
 
-                // for VR rig, there does not have to be a post process 
+                // for VR rig, there does not have to be a post process
                 if (rigPostProcess) {
                     var isPass = rigPostProcess instanceof PassPostProcess;
                     if (isPass) {
@@ -367,7 +390,7 @@
             } else {
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
-            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated            
+            this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
             return this._postProcesses.indexOf(postProcess);
         }
 
@@ -558,10 +581,10 @@
             if (!origin) {
                 origin = this.position;
             }
-            var forward = new BABYLON.Vector3(0, 0, 1);
-            var forwardWorld = BABYLON.Vector3.TransformNormal(forward, transform);
+            var forward = new Vector3(0, 0, 1);
+            var forwardWorld = Vector3.TransformNormal(forward, transform);
 
-            var direction = BABYLON.Vector3.Normalize(forwardWorld);
+            var direction = Vector3.Normalize(forwardWorld);
 
             return new Ray(origin, direction, length);
         }
@@ -587,7 +610,7 @@
                 let camera = this._rigCameras.pop();
                 if (camera) {
                     camera.dispose();
-                }                
+                }
             }
 
             // Postprocesses
@@ -662,10 +685,10 @@
             }
             this.cameraRigMode = mode;
             this._cameraRigParams = {};
-            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target, 
+            //we have to implement stereo camera calcultating left and right viewpoints from interaxialDistance and target,
             //not from a given angle as it is now, but until that complete code rewriting provisional stereoHalfAngle value is introduced
             this._cameraRigParams.interaxialDistance = rigParams.interaxialDistance || 0.0637;
-            this._cameraRigParams.stereoHalfAngle = BABYLON.Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
+            this._cameraRigParams.stereoHalfAngle = Tools.ToRadians(this._cameraRigParams.interaxialDistance / 0.0637);
 
             // create the rig cameras, unless none
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {

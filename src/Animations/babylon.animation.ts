@@ -81,10 +81,25 @@
         }
     }
 
+    export interface IAnimationKey {
+        frame: number;
+        value: any;
+        inTangent?: any;
+        outTangent?: any;
+        interpolation?: AnimationKeyInterpolation;
+    }
+
+    export enum AnimationKeyInterpolation {
+        /**
+         * Do not interpolate between keys and use the start key value only. Tangents are ignored.
+         */
+        STEP = 1
+    }
+
     export class Animation {
         public static AllowMatricesInterpolation = false;
 
-        private _keys: Array<{frame:number, value: any, inTangent?: any, outTangent?: any}>;
+        private _keys: Array<IAnimationKey>;
         private _easingFunction: IEasingFunction;
 
         public _runtimeAnimations = new Array<RuntimeAnimation>();
@@ -122,7 +137,7 @@
 
             var animation = new Animation(name, targetProperty, framePerSecond, dataType, loopMode);
 
-            var keys: Array<{frame: number, value:any}> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
+            var keys: Array<IAnimationKey> = [{ frame: 0, value: from }, { frame: totalFrame, value: to }];
             animation.setKeys(keys);
 
             if (easingFunction !== undefined) {
@@ -139,18 +154,32 @@
 		 * @param easingFunction the easing function used in the animation
 		 * @returns The created animation
 		 */
-		public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: BABYLON.EasingFunction): BABYLON.Animation {
-			var animation: BABYLON.Animation = new BABYLON.Animation(property + "Animation",
-				property,
-				framePerSecond,
-				animationType,
-				BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        public static CreateAnimation(property: string, animationType: number, framePerSecond: number, easingFunction: EasingFunction): Animation {
+            var animation: Animation = new Animation(property + "Animation",
+                property,
+                framePerSecond,
+                animationType,
+                Animation.ANIMATIONLOOPMODE_CONSTANT);
 
-			animation.setEasingFunction(easingFunction);
+            animation.setEasingFunction(easingFunction);
 
-			return animation;
-		}
+            return animation;
+        }
 
+        /**
+         * Create and start an animation on a node
+         * @param {string} name defines the name of the global animation that will be run on all nodes
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {string} targetProperty defines property to animate
+         * @param {number} framePerSecond defines the number of frame per second yo use
+         * @param {number} totalFrame defines the number of frames in total
+         * @param {any} from defines the initial value
+         * @param {any} to defines the final value
+         * @param {number} loopMode defines which loop mode you want to use (off by default)
+         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when animation end
+         * @returns the animatable created for this animation
+         */
         public static CreateAndStartAnimation(name: string, node: Node, targetProperty: string,
             framePerSecond: number, totalFrame: number,
             from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable> {
@@ -162,6 +191,36 @@
             }
 
             return node.getScene().beginDirectAnimation(node, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
+        }
+
+        /**
+         * Create and start an animation on a node and its descendants
+         * @param {string} name defines the name of the global animation that will be run on all nodes
+         * @param {BABYLON.Node} node defines the root node where the animation will take place
+         * @param {boolean} directDescendantsOnly if true only direct descendants will be used, if false direct and also indirect (children of children, an so on in a recursive manner) descendants will be used.
+         * @param {string} targetProperty defines property to animate
+         * @param {number} framePerSecond defines the number of frame per second yo use
+         * @param {number} totalFrame defines the number of frames in total
+         * @param {any} from defines the initial value
+         * @param {any} to defines the final value
+         * @param {number} loopMode defines which loop mode you want to use (off by default)
+         * @param {BABYLON.EasingFunction} easingFunction defines the easing function to use (linear by default)
+         * @param onAnimationEnd defines the callback to call when an animation ends (will be called once per node)
+         * @returns the list of animatables created for all nodes
+         * @example https://www.babylonjs-playground.com/#MH0VLI
+         */
+        public static CreateAndStartHierarchyAnimation(name: string, node: Node, directDescendantsOnly: boolean, targetProperty: string,
+            framePerSecond: number, totalFrame: number,
+            from: any, to: any, loopMode?: number, easingFunction?: EasingFunction, onAnimationEnd?: () => void): Nullable<Animatable[]> {
+
+            var animation = Animation._PrepareAnimation(name, targetProperty, framePerSecond, totalFrame, from, to, loopMode, easingFunction);
+
+            if (!animation) {
+                return null;
+            }
+
+            let scene = node.getScene();
+            return scene.beginDirectHierarchyAnimation(node, directDescendantsOnly, [animation], 0, totalFrame, (animation.loopMode === 1), 1.0, onAnimationEnd);
         }
 
         public static CreateMergeAndStartAnimation(name: string, node: Node, targetProperty: string,
@@ -190,38 +249,38 @@
 		 * @param duration The duration of the animation, in milliseconds
 		 * @param onAnimationEnd Call back trigger at the end of the animation.
 		 */
-		public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number,	onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
+        public static TransitionTo(property: string, targetValue: any, host: any, scene: Scene, frameRate: number, transition: Animation, duration: number, onAnimationEnd: Nullable<() => void> = null): Nullable<Animatable> {
 
-			if (duration <= 0) {
-				host[property] = targetValue;
-				if (onAnimationEnd) {
+            if (duration <= 0) {
+                host[property] = targetValue;
+                if (onAnimationEnd) {
                     onAnimationEnd();
                 }
-				return null;
-			}
+                return null;
+            }
 
-			var endFrame: number = frameRate * (duration / 1000);
+            var endFrame: number = frameRate * (duration / 1000);
 
-			transition.setKeys([{
-				frame: 0,
-				value: host[property].clone ? host[property].clone() : host[property]
-			},
-			{
-				frame: endFrame,
-				value: targetValue
-			}]);
+            transition.setKeys([{
+                frame: 0,
+                value: host[property].clone ? host[property].clone() : host[property]
+            },
+            {
+                frame: endFrame,
+                value: targetValue
+            }]);
 
-			if (!host.animations) {
-				host.animations = [];
-			}
+            if (!host.animations) {
+                host.animations = [];
+            }
 
-			host.animations.push(transition);
+            host.animations.push(transition);
 
-			var animation: BABYLON.Animatable = scene.beginAnimation(host, 0, endFrame, false);
-			animation.onAnimationEnd = onAnimationEnd;
-			return animation;
+            var animation: Animatable = scene.beginAnimation(host, 0, endFrame, false);
+            animation.onAnimationEnd = onAnimationEnd;
+            return animation;
         }
-        
+
         /**
          * Return the array of runtime animations currently using this animation
          */
@@ -249,7 +308,7 @@
         /**
          * @param {boolean} fullDetails - support for multiple levels of logging within scene loading
          */
-        public toString(fullDetails? : boolean) : string {
+        public toString(fullDetails?: boolean): string {
             var ret = "Name: " + this.name + ", property: " + this.targetProperty;
             ret += ", datatype: " + (["Float", "Vector3", "Quaternion", "Matrix", "Color3", "Vector2"])[this.dataType];
             ret += ", nKeys: " + (this._keys ? this._keys.length : "none");
@@ -260,15 +319,15 @@
                 for (var name in this._ranges) {
                     if (first) {
                         ret += ", ";
-                        first = false; 
+                        first = false;
                     }
-                    ret += name; 
+                    ret += name;
                 }
                 ret += "}";
             }
             return ret;
-        } 
-        
+        }
+
         /**
          * Add an event to this animation.
          */
@@ -318,7 +377,7 @@
                 }
             }
             this._ranges[name] = null; // said much faster than 'delete this._range[name]' 
-        
+
         }
 
         public getRange(name: string): Nullable<AnimationRange> {
@@ -326,7 +385,7 @@
         }
 
 
-        public getKeys(): Array<{frame:number, value: any, inTangent?: any, outTangent?: any}> {
+        public getKeys(): Array<IAnimationKey> {
             return this._keys;
         }
 
@@ -417,7 +476,7 @@
             return clone;
         }
 
-        public setKeys(values: Array<{ frame: number, value: any }>): void {
+        public setKeys(values: Array<IAnimationKey>): void {
             this._keys = values.slice(0);
         }
 
@@ -458,7 +517,7 @@
 
             serializationObject.ranges = [];
             for (var name in this._ranges) {
-                let source  =this._ranges[name];
+                let source = this._ranges[name];
 
                 if (!source) {
                     continue;
@@ -529,7 +588,7 @@
             var animation = new Animation(parsedAnimation.name, parsedAnimation.property, parsedAnimation.framePerSecond, parsedAnimation.dataType, parsedAnimation.loopBehavior);
 
             var dataType = parsedAnimation.dataType;
-            var keys: Array<{ frame: number, value: any, inTangent:any, outTangent:any }> = [];
+            var keys: Array<IAnimationKey> = [];
             var data;
             var index: number;
 
@@ -543,8 +602,8 @@
 
             for (index = 0; index < parsedAnimation.keys.length; index++) {
                 var key = parsedAnimation.keys[index];
-                var inTangent:any;
-                var outTangent:any;
+                var inTangent: any;
+                var outTangent: any;
 
                 switch (dataType) {
                     case Animation.ANIMATIONTYPE_FLOAT:
@@ -583,7 +642,7 @@
                         break;
                 }
 
-                var keyData:any = {};
+                var keyData: any = {};
                 keyData.frame = key.frame;
                 keyData.value = data;
 
@@ -619,6 +678,6 @@
             }
         }
     }
-} 
+}
 
 

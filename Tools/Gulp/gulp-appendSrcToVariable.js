@@ -7,7 +7,7 @@ var File = gutil.File;
 // Consts
 const PLUGIN_NAME = 'gulp-appendSrcToVariable';
 
-var appendSrcToVariable = function appendSrcToVariable(varName, namingCallback, output) {
+var appendSrcToVariable = function appendSrcToVariable(varName, namingCallback, output, moduleType) {
 
     var content;
     var firstFile;
@@ -28,17 +28,47 @@ var appendSrcToVariable = function appendSrcToVariable(varName, namingCallback, 
             return;
         }
 
-        // set first file if not already set
-        if (!firstFile) {
-            firstFile = file;
-        }
-
         // construct concat instance
         if (!content) {
             content = "";
         }
+
+        // set first file if not already set
+        if (!firstFile) {
+            if (moduleType === "es6") {
+                content += `
+// import * as BABYLON from 'babylonjs/core/es6';
+`;
+            }
+            firstFile = file;
+        }
+
+
         var name = namingCallback(file.relative);
-        content += varName + "['" + name + "'] = " + JSON.stringify(file.contents.toString()) + ";\r\n";
+        if (moduleType) {
+            let vars = varName.split(".");
+            // shader support when using modules
+            if (moduleType === "es6") {
+                content += `
+let ${name} = ${JSON.stringify(file.contents.toString())};
+// ${varName}["${name}"] = ${varName}["${name}"] || ${name};
+export { ${name}  };
+`;
+            } else {
+                // commonjs
+                content += `
+if(typeof require !== 'undefined'){
+var BABYLON = require("babylonjs/core");
+let data = ${JSON.stringify(file.contents.toString())};
+${varName}["${name}"] = ${varName}["${name}"] || data;
+module.exports = module.exports || {};
+module.exports["${name}"] = data;
+}
+`;
+            }
+        } else {
+            content += varName + "['" + name + "'] = " + JSON.stringify(file.contents.toString()) + ";\r\n";
+        }
         cb();
     }
 

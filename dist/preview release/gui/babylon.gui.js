@@ -476,6 +476,17 @@ var BABYLON;
                 result.attachToMesh(mesh, supportPointerMove);
                 return result;
             };
+            /**
+             * FullScreenUI is created in a layer. This allows it to be treated like any other layer.
+             * As such, if you have a multi camera setup, you can set the layerMask on the GUI as well.
+             * When the GUI is not Created as FullscreenUI it does not respect the layerMask.
+             * layerMask is set through advancedTexture.layer.layerMask
+             * @param name name for the Texture
+             * @param foreground render in foreground (default is true)
+             * @param scene scene to be rendered in
+             * @param sampling method for scaling to fit screen
+             * @returns AdvancedDynamicTexture
+             */
             AdvancedDynamicTexture.CreateFullscreenUI = function (name, foreground, scene, sampling) {
                 if (foreground === void 0) { foreground = true; }
                 if (scene === void 0) { scene = null; }
@@ -2589,11 +2600,48 @@ var BABYLON;
                 this._currentMeasure.left = Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
                 this._currentMeasure.top = Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
             };
-            Line.prototype._moveToProjectedPosition = function (projectedPosition) {
-                this.x1 = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
-                this.y1 = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
-                this._x1.ignoreAdaptiveScaling = true;
-                this._y1.ignoreAdaptiveScaling = true;
+            /**
+             * Move one end of the line given 3D cartesian coordinates.
+             * @param position Targeted world position
+             * @param scene Scene
+             * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
+             */
+            Line.prototype.moveToVector3 = function (position, scene, end) {
+                if (end === void 0) { end = false; }
+                if (!this._host || this._root !== this._host._rootContainer) {
+                    BABYLON.Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
+                    return;
+                }
+                var globalViewport = this._host._getGlobalViewport(scene);
+                var projectedPosition = BABYLON.Vector3.Project(position, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), globalViewport);
+                this._moveToProjectedPosition(projectedPosition, end);
+                if (projectedPosition.z < 0 || projectedPosition.z > 1) {
+                    this.notRenderable = true;
+                    return;
+                }
+                this.notRenderable = false;
+            };
+            /**
+             * Move one end of the line to a position in screen absolute space.
+             * @param projectedPosition Position in screen absolute space (X, Y)
+             * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
+             */
+            Line.prototype._moveToProjectedPosition = function (projectedPosition, end) {
+                if (end === void 0) { end = false; }
+                var x = (projectedPosition.x + this._linkOffsetX.getValue(this._host)) + "px";
+                var y = (projectedPosition.y + this._linkOffsetY.getValue(this._host)) + "px";
+                if (end) {
+                    this.x2 = x;
+                    this.y2 = y;
+                    this._x2.ignoreAdaptiveScaling = true;
+                    this._y2.ignoreAdaptiveScaling = true;
+                }
+                else {
+                    this.x1 = x;
+                    this.y1 = y;
+                    this._x1.ignoreAdaptiveScaling = true;
+                    this._y1.ignoreAdaptiveScaling = true;
+                }
             };
             return Line;
         }(GUI.Control));
@@ -2622,6 +2670,7 @@ var BABYLON;
                 _this._borderColor = "white";
                 _this._barOffset = new GUI.ValueAndUnit(5, GUI.ValueAndUnit.UNITMODE_PIXEL, false);
                 _this._isThumbCircle = false;
+                _this._isThumbClamped = false;
                 _this.onValueChangedObservable = new BABYLON.Observable();
                 // Events
                 _this._pointerIsDown = false;
@@ -2760,6 +2809,20 @@ var BABYLON;
                 enumerable: true,
                 configurable: true
             });
+            Object.defineProperty(Slider.prototype, "isThumbClamped", {
+                get: function () {
+                    return this._isThumbClamped;
+                },
+                set: function (value) {
+                    if (this._isThumbClamped === value) {
+                        return;
+                    }
+                    this._isThumbClamped = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Slider.prototype._getTypeName = function () {
                 return "Slider";
             };
@@ -2770,12 +2833,6 @@ var BABYLON;
                     // Main bar
                     var effectiveThumbWidth;
                     var effectiveBarOffset;
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowColor = this.shadowColor;
-                        context.shadowBlur = this.shadowBlur;
-                        context.shadowOffsetX = this.shadowOffsetX;
-                        context.shadowOffsetY = this.shadowOffsetY;
-                    }
                     if (this._thumbWidth.isPixel) {
                         effectiveThumbWidth = Math.min(this._thumbWidth.getValue(this._host), this._currentMeasure.width);
                     }
@@ -2788,29 +2845,43 @@ var BABYLON;
                     else {
                         effectiveBarOffset = this._currentMeasure.height * this._barOffset.getValue(this._host);
                     }
-                    var left = this._currentMeasure.left + effectiveThumbWidth / 2;
-                    var width = this._currentMeasure.width - effectiveThumbWidth;
-                    var thumbPosition = (this._value - this._minimum) / (this._maximum - this._minimum) * width;
-                    // Bar
-                    context.fillStyle = this._background;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
-                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
-                        context.shadowBlur = 0;
-                        context.shadowOffsetX = 0;
-                        context.shadowOffsetY = 0;
-                    }
-                    context.fillStyle = this.color;
-                    context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
                     if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                         context.shadowColor = this.shadowColor;
                         context.shadowBlur = this.shadowBlur;
                         context.shadowOffsetX = this.shadowOffsetX;
                         context.shadowOffsetY = this.shadowOffsetY;
                     }
-                    // Thumb
+                    var left = this._currentMeasure.left;
+                    var width = this._currentMeasure.width - effectiveThumbWidth;
+                    var thumbPosition = ((this._value - this._minimum) / (this._maximum - this._minimum)) * width;
+                    context.fillStyle = this._background;
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, width + effectiveThumbWidth, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, width, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowBlur = 0;
+                        context.shadowOffsetX = 0;
+                        context.shadowOffsetY = 0;
+                    }
+                    context.fillStyle = this.color;
+                    if (this.isThumbClamped) {
+                        context.fillRect(left, this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    else {
+                        context.fillRect(left + (effectiveThumbWidth / 2), this._currentMeasure.top + effectiveBarOffset, thumbPosition, this._currentMeasure.height - effectiveBarOffset * 2);
+                    }
+                    if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
+                        context.shadowColor = this.shadowColor;
+                        context.shadowBlur = this.shadowBlur;
+                        context.shadowOffsetX = this.shadowOffsetX;
+                        context.shadowOffsetY = this.shadowOffsetY;
+                    }
                     if (this._isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + thumbPosition, this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
+                        context.arc(left + thumbPosition + (effectiveThumbWidth / 2), this._currentMeasure.top + this._currentMeasure.height / 2, effectiveThumbWidth / 2, 0, 2 * Math.PI);
                         context.fill();
                         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                             context.shadowBlur = 0;
@@ -2821,14 +2892,14 @@ var BABYLON;
                         context.stroke();
                     }
                     else {
-                        context.fillRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        context.fillRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
                             context.shadowBlur = 0;
                             context.shadowOffsetX = 0;
                             context.shadowOffsetY = 0;
                         }
                         context.strokeStyle = this._borderColor;
-                        context.strokeRect(left + thumbPosition - effectiveThumbWidth / 2, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
+                        context.strokeRect(left + thumbPosition, this._currentMeasure.top, effectiveThumbWidth, this._currentMeasure.height);
                     }
                 }
                 context.restore();
@@ -3151,7 +3222,16 @@ var BABYLON;
     (function (GUI) {
         var TextBlock = /** @class */ (function (_super) {
             __extends(TextBlock, _super);
-            function TextBlock(name, text) {
+            /**
+             * Creates a new TextBlock object
+             * @param name defines the name of the control
+             * @param text defines the text to display (emptry string by default)
+             */
+            function TextBlock(
+                /**
+                 * Defines the name of the control
+                 */
+                name, text) {
                 if (text === void 0) { text = ""; }
                 var _this = _super.call(this, name) || this;
                 _this.name = name;
@@ -3160,18 +3240,42 @@ var BABYLON;
                 _this._textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
                 _this._textVerticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
                 _this._resizeToFit = false;
+                _this._lineSpacing = new GUI.ValueAndUnit(0);
+                _this._outlineWidth = 0;
+                _this._outlineColor = "white";
                 /**
                 * An event triggered after the text is changed
                 * @type {BABYLON.Observable}
                 */
                 _this.onTextChangedObservable = new BABYLON.Observable();
+                /**
+                * An event triggered after the text was broken up into lines
+                * @type {BABYLON.Observable}
+                */
+                _this.onLinesReadyObservable = new BABYLON.Observable();
                 _this.text = text;
                 return _this;
             }
+            Object.defineProperty(TextBlock.prototype, "lines", {
+                /**
+                 * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
+                 */
+                get: function () {
+                    return this._lines;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(TextBlock.prototype, "resizeToFit", {
+                /**
+                 * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+                 */
                 get: function () {
                     return this._resizeToFit;
                 },
+                /**
+                 * Gets or sets an boolean indicating that the TextBlock will be resized to fit container
+                 */
                 set: function (value) {
                     this._resizeToFit = value;
                     if (this._resizeToFit) {
@@ -3183,9 +3287,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "textWrapping", {
+                /**
+                 * Gets or sets a boolean indicating if text must be wrapped
+                 */
                 get: function () {
                     return this._textWrapping;
                 },
+                /**
+                 * Gets or sets a boolean indicating if text must be wrapped
+                 */
                 set: function (value) {
                     if (this._textWrapping === value) {
                         return;
@@ -3197,9 +3307,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "text", {
+                /**
+                 * Gets or sets text to display
+                 */
                 get: function () {
                     return this._text;
                 },
+                /**
+                 * Gets or sets text to display
+                 */
                 set: function (value) {
                     if (this._text === value) {
                         return;
@@ -3212,9 +3328,15 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "textHorizontalAlignment", {
+                /**
+                 * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+                 */
                 get: function () {
                     return this._textHorizontalAlignment;
                 },
+                /**
+                 * Gets or sets text horizontal alignment (BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER by default)
+                 */
                 set: function (value) {
                     if (this._textHorizontalAlignment === value) {
                         return;
@@ -3226,14 +3348,78 @@ var BABYLON;
                 configurable: true
             });
             Object.defineProperty(TextBlock.prototype, "textVerticalAlignment", {
+                /**
+                 * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+                 */
                 get: function () {
                     return this._textVerticalAlignment;
                 },
+                /**
+                 * Gets or sets text vertical alignment (BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER by default)
+                 */
                 set: function (value) {
                     if (this._textVerticalAlignment === value) {
                         return;
                     }
                     this._textVerticalAlignment = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "lineSpacing", {
+                /**
+                 * Gets or sets line spacing value
+                 */
+                get: function () {
+                    return this._lineSpacing.toString(this._host);
+                },
+                /**
+                 * Gets or sets line spacing value
+                 */
+                set: function (value) {
+                    if (this._lineSpacing.fromString(value)) {
+                        this._markAsDirty();
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "outlineWidth", {
+                /**
+                 * Gets or sets outlineWidth of the text to display
+                 */
+                get: function () {
+                    return this._outlineWidth;
+                },
+                /**
+                 * Gets or sets outlineWidth of the text to display
+                 */
+                set: function (value) {
+                    if (this._outlineWidth === value) {
+                        return;
+                    }
+                    this._outlineWidth = value;
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(TextBlock.prototype, "outlineColor", {
+                /**
+                 * Gets or sets outlineColor of the text to display
+                 */
+                get: function () {
+                    return this._outlineColor;
+                },
+                /**
+                 * Gets or sets outlineColor of the text to display
+                 */
+                set: function (value) {
+                    if (this._outlineColor === value) {
+                        return;
+                    }
+                    this._outlineColor = value;
                     this._markAsDirty();
                 },
                 enumerable: true,
@@ -3262,8 +3448,12 @@ var BABYLON;
                     context.shadowOffsetX = this.shadowOffsetX;
                     context.shadowOffsetY = this.shadowOffsetY;
                 }
+                if (this.outlineWidth) {
+                    context.strokeText(text, this._currentMeasure.left + x, y);
+                }
                 context.fillText(text, this._currentMeasure.left + x, y);
             };
+            /** @ignore */
             TextBlock.prototype._draw = function (parentMeasure, context) {
                 context.save();
                 this._applyStates(context);
@@ -3272,6 +3462,13 @@ var BABYLON;
                     this._renderLines(context);
                 }
                 context.restore();
+            };
+            TextBlock.prototype._applyStates = function (context) {
+                _super.prototype._applyStates.call(this, context);
+                if (this.outlineWidth) {
+                    context.lineWidth = this.outlineWidth;
+                    context.strokeStyle = this.outlineColor;
+                }
             };
             TextBlock.prototype._additionalProcessing = function (parentMeasure, context) {
                 this._lines = [];
@@ -3288,6 +3485,7 @@ var BABYLON;
                         this._lines.push(this._parseLine(_line, context));
                     }
                 }
+                this.onLinesReadyObservable.notifyObservers(this);
             };
             TextBlock.prototype._parseLine = function (line, context) {
                 if (line === void 0) { line = ''; }
@@ -3333,8 +3531,16 @@ var BABYLON;
                 }
                 rootY += this._currentMeasure.top;
                 var maxLineWidth = 0;
-                for (var _i = 0, _a = this._lines; _i < _a.length; _i++) {
-                    var line = _a[_i];
+                for (var i = 0; i < this._lines.length; i++) {
+                    var line = this._lines[i];
+                    if (i !== 0 && this._lineSpacing.internalValue !== 0) {
+                        if (this._lineSpacing.isPixel) {
+                            rootY += this._lineSpacing.getValue(this._host);
+                        }
+                        else {
+                            rootY = rootY + (this._lineSpacing.getValue(this._host) * this._height.getValueInPixel(this._host, this._cachedParentMeasure.height));
+                        }
+                    }
                     this._drawText(line.text, line.width, rootY, context);
                     rootY += this._fontOffset.height;
                     if (line.width > maxLineWidth)
