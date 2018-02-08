@@ -282,6 +282,7 @@
         public static ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
             { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
             { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
@@ -3987,37 +3988,35 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
         }
 
-        public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): InternalTexture {
-            var gl = this._gl;
+        public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+            let fullOptions = {
+              generateMipMaps: true,
+              generateDepthBuffer: true,
+              generateStencilBuffer: false,
+              type: Engine.TEXTURETYPE_UNSIGNED_INT,
+              samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+              ...options
+            };
+            fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+              // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+              // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            var gl = this._gl
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
-
-            var generateMipMaps = true;
-            var generateDepthBuffer = true;
-            var generateStencilBuffer = false;
-
-            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
-            if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
-                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
-
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
-                }
-            }
-
-            texture.isCube = true;
-            texture.generateMipMaps = generateMipMaps;
-            texture.samples = 1;
-            texture.samplingMode = samplingMode;
-
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            for (var face = 0; face < 6; face++) {
-                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+              Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -4025,15 +4024,19 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+            for (var face = 0; face < 6; face++) {
+                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), size, size, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
+            }
+
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);
 
-            // Mipmaps
-            if (texture.generateMipMaps) {
-                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            // MipMaps
+            if (fullOptions.generateMipMaps) {
+              gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
             // Unbind
@@ -4045,8 +4048,13 @@
             texture.width = size;
             texture.height = size;
             texture.isReady = true;
-
-            //this.resetTextureCache();
+            texture.isCube = true;
+            texture.samples = 1;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
             this._internalTexturesCache.push(texture);
 
@@ -4814,7 +4822,7 @@
             if (this.disableTextureBindingOptimization) {
                 return -1;
             }
-            
+
             // Remove from bound list
             this._linkTrackers(internalTexture.previous, internalTexture.next);
 
