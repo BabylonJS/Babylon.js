@@ -841,6 +841,7 @@ var BABYLON;
                     var material = GLTFLoader._GetProperty(context + "/material", this._gltf.materials, primitive.material);
                     promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, babylonMesh));
                 }
+                this.onMeshLoadedObservable.notifyObservers(babylonMesh);
                 return Promise.all(promises).then(function () {
                     babylonMesh.setEnabled(true);
                 });

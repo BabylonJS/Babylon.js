@@ -159,6 +159,7 @@ module BABYLON.GUI {
                 this._clipForChildren(context);
                 for (var child of this._children) {
                     if (child.isVisible && !child.notRenderable) {
+                        child._tempParentMeasure.copyFrom(this._measureForChildren);
                         child._draw(this._measureForChildren, context);
 
                         if (child.onAfterDrawObservable.hasObservers()) {
