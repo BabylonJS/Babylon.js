@@ -64,22 +64,39 @@
 
         /**
          * Removes the defines that shoould be removed when falling back.
-         * @param currentDefines The current define statements for the shader.
+         * @param currentDefines defines the current define statements for the shader.
+         * @param effect defines the current effect we try to compile
          * @returns The resulting defines with defines of the current rank removed.
          */
-        public reduce(currentDefines: string): string {
+        public reduce(currentDefines: string, effect: Effect): string {
             // First we try to switch to CPU skinning
-            if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0) {
+            if (this._mesh && this._mesh.computeBonesUsingShaders && this._mesh.numBoneInfluencers > 0 && this._mesh.material) {
                 this._mesh.computeBonesUsingShaders = false;
                 currentDefines = currentDefines.replace("#define NUM_BONE_INFLUENCERS " + this._mesh.numBoneInfluencers, "#define NUM_BONE_INFLUENCERS 0");
-                Tools.Log("Falling back to CPU skinning for " + this._mesh.name);
 
                 var scene = this._mesh.getScene();
                 for (var index = 0; index < scene.meshes.length; index++) {
                     var otherMesh = scene.meshes[index];
 
-                    if (otherMesh.material === this._mesh.material && otherMesh.computeBonesUsingShaders && otherMesh.numBoneInfluencers > 0) {
+                    if (!otherMesh.material) {
+                        continue;
+                    }
+
+                    if (!otherMesh.computeBonesUsingShaders || otherMesh.numBoneInfluencers === 0) {
+                        continue;
+                    }
+
+                    if (otherMesh.material.getEffect() === effect) {
                         otherMesh.computeBonesUsingShaders = false;
+                    } else {
+                        for (var subMesh of otherMesh.subMeshes) {
+                            let subMeshEffect = subMesh.effect;
+
+                            if (subMeshEffect === effect) {
+                                otherMesh.computeBonesUsingShaders = false;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -808,7 +825,7 @@
 
                 if (fallbacks && fallbacks.isMoreFallbacks) {
                     Tools.Error("Trying next fallback.");
-                    this.defines = fallbacks.reduce(this.defines);
+                    this.defines = fallbacks.reduce(this.defines, this);
                     this._prepareEffect();
                 } else { // Sorry we did everything we can
 
