@@ -196,6 +196,12 @@ module BABYLON.GUI {
 
         public markAsDirty() {
             this._isDirty = true;
+
+            this.executeOnAllControls((control) => {
+                if (control._isFontSizeInPercentage) {
+                    control._resetFontCache();
+                }
+            });
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {

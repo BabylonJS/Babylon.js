@@ -27,7 +27,7 @@
   ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now has onBeforeCameraTeleport and onAfterCameraTeleport observables that will be notified before and after camera teleportation is triggered.
   ([carloslanderas](https://github.com/carloslanderas))
-- VRHelper now has the public property teleportationEnabled to enable / disable camera teleportation. 
+- VRHelper now has the public property teleportationEnabled to enable / disable camera teleportation.
    ([carloslanderas](https://github.com/carloslanderas))
 - VRHelper now exposes onNewMeshPicked observable that will notify a PickingInfo object after meshSelectionPredicate evaluation
    ([carloslanderas](https://github.com/carloslanderas))
@@ -66,6 +66,7 @@
 - Added checks to VertexData.merge to ensure data is valid before merging. ([bghgary](https://github.com/bghgary)]
 - Ability to set a mesh to customize the webVR gaze tracker ([trevordev](https://github.com/trevordev))
 - Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
+- Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 
 ## Bug fixes
 
