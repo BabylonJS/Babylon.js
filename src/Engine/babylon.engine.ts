@@ -3989,7 +3989,7 @@
 
         public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
             let fullOptions = {
-              generateMipMaps: false,
+              generateMipMaps: true,
               generateDepthBuffer: true,
               generateStencilBuffer: false,
               type: Engine.TEXTURETYPE_UNSIGNED_INT,
@@ -4011,7 +4011,7 @@
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps ? true : false, gl);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
               fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
@@ -4031,7 +4031,7 @@
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer ? true : false, fullOptions.generateDepthBuffer, size, size);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);
 
             // MipMaps
             if (fullOptions.generateMipMaps) {
@@ -4049,11 +4049,11 @@
             texture.isReady = true;
             texture.isCube = true;
             texture.samples = 1;
-            texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
             texture.samplingMode = fullOptions.samplingMode;
             texture.type = fullOptions.type;
             texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
-            texture._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
             this._internalTexturesCache.push(texture);
 
