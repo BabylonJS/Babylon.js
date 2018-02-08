@@ -169,6 +169,7 @@ declare module BABYLON.GUI {
         protected _horizontalAlignment: number;
         protected _verticalAlignment: number;
         private _isDirty;
+        _tempParentMeasure: Measure;
         protected _cachedParentMeasure: Measure;
         private _paddingLeft;
         private _paddingRight;
@@ -253,6 +254,8 @@ declare module BABYLON.GUI {
         readonly heightInPixels: number;
         fontFamily: string;
         fontStyle: string;
+        /** @ignore */
+        readonly _isFontSizeInPercentage: boolean;
         readonly fontSizeInPixels: number;
         fontSize: string | number;
         color: string;
@@ -280,6 +283,8 @@ declare module BABYLON.GUI {
         readonly centerY: number;
         constructor(name?: string | undefined);
         protected _getTypeName(): string;
+        /** @ignore */
+        _resetFontCache(): void;
         getLocalCoordinates(globalCoordinates: Vector2): Vector2;
         getLocalCoordinatesToRef(globalCoordinates: Vector2, result: Vector2): Control;
         getParentLocalCoordinates(globalCoordinates: Vector2): Vector2;
