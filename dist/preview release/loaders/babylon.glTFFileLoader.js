@@ -2900,6 +2900,12 @@ var BABYLON;
                         if (node._babylonMesh) {
                             meshes.push(node._babylonMesh);
                         }
+                        if (node._primitiveBabylonMeshes) {
+                            for (var _a = 0, _b = node._primitiveBabylonMeshes; _a < _b.length; _a++) {
+                                var babylonMesh = _b[_a];
+                                meshes.push(babylonMesh);
+                            }
+                        }
                     }
                 }
                 return meshes;

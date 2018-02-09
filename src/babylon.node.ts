@@ -325,9 +325,10 @@
 
         /**
          * Is this node ready to be used/rendered
+         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
          * @return true if the node is ready
          */
-        public isReady(): boolean {
+        public isReady(completeCheck = false): boolean {
             return this._isReady;
         }
 
