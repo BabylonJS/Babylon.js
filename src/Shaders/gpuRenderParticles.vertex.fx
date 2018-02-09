@@ -1,5 +1,6 @@
 #version 300 es
 
+uniform vec4 colorDead;
 uniform mat4 view;
 uniform mat4 projection;
 
@@ -17,8 +18,8 @@ out vec4 vColor;
 
 void main() {
   vUV = uv;
-  float ratio = 1.0 - age / life;
-  vColor = color * vec4(ratio);
+  float ratio = age / life;
+  vColor = color * vec4(1.0 - ratio) + colorDead * vec4(ratio);
 
   // Expand position
   vec4 viewPosition = view * vec4(position, 1.0);
