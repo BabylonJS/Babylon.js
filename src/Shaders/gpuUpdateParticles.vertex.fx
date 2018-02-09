@@ -8,6 +8,7 @@ uniform vec2 lifeTime;
 uniform vec2 sizeRange;
 uniform vec4 color1;
 uniform vec4 color2;
+uniform vec3 gravity;
 uniform sampler2D randomSampler;
 
 // Particles state
@@ -55,8 +56,8 @@ void main() {
 
     // Direction
     outDirection = 2.0 * (getRandomVec3(seed) - vec3(0.5, 0.5, 0.5));
-  } else {
-    outPosition = position + direction * timeDelta;
+  } else {   
+    outPosition = position + (direction + gravity) * timeDelta;
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
