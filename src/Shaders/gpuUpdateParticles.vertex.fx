@@ -1,5 +1,6 @@
 #version 300 es
 
+uniform float currentCount;
 uniform float timeDelta;
 uniform float generalRandom;
 uniform mat4 emitterWM;
@@ -25,7 +26,7 @@ out vec4 outColor;
 out vec3 outDirection;
 
 vec3 getRandomVec3(float offset) {
-  return texture(randomSampler, vec2(float(gl_VertexID) * offset, 0)).rgb;
+  return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
 }
 
 void main() {
