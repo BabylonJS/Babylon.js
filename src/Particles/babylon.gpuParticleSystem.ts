@@ -160,7 +160,7 @@
 
             let updateEffectOptions: EffectCreationOptions = {
                 attributes: ["position", "age", "life", "seed", "color", "direction"],
-                uniformsNames: ["timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2"],
+                uniformsNames: ["currentCount", "timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -177,13 +177,14 @@
             this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "color", "offset", "uv"], ["view", "projection"], ["textureSampler"], this._scene.getEngine());
 
             // Random data
+            var maxTextureSize = this._engine.getCaps().maxTextureSize;
             var d = [];
-            for (var i = 0; i < 4096; ++i) {
+            for (var i = 0; i < maxTextureSize; ++i) {
                 d.push(Math.random());
                 d.push(Math.random());
                 d.push(Math.random());
             }
-            this._randomTexture = new RawTexture(new Float32Array(d), 4096, 1, Engine.TEXTUREFORMAT_RGB32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
+            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGB32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
         }
@@ -264,9 +265,12 @@
             }
 
             // Sprite data
-            var spriteData = new Float32Array([1, 1,  1, 1,  -1, 1,  0, 1,
-                -1, -1,  0, 0,   1, 1,  1, 1,
-                -1, -1,  0, 0,   1, -1, 1, 0]);
+            var spriteData = new Float32Array([1, 1,  1, 1,  
+                                              -1, 1,  0, 1,
+                                             -1, -1,  0, 0,   
+                                             1, 1,  1, 1,
+                                            -1, -1,  0, 0,   
+                                            1, -1,  1, 0]);
 
             // Buffers
             this._buffer0 = new Buffer(engine, data, false, this._attributesStrideSize);
@@ -304,6 +308,7 @@
             this._engine.enableEffect(this._updateEffect);
             this._engine.setState(false);    
             
+            this._updateEffect.setFloat("currentCount", this._currentActiveCount);
             this._updateEffect.setFloat("timeDelta", this._timeDelta);
             this._updateEffect.setFloat("generalRandom", Math.random());
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
