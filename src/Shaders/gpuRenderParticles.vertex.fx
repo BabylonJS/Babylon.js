@@ -7,6 +7,7 @@ uniform mat4 projection;
 in vec3 position;
 in float age;
 in float life;
+in float size;
 in vec4 color;
 in vec2 offset;
 in vec2 uv;
@@ -16,10 +17,10 @@ out vec4 vColor;
 
 void main() {
   vUV = uv;
-  float ratio = age / life;
-  vColor = color * vec4(1. - ratio, 1. - ratio, 1. - ratio, ratio);
+  float ratio = 1.0 - age / life;
+  vColor = color * vec4(ratio);
 
   // Expand position
   vec4 viewPosition = view * vec4(position, 1.0);
-  gl_Position = projection * (viewPosition + vec4(offset * 0.1, 0, 1.0));
+  gl_Position = projection * (viewPosition + vec4(offset * size, 0, 1.0));
 }
