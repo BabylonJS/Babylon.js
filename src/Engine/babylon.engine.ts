@@ -501,14 +501,23 @@
             return Engine._TEXTUREFORMAT_LUMINANCE;
         }
 
+        /**
+         * R32F
+         */
         public static get TEXTUREFORMAT_R32F(): number {
             return Engine._TEXTUREFORMAT_R32F;
         }       
         
+        /**
+         * RG32F
+         */
         public static get TEXTUREFORMAT_RG32F(): number {
             return Engine._TEXTUREFORMAT_RG32F;
         }       
         
+        /**
+         * RGB32F
+         */
         public static get TEXTUREFORMAT_RGB32F(): number {
             return Engine._TEXTUREFORMAT_RGB32F;
         }               
@@ -5570,6 +5579,7 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
+        /** @ignore */
         public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
