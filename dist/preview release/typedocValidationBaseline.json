@@ -1,7 +1,7 @@
 {
-  "errors": 7267,
+  "errors": 7263,
   "babylon.typedoc.json": {
-    "errors": 7267,
+    "errors": 7263,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -4381,11 +4381,6 @@
             "MissingText": true
           }
         },
-        "coordinatesMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "delayLoadState": {
           "Comments": {
             "MissingText": true
@@ -4477,21 +4472,6 @@
           }
         },
         "uid": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "wrapR": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "wrapU": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "wrapV": {
           "Comments": {
             "MissingText": true
           }

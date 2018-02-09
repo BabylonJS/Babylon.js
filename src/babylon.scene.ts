@@ -1913,7 +1913,7 @@
                     continue;
                 }
 
-                if (!mesh.isReady()) {
+                if (!mesh.isReady(true)) {
                     return false;
                 }
 
