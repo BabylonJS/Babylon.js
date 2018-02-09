@@ -55,7 +55,7 @@
 
         private _randomTexture: RawTexture;
 
-        private readonly _attributesStrideSize = 13;
+        private readonly _attributesStrideSize = 14;
 
         /**
         * An event triggered when the system is disposed.
@@ -85,6 +85,15 @@
          * Maximum life time of emitting particles.
          */
         public maxLifeTime = 1;    
+
+        /**
+         * Minimum Size of emitting particles.
+         */
+        public minSize = 1;
+        /**
+         * Maximum Size of emitting particles.
+         */
+        public maxSize = 1;        
         
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
@@ -159,8 +168,8 @@
             this._scene.particleSystems.push(this);
 
             let updateEffectOptions: EffectCreationOptions = {
-                attributes: ["position", "age", "life", "seed", "color", "direction"],
-                uniformsNames: ["currentCount", "timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2"],
+                attributes: ["position", "age", "life", "seed", "size", "color", "direction"],
+                uniformsNames: ["currentCount", "timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2", "sizeRange"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -169,12 +178,12 @@
                 onError: null,
                 indexParameters: null,
                 maxSimultaneousLights: 0,                                                      
-                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outColor", "outDirection"]
+                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection"]
             };
 
             this._updateEffect = new Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());   
 
-            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "color", "offset", "uv"], ["view", "projection"], ["textureSampler"], this._scene.getEngine());
+            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "size", "color", "offset", "uv"], ["view", "projection"], ["textureSampler"], this._scene.getEngine());
 
             // Random data
             var maxTextureSize = this._engine.getCaps().maxTextureSize;
@@ -207,8 +216,9 @@
             updateVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1);
             updateVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1);
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 1);
-            updateVertexBuffers["color"] = source.createVertexBuffer("color", 6, 4);
-            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 10, 3);
+            updateVertexBuffers["size"] = source.createVertexBuffer("size", 6, 1);
+            updateVertexBuffers["color"] = source.createVertexBuffer("color", 7, 4);
+            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 11, 3);
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -221,7 +231,8 @@
             renderVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3, this._attributesStrideSize, true);
             renderVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1, this._attributesStrideSize, true);
             renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
-            renderVertexBuffers["color"] = source.createVertexBuffer("color", 6, 4, this._attributesStrideSize, true);
+            renderVertexBuffers["size"] = source.createVertexBuffer("size", 6, 1, this._attributesStrideSize, true);           
+            renderVertexBuffers["color"] = source.createVertexBuffer("color", 7, 4, this._attributesStrideSize, true);
 
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
@@ -252,6 +263,9 @@
               // Seed
               data.push(Math.random());
 
+              // Size
+              data.push(0.0);
+
               // color
               data.push(0.0);
               data.push(0.0);
@@ -268,9 +282,7 @@
             var spriteData = new Float32Array([1, 1,  1, 1,  
                                               -1, 1,  0, 1,
                                              -1, -1,  0, 0,   
-                                             1, 1,  1, 1,
-                                            -1, -1,  0, 0,   
-                                            1, -1,  1, 0]);
+                                              1, -1,  1, 0]);
 
             // Buffers
             this._buffer0 = new Buffer(engine, data, false, this._attributesStrideSize);
@@ -315,6 +327,7 @@
             this._updateEffect.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
             this._updateEffect.setDirectColor4("color1", this.color1);
             this._updateEffect.setDirectColor4("color2", this.color2);
+            this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
@@ -355,7 +368,7 @@
             this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
 
             // Render
-            this._engine.drawArraysType(Material.TriangleFillMode, 0, 6, this._currentActiveCount);   
+            this._engine.drawArraysType(Material.TriangleFanDrawMode, 0, 4, this._currentActiveCount);   
             this._engine.setAlphaMode(Engine.ALPHA_DISABLE);         
 
             // Switch VAOs
