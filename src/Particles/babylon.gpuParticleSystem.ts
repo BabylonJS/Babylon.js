@@ -105,6 +105,11 @@
         public color2 = new Color4(1.0, 1.0, 1.0, 1.0);  
         
         /**
+         * Color the particle will have at the end of its lifetime.
+         */
+        public colorDead = new Color4(0, 0, 0, 0);        
+        
+        /**
          * The maximum number of particles to emit per frame until we reach the activeParticleCount value
          */
         public emitRate = 100;        
@@ -183,7 +188,7 @@
 
             this._updateEffect = new Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());   
 
-            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "size", "color", "offset", "uv"], ["view", "projection"], ["textureSampler"], this._scene.getEngine());
+            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "size", "color", "offset", "uv"], ["view", "projection", "colorDead"], ["textureSampler"], this._scene.getEngine());
 
             // Random data
             var maxTextureSize = this._engine.getCaps().maxTextureSize;
@@ -356,6 +361,7 @@
             this._renderEffect.setMatrix("view", this._scene.getViewMatrix());
             this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
             this._renderEffect.setTexture("textureSampler", this.particleTexture);
+            this._renderEffect.setDirectColor4("colorDead", this.colorDead);
 
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
