@@ -5,8 +5,6 @@
         private _data: Nullable<FloatArray>;
         private _updatable: boolean;
         private _strideSize: number;
-        private _instanced: boolean;
-        private _instanceDivisor: number;
 
         constructor(engine: any, data: FloatArray, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced: boolean = false) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
@@ -25,14 +23,11 @@
             if (!postponeInternalCreation) { // by default
                 this.create();
             }
-
-            this._instanced = instanced;
-            this._instanceDivisor = instanced ? 1 : 0;
         }
 
         public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean): VertexBuffer {
             // a lot of these parameters are ignored as they are overriden by the buffer
-            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced !== undefined ? instanced : this._instanced, offset, size);
+            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced, offset, size);
         }
 
         // Properties
@@ -52,22 +47,22 @@
             return this._strideSize;
         }
 
-        public getIsInstanced(): boolean {
-            return this._instanced;
-        }
+        // public getIsInstanced(): boolean {
+        //     return this._instanced;
+        // }
 
-        public get instanceDivisor(): number {
-            return this._instanceDivisor;
-        }
+        // public get instanceDivisor(): number {
+        //     return this._instanceDivisor;
+        // }
 
-        public set instanceDivisor(value: number) {
-            this._instanceDivisor = value;
-            if (value == 0) {
-                this._instanced = false;
-            } else {
-                this._instanced = true;
-            }
-        }
+        // public set instanceDivisor(value: number) {
+        //     this._instanceDivisor = value;
+        //     if (value == 0) {
+        //         this._instanced = false;
+        //     } else {
+        //         this._instanced = true;
+        //     }
+        // }
 
         // Methods
         public create(data: Nullable<FloatArray> = null): void {
