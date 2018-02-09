@@ -1,4 +1,11 @@
+#version 300 es
+
+uniform sampler2D textureSampler;
+
+in vec2 vUV;
+
+out vec4 outFragColor;
 
 void main() {
-  gl_FragColor = vec4(1.0);
+  outFragColor = texture(textureSampler, vUV);
 }
