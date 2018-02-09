@@ -346,6 +346,9 @@
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 5;
+        private static _TEXTUREFORMAT_R32F = 6;
+        private static _TEXTUREFORMAT_RG32F = 7;
+        private static _TEXTUREFORMAT_RGB32F = 8;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -497,6 +500,18 @@
         public static get TEXTUREFORMAT_LUMINANCE(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE;
         }
+
+        public static get TEXTUREFORMAT_R32F(): number {
+            return Engine._TEXTUREFORMAT_R32F;
+        }       
+        
+        public static get TEXTUREFORMAT_RG32F(): number {
+            return Engine._TEXTUREFORMAT_RG32F;
+        }       
+        
+        public static get TEXTUREFORMAT_RGB32F(): number {
+            return Engine._TEXTUREFORMAT_RGB32F;
+        }               
 
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
@@ -3353,11 +3368,18 @@
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
                 case Engine.TEXTUREFORMAT_RGB:
+                case Engine.TEXTUREFORMAT_RGB32F:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
+                case Engine.TEXTUREFORMAT_R32F:
+                    internalFormat = this._gl.RED;
+                    break;       
+                case Engine.TEXTUREFORMAT_RG32F:
+                    internalFormat = this._gl.RG;
+                    break;                                    
             }
 
             return internalFormat;
@@ -3368,8 +3390,8 @@
                 return;
             }
 
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format);
             var internalFormat = this._getInternalFormat(format);
-            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -5536,12 +5558,22 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
-        public _getRGBABufferInternalSizedFormat(type: number): number {
+        public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
             }
 
             if (type === Engine.TEXTURETYPE_FLOAT) {
+                if (format) {
+                    switch(format) {
+                        case Engine.TEXTUREFORMAT_R32F:
+                            return this._gl.R32F;
+                        case Engine.TEXTUREFORMAT_RG32F:
+                            return this._gl.RG32F;
+                            case Engine.TEXTUREFORMAT_RGB32F:
+                            return this._gl.RGB32F;                            
+                    }                    
+                }
                 return this._gl.RGBA32F;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
