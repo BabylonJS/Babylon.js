@@ -112,7 +112,12 @@
         /**
          * The maximum number of particles to emit per frame until we reach the activeParticleCount value
          */
-        public emitRate = 100;        
+        public emitRate = 100; 
+        
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        public gravity = Vector3.Zero();        
 
         /**
          * Gets the maximum number of particles supported by this system
@@ -174,7 +179,7 @@
 
             let updateEffectOptions: EffectCreationOptions = {
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction"],
-                uniformsNames: ["currentCount", "timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2", "sizeRange"],
+                uniformsNames: ["currentCount", "timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -333,6 +338,7 @@
             this._updateEffect.setDirectColor4("color1", this.color1);
             this._updateEffect.setDirectColor4("color2", this.color2);
             this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
+            this._updateEffect.setVector3("gravity", this.gravity);
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
