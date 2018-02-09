@@ -71,10 +71,11 @@
 
         /**
          * Is this node ready to be used/rendered
+         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
          * @return {boolean} is it ready
          */
-        public isReady(): boolean {
-            return this._sourceMesh.isReady(true);
+        public isReady(completeCheck = false): boolean {
+            return this._sourceMesh.isReady(completeCheck, true);
         }
 
         /**
