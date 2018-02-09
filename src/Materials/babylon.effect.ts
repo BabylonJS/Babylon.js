@@ -1384,6 +1384,19 @@
             return this;
         }
 
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniformName defines the name of the variable
+         * @param color4 defines the value to be set
+         * @returns this effect.
+         */
+        public setDirectColor4(uniformName: string, color4: Color4): Effect {
+            if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
+                this._engine.setDirectColor4(this.getUniform(uniformName), color4);
+            }
+            return this;
+        }
+
         // Statics
         /**
          * Store of each shader (The can be looked up using effect.key)

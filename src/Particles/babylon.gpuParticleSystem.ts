@@ -30,6 +30,8 @@
         public layerMask: number = 0x0FFFFFFF; // TODO
 
         private _capacity: number;
+        private _activeCount: number;
+        private _currentActiveCount: number;
         private _renderEffect: Effect;
         private _updateEffect: Effect;
 
@@ -53,6 +55,8 @@
 
         private _randomTexture: RawTexture;
 
+        private readonly _attributesStrideSize = 13;
+
         /**
         * An event triggered when the system is disposed.
         */
@@ -71,7 +75,48 @@
         /**
          * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
          */
-        public blendMode = ParticleSystem.BLENDMODE_ONEONE;        
+        public blendMode = ParticleSystem.BLENDMODE_ONEONE;   
+        
+        /**
+         * Minimum life time of emitting particles.
+         */
+        public minLifeTime = 1;
+        /**
+         * Maximum life time of emitting particles.
+         */
+        public maxLifeTime = 1;    
+        
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        public color1 = new Color4(1.0, 1.0, 1.0, 1.0);
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        public color2 = new Color4(1.0, 1.0, 1.0, 1.0);  
+        
+        /**
+         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
+         */
+        public emitRate = 100;        
+
+        /**
+         * Gets the maximum number of particles supported by this system
+         */
+        public get capacity(): number {
+            return this._capacity;
+        }
+
+        /**
+         * Gets or set the number of active particles
+         */
+        public get activeParticleCount(): number {
+            return this._activeCount;
+        }
+
+        public set activeParticleCount(value: number) {
+            this._activeCount = Math.min(value, this._capacity);
+        }
 
         /**
          * Gets Wether the system has been started.
@@ -107,13 +152,15 @@
             this.name = name;
             this._scene = scene || Engine.LastCreatedScene;
             this._capacity = capacity;
+            this._activeCount = capacity;
+            this._currentActiveCount = 0;
             this._engine = this._scene.getEngine();
 
             this._scene.particleSystems.push(this);
 
             let updateEffectOptions: EffectCreationOptions = {
-                attributes: ["position", "age", "life", "seed", "direction"],
-                uniformsNames: ["timeDelta", "generalRandom", "emitterWM"],
+                attributes: ["position", "age", "life", "seed", "color", "direction"],
+                uniformsNames: ["timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -122,12 +169,12 @@
                 onError: null,
                 indexParameters: null,
                 maxSimultaneousLights: 0,                                                      
-                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outDirection"]
+                transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outColor", "outDirection"]
             };
 
             this._updateEffect = new Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());   
 
-            this._renderEffect = new Effect("gpuRenderParticles", ["position", "offset", "uv"], ["view", "projection"], ["textureSampler"], this._scene.getEngine());
+            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "color", "offset", "uv"], ["view", "projection"], ["textureSampler"], this._scene.getEngine());
 
             // Random data
             var d = [];
@@ -159,7 +206,8 @@
             updateVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1);
             updateVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1);
             updateVertexBuffers["seed"] = source.createVertexBuffer("seed", 5, 1);
-            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 6, 3);
+            updateVertexBuffers["color"] = source.createVertexBuffer("color", 6, 4);
+            updateVertexBuffers["direction"] = source.createVertexBuffer("direction", 10, 3);
            
             let vao = this._engine.recordVertexArrayObject(updateVertexBuffers, null, this._updateEffect);
             this._engine.bindArrayBuffer(null);
@@ -169,7 +217,11 @@
 
         private _createRenderVAO(source: Buffer, spriteSource: Buffer): WebGLVertexArrayObject {            
             let renderVertexBuffers: {[key: string]: VertexBuffer} = {};
-            renderVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3, 9, true);
+            renderVertexBuffers["position"] = source.createVertexBuffer("position", 0, 3, this._attributesStrideSize, true);
+            renderVertexBuffers["age"] = source.createVertexBuffer("age", 3, 1, this._attributesStrideSize, true);
+            renderVertexBuffers["life"] = source.createVertexBuffer("life", 4, 1, this._attributesStrideSize, true);
+            renderVertexBuffers["color"] = source.createVertexBuffer("color", 6, 4, this._attributesStrideSize, true);
+
             renderVertexBuffers["offset"] = spriteSource.createVertexBuffer("offset", 0, 2);
             renderVertexBuffers["uv"] = spriteSource.createVertexBuffer("uv", 2, 2);
            
@@ -193,12 +245,17 @@
               data.push(0.0);
 
               // Age and life
-              var life = 1 + Math.random();// * 10; 
-              data.push(life + 1); // create the particle as a dead one to create a new one at start
-              data.push(life);
+              data.push(0.0); // create the particle as a dead one to create a new one at start
+              data.push(0.0);
 
               // Seed
               data.push(Math.random());
+
+              // color
+              data.push(0.0);
+              data.push(0.0);
+              data.push(0.0);                     
+              data.push(0.0); 
 
               // direction
               data.push(0.0);
@@ -212,8 +269,8 @@
                 -1, -1,  0, 0,   1, -1, 1, 0]);
 
             // Buffers
-            this._buffer0 = new Buffer(engine, data, false, 9);
-            this._buffer1 = new Buffer(engine, data, false, 9);
+            this._buffer0 = new Buffer(engine, data, false, this._attributesStrideSize);
+            this._buffer1 = new Buffer(engine, data, false, this._attributesStrideSize);
             this._spriteBuffer = new Buffer(engine, spriteData, false, 4);                                      
 
             // Update VAO
@@ -240,6 +297,8 @@
 
             // Get everything ready to render
             this. _initialize();
+
+            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + this.emitRate);
             
             // Enable update effect
             this._engine.enableEffect(this._updateEffect);
@@ -248,6 +307,9 @@
             this._updateEffect.setFloat("timeDelta", this._timeDelta);
             this._updateEffect.setFloat("generalRandom", Math.random());
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
+            this._updateEffect.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
+            this._updateEffect.setDirectColor4("color1", this.color1);
+            this._updateEffect.setDirectColor4("color2", this.color2);
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
@@ -266,7 +328,7 @@
             this._engine.bindTransformFeedbackBuffer(this._targetBuffer.getBuffer());
             this._engine.setRasterizerState(false);
             this._engine.beginTransformFeedback();
-            this._engine.drawArraysType(Material.PointListDrawMode, 0, this._capacity);
+            this._engine.drawArraysType(Material.PointListDrawMode, 0, this._currentActiveCount);
             this._engine.endTransformFeedback();
             this._engine.setRasterizerState(true);
             this._engine.bindTransformFeedbackBuffer(null);
@@ -288,7 +350,7 @@
             this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
 
             // Render
-            this._engine.drawArraysType(Material.TriangleFillMode, 0, 6, this._capacity);   
+            this._engine.drawArraysType(Material.TriangleFillMode, 0, 6, this._currentActiveCount);   
             this._engine.setAlphaMode(Engine.ALPHA_DISABLE);         
 
             // Switch VAOs
