@@ -2940,6 +2940,18 @@
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniform defines the uniform location
+         * @param color4 defines the value to be set
+         */
+        public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
+        }        
+
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling
