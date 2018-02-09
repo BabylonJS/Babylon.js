@@ -25,6 +25,15 @@
             }
         }
 
+        /**
+         * Create a new {BABYLON.VertexBuffer} based on the current buffer
+         * @param kind defines the vertex buffer kind (position, normal, etc.)
+         * @param offset defines offset in the buffer (0 by default)
+         * @param size defines the size in floats of attributes (position is 3 for instance)
+         * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
+         * @param instanced defines if the vertex buffer contains indexed data
+         * @returns the new vertex buffer
+         */
         public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean): VertexBuffer {
             // a lot of these parameters are ignored as they are overriden by the buffer
             return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced, offset, size);
