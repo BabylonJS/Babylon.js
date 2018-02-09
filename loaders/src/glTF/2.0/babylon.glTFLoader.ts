@@ -298,6 +298,12 @@ module BABYLON.GLTF2 {
                     if (node._babylonMesh) {
                         meshes.push(node._babylonMesh);
                     }
+
+                    if (node._primitiveBabylonMeshes) {
+                        for (const babylonMesh of node._primitiveBabylonMeshes) {
+                            meshes.push(babylonMesh);
+                        }
+                    }
                 }
             }
 

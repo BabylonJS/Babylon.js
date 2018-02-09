@@ -53,6 +53,15 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
+        it('Load BoomBox with ImportMesh', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(result => {
+                expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
+                expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
+                expect(result.skeletons.length, "skeletons.length").to.equal(0);
+            });
+        });
+
         it('Load BoomBox with callbacks', () => {
             let parsedCount = 0;
             let meshCount = 0;
@@ -183,7 +192,7 @@ describe('Babylon Scene Loader', function () {
         it('should be loaded from BoomBox GLTF', () => {
             var scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.LoadAssetContainerAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(container => {
-                expect(container.meshes.length).to.eq(2);
+                expect(container.meshes.length).to.eq(3);
             });
         });
         it('should be adding and removing objects from scene', () => {
