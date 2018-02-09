@@ -29,6 +29,9 @@
         @serialize()
         public coordinatesIndex = 0;
         
+        @serialize("coordinatesMode")
+        private _coordinatesMode = Texture.EXPLICIT_MODE;
+        
         /**
         * How a texture is mapped.
         *
@@ -45,8 +48,6 @@
         * | 8     | FIXED_EQUIRECTANGULAR_MODE          |             |
         * | 9     | FIXED_EQUIRECTANGULAR_MIRRORED_MODE |             |
         */
-        @serialize("coordinatesMode")
-        private _coordinatesMode = Texture.EXPLICIT_MODE;
         public set coordinatesMode(value: number) {
             if (this._coordinatesMode === value) {
                 return;
@@ -69,10 +70,24 @@
         */
         @serialize()
         public wrapU = Texture.WRAP_ADDRESSMODE;
-
+        
+        /**
+        * | Value | Type               | Description |
+        * | ----- | ------------------ | ----------- |
+        * | 0     | CLAMP_ADDRESSMODE  |             |
+        * | 1     | WRAP_ADDRESSMODE   |             |
+        * | 2     | MIRROR_ADDRESSMODE |             |
+        */
         @serialize()
         public wrapV = Texture.WRAP_ADDRESSMODE;
-
+        
+        /**
+        * | Value | Type               | Description |
+        * | ----- | ------------------ | ----------- |
+        * | 0     | CLAMP_ADDRESSMODE  |             |
+        * | 1     | WRAP_ADDRESSMODE   |             |
+        * | 2     | MIRROR_ADDRESSMODE |             |
+        */
         @serialize()
         public wrapR = Texture.WRAP_ADDRESSMODE;
 
