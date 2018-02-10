@@ -6,12 +6,26 @@
         private _size: number;
         private _stride: number;
         private _ownsBuffer: boolean;
+        private _instanced: boolean;        
+        private _instanceDivisor: number;
+
+        /**
+         * Gets or sets the instance divisor when in instanced mode
+         */
+        public get instanceDivisor(): number {
+            return this._instanceDivisor;
+        }
+
+        public set instanceDivisor(value: number) {
+            this._instanceDivisor = value;
+            if (value == 0) {
+                this._instanced = false;
+            } else {
+                this._instanced = true;
+            }
+        }        
 
         constructor(engine: any, data: FloatArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
-            if (!stride) {
-                stride = VertexBuffer.DeduceStride(kind);
-            }
-
             if (data instanceof Buffer) {
                 if (!stride) {
                     stride = data.getStrideSize();
@@ -19,12 +33,16 @@
                 this._buffer = data;
                 this._ownsBuffer = false;
             } else {
+                if (!stride) {
+                    stride = VertexBuffer.DeduceStride(kind);
+                }
                 this._buffer = new Buffer(engine, <FloatArray>data, updatable, stride, postponeInternalCreation, instanced);
                 this._ownsBuffer = true;
             }
 
             this._stride = stride;
-
+            this._instanced = instanced !== undefined ? instanced : false;
+            this._instanceDivisor = instanced ? 1 : 0;
 
             this._offset = offset ? offset : 0;
             this._size = size ? size : stride;
@@ -94,14 +112,14 @@
          * Boolean : is the WebGLBuffer of the VertexBuffer instanced now ?
          */
         public getIsInstanced(): boolean {
-            return this._buffer.getIsInstanced();
+            return this._instanced;
         }
 
         /**
          * Returns the instancing divisor, zero for non-instanced (integer).  
          */
         public getInstanceDivisor(): number {
-            return this._buffer.instanceDivisor;
+            return this._instanceDivisor;
         }
 
         // Methods
