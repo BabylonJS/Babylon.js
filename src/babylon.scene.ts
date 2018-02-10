@@ -1913,7 +1913,7 @@
                     continue;
                 }
 
-                if (!mesh.isReady()) {
+                if (!mesh.isReady(true)) {
                     return false;
                 }
 
@@ -4232,11 +4232,12 @@
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
+                mesh.computeWorldMatrix(true);
+
                 if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
                     continue;
                 }
 
-                mesh.computeWorldMatrix(true);
                 let boundingInfo = mesh.getBoundingInfo();
 
                 var minBox = boundingInfo.boundingBox.minimumWorld;
