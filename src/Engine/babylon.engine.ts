@@ -346,6 +346,9 @@
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 5;
+        private static _TEXTUREFORMAT_R32F = 6;
+        private static _TEXTUREFORMAT_RG32F = 7;
+        private static _TEXTUREFORMAT_RGB32F = 8;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -497,6 +500,27 @@
         public static get TEXTUREFORMAT_LUMINANCE(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE;
         }
+
+        /**
+         * R32F
+         */
+        public static get TEXTUREFORMAT_R32F(): number {
+            return Engine._TEXTUREFORMAT_R32F;
+        }       
+        
+        /**
+         * RG32F
+         */
+        public static get TEXTUREFORMAT_RG32F(): number {
+            return Engine._TEXTUREFORMAT_RG32F;
+        }       
+        
+        /**
+         * RGB32F
+         */
+        public static get TEXTUREFORMAT_RGB32F(): number {
+            return Engine._TEXTUREFORMAT_RGB32F;
+        }               
 
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
@@ -2925,6 +2949,18 @@
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniform defines the uniform location
+         * @param color4 defines the value to be set
+         */
+        public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
+        }        
+
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling
@@ -3353,11 +3389,18 @@
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
                 case Engine.TEXTUREFORMAT_RGB:
+                case Engine.TEXTUREFORMAT_RGB32F:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
+                case Engine.TEXTUREFORMAT_R32F:
+                    internalFormat = this._gl.RED;
+                    break;       
+                case Engine.TEXTUREFORMAT_RG32F:
+                    internalFormat = this._gl.RG;
+                    break;                                    
             }
 
             return internalFormat;
@@ -3368,8 +3411,8 @@
                 return;
             }
 
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format);
             var internalFormat = this._getInternalFormat(format);
-            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -5536,12 +5579,23 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
-        public _getRGBABufferInternalSizedFormat(type: number): number {
+        /** @ignore */
+        public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
             }
 
             if (type === Engine.TEXTURETYPE_FLOAT) {
+                if (format) {
+                    switch(format) {
+                        case Engine.TEXTUREFORMAT_R32F:
+                            return this._gl.R32F;
+                        case Engine.TEXTUREFORMAT_RG32F:
+                            return this._gl.RG32F;
+                            case Engine.TEXTUREFORMAT_RGB32F:
+                            return this._gl.RGB32F;                            
+                    }                    
+                }
                 return this._gl.RGBA32F;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
