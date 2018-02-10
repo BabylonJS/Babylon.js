@@ -117,7 +117,7 @@
         /**
          * You can use gravity if you want to give an orientation to your particles.
          */
-        public gravity = Vector3.Zero();        
+        public gravity = Vector3.Zero();    
 
         /**
          * Gets the maximum number of particles supported by this system
