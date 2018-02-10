@@ -607,19 +607,24 @@
 
         /**
          * Determine if the current mesh is ready to be rendered
+         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
          * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
          * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        public isReady(forceInstanceSupport = false): boolean {
+        public isReady(completeCheck = false, forceInstanceSupport = false): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            if (!super.isReady()) {
+            if (!super.isReady(completeCheck)) {
                 return false;
             }
 
             if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
+            if (!completeCheck) {
                 return true;
             }
 
