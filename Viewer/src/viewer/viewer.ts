@@ -74,7 +74,7 @@ export abstract class AbstractViewer {
         this.prepareContainerElement();
 
         // extend the configuration
-        configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
+        configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
             this.configuration = deepmerge(this.configuration || {}, configuration);
             if (this.configuration.observers) {
                 this.configureObservers(this.configuration.observers);
@@ -193,7 +193,7 @@ export abstract class AbstractViewer {
             }
 
             options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
-            if (groundConfig.shadowLevel) {
+            if (groundConfig.shadowLevel !== undefined) {
                 options.groundShadowLevel = groundConfig.shadowLevel;
             }
             options.enableGroundMirror = !!groundConfig.mirror;
@@ -204,19 +204,23 @@ export abstract class AbstractViewer {
                 options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
             }
 
+            if (groundConfig.opacity !== undefined) {
+                options.groundOpacity = groundConfig.opacity;
+            }
+
             if (groundConfig.mirror) {
                 options.enableGroundMirror = true;
                 // to prevent undefines
                 if (typeof groundConfig.mirror === "object") {
-                    if (groundConfig.mirror.amount)
+                    if (groundConfig.mirror.amount !== undefined)
                         options.groundMirrorAmount = groundConfig.mirror.amount;
-                    if (groundConfig.mirror.sizeRatio)
+                    if (groundConfig.mirror.sizeRatio !== undefined)
                         options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                    if (groundConfig.mirror.blurKernel)
+                    if (groundConfig.mirror.blurKernel !== undefined)
                         options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                    if (groundConfig.mirror.fresnelWeight)
+                    if (groundConfig.mirror.fresnelWeight !== undefined)
                         options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                    if (groundConfig.mirror.fallOffDistance)
+                    if (groundConfig.mirror.fallOffDistance !== undefined)
                         options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
                     if (this.defaultHighpTextureType !== undefined)
                         options.groundMirrorTextureType = this.defaultHighpTextureType;
@@ -252,6 +256,8 @@ export abstract class AbstractViewer {
                 postInitSkyboxMaterial = true;
             }
         }
+
+        options.setupImageProcessing = false; // TMP
 
         if (!this.environmentHelper) {
             this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
@@ -413,8 +419,6 @@ export abstract class AbstractViewer {
         const sceneDiagonalLenght = sceneDiagonal.length();
         if (isFinite(sceneDiagonalLenght))
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
-
-
     }
 
     protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
@@ -450,7 +454,7 @@ export abstract class AbstractViewer {
                 // available? get it from the scene
                 light = <Light>this.scene.getLightByName(name);
                 lightsAvailable = lightsAvailable.filter(ln => ln !== name);
-                if (light.getTypeID() !== lightConfig.type) {
+                if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
                     light.dispose();
                     let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
                     if (!constructor) return;
@@ -495,7 +499,7 @@ export abstract class AbstractViewer {
                     let renderList = shadownMap.renderList;
                     for (var index = 0; index < focusMeshes.length; index++) {
                         if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
-                            // renderList && renderList.push(focusMeshes[index]);
+                            renderList && renderList.push(focusMeshes[index]);
                         }
                     }
                 } else if (shadowGenerator) {
