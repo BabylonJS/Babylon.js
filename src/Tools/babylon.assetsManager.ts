@@ -934,6 +934,7 @@ module BABYLON {
             this._totalTasksCount = this._tasks.length;
 
             if (this._waitingTasksCount === 0) {
+                this._isLoading = false;
                 if (this.onFinish) {
                     this.onFinish(this._tasks);
                 }
