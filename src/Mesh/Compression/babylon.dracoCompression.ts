@@ -75,12 +75,16 @@ module BABYLON {
                     const attribute = decoder.GetAttributeByUniqueId(geometry, uniqueId);
                     const dracoData = new dracoModule.DracoFloat32Array();
                     try {
-                        decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
-                        const data = new Float32Array(numPoints * VertexBuffer.DeduceStride(kind));
-                        for (let i = 0; i < data.length; i++) {
-                            data[i] = dracoData.GetValue(i);
+                        if (attribute.num_components() !== VertexBuffer.DeduceStride(kind)) {
+                            throw new Error(`Unsupported number of components for ${kind}`);
                         }
-                        vertexData.set(data, kind);
+
+                        decoder.GetAttributeFloatForAllPoints(geometry, attribute, dracoData);
+                        const babylonData = new Float32Array(numPoints * attribute.num_components());
+                        for (let i = 0; i < babylonData.length; i++) {
+                            babylonData[i] = dracoData.GetValue(i);
+                        }
+                        vertexData.set(babylonData, kind);
                     }
                     finally {
                         dracoModule.destroy(dracoData);
