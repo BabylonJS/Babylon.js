@@ -3364,7 +3364,7 @@
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
 
-        private _renderForCamera(camera: Camera): void {
+        private _renderForCamera(camera: Camera, rigParent:? Camera): void {
             if (camera && camera._skipRendering) {
                 return;
             }
@@ -3410,6 +3410,10 @@
 
             if (camera.customRenderTargets && camera.customRenderTargets.length > 0) {
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
+            }
+
+            if (rigParent && rigParent.customRenderTargets && rigParent.customRenderTargets.length > 0) {
+                this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
             }
 
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
@@ -3566,7 +3570,7 @@
 
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
-                this._renderForCamera(camera._rigCameras[index]);
+                this._renderForCamera(camera._rigCameras[index], camera);
             }
 
             this.activeCamera = camera;

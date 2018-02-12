@@ -100,9 +100,7 @@ module BABYLON {
                 }
             }
 
-            if (this._opacityTexture) {
-                defines.ALPHATEST = true;
-            }
+            defines.ALPHATEST = this._opacityTexture ? true : false;
 
             // Misc.
             if (defines._areMiscDirty) {

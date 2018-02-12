@@ -452,13 +452,6 @@ declare module BABYLON.GLTF2 {
          */
         private setNodeTransformation(node, babylonMesh, useRightHandedSystem);
         /**
-         *
-         * @param babylonTexture - Babylon texture to extract.
-         * @param mimeType - Mime Type of the babylonTexture.
-         * @return - glTF texture, or null if the texture format is not supported.
-         */
-        private exportTexture(babylonTexture, mimeType?);
-        /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
          * @param kind - Indicates the type of vertices data.
          * @param babylonMesh - The Babylon mesh to get the vertices data from.
@@ -524,28 +517,31 @@ declare module BABYLON.GLTF2 {
          */
         private static readonly dielectricSpecular;
         /**
-         * Epsilon value, used as a small tolerance value for a numeric value.
+         * Allows the maximum specular power to be defined for material calculations.
          */
-        private static readonly epsilon;
+        private static maxSpecularPower;
+        /**
+         * Gets the materials from a Babylon scene and converts them to glTF materials.
+         * @param scene
+         * @param mimeType
+         * @param images
+         * @param textures
+         * @param materials
+         * @param imageData
+         * @param hasTextureCoords
+         */
+        static ConvertMaterialsToGLTF(babylonMaterials: Material[], mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+            [fileName: string]: {
+                data: Uint8Array;
+                mimeType: ImageMimeType;
+            };
+        }, hasTextureCoords: boolean): void;
         /**
          * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material.
          * @param babylonStandardMaterial
          * @returns - glTF Metallic Roughness Material representation
          */
         static ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial: StandardMaterial): IMaterialPbrMetallicRoughness;
-        /**
-         * Converts Specular Glossiness to Metallic Roughness.  This is based on the algorithm used in the Babylon glTF 3ds Max Exporter.
-         * {@link https://github.com/BabylonJS/Exporters/blob/master/3ds%20Max/Max2Babylon/Exporter/BabylonExporter.GLTFExporter.Material.cs}
-         * @param  babylonSpecularGlossiness - Babylon specular glossiness parameters
-         * @returns - Babylon metallic roughness values
-         */
-        private static _ConvertToMetallicRoughness(babylonSpecularGlossiness);
-        /**
-         * Returns the perceived brightness value based on the provided color
-         * @param color - color used in calculating the perceived brightness
-         * @returns - perceived brightness value
-         */
-        private static PerceivedBrightness(color);
         /**
          * Computes the metallic factor
          * @param diffuse - diffused value
@@ -560,5 +556,52 @@ declare module BABYLON.GLTF2 {
          * @returns - The Babylon alpha mode value
          */
         static GetAlphaMode(babylonMaterial: Material): MaterialAlphaMode;
+        /**
+         * Converts a Babylon Standard Material to a glTF Material.
+         * @param babylonStandardMaterial - BJS Standard Material.
+         * @param mimeType - mime type to use for the textures.
+         * @param images - array of glTF image interfaces.
+         * @param textures - array of glTF texture interfaces.
+         * @param materials - array of glTF material interfaces.
+         * @param imageData - map of image file name to data.
+         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         */
+        static ConvertStandardMaterial(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+            [fileName: string]: {
+                data: Uint8Array;
+                mimeType: ImageMimeType;
+            };
+        }, hasTextureCoords: boolean): void;
+        /**
+         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material.
+         * @param babylonPBRMetalRoughMaterial - BJS PBR Metallic Roughness Material.
+         * @param mimeType - mime type to use for the textures.
+         * @param images - array of glTF image interfaces.
+         * @param textures - array of glTF texture interfaces.
+         * @param materials - array of glTF material interfaces.
+         * @param imageData - map of image file name to data.
+         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         */
+        static ConvertPBRMetallicRoughnessMaterial(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+            [fileName: string]: {
+                data: Uint8Array;
+                mimeType: ImageMimeType;
+            };
+        }, hasTextureCoords: boolean): void;
+        /**
+         * Extracts a texture from a Babylon texture into file data and glTF data.
+         * @param babylonTexture - Babylon texture to extract.
+         * @param mimeType - Mime Type of the babylonTexture.
+         * @param images - Array of glTF images.
+         * @param textures - Array of glTF textures.
+         * @param imageData - map of image file name and data.
+         * @return - glTF texture, or null if the texture format is not supported.
+         */
+        static ExportTexture(babylonTexture: BaseTexture, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], imageData: {
+            [fileName: string]: {
+                data: Uint8Array;
+                mimeType: ImageMimeType;
+            };
+        }): Nullable<ITextureInfo>;
     }
 }
