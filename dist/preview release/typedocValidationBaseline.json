@@ -1,7 +1,7 @@
 {
-  "errors": 7263,
+  "errors": 7253,
   "babylon.typedoc.json": {
-    "errors": 7263,
+    "errors": 7253,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -5733,13 +5733,6 @@
           }
         }
       },
-      "Property": {
-        "instanceDivisor": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
       "Method": {
         "_rebuild": {
           "Comments": {
@@ -5758,33 +5751,6 @@
             }
           }
         },
-        "createVertexBuffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "kind": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "offset": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "size": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "stride": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "dispose": {
           "Comments": {
             "MissingText": true
@@ -5796,11 +5762,6 @@
           }
         },
         "getData": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getIsInstanced": {
           "Comments": {
             "MissingText": true
           }
@@ -9733,18 +9694,6 @@
             }
           }
         },
-        "_getRGBABufferInternalSizedFormat": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "type": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "_getRGBAMultiSampleBufferFormat": {
           "Comments": {
             "MissingText": true
@@ -11435,11 +11384,6 @@
           }
         },
         "hideLoadingUI": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "initWebVR": {
           "Comments": {
             "MissingText": true
           }
