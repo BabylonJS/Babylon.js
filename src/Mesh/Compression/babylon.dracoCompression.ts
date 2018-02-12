@@ -43,7 +43,7 @@ module BABYLON {
                         status = decoder.DecodeBufferToPointCloud(buffer, geometry);
                         break;
                     default:
-                        throw new Error("Invalid geometry type");
+                        throw new Error(`Invalid geometry type ${type}`);
                 }
 
                 if (!status.ok() || !geometry.ptr) {

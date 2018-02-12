@@ -462,7 +462,7 @@ module BABYLON.GLTF2 {
                 throw new Error(context + ": Attributes are missing");
             }
 
-            if (primitive.mode && primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
+            if (primitive.mode != undefined && primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
                 // TODO: handle other primitive modes
                 throw new Error(context + ": Mode " + primitive.mode + " is not currently supported");
             }
