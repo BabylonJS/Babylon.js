@@ -12,7 +12,7 @@ export class ConfigurationLoader {
         this.configurationCache = {};
     }
 
-    public loadConfiguration(initConfig: ViewerConfiguration = {}): Promise<ViewerConfiguration> {
+    public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
 
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
 
@@ -55,9 +55,12 @@ export class ConfigurationLoader {
             }).then((data: any) => {
                 let mapper = mapperManager.getMapper(mapperType);
                 let parsed = mapper.map(data);
-                return deepmerge(loadedConfig, parsed);
+                let merged = deepmerge(loadedConfig, parsed);
+                if (callback) callback(merged);
+                return merged;
             });
         } else {
+            if (callback) callback(loadedConfig);
             return Promise.resolve(loadedConfig);
         }
     }
