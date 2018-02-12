@@ -103,6 +103,21 @@ module BABYLON {
             Tools.DeepCopy(this, newOne);
 
             return newOne;
-        }          
+        }        
+        
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */        
+        public applyToShader(effect: Effect): void {
+            
+        }
+
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         */
+        public getEffectDefines(): string {
+            return "#define CONEEMITTER"
+        }        
     }
 }

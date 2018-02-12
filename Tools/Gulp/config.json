@@ -272,10 +272,10 @@
             "files": [
                 "../../src/Particles/babylon.particle.js",
                 "../../src/Particles/babylon.particleSystem.js",
-                "../../src/Particles/babylon.boxParticleEmitter.js",
-                "../../src/Particles/babylon.coneParticleEmitter.js",
-                "../../src/Particles/babylon.sphereParticleEmitter.js",
-                "../../src/Particles/babylon.iParticleEmitterType.js"
+                "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.IParticleEmitterType.js"
             ],
             "dependUpon": [
                 "core"
@@ -287,10 +287,11 @@
         },
         "gpuParticles": {
             "files": [
-                "../../src/Particles/babylon.gpuParticleSystem.js"
+                "../../src/Particles/babylon.gpuParticleSystem.js"          
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "particles"
             ],
             "shaders": [
                 "gpuRenderParticles.vertex",
