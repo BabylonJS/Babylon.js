@@ -100,6 +100,8 @@ module BABYLON {
                 }
             }
 
+            defines.ALPHATEST = this._opacityTexture ? true : false;
+
             // Misc.
             if (defines._areMiscDirty) {
                 defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
