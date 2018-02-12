@@ -251,6 +251,7 @@
             this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._volumetricLightScatteringRTT.renderList = null;
             this._volumetricLightScatteringRTT.renderParticles = false;
+            this._volumetricLightScatteringRTT.ignoreCameraViewport = true;
 
             var camera = this.getCamera();
             if (camera) {
