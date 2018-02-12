@@ -432,8 +432,8 @@ module BABYLON.GUI {
             context.restore();
         }
 
-        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }
 
@@ -449,8 +449,8 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void {
-            super._onPointerUp(target, coordinates, buttonIndex);
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
+            super._onPointerUp(target, coordinates, pointerId, buttonIndex);
         }
 
         public dispose() {

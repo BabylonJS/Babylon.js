@@ -69,6 +69,7 @@
 - Added promise-based async functions for initWebVRAsync and useStandingMatrixAsync ([trevordev](https://github.com/trevordev))
 - Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
