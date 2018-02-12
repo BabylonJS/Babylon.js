@@ -16,10 +16,14 @@ module BABYLON.GLTF2.Extensions {
         protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> {
             return this._loadExtensionAsync<IKHRDracoMeshCompression, VertexData>(context, primitive, (context, extension) => {
                 if (primitive.mode != undefined) {
-                    if (primitive.mode !== MeshPrimitiveMode.POINTS &&
-                        primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
+                    if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
                         primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
-                        throw new Error(context + ": Unsupported mode " + primitive.mode);
+                        throw new Error(`${context}: Unsupported mode ${primitive.mode}`);
+                    }
+
+                    // TODO: handle triangle strips
+                    if (primitive.mode === MeshPrimitiveMode.TRIANGLE_STRIP) {
+                        throw new Error(`${context}: Mode ${primitive.mode} is not currently supported`);
                     }
                 }
 
@@ -48,12 +52,12 @@ module BABYLON.GLTF2.Extensions {
                 loadAttribute("COLOR_0", VertexBuffer.ColorKind);
 
                 var bufferView = GLTFLoader._GetProperty(context, this._loader._gltf.bufferViews, extension.bufferView);
-                return this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(data => {
+                return this._loader._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(data => {
                     try {
                         return DracoCompression.Decode(data, attributes);
                     }
                     catch (e) {
-                        throw new Error(context + ": " + e.message);
+                        throw new Error(`${context}: ${e.message}`);
                     }
                 });
             });
