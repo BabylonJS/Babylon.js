@@ -405,6 +405,8 @@ export abstract class AbstractViewer {
             this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
         }
 
+        this.extendClassWithConfig(this.camera, cameraConfig);
+
         this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
         this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
 
