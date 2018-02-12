@@ -46,12 +46,13 @@ module BABYLON.GLTF2 {
             // Clear out the extension before executing the action to avoid recursing into the same property.
             delete extensions[this.name];
 
-            return actionAsync(context + "/extensions/" + this.name, extension).then(result => {
-                // Restore the extension after completing the action.
+            try {
+                return actionAsync(context + "/extensions/" + this.name, extension);
+            }
+            finally {
+                // Restore the extension after executing the action.
                 extensions[this.name] = extension;
-
-                return result;
-            });
+            }
         }
 
         /** Helper method called by the loader to allow extensions to override loading scenes. */
