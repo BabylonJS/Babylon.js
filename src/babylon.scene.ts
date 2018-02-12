@@ -1223,9 +1223,8 @@
          * Use this method to simulate a pointer move on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
          */
-        public simulatePointerMove(pickResult: PickingInfo): Scene {
-            let evt = new PointerEvent("pointermove");
-
+        public simulatePointerMove(pickResult: PickingInfo, eventInit: PointerEventInit | undefined): Scene {
+            let evt = new PointerEvent("pointermove", eventInit);
             return this._processPointerMove(pickResult, evt);
         }
 
@@ -1289,8 +1288,8 @@
          * Use this method to simulate a pointer down on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
          */
-        public simulatePointerDown(pickResult: PickingInfo): Scene {
-            let evt = new PointerEvent("pointerdown");
+        public simulatePointerDown(pickResult: PickingInfo, eventInit: PointerEventInit | undefined): Scene {
+            let evt = new PointerEvent("pointerdown", eventInit);
 
             return this._processPointerDown(pickResult, evt);
         }
@@ -1354,8 +1353,8 @@
          * Use this method to simulate a pointer up on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
          */
-        public simulatePointerUp(pickResult: PickingInfo): Scene {
-            let evt = new PointerEvent("pointerup");
+        public simulatePointerUp(pickResult: PickingInfo, eventInit: PointerEventInit | undefined): Scene {
+            let evt = new PointerEvent("pointerup", eventInit);
             let clickInfo = new ClickInfo();
             clickInfo.singleClick = true;
             clickInfo.ignore = true;
