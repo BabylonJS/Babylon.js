@@ -1291,7 +1291,7 @@ module BABYLON {
 
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
-
+            this._postProcessMove.samples = 4;
             this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
