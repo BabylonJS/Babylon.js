@@ -3364,7 +3364,7 @@
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
 
-        private _renderForCamera(camera: Camera, rigParent:? Camera): void {
+        private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
             }
