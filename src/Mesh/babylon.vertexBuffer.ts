@@ -237,10 +237,6 @@
          */
         public static DeduceStride(kind: string): number {
             switch (kind) {
-                case VertexBuffer.PositionKind:
-                    return 3;
-                case VertexBuffer.NormalKind:
-                    return 3;
                 case VertexBuffer.UVKind:
                 case VertexBuffer.UV2Kind:
                 case VertexBuffer.UV3Kind:
@@ -248,14 +244,15 @@
                 case VertexBuffer.UV5Kind:
                 case VertexBuffer.UV6Kind:
                     return 2;
-                case VertexBuffer.TangentKind:
+                case VertexBuffer.NormalKind:
+                case VertexBuffer.PositionKind:
+                    return 3;
                 case VertexBuffer.ColorKind:
-                    return 4;
                 case VertexBuffer.MatricesIndicesKind:
                 case VertexBuffer.MatricesIndicesExtraKind:
-                    return 4;
                 case VertexBuffer.MatricesWeightsKind:
                 case VertexBuffer.MatricesWeightsExtraKind:
+                case VertexBuffer.TangentKind:
                     return 4;
                 default:
                     throw new Error("Invalid kind '" + kind + "'");

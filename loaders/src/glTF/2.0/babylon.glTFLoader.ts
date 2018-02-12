@@ -452,6 +452,11 @@ module BABYLON.GLTF2 {
         }
 
         private _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Promise<VertexData> {
+            const promise = GLTFLoaderExtension._LoadVertexDataAsync(this, context, primitive, babylonMesh);
+            if (promise) {
+                return promise;
+            }
+
             const attributes = primitive.attributes;
             if (!attributes) {
                 throw new Error(context + ": Attributes are missing");
@@ -1004,7 +1009,7 @@ module BABYLON.GLTF2 {
             return buffer._data;
         }
 
-        private _loadBufferViewAsync(context: string, bufferView: ILoaderBufferView): Promise<ArrayBufferView> {
+        public _loadBufferViewAsync(context: string, bufferView: ILoaderBufferView): Promise<ArrayBufferView> {
             if (bufferView._data) {
                 return bufferView._data;
             }
