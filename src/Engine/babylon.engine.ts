@@ -270,7 +270,7 @@
     }
 
     export interface IDisplayChangedEventArgs {
-        vrDisplay: any;
+        vrDisplay: Nullable<any>;
         vrSupported: boolean;
     }
 
@@ -619,6 +619,7 @@
         private _oldSize: Size;
         private _oldHardwareScaleFactor: number;
         private _vrExclusivePointerMode = false;
+        private _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
 
         public get isInVRExclusivePointerMode(): boolean {
             return this._vrExclusivePointerMode;
@@ -1809,13 +1810,29 @@
             return this._vrDisplay;
         }
 
-        public initWebVR(): Observable<{ vrDisplay: any, vrSupported: any }> {
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns The onVRDisplayChangedObservable.
+         */
+        public initWebVR(): Observable<IDisplayChangedEventArgs> {
+            this.initWebVRAsync();
+            return this.onVRDisplayChangedObservable;
+        }
+
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns A promise containing a VRDisplay and if vr is supported.
+         */
+        public initWebVRAsync(): Promise<IDisplayChangedEventArgs> {
             var notifyObservers = () => {
                 var eventArgs = {
                     vrDisplay: this._vrDisplay,
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+                this._webVRInitPromise = new Promise((res)=>{res(eventArgs)});
             }
 
             if (!this._onVrDisplayConnect) {
@@ -1836,10 +1853,9 @@
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             }
-
-            this._getVRDisplays(notifyObservers);
-
-            return this.onVRDisplayChangedObservable;
+            this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
+            this._webVRInitPromise.then(notifyObservers);
+            return this._webVRInitPromise;
         }
 
         public enableVR() {
@@ -1879,26 +1895,28 @@
             }
         }
 
-        private _getVRDisplays(callback: () => void) {
-            var getWebVRDevices = (devices: Array<any>) => {
-                this._vrSupported = true;
-                // note that devices may actually be an empty array. This is fine;
-                // we expect this._vrDisplay to be undefined in this case.
-                return this._vrDisplay = devices[0];
-            }
-
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch((error: () => void) => {
-                    // TODO: System CANNOT support WebVR, despite API presence.
+        private _getVRDisplaysAsync():Promise<IDisplayChangedEventArgs> {
+            return new Promise((res, rej)=>{    
+                if (navigator.getVRDisplays) {
+                    navigator.getVRDisplays().then((devices: Array<any>)=>{
+                        this._vrSupported = true;
+                        // note that devices may actually be an empty array. This is fine;
+                        // we expect this._vrDisplay to be undefined in this case.
+                        this._vrDisplay = devices[0];
+                        res({
+                            vrDisplay: this._vrDisplay,
+                            vrSupported: this._vrSupported
+                        });
+                    });
+                } else {
+                    this._vrDisplay = undefined;
                     this._vrSupported = false;
-                    callback();
-                });
-            } else {
-                // TODO: Browser does not support WebVR
-                this._vrDisplay = undefined;
-                this._vrSupported = false;
-                callback();
-            }
+                    res({
+                        vrDisplay: this._vrDisplay,
+                        vrSupported: this._vrSupported
+                    });
+                }
+            });
         }
 
         public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {

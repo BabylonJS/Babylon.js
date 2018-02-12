@@ -5,6 +5,7 @@
         private _data: Nullable<FloatArray>;
         private _updatable: boolean;
         private _strideSize: number;
+        private _instanced: boolean;
 
         constructor(engine: any, data: FloatArray, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced: boolean = false) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
@@ -15,6 +16,7 @@
             }
 
             this._updatable = updatable;
+            this._instanced = instanced;
 
             this._data = data;
 
@@ -36,7 +38,7 @@
          */
         public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean): VertexBuffer {
             // a lot of these parameters are ignored as they are overriden by the buffer
-            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced, offset, size);
+            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced === undefined ? this._instanced : instanced, offset, size);
         }
 
         // Properties

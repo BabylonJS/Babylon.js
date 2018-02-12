@@ -120,7 +120,6 @@ module BABYLON {
         private _teleportationTarget: Mesh;
         private _isDefaultTeleportationTarget = true;
         private _postProcessMove: ImageProcessingPostProcess;
-        private _passProcessMove: PassPostProcess;
         private _teleportationFillColor: string = "#444444";
         private _teleportationBorderColor: string = "#FFFFFF";
         private _rotationAngle: number = 0;
@@ -207,15 +206,14 @@ module BABYLON {
         }
 
         /**
-         * The mesh used to display where the user is selecting.
+         * The mesh used to display where the user is selecting, 
+         * when set bakeCurrentTransformIntoVertices will be called on the mesh.
+         * See http://doc.babylonjs.com/resources/baking_transformations 
          */
         public get gazeTrackerMesh(): Mesh {
             return this._gazeTracker;
         }
 
-        /**
-         * Sets the mesh to be used to display where the user is selecting.
-         */
         public set gazeTrackerMesh(value: Mesh) {
             if (value) {
                 this._gazeTracker = value;
@@ -802,7 +800,6 @@ module BABYLON {
                     imageProcessingConfiguration);
 
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
-                this._passProcessMove = new PassPostProcess("pass", 1.0, this._webVRCamera);
                 this._teleportationInitialized = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._createTeleportationCircles();
@@ -1595,10 +1592,6 @@ module BABYLON {
         public dispose() {
             if (this.isInVRMode) {
                 this.exitVR();
-            }
-
-            if (this._passProcessMove) {
-                this._passProcessMove.dispose();
             }
 
             if (this._postProcessMove) {
