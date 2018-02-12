@@ -19,6 +19,9 @@ module BABYLON.GLTF2 {
         /** Override this method to modify the default behavior for loading nodes. */
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { return null; }
 
+        /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
+        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> { return null; }
+
         /** Override this method to modify the default behavior for loading materials. */
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> { return null; }
 
@@ -28,14 +31,14 @@ module BABYLON.GLTF2 {
         // #endregion
 
         /** Helper method called by a loader extension to load an glTF extension. */
-        protected _loadExtensionAsync<T>(context: string, property: IProperty, actionAsync: (context: string, extension: T) => Promise<void>): Nullable<Promise<void>> {
+        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (context: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>> {
             if (!property.extensions) {
                 return null;
             }
 
             const extensions = property.extensions;
 
-            const extension = extensions[this.name] as T;
+            const extension = extensions[this.name] as TProperty;
             if (!extension) {
                 return null;
             }
@@ -43,9 +46,11 @@ module BABYLON.GLTF2 {
             // Clear out the extension before executing the action to avoid recursing into the same property.
             delete extensions[this.name];
 
-            return actionAsync(context + "/extensions/" + this.name, extension).then(() => {
+            return actionAsync(context + "/extensions/" + this.name, extension).then(result => {
                 // Restore the extension after completing the action.
                 extensions[this.name] = extension;
+
+                return result;
             });
         }
 
@@ -57,6 +62,11 @@ module BABYLON.GLTF2 {
         /** Helper method called by the loader to allow extensions to override loading nodes. */
         public static _LoadNodeAsync(loader: GLTFLoader, context: string, node: ILoaderNode): Nullable<Promise<void>> {
             return loader._applyExtensions(extension => extension._loadNodeAsync(context, node));
+        }
+
+        /** Helper method called by the loader to allow extensions to override loading mesh primitive vertex data. */
+        public static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> {
+            return loader._applyExtensions(extension => extension._loadVertexDataAsync(context, primitive, babylonMesh));
         }
 
         /** Helper method called by the loader to allow extensions to override loading materials. */
