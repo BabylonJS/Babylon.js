@@ -3,6 +3,14 @@
         private _refTexture: Texture;
         private _ownRefractionTexture = true;
 
+        /**
+         * Gets or sets the refraction texture
+         * Please note that you are responsible for disposing the texture if you set it manually
+         */
+        public get refractionTexture(): Texture {
+            return this._refTexture;
+        }
+
         public set refractionTexture(value: Texture) {
             if (this._refTexture && this._ownRefractionTexture) {
                 this._refTexture.dispose();
