@@ -67,7 +67,7 @@ export interface ViewerConfiguration {
 }
 
 export interface IModelConfiguration {
-    url: string;
+    url?: string;
     loader?: string; // obj, gltf?
     position?: { x: number, y: number, z: number };
     rotation?: { x: number, y: number, z: number, w?: number };
@@ -81,7 +81,7 @@ export interface IModelConfiguration {
         parentIndex?: number;
     }; // shoud the model be scaled to unit-size
 
-    title: string;
+    title?: string;
     subtitle?: string;
     thumbnail?: string; // URL or data-url
 
@@ -100,6 +100,7 @@ export interface ISkyboxConfiguration {
     blur?: number; // deprecated
     material?: {
         imageProcessingConfiguration?: IImageProcessingConfiguration;
+        [propName: string]: any;
     };
     infiniteDIstance?: boolean;
 

@@ -217,7 +217,10 @@
             // Skeletons
             serializationObject.skeletons = [];
             for (index = 0; index < scene.skeletons.length; index++) {
-                serializationObject.skeletons.push(scene.skeletons[index].serialize());
+                let skeleton = scene.skeletons[index];
+                if (!skeleton.doNotSerialize) {
+                    serializationObject.skeletons.push(skeleton.serialize());
+                }
             }
 
             // Transform nodes

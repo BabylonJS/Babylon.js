@@ -54,9 +54,9 @@
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
 - AssetContainer Class and loading methods ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
-- (Viewer) It is now possible to update parts of the configuration without rcreating the objects. ([RaananW](https://github.com/RaananW))
+- (Viewer) It is now possible to update parts of the configuration without rcreating the objects. Extra configuration can be loaded sync (if provided) ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
-- (Viewer) Model can be normalized using configuration. ([RaananW](https://github.com/RaananW))
+- (Viewer) Model can be normalized using configuration, camera is dynamically configured. ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final NPM declarations during build. ([RaananW](https://github.com/RaananW))
 - GUI.Line can have its world position set from one end or the other ([SvenFrankson](https://github.com/SvenFrankson))
 - Added FOV system to background material for zoom effects in skyboxes without adjusting camera FOV ([DavidHGillen](https://github.com/DavidHGillen))
@@ -66,8 +66,10 @@
 - Added promise-based async functions to the SceneLoader, Scene.whenReadyAsync, and material.forceCompilationAsync. ([bghgary](https://github.com/bghgary)]
 - Added checks to VertexData.merge to ensure data is valid before merging. ([bghgary](https://github.com/bghgary)]
 - Ability to set a mesh to customize the webVR gaze tracker ([trevordev](https://github.com/trevordev))
+- Added promise-based async functions for initWebVRAsync and useStandingMatrixAsync ([trevordev](https://github.com/trevordev))
 - Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
 - Added Draco mesh compression support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)) 
 
 ## Bug fixes
@@ -77,6 +79,7 @@
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 - SPS internal temporary vector3 instead of Tmp.Vector3 to avoid possible concurrent uses ([jbousquie](https://github.com/jbousquie))
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
+- Enabling teleportation in vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 
 ## Breaking changes
 

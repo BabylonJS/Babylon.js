@@ -556,97 +556,6 @@ module BABYLON.GLTF2 {
         }
 
         /**
-         * 
-         * @param babylonTexture - Babylon texture to extract.
-         * @param mimeType - Mime Type of the babylonTexture.
-         * @return - glTF texture, or null if the texture format is not supported.
-         */
-        private exportTexture(babylonTexture: BaseTexture, mimeType: ImageMimeType = ImageMimeType.JPEG): Nullable<ITextureInfo> {
-            let textureInfo: Nullable<ITextureInfo> = null;
-
-            let glTFTexture: Nullable<ITexture>;
-
-            glTFTexture = {
-                source: this.images.length
-            };
-
-            let textureName = babylonTexture.getInternalTexture()!.url;
-            if (textureName.search('/') !== -1) {
-                const splitFilename = textureName.split('/');
-                textureName = splitFilename[splitFilename.length - 1];
-                const basefile = textureName.split('.')[0];
-                let extension = textureName.split('.')[1];
-                if (mimeType === ImageMimeType.JPEG) {
-                    extension = ".jpg";
-                }
-                else if (mimeType === ImageMimeType.PNG) {
-                    extension = ".png";
-                }
-                else {
-                    throw new Error("Unsupported mime type " + mimeType);
-                }
-                textureName = basefile + extension;
-            }
-
-            const pixels = babylonTexture!.readPixels() as Uint8Array;
-
-            const imageCanvas = document.createElement('canvas');
-            imageCanvas.id = "ImageCanvas";
-
-            const ctx = <CanvasRenderingContext2D>imageCanvas.getContext('2d');
-            const size = babylonTexture.getSize();
-            imageCanvas.width = size.width;
-            imageCanvas.height = size.height;
-
-            const imgData = ctx.createImageData(size.width, size.height);
-
-
-            imgData.data.set(pixels!);
-            ctx.putImageData(imgData, 0, 0);
-            const base64Data = imageCanvas.toDataURL(mimeType);
-            const binStr = atob(base64Data.split(',')[1]);
-            const arr = new Uint8Array(binStr.length);
-            for (let i = 0; i < binStr.length; ++i) {
-                arr[i] = binStr.charCodeAt(i);
-            }
-            const imageValues = { data: arr, mimeType: mimeType };
-
-            this.imageData[textureName] = imageValues;
-            if (mimeType === ImageMimeType.JPEG) {
-                const glTFImage: IImage = {
-                    uri: textureName
-                }
-                let foundIndex = -1;
-                for (let i = 0; i < this.images.length; ++i) {
-                    if (this.images[i].uri === textureName) {
-                        foundIndex = i;
-                        break;
-                    }
-                }
-                if (foundIndex === -1) {
-                    this.images.push(glTFImage);
-                    glTFTexture.source = this.images.length - 1;
-                    this.textures.push({
-                        source: this.images.length - 1
-                    });
-
-                    textureInfo = {
-                        index: this.images.length - 1
-                    }
-                }
-                else {
-                    glTFTexture.source = foundIndex;
-
-                    textureInfo = {
-                        index: foundIndex
-                    }
-                }
-            }
-
-            return textureInfo;
-        }
-
-        /**
          * Creates a bufferview based on the vertices type for the Babylon mesh
          * @param kind - Indicates the type of vertices data.
          * @param babylonMesh - The Babylon mesh to get the vertices data from.
@@ -721,7 +630,7 @@ module BABYLON.GLTF2 {
                                 break;
                             }
                             default: {
-                                console.warn("Unsupported VertexBuffer kind: " + kind);
+                                Tools.Warn("Unsupported VertexBuffer kind: " + kind);
                             }
                         }
 
@@ -817,7 +726,6 @@ module BABYLON.GLTF2 {
                 const submesh = babylonMesh.subMeshes[j];
                 const meshPrimitive: IMeshPrimitive = { attributes: {} };
 
-
                 if (bufferMesh !== null) {
                     // Create a bufferview storing all the positions
                     if (!dataBuffer) {
@@ -829,8 +737,8 @@ module BABYLON.GLTF2 {
                             const positionStrideSize = positionVertexBuffer!.getStrideSize();
 
                             // Create accessor
-                            const result = this.calculateMinMax(positions!, 0, positions!.length/positionStrideSize, positionStrideSize!, useRightHandedSystem);
-                            const accessor = this.createAccessor(positionBufferViewIndex, "Position", AccessorType.VEC3, AccessorComponentType.FLOAT, positions!.length/positionStrideSize, 0, result.min, result.max);
+                            const result = this.calculateMinMax(positions!, 0, positions!.length / positionStrideSize, positionStrideSize!, useRightHandedSystem);
+                            const accessor = this.createAccessor(positionBufferViewIndex, "Position", AccessorType.VEC3, AccessorComponentType.FLOAT, positions!.length / positionStrideSize, 0, result.min, result.max);
                             this.accessors.push(accessor);
 
                             meshPrimitive.attributes.POSITION = this.accessors.length - 1;
@@ -842,7 +750,7 @@ module BABYLON.GLTF2 {
                             const normalStrideSize = normalVertexBuffer!.getStrideSize();
 
                             // Create accessor
-                            const accessor = this.createAccessor(normalBufferViewIndex, "Normal", AccessorType.VEC3, AccessorComponentType.FLOAT, normals!.length/normalStrideSize);
+                            const accessor = this.createAccessor(normalBufferViewIndex, "Normal", AccessorType.VEC3, AccessorComponentType.FLOAT, normals!.length / normalStrideSize);
                             this.accessors.push(accessor);
 
                             meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
@@ -854,7 +762,7 @@ module BABYLON.GLTF2 {
                             const tangentStrideSize = tangentVertexBuffer!.getStrideSize();
 
                             // Create accessor
-                            const accessor = this.createAccessor(tangentBufferViewIndex, "Tangent", AccessorType.VEC4, AccessorComponentType.FLOAT, tangents!.length/tangentStrideSize);
+                            const accessor = this.createAccessor(tangentBufferViewIndex, "Tangent", AccessorType.VEC4, AccessorComponentType.FLOAT, tangents!.length / tangentStrideSize);
                             this.accessors.push(accessor);
 
                             meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
@@ -866,7 +774,7 @@ module BABYLON.GLTF2 {
                             const colorStrideSize = colorVertexBuffer!.getStrideSize();
 
                             // Create accessor
-                            const accessor = this.createAccessor(colorBufferViewIndex, "Color", AccessorType.VEC4, AccessorComponentType.FLOAT, colors!.length/colorStrideSize);
+                            const accessor = this.createAccessor(colorBufferViewIndex, "Color", AccessorType.VEC4, AccessorComponentType.FLOAT, colors!.length / colorStrideSize);
                             this.accessors.push(accessor);
 
                             meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
@@ -877,7 +785,7 @@ module BABYLON.GLTF2 {
                             const texCoord0VertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.UVKind);
                             const texCoord0s = texCoord0VertexBuffer!.getData();
                             const texCoord0StrideSize = texCoord0VertexBuffer!.getStrideSize();
-                            const accessor = this.createAccessor(texCoord0BufferViewIndex, "Texture Coords 0", AccessorType.VEC2, AccessorComponentType.FLOAT, texCoord0s!.length/texCoord0StrideSize);
+                            const accessor = this.createAccessor(texCoord0BufferViewIndex, "Texture Coords 0", AccessorType.VEC2, AccessorComponentType.FLOAT, texCoord0s!.length / texCoord0StrideSize);
                             this.accessors.push(accessor);
 
                             meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
@@ -888,7 +796,7 @@ module BABYLON.GLTF2 {
                             const texCoord1VertexBuffer = bufferMesh.getVertexBuffer(VertexBuffer.UV2Kind);
                             const texCoord1s = texCoord1VertexBuffer!.getData();
                             const texCoord1StrideSize = texCoord1VertexBuffer!.getStrideSize();
-                            const accessor = this.createAccessor(texCoord1BufferViewIndex, "Texture Coords 1", AccessorType.VEC2, AccessorComponentType.FLOAT, texCoord1s!.length/texCoord1StrideSize);
+                            const accessor = this.createAccessor(texCoord1BufferViewIndex, "Texture Coords 1", AccessorType.VEC2, AccessorComponentType.FLOAT, texCoord1s!.length / texCoord1StrideSize);
                             this.accessors.push(accessor);
 
                             meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
@@ -904,129 +812,22 @@ module BABYLON.GLTF2 {
                         }
                     }
                     if (bufferMesh.material) {
-                        if (bufferMesh.material instanceof StandardMaterial) {
-                            console.warn("Standard Material is currently not fully supported/implemented in glTF serializer");
-                            const babylonStandardMaterial = bufferMesh.material as StandardMaterial;
-                            const glTFPbrMetallicRoughness = _GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
-
-                            const glTFMaterial: IMaterial = { name: babylonStandardMaterial.name };
-                            if (!babylonStandardMaterial.backFaceCulling) {
-                                glTFMaterial.doubleSided = true;
-                            }
-                            if (babylonStandardMaterial.diffuseTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                                const glTFTexture = this.exportTexture(babylonStandardMaterial.diffuseTexture);
-                                if (glTFTexture !== null) {
-                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                                }
-                            }
-                            if (babylonStandardMaterial.bumpTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                                const glTFTexture = this.exportTexture(babylonStandardMaterial.bumpTexture);
-                                if (glTFTexture) {
-                                    glTFMaterial.normalTexture = glTFTexture;
-                                }
-                            }
-                            if (babylonStandardMaterial.emissiveTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                                const glTFEmissiveTexture = this.exportTexture(babylonStandardMaterial.emissiveTexture);
-                                if (glTFEmissiveTexture) {
-                                    glTFMaterial.emissiveTexture = glTFEmissiveTexture;
-                                }
-                                glTFMaterial.emissiveFactor = [1.0, 1.0, 1.0];
-                            }
-                            if (babylonStandardMaterial.ambientTexture && bufferMesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
-                                const glTFOcclusionTexture = this.exportTexture(babylonStandardMaterial.ambientTexture);
-                                if (glTFOcclusionTexture) {
-                                    glTFMaterial.occlusionTexture = glTFOcclusionTexture;
-                                }
-                            }
-                            if (babylonStandardMaterial.alpha < 1.0 || babylonStandardMaterial.opacityTexture) {
-
-                                if (babylonStandardMaterial.alphaMode === Engine.ALPHA_COMBINE) {
-                                    glTFMaterial.alphaMode = GLTF2.MaterialAlphaMode.BLEND;
-                                }
-                                else {
-                                    console.warn("glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
-                                }
-                            }
-
-                            glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-
-                            this.materials.push(glTFMaterial);
-                            meshPrimitive.material = this.materials.length - 1;
+                        if (bufferMesh.material instanceof StandardMaterial || bufferMesh.material instanceof PBRMetallicRoughnessMaterial) {
+                            const materialIndex = babylonMesh.getScene().materials.indexOf(bufferMesh.material);
+                            meshPrimitive.material = materialIndex;
                         }
-                        else if (bufferMesh.material instanceof PBRMetallicRoughnessMaterial) {
-                            const babylonPBRMaterial = bufferMesh.material as PBRMetallicRoughnessMaterial;
-                            const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};
+                        else if (bufferMesh.material instanceof MultiMaterial) {
+                            const babylonMultiMaterial = bufferMesh.material as MultiMaterial;
 
-                            if (babylonPBRMaterial.baseColor) {
-                                glTFPbrMetallicRoughness.baseColorFactor = [
-                                    babylonPBRMaterial.baseColor.r,
-                                    babylonPBRMaterial.baseColor.g,
-                                    babylonPBRMaterial.baseColor.b,
-                                    babylonPBRMaterial.alpha
-                                ];
-                            }
-                            if (babylonPBRMaterial.baseTexture !== undefined) {
-                                const glTFTexture = this.exportTexture(babylonPBRMaterial.baseTexture);
-                                if (glTFTexture !== null) {
-                                    glTFPbrMetallicRoughness.baseColorTexture = glTFTexture;
-                                }
-                                glTFPbrMetallicRoughness.baseColorTexture
-                            }
-                            if (babylonPBRMaterial.metallic !== undefined) {
-                                glTFPbrMetallicRoughness.metallicFactor = babylonPBRMaterial.metallic;
-                            }
-                            if (babylonPBRMaterial.roughness !== undefined) {
-                                glTFPbrMetallicRoughness.roughnessFactor = babylonPBRMaterial.roughness;
-                            }
+                            const material = babylonMultiMaterial.subMaterials[submesh.materialIndex];
 
-                            const glTFMaterial: IMaterial = {
-                                name: babylonPBRMaterial.name
-                            };
-                            if (babylonPBRMaterial.doubleSided) {
-                                glTFMaterial.doubleSided = babylonPBRMaterial.doubleSided;
+                            if (material !== null) {
+                                const materialIndex = babylonMesh.getScene().materials.indexOf(material);
+                                meshPrimitive.material = materialIndex;
                             }
-                            if (babylonPBRMaterial.normalTexture) {
-                                const glTFTexture = this.exportTexture(babylonPBRMaterial.normalTexture);
-                                if (glTFTexture) {
-                                    glTFMaterial.normalTexture = glTFTexture;
-                                }
-                            }
-                            if (babylonPBRMaterial.occlusionTexture) {
-                                const glTFTexture = this.exportTexture(babylonPBRMaterial.occlusionTexture);
-                                if (glTFTexture) {
-                                    glTFMaterial.occlusionTexture = glTFTexture;
-                                    if (babylonPBRMaterial.occlusionStrength !== undefined) {
-                                        glTFMaterial.occlusionTexture.strength = babylonPBRMaterial.occlusionStrength;
-                                    }
-                                }
-                            }
-                            if (babylonPBRMaterial.emissiveTexture) {
-                                const glTFTexture = this.exportTexture(babylonPBRMaterial.emissiveTexture);
-                                if (glTFTexture !== null) {
-                                    glTFMaterial.emissiveTexture = glTFTexture;
-                                }
-                            }
-                            if (!babylonPBRMaterial.emissiveColor.equals(new Color3(0.0, 0.0, 0.0))) {
-                                glTFMaterial.emissiveFactor = babylonPBRMaterial.emissiveColor.asArray();
-                            }
-                            if (babylonPBRMaterial.transparencyMode) {
-                                const alphaMode = _GLTFMaterial.GetAlphaMode(babylonPBRMaterial);
-
-                                if (alphaMode !== MaterialAlphaMode.OPAQUE) { //glTF defaults to opaque
-                                    glTFMaterial.alphaMode = alphaMode;
-                                    if (alphaMode === MaterialAlphaMode.BLEND) {
-                                        glTFMaterial.alphaCutoff = babylonPBRMaterial.alphaCutOff;
-                                    }
-                                }
-                            }
-
-                            glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
-
-                            this.materials.push(glTFMaterial);
-                            meshPrimitive.material = this.materials.length - 1;
                         }
                         else {
-                            console.warn("Material type is not yet implemented in glTF serializer: " + bufferMesh.material.name);
+                            Tools.Warn("Material type " + bufferMesh.material.getClassName() + " for material " + bufferMesh.material.name + " is not yet implemented in glTF serializer.");
                         }
                     }
                     mesh.primitives.push(meshPrimitive);
@@ -1047,6 +848,9 @@ module BABYLON.GLTF2 {
             if (babylonScene.meshes.length > 0) {
                 const babylonMeshes = babylonScene.meshes;
                 const scene = { nodes: new Array<number>() };
+                if (dataBuffer == null) {
+                    _GLTFMaterial.ConvertMaterialsToGLTF(babylonScene.materials, ImageMimeType.JPEG, this.images, this.textures, this.materials, this.imageData, true);
+                }
 
                 for (let i = 0; i < babylonMeshes.length; ++i) {
                     if (this.options &&
