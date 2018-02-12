@@ -114,7 +114,7 @@ module BABYLON {
         rayLength?: number;
 
         /**
-         * To change the default offset from the ground to account for user's height. (default: 1.7)
+         * To change the default offset from the ground to account for user's height in meters. (default: 1.7)
          */
         defaultHeight?: number;
 
@@ -282,11 +282,11 @@ module BABYLON {
         }
 
         /**
-         * Gets the device distance from the ground.
-         * @returns the distance from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
+         * Gets the device distance from the ground in meters.
+         * @returns the distance in meters from the vrDevice to ground in device space. If standing matrix is not supported for the vrDevice 0 is returned.
          */
         public deviceDistanceToRoomGround(): number {
-            if (this._standingMatrix && this._defaultHeight === undefined) {
+            if (this._standingMatrix) {
                 // Add standing matrix offset to get real offset from ground in room
                 this._standingMatrix.getTranslationToRef(this._workingVector);
                 return this._deviceRoomPosition.y + this._workingVector.y
@@ -301,26 +301,34 @@ module BABYLON {
          */
         public useStandingMatrix(callback = (bool: boolean) => { }) {
             // Use standing matrix if available
-            if (!navigator || !navigator.getVRDisplays) {
-                callback(false);
-            } else {
-                navigator.getVRDisplays().then((displays: any) => {
-                    if (!displays || !displays[0] || !displays[0].stageParameters || !displays[0].stageParameters.sittingToStandingTransform) {
-                        callback(false);
-                    } else {
-                        this._standingMatrix = new Matrix();
-                        Matrix.FromFloat32ArrayToRefScaled(displays[0].stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
-                        if (!this.getScene().useRightHandedSystem) {
-                            [2, 6, 8, 9, 14].forEach((num) => {
-                                if (this._standingMatrix) {
-                                    this._standingMatrix.m[num] *= -1;
-                                }
-                            });
-                        }
-                        callback(true);
+            this.getEngine().initWebVRAsync().then((result)=>{
+                if (!result.vrDisplay || !result.vrDisplay.stageParameters || !result.vrDisplay.stageParameters.sittingToStandingTransform) {
+                    callback(false);
+                } else {
+                    this._standingMatrix = new Matrix();
+                    Matrix.FromFloat32ArrayToRefScaled(result.vrDisplay.stageParameters.sittingToStandingTransform, 0, 1, this._standingMatrix);
+                    if (!this.getScene().useRightHandedSystem) {
+                        [2, 6, 8, 9, 14].forEach((num) => {
+                            if (this._standingMatrix) {
+                                this._standingMatrix.m[num] *= -1;
+                            }
+                        });
                     }
+                    callback(true);
+                }
+            });
+        }
+
+        /**
+         * Enables the standing matrix when supported. This can be used to position the user's view the correct height from the ground.
+         * @returns A promise with a boolean set to if the standing matrix is supported.
+         */
+        public useStandingMatrixAsync():Promise<boolean> {
+            return new Promise((res, rej)=>{
+                this.useStandingMatrix((supported)=>{
+                    res(supported);
                 });
-            }
+            });
         }
 
         /**
