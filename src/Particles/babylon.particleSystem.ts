@@ -36,7 +36,7 @@
         animate(): void;
         /**
          * Renders the particle system in its current state.
-         * @returns the current number of particles.
+         * @returns the current number of particles
          */
         render(): number;
         /**
@@ -213,23 +213,77 @@
          */
         public gravity = Vector3.Zero();
 
+       /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction1(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction1;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction1(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction1 = value;
+            }
+        }
+
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
-        public direction1 = new Vector3(0, 1.0, 0);
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         */
-        public direction2 = new Vector3(0, 1.0, 0);
+        public get direction2(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction2;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction2(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction2 = value;
+            }
+        }
 
         /**
          * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
-        public minEmitBox = new Vector3(-0.5, -0.5, -0.5);
+        public get minEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).minEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set minEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).minEmitBox = value;
+            }
+        }
+
         /**
          * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
-        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);
+        public get maxEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set maxEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
+            }
+        }
 
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
@@ -387,8 +441,8 @@
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
 
-            // Default behaviors
-            this.particleEmitterType = new BoxParticleEmitter(this);
+            // Default emitter type
+            this.particleEmitterType = new BoxParticleEmitter();
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
@@ -767,14 +821,15 @@
 
         /**
          * Renders the particle system in its current state.
-         * @returns the current number of particles.
+         * @returns the current number of particles
          */
         public render(): number {
             var effect = this._getEffect();
 
             // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length)
+            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length) {
                 return 0;
+            }
 
             var engine = this._scene.getEngine();
 
@@ -898,7 +953,7 @@
          * @returns the emitter
          */
         public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-            var particleEmitter = new BoxParticleEmitter(this);
+            var particleEmitter = new BoxParticleEmitter();
             this.direction1 = direction1;
             this.direction2 = direction2;
             this.minEmitBox = minEmitBox;

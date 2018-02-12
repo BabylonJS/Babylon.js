@@ -8,62 +8,25 @@ module BABYLON {
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          */
-        public get direction1(): Vector3 {
-            return this._particleSystem.direction1;
-        }
+        public direction1 = new Vector3(0, 1.0, 0);
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
          */
-        public set direction1(value: Vector3) {
-            this._particleSystem.direction1 = value;
-        }
-
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         */
-        public get direction2(): Vector3 {
-            return this._particleSystem.direction2;
-        }
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         */
-        public set direction2(value: Vector3) {
-            this._particleSystem.direction2 = value;
-        }
+        public direction2 = new Vector3(0, 1.0, 0);
 
         /**
          * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
          */
-        public get minEmitBox(): Vector3 {
-            return this._particleSystem.minEmitBox;
-        }
-        /**
-         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         */
-        public set minEmitBox(value: Vector3) {
-            this._particleSystem.minEmitBox = value;
-        }
-
+        public minEmitBox = new Vector3(-0.5, -0.5, -0.5);
         /**
          * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
          */
-        public get maxEmitBox(): Vector3 {
-            return this._particleSystem.maxEmitBox;
-        }
-        /**
-         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         */
-        public set maxEmitBox(value: Vector3) {
-            this._particleSystem.maxEmitBox = value;
-        }
-        
-        // to be updated like the rest of emitters when breaking changes.
-        // all property should be come public variables and passed through constructor.
+        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);  
+               
         /**
          * Creates a new instance of @see BoxParticleEmitter
-         * @param _particleSystem the particle system associated with the emitter
          */
-        constructor(private _particleSystem: ParticleSystem) {
+        constructor() {
 
         }
 
@@ -102,11 +65,27 @@ module BABYLON {
          */
         public clone(): BoxParticleEmitter
         {
-            let newOne = new BoxParticleEmitter(this._particleSystem);
+            let newOne = new BoxParticleEmitter();
 
             Tools.DeepCopy(this, newOne);
 
             return newOne;
+        }
+
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */        
+        public applyToShader(effect: Effect): void {            
+            effect.setVector3("direction1", this.direction1);
+            effect.setVector3("direction2", this.direction2);
+        }
+
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         */
+        public getEffectDefines(): string {
+            return "#define BOXEMITTER"
         }
     }
 }
