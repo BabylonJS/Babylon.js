@@ -103,7 +103,7 @@
         public emitter: Nullable<AbstractMesh | Vector3> = null;
 
         /**
-         * The density of particles, the rate of particle flow
+         * The maximum number of particles to emit per frame
          */
         public emitRate = 10;
 

@@ -270,7 +270,7 @@
     }
 
     export interface IDisplayChangedEventArgs {
-        vrDisplay: any;
+        vrDisplay: Nullable<any>;
         vrSupported: boolean;
     }
 
@@ -346,6 +346,9 @@
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 5;
+        private static _TEXTUREFORMAT_R32F = 6;
+        private static _TEXTUREFORMAT_RG32F = 7;
+        private static _TEXTUREFORMAT_RGB32F = 8;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -498,6 +501,27 @@
             return Engine._TEXTUREFORMAT_LUMINANCE;
         }
 
+        /**
+         * R32F
+         */
+        public static get TEXTUREFORMAT_R32F(): number {
+            return Engine._TEXTUREFORMAT_R32F;
+        }       
+        
+        /**
+         * RG32F
+         */
+        public static get TEXTUREFORMAT_RG32F(): number {
+            return Engine._TEXTUREFORMAT_RG32F;
+        }       
+        
+        /**
+         * RGB32F
+         */
+        public static get TEXTUREFORMAT_RGB32F(): number {
+            return Engine._TEXTUREFORMAT_RGB32F;
+        }               
+
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
         }
@@ -595,6 +619,7 @@
         private _oldSize: Size;
         private _oldHardwareScaleFactor: number;
         private _vrExclusivePointerMode = false;
+        private _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
 
         public get isInVRExclusivePointerMode(): boolean {
             return this._vrExclusivePointerMode;
@@ -1785,13 +1810,29 @@
             return this._vrDisplay;
         }
 
-        public initWebVR(): Observable<{ vrDisplay: any, vrSupported: any }> {
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns The onVRDisplayChangedObservable.
+         */
+        public initWebVR(): Observable<IDisplayChangedEventArgs> {
+            this.initWebVRAsync();
+            return this.onVRDisplayChangedObservable;
+        }
+
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns A promise containing a VRDisplay and if vr is supported.
+         */
+        public initWebVRAsync(): Promise<IDisplayChangedEventArgs> {
             var notifyObservers = () => {
                 var eventArgs = {
                     vrDisplay: this._vrDisplay,
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+                this._webVRInitPromise = new Promise((res)=>{res(eventArgs)});
             }
 
             if (!this._onVrDisplayConnect) {
@@ -1812,10 +1853,9 @@
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             }
-
-            this._getVRDisplays(notifyObservers);
-
-            return this.onVRDisplayChangedObservable;
+            this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
+            this._webVRInitPromise.then(notifyObservers);
+            return this._webVRInitPromise;
         }
 
         public enableVR() {
@@ -1855,26 +1895,28 @@
             }
         }
 
-        private _getVRDisplays(callback: () => void) {
-            var getWebVRDevices = (devices: Array<any>) => {
-                this._vrSupported = true;
-                // note that devices may actually be an empty array. This is fine;
-                // we expect this._vrDisplay to be undefined in this case.
-                return this._vrDisplay = devices[0];
-            }
-
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch((error: () => void) => {
-                    // TODO: System CANNOT support WebVR, despite API presence.
+        private _getVRDisplaysAsync():Promise<IDisplayChangedEventArgs> {
+            return new Promise((res, rej)=>{    
+                if (navigator.getVRDisplays) {
+                    navigator.getVRDisplays().then((devices: Array<any>)=>{
+                        this._vrSupported = true;
+                        // note that devices may actually be an empty array. This is fine;
+                        // we expect this._vrDisplay to be undefined in this case.
+                        this._vrDisplay = devices[0];
+                        res({
+                            vrDisplay: this._vrDisplay,
+                            vrSupported: this._vrSupported
+                        });
+                    });
+                } else {
+                    this._vrDisplay = undefined;
                     this._vrSupported = false;
-                    callback();
-                });
-            } else {
-                // TODO: Browser does not support WebVR
-                this._vrDisplay = undefined;
-                this._vrSupported = false;
-                callback();
-            }
+                    res({
+                        vrDisplay: this._vrDisplay,
+                        vrSupported: this._vrSupported
+                    });
+                }
+            });
         }
 
         public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
@@ -2925,6 +2967,18 @@
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniform defines the uniform location
+         * @param color4 defines the value to be set
+         */
+        public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
+        }        
+
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling
@@ -3353,11 +3407,18 @@
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
                 case Engine.TEXTUREFORMAT_RGB:
+                case Engine.TEXTUREFORMAT_RGB32F:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
                     internalFormat = this._gl.RGBA;
                     break;
+                case Engine.TEXTUREFORMAT_R32F:
+                    internalFormat = this._gl.RED;
+                    break;       
+                case Engine.TEXTUREFORMAT_RG32F:
+                    internalFormat = this._gl.RG;
+                    break;                                    
             }
 
             return internalFormat;
@@ -3368,8 +3429,8 @@
                 return;
             }
 
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format);
             var internalFormat = this._getInternalFormat(format);
-            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -5536,12 +5597,23 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
-        public _getRGBABufferInternalSizedFormat(type: number): number {
+        /** @ignore */
+        public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
             }
 
             if (type === Engine.TEXTURETYPE_FLOAT) {
+                if (format) {
+                    switch(format) {
+                        case Engine.TEXTUREFORMAT_R32F:
+                            return this._gl.R32F;
+                        case Engine.TEXTUREFORMAT_RG32F:
+                            return this._gl.RG32F;
+                            case Engine.TEXTUREFORMAT_RGB32F:
+                            return this._gl.RGB32F;                            
+                    }                    
+                }
                 return this._gl.RGBA32F;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {

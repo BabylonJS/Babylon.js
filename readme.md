@@ -5,8 +5,6 @@ Getting started? Play directly with the Babylon.js API via our [playground](http
 
 [![Build Status](https://travis-ci.org/BabylonJS/Babylon.js.svg)](https://travis-ci.org/BabylonJS/Babylon.js) 
 
-[![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=d0pZcGpNU0NPeTM5cEpEc2lTU2JJTWc2Mk9NSlAzTzdIaFBpTnF2TjBycz0tLStUWkVBejdVQmN4Y0dIUVVYeU0yc2c9PQ==--4e576f7b7c21279bc6d026b6f51796f58134856b)](https://www.browserstack.com/automate/public-build/d0pZcGpNU0NPeTM5cEpEc2lTU2JJTWc2Mk9NSlAzTzdIaFBpTnF2TjBycz0tLStUWkVBejdVQmN4Y0dIUVVYeU0yc2c9PQ==--4e576f7b7c21279bc6d026b6f51796f58134856b)
-
 **Any questions?** Here is our official [forum](http://www.html5gamedevs.com/forum/16-babylonjs/) on www.html5gamedevs.com.
 
 ## CDN

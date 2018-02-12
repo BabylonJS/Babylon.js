@@ -18,6 +18,11 @@
 
         private _lastAbsoluteTransformsUpdateId = -1;
 
+        /**
+         * Specifies if the skeleton should be serialized.
+         */
+        public doNotSerialize = false;        
+
         // Events
         /**
          * An event triggered before computing the skeleton's matrices
