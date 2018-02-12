@@ -18,6 +18,7 @@ interface Window {
     mozURL: typeof URL;
     msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
+    DracoDecoderModule: any;
 }
 
 interface WebGLRenderingContext {
