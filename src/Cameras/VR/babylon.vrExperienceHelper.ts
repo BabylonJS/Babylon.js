@@ -41,6 +41,9 @@ module BABYLON {
         public static counter = 0;
         public id:number;
 
+        public pointerDownOnMeshAsked:boolean = false;
+        public isActionableMesh:boolean = false;
+
         constructor(scene: Scene){
             this.id = VRExperienceHelperGazer.counter++;
             // Laser pointer
@@ -243,8 +246,6 @@ module BABYLON {
          */
         public teleportationEnabled: boolean = true;
         
-        private _pointerDownOnMeshAsked = false;
-        private _isActionableMesh = false;
         private _defaultHeight: number;
         private _teleportationInitialized = false;
         private _interactionsEnabled = false;
@@ -1004,7 +1005,7 @@ module BABYLON {
                     }
                 });
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
-                    if (!this._pointerDownOnMeshAsked) {
+                    if (!controller.pointerDownOnMeshAsked) {
                         if (stateObject.value > this._padSensibilityUp) {
                             this._selectionPointerDown(controller);
                         }
@@ -1039,7 +1040,7 @@ module BABYLON {
             }
         }
         private _selectionPointerDown(gazer: VRExperienceHelperGazer) {
-            this._pointerDownOnMeshAsked = true;
+            gazer.pointerDownOnMeshAsked = true;
             if (gazer.currentMeshSelected && gazer.currentHit) {
                 this._scene.simulatePointerDown(gazer.currentHit, {pointerId: gazer.id});
             }
@@ -1048,7 +1049,7 @@ module BABYLON {
             if (gazer.currentMeshSelected && gazer.currentHit) {
                 this._scene.simulatePointerUp(gazer.currentHit, {pointerId: gazer.id});
             }
-            this._pointerDownOnMeshAsked = false;
+            gazer.pointerDownOnMeshAsked = false;
         }
         private _checkRotate(stateObject: StickValues) {
             // Only rotate when user is not currently selecting a teleportation location
@@ -1460,7 +1461,7 @@ module BABYLON {
 
                     gazer.gazeTracker.isVisible = true;
 
-                    if (this._isActionableMesh) {
+                    if (gazer.isActionableMesh) {
                         multiplier = 3;
                     }
                     gazer.gazeTracker.scaling.x = hit.distance * multiplier;
@@ -1508,7 +1509,7 @@ module BABYLON {
 
             if (hit && hit.pickedMesh) {
                 gazer.currentHit = hit;
-                if (this._pointerDownOnMeshAsked) {
+                if (gazer.pointerDownOnMeshAsked) {
                     this._scene.simulatePointerMove(gazer.currentHit, {pointerId: gazer.id});
                 }
                 // The object selected is the floor, we're in a teleportation scenario
@@ -1535,12 +1536,12 @@ module BABYLON {
                         if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
                             this.changeGazeColor(new Color3(0, 0, 1));
                             this.changeLaserColor(new Color3(0.2, 0.2, 1));
-                            this._isActionableMesh = true;
+                            gazer.isActionableMesh = true;
                         }
                         else {
                             this.changeGazeColor(new Color3(0.7, 0.7, 0.7));
                             this.changeLaserColor(new Color3(0.7, 0.7, 0.7));
-                            this._isActionableMesh = false;
+                            gazer.isActionableMesh = false;
                         }
                         try {
                             this.onNewMeshSelected.notifyObservers(hit.pickedMesh);
