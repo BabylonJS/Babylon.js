@@ -58,6 +58,9 @@
         private readonly _attributesStrideSize = 14;
         private _updateEffectOptions: EffectCreationOptions;
 
+        /**
+         * Gets a boolean indicating if the GPU particles can be rendered on current browser
+         */
         public static get IsSupported(): boolean {
             if (!Engine.LastCreatedEngine) {
                 return false;
