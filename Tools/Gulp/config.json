@@ -1689,6 +1689,10 @@
                         {
                             "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
+                        },
+                        {
+                            "filename": "babylon.viewer.max.js",
+                            "outputDirectory": "/viewer/"
                         }
                     ]
                 }
