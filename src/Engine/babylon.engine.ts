@@ -349,6 +349,7 @@
         private static _TEXTUREFORMAT_R32F = 6;
         private static _TEXTUREFORMAT_RG32F = 7;
         private static _TEXTUREFORMAT_RGB32F = 8;
+        private static _TEXTUREFORMAT_RGBA32F = 9;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -520,7 +521,14 @@
          */
         public static get TEXTUREFORMAT_RGB32F(): number {
             return Engine._TEXTUREFORMAT_RGB32F;
-        }               
+        }       
+        
+        /**
+         * RGBA32F
+         */
+        public static get TEXTUREFORMAT_RGBA32F(): number {
+            return Engine._TEXTUREFORMAT_RGBA32F;
+        }             
 
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
@@ -565,7 +573,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha7";
+            return "3.2.0-alpha8";
         }
 
         // Updatable statics so stick with vars here
@@ -3411,6 +3419,7 @@
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
+                case Engine.TEXTUREFORMAT_RGBA32F:
                     internalFormat = this._gl.RGBA;
                     break;
                 case Engine.TEXTUREFORMAT_R32F:
