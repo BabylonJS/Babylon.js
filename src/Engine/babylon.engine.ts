@@ -605,7 +605,7 @@
         /**
          * Observable event triggered each time the canvas receives pointerout event
          */
-        public onCanvasPointerOutObservable = new Observable<Engine>();
+        public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
         /**
          * Observable event triggered before each texture is initialized
@@ -686,7 +686,7 @@
         // Focus
         private _onFocus: () => void;
         private _onBlur: () => void;
-        private _onCanvasPointerOut: () => void;
+        private _onCanvasPointerOut: (event: PointerEvent) => void;
         private _onCanvasBlur: () => void;
         private _onCanvasFocus: () => void;
 
@@ -988,8 +988,8 @@
                     this._windowIsBackground = false;
                 };
 
-                this._onCanvasPointerOut = () => {
-                    this.onCanvasPointerOutObservable.notifyObservers(this);
+                this._onCanvasPointerOut = (ev) => {
+                    this.onCanvasPointerOutObservable.notifyObservers(ev);
                 };
 
                 window.addEventListener("blur", this._onBlur);
