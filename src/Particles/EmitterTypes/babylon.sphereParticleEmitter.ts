@@ -80,6 +80,7 @@ module BABYLON {
         
         /**
          * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
             return "#define SPHEREEMITTER"
@@ -148,6 +149,7 @@ module BABYLON {
         
         /**
          * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
          */
         public getEffectDefines(): string {
             return "#define SPHEREEMITTER\n#define DIRECTEDSPHEREEMITTER"

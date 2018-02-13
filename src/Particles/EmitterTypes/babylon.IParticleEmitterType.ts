@@ -35,6 +35,7 @@ module BABYLON {
 
         /**
          * Returns a string to use to update the GPU particles update shader
+         * @returns the effect defines string
          */
         getEffectDefines(): string;
     }
