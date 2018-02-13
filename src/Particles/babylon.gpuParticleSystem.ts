@@ -2,7 +2,7 @@
     /**
      * This represents a GPU particle system in Babylon
      * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
-     * @see https://www.babylonjs-playground.com/#PU4WYI
+     * @see https://www.babylonjs-playground.com/#PU4WYI#2
      */
     export class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
         /**
