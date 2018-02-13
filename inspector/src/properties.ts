@@ -28,7 +28,7 @@ module INSPECTOR {
         },
         'Color3': {
             type: BABYLON.Color3,
-            format: (color: BABYLON.Color3) => { return `R:${color.r}, G:${color.g}, B:${color.b}` },
+            format: (color: BABYLON.Color3) => { return `R:${color.r.toPrecision(2)}, G:${color.g.toPrecision(2)}, B:${color.b.toPrecision(2)}` },
             slider: {
                 r: { min: 0, max: 1, step: 0.01 },
                 g: { min: 0, max: 1, step: 0.01 },

@@ -11,6 +11,10 @@
 	varying mat3 vTBN;
 #endif
 
+#ifdef OBJECTSPACE_NORMALMAP
+uniform mat4 normalMatrix;
+#endif
+
 	// Thanks to http://www.thetenthplanet.de/archives/1180
 	mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv)
 	{

@@ -8,6 +8,8 @@ let getConfigurationType = function (type: string): ViewerConfiguration {
             return defaultConfiguration;
         case 'minimal':
             return minimalConfiguration;
+        case 'none':
+            return {};
         default:
             return defaultConfiguration;
     }

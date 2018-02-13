@@ -412,7 +412,6 @@
         public _masterMesh: Nullable<AbstractMesh>;
 
         public _boundingInfo: Nullable<BoundingInfo>;
-        public _isDisposed = false;
         public _renderId = 0;
 
         public subMeshes: SubMesh[];
@@ -464,13 +463,6 @@
             this.getScene().addMesh(this);
 
             this._resyncLightSources();
-        }
-
-        /**
-         * Boolean : true if the mesh has been disposed.  
-         */
-        public isDisposed(): boolean {
-            return this._isDisposed;
         }
 
         /**
@@ -1455,8 +1447,6 @@
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
-
-            this._isDisposed = true;
 
             super.dispose(doNotRecurse);
         }
