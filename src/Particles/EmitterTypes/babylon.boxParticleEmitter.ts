@@ -79,6 +79,8 @@ module BABYLON {
         public applyToShader(effect: Effect): void {            
             effect.setVector3("direction1", this.direction1);
             effect.setVector3("direction2", this.direction2);
+            effect.setVector3("minEmitBox", this.minEmitBox);
+            effect.setVector3("maxEmitBox", this.maxEmitBox);
         }
 
         /**

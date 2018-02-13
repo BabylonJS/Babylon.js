@@ -88,7 +88,7 @@ module BABYLON {
 
             var randX = radius * Math.sin(s);
             var randZ = radius * Math.cos(s);
-            var randY = h;
+            var randY = h * this._height;
 
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         }
@@ -110,7 +110,10 @@ module BABYLON {
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {
-            
+            effect.setFloat("radius", this.radius);
+            effect.setFloat("angle", this.angle);
+            effect.setFloat("height", this._height);
+            effect.setFloat("directionRandomizer", this.directionRandomizer);
         }
 
         /**
