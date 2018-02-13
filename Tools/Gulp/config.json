@@ -37,6 +37,7 @@
             "solidParticles",
             "additionalMeshes",
             "meshBuilder",
+            "meshCompression",
             "audio",
             "additionalTextures",
             "shadows",
@@ -115,6 +116,7 @@
             "solidParticles",
             "additionalMeshes",
             "meshBuilder",
+            "meshCompression",
             "audio",
             "additionalTextures",
             "shadows",
@@ -426,6 +428,12 @@
             "dependUpon": [
                 "core",
                 "additionalMeshes"
+            ]
+        },
+        "meshCompression" :
+        {
+            "files": [
+                "../../src/Mesh/Compression/babylon.dracoCompression.js"
             ]
         },
         "shaderMaterial": {
@@ -1480,6 +1488,7 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
@@ -1500,6 +1509,7 @@
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
