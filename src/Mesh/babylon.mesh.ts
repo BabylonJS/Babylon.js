@@ -804,14 +804,14 @@
                         for (inf = 0; inf < 4; inf++) {
                             weight = matricesWeightsData[matWeightIdx + inf];
                             if (weight <= 0) break;
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
                         }
                         if (needExtras) {
                             for (inf = 0; inf < 4; inf++) {
                                 weight = matricesWeightsExtraData![matWeightIdx + inf];
                                 if (weight <= 0) break;
-                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
                                 finalMatrix.addToSelf(tempMatrix);
                             }
                         }
@@ -3266,7 +3266,7 @@
                 for (inf = 0; inf < 4; inf++) {
                     weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
-                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
 
                     } else break;
@@ -3275,7 +3275,7 @@
                     for (inf = 0; inf < 4; inf++) {
                         weight = matricesWeightsExtraData![matWeightIdx + inf];
                         if (weight > 0) {
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
                         } else break;
