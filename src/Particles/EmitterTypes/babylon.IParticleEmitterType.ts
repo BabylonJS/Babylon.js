@@ -38,5 +38,17 @@ module BABYLON {
          * @returns the effect defines string
          */
         getEffectDefines(): string;
+
+        /**
+         * Returns a string representing the class name
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */        
+        serialize(): any;
     }
 }

@@ -122,6 +122,24 @@ module BABYLON {
          */
         public getEffectDefines(): string {
             return "#define CONEEMITTER"
+        }     
+        
+        /**
+         * Returns the string "BoxEmitter"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "ConeEmitter";
+        }  
+        
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */        
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            return serializationObject;
         }        
     }
 }

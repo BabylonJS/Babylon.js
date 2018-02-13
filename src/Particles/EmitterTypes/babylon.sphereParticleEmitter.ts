@@ -84,6 +84,24 @@ module BABYLON {
          */
         public getEffectDefines(): string {
             return "#define SPHEREEMITTER"
+        }   
+        
+        /**
+         * Returns the string "SphereParticleEmitter"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "SphereParticleEmitter";
+        }         
+        
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */        
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            return serializationObject;
         }        
     }
 
@@ -153,6 +171,24 @@ module BABYLON {
          */
         public getEffectDefines(): string {
             return "#define SPHEREEMITTER\n#define DIRECTEDSPHEREEMITTER"
-        }          
+        }    
+        
+        /**
+         * Returns the string "SphereDirectedParticleEmitter"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "SphereDirectedParticleEmitter";
+        }       
+        
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */        
+        public serialize(): any {
+            var serializationObject: any = {};
+
+            return serializationObject;
+        }        
     }
 }
