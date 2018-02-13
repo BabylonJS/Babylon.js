@@ -32,6 +32,11 @@ export abstract class AbstractViewer {
     protected shadowGeneratorBias: number;
     protected defaultPipelineTextureType: number;
     protected maxShadows: number;
+    private _hdrSupport: boolean;
+
+    public get isHdrSupported() {
+        return this._hdrSupport;
+    }
 
 
     // observables
@@ -222,8 +227,8 @@ export abstract class AbstractViewer {
                         options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
                     if (groundConfig.mirror.fallOffDistance !== undefined)
                         options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                    if (this.defaultHighpTextureType !== undefined)
-                        options.groundMirrorTextureType = this.defaultHighpTextureType;
+                    if (this.defaultPipelineTextureType !== undefined)
+                        options.groundMirrorTextureType = this.defaultPipelineTextureType;
                 }
             }
 
@@ -818,7 +823,7 @@ export abstract class AbstractViewer {
         let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
         let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
 
-        let supportsHDR: boolean = !!(linearFloatTargets || linearHalfFloatTargets);
+        this._hdrSupport = !!(linearFloatTargets || linearHalfFloatTargets);
 
         if (linearHalfFloatTargets) {
             this.defaultHighpTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
@@ -831,7 +836,7 @@ export abstract class AbstractViewer {
             this.shadowGeneratorBias = 0.001;
         }
 
-        this.defaultPipelineTextureType = supportsHDR ? this.defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
+        this.defaultPipelineTextureType = this._hdrSupport ? this.defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**
