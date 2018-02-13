@@ -12,9 +12,11 @@
     "main": "babylon.viewer.js",
     "files": [
         "babylon.viewer.js",
+        "babylon.viewer.module.d.ts",
         "readme.md",
         "package.json"
     ],
+    "typings": "babylon.viewer.module.d.ts",
     "keywords": [
         "3D",
         "javascript",
