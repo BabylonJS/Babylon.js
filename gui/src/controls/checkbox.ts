@@ -115,8 +115,8 @@ module BABYLON.GUI {
         }
 
         // Events
-        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }
 

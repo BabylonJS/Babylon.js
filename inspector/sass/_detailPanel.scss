@@ -31,7 +31,7 @@
     .prop-value {
         @extend .base-property;
         width:59%;
-        padding-left:10px;
+        padding-left:5px;
         &.clickable {
             cursor:pointer;
             &:hover {
@@ -113,7 +113,8 @@
   // The div displaying a color
   .color-element {
       @extend .element-viewer;
-      top: 2px;
+      width: 20px;
+      height: 15px;
   }
 
   // The div displaying a texture element

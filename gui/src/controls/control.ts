@@ -20,6 +20,7 @@ module BABYLON.GUI {
         protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         protected _verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         private _isDirty = true;
+        public _tempParentMeasure = Measure.Empty();
         protected _cachedParentMeasure = Measure.Empty();
         private _paddingLeft = new ValueAndUnit(0);
         private _paddingRight = new ValueAndUnit(0);
@@ -45,6 +46,7 @@ module BABYLON.GUI {
         private _downCount = 0;
         private _enterCount = 0;
         private _doNotRender = false;
+        private _downPointerIds:{[id:number] : boolean} = {};
 
         public isHitTestVisible = true;
         public isPointerBlocker = false;
@@ -277,8 +279,17 @@ module BABYLON.GUI {
             this._fontSet = true;
         }
 
+        /** @ignore */
+        public get _isFontSizeInPercentage(): boolean {
+            return this._fontSize.isPercentage;
+        }
+
         public get fontSizeInPixels(): number {
-            return this._fontSize.getValueInPixel(this._host, 100);
+            if (this._fontSize.isPixel) {
+                return this._fontSize.getValue(this._host);
+            }
+
+            return this._fontSize.getValueInPixel(this._host, this._tempParentMeasure.height || this._cachedParentMeasure.height);
         }
 
         public get fontSize(): string | number {
@@ -481,6 +492,11 @@ module BABYLON.GUI {
 
         protected _getTypeName(): string {
             return "Control";
+        }
+
+        /** @ignore */
+        public _resetFontCache(): void {
+            this._fontSet = true;
         }
 
         public getLocalCoordinates(globalCoordinates: Vector2): Vector2 {
@@ -844,7 +860,7 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
+        public _processPicking(x: number, y: number, type: number, pointerId:number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this._doNotRender) {
                 return false;
             }
@@ -853,7 +869,7 @@ module BABYLON.GUI {
                 return false;
             }
 
-            this._processObservables(type, x, y, buttonIndex);
+            this._processObservables(type, x, y, pointerId, buttonIndex);
 
             return true;
         }
@@ -886,33 +902,43 @@ module BABYLON.GUI {
             if (canNotify && this.parent != null) this.parent._onPointerOut(target);
         }
 
-        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
             if (this._downCount !== 0) {
                 return false;
             }
 
             this._downCount++;
 
+            this._downPointerIds[pointerId] = true;
+
             var canNotify: boolean = this.onPointerDownObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerDown(target, coordinates, buttonIndex);
+            if (canNotify && this.parent != null) this.parent._onPointerDown(target, coordinates, pointerId, buttonIndex);
 
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
             this._downCount = 0;
+
+            delete this._downPointerIds[pointerId];
 
             var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, buttonIndex);
+            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex);
         }
 
-        public forcePointerUp() {
-            this._onPointerUp(this, Vector2.Zero(), 0);
+        public forcePointerUp(pointerId:Nullable<number> = null) {
+            if(pointerId !== null){
+                this._onPointerUp(this, Vector2.Zero(), pointerId, 0);
+            }else{
+                for(var key in this._downPointerIds){
+                    this._onPointerUp(this, Vector2.Zero(), +key as number, 0);
+                }
+            }
         }
 
-        public _processObservables(type: number, x: number, y: number, buttonIndex: number): boolean {
+        public _processObservables(type: number, x: number, y: number, pointerId:number, buttonIndex: number): boolean {
             this._dummyVector2.copyFromFloats(x, y);
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                 this._onPointerMove(this, this._dummyVector2);
@@ -931,7 +957,7 @@ module BABYLON.GUI {
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
-                this._onPointerDown(this, this._dummyVector2, buttonIndex);
+                this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
                 this._host._lastControlDown = this;
                 this._host._lastPickedControl = this;
                 return true;
@@ -939,7 +965,7 @@ module BABYLON.GUI {
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown) {
-                    this._host._lastControlDown._onPointerUp(this, this._dummyVector2, buttonIndex);
+                    this._host._lastControlDown._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
                 }
                 this._host._lastControlDown = null;
                 return true;
@@ -948,12 +974,13 @@ module BABYLON.GUI {
             return false;
         }
 
+
         private _prepareFont() {
             if (!this._font && !this._fontSet) {
                 return;
             }
 
-            this._font = this._fontStyle + " " + this._fontSize.getValue(this._host) + "px " + this._fontFamily;
+            this._font = this._fontStyle + " " + this.fontSizeInPixels + "px " + this._fontFamily;
 
             this._fontOffset = Control._GetFontOffset(this._font);
         }

@@ -20,7 +20,7 @@ module BABYLON.GUI {
         public _lastPickedControl: Control;
         public _lastControlOver: Nullable<Control>;
         public _lastControlDown: Nullable<Control>;
-        public _capturingControl: Nullable<Control>;
+        public _capturingControl: {[pointerId:number]:Control} = {};
         public _shouldBlockPointer: boolean;
         public _layerToDispose: Nullable<Layer>;
         public _linkedControls = new Array<Control>();
@@ -196,6 +196,12 @@ module BABYLON.GUI {
 
         public markAsDirty() {
             this._isDirty = true;
+
+            this.executeOnAllControls((control) => {
+                if (control._isFontSizeInPercentage) {
+                    control._resetFontCache();
+                }
+            });
         }
 
         public addControl(control: Control): AdvancedDynamicTexture {
@@ -364,7 +370,7 @@ module BABYLON.GUI {
             this._rootContainer._draw(measure, context);
         }
 
-        private _doPicking(x: number, y: number, type: number, buttonIndex: number): void {
+        private _doPicking(x: number, y: number, type: number, pointerId: number, buttonIndex: number): void {
             var scene = this.getScene();
 
             if (!scene) {
@@ -379,12 +385,12 @@ module BABYLON.GUI {
                 y = y * ((textureSize.height / this._renderScale) / engine.getRenderHeight());
             }
 
-            if (this._capturingControl) {
-                this._capturingControl._processObservables(type, x, y, buttonIndex);
+            if (this._capturingControl[pointerId]) {
+                this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
                 return;
             }
 
-            if (!this._rootContainer._processPicking(x, y, type, buttonIndex)) {
+            if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
 
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     if (this._lastControlOver) {
@@ -426,7 +432,7 @@ module BABYLON.GUI {
                 let y = (scene.pointerY / engine.getHardwareScalingLevel() - viewport.y * engine.getRenderHeight()) / viewport.height;
 
                 this._shouldBlockPointer = false;
-                this._doPicking(x, y, pi.type, pi.event.button);
+                this._doPicking(x, y, pi.type, (pi.event as PointerEvent).pointerId || 0, pi.event.button);
 
                 pi.skipOnPointerObservable = this._shouldBlockPointer;
             });
@@ -445,17 +451,18 @@ module BABYLON.GUI {
                     && pi.type !== BABYLON.PointerEventTypes.POINTERDOWN) {
                     return;
                 }
-
+                var pointerId = (pi.event as PointerEvent).pointerId || 0;
                 if (pi.pickInfo && pi.pickInfo.hit && pi.pickInfo.pickedMesh === mesh) {
                     var uv = pi.pickInfo.getTextureCoordinates();
 
                     if (uv) {
                         let size = this.getSize();
-                        this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pi.event.button);
+                        
+                        this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
                     }
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
                     if (this._lastControlDown) {
-                        this._lastControlDown.forcePointerUp();
+                        this._lastControlDown.forcePointerUp(pointerId);
                     }
                     this._lastControlDown = null;
 
