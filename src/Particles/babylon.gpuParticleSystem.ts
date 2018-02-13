@@ -56,6 +56,17 @@
         private _randomTexture: RawTexture;
 
         private readonly _attributesStrideSize = 14;
+        private _updateEffectOptions: EffectCreationOptions;
+
+        /**
+         * Gets a boolean indicating if the GPU particles can be rendered on current browser
+         */
+        public static get IsSupported(): boolean {
+            if (!Engine.LastCreatedEngine) {
+                return false;
+            }
+            return Engine.LastCreatedEngine.webGLVersion > 1;
+        }
 
         /**
         * An event triggered when the system is disposed.
@@ -120,6 +131,21 @@
         public gravity = Vector3.Zero();    
 
         /**
+         * Minimum power of emitting particles.
+         */
+        public minEmitPower = 1;
+        /**
+         * Maximum power of emitting particles.
+         */
+        public maxEmitPower = 1;        
+
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        public particleEmitterType: Nullable<IParticleEmitterType>;        
+
+        /**
          * Gets the maximum number of particles supported by this system
          */
         public get capacity(): number {
@@ -166,20 +192,31 @@
          * @param capacity The max number of particles alive at the same time
          * @param scene The scene the particle system belongs to
          */
-        constructor(name: string, capacity: number, scene: Scene) {
+        constructor(name: string, options: Partial<{
+                        capacity: number,
+                        randomTextureSize: number
+                    }>, scene: Scene) {
             this.id = name;
             this.name = name;
             this._scene = scene || Engine.LastCreatedScene;
-            this._capacity = capacity;
-            this._activeCount = capacity;
-            this._currentActiveCount = 0;
             this._engine = this._scene.getEngine();
+
+            let fullOptions = {
+                capacity: 50000,
+                randomTextureSize: this._engine.getCaps().maxTextureSize,
+                ...options
+            };
+
+            this._capacity = fullOptions.capacity;
+            this._activeCount = fullOptions.capacity;
+            this._currentActiveCount = 0;
 
             this._scene.particleSystems.push(this);
 
-            let updateEffectOptions: EffectCreationOptions = {
+            this._updateEffectOptions = {
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction"],
-                uniformsNames: ["currentCount", "timeDelta", "generalRandom", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity"],
+                uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity", "emitPower",
+                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "angle"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -191,19 +228,20 @@
                 transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection"]
             };
 
-            this._updateEffect = new Effect("gpuUpdateParticles", updateEffectOptions, this._scene.getEngine());   
+            this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
 
             this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "size", "color", "offset", "uv"], ["view", "projection", "colorDead"], ["textureSampler"], this._scene.getEngine());
 
             // Random data
-            var maxTextureSize = this._engine.getCaps().maxTextureSize;
+            var maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
             var d = [];
             for (var i = 0; i < maxTextureSize; ++i) {
                 d.push(Math.random());
                 d.push(Math.random());
                 d.push(Math.random());
+                d.push(Math.random());
             }
-            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGB32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
+            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGBA32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
         }
@@ -212,11 +250,6 @@
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          */
         public animate(): void {
-            if (this._currentRenderId === this._scene.getRenderId()) {
-                return;
-            }
-
-            this._currentRenderId = this._scene.getRenderId();
             this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();               
         }
 
@@ -253,8 +286,8 @@
             return vao;
         }        
         
-        private _initialize(): void {
-            if (this._buffer0) {
+        private _initialize(force = false): void {
+            if (this._buffer0 && !force) {
                 return;
             }
 
@@ -312,14 +345,35 @@
             this._targetBuffer = this._buffer1;
 
         }
+
+        /** @ignore */
+        public _recreateUpdateEffect(defines: string) {
+            if (this._updateEffectOptions.defines === defines) {
+                return;
+            }
+            this._updateEffectOptions.defines = defines;
+            this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
+        }
+
         /**
          * Renders the particle system in its current state.
-         * @returns the current number of particles.
+         * @returns the current number of particles
          */
         public render(): number {
+            if (this.particleEmitterType) {
+                this._recreateUpdateEffect(this.particleEmitterType.getEffectDefines());
+            }
+
             if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
                 return 0;
             }
+
+            if (this._currentRenderId === this._scene.getRenderId()) {
+                return 0;
+            }
+
+            this._currentRenderId = this._scene.getRenderId();
+            
 
             // Get everything ready to render
             this. _initialize();
@@ -327,18 +381,24 @@
             this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + this.emitRate);
             
             // Enable update effect
+
             this._engine.enableEffect(this._updateEffect);
             this._engine.setState(false);    
             
             this._updateEffect.setFloat("currentCount", this._currentActiveCount);
             this._updateEffect.setFloat("timeDelta", this._timeDelta);
-            this._updateEffect.setFloat("generalRandom", Math.random());
+            this._updateEffect.setFloat3("generalRandoms", Math.random(), Math.random(), Math.random());
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
             this._updateEffect.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
+            this._updateEffect.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
             this._updateEffect.setDirectColor4("color1", this.color1);
             this._updateEffect.setDirectColor4("color2", this.color2);
             this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
             this._updateEffect.setVector3("gravity", this.gravity);
+
+            if (this.particleEmitterType) {
+                this.particleEmitterType.applyToShader(this._updateEffect);
+            }
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {
@@ -392,16 +452,16 @@
             // Switch buffers
             let tmpBuffer = this._sourceBuffer;
             this._sourceBuffer = this._targetBuffer;
-            this._targetBuffer = tmpBuffer;            
-
-            return 0;
+            this._targetBuffer = tmpBuffer;     
+            
+            return this._currentActiveCount;
         }
 
         /**
          * Rebuilds the particle system
          */
         public rebuild(): void {
-            
+            this._initialize(true);
         }
 
         /**
