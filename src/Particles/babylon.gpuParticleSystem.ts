@@ -128,10 +128,19 @@
         public gravity = Vector3.Zero();    
 
         /**
+         * Minimum power of emitting particles.
+         */
+        public minEmitPower = 1;
+        /**
+         * Maximum power of emitting particles.
+         */
+        public maxEmitPower = 1;        
+
+        /**
          * The particle emitter type defines the emitter used by the particle system.
          * It can be for example box, sphere, or cone...
          */
-        public particleEmitterType: IParticleEmitterType;        
+        public particleEmitterType: Nullable<IParticleEmitterType>;        
 
         /**
          * Gets the maximum number of particles supported by this system
@@ -203,7 +212,8 @@
 
             this._updateEffectOptions = {
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction"],
-                uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity", "direction1", "direction2"],
+                uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity", "emitPower",
+                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "angle"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -226,13 +236,11 @@
                 d.push(Math.random());
                 d.push(Math.random());
                 d.push(Math.random());
+                d.push(Math.random());
             }
-            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGB32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
+            this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGBA32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
-
-            // Default emitter type
-            this.particleEmitterType = new BoxParticleEmitter();            
         }
 
         /**
@@ -349,7 +357,9 @@
          * @returns the current number of particles
          */
         public render(): number {
-            this._recreateUpdateEffect(this.particleEmitterType.getEffectDefines());
+            if (this.particleEmitterType) {
+                this._recreateUpdateEffect(this.particleEmitterType.getEffectDefines());
+            }
 
             if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
                 return 0;
@@ -374,15 +384,18 @@
             
             this._updateEffect.setFloat("currentCount", this._currentActiveCount);
             this._updateEffect.setFloat("timeDelta", this._timeDelta);
-            this._updateEffect.setFloat2("generalRandoms", Math.random(), Math.random());
+            this._updateEffect.setFloat3("generalRandoms", Math.random(), Math.random(), Math.random());
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
             this._updateEffect.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
+            this._updateEffect.setFloat2("emitPower", this.minEmitPower, this.maxEmitPower);
             this._updateEffect.setDirectColor4("color1", this.color1);
             this._updateEffect.setDirectColor4("color2", this.color2);
             this._updateEffect.setFloat2("sizeRange", this.minSize, this.maxSize);
             this._updateEffect.setVector3("gravity", this.gravity);
 
-            this.particleEmitterType.applyToShader(this._updateEffect);
+            if (this.particleEmitterType) {
+                this.particleEmitterType.applyToShader(this._updateEffect);
+            }
 
             let emitterWM: Matrix;
             if ((<AbstractMesh>this.emitter).position) {

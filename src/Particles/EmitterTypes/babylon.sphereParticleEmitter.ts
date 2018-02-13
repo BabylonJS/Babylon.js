@@ -74,7 +74,8 @@ module BABYLON {
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {
-            
+            effect.setFloat("radius", this.radius);
+            effect.setFloat("directionRandomizer", this.directionRandomizer);
         }    
         
         /**
@@ -140,14 +141,16 @@ module BABYLON {
          * @param effect defines the update shader
          */        
         public applyToShader(effect: Effect): void {
-            
+            effect.setFloat("radius", this.radius);
+            effect.setVector3("direction1", this.direction1);
+            effect.setVector3("direction2", this.direction2);
         }       
         
         /**
          * Returns a string to use to update the GPU particles update shader
          */
         public getEffectDefines(): string {
-            return "#define SPHEREEMITTER"
+            return "#define SPHEREEMITTER\n#define DIRECTEDSPHEREEMITTER"
         }          
     }
 }
