@@ -1067,6 +1067,11 @@
 
             serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
 
+            // Emitter
+            if (this.particleEmitterType) {
+                serializationObject.particleEmitterType = this.particleEmitterType.serialize();
+            }            
+
             return serializationObject;
         }
 

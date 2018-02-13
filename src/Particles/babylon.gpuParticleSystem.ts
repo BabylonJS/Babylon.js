@@ -1,7 +1,8 @@
 ﻿module BABYLON {
     /**
-     * This represents a GPU particle system in Babylon.
-     * This os the fastest particle system in Babylon as it uses the GPU to update the individual particle data.
+     * This represents a GPU particle system in Babylon
+     * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
+     * @see https://www.babylonjs-playground.com/#PU4WYI
      */
     export class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
         /**
@@ -27,7 +28,7 @@
         /**
          * The layer mask we are rendering the particles through.
          */
-        public layerMask: number = 0x0FFFFFFF; // TODO
+        public layerMask: number = 0x0FFFFFFF;
 
         private _capacity: number;
         private _activeCount: number;
@@ -560,9 +561,6 @@
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         }
-
-        //TODO: Clone / Parse / serialize
-
         /**
          * Clones the particle system.
          * @param name The name of the cloned object
@@ -570,7 +568,20 @@
          * @returns the cloned particle system
          */
         public clone(name: string, newEmitter: any): Nullable<GPUParticleSystem> {
-            return null;
+            var result = new GPUParticleSystem(name, {capacity: this._capacity, randomTextureSize: this._randomTextureSize}, this._scene);
+
+            Tools.DeepCopy(this, result);
+
+            if (newEmitter === undefined) {
+                newEmitter = this.emitter;
+            }
+
+            result.emitter = newEmitter;
+            if (this.particleTexture) {
+                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+            }
+
+            return result;
         }
 
         /**
@@ -619,12 +630,91 @@
             serializationObject.targetStopDuration = this.targetStopDuration;
             serializationObject.blendMode = this.blendMode;
 
-            // Emitters
+            // Emitter
             if (this.particleEmitterType) {
-                
+                serializationObject.particleEmitterType = this.particleEmitterType.serialize();
             }
 
             return serializationObject;            
         }
+
+        /**
+         * Parses a JSON object to create a GPU particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the parsed GPU particle system
+         */
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem {
+            var name = parsedParticleSystem.name;
+            var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
+
+            if (parsedParticleSystem.id) {
+                particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Texture
+            if (parsedParticleSystem.textureName) {
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+
+            // Emitter
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            // Particle system
+            particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            particleSystem.minSize = parsedParticleSystem.minSize;
+            particleSystem.maxSize = parsedParticleSystem.maxSize;
+            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
+            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
+            particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
+            particleSystem.emitRate = parsedParticleSystem.emitRate;
+            particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
+            particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
+            particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
+            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
+            particleSystem.blendMode = parsedParticleSystem.blendMode;
+
+            // Emitter
+            if (parsedParticleSystem.particleEmitterType) {
+                let emitterType: IParticleEmitterType;
+                switch (parsedParticleSystem.particleEmitterType.type) {
+                    case "SphereEmitter":
+                        emitterType = new SphereParticleEmitter();
+                        break;
+                    case "SphereDirectedParticleEmitter":
+                        emitterType = new SphereDirectedParticleEmitter();
+                        break;
+                    case "ConeEmitter":
+                        emitterType = new ConeParticleEmitter();
+                        break;
+                    case "BoxEmitter":
+                    default:
+                        emitterType = new BoxParticleEmitter();
+                        break;                                                
+                }
+
+                emitterType.parse(parsedParticleSystem.particleEmitterType);
+                particleSystem.particleEmitterType = emitterType;
+            }
+
+            return particleSystem;
+        }        
     }
 }

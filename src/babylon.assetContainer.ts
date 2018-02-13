@@ -94,7 +94,7 @@ module BABYLON {
         /**
          * ParticleSystems populated in the container.
          */
-        public particleSystems = new Array<ParticleSystem>();
+        public particleSystems = new Array<IParticleSystem>();
         /**
          * Animations populated in the container.
          */
