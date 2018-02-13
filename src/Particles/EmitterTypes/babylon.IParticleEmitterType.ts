@@ -26,5 +26,17 @@ module BABYLON {
          * @returns the new emitter
          */
         clone(): IParticleEmitterType;
+
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */
+        applyToShader(effect: Effect): void;
+
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns the effect defines string
+         */
+        getEffectDefines(): string;
     }
 }

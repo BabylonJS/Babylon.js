@@ -88,7 +88,7 @@ module BABYLON {
 
             var randX = radius * Math.sin(s);
             var randZ = radius * Math.cos(s);
-            var randY = h;
+            var randY = h * this._height;
 
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         }
@@ -103,6 +103,25 @@ module BABYLON {
             Tools.DeepCopy(this, newOne);
 
             return newOne;
-        }          
+        }        
+        
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */        
+        public applyToShader(effect: Effect): void {
+            effect.setFloat("radius", this.radius);
+            effect.setFloat("angle", this.angle);
+            effect.setFloat("height", this._height);
+            effect.setFloat("directionRandomizer", this.directionRandomizer);
+        }
+
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        public getEffectDefines(): string {
+            return "#define CONEEMITTER"
+        }        
     }
 }

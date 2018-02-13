@@ -67,6 +67,23 @@ module BABYLON {
             Tools.DeepCopy(this, newOne);
 
             return newOne;
+        }    
+        
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */        
+        public applyToShader(effect: Effect): void {
+            effect.setFloat("radius", this.radius);
+            effect.setFloat("directionRandomizer", this.directionRandomizer);
+        }    
+        
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        public getEffectDefines(): string {
+            return "#define SPHEREEMITTER"
         }        
     }
 
@@ -118,6 +135,24 @@ module BABYLON {
             Tools.DeepCopy(this, newOne);
 
             return newOne;
+        }     
+        
+        /**
+         * Called by the {BABYLON.GPUParticleSystem} to setup the update shader
+         * @param effect defines the update shader
+         */        
+        public applyToShader(effect: Effect): void {
+            effect.setFloat("radius", this.radius);
+            effect.setVector3("direction1", this.direction1);
+            effect.setVector3("direction2", this.direction2);
+        }       
+        
+        /**
+         * Returns a string to use to update the GPU particles update shader
+         * @returns a string containng the defines string
+         */
+        public getEffectDefines(): string {
+            return "#define SPHEREEMITTER\n#define DIRECTEDSPHEREEMITTER"
         }          
     }
 }
