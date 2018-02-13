@@ -377,8 +377,8 @@ module BABYLON.GUI {
             return false;
         }
 
-        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }            
 
@@ -394,7 +394,7 @@ module BABYLON.GUI {
             }
 
             this._updateValueFromPointer(coordinates.x, coordinates.y);
-            this._host._capturingControl = this;
+            this._host._capturingControl[pointerId] = this;
 
             return true;
         }
@@ -407,11 +407,11 @@ module BABYLON.GUI {
             super._onPointerMove(target, coordinates);
         }
 
-        public _onPointerUp (target: Control, coordinates: Vector2, buttonIndex: number): void {
+        public _onPointerUp (target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
             this._pointerIsDown = false;
             
-            this._host._capturingControl = null;
-            super._onPointerUp(target, coordinates, buttonIndex);
+            delete this._host._capturingControl[pointerId];
+            super._onPointerUp(target, coordinates, pointerId, buttonIndex);
         }     
     }    
 }

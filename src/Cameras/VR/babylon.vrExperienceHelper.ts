@@ -120,7 +120,6 @@ module BABYLON {
         private _teleportationTarget: Mesh;
         private _isDefaultTeleportationTarget = true;
         private _postProcessMove: ImageProcessingPostProcess;
-        private _passProcessMove: PassPostProcess;
         private _teleportationFillColor: string = "#444444";
         private _teleportationBorderColor: string = "#FFFFFF";
         private _rotationAngle: number = 0;
@@ -801,7 +800,6 @@ module BABYLON {
                     imageProcessingConfiguration);
 
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
-                this._passProcessMove = new PassPostProcess("pass", 1.0, this._webVRCamera);
                 this._teleportationInitialized = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._createTeleportationCircles();
@@ -1293,7 +1291,7 @@ module BABYLON {
 
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
-
+            this._postProcessMove.samples = 4;
             this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
@@ -1594,10 +1592,6 @@ module BABYLON {
         public dispose() {
             if (this.isInVRMode) {
                 this.exitVR();
-            }
-
-            if (this._passProcessMove) {
-                this._passProcessMove.dispose();
             }
 
             if (this._postProcessMove) {
