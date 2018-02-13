@@ -7,14 +7,14 @@ module BABYLON {
 
         /**
          * Creates a new instance of @see SphereParticleEmitter
-         * @param radius the radius of the emission sphere
+         * @param radius the radius of the emission sphere (1 by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
          */
         constructor(
             /**
              * The radius of the emission sphere.
              */
-            public radius: number, 
+            public radius = 1, 
             /**
              * How much to randomize the particle direction [0-1].
              */
@@ -51,9 +51,10 @@ module BABYLON {
         public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void {
             var phi = Scalar.RandomRange(0, 2 * Math.PI);
             var theta = Scalar.RandomRange(0, Math.PI);
-            var randX = this.radius * Math.cos(phi) * Math.sin(theta);
-            var randY = this.radius * Math.cos(theta);
-            var randZ = this.radius * Math.sin(phi) * Math.sin(theta);
+            var randRadius = Scalar.RandomRange(0, this.radius);
+            var randX = randRadius * Math.cos(phi) * Math.sin(theta);
+            var randY = randRadius * Math.cos(theta);
+            var randZ = randRadius * Math.sin(phi) * Math.sin(theta);
             Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
         }
 
@@ -100,9 +101,21 @@ module BABYLON {
          */        
         public serialize(): any {
             var serializationObject: any = {};
+            serializationObject.type = this.getClassName();
+            serializationObject.radius = this.radius;
+            serializationObject.directionRandomizer = this.directionRandomizer;
 
             return serializationObject;
-        }        
+        }    
+        
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        public parse(serializationObject: any): void {
+            this.radius = serializationObject.radius;
+            this.directionRandomizer = serializationObject.directionRandomizer;
+        }          
     }
 
     /**
@@ -113,19 +126,19 @@ module BABYLON {
 
         /**
          * Creates a new instance of @see SphereDirectedParticleEmitter
-         * @param radius the radius of the emission sphere
-         * @param direction1 the min limit of the emission direction
-         * @param direction2 the max limit of the emission direction
+         * @param radius the radius of the emission sphere (1 by default)
+         * @param direction1 the min limit of the emission direction (up vector by default)
+         * @param direction2 the max limit of the emission direction (up vector by default)
          */
-        constructor(radius: number, 
+        constructor(radius = 1, 
             /**
              * The min limit of the emission direction.
              */
-            public direction1: Vector3, 
+            public direction1 = new Vector3(0, 1, 0), 
             /**
              * The max limit of the emission direction.
              */
-            public direction2: Vector3) {
+            public direction2 = new Vector3(0, 1, 0)) {
             super(radius);
         }
 
@@ -186,9 +199,22 @@ module BABYLON {
          * @returns the JSON object
          */        
         public serialize(): any {
-            var serializationObject: any = {};
+            var serializationObject = super.serialize();;
+
+            serializationObject.direction1 = this.direction1.asArray();;
+            serializationObject.direction2 = this.direction2.asArray();;
 
             return serializationObject;
-        }        
+        }    
+        
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        public parse(serializationObject: any): void {
+            super.parse(serializationObject);
+            this.direction1.copyFrom(serializationObject.direction1);
+            this.direction2.copyFrom(serializationObject.direction2);
+        }           
     }
 }

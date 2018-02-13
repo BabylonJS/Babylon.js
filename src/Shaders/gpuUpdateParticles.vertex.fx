@@ -105,10 +105,10 @@ void main() {
     float randY = cos(theta);
     float randZ = sin(phi) * sin(theta);
 
-    position = radius * vec3(randX, randY, randZ);
+    position = (radius * randoms2.z) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
-      direction = direction1 + (direction2 - direction1) * randoms3;
+        direction = direction1 + (direction2 - direction1) * randoms3;
     #else
         // Direction
         direction = position + directionRandomizer * randoms3;

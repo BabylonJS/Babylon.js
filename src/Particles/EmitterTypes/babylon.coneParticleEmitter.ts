@@ -30,15 +30,15 @@ module BABYLON {
 
         /**
          * Creates a new instance of @see ConeParticleEmitter
-         * @param radius the radius of the emission cone
-         * @param angles the cone base angle
+         * @param radius the radius of the emission cone (1 by default)
+         * @param angles the cone base angle (PI by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
          */
-        constructor(radius: number, 
+        constructor(radius = 1, 
             /**
              * The radius of the emission cone.
              */
-            public angle: number, 
+            public angle = Math.PI, 
             /**
              * The cone base angle.
              */
@@ -139,7 +139,22 @@ module BABYLON {
         public serialize(): any {
             var serializationObject: any = {};
 
+            serializationObject.type = this.getClassName();
+            serializationObject.radius  = this.radius;
+            serializationObject.angle  = this.angle;
+            serializationObject.directionRandomizer  = this.directionRandomizer;
+
             return serializationObject;
+        }   
+
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        public parse(serializationObject: any): void {
+            this.radius = serializationObject.radius;
+            this.angle = serializationObject.angle;
+            this.directionRandomizer = serializationObject.directionRandomizer;
         }        
     }
 }
