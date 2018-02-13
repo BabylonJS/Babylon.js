@@ -68,7 +68,11 @@
 - Ability to set a mesh to customize the webVR gaze tracker ([trevordev](https://github.com/trevordev))
 - Added promise-based async functions for initWebVRAsync and useStandingMatrixAsync ([trevordev](https://github.com/trevordev))
 - Add stroke (outline) options on GUI text control ([SvenFrankson](https://github.com/SvenFrankson))
+- Add isThumbClamped option on GUI slider control ([JeanPhilippeKernel](https://github.com/JeanPhilippeKernel))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
+- Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
+- (Viewer) Declaration file published. ([RaananW](https://github.com/RaananW))
+- Added Draco mesh compression support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes
 
@@ -77,6 +81,7 @@
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 - SPS internal temporary vector3 instead of Tmp.Vector3 to avoid possible concurrent uses ([jbousquie](https://github.com/jbousquie))
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
+- Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 
 ## Breaking changes
 
