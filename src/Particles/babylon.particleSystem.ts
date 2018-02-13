@@ -118,7 +118,7 @@
         public updateSpeed = 0.01;
 
         /**
-         * The amount of time the particle system is running (depends of the overall speed above).
+         * The amount of time the particle system is running (depends of the overall update speed).
          */
         public targetStopDuration = 0;
 
@@ -393,6 +393,14 @@
         private _scaledUpdateSpeed: number;
         private _vertexBufferSize = 11;
         private _isAnimationSheetEnabled: boolean;
+
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "ParticleSystem";
+        }        
 
         /**
          * Instantiates a particle system.

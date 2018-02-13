@@ -3,7 +3,7 @@
      * This represents a GPU particle system in Babylon.
      * This os the fastest particle system in Babylon as it uses the GPU to update the individual particle data.
      */
-    export class GPUParticleSystem implements IDisposable, IParticleSystem {
+    export class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
         /**
          * The id of the Particle system.
          */
@@ -50,6 +50,7 @@
 
         private _currentRenderId = -1;    
         private _started = false;    
+        private _stopped = false;    
 
         private _timeDelta = 0;
 
@@ -57,6 +58,14 @@
 
         private readonly _attributesStrideSize = 14;
         private _updateEffectOptions: EffectCreationOptions;
+
+        private _randomTextureSize: number;
+        private _actualFrame = 0;        
+
+        /**
+         * List of animations used by the particle system.
+         */
+        public animations: Animation[] = [];        
 
         /**
          * Gets a boolean indicating if the GPU particles can be rendered on current browser
@@ -77,6 +86,11 @@
          * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
          */
         public updateSpeed = 0.01;        
+
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
+        public targetStopDuration = 0;        
 
         /**
          * The texture used to render each particle. (this can be a spritesheet)
@@ -146,9 +160,10 @@
         public particleEmitterType: Nullable<IParticleEmitterType>;        
 
         /**
-         * Gets the maximum number of particles supported by this system
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
          */
-        public get capacity(): number {
+        public getCapacity(): number {
             return this._capacity;
         }
 
@@ -176,14 +191,33 @@
          */
         public start(): void {
             this._started = true;
+            this._stopped = false;
         }
 
         /**
          * Stops the particle system.
          */
         public stop(): void {
-            this._started = false;
+            this._stopped = true;
         }
+
+        /**
+         * Remove all active particles
+         */
+        public reset(): void {
+            this._releaseBuffers();
+            this._releaseVAOs();   
+            this._currentActiveCount = 0;         
+            this._targetIndex = 0;
+        }      
+        
+        /**
+         * Returns the string "GPUParticleSystem"
+         * @returns a string containing the class name 
+         */
+        public getClassName(): string {
+            return "GPUParticleSystem";
+        }            
 
         /**
          * Instantiates a GPU particle system.
@@ -244,13 +278,8 @@
             this._randomTexture = new RawTexture(new Float32Array(d), maxTextureSize, 1, Engine.TEXTUREFORMAT_RGBA32F, this._scene, false, false, Texture.NEAREST_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT)
             this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
-        }
 
-        /**
-         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
-         */
-        public animate(): void {
-            this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();               
+            this._randomTextureSize = maxTextureSize;
         }
 
         private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {            
@@ -322,10 +351,10 @@
             }
 
             // Sprite data
-            var spriteData = new Float32Array([1, 1,  1, 1,  
-                                              -1, 1,  0, 1,
-                                             -1, -1,  0, 0,   
-                                              1, -1,  1, 0]);
+            var spriteData = new Float32Array([0.5, 0.5,  1, 1,  
+                                              -0.5, 0.5,  0, 1,
+                                             -0.5, -0.5,  0, 0,   
+                                             0.5, -0.5,  1, 0]);
 
             // Buffers
             this._buffer0 = new Buffer(engine, data, false, this._attributesStrideSize);
@@ -356,10 +385,29 @@
         }
 
         /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
+        public animate(): void {           
+            if (!this._stopped) {
+                this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
+                this._actualFrame += this._timeDelta;
+
+                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration)
+                    this.stop();
+            } else {
+                this._timeDelta = 0;
+            }             
+        }        
+
+        /**
          * Renders the particle system in its current state.
          * @returns the current number of particles
          */
         public render(): number {
+            if (!this._started) {
+                return 0;
+            }
+
             if (this.particleEmitterType) {
                 this._recreateUpdateEffect(this.particleEmitterType.getEffectDefines());
             }
@@ -372,9 +420,8 @@
                 return 0;
             }
 
-            this._currentRenderId = this._scene.getRenderId();
+            this._currentRenderId = this._scene.getRenderId();      
             
-
             // Get everything ready to render
             this. _initialize();
 
@@ -464,6 +511,33 @@
             this._initialize(true);
         }
 
+        private _releaseBuffers() {
+            if (this._buffer0) {
+                this._buffer0.dispose();
+                (<any>this._buffer0) = null;
+            }
+            if (this._buffer1) {
+                this._buffer1.dispose();
+                (<any>this._buffer1) = null;
+            }
+            if (this._spriteBuffer) {
+                this._spriteBuffer.dispose();
+                (<any>this._spriteBuffer) = null;
+            }            
+        }
+
+        private _releaseVAOs() {
+            for (var index = 0; index < this._updateVAO.length; index++) {
+                this._engine.releaseVertexArrayObject(this._updateVAO[index]);
+            }
+            this._updateVAO = [];
+
+            for (var index = 0; index < this._renderVAO.length; index++) {
+                this._engine.releaseVertexArrayObject(this._renderVAO[index]);
+            }
+            this._renderVAO = [];   
+        }
+
         /**
          * Disposes the particle system and free the associated resources.
          */
@@ -473,24 +547,9 @@
                 this._scene.particleSystems.splice(index, 1);
             }
 
-            if (this._buffer0) {
-                this._buffer0.dispose();
-                (<any>this._buffer0) = null;
-            }
-            if (this._buffer1) {
-                this._buffer1.dispose();
-                (<any>this._buffer1) = null;
-            }
-            
-            for (var index = 0; index < this._updateVAO.length; index++) {
-                this._engine.releaseVertexArrayObject(this._updateVAO[index]);
-            }
-            this._updateVAO = [];
-
-            for (var index = 0; index < this._renderVAO.length; index++) {
-                this._engine.releaseVertexArrayObject(this._renderVAO[index]);
-            }
-            this._renderVAO = [];            
+            this._releaseBuffers();
+            this._releaseVAOs();
+         
 
             if (this._randomTexture) {
                 this._randomTexture.dispose();
@@ -519,6 +578,53 @@
          * @returns the JSON object
          */
         public serialize(): any {
+            var serializationObject: any = {};
+
+            serializationObject.name = this.name;
+            serializationObject.id = this.id;
+
+            // Emitter
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                serializationObject.emitterId = emitterMesh.id;
+            } else {
+                var emitterPosition = (<Vector3>this.emitter);
+                serializationObject.emitter = emitterPosition.asArray();
+            }
+
+            serializationObject.capacity = this.getCapacity();
+
+            if (this.particleTexture) {
+                serializationObject.textureName = this.particleTexture.name;
+            }
+
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
+            // Particle system
+            serializationObject.activeParticleCount = this.activeParticleCount;
+            serializationObject.randomTextureSize = this._randomTextureSize;
+            serializationObject.minSize = this.minSize;
+            serializationObject.maxSize = this.maxSize;
+            serializationObject.minEmitPower = this.minEmitPower;
+            serializationObject.maxEmitPower = this.maxEmitPower;
+            serializationObject.minLifeTime = this.minLifeTime;
+            serializationObject.maxLifeTime = this.maxLifeTime;
+            serializationObject.emitRate = this.emitRate;
+            serializationObject.gravity = this.gravity.asArray();
+            serializationObject.color1 = this.color1.asArray();
+            serializationObject.color2 = this.color2.asArray();
+            serializationObject.colorDead = this.colorDead.asArray();
+            serializationObject.updateSpeed = this.updateSpeed;
+            serializationObject.targetStopDuration = this.targetStopDuration;
+            serializationObject.blendMode = this.blendMode;
+
+            // Emitters
+            if (this.particleEmitterType) {
+                
+            }
+
+            return serializationObject;            
         }
     }
 }
