@@ -2,7 +2,7 @@
     /**
      * This represents a GPU particle system in Babylon
      * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
-     * @see https://www.babylonjs-playground.com/#PU4WYI#2
+     * @see https://www.babylonjs-playground.com/#PU4WYI#4
      */
     export class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
         /**
@@ -501,7 +501,7 @@
             // Get everything ready to render
             this. _initialize();
 
-            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + this.emitRate);
+            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + (this.emitRate * this._timeDelta) | 0);
             
             // Enable update effect
 
