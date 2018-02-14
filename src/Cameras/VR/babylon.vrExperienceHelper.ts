@@ -341,9 +341,11 @@ module BABYLON {
             if (!value) {
                 if (this.rightController) {
                     this.rightController.laserPointer.isVisible = false;
+                    this.rightController.gazeTracker.isVisible = false;
                 }
                 if (this.leftController) {
                     this.leftController.laserPointer.isVisible = false;
+                    this.leftController.gazeTracker.isVisible = false;
                 }
             }
             else {
@@ -820,7 +822,12 @@ module BABYLON {
                 this._castRayAndSelectObject(this.rightController);
             }
 
-            this._castRayAndSelectObject(this._cameraGazer);
+            if(!(this.leftController && this.leftController.laserPointer.isVisible) && !(this.rightController && this.rightController.laserPointer.isVisible)){
+                this._castRayAndSelectObject(this._cameraGazer);
+            }else{
+                this._cameraGazer.gazeTracker.isVisible = false;
+            }
+            
         }
 
         private _isTeleportationFloor(mesh: AbstractMesh): boolean {
@@ -1011,6 +1018,7 @@ module BABYLON {
                     // Enabling / disabling laserPointer 
                     if (this._displayLaserPointer && stateObject.value === 1) {
                         controller.laserPointer.isVisible = !controller.laserPointer.isVisible;
+                        controller.gazeTracker.isVisible = controller.laserPointer.isVisible;
                     }
                 });
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
@@ -1037,12 +1045,9 @@ module BABYLON {
                 }
             } else {
                 // Listening to the proper controller values changes to confirm teleportation
-                if ((this.leftController && this.leftController.laserPointer.isVisible)
-                    || (this.rightController && this.rightController.laserPointer.isVisible)) {
-                    if (Math.sqrt(stateObject.y * stateObject.y + stateObject.x * stateObject.x) < this._padSensibilityDown) {
-                        this._teleportCamera(this._haloCenter);
-                        gazer.teleportationRequestInitiated = false;
-                    }
+                if (Math.sqrt(stateObject.y * stateObject.y + stateObject.x * stateObject.x) < this._padSensibilityDown) {
+                    this._teleportCamera(this._haloCenter);
+                    gazer.teleportationRequestInitiated = false;
                 }
             }
         }
