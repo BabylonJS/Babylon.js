@@ -960,6 +960,7 @@ declare module BABYLON.GLTF2 {
         private _loadExtensions();
         private _loadData(data);
         private _setupData();
+        private _checkExtensions();
         private _createRootNode();
         private _loadNodesAsync(nodes);
         _loadSceneAsync(context: string, scene: ILoaderScene): Promise<void>;

@@ -11,7 +11,7 @@ module BABYLON {
          * Returns whether Draco compression is supported.
          */
         public static get IsSupported(): boolean {
-            return !!window.DracoDecoderModule;
+            return Tools.IsWindowObjectExist() && !!window.DracoDecoderModule;
         }
 
         /**
