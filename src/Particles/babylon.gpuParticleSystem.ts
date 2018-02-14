@@ -39,8 +39,8 @@
         private _buffer0: Buffer;
         private _buffer1: Buffer;
         private _spriteBuffer: Buffer;
-        private _updateVAO = new Array<WebGLVertexArrayObject>();
-        private _renderVAO = new Array<WebGLVertexArrayObject>()
+        private _updateVAO: Array<WebGLVertexArrayObject>;
+        private _renderVAO: Array<WebGLVertexArrayObject>;
 
         private _targetIndex = 0;
         private _sourceBuffer: Buffer;
@@ -363,10 +363,12 @@
             this._spriteBuffer = new Buffer(engine, spriteData, false, 4);                                      
 
             // Update VAO
+            this._updateVAO = [];
             this._updateVAO.push(this._createUpdateVAO(this._buffer0));
             this._updateVAO.push(this._createUpdateVAO(this._buffer1));
 
             // Render VAO
+            this._renderVAO = [];
             this._renderVAO.push(this._createRenderVAO(this._buffer1, this._spriteBuffer));
             this._renderVAO.push(this._createRenderVAO(this._buffer0, this._spriteBuffer));
 
