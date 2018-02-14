@@ -584,9 +584,7 @@ module BABYLON.GLTF1 {
 
         const subMaterials: Material[] = [];
 
-        var vertexData = new VertexData();
-        var geometry = new Geometry(id, gltfRuntime.scene, vertexData, false, newMesh);
-
+        var vertexData: Nullable<VertexData> = null;
         var verticesStarts = new Array<number>();
         var verticesCounts = new Array<number>();
         var indexStarts = new Array<number>();
@@ -684,7 +682,12 @@ module BABYLON.GLTF1 {
                     indexCounts.push(tempVertexData.indices.length);
                 }
 
-                vertexData.merge(tempVertexData);
+                if (!vertexData) {
+                    vertexData = tempVertexData;
+                }
+                else {
+                    vertexData.merge(tempVertexData);
+                }
 
                 // Sub material
                 let material = gltfRuntime.scene.getMaterialByID(primitive.material);
@@ -714,7 +717,7 @@ module BABYLON.GLTF1 {
         }
 
         // Apply geometry
-        geometry.setAllVerticesData(vertexData, false);
+        new Geometry(id, gltfRuntime.scene, vertexData!, false, newMesh);
         newMesh.computeWorldMatrix(true);
 
         // Apply submeshes
@@ -1292,8 +1295,8 @@ module BABYLON.GLTF1 {
         public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void {
             var buffer: IGLTFBuffer = gltfRuntime.buffers[id];
 
-            if (GLTFUtils.IsBase64(buffer.uri)) {
-                setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(buffer.uri))));
+            if (Tools.IsBase64(buffer.uri)) {
+                setTimeout(() => onSuccess(new Uint8Array(Tools.DecodeBase64(buffer.uri))));
             }
             else {
                 Tools.LoadFile(gltfRuntime.rootUrl + buffer.uri, data => onSuccess(new Uint8Array(data as ArrayBuffer)), onProgress, undefined, true, request => {
@@ -1319,8 +1322,8 @@ module BABYLON.GLTF1 {
 
             var source: IGLTFImage = gltfRuntime.images[texture.source];
 
-            if (GLTFUtils.IsBase64(source.uri)) {
-                setTimeout(() => onSuccess(new Uint8Array(GLTFUtils.DecodeBase64(source.uri))));
+            if (Tools.IsBase64(source.uri)) {
+                setTimeout(() => onSuccess(new Uint8Array(Tools.DecodeBase64(source.uri))));
             }
             else {
                 Tools.LoadFile(gltfRuntime.rootUrl + source.uri, data => onSuccess(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, request => {
@@ -1368,7 +1371,7 @@ module BABYLON.GLTF1 {
         public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): void {
             var shader: IGLTFShader = gltfRuntime.shaders[id];
 
-            if (GLTFUtils.IsBase64(shader.uri)) {
+            if (Tools.IsBase64(shader.uri)) {
                 var shaderString = atob(shader.uri.split(",")[1]);
                 onSuccess(shaderString);
             }
@@ -1569,11 +1572,14 @@ module BABYLON.GLTF1 {
         public onTextureLoadedObservable = new Observable<BaseTexture>();
         public onMaterialLoadedObservable = new Observable<Material>();
         public onCompleteObservable = new Observable<IGLTFLoader>();
+        public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
+
+        public state: Nullable<GLTFLoaderState> = null;
 
         public dispose(): void {}
         // #endregion
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): boolean {
+        private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1636,7 +1642,21 @@ module BABYLON.GLTF1 {
             return true;
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): void {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
+            return new Promise((resolve, reject) => {
+                this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
+                    resolve({
+                        meshes: meshes,
+                        particleSystems: particleSystems,
+                        skeletons: skeletons
+                    });
+                }, onProgress, message => {
+                    reject(new Error(message));
+                });
+            });
+        }
+
+        private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): void {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1662,6 +1682,16 @@ module BABYLON.GLTF1 {
                     }
                 }, onError);
             }, onError);
+        }
+
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<void> {
+            return new Promise((resolve, reject) => {
+                this._loadAsync(scene, data, rootUrl, () => {
+                    resolve();
+                }, onProgress, message => {
+                    reject(new Error(message));
+                });
+            });
         }
 
         private _loadShadersAsync(gltfRuntime: IGLTFRuntime, onload: () => void): void {

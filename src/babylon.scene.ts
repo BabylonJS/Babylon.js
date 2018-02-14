@@ -748,9 +748,15 @@
         public spritesEnabled = true;
         public spriteManagers = new Array<SpriteManager>();
 
-        // Layers
+        /**
+         * The list of layers (background and foreground) of the scene.
+         */
         public layers = new Array<Layer>();
-        public highlightLayers = new Array<HighlightLayer>();
+
+        /**
+         * The list of effect layers (highlights/glow) contained in the scene.
+         */
+        public effectLayers = new Array<EffectLayer>();
 
         // Skeletons
         private _skeletonsEnabled = true;
@@ -1907,13 +1913,13 @@
                     continue;
                 }
 
-                if (!mesh.isReady()) {
+                if (!mesh.isReady(true)) {
                     return false;
                 }
 
-                // Highlight layers
+                // Effect layers
                 let hardwareInstancedRendering = mesh.getClassName() === "InstancedMesh" || engine.getCaps().instancedArrays && (<Mesh>mesh).instances.length > 0;
-                for (var layer of this.highlightLayers) {
+                for (var layer of this.effectLayers) {
                     if (!layer.hasMesh(mesh)) {
                         continue;
                     }
@@ -2017,6 +2023,18 @@
             this._executeWhenReadyTimeoutId = setTimeout(() => {
                 this._checkIsReady();
             }, 150);
+        }
+
+        /**
+         * Returns a promise that resolves when the scene is ready.
+         * @returns A promise that resolves when the scene is ready.
+         */
+        public whenReadyAsync(): Promise<void> {
+            return new Promise(resolve => {
+                this.executeWhenReady(() => {
+                    resolve();
+                });
+            });
         }
 
         public _checkIsReady() {
@@ -2371,7 +2389,7 @@
         }
 
 
-        public removeParticleSystem(toRemove: ParticleSystem): number {
+        public removeParticleSystem(toRemove: IParticleSystem): number {
             var index = this.particleSystems.indexOf(toRemove);
             if (index !== -1) {
                 this.particleSystems.splice(index, 1);
@@ -2444,7 +2462,7 @@
             this.skeletons.push(newSkeleton)
         }
 
-        public addParticleSystem(newParticleSystem: ParticleSystem) {
+        public addParticleSystem(newParticleSystem: IParticleSystem) {
             this.particleSystems.push(newParticleSystem)
         }
 
@@ -3037,9 +3055,24 @@
          * @return The highlight layer if found otherwise null.
          */
         public getHighlightLayerByName(name: string): Nullable<HighlightLayer> {
-            for (var index = 0; index < this.highlightLayers.length; index++) {
-                if (this.highlightLayers[index].name === name) {
-                    return this.highlightLayers[index];
+            for (var index = 0; index < this.effectLayers.length; index++) {
+                if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === HighlightLayer.EffectName) {
+                    return (<any>this.effectLayers[index]) as HighlightLayer;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Return a the first highlight layer of the scene with a given name.
+         * @param name The name of the highlight layer to look for.
+         * @return The highlight layer if found otherwise null.
+         */
+        public getGlowLayerByName(name: string): Nullable<GlowLayer> {
+            for (var index = 0; index < this.effectLayers.length; index++) {
+                if (this.effectLayers[index].name === name && this.effectLayers[index].getEffectName() === GlowLayer.EffectName) {
+                    return (<any>this.effectLayers[index]) as GlowLayer;
                 }
             }
 
@@ -3331,7 +3364,7 @@
             this._setAlternateTransformMatrix(alternateCamera.getViewMatrix(), alternateCamera.getProjectionMatrix());
         }
 
-        private _renderForCamera(camera: Camera): void {
+        private _renderForCamera(camera: Camera, rigParent?: Camera): void {
             if (camera && camera._skipRendering) {
                 return;
             }
@@ -3379,6 +3412,10 @@
                 this._renderTargets.concatWithNoDuplicate(camera.customRenderTargets);
             }
 
+            if (rigParent && rigParent.customRenderTargets && rigParent.customRenderTargets.length > 0) {
+                this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
+            }
+
             if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
@@ -3398,22 +3435,24 @@
                 needsRestoreFrameBuffer = true; // Restore back buffer
             }
 
-            // Render HighlightLayer Texture
+            // Render EffecttLayer Texture
             var stencilState = this._engine.getStencilBuffer();
-            var renderhighlights = false;
-            if (this.renderTargetsEnabled && this.highlightLayers && this.highlightLayers.length > 0) {
+            var renderEffects = false;
+            var needStencil = false;
+            if (this.renderTargetsEnabled && this.effectLayers && this.effectLayers.length > 0) {
                 this._intermediateRendering = true;
-                for (let i = 0; i < this.highlightLayers.length; i++) {
-                    let highlightLayer = this.highlightLayers[i];
+                for (let i = 0; i < this.effectLayers.length; i++) {
+                    let effectLayer = this.effectLayers[i];
 
-                    if (highlightLayer.shouldRender() &&
-                        (!highlightLayer.camera ||
-                            (highlightLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === highlightLayer.camera) ||
-                            (highlightLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && highlightLayer.camera._rigCameras.indexOf(camera) > -1))) {
+                    if (effectLayer.shouldRender() &&
+                        (!effectLayer.camera ||
+                            (effectLayer.camera.cameraRigMode === Camera.RIG_MODE_NONE && camera === effectLayer.camera) ||
+                            (effectLayer.camera.cameraRigMode !== Camera.RIG_MODE_NONE && effectLayer.camera._rigCameras.indexOf(camera) > -1))) {
 
-                        renderhighlights = true;
+                        renderEffects = true;
+                        needStencil = needStencil || effectLayer.needStencil();
 
-                        let renderTarget = (<RenderTargetTexture>(<any>highlightLayer)._mainTexture);
+                        let renderTarget = (<RenderTargetTexture>(<any>effectLayer)._mainTexture);
                         if (renderTarget._shouldRender()) {
                             this._renderId++;
                             renderTarget.render(false, false);
@@ -3449,8 +3488,8 @@
                 engine.setDepthBuffer(true);
             }
 
-            // Activate HighlightLayer stencil
-            if (renderhighlights) {
+            // Activate effect Layer stencil
+            if (needStencil) {
                 this._engine.setStencilBuffer(true);
             }
 
@@ -3459,8 +3498,8 @@
             this._renderingManager.render(null, null, true, true);
             this.onAfterDrawPhaseObservable.notifyObservers(this);
 
-            // Restore HighlightLayer stencil
-            if (renderhighlights) {
+            // Restore effect Layer stencil
+            if (needStencil) {
                 this._engine.setStencilBuffer(stencilState);
             }
 
@@ -3494,12 +3533,12 @@
                 engine.setDepthBuffer(true);
             }
 
-            // Highlight Layer
-            if (renderhighlights) {
+            // Effect Layer
+            if (renderEffects) {
                 engine.setDepthBuffer(false);
-                for (let i = 0; i < this.highlightLayers.length; i++) {
-                    if (this.highlightLayers[i].shouldRender()) {
-                        this.highlightLayers[i].render();
+                for (let i = 0; i < this.effectLayers.length; i++) {
+                    if (this.effectLayers[i].shouldRender()) {
+                        this.effectLayers[i].render();
                     }
                 }
                 engine.setDepthBuffer(true);
@@ -3531,7 +3570,7 @@
 
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
-                this._renderForCamera(camera._rigCameras[index]);
+                this._renderForCamera(camera._rigCameras[index], camera);
             }
 
             this.activeCamera = camera;
@@ -4134,8 +4173,8 @@
             while (this.layers.length) {
                 this.layers[0].dispose();
             }
-            while (this.highlightLayers.length) {
-                this.highlightLayers[0].dispose();
+            while (this.effectLayers.length) {
+                this.effectLayers[0].dispose();
             }
 
             // Release textures
@@ -4197,11 +4236,12 @@
             for (var index = 0; index < this.meshes.length; index++) {
                 var mesh = this.meshes[index];
 
+                mesh.computeWorldMatrix(true);
+
                 if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
                     continue;
                 }
 
-                mesh.computeWorldMatrix(true);
                 let boundingInfo = mesh.getBoundingInfo();
 
                 var minBox = boundingInfo.boundingBox.minimumWorld;
@@ -4594,8 +4634,8 @@
                 layer._rebuild();
             }
 
-            for (var highlightLayer of this.highlightLayers) {
-                highlightLayer._rebuild();
+            for (var effectLayer of this.effectLayers) {
+                effectLayer._rebuild();
             }
 
             if (this._boundingBoxRenderer) {
@@ -4662,6 +4702,11 @@
 
                 var camera: TargetCamera;
                 var radius = worldSize.length() * 1.5;
+                // empty scene scenario!
+                if (!isFinite(radius)) {
+                    radius = 1;
+                    worldCenter.copyFromFloats(0, 0, 0);
+                }
                 if (createArcRotateCamera) {
                     var arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
                     arcRotateCamera.lowerRadiusLimit = radius * 0.01;

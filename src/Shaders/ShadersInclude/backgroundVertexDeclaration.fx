@@ -11,6 +11,7 @@ uniform vec2 vDiffuseInfos;
     uniform vec2 vReflectionInfos;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
+    uniform float fFovMultiplier;
 #endif
 
 #ifdef POINTSIZE

@@ -220,8 +220,12 @@
                     this._currentScene.dispose();
                 }
 
-                SceneLoader.Load("file:", this._sceneFileToLoad, this._engine, (newScene) => {
-                    this._currentScene = newScene;
+                SceneLoader.LoadAsync("file:", this._sceneFileToLoad, this._engine, progress => {
+                    if (this._progressCallback) {
+                        this._progressCallback(progress);
+                    }
+                }).then(scene => {
+                    this._currentScene = scene;
 
                     if (this._sceneLoadedCallback) {
                         this._sceneLoadedCallback(this._sceneFileToLoad, this._currentScene);
@@ -233,15 +237,9 @@
                             this.renderFunction();
                         });
                     });
-                }, progress => {
-                    if (this._progressCallback) {
-                        this._progressCallback(progress);
-                    }
-                }, (scene, message) => {
-                    this._currentScene = scene;
-
+                }).catch(error => {
                     if (this._errorCallback) {
-                        this._errorCallback(this._sceneFileToLoad, this._currentScene, message);
+                        this._errorCallback(this._sceneFileToLoad, this._currentScene, error.message);
                     }
                 });
             }

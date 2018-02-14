@@ -84,30 +84,6 @@ module BABYLON.GLTF1 {
         }
 
         /**
-        * If the uri is a base64 string
-        * @param uri: the uri to test
-        */
-        public static IsBase64(uri: string): boolean {
-            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
-        }
-
-        /**
-        * Decode the base64 uri
-        * @param uri: the uri to decode
-        */
-        public static DecodeBase64(uri: string): ArrayBuffer {
-            var decodedString = atob(uri.split(",")[1]);
-            var bufferLength = decodedString.length;
-            var bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-            for (var i = 0; i < bufferLength; i++) {
-                bufferView[i] = decodedString.charCodeAt(i);
-            }
-
-            return bufferView.buffer;
-        }
-
-        /**
         * Returns the wrap mode of the texture
         * @param mode: the mode value
         */
