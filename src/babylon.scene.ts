@@ -1228,9 +1228,11 @@
         /**
          * Use this method to simulate a pointer move on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
+         * @param pickResult pickingInfo of the object wished to simulate pointer event on
+         * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
          */
-        public simulatePointerMove(pickResult: PickingInfo, eventInit: PointerEventInit | undefined): Scene {
-            let evt = new PointerEvent("pointermove", eventInit);
+        public simulatePointerMove(pickResult: PickingInfo, pointerEventInit: PointerEventInit | undefined): Scene {
+            let evt = new PointerEvent("pointermove", pointerEventInit);
             return this._processPointerMove(pickResult, evt);
         }
 
@@ -1293,9 +1295,11 @@
         /**
          * Use this method to simulate a pointer down on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
+         * @param pickResult pickingInfo of the object wished to simulate pointer event on
+         * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
          */
-        public simulatePointerDown(pickResult: PickingInfo, eventInit: PointerEventInit | undefined): Scene {
-            let evt = new PointerEvent("pointerdown", eventInit);
+        public simulatePointerDown(pickResult: PickingInfo, pointerEventInit: PointerEventInit | undefined): Scene {
+            let evt = new PointerEvent("pointerdown", pointerEventInit);
 
             return this._processPointerDown(pickResult, evt);
         }
@@ -1358,9 +1362,11 @@
         /**
          * Use this method to simulate a pointer up on a mesh
          * The pickResult parameter can be obtained from a scene.pick or scene.pickWithRay
+         * @param pickResult pickingInfo of the object wished to simulate pointer event on
+         * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
          */
-        public simulatePointerUp(pickResult: PickingInfo, eventInit: PointerEventInit | undefined): Scene {
-            let evt = new PointerEvent("pointerup", eventInit);
+        public simulatePointerUp(pickResult: PickingInfo, pointerEventInit: PointerEventInit | undefined): Scene {
+            let evt = new PointerEvent("pointerup", pointerEventInit);
             let clickInfo = new ClickInfo();
             clickInfo.singleClick = true;
             clickInfo.ignore = true;
