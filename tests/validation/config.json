@@ -250,6 +250,11 @@
       "excludeFromAutomaticTesting": true
     },
     {
+      "title": "GLTF Buggy with Draco Mesh Compression",
+      "playgroundId": "#JNW207#1",
+      "referenceImage": "gltfBuggyDraco.png"
+    },
+    {
       "title": "Asset Containers",
       "playgroundId": "#P3U079#19",
       "referenceImage": "assetContainer.png"

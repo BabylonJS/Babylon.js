@@ -123,6 +123,7 @@ module BABYLON.GLTF2 {
                 this._state = GLTFLoaderState.Loading;
 
                 this._loadData(data);
+                this._checkExtensions();
 
                 const promises = new Array<Promise<void>>();
 
@@ -227,6 +228,17 @@ module BABYLON.GLTF2 {
                 for (const node of this._gltf.nodes) {
                     const parentIndex = nodeParents[node._index];
                     node._parent = parentIndex === undefined ? rootNode : this._gltf.nodes[parentIndex];
+                }
+            }
+        }
+
+        private _checkExtensions(): void {
+            if (this._gltf.extensionsRequired) {
+                for (const name of this._gltf.extensionsRequired) {
+                    const extension = this._extensions[name];
+                    if (!extension || !extension.enabled) {
+                        throw new Error(`Require extension ${name} is not available`);
+                    }
                 }
             }
         }
