@@ -37,6 +37,7 @@
             "solidParticles",
             "additionalMeshes",
             "meshBuilder",
+            "meshCompression",
             "audio",
             "additionalTextures",
             "shadows",
@@ -86,7 +87,8 @@
             "nullEngine",
             "instrumentation",
             "backgroundMaterial",
-            "environmentHelper"
+            "environmentHelper",
+            "videoDome"
         ],
         "minimal": [
             "freeCamera",
@@ -114,6 +116,7 @@
             "solidParticles",
             "additionalMeshes",
             "meshBuilder",
+            "meshCompression",
             "audio",
             "additionalTextures",
             "shadows",
@@ -178,6 +181,7 @@
                 "../../src/babylon.mixins.js",
                 "../../src/Engine/babylon.webgl2.js",
                 "../../src/Tools/babylon.decorators.js",
+                "../../src/Tools/babylon.deferred.js",
                 "../../src/Tools/babylon.observable.js",
                 "../../src/Tools/babylon.smartArray.js",
                 "../../src/Tools/babylon.tools.js",
@@ -270,10 +274,10 @@
             "files": [
                 "../../src/Particles/babylon.particle.js",
                 "../../src/Particles/babylon.particleSystem.js",
-                "../../src/Particles/babylon.boxParticleEmitter.js",
-                "../../src/Particles/babylon.coneParticleEmitter.js",
-                "../../src/Particles/babylon.sphereParticleEmitter.js",
-                "../../src/Particles/babylon.iParticleEmitterType.js"
+                "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
+                "../../src/Particles/EmitterTypes/babylon.IParticleEmitterType.js"
             ],
             "dependUpon": [
                 "core"
@@ -285,10 +289,11 @@
         },
         "gpuParticles": {
             "files": [
-                "../../src/Particles/babylon.gpuParticleSystem.js"
+                "../../src/Particles/babylon.gpuParticleSystem.js"          
             ],
             "dependUpon": [
-                "core"
+                "core",
+                "particles"
             ],
             "shaders": [
                 "gpuRenderParticles.vertex",
@@ -423,6 +428,12 @@
             "dependUpon": [
                 "core",
                 "additionalMeshes"
+            ]
+        },
+        "meshCompression" :
+        {
+            "files": [
+                "../../src/Mesh/Compression/babylon.dracoCompression.js"
             ]
         },
         "shaderMaterial": {
@@ -1041,7 +1052,9 @@
             "files": [
                 "../../src/Rendering/babylon.outlineRenderer.js",
                 "../../src/Rendering/babylon.edgesRenderer.js",
-                "../../src/Layer/babylon.highlightlayer.js"
+                "../../src/Layer/babylon.effectLayer.js",
+                "../../src/Layer/babylon.highlightLayer.js",
+                "../../src/Layer/babylon.glowLayer.js"
             ],
             "dependUpon": [
                 "shaderMaterial"
@@ -1118,6 +1131,16 @@
             "dependUpon": [
                 "core",
                 "backgroundMaterial",
+                "additionalTextures"
+            ]
+        },
+        "videoDome": {
+            "files": [
+                "../../src/Helpers/babylon.videoDome.js"
+            ],
+            "dependUpon": [
+                "core",
+                "meshBuilder",
                 "additionalTextures"
             ]
         }
@@ -1460,11 +1483,12 @@
             {
                 "files": [
                     "../../loaders/src/glTF/babylon.glTFFileLoader.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtilities.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
@@ -1480,11 +1504,12 @@
                     "../../loaders/src/glTF/1.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFBinaryExtension.ts",
                     "../../loaders/src/glTF/1.0/babylon.glTFMaterialsCommonExtension.ts",
+                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtilities.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderInterfaces.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoader.ts",
-                    "../../loaders/src/glTF/2.0/babylon.glTFLoaderUtils.ts",
                     "../../loaders/src/glTF/2.0/babylon.glTFLoaderExtension.ts",
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
@@ -1524,6 +1549,9 @@
             "distOutputDirectory": "/serializers/",
             "buildAsModule": true,
             "moduleName": "babylonjs-serializers",
+            "extraDeclarations": [
+                "../../dist/babylon.glTF2Interface.d.ts"
+            ],
             "outputFilename": "babylonjs.serializers",
             "moduleDeclaration": "BJSSerializers",
             "extendsRoot": true
@@ -1672,6 +1700,10 @@
                         {
                             "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
+                        },
+                        {
+                            "filename": "babylon.viewer.max.js",
+                            "outputDirectory": "/viewer/"
                         }
                     ]
                 }

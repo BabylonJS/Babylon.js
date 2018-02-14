@@ -607,19 +607,24 @@
 
         /**
          * Determine if the current mesh is ready to be rendered
+         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
          * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
          * @returns true if all associated assets are ready (material, textures, shaders)
          */
-        public isReady(forceInstanceSupport = false): boolean {
+        public isReady(completeCheck = false, forceInstanceSupport = false): boolean {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return false;
             }
 
-            if (!super.isReady()) {
+            if (!super.isReady(completeCheck)) {
                 return false;
             }
 
             if (!this.subMeshes || this.subMeshes.length === 0) {
+                return true;
+            }
+
+            if (!completeCheck) {
                 return true;
             }
 
@@ -799,14 +804,14 @@
                         for (inf = 0; inf < 4; inf++) {
                             weight = matricesWeightsData[matWeightIdx + inf];
                             if (weight <= 0) break;
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
                         }
                         if (needExtras) {
                             for (inf = 0; inf < 4; inf++) {
                                 weight = matricesWeightsExtraData![matWeightIdx + inf];
                                 if (weight <= 0) break;
-                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                                Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
                                 finalMatrix.addToSelf(tempMatrix);
                             }
                         }
@@ -1740,13 +1745,12 @@
                 this.instances[0].dispose();
             }
 
-            // Highlight layers.
-            let highlightLayers = this.getScene().highlightLayers;
-            for (let i = 0; i < highlightLayers.length; i++) {
-                let highlightLayer = highlightLayers[i];
-                if (highlightLayer) {
-                    highlightLayer.removeMesh(this);
-                    highlightLayer.removeExcludedMesh(this);
+            // Effect layers.
+            let effectLayers = this.getScene().effectLayers;
+            for (let i = 0; i < effectLayers.length; i++) {
+                let effectLayer = effectLayers[i];
+                if (effectLayer) {
+                    effectLayer._disposeMesh(this);
                 }
             }
             super.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -3262,7 +3266,7 @@
                 for (inf = 0; inf < 4; inf++) {
                     weight = matricesWeightsData[matWeightIdx + inf];
                     if (weight > 0) {
-                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesData[matWeightIdx + inf] * 16, weight, tempMatrix);
+                        Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesData[matWeightIdx + inf] * 16), weight, tempMatrix);
                         finalMatrix.addToSelf(tempMatrix);
 
                     } else break;
@@ -3271,7 +3275,7 @@
                     for (inf = 0; inf < 4; inf++) {
                         weight = matricesWeightsExtraData![matWeightIdx + inf];
                         if (weight > 0) {
-                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, matricesIndicesExtraData![matWeightIdx + inf] * 16, weight, tempMatrix);
+                            Matrix.FromFloat32ArrayToRefScaled(skeletonMatrices, Math.floor(matricesIndicesExtraData![matWeightIdx + inf] * 16), weight, tempMatrix);
                             finalMatrix.addToSelf(tempMatrix);
 
                         } else break;
@@ -3310,8 +3314,8 @@
                     minVector = boundingBox.minimumWorld;
                     maxVector = boundingBox.maximumWorld;
                 } else {
-                    minVector.MinimizeInPlace(boundingBox.minimumWorld);
-                    maxVector.MaximizeInPlace(boundingBox.maximumWorld);
+                    minVector.minimizeInPlace(boundingBox.minimumWorld);
+                    maxVector.maximizeInPlace(boundingBox.maximumWorld);
                 }
             });
 

@@ -311,7 +311,7 @@ module BABYLON {
             scene._loadFile(this.url, (data) => {
                 this.text = data as string;
                 onSuccess();
-            }, undefined, false, true, (request, exception) => {
+            }, undefined, false, false, (request, exception) => {
                 if (request) {
                     onError(request.status + " " + request.statusText, exception);
                 }
@@ -934,6 +934,7 @@ module BABYLON {
             this._totalTasksCount = this._tasks.length;
 
             if (this._waitingTasksCount === 0) {
+                this._isLoading = false;
                 if (this.onFinish) {
                     this.onFinish(this._tasks);
                 }

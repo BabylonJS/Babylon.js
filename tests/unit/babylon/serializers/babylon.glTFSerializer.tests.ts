@@ -39,10 +39,10 @@ describe('Babylon glTF Serializer', () => {
             const scene = new BABYLON.Scene(subject);
             const babylonMaterial = new BABYLON.PBRMetallicRoughnessMaterial("metallicroughness", scene);
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
-            
+
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('OPAQUE');
-            
+
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
@@ -53,7 +53,7 @@ describe('Babylon glTF Serializer', () => {
 
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
-            alphaMode.should.be.equal('MASK'); 
+            alphaMode.should.be.equal('MASK');
         });
 
         it('should convert Babylon standard material to metallic roughness', () => {
@@ -66,11 +66,11 @@ describe('Babylon glTF Serializer', () => {
 
             const metalRough = BABYLON.GLTF2._GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
-            metalRough.baseColorFactor.should.deep.equal([1,1,1,1]);
+            metalRough.baseColorFactor.should.deep.equal([0.5, 0.5, 0.5, 1]);
 
             metalRough.metallicFactor.should.be.equal(0);
-            
-            metalRough.roughnessFactor.should.be.equal(0.75);
+
+            metalRough.roughnessFactor.should.be.approximately(0.328809, 1e-6);
         });
 
         it('should solve for metallic', () => {
@@ -107,8 +107,8 @@ describe('Babylon glTF Serializer', () => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
 
-                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, 
-                Object.keys(jsonData).length.should.be.equal(8);
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials
+                Object.keys(jsonData).length.should.be.equal(9);
 
                 // positions, normals, texture coords, indices
                 jsonData.accessors.length.should.be.equal(4);
@@ -132,7 +132,7 @@ describe('Babylon glTF Serializer', () => {
                 done();
             });
         });
-        
+
         it('should serialize alpha mode and cutoff', (done) => {
             mocha.timeout(10000);
             const scene = new BABYLON.Scene(subject);
@@ -151,14 +151,15 @@ describe('Babylon glTF Serializer', () => {
                 const jsonString = glTFData.glTFFiles['test.gltf'] as string;
                 const jsonData = JSON.parse(jsonString);
 
+                // accessors, asset, buffers, bufferViews, meshes, nodes, scene, scenes, materials
                 Object.keys(jsonData).length.should.be.equal(9);
 
-                jsonData.materials.length.should.be.equal(1);
-                
+                jsonData.materials.length.should.be.equal(2);
+
                 jsonData.materials[0].alphaMode.should.be.equal('BLEND');
-                
+
                 jsonData.materials[0].alphaCutoff.should.be.equal(alphaCutoff);
-                
+
                 done();
             });
         });

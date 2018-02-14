@@ -123,16 +123,20 @@
             private _sinYaw: number = 0.0;
             private _cosYaw: number = 0.0;
             private _mustUnrotateFixedNormals = false;
-            private _minimum: Vector3 = Tmp.Vector3[0];
-            private _maximum: Vector3 = Tmp.Vector3[1];
-            private _minBbox: Vector3 = Tmp.Vector3[4];
-            private _maxBbox: Vector3 = Tmp.Vector3[5];
+            private _minimum: Vector3 = Vector3.Zero();
+            private _maximum: Vector3 = Vector3.Zero();
+            private _minBbox: Vector3 = Vector3.Zero();
+            private _maxBbox: Vector3 = Vector3.Zero();
             private _particlesIntersect: boolean = false;
             private _depthSortFunction: (p1: DepthSortedParticle, p2: DepthSortedParticle) => number = 
                 function(p1, p2) {
                     return (p2.sqDistance - p1.sqDistance);
                 };
             private _needs32Bits: boolean = false;
+            private _pivotBackTranslation: Vector3 = Vector3.Zero();
+            private _scaledPivot: Vector3 = Vector3.Zero();
+            private _particleHasParent: boolean = false;
+            private _parent: SolidParticle;
 
             /**
              * Creates a SPS (Solid Particle System) object.
@@ -258,7 +262,7 @@
                 var facetInd: number[] = [];      // submesh indices
                 var facetUV: number[] = [];       // submesh UV
                 var facetCol: number[] = [];      // submesh colors
-                var barycenter: Vector3 = Tmp.Vector3[0];
+                var barycenter: Vector3 = Vector3.Zero();
                 var sizeO: number = size;
     
                 while (f < totalFacets) {
@@ -373,6 +377,7 @@
                 this._copy.uvs.z = 1.0;
                 this._copy.uvs.w = 1.0;
                 this._copy.color = null;
+                this._copy.translateFromPivot = false;
             }
     
             // _meshBuilder : inserts the shape model in the global SPS mesh
@@ -397,6 +402,17 @@
                     this._quaternionRotationYPR();
                 }
                 this._quaternionToRotationMatrix();
+
+                this._scaledPivot.x = this._copy.pivot.x * this._copy.scaling.x;
+                this._scaledPivot.y = this._copy.pivot.y * this._copy.scaling.y;
+                this._scaledPivot.z = this._copy.pivot.z * this._copy.scaling.z;
+                
+                if (this._copy.translateFromPivot) {
+                    this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
+                }
+                else {
+                    this._pivotBackTranslation.copyFrom(this._scaledPivot);
+                }
     
                 for (i = 0; i < shape.length; i++) {
                     this._vertex.x = shape[i].x;
@@ -411,11 +427,13 @@
                     this._vertex.y *= this._copy.scaling.y;
                     this._vertex.z *= this._copy.scaling.z;
 
-                    this._vertex.x += this._copy.pivot.x;
-                    this._vertex.y += this._copy.pivot.y;
-                    this._vertex.z += this._copy.pivot.z;
+                    this._vertex.x -= this._scaledPivot.x;
+                    this._vertex.y -= this._scaledPivot.y;
+                    this._vertex.z -= this._scaledPivot.z;
     
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+
+                    this._rotated.addInPlace(this._pivotBackTranslation);
                     positions.push(this._copy.position.x + this._rotated.x, this._copy.position.y + this._rotated.y, this._copy.position.z + this._rotated.z);
                     if (meshUV) {
                         uvs.push((this._copy.uvs.z - this._copy.uvs.x) * meshUV[u] + this._copy.uvs.x, (this._copy.uvs.w - this._copy.uvs.y) * meshUV[u + 1] + this._copy.uvs.y);
@@ -570,6 +588,17 @@
                     this._quaternionRotationYPR();
                 }
                 this._quaternionToRotationMatrix();
+
+                this._scaledPivot.x = this._particle.pivot.x * this._particle.scaling.x;
+                this._scaledPivot.y = this._particle.pivot.y * this._particle.scaling.y;
+                this._scaledPivot.z = this._particle.pivot.z * this._particle.scaling.z;
+
+                if (this._copy.translateFromPivot) {
+                    this._pivotBackTranslation.copyFromFloats(0.0, 0.0, 0.0);
+                }
+                else {
+                    this._pivotBackTranslation.copyFrom(this._scaledPivot);
+                }
     
                 this._shape = particle._model._shape;
                 for (var pt = 0; pt < this._shape.length; pt++) {
@@ -585,11 +614,12 @@
                     this._vertex.y *= this._copy.scaling.y;
                     this._vertex.z *= this._copy.scaling.z;
 
-                    this._vertex.x += this._copy.pivot.x;
-                    this._vertex.y += this._copy.pivot.y;
-                    this._vertex.z += this._copy.pivot.z;
+                    this._vertex.x -= this._scaledPivot.x;
+                    this._vertex.y -= this._scaledPivot.y;
+                    this._vertex.z -= this._scaledPivot.z;
     
                     Vector3.TransformCoordinatesToRef(this._vertex, this._rotMatrix, this._rotated);
+                    this._rotated.addInPlace(this._pivotBackTranslation);
     
                     this._positions32[particle._pos + pt * 3] = this._copy.position.x + this._rotated.x;
                     this._positions32[particle._pos + pt * 3 + 1] = this._copy.position.y + this._rotated.y;
@@ -605,6 +635,15 @@
                 particle.scaling.x = 1.0;
                 particle.scaling.y = 1.0;
                 particle.scaling.z = 1.0;
+                particle.uvs.x = 0.0;
+                particle.uvs.y = 0.0;
+                particle.uvs.z = 1.0;
+                particle.uvs.w = 1.0;
+                particle.pivot.x = 0.0;
+                particle.pivot.y = 0.0;
+                particle.pivot.z = 0.0;
+                particle.translateFromPivot = false;
+                particle.parentId = null;
             }
 
             /**
@@ -732,7 +771,12 @@
     
                     if (this._particle.isVisible) {
                         this._particle._stillInvisible = false; // un-mark permanent invisibility
-    
+                        this._particleHasParent = (this._particle.parentId !== null);
+
+                        this._scaledPivot.x = this._particle.pivot.x * this._particle.scaling.x;
+                        this._scaledPivot.y = this._particle.pivot.y * this._particle.scaling.y;
+                        this._scaledPivot.z = this._particle.pivot.z * this._particle.scaling.z;
+
                         // particle rotation matrix
                         if (this.billboard) {
                             this._particle.rotation.x = 0.0;
@@ -748,17 +792,58 @@
                                 this._quaternionRotationYPR();
                             }
                             this._quaternionToRotationMatrix();
-                            this._particle._rotationMatrix[0] = this._rotMatrix.m[0];
-                            this._particle._rotationMatrix[1] = this._rotMatrix.m[1];
-                            this._particle._rotationMatrix[2] = this._rotMatrix.m[2];
-                            this._particle._rotationMatrix[3] = this._rotMatrix.m[4];
-                            this._particle._rotationMatrix[4] = this._rotMatrix.m[5];
-                            this._particle._rotationMatrix[5] = this._rotMatrix.m[6];
-                            this._particle._rotationMatrix[6] = this._rotMatrix.m[8];
-                            this._particle._rotationMatrix[7] = this._rotMatrix.m[9];
-                            this._particle._rotationMatrix[8] = this._rotMatrix.m[10];
+                        }
+
+                        if (this._particleHasParent) {
+                            this._parent = this.particles[this._particle.parentId!];
+                            this._rotated.x = this._particle.position.x * this._parent._rotationMatrix[0] + this._particle.position.y * this._parent._rotationMatrix[3] + this._particle.position.z * this._parent._rotationMatrix[6];
+                            this._rotated.y = this._particle.position.x * this._parent._rotationMatrix[1] + this._particle.position.y * this._parent._rotationMatrix[4] + this._particle.position.z * this._parent._rotationMatrix[7];
+                            this._rotated.z = this._particle.position.x * this._parent._rotationMatrix[2] + this._particle.position.y * this._parent._rotationMatrix[5] + this._particle.position.z * this._parent._rotationMatrix[8];
+
+                            this._particle._globalPosition.x = this._parent._globalPosition.x + this._rotated.x;
+                            this._particle._globalPosition.y = this._parent._globalPosition.y + this._rotated.y;
+                            this._particle._globalPosition.z = this._parent._globalPosition.z + this._rotated.z;
+
+                            if (this._computeParticleRotation || this.billboard) {
+                                this._particle._rotationMatrix[0] = this._rotMatrix.m[0] * this._parent._rotationMatrix[0] + this._rotMatrix.m[1] * this._parent._rotationMatrix[3] + this._rotMatrix.m[2] * this._parent._rotationMatrix[6];
+                                this._particle._rotationMatrix[1] = this._rotMatrix.m[0] * this._parent._rotationMatrix[1] + this._rotMatrix.m[1] * this._parent._rotationMatrix[4] + this._rotMatrix.m[2] * this._parent._rotationMatrix[7];
+                                this._particle._rotationMatrix[2] = this._rotMatrix.m[0] * this._parent._rotationMatrix[2] + this._rotMatrix.m[1] * this._parent._rotationMatrix[5] + this._rotMatrix.m[2] * this._parent._rotationMatrix[8];
+                                this._particle._rotationMatrix[3] = this._rotMatrix.m[4] * this._parent._rotationMatrix[0] + this._rotMatrix.m[5] * this._parent._rotationMatrix[3] + this._rotMatrix.m[6] * this._parent._rotationMatrix[6];
+                                this._particle._rotationMatrix[4] = this._rotMatrix.m[4] * this._parent._rotationMatrix[1] + this._rotMatrix.m[5] * this._parent._rotationMatrix[4] + this._rotMatrix.m[6] * this._parent._rotationMatrix[7];
+                                this._particle._rotationMatrix[5] = this._rotMatrix.m[4] * this._parent._rotationMatrix[2] + this._rotMatrix.m[5] * this._parent._rotationMatrix[5] + this._rotMatrix.m[6] * this._parent._rotationMatrix[8];
+                                this._particle._rotationMatrix[6] = this._rotMatrix.m[8] * this._parent._rotationMatrix[0] + this._rotMatrix.m[9] * this._parent._rotationMatrix[3] + this._rotMatrix.m[10] * this._parent._rotationMatrix[6];
+                                this._particle._rotationMatrix[7] = this._rotMatrix.m[8] * this._parent._rotationMatrix[1] + this._rotMatrix.m[9] * this._parent._rotationMatrix[4] + this._rotMatrix.m[10] * this._parent._rotationMatrix[7];
+                                this._particle._rotationMatrix[8] = this._rotMatrix.m[8] * this._parent._rotationMatrix[2] + this._rotMatrix.m[9] * this._parent._rotationMatrix[5] + this._rotMatrix.m[10] * this._parent._rotationMatrix[8];
+                            }
+                        }
+                        else {
+                            this._particle._globalPosition.x = this._particle.position.x;
+                            this._particle._globalPosition.y = this._particle.position.y;
+                            this._particle._globalPosition.z = this._particle.position.z;
+
+                            if (this._computeParticleRotation || this.billboard) {
+                                this._particle._rotationMatrix[0] = this._rotMatrix.m[0];
+                                this._particle._rotationMatrix[1] = this._rotMatrix.m[1];
+                                this._particle._rotationMatrix[2] = this._rotMatrix.m[2];
+                                this._particle._rotationMatrix[3] = this._rotMatrix.m[4];
+                                this._particle._rotationMatrix[4] = this._rotMatrix.m[5];
+                                this._particle._rotationMatrix[5] = this._rotMatrix.m[6];
+                                this._particle._rotationMatrix[6] = this._rotMatrix.m[8];
+                                this._particle._rotationMatrix[7] = this._rotMatrix.m[9];
+                                this._particle._rotationMatrix[8] = this._rotMatrix.m[10];
+                            }
                         }
        
+                        if (this._particle.translateFromPivot) {
+                            this._pivotBackTranslation.x = 0.0;
+                            this._pivotBackTranslation.y = 0.0;
+                            this._pivotBackTranslation.z = 0.0;
+                        }
+                        else {
+                            this._pivotBackTranslation.x = this._scaledPivot.x;
+                            this._pivotBackTranslation.y = this._scaledPivot.y;
+                            this._pivotBackTranslation.z = this._scaledPivot.z;
+                        }
                         // particle vertex loop
                         for (pt = 0; pt < this._shape.length; pt++) {
                             idx = index + pt * 3;
@@ -778,17 +863,21 @@
                             this._vertex.y *= this._particle.scaling.y;
                             this._vertex.z *= this._particle.scaling.z;
 
-                            this._vertex.x += this._particle.pivot.x;
-                            this._vertex.y += this._particle.pivot.y;
-                            this._vertex.z += this._particle.pivot.z;
+                            this._vertex.x -= this._scaledPivot.x;
+                            this._vertex.y -= this._scaledPivot.y;
+                            this._vertex.z -= this._scaledPivot.z;
     
                             this._rotated.x = this._vertex.x * this._particle._rotationMatrix[0] + this._vertex.y * this._particle._rotationMatrix[3] + this._vertex.z * this._particle._rotationMatrix[6];
                             this._rotated.y = this._vertex.x * this._particle._rotationMatrix[1] + this._vertex.y * this._particle._rotationMatrix[4] + this._vertex.z * this._particle._rotationMatrix[7];
                             this._rotated.z = this._vertex.x * this._particle._rotationMatrix[2] + this._vertex.y * this._particle._rotationMatrix[5] + this._vertex.z * this._particle._rotationMatrix[8];
     
-                            this._positions32[idx] = this._particle.position.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
-                            this._positions32[idx + 1] = this._particle.position.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
-                            this._positions32[idx + 2] = this._particle.position.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
+                            this._rotated.x += this._pivotBackTranslation.x;
+                            this._rotated.y += this._pivotBackTranslation.y;
+                            this._rotated.z += this._pivotBackTranslation.z;
+
+                            this._positions32[idx] = this._particle._globalPosition.x + this._cam_axisX.x * this._rotated.x + this._cam_axisY.x * this._rotated.y + this._cam_axisZ.x * this._rotated.z;
+                            this._positions32[idx + 1] = this._particle._globalPosition.y + this._cam_axisX.y * this._rotated.x + this._cam_axisY.y * this._rotated.y + this._cam_axisZ.y * this._rotated.z;
+                            this._positions32[idx + 2] = this._particle._globalPosition.z + this._cam_axisX.z * this._rotated.x + this._cam_axisY.z * this._rotated.y + this._cam_axisZ.z * this._rotated.z;
     
                             if (this._computeBoundingBox) {
                                 if (this._positions32[idx] < this._minimum.x) {
@@ -893,9 +982,9 @@
                         this._maxBbox.x = this._particle._modelBoundingInfo.maximum.x * this._particle.scaling.x;
                         this._maxBbox.y = this._particle._modelBoundingInfo.maximum.y * this._particle.scaling.y;
                         this._maxBbox.z = this._particle._modelBoundingInfo.maximum.z * this._particle.scaling.z;
-                        bSphere.center.x = this._particle.position.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
-                        bSphere.center.y = this._particle.position.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
-                        bSphere.center.z = this._particle.position.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
+                        bSphere.center.x = this._particle._globalPosition.x + (this._minBbox.x + this._maxBbox.x) * 0.5;
+                        bSphere.center.y = this._particle._globalPosition.y + (this._minBbox.y + this._maxBbox.y) * 0.5;
+                        bSphere.center.z = this._particle._globalPosition.z + (this._minBbox.z + this._maxBbox.z) * 0.5;
                         bSphere.radius = this._bSphereRadiusFactor * 0.5 * Math.sqrt((this._maxBbox.x - this._minBbox.x) * (this._maxBbox.x - this._minBbox.x) + (this._maxBbox.y - this._minBbox.y) * (this._maxBbox.y - this._minBbox.y) + (this._maxBbox.z - this._minBbox.z) * (this._maxBbox.z - this._minBbox.z));
                         bSphere._update(this.mesh._worldMatrix);
                     }

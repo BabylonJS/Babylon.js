@@ -1,19 +1,26 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version": "0.1.0",
+    "version": "2.0.0",
     "command": "gulp",
-    "isShellCommand": true,
     "args": [],
-    "showOutput": "always",
+    "type": "shell",
     "options": {
         "cwd": "${workspaceRoot}/Tools/Gulp"
     },
+    "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+    },
     "tasks": [
         { 
-            "taskName": "run",
-            // Hijack Test Command for easy shortcut
-            "isTestCommand": true,
+            "label": "run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "isBackground": true,
             "problemMatcher": {
                 "owner": "typescript",

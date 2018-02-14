@@ -1,4 +1,5 @@
 module BABYLON {
+    /** @ignore */
     export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public MAINUV1 = false;
         public MAINUV2 = false;
@@ -47,11 +48,13 @@ module BABYLON {
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
         public LIGHTMAPDIRECTUV = 0;
+        public OBJECTSPACE_NORMALMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
         public REFLECTIONMAP_CUBIC = false;
+        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
@@ -195,6 +198,14 @@ module BABYLON {
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
+
+        @serialize("useObjectSpaceNormalMap")
+        private _useObjectSpaceNormalMap = false;
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useObjectSpaceNormalMap: boolean;
 
         @serialize("useParallax")
         private _useParallax = false;
@@ -616,6 +627,8 @@ module BABYLON {
                                     defines.setReflectionMode("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
                                     break;
                             }
+
+                            defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>this._reflectionTexture).boundingBoxSize ? true : false;
                         }
                     } else {
                         defines.REFLECTION = false;
@@ -663,6 +676,8 @@ module BABYLON {
                             defines.PARALLAX = this._useParallax;
                             defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                         }
+
+                        defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
                     }
@@ -845,8 +860,9 @@ module BABYLON {
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
+                    "vReflectionPosition", "vReflectionSize",
                     "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
 
@@ -911,6 +927,8 @@ module BABYLON {
             this._uniformBuffer.addUniform("vAmbientInfos", 2);
             this._uniformBuffer.addUniform("vOpacityInfos", 2);
             this._uniformBuffer.addUniform("vReflectionInfos", 2);
+            this._uniformBuffer.addUniform("vReflectionPosition", 3);
+            this._uniformBuffer.addUniform("vReflectionSize", 3);
             this._uniformBuffer.addUniform("vEmissiveInfos", 2);
             this._uniformBuffer.addUniform("vLightmapInfos", 2);
             this._uniformBuffer.addUniform("vSpecularInfos", 2);
@@ -965,6 +983,13 @@ module BABYLON {
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
+
+            // Normal Matrix
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
+                world.toNormalMatrix(this._normalMatrix);
+                this.bindOnlyNormalMatrix(this._normalMatrix);               
+            }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 
@@ -1024,6 +1049,13 @@ module BABYLON {
                         if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
                             this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
+
+                            if ((<any>this._reflectionTexture).boundingBoxSize) {
+                                let cubeTexture = <CubeTexture>this._reflectionTexture;
+
+                                this._uniformBuffer.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                                this._uniformBuffer.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+                            }
                         }
 
                         if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
@@ -1146,7 +1178,7 @@ module BABYLON {
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
                     this.bindView(effect);
-                }
+                }              
 
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);

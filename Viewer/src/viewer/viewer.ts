@@ -26,12 +26,17 @@ export abstract class AbstractViewer {
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     protected configuration: ViewerConfiguration;
-    protected environmentHelper: EnvironmentHelper;
+    public environmentHelper: EnvironmentHelper;
 
     protected defaultHighpTextureType: number;
     protected shadowGeneratorBias: number;
     protected defaultPipelineTextureType: number;
     protected maxShadows: number;
+    private _hdrSupport: boolean;
+
+    public get isHdrSupported() {
+        return this._hdrSupport;
+    }
 
 
     // observables
@@ -43,7 +48,7 @@ export abstract class AbstractViewer {
     public onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
     public onInitDoneObservable: Observable<AbstractViewer>;
 
-    protected canvas: HTMLCanvasElement;
+    public canvas: HTMLCanvasElement;
 
     protected registeredOnBeforerenderFunctions: Array<() => void>;
 
@@ -74,8 +79,8 @@ export abstract class AbstractViewer {
         this.prepareContainerElement();
 
         // extend the configuration
-        configurationLoader.loadConfiguration(initialConfiguration).then((configuration) => {
-            this.configuration = configuration;
+        configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
+            this.configuration = deepmerge(this.configuration || {}, configuration);
             if (this.configuration.observers) {
                 this.configureObservers(this.configuration.observers);
             }
@@ -131,6 +136,9 @@ export abstract class AbstractViewer {
      * @param newConfiguration 
      */
     public updateConfiguration(newConfiguration: Partial<ViewerConfiguration> = this.configuration) {
+        // update this.configuration with the new data
+        this.configuration = deepmerge(this.configuration || {}, newConfiguration);
+
         // update scene configuration
         if (newConfiguration.scene) {
             this.configureScene(newConfiguration.scene);
@@ -160,14 +168,17 @@ export abstract class AbstractViewer {
             this.configureEnvironment(newConfiguration.skybox, newConfiguration.ground);
         }
 
-        // update this.configuration with the new data
-        this.configuration = deepmerge(this.configuration || {}, newConfiguration);
+        // camera
+        if (newConfiguration.camera) {
+            this.configureCamera(newConfiguration.camera);
+        }
     }
 
     protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean) {
         if (!skyboxConifguration && !groundConfiguration) {
             if (this.environmentHelper) {
                 this.environmentHelper.dispose();
+                delete this.environmentHelper;
             };
             return Promise.resolve(this.scene);
         }
@@ -187,7 +198,7 @@ export abstract class AbstractViewer {
             }
 
             options.enableGroundShadow = groundConfig === true || groundConfig.receiveShadows;
-            if (groundConfig.shadowLevel) {
+            if (groundConfig.shadowLevel !== undefined) {
                 options.groundShadowLevel = groundConfig.shadowLevel;
             }
             options.enableGroundMirror = !!groundConfig.mirror;
@@ -198,22 +209,26 @@ export abstract class AbstractViewer {
                 options.groundColor = new Color3(groundConfig.color.r, groundConfig.color.g, groundConfig.color.b)
             }
 
+            if (groundConfig.opacity !== undefined) {
+                options.groundOpacity = groundConfig.opacity;
+            }
+
             if (groundConfig.mirror) {
                 options.enableGroundMirror = true;
                 // to prevent undefines
                 if (typeof groundConfig.mirror === "object") {
-                    if (groundConfig.mirror.amount)
+                    if (groundConfig.mirror.amount !== undefined)
                         options.groundMirrorAmount = groundConfig.mirror.amount;
-                    if (groundConfig.mirror.sizeRatio)
+                    if (groundConfig.mirror.sizeRatio !== undefined)
                         options.groundMirrorSizeRatio = groundConfig.mirror.sizeRatio;
-                    if (groundConfig.mirror.blurKernel)
+                    if (groundConfig.mirror.blurKernel !== undefined)
                         options.groundMirrorBlurKernel = groundConfig.mirror.blurKernel;
-                    if (groundConfig.mirror.fresnelWeight)
+                    if (groundConfig.mirror.fresnelWeight !== undefined)
                         options.groundMirrorFresnelWeight = groundConfig.mirror.fresnelWeight;
-                    if (groundConfig.mirror.fallOffDistance)
+                    if (groundConfig.mirror.fallOffDistance !== undefined)
                         options.groundMirrorFallOffDistance = groundConfig.mirror.fallOffDistance;
-                    if (this.defaultHighpTextureType !== undefined)
-                        options.groundMirrorTextureType = this.defaultHighpTextureType;
+                    if (this.defaultPipelineTextureType !== undefined)
+                        options.groundMirrorTextureType = this.defaultPipelineTextureType;
                 }
             }
 
@@ -246,6 +261,8 @@ export abstract class AbstractViewer {
                 postInitSkyboxMaterial = true;
             }
         }
+
+        options.setupImageProcessing = false; // TMP
 
         if (!this.environmentHelper) {
             this.environmentHelper = this.scene.createDefaultEnvironment(options)!;
@@ -393,6 +410,8 @@ export abstract class AbstractViewer {
             this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
         }
 
+        this.extendClassWithConfig(this.camera, cameraConfig);
+
         this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
         this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
 
@@ -405,7 +424,8 @@ export abstract class AbstractViewer {
         const sceneExtends = this.scene.getWorldExtends();
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
         const sceneDiagonalLenght = sceneDiagonal.length();
-        this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
+        if (isFinite(sceneDiagonalLenght))
+            this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
     }
 
     protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
@@ -413,6 +433,15 @@ export abstract class AbstractViewer {
         if (!Object.keys(lightsConfiguration).length) return;
 
         let lightsAvailable: Array<string> = this.scene.lights.map(light => light.name);
+        // compare to the global (!) configuration object and dispose unneeded:
+        let lightsToConfigure = Object.keys(this.configuration.lights || []);
+        if (Object.keys(lightsToConfigure).length !== lightsAvailable.length) {
+            lightsAvailable.forEach(lName => {
+                if (lightsToConfigure.indexOf(lName) === -1) {
+                    this.scene.getLightByName(lName)!.dispose()
+                }
+            });
+        }
 
         Object.keys(lightsConfiguration).forEach((name, idx) => {
             let lightConfig: ILightConfiguration = { type: 0 };
@@ -422,7 +451,7 @@ export abstract class AbstractViewer {
 
             lightConfig.name = name;
 
-            let light;
+            let light: Light;
             // light is not already available
             if (lightsAvailable.indexOf(name) === -1) {
                 let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
@@ -430,8 +459,14 @@ export abstract class AbstractViewer {
                 light = constructor();
             } else {
                 // available? get it from the scene
-                light = this.scene.getLightByName(name);
+                light = <Light>this.scene.getLightByName(name);
                 lightsAvailable = lightsAvailable.filter(ln => ln !== name);
+                if (lightConfig.type !== undefined && light.getTypeID() !== lightConfig.type) {
+                    light.dispose();
+                    let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
+                    if (!constructor) return;
+                    light = constructor();
+                }
             }
 
             // if config set the light to false, dispose it.
@@ -441,18 +476,28 @@ export abstract class AbstractViewer {
             }
 
             //enabled
-            if (light.isEnabled() !== !lightConfig.disabled) {
-                light.setEnabled(!lightConfig.disabled);
-            }
+            var enabled = lightConfig.enabled !== undefined ? lightConfig.enabled : !lightConfig.disabled;
+            light.setEnabled(enabled);
+
 
             this.extendClassWithConfig(light, lightConfig);
 
             //position. Some lights don't support shadows
             if (light instanceof ShadowLight) {
+                if (lightConfig.target) {
+                    if (light.setDirectionToTarget) {
+                        let target = Vector3.Zero().copyFrom(lightConfig.target as Vector3);
+                        light.setDirectionToTarget(target);
+                    }
+                } else if (lightConfig.direction) {
+                    let direction = Vector3.Zero().copyFrom(lightConfig.direction as Vector3);
+                    light.direction = direction;
+                }
                 let shadowGenerator = light.getShadowGenerator();
                 if (lightConfig.shadowEnabled && this.maxShadows) {
                     if (!shadowGenerator) {
                         shadowGenerator = new ShadowGenerator(512, light);
+                        // TODO blur kernel definition
                     }
                     this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
                     // add the focues meshes to the shadow list
@@ -461,7 +506,7 @@ export abstract class AbstractViewer {
                     let renderList = shadownMap.renderList;
                     for (var index = 0; index < focusMeshes.length; index++) {
                         if (Tags.MatchesQuery(focusMeshes[index], 'castShadow')) {
-                            // renderList && renderList.push(focusMeshes[index]);
+                            renderList && renderList.push(focusMeshes[index]);
                         }
                     }
                 } else if (shadowGenerator) {
@@ -473,7 +518,7 @@ export abstract class AbstractViewer {
         // remove the unneeded lights
         /*lightsAvailable.forEach(name => {
             let light = this.scene.getLightByName(name);
-            if (light) {
+            if (light && !Tags.MatchesQuery(light, "fixed")) {
                 light.dispose();
             }
         });*/
@@ -529,13 +574,60 @@ export abstract class AbstractViewer {
                 Tags.AddTagsTo(mesh, 'castShadow');
             });
         }
+
+        if (modelConfiguration.normalize) {
+            let center = false;
+            let unitSize = false;
+            let parentIndex;
+            if (modelConfiguration.normalize === true) {
+                center = true;
+                unitSize = true;
+                parentIndex = 0;
+            } else {
+                center = !!modelConfiguration.normalize.center;
+                unitSize = !!modelConfiguration.normalize.unitSize;
+                parentIndex = modelConfiguration.normalize.parentIndex;
+            }
+
+            let meshesToNormalize: Array<AbstractMesh> = [];
+            if (parentIndex !== undefined) {
+                meshesToNormalize.push(focusMeshes[parentIndex]);
+            } else {
+                meshesToNormalize = meshesWithNoParent;
+            }
+
+            if (unitSize) {
+                meshesToNormalize.forEach(mesh => {
+                    console.log(mesh.scaling.x)
+                    mesh.normalizeToUnitCube(true);
+                    mesh.computeWorldMatrix(true);
+                    console.log(mesh.scaling.x)
+                });
+            }
+            if (center) {
+                meshesToNormalize.forEach(mesh => {
+                    const boundingInfo = mesh.getHierarchyBoundingVectors(true);
+                    const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
+                    const halfSizeVec = sizeVec.scale(0.5);
+                    const center = boundingInfo.min.add(halfSizeVec);
+                    mesh.position = center.scale(-1);
+
+                    // Set on ground.
+                    mesh.position.y += halfSizeVec.y;
+
+                    // Recompute Info.
+                    mesh.computeWorldMatrix(true);
+                });
+            }
+        }
     }
 
     public dispose() {
         window.removeEventListener('resize', this.resize);
-
-        this.sceneOptimizer.stop();
-        this.sceneOptimizer.dispose();
+        if (this.sceneOptimizer) {
+            this.sceneOptimizer.stop();
+            this.sceneOptimizer.dispose();
+        }
 
         if (this.scene.activeCamera) {
             this.scene.activeCamera.detachControl(this.canvas);
@@ -653,6 +745,10 @@ export abstract class AbstractViewer {
     }
 
     public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
+        // no model was provided? Do nothing!
+        if (!model.url) {
+            return Promise.resolve(this.scene);
+        }
         this.configuration.model = model;
         let modelUrl = (typeof model === 'string') ? model : model.url;
         let parts = modelUrl.split('/');
@@ -727,7 +823,7 @@ export abstract class AbstractViewer {
         let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
         let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
 
-        let supportsHDR: boolean = !!(linearFloatTargets || linearHalfFloatTargets);
+        this._hdrSupport = !!(linearFloatTargets || linearHalfFloatTargets);
 
         if (linearHalfFloatTargets) {
             this.defaultHighpTextureType = Engine.TEXTURETYPE_HALF_FLOAT;
@@ -740,7 +836,7 @@ export abstract class AbstractViewer {
             this.shadowGeneratorBias = 0.001;
         }
 
-        this.defaultPipelineTextureType = supportsHDR ? this.defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
+        this.defaultPipelineTextureType = this._hdrSupport ? this.defaultHighpTextureType : Engine.TEXTURETYPE_UNSIGNED_INT;
     }
 
     /**
@@ -770,12 +866,14 @@ export abstract class AbstractViewer {
         if (!config) return;
         Object.keys(config).forEach(key => {
             if (key in object && typeof object[key] !== 'function') {
-                if (typeof object[key] === 'function') return;
+                // if (typeof object[key] === 'function') return;
                 // if it is an object, iterate internally until reaching basic types
                 if (typeof object[key] === 'object') {
                     this.extendClassWithConfig(object[key], config[key]);
                 } else {
-                    object[key] = config[key];
+                    if (config[key] !== undefined) {
+                        object[key] = config[key];
+                    }
                 }
             }
         });
@@ -794,13 +892,16 @@ export abstract class AbstractViewer {
         // constructing behavior
         switch (type) {
             case CameraBehavior.AUTOROTATION:
-                behavior = new AutoRotationBehavior();
+                this.camera.useAutoRotationBehavior = true;
+                behavior = this.camera.autoRotationBehavior;
                 break;
             case CameraBehavior.BOUNCING:
-                behavior = new BouncingBehavior();
+                this.camera.useBouncingBehavior = true;
+                behavior = this.camera.bouncingBehavior;
                 break;
             case CameraBehavior.FRAMING:
-                behavior = new FramingBehavior();
+                this.camera.useFramingBehavior = true;
+                behavior = this.camera.framingBehavior;
                 break;
             default:
                 behavior = null;
@@ -811,7 +912,7 @@ export abstract class AbstractViewer {
             if (typeof behaviorConfig === "object") {
                 this.extendClassWithConfig(behavior, behaviorConfig);
             }
-            this.camera.addBehavior(behavior);
+            //this.camera.addBehavior(behavior);
         }
 
         // post attach configuration. Some functionalities require the attached camera.

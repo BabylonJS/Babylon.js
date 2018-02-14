@@ -120,7 +120,6 @@ module BABYLON {
         private _teleportationTarget: Mesh;
         private _isDefaultTeleportationTarget = true;
         private _postProcessMove: ImageProcessingPostProcess;
-        private _passProcessMove: PassPostProcess;
         private _teleportationFillColor: string = "#444444";
         private _teleportationBorderColor: string = "#FFFFFF";
         private _rotationAngle: number = 0;
@@ -203,6 +202,24 @@ module BABYLON {
                 value.name = "teleportationTarget";
                 this._isDefaultTeleportationTarget = false;
                 this._teleportationTarget = value;
+            }
+        }
+
+        /**
+         * The mesh used to display where the user is selecting, 
+         * when set bakeCurrentTransformIntoVertices will be called on the mesh.
+         * See http://doc.babylonjs.com/resources/baking_transformations 
+         */
+        public get gazeTrackerMesh(): Mesh {
+            return this._gazeTracker;
+        }
+
+        public set gazeTrackerMesh(value: Mesh) {
+            if (value) {
+                this._gazeTracker = value;
+                this._gazeTracker.bakeCurrentTransformIntoVertices();
+                this._gazeTracker.isPickable = false;
+                this._gazeTracker.isVisible = false;
             }
         }
 
@@ -670,7 +687,9 @@ module BABYLON {
                     this._enableInteractionOnController(this._webVRCamera.rightController)
                 }
 
-                this._createGazeTracker();
+                if(!this._gazeTracker){
+                    this._createGazeTracker();
+                }                
 
                 this.raySelectionPredicate = (mesh) => {
                     return mesh.isVisible;
@@ -681,7 +700,7 @@ module BABYLON {
                 }
 
                 this._raySelectionPredicate = (mesh) => {
-                    if (this._isTeleportationFloor(mesh) || (mesh.name.indexOf("gazeTracker") === -1
+                    if (this._isTeleportationFloor(mesh) || (mesh != this._gazeTracker
                         && mesh.name.indexOf("teleportationTarget") === -1
                         && mesh.name.indexOf("torusTeleportation") === -1
                         && mesh.name.indexOf("laserPointer") === -1)) {
@@ -781,7 +800,6 @@ module BABYLON {
                     imageProcessingConfiguration);
 
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
-                this._passProcessMove = new PassPostProcess("pass", 1.0, this._webVRCamera);
                 this._teleportationInitialized = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._createTeleportationCircles();
@@ -1273,7 +1291,7 @@ module BABYLON {
 
             this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
             this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
-
+            this._postProcessMove.samples = 4;
             this._webVRCamera.attachPostProcess(this._postProcessMove)
             this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
                 this._webVRCamera.detachPostProcess(this._postProcessMove)
@@ -1574,10 +1592,6 @@ module BABYLON {
         public dispose() {
             if (this.isInVRMode) {
                 this.exitVR();
-            }
-
-            if (this._passProcessMove) {
-                this._passProcessMove.dispose();
             }
 
             if (this._postProcessMove) {
