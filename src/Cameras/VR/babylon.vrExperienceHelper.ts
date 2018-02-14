@@ -31,7 +31,7 @@ module BABYLON {
         public laserPointer: Mesh;
         public gazeTracker:Mesh;
 
-        
+        public useLaserPointer = true;
         public currentMeshSelected:Nullable<AbstractMesh>;
         public currentHit:Nullable<PickingInfo>;
 
@@ -97,6 +97,7 @@ module BABYLON {
     class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer{
         constructor(private getCamera:()=>Nullable<Camera>, scene: Scene){
             super(scene);
+            this.useLaserPointer = false;
         }
         getForwardRay(length:number):Ray{
             var camera = this.getCamera();
@@ -183,10 +184,11 @@ module BABYLON {
         private _rayLength: number;
         private _useCustomVRButton: boolean = false;
         private _teleportationRequested: boolean = false;
+        private _teleportActive = false;
         private _floorMeshName: string;
         private _floorMeshesCollection: Mesh[] = [];
         private _rotationAllowed: boolean = true;
-        private teleportBackwardsVector = new Vector3(0, -1, -1);
+        private _teleportBackwardsVector = new Vector3(0, -1, -1);
         private _rotationRightAsked = false;
         private _rotationLeftAsked = false;
         private _teleportationTarget: Mesh;
@@ -201,8 +203,8 @@ module BABYLON {
         private _padSensibilityDown = 0.35;
         
 
-        private leftController:Nullable<VRExperienceHelperControllerGazer>;
-        private rightController:Nullable<VRExperienceHelperControllerGazer>;
+        private leftController:Nullable<VRExperienceHelperControllerGazer> = null;
+        private rightController:Nullable<VRExperienceHelperControllerGazer> = null;
 
         /**
          * Observable raised when a new mesh is selected based on meshSelectionPredicate
@@ -1040,13 +1042,18 @@ module BABYLON {
             }
             if (!gazer.teleportationRequestInitiated) {
                 if (stateObject.y < -this._padSensibilityUp && this._dpadPressed) {
-                    gazer.laserPointer.isVisible = true;
+                    if(gazer.useLaserPointer){
+                        gazer.laserPointer.isVisible = true;
+                    }
                     gazer.teleportationRequestInitiated = true;
                 }
             } else {
                 // Listening to the proper controller values changes to confirm teleportation
                 if (Math.sqrt(stateObject.y * stateObject.y + stateObject.x * stateObject.x) < this._padSensibilityDown) {
-                    this._teleportCamera(this._haloCenter);
+                    if(this._teleportActive){
+                        this._teleportCamera(this._haloCenter);
+                    }
+                    
                     gazer.teleportationRequestInitiated = false;
                 }
             }
@@ -1125,7 +1132,7 @@ module BABYLON {
                     this._workingQuaternion.toRotationMatrix(this._workingMatrix);
 
                     // Rotate backwards ray by device rotation to cast at the ground behind the user
-                    Vector3.TransformCoordinatesToRef(this.teleportBackwardsVector, this._workingMatrix, this._workingVector);
+                    Vector3.TransformCoordinatesToRef(this._teleportBackwardsVector, this._workingMatrix, this._workingVector);
 
                     // Teleport if ray hit the ground and is not to far away eg. backwards off a cliff
                     var ray = new Ray(position, this._workingVector);
@@ -1233,6 +1240,7 @@ module BABYLON {
         }
 
         private _displayTeleportationTarget() {
+            this._teleportActive = true;
             if (this._teleportationInitialized) {
                 this._teleportationTarget.isVisible = true;
                 if (this._isDefaultTeleportationTarget) {
@@ -1242,6 +1250,7 @@ module BABYLON {
         }
 
         private _hideTeleportationTarget() {
+            this._teleportActive = false;
             if (this._teleportationInitialized) {
                 this._teleportationTarget.isVisible = false;
                 if (this._isDefaultTeleportationTarget) {
