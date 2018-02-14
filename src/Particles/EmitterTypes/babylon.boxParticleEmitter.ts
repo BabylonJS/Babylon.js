@@ -106,7 +106,24 @@ module BABYLON {
         public serialize(): any {
             var serializationObject: any = {};
 
+            serializationObject.type = this.getClassName();
+            serializationObject.direction1  = this.direction1.asArray();;
+            serializationObject.direction2  = this.direction2.asArray();;
+            serializationObject.minEmitBox  = this.minEmitBox.asArray();;
+            serializationObject.maxEmitBox  = this.maxEmitBox.asArray();;
+
             return serializationObject;
+        }
+
+        /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        public parse(serializationObject: any): void {
+            this.direction1.copyFrom(serializationObject.direction1);
+            this.direction2.copyFrom(serializationObject.direction2);
+            this.minEmitBox.copyFrom(serializationObject.minEmitBox);
+            this.maxEmitBox.copyFrom(serializationObject.maxEmitBox);
         }
     }
 }
