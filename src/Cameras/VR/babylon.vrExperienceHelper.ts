@@ -43,23 +43,28 @@ module BABYLON {
         public _teleportationEnabled: boolean;
         public _teleportationRequestInitiated = false;
         public _teleportationBackRequestInitiated = false;
-        public _dpadPressed = false;
+        public _dpadPressed = true;
 
         public _activePointer = false;
 
-        constructor(public scene: Scene){
+        constructor(public scene: Scene, gazeTrackerToClone:Nullable<Mesh> = null){
             this._id = VRExperienceHelperGazer._idCounter++;
 
             // Gaze tracker
-            this._gazeTracker = Mesh.CreateTorus("gazeTracker", 0.0035, 0.0025, 20, scene, false);
-            this._gazeTracker.bakeCurrentTransformIntoVertices();
-            this._gazeTracker.isPickable = false;
-            this._gazeTracker.isVisible = false;
-            var targetMat = new StandardMaterial("targetMat", scene);
-            targetMat.specularColor = Color3.Black();
-            targetMat.emissiveColor = new Color3(0.7, 0.7, 0.7)
-            targetMat.backFaceCulling = false;
-            this._gazeTracker.material = targetMat;
+            if(!gazeTrackerToClone){
+                this._gazeTracker = Mesh.CreateTorus("gazeTracker", 0.0035, 0.0025, 20, scene, false);
+                this._gazeTracker.bakeCurrentTransformIntoVertices();
+                this._gazeTracker.isPickable = false;
+                this._gazeTracker.isVisible = false;
+                var targetMat = new StandardMaterial("targetMat", scene);
+                targetMat.specularColor = Color3.Black();
+                targetMat.emissiveColor = new Color3(0.7, 0.7, 0.7)
+                targetMat.backFaceCulling = false;
+                this._gazeTracker.material = targetMat;
+            }else{
+                this._gazeTracker = gazeTrackerToClone.clone("gazeTracker");
+            }
+            
         }
 
         public _getForwardRay(length:number):Ray{
@@ -100,8 +105,8 @@ module BABYLON {
     class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer{
         private _laserPointer: Mesh;
 
-        constructor(public webVRController: WebVRController, scene: Scene){
-            super(scene);
+        constructor(public webVRController: WebVRController, scene: Scene, gazeTrackerToClone:Mesh){
+            super(scene, gazeTrackerToClone);
             // Laser pointer
             this._laserPointer = Mesh.CreateCylinder("laserPointer", 1, 0.004, 0.0002, 20, 1, scene, false);
             var laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
@@ -342,13 +347,13 @@ module BABYLON {
                 this._cameraGazer._gazeTracker.bakeCurrentTransformIntoVertices();
                 this._cameraGazer._gazeTracker.isPickable = false;
                 this._cameraGazer._gazeTracker.isVisible = false;
-
+                this._cameraGazer._gazeTracker.name = "gazeTracker";
                 if(this.leftController){
-                    this.leftController._gazeTracker = this._cameraGazer._gazeTracker.clone("controllerGazeTacker");
+                    this.leftController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker");
                 }
 
                 if(this.rightController){
-                    this.rightController._gazeTracker = this._cameraGazer._gazeTracker.clone("controllerGazeTacker");
+                    this.rightController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker");
                 }
             }
         }
@@ -866,15 +871,15 @@ module BABYLON {
         }
 
         private beforeRender = () => {
-            if(this.leftController && this.leftController._activatePointer){
+            if(this.leftController && this.leftController._activePointer){
                 this._castRayAndSelectObject(this.leftController);
             }
             
-            if(this.rightController && this.rightController._activatePointer){
+            if(this.rightController && this.rightController._activePointer){
                 this._castRayAndSelectObject(this.rightController);
             }
 
-            if(!(this.leftController && this.leftController._activatePointer) && !(this.rightController && this.rightController._activePointer)){
+            if(!(this.leftController && this.leftController._activePointer) && !(this.rightController && this.rightController._activePointer)){
                 this._castRayAndSelectObject(this._cameraGazer);
             }else{
                 this._cameraGazer._gazeTracker.isVisible = false;
@@ -1008,7 +1013,7 @@ module BABYLON {
                 }
             } else {
                 var webVRController = <WebVRController>gamepad;
-                var controller = new VRExperienceHelperControllerGazer(webVRController, this._scene);
+                var controller = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
 
                 if (webVRController.hand === "right" || (this.leftController && this.leftController.webVRController != webVRController)) {
                     this.rightController = controller;
@@ -1069,11 +1074,13 @@ module BABYLON {
                     // Enabling / disabling laserPointer 
                     if (this._displayLaserPointer && stateObject.value === 1) {
                         if(controller._activePointer){
-                            controller._activatePointer();
-                        }else{
                             controller._deactivatePointer();
+                        }else{
+                            controller._activatePointer();
                         }
-                        controller._gazeTracker.isVisible = controller._activePointer;
+                        if(this.displayGaze){
+                            controller._gazeTracker.isVisible = controller._activePointer;
+                        }
                     }
                 });
                 controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
@@ -1647,6 +1654,9 @@ module BABYLON {
          * @param color new color for the ray.
          */
         public changeGazeColor(color: Color3) {
+            if(!(<StandardMaterial>this._cameraGazer._gazeTracker.material)){
+                return;
+            }
             (<StandardMaterial>this._cameraGazer._gazeTracker.material).emissiveColor = color;
             if(this.leftController){
                 (<StandardMaterial>this.leftController._gazeTracker.material).emissiveColor = color;
