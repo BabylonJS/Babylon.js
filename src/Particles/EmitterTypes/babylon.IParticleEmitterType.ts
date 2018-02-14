@@ -50,5 +50,11 @@ module BABYLON {
          * @returns the JSON object
          */        
         serialize(): any;
+
+ /**
+         * Parse properties from a JSON object
+         * @param serializationObject defines the JSON object
+         */
+        parse(serializationObject: any): void;
     }
 }

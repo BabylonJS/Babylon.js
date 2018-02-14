@@ -1,7 +1,8 @@
 ﻿module BABYLON {
     /**
-     * This represents a GPU particle system in Babylon.
-     * This os the fastest particle system in Babylon as it uses the GPU to update the individual particle data.
+     * This represents a GPU particle system in Babylon
+     * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
+     * @see https://www.babylonjs-playground.com/#PU4WYI#2
      */
     export class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
         /**
@@ -27,7 +28,7 @@
         /**
          * The layer mask we are rendering the particles through.
          */
-        public layerMask: number = 0x0FFFFFFF; // TODO
+        public layerMask: number = 0x0FFFFFFF;
 
         private _capacity: number;
         private _activeCount: number;
@@ -38,8 +39,8 @@
         private _buffer0: Buffer;
         private _buffer1: Buffer;
         private _spriteBuffer: Buffer;
-        private _updateVAO = new Array<WebGLVertexArrayObject>();
-        private _renderVAO = new Array<WebGLVertexArrayObject>()
+        private _updateVAO: Array<WebGLVertexArrayObject>;
+        private _renderVAO: Array<WebGLVertexArrayObject>;
 
         private _targetIndex = 0;
         private _sourceBuffer: Buffer;
@@ -157,7 +158,79 @@
          * The particle emitter type defines the emitter used by the particle system.
          * It can be for example box, sphere, or cone...
          */
-        public particleEmitterType: Nullable<IParticleEmitterType>;        
+        public particleEmitterType: Nullable<IParticleEmitterType>;    
+
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction1(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction1;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction1(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction1 = value;
+            }
+        }        
+        
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction2(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction2;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction2(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction2 = value;
+            }
+        }
+
+        /**
+         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get minEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).minEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set minEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).minEmitBox = value;
+            }
+        }      
+        
+        /**
+         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get maxEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set maxEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
+            }
+        }        
 
         /**
          * Gets the maximum number of particles active at the same time.
@@ -280,6 +353,7 @@
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
             this._randomTextureSize = maxTextureSize;
+            this.particleEmitterType = new BoxParticleEmitter();
         }
 
         private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {            
@@ -362,10 +436,12 @@
             this._spriteBuffer = new Buffer(engine, spriteData, false, 4);                                      
 
             // Update VAO
+            this._updateVAO = [];
             this._updateVAO.push(this._createUpdateVAO(this._buffer0));
             this._updateVAO.push(this._createUpdateVAO(this._buffer1));
 
             // Render VAO
+            this._renderVAO = [];
             this._renderVAO.push(this._createRenderVAO(this._buffer1, this._spriteBuffer));
             this._renderVAO.push(this._createRenderVAO(this._buffer0, this._spriteBuffer));
 
@@ -560,9 +636,6 @@
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         }
-
-        //TODO: Clone / Parse / serialize
-
         /**
          * Clones the particle system.
          * @param name The name of the cloned object
@@ -570,7 +643,20 @@
          * @returns the cloned particle system
          */
         public clone(name: string, newEmitter: any): Nullable<GPUParticleSystem> {
-            return null;
+            var result = new GPUParticleSystem(name, {capacity: this._capacity, randomTextureSize: this._randomTextureSize}, this._scene);
+
+            Tools.DeepCopy(this, result);
+
+            if (newEmitter === undefined) {
+                newEmitter = this.emitter;
+            }
+
+            result.emitter = newEmitter;
+            if (this.particleTexture) {
+                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+            }
+
+            return result;
         }
 
         /**
@@ -619,12 +705,91 @@
             serializationObject.targetStopDuration = this.targetStopDuration;
             serializationObject.blendMode = this.blendMode;
 
-            // Emitters
+            // Emitter
             if (this.particleEmitterType) {
-                
+                serializationObject.particleEmitterType = this.particleEmitterType.serialize();
             }
 
             return serializationObject;            
         }
+
+        /**
+         * Parses a JSON object to create a GPU particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the parsed GPU particle system
+         */
+        public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem {
+            var name = parsedParticleSystem.name;
+            var particleSystem = new GPUParticleSystem(name, {capacity: parsedParticleSystem.capacity, randomTextureSize: parsedParticleSystem.randomTextureSize}, scene);
+
+            if (parsedParticleSystem.id) {
+                particleSystem.id = parsedParticleSystem.id;
+            }
+
+            // Texture
+            if (parsedParticleSystem.textureName) {
+                particleSystem.particleTexture = new Texture(rootUrl + parsedParticleSystem.textureName, scene);
+                particleSystem.particleTexture.name = parsedParticleSystem.textureName;
+            }
+
+            // Emitter
+            if (parsedParticleSystem.emitterId) {
+                particleSystem.emitter = scene.getLastMeshByID(parsedParticleSystem.emitterId);
+            } else {
+                particleSystem.emitter = Vector3.FromArray(parsedParticleSystem.emitter);
+            }
+
+            // Animations
+            if (parsedParticleSystem.animations) {
+                for (var animationIndex = 0; animationIndex < parsedParticleSystem.animations.length; animationIndex++) {
+                    var parsedAnimation = parsedParticleSystem.animations[animationIndex];
+                    particleSystem.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
+            // Particle system
+            particleSystem.activeParticleCount = parsedParticleSystem.activeParticleCount;
+            particleSystem.minSize = parsedParticleSystem.minSize;
+            particleSystem.maxSize = parsedParticleSystem.maxSize;
+            particleSystem.minLifeTime = parsedParticleSystem.minLifeTime;
+            particleSystem.maxLifeTime = parsedParticleSystem.maxLifeTime;
+            particleSystem.minEmitPower = parsedParticleSystem.minEmitPower;
+            particleSystem.maxEmitPower = parsedParticleSystem.maxEmitPower;
+            particleSystem.emitRate = parsedParticleSystem.emitRate;
+            particleSystem.gravity = Vector3.FromArray(parsedParticleSystem.gravity);
+            particleSystem.color1 = Color4.FromArray(parsedParticleSystem.color1);
+            particleSystem.color2 = Color4.FromArray(parsedParticleSystem.color2);
+            particleSystem.colorDead = Color4.FromArray(parsedParticleSystem.colorDead);
+            particleSystem.updateSpeed = parsedParticleSystem.updateSpeed;
+            particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
+            particleSystem.blendMode = parsedParticleSystem.blendMode;
+
+            // Emitter
+            if (parsedParticleSystem.particleEmitterType) {
+                let emitterType: IParticleEmitterType;
+                switch (parsedParticleSystem.particleEmitterType.type) {
+                    case "SphereEmitter":
+                        emitterType = new SphereParticleEmitter();
+                        break;
+                    case "SphereDirectedParticleEmitter":
+                        emitterType = new SphereDirectedParticleEmitter();
+                        break;
+                    case "ConeEmitter":
+                        emitterType = new ConeParticleEmitter();
+                        break;
+                    case "BoxEmitter":
+                    default:
+                        emitterType = new BoxParticleEmitter();
+                        break;                                                
+                }
+
+                emitterType.parse(parsedParticleSystem.particleEmitterType);
+                particleSystem.particleEmitterType = emitterType;
+            }
+
+            return particleSystem;
+        }        
     }
 }

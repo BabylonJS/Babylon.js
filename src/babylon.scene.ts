@@ -2389,7 +2389,7 @@
         }
 
 
-        public removeParticleSystem(toRemove: ParticleSystem): number {
+        public removeParticleSystem(toRemove: IParticleSystem): number {
             var index = this.particleSystems.indexOf(toRemove);
             if (index !== -1) {
                 this.particleSystems.splice(index, 1);
@@ -2462,7 +2462,7 @@
             this.skeletons.push(newSkeleton)
         }
 
-        public addParticleSystem(newParticleSystem: ParticleSystem) {
+        public addParticleSystem(newParticleSystem: IParticleSystem) {
             this.particleSystems.push(newParticleSystem)
         }
 
