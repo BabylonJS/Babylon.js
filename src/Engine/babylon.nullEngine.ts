@@ -25,6 +25,10 @@
             return this._options.lockstepMaxSteps;
         }
 
+        public getHardwareScalingLevel(): number {
+            return 1.0;
+        }
+
         public constructor(options: NullEngineOptions = new NullEngineOptions()) {
             super(null);
 
