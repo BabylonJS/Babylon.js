@@ -73,6 +73,7 @@
 - Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
 - (Viewer) Declaration file published. ([RaananW](https://github.com/RaananW))
 - Added Draco mesh compression support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
+- Support multiple simultaneous webVR controller gui interactions in WebVRExperienceHelper ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
