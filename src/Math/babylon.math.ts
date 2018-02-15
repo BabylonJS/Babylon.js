@@ -334,7 +334,6 @@
          */
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-                //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
 
@@ -746,7 +745,6 @@
          */
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
-                //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0.0, 0.0, 0.0, 0.0);
             }
 
@@ -5290,7 +5288,6 @@
          */
         public addLineTo(x: number, y: number): Path2 {
             if (this.closed) {
-                //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
             var newPoint = new Vector2(x, y);
@@ -5306,7 +5303,6 @@
          */
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (this.closed) {
-                //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
             var startPoint = this._points[this._points.length - 1];
@@ -5361,7 +5357,6 @@
          */
         public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                //Tools.Error("normalized length position should be between 0 and 1.");
                 return Vector2.Zero();
             }
 
@@ -5388,7 +5383,6 @@
                 previousOffset = nextOffset;
             }
 
-            //Tools.Error("internal error");
             return Vector2.Zero();
         }
 

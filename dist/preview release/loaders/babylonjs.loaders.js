@@ -3715,6 +3715,7 @@ var BABYLON;
                     _this._progressCallback = onProgress;
                     _this._state = BABYLON.GLTFLoaderState.Loading;
                     _this._loadData(data);
+                    _this._checkExtensions();
                     var promises = new Array();
                     if (nodes) {
                         promises.push(_this._loadNodesAsync(nodes));
@@ -3808,6 +3809,17 @@ var BABYLON;
                         var node = _e[_d];
                         var parentIndex = nodeParents[node._index];
                         node._parent = parentIndex === undefined ? rootNode : this._gltf.nodes[parentIndex];
+                    }
+                }
+            };
+            GLTFLoader.prototype._checkExtensions = function () {
+                if (this._gltf.extensionsRequired) {
+                    for (var _i = 0, _a = this._gltf.extensionsRequired; _i < _a.length; _i++) {
+                        var name_2 = _a[_i];
+                        var extension = this._extensions[name_2];
+                        if (!extension || !extension.enabled) {
+                            throw new Error("Require extension " + name_2 + " is not available");
+                        }
                     }
                 }
             };
@@ -4953,8 +4965,8 @@ var BABYLON;
             };
             GLTFLoader.prototype._applyExtensions = function (actionAsync) {
                 for (var _i = 0, _a = GLTFLoader._Names; _i < _a.length; _i++) {
-                    var name_2 = _a[_i];
-                    var extension = this._extensions[name_2];
+                    var name_3 = _a[_i];
+                    var extension = this._extensions[name_3];
                     if (extension.enabled) {
                         var promise = actionAsync(extension);
                         if (promise) {
