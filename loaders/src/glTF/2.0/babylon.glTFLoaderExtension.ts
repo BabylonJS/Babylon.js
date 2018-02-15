@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension {
+    export abstract class GLTFLoaderExtension implements IGLTFLoaderExtension, IDisposable {
         public enabled = true;
         public abstract readonly name: string;
 
@@ -9,6 +9,10 @@ module BABYLON.GLTF2 {
 
         constructor(loader: GLTFLoader) {
             this._loader = loader;
+        }
+
+        public dispose(): void {
+            delete this._loader;
         }
 
         // #region Overridable Methods

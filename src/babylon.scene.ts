@@ -4242,16 +4242,22 @@
         }
 
         // Octrees
-        public getWorldExtends(): { min: Vector3; max: Vector3 } {
+
+        /**
+         * Get the world extend vectors with an optional filter
+         * 
+         * @param filterPredicate the predicate - which meshes should be included when calculating the world size
+         * @returns {{ min: Vector3; max: Vector3 }} min and max vectors
+         */
+        public getWorldExtends(filterPredicate?: (mesh: AbstractMesh) => boolean): { min: Vector3; max: Vector3 } {
             var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-            for (var index = 0; index < this.meshes.length; index++) {
-                var mesh = this.meshes[index];
-
+            filterPredicate = filterPredicate || (() => true);
+            this.meshes.filter(filterPredicate).forEach(mesh => {
                 mesh.computeWorldMatrix(true);
 
                 if (!mesh.subMeshes || mesh.subMeshes.length === 0 || mesh.infiniteDistance) {
-                    continue;
+                    return;
                 }
 
                 let boundingInfo = mesh.getBoundingInfo();
@@ -4261,7 +4267,7 @@
 
                 Tools.CheckExtends(minBox, min, max);
                 Tools.CheckExtends(maxBox, min, max);
-            }
+            })
 
             return {
                 min: min,

@@ -1,6 +1,6 @@
 
-import { Observable } from 'babylonjs';
-import { isUrl, loadFile, camelToKebab, kebabToCamel } from './helper';
+import { Observable, IFileRequest, Tools } from 'babylonjs';
+import { isUrl, camelToKebab, kebabToCamel } from './helper';
 
 export interface ITemplateConfiguration {
     location?: string; // #template-id OR http://example.com/loading.html
@@ -212,12 +212,16 @@ export class Template {
     private fragment: DocumentFragment;
     private htmlTemplate: string;
 
+    private loadRequests: Array<IFileRequest>;
+
     constructor(public name: string, private _configuration: ITemplateConfiguration) {
         this.onInit = new Observable<Template>();
         this.onLoaded = new Observable<Template>();
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
         this.onEventTriggered = new Observable<EventCallback>();
+
+        this.loadRequests = [];
 
         this.isLoaded = false;
         this.isShown = false;
@@ -228,7 +232,7 @@ export class Template {
         */
         this.onInit.notifyObservers(this);
 
-        let htmlContentPromise = getTemplateAsHtml(_configuration);
+        let htmlContentPromise = this.getTemplateAsHtml(_configuration);
 
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
@@ -299,8 +303,12 @@ export class Template {
         });
     }
 
+    private isShowing: boolean;
+    private isHiding: boolean;
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        if (this.isHiding) return Promise.resolve(this);
         return Promise.resolve().then(() => {
+            this.isShowing = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -310,13 +318,16 @@ export class Template {
             }
         }).then(() => {
             this.isShown = true;
+            this.isShowing = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
     }
 
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        if (this.isShowing) return Promise.resolve(this);
         return Promise.resolve().then(() => {
+            this.isHiding = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -326,6 +337,7 @@ export class Template {
             }
         }).then(() => {
             this.isShown = false;
+            this.isHiding = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
@@ -340,6 +352,38 @@ export class Template {
         this.isLoaded = false;
         // remove from parent
         this.parent.removeChild(this.fragment);
+
+        this.loadRequests.forEach(request => {
+            request.abort();
+        });
+    }
+
+    private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
+        if (!templateConfig) {
+            return Promise.reject('No templateConfig provided');
+        } else if (templateConfig.html) {
+            return Promise.resolve(templateConfig.html);
+        } else {
+            let location = getTemplateLocation(templateConfig);
+            if (isUrl(location)) {
+                return new Promise((resolve, reject) => {
+                    let fileRequest = Tools.LoadFile(location, (data: string) => {
+                        resolve(data);
+                    }, undefined, undefined, false, (request, error: any) => {
+                        reject(error);
+                    });
+                    this.loadRequests.push(fileRequest);
+                });
+            } else {
+                location = location.replace('#', '');
+                let element = document.getElementById(location);
+                if (element) {
+                    return Promise.resolve(element.innerHTML);
+                } else {
+                    return Promise.reject('Template ID not found');
+                }
+            }
+        }
     }
 
     private registeredEvents: Array<{ htmlElement: HTMLElement, eventName: string, function: EventListenerOrEventListenerObject }>;
@@ -384,27 +428,6 @@ export class Template {
                         });
                     }
                 }
-            }
-        }
-    }
-}
-
-export function getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
-    if (!templateConfig) {
-        return Promise.reject('No templateConfig provided');
-    } else if (templateConfig.html) {
-        return Promise.resolve(templateConfig.html);
-    } else {
-        let location = getTemplateLocation(templateConfig);
-        if (isUrl(location)) {
-            return loadFile(location);
-        } else {
-            location = location.replace('#', '');
-            let element = document.getElementById(location);
-            if (element) {
-                return Promise.resolve(element.innerHTML);
-            } else {
-                return Promise.reject('Template ID not found');
             }
         }
     }
