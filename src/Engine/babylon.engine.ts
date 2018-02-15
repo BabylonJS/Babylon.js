@@ -4268,7 +4268,7 @@
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
                 if (files && files.length === 6) {
-                    this._cascadeLoadFiles(rootUrl,
+                    this._cascadeLoadFiles(
                         scene,
                         imgs => {
                             var info: DDSInfo | undefined;
@@ -5883,7 +5883,7 @@
             this._loadFile(url, onload, undefined, undefined, true, onerror);
         }
 
-        private _cascadeLoadFiles(rootUrl: string, scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+        private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
             var loadedFiles: (string | ArrayBuffer)[] = [];
             (<any>loadedFiles)._internalCount = 0;
 

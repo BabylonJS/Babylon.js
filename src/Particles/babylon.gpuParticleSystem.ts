@@ -335,10 +335,6 @@
                 transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection"]
             };
 
-            this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
-
-            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "size", "color", "offset", "uv"], ["view", "projection", "colorDead"], ["textureSampler"], this._scene.getEngine());
-
             // Random data
             var maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
             var d = [];
@@ -452,13 +448,31 @@
         }
 
         /** @ignore */
-        public _recreateUpdateEffect(defines: string) {
-            if (this._updateEffectOptions.defines === defines) {
+        public _recreateUpdateEffect() {
+            let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
+            if (this._updateEffect && this._updateEffectOptions.defines === defines) {
                 return;
             }
             this._updateEffectOptions.defines = defines;
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
         }
+
+        /** @ignore */
+        public _recreateRenderEffect() {
+            let defines = "";
+            if (this._scene.clipPlane) {
+                defines = "\n#define CLIPPLANE";
+            }
+
+            if (this._renderEffect && this._renderEffect.defines === defines) {
+                return;
+            }
+
+            this._renderEffect = new Effect("gpuRenderParticles", 
+                                            ["position", "age", "life", "size", "color", "offset", "uv"], 
+                                            ["view", "projection", "colorDead", "invView", "vClipPlane"], 
+                                            ["textureSampler"], this._scene.getEngine(), defines);
+        }        
 
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
@@ -484,9 +498,8 @@
                 return 0;
             }
 
-            if (this.particleEmitterType) {
-                this._recreateUpdateEffect(this.particleEmitterType.getEffectDefines());
-            }
+            this._recreateUpdateEffect();
+            this._recreateRenderEffect();
 
             if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
                 return 0;
@@ -547,10 +560,20 @@
 
             // Enable render effect
             this._engine.enableEffect(this._renderEffect);
-            this._renderEffect.setMatrix("view", this._scene.getViewMatrix());
+            let viewMatrix = this._scene.getViewMatrix();
+            this._renderEffect.setMatrix("view", viewMatrix);
             this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
             this._renderEffect.setTexture("textureSampler", this.particleTexture);
             this._renderEffect.setDirectColor4("colorDead", this.colorDead);
+
+
+            if (this._scene.clipPlane) {
+                var clipPlane = this._scene.clipPlane;
+                var invView = viewMatrix.clone();
+                invView.invert();
+                this._renderEffect.setMatrix("invView", invView);
+                this._renderEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }            
 
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {
