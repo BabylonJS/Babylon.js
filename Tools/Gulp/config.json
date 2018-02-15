@@ -274,10 +274,10 @@
             "files": [
                 "../../src/Particles/babylon.particle.js",
                 "../../src/Particles/babylon.particleSystem.js",
+                "../../src/Particles/EmitterTypes/babylon.IParticleEmitterType.js",
                 "../../src/Particles/EmitterTypes/babylon.boxParticleEmitter.js",
                 "../../src/Particles/EmitterTypes/babylon.coneParticleEmitter.js",
-                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js",
-                "../../src/Particles/EmitterTypes/babylon.IParticleEmitterType.js"
+                "../../src/Particles/EmitterTypes/babylon.sphereParticleEmitter.js"
             ],
             "dependUpon": [
                 "core"
