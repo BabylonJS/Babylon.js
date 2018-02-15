@@ -333,6 +333,13 @@
         private _isAnimationSheetEnabled: boolean;
 
         /**
+         * Gets the current list of active particles
+         */
+        public get particles(): Particle[] {
+            return this._particles;
+        }
+
+        /**
          * Returns the string "ParticleSystem"
          * @returns a string containing the class name
          */
