@@ -1,7 +1,7 @@
 {
-  "errors": 7253,
+  "errors": 7241,
   "babylon.typedoc.json": {
-    "errors": 7253,
+    "errors": 7241,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -27635,11 +27635,6 @@
             "MissingText": true
           }
         },
-        "disableDepthRenderer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "disableGeometryBufferRenderer": {
           "Comments": {
             "MissingText": true
@@ -27656,11 +27651,6 @@
           }
         },
         "disposeSounds": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "enableDepthRenderer": {
           "Comments": {
             "MissingText": true
           }
@@ -28212,11 +28202,6 @@
           }
         },
         "getWaitingItemsCount": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getWorldExtends": {
           "Comments": {
             "MissingText": true
           }
