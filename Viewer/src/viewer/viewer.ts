@@ -758,6 +758,7 @@ export abstract class AbstractViewer {
         if (this.isLoading) {
             //another model is being model. Wait for it to finish, trigger the load afterwards
             this.nextLoading = () => {
+                delete this.nextLoading;
                 this.loadModel(model, clearScene);
             }
             return Promise.resolve(this.scene);
