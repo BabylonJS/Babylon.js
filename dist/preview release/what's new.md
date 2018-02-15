@@ -74,6 +74,7 @@
 - (Viewer) Declaration file published, ready for npm. ([RaananW](https://github.com/RaananW))
 - Added Draco mesh compression support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - (Viewer) XHR requests not use Tools.LoadFile and are disposed correctly - [#3671](https://github.com/BabylonJS/Babylon.js/issues/3671) ([RaananW](https://github.com/RaananW))
+- Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes
 

@@ -1568,7 +1568,13 @@ module BABYLON.GLTF2 {
             delete this._gltf;
             delete this._babylonScene;
             this._completePromises.length = 0;
+
+            for (const name in this._extensions) {
+                this._extensions[name].dispose();
+            }
+
             this._extensions = {};
+
             delete this._rootBabylonMesh;
             delete this._progressCallback;
 
