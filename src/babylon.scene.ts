@@ -4230,6 +4230,12 @@
         }
 
         // Octrees
+        /**
+         * Get the world extend vectors with an optional filter
+         * 
+         * @param {(mesh: AbstractMesh) => boolean} [filterPredicate] the predicate - which meshes should be included when calculating the world size
+         * @returns {{ min: Vector3; max: Vector3 }} min and max vectors
+         */
         public getWorldExtends(filterPredicate?: (mesh: AbstractMesh) => boolean): { min: Vector3; max: Vector3 } {
             var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
