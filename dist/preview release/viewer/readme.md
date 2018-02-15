@@ -54,3 +54,16 @@ import from 'babylonjs-viewer';
 This will enable the BabylonViewer namespace.
 
 Using webpack to package your project will use the minified js file.
+
+## TypeScript
+
+If you use the npm package, starting 3.2.0-alpha8 the babylon viewer has a module declaration file that also includes the BABYLON namespace.
+
+Using TypeScript and NPM you could do the following:
+
+```javascript
+import from 'babylonjs-viewer';
+
+// both namespaces are now available
+console.log(BabylonViewer, BABYLON)
+```

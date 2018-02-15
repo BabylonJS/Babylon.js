@@ -1,4 +1,4 @@
-/// <reference path="./babylonjsd.ts"/>
+/// <reference path="./babylon.d.ts"/>
 
 declare module "babylonjs-viewer" {
     export = BabylonViewer;
@@ -60,7 +60,7 @@ declare module BabylonViewer {
         selector: string;
         payload?: any;
     }
-    class TemplateManager {
+    interface TemplateManager {
         containerElement: HTMLElement;
         onInit: BABYLON.Observable<Template>;
         onLoaded: BABYLON.Observable<Template>;
@@ -79,7 +79,7 @@ declare module BabylonViewer {
         private checkLoadedState();
     }
 
-    class Template {
+    interface Template {
         name: string;
         private _configuration;
         onInit: BABYLON.Observable<Template>;
@@ -102,7 +102,7 @@ declare module BabylonViewer {
         private registerEvents();
     }
 
-    class ViewerManager {
+    interface ViewerManager {
         private viewers;
         onViewerAdded: (viewer: AbstractViewer) => void;
         onViewerAddedObservable: BABYLON.Observable<AbstractViewer>;
@@ -123,7 +123,7 @@ declare module BabylonViewer {
 
     export function InitTags(selector?: string): void;
 
-    class EventManager {
+    interface EventManager {
         private templateManager;
         private callbacksContainer;
         constructor(templateManager: TemplateManager);
@@ -132,14 +132,14 @@ declare module BabylonViewer {
         private eventTriggered(data);
     }
 
-    class PromiseObservable<T> extends BABYLON.Observable<T> {
+    interface PromiseObservable<T> extends BABYLON.Observable<T> {
         notifyWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any): Promise<any>;
     }
 
     export interface IMapper {
         map(rawSource: any): ViewerConfiguration;
     }
-    class MapperManager {
+    interface MapperManager {
         private mappers;
         static DefaultMapper: string;
         constructor();
@@ -148,7 +148,7 @@ declare module BabylonViewer {
     }
     export let mapperManager: MapperManager;
 
-    class ConfigurationLoader {
+    interface ConfigurationLoader {
         private configurationCache;
         constructor();
         loadConfiguration(initConfig?: ViewerConfiguration): Promise<ViewerConfiguration>;
