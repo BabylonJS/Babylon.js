@@ -18,7 +18,7 @@
       "sceneFolder": "/Scenes/Espilit/",
       "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
-    },
+    },    
     {
       "title": "The car",
       "sceneFolder": "/Scenes/TheCar/",
@@ -248,6 +248,11 @@
       "functionToCall": "createScene",
       "referenceImage": "gltf1CesiumMan.png",
       "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "GLTF Buggy with Draco Mesh Compression",
+      "playgroundId": "#JNW207#1",
+      "referenceImage": "gltfBuggyDraco.png"
     },
     {
       "title": "Asset Containers",

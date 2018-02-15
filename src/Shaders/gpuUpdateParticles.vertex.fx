@@ -105,13 +105,13 @@ void main() {
     float randY = cos(theta);
     float randZ = sin(phi) * sin(theta);
 
-    position = radius * vec3(randX, randY, randZ);
+    position = (radius * randoms2.z) * vec3(randX, randY, randZ);
 
     #ifdef DIRECTEDSPHEREEMITTER
       direction = direction1 + (direction2 - direction1) * randoms3;
     #else
-        // Direction
-        direction = position + directionRandomizer * randoms3;
+      // Direction
+      direction = position + directionRandomizer * randoms3;
     #endif
 #elif defined(CONEEMITTER)
     vec3 randoms2 = getRandomVec3(generalRandoms.y);
@@ -132,10 +132,10 @@ void main() {
 
     // Direction
     if (angle == 0.) {
-      direction = vec3(0., 1.0, 0.);
+        direction = vec3(0., 1.0, 0.);
     } else {
-      vec3 randoms3 = getRandomVec3(generalRandoms.z);
-      direction = position + directionRandomizer * randoms3;
+        vec3 randoms3 = getRandomVec3(generalRandoms.z);
+        direction = position + directionRandomizer * randoms3;
     }
 #else    
     // Create the particle at origin
@@ -148,7 +148,7 @@ void main() {
     float power = emitPower.x + (emitPower.y - emitPower.x) * randoms.a;
 
     outPosition = (emitterWM * vec4(position, 1.)).xyz;
-    outDirection = (emitterWM * vec4(normalize(direction) * power, 0.)).xyz;
+    outDirection = (emitterWM * vec4(direction * power, 0.)).xyz;
 
   } else {   
     outPosition = position + (direction + gravity) * timeDelta;

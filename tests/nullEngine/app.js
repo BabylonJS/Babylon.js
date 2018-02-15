@@ -129,16 +129,29 @@ var engine = new BABYLON.NullEngine();
 //     scene.render();
 // })
 
-new BABYLON.Scene(engine).dispose()
+// new BABYLON.Scene(engine).dispose()
 
-BABYLON.SceneLoader.Load("https://playground.babylonjs.com/scenes/", "skull.babylon", engine, (scene) => {
-    console.log('scene loaded!');
-    for (var index = 0; index < scene.meshes.length; index++) {
-        console.log(scene.meshes[index].name);
-    } 
-    engine.dispose();   
-   // engine.runRenderLoop(function() {
-     //   scene.render();
-    //});
+// BABYLON.SceneLoader.Load("https://playground.babylonjs.com/scenes/", "skull.babylon", engine, (scene) => {
+//     console.log('scene loaded!');
+//     for (var index = 0; index < scene.meshes.length; index++) {
+//         console.log(scene.meshes[index].name);
+//     } 
+//     engine.dispose();   
+//    // engine.runRenderLoop(function() {
+//      //   scene.render();
+//     //});
   
-  }, progress => {}, (scene, err) => console.error('error:', err));
+//   }, progress => {}, (scene, err) => console.error('error:', err));
+var scene = new BABYLON.Scene(engine);
+var camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 0, BABYLON.Vector3.Zero(), scene);
+scene.render();
+var pos = BABYLON.Vector3.Project(
+              new BABYLON.Vector3(0.5, 0.5, 0.5),
+              BABYLON.Matrix.Identity(),
+              scene.getTransformMatrix(),
+              scene.activeCamera.viewport.toGlobal(
+              engine.getRenderWidth(),
+              engine.getRenderHeight()
+            ));;
+
+            console.log(pos);
