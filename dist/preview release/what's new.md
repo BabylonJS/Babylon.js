@@ -71,7 +71,7 @@
 - Add isThumbClamped option on GUI slider control ([JeanPhilippeKernel](https://github.com/JeanPhilippeKernel))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
-- (Viewer) Declaration file published. ([RaananW](https://github.com/RaananW))
+- (Viewer) Declaration file published, ready for npm. ([RaananW](https://github.com/RaananW))
 - Added Draco mesh compression support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes

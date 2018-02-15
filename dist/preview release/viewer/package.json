@@ -12,7 +12,9 @@
     "main": "babylon.viewer.js",
     "files": [
         "babylon.viewer.js",
+        "babylon.viewer.d.ts",
         "babylon.viewer.module.d.ts",
+        "babylon.d.ts",
         "readme.md",
         "package.json"
     ],
