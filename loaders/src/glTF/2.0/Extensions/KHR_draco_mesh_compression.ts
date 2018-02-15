@@ -1,7 +1,7 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/KhronosGroup/glTF/pull/874
+    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
 
     const NAME = "KHR_draco_mesh_compression";
 
