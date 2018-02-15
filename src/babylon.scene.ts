@@ -3970,6 +3970,11 @@
             }
         }
 
+        /**
+         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
+         * @param camera The camera to create the depth renderer on (default: scene's active camera)
+         * @returns the created depth renderer
+         */
         public enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer {
             camera = camera || this.activeCamera;
             if(!camera){
@@ -3982,8 +3987,13 @@
             return this._depthRenderer[camera.id];
         }
 
-        public disableDepthRenderer(camera: Camera): void {
-            if (!this._depthRenderer[camera.id]) {
+        /**
+         * Disables a depth renderer for a given camera
+         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
+         */
+        public disableDepthRenderer(camera?: Nullable<Camera>): void {
+            camera = camera || this.activeCamera;
+            if (!camera || !this._depthRenderer[camera.id]) {
                 return;
             }
 
