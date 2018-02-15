@@ -746,12 +746,23 @@ export abstract class AbstractViewer {
         return Promise.resolve(this.scene);
     }
 
+    private isLoading: boolean;
+    private nextLoading: Function;
+
     public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
         // no model was provided? Do nothing!
         let modelUrl = (typeof model === 'string') ? model : model.url;
         if (!modelUrl) {
             return Promise.resolve(this.scene);
         }
+        if (this.isLoading) {
+            //another model is being model. Wait for it to finish, trigger the load afterwards
+            this.nextLoading = () => {
+                this.loadModel(model, clearScene);
+            }
+            return Promise.resolve(this.scene);
+        }
+        this.isLoading = true;
         if ((typeof model === 'string')) {
             if (this.configuration.model && typeof this.configuration.model === 'object') {
                 this.configuration.model.url = model;
@@ -809,6 +820,10 @@ export abstract class AbstractViewer {
                     }
                     return this.initEnvironment(meshes);
                 }).then(() => {
+                    this.isLoading = false;
+                    if (this.nextLoading) {
+                        return this.nextLoading();
+                    }
                     return this.scene;
                 });
         });
