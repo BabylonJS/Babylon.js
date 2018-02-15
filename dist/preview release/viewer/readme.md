@@ -1,5 +1,4 @@
-Babylon.js Viewer
-=====================
+# Babylon.js Viewer
 
 Babylon's viewer is a wrapper around Babylon, that automatically initializes the needed components in order to display a loaded model. It is easy to use, and require no coding at all.
 
@@ -9,9 +8,9 @@ for basic and advanced usage instructions please read the doc at https://doc.bab
 
 The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/Viewer
 
-# Basic usage
+## Basic usage
 
-to create a simple viewer add the following code to your HTML>
+to create a simple viewer add the following code to your HTML:
 
 ```HTML
 <babylon model="https://playground.babylonjs.com/scenes/Rabbit.babylon"></babylon>
@@ -29,25 +28,25 @@ babylon {
 }
 ```
 
-# Installation instructions
+## Installation instructions
 
-## CDN
+### CDN
 
 Compiled js files (minified) are offered on our public CDN here:
 
-* https://viewer.babylonjs.com/serializers/viewer.min.js
+* https://viewer.babylonjs.com/viewer.js
 
-## NPM
+### Using NPM
 
 To install using npm :
 
-```
+```javascript
 npm install --save babylonjs-viewer
 ```
 
 Afterwards it can be imported to the project using:
 
-```
+```javascript
 import from 'babylonjs-viewer';
 ```
 
