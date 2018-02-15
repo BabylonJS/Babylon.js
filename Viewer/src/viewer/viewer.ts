@@ -421,7 +421,9 @@ export abstract class AbstractViewer {
             }
         };
 
-        const sceneExtends = this.scene.getWorldExtends();
+        const sceneExtends = this.scene.getWorldExtends((mesh) => {
+            return !this.environmentHelper || (mesh !== this.environmentHelper.ground && mesh !== this.environmentHelper.rootMesh && mesh !== this.environmentHelper.skybox);
+        });
         const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
         const sceneDiagonalLenght = sceneDiagonal.length();
         if (isFinite(sceneDiagonalLenght))

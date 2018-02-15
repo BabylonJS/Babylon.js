@@ -4233,7 +4233,7 @@
         public getWorldExtends(filterPredicate?: (mesh: AbstractMesh) => boolean): { min: Vector3; max: Vector3 } {
             var min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
             var max = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
-            filterPredicate = filterPredicate || (() => false);
+            filterPredicate = filterPredicate || (() => true);
             this.meshes.filter(filterPredicate).forEach(mesh => {
                 mesh.computeWorldMatrix(true);
 
