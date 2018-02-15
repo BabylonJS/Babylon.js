@@ -1231,7 +1231,7 @@
          * @param pickResult pickingInfo of the object wished to simulate pointer event on
          * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
          */
-        public simulatePointerMove(pickResult: PickingInfo, pointerEventInit: PointerEventInit | undefined): Scene {
+        public simulatePointerMove(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointermove", pointerEventInit);
             return this._processPointerMove(pickResult, evt);
         }
@@ -1298,7 +1298,7 @@
          * @param pickResult pickingInfo of the object wished to simulate pointer event on
          * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
          */
-        public simulatePointerDown(pickResult: PickingInfo, pointerEventInit: PointerEventInit | undefined): Scene {
+        public simulatePointerDown(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerdown", pointerEventInit);
 
             return this._processPointerDown(pickResult, evt);
@@ -1365,7 +1365,7 @@
          * @param pickResult pickingInfo of the object wished to simulate pointer event on
          * @param pointerEventInit pointer event state to be used when simulating the pointer event (eg. pointer id for multitouch)
          */
-        public simulatePointerUp(pickResult: PickingInfo, pointerEventInit: PointerEventInit | undefined): Scene {
+        public simulatePointerUp(pickResult: PickingInfo, pointerEventInit?: PointerEventInit): Scene {
             let evt = new PointerEvent("pointerup", pointerEventInit);
             let clickInfo = new ClickInfo();
             clickInfo.singleClick = true;
