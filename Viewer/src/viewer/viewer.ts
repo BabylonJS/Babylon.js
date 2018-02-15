@@ -746,11 +746,22 @@ export abstract class AbstractViewer {
 
     public loadModel(model: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
         // no model was provided? Do nothing!
-        if (!model.url) {
+        let modelUrl = (typeof model === 'string') ? model : model.url;
+        if (!modelUrl) {
             return Promise.resolve(this.scene);
         }
-        this.configuration.model = model;
-        let modelUrl = (typeof model === 'string') ? model : model.url;
+        if ((typeof model === 'string')) {
+            if (this.configuration.model && typeof this.configuration.model === 'object') {
+                this.configuration.model.url = model;
+            }
+        } else {
+            if (this.configuration.model) {
+                deepmerge(this.configuration.model, model)
+            } else {
+                this.configuration.model = model;
+            }
+        }
+
         let parts = modelUrl.split('/');
         let filename = parts.pop();
         let base = parts.join('/') + '/';
@@ -761,13 +772,18 @@ export abstract class AbstractViewer {
 
             if (clearScene) {
                 scene.meshes.forEach(mesh => {
-                    mesh.dispose();
+                    if (Tags.MatchesQuery(mesh, "viewerMesh")) {
+                        mesh.dispose();
+                    }
                 });
             }
             return scene!;
         }).then(() => {
             return new Promise<Array<AbstractMesh>>((resolve, reject) => {
                 this.lastUsedLoader = SceneLoader.ImportMesh(undefined, base, filename, this.scene, (meshes) => {
+                    meshes.forEach(mesh => {
+                        Tags.AddTagsTo(mesh, "viewerMesh");
+                    });
                     resolve(meshes);
                 }, (progressEvent) => {
                     this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
@@ -783,7 +799,7 @@ export abstract class AbstractViewer {
             return this.onModelLoadedObservable.notifyObserversWithPromise(meshes)
                 .then(() => {
                     // update the models' configuration
-                    this.configureModel(model, meshes);
+                    this.configureModel(this.configuration.model || model, meshes);
                     this.configureLights(this.configuration.lights);
 
                     if (this.configuration.camera) {
@@ -796,7 +812,7 @@ export abstract class AbstractViewer {
         });
     }
 
-    protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
+    protected initEnvironment(focusMeshes: Array<AbstractMesh> = this.scene.meshes): Promise<Scene> {
         this.configureEnvironment(this.configuration.skybox, this.configuration.ground);
 
         return Promise.resolve(this.scene);
