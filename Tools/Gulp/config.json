@@ -1675,7 +1675,8 @@
                 "output": "babylon.viewer.js",
                 "webpack": "../../Viewer/webpack.gulp.config.js",
                 "bundle": "true",
-                "moduleDeclaration": "BabylonViewer"
+                "moduleDeclaration": "BabylonViewer",
+                "babylonIncluded": true
             }
         ],
         "build": {
@@ -1689,7 +1690,8 @@
                         },
                         {
                             "filename": "babylon.viewer.js",
-                            "outputDirectory": "/viewer/"
+                            "outputDirectory": "/viewer/",
+                            "addBabylonDeclaration": true
                         }
                     ],
                     "minified": true

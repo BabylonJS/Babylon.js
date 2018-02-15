@@ -1,4 +1,8 @@
-/// <reference types="babylonjs"/>
+/// <reference path="./babylonjsd.ts"/>
+
+declare module "babylonjs-viewer" {
+    export = BabylonViewer;
+}
 
 declare module BabylonViewer {
 
