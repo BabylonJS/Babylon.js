@@ -934,7 +934,7 @@
 
         private _debugLayer: DebugLayer;
 
-        private _depthRenderer: Nullable<DepthRenderer>;
+        private _depthRenderer: {[id:string]:DepthRenderer} = {};
         private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
         /**
@@ -3416,7 +3416,7 @@
                 this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
             }
 
-            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {                
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
@@ -3574,7 +3574,7 @@
             }
 
             this.activeCamera = camera;
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());           
         }
 
         private _checkIntersections(): void {
@@ -3782,8 +3782,8 @@
             }
 
             // Depth renderer
-            if (this._depthRenderer) {
-                this._renderTargets.push(this._depthRenderer.getDepthMap());
+            for(var key in this._depthRenderer){
+                this._renderTargets.push(this._depthRenderer[key].getDepthMap());
             }
 
             // Geometry renderer
@@ -3970,23 +3970,35 @@
             }
         }
 
-        public enableDepthRenderer(): DepthRenderer {
-            if (this._depthRenderer) {
-                return this._depthRenderer;
+        /**
+         * Creates a depth renderer a given camera which contains a depth map which can be used for post processing.
+         * @param camera The camera to create the depth renderer on (default: scene's active camera)
+         * @returns the created depth renderer
+         */
+        public enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer {
+            camera = camera || this.activeCamera;
+            if(!camera){
+                throw "No camera available to enable depth renderer";
             }
+            if (!this._depthRenderer[camera.id]) {
+                this._depthRenderer[camera.id] = new DepthRenderer(this, Engine.TEXTURETYPE_FLOAT, camera);
+            }            
 
-            this._depthRenderer = new DepthRenderer(this);
-
-            return this._depthRenderer;
+            return this._depthRenderer[camera.id];
         }
 
-        public disableDepthRenderer(): void {
-            if (!this._depthRenderer) {
+        /**
+         * Disables a depth renderer for a given camera
+         * @param camera The camera to disable the depth renderer on (default: scene's active camera)
+         */
+        public disableDepthRenderer(camera?: Nullable<Camera>): void {
+            camera = camera || this.activeCamera;
+            if (!camera || !this._depthRenderer[camera.id]) {
                 return;
             }
 
-            this._depthRenderer.dispose();
-            this._depthRenderer = null;
+            this._depthRenderer[camera.id].dispose();
+            delete this._depthRenderer[camera.id];
         }
 
         public enableGeometryBufferRenderer(ratio: number = 1): Nullable<GeometryBufferRenderer> {
@@ -4036,8 +4048,8 @@
 
             this.resetCachedMaterial();
 
-            if (this._depthRenderer) {
-                this._depthRenderer.dispose();
+            for(var key in this._depthRenderer){
+                this._depthRenderer[key].dispose();
             }
 
             if (this._gamepadManager) {

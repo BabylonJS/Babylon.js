@@ -8873,61 +8873,6 @@
         }
       }
     },
-    "DepthRenderer": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new DepthRenderer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "type": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Method": {
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getDepthMap": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isReady": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useInstances": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "DisplayPassPostProcess": {
       "Class": {
         "Comments": {
