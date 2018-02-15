@@ -4,6 +4,8 @@
 #extension GL_OES_standard_derivatives : enable
 #endif
 
+#define CUSTOM_FRAGMENT_BEGIN
+
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
 #endif
@@ -152,14 +154,23 @@ varying vec3 vDirectionW;
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
+
+
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
 	vec3 diffuseColor = vDiffuseColor.rgb;
+	
+	
 
 	// Alpha
 	float alpha = vDiffuseColor.a;
@@ -188,9 +199,13 @@ void main(void) {
 	#ifdef ALPHAFROMDIFFUSE
 		alpha *= baseColor.a;
 	#endif
+	
+	#define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
+
+
 
 #include<depthPrePass>
 
@@ -198,12 +213,16 @@ void main(void) {
 	baseColor.rgb *= vColor.rgb;
 #endif
 
+#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE
+
 	// Ambient color
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
 
 #ifdef AMBIENT
 	baseAmbientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
 #endif
+
+#define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
 	// Specular map
 #ifdef SPECULARTERM
@@ -398,6 +417,8 @@ void main(void) {
     #endif
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FOG
+
 #include<logDepthFragment>
 #include<fogFragment>
 
@@ -417,5 +438,6 @@ void main(void) {
 	color.rgb *= color.a;
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 	gl_FragColor = color;
 }
