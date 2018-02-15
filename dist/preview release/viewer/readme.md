@@ -14,7 +14,7 @@ to create a simple viewer add the following code to your HTML:
 
 ```HTML
 <babylon model="https://playground.babylonjs.com/scenes/Rabbit.babylon"></babylon>
-<script src="https://viewer.babylonjs.com/viewer.min.js"></script>
+<script src="https://viewer.babylonjs.com/viewer.js"></script>
 ```
 
 Make sure to size the babylon HTML tag. For example:
@@ -32,9 +32,10 @@ babylon {
 
 ### CDN
 
-Compiled js files (minified) are offered on our public CDN here:
+Compiled js files are offered on our public CDN here:
 
-* https://viewer.babylonjs.com/viewer.js
+* https://viewer.babylonjs.com/viewer.js (minified)
+* https://viewer.babylonjs.com/viewer.max.js
 
 ### Using NPM
 
