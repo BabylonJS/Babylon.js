@@ -434,7 +434,7 @@ var buildExternalLibrary = function (library, settings, watch) {
             let wpBuild = webpack(require(library.webpack));
             if (settings.build.outputs) {
                 let build = wpBuild
-                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true));
+                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true, library.babylonIncluded));
 
                 let unminifiedOutpus = [];
                 let minifiedOutputs = [];
@@ -455,6 +455,12 @@ var buildExternalLibrary = function (library, settings, watch) {
                     build = build
                         .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
                         .pipe(gulp.dest(outputDirectory));
+
+                    if (library.babylonIncluded && dest.addBabylonDeclaration) {
+                        // include the babylon declaration
+                        sequence.unshift(gulp.src(config.build.outputDirectory + '/' + config.build.declarationFilename)
+                            .pipe(gulp.dest(outputDirectory)))
+                    }
                 }
 
                 unminifiedOutpus.forEach(dest => {
@@ -472,6 +478,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                 });
 
                 sequence.push(build);
+
             } else {
                 sequence.push(
                     wpBuild

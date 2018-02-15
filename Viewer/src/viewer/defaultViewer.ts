@@ -103,8 +103,8 @@ export class DefaultViewer extends AbstractViewer {
         this.containerElement.style.display = 'flex';
     }
 
-    protected configureModel(modelConfiguration: Partial<IModelConfiguration>) {
-        super.configureModel(modelConfiguration);
+    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        super.configureModel(modelConfiguration, focusMeshes);
 
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
