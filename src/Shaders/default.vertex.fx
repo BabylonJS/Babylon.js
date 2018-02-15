@@ -1,5 +1,8 @@
 ﻿#include<__decl__defaultVertex>
 // Attributes
+
+#define CUSTOM_VERTEX_BEGIN
+
 attribute vec3 position;
 #ifdef NORMAL
 attribute vec3 normal;
@@ -89,8 +92,12 @@ varying vec3 vDirectionW;
 #endif
 
 #include<logDepthDeclaration>
+#define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
+	
+	#define CUSTOM_VERTEX_MAIN_BEGIN
+	
 	vec3 positionUpdated = position;
 #ifdef NORMAL	
 	vec3 normalUpdated = normal;
@@ -104,6 +111,10 @@ void main(void) {
 #ifdef REFLECTIONMAP_SKYBOX
 	vPositionUVW = positionUpdated;
 #endif 
+
+#define CUSTOM_VERTEX_UPDATE_POSITION
+
+#define CUSTOM_VERTEX_UPDATE_NORMAL
 
 #include<instancesVertex>
 #include<bonesVertex>
@@ -232,5 +243,7 @@ void main(void) {
 
 #include<pointCloudVertex>
 #include<logDepthVertex>
+
+#define CUSTOM_VERTEX_MAIN_END
 
 }
