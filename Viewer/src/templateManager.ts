@@ -303,8 +303,12 @@ export class Template {
         });
     }
 
+    private isShowing: boolean;
+    private isHiding: boolean;
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        if (this.isHiding) return Promise.resolve(this);
         return Promise.resolve().then(() => {
+            this.isShowing = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -314,13 +318,16 @@ export class Template {
             }
         }).then(() => {
             this.isShown = true;
+            this.isShowing = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
     }
 
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        if (this.isShowing) return Promise.resolve(this);
         return Promise.resolve().then(() => {
+            this.isHiding = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -330,6 +337,7 @@ export class Template {
             }
         }).then(() => {
             this.isShown = false;
+            this.isHiding = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
