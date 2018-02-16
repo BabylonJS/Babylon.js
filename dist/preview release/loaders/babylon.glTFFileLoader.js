@@ -3988,6 +3988,9 @@ var BABYLON;
                 delete this._gltf;
                 delete this._babylonScene;
                 this._completePromises.length = 0;
+                for (var name_3 in this._extensions) {
+                    this._extensions[name_3].dispose();
+                }
                 this._extensions = {};
                 delete this._rootBabylonMesh;
                 delete this._progressCallback;
@@ -3997,8 +4000,8 @@ var BABYLON;
             };
             GLTFLoader.prototype._applyExtensions = function (actionAsync) {
                 for (var _i = 0, _a = GLTFLoader._Names; _i < _a.length; _i++) {
-                    var name_3 = _a[_i];
-                    var extension = this._extensions[name_3];
+                    var name_4 = _a[_i];
+                    var extension = this._extensions[name_4];
                     if (extension.enabled) {
                         var promise = actionAsync(extension);
                         if (promise) {
@@ -4029,6 +4032,9 @@ var BABYLON;
                 this.enabled = true;
                 this._loader = loader;
             }
+            GLTFLoaderExtension.prototype.dispose = function () {
+                delete this._loader;
+            };
             // #region Overridable Methods
             /** Override this method to modify the default behavior for loading scenes. */
             GLTFLoaderExtension.prototype._loadSceneAsync = function (context, node) { return null; };
@@ -4256,15 +4262,26 @@ var BABYLON;
     (function (GLTF2) {
         var Extensions;
         (function (Extensions) {
-            // https://github.com/KhronosGroup/glTF/pull/874
+            // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
             var NAME = "KHR_draco_mesh_compression";
             var KHR_draco_mesh_compression = /** @class */ (function (_super) {
                 __extends(KHR_draco_mesh_compression, _super);
-                function KHR_draco_mesh_compression() {
-                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                function KHR_draco_mesh_compression(loader) {
+                    var _this = _super.call(this, loader) || this;
                     _this.name = NAME;
+                    _this._dracoCompression = null;
+                    // Disable extension if decoder is not available.
+                    if (!BABYLON.DracoCompression.DecoderUrl) {
+                        _this.enabled = false;
+                    }
                     return _this;
                 }
+                KHR_draco_mesh_compression.prototype.dispose = function () {
+                    if (this._dracoCompression) {
+                        this._dracoCompression.dispose();
+                    }
+                    _super.prototype.dispose.call(this);
+                };
                 KHR_draco_mesh_compression.prototype._loadVertexDataAsync = function (context, primitive, babylonMesh) {
                     var _this = this;
                     return this._loadExtensionAsync(context, primitive, function (extensionContext, extension) {
@@ -4301,7 +4318,10 @@ var BABYLON;
                         var bufferView = GLTF2.GLTFLoader._GetProperty(extensionContext, _this._loader._gltf.bufferViews, extension.bufferView);
                         return _this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(function (data) {
                             try {
-                                return BABYLON.DracoCompression.Decode(data, attributes);
+                                if (!_this._dracoCompression) {
+                                    _this._dracoCompression = new BABYLON.DracoCompression();
+                                }
+                                return _this._dracoCompression.decodeMeshAsync(data, attributes);
                             }
                             catch (e) {
                                 throw new Error(context + ": " + e.message);
@@ -4312,9 +4332,7 @@ var BABYLON;
                 return KHR_draco_mesh_compression;
             }(GLTF2.GLTFLoaderExtension));
             Extensions.KHR_draco_mesh_compression = KHR_draco_mesh_compression;
-            if (BABYLON.DracoCompression.IsSupported) {
-                GLTF2.GLTFLoader._Register(NAME, function (loader) { return new KHR_draco_mesh_compression(loader); });
-            }
+            GLTF2.GLTFLoader._Register(NAME, function (loader) { return new KHR_draco_mesh_compression(loader); });
         })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));

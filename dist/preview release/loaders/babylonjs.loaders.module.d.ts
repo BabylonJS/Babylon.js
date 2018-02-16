@@ -1016,11 +1016,12 @@ declare module BABYLON.GLTF2 {
 
 
 declare module BABYLON.GLTF2 {
-    abstract class GLTFLoaderExtension implements IGLTFLoaderExtension {
+    abstract class GLTFLoaderExtension implements IGLTFLoaderExtension, IDisposable {
         enabled: boolean;
         readonly abstract name: string;
         protected _loader: GLTFLoader;
         constructor(loader: GLTFLoader);
+        dispose(): void;
         /** Override this method to modify the default behavior for loading scenes. */
         protected _loadSceneAsync(context: string, node: ILoaderScene): Nullable<Promise<void>>;
         /** Override this method to modify the default behavior for loading nodes. */
@@ -1072,6 +1073,9 @@ declare module BABYLON.GLTF2.Extensions {
 declare module BABYLON.GLTF2.Extensions {
     class KHR_draco_mesh_compression extends GLTFLoaderExtension {
         readonly name: string;
+        private _dracoCompression;
+        constructor(loader: GLTFLoader);
+        dispose(): void;
         protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>>;
     }
 }
