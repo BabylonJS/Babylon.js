@@ -14,6 +14,7 @@
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
+- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
@@ -42,7 +43,6 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - (Viewer) initScene and initEngine can now be extended. onProgress during model loading is implemented as observable. ([RaananW](https://github.com/RaananW))
 - glTF loader now supports the KHR_lights extension ([MiiBond](https://github.com/MiiBond))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
 - The observable can now notify observers using promise-based callback chain. ([RaananW](https://github.com/RaananW))
 - Added base64 helper functions to `Tools` ([bghgary](https://github.com/bghgary))
 - Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))
