@@ -1,7 +1,7 @@
 {
-  "errors": 7241,
+  "errors": 7238,
   "babylon.typedoc.json": {
-    "errors": 7241,
+    "errors": 7238,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -28539,37 +28539,16 @@
         "simulatePointerDown": {
           "Comments": {
             "MissingReturn": true
-          },
-          "Parameter": {
-            "pickResult": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "simulatePointerMove": {
           "Comments": {
             "MissingReturn": true
-          },
-          "Parameter": {
-            "pickResult": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "simulatePointerUp": {
           "Comments": {
             "MissingReturn": true
-          },
-          "Parameter": {
-            "pickResult": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "sortLightsByPriority": {
