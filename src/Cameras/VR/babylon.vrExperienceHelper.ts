@@ -486,6 +486,11 @@ module BABYLON {
             }
             this._defaultHeight = webVROptions.defaultHeight;
 
+            if(webVROptions.positionScale){
+                this._rayLength *= webVROptions.positionScale;
+                this._defaultHeight *= webVROptions.positionScale;
+            }
+
             // Set position
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
@@ -973,6 +978,7 @@ module BABYLON {
                 this._teleportationInitialized = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._createTeleportationCircles();
+                    this._teleportationTarget.scaling.scaleInPlace(this._webVRCamera.deviceScaleFactor);
                 }
             }
         }
@@ -1429,7 +1435,7 @@ module BABYLON {
             }
             // Add height to account for user's height offset
             if (this.isInVRMode) {
-                this._workingVector.y += this.webVRCamera.deviceDistanceToRoomGround();
+                this._workingVector.y += this.webVRCamera.deviceDistanceToRoomGround() * this._webVRCamera.deviceScaleFactor;
             } else {
                 this._workingVector.y += this._defaultHeight;
             }
