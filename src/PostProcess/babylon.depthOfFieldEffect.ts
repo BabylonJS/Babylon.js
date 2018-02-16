@@ -66,15 +66,13 @@ module BABYLON {
         /**
          * Creates a new instance of @see DepthOfFieldEffect
          * @param scene The scene the effect belongs to.
-         * @param cameraMinZ The minZ value of the camera corrisponding to the the depth map
-         * @param cameraMaxZ The maxZ value of the camera corrisponding to the the depth map
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
-        constructor(scene: Scene, cameraMinZ:number, cameraMaxZ:number, depthTexture: RenderTargetTexture, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
+        constructor(scene: Scene, depthTexture: RenderTargetTexture, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
             super(scene.getEngine(), "depth of field", ()=>{
                 // Circle of confusion value for each pixel is used to determine how much to blur that pixel
-                this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", cameraMinZ, cameraMaxZ, depthTexture, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+                this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthTexture, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
                 // Capture circle of confusion texture
                 this._depthOfFieldPass = new PassPostProcess("depthOfFieldPass", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
                 this._depthOfFieldPass.autoClear = false;
