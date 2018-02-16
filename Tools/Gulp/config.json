@@ -186,6 +186,7 @@
                 "../../src/Tools/babylon.smartArray.js",
                 "../../src/Tools/babylon.tools.js",
                 "../../src/Tools/babylon.promise.js",
+                "../../src/Tools/babylon.workerPool.js",
                 "../../src/States/babylon.alphaCullingState.js",
                 "../../src/States/babylon.depthCullingState.js",
                 "../../src/States/babylon.stencilState.js",
@@ -289,7 +290,7 @@
         },
         "gpuParticles": {
             "files": [
-                "../../src/Particles/babylon.gpuParticleSystem.js"          
+                "../../src/Particles/babylon.gpuParticleSystem.js"
             ],
             "dependUpon": [
                 "core",
@@ -430,8 +431,7 @@
                 "additionalMeshes"
             ]
         },
-        "meshCompression" :
-        {
+        "meshCompression": {
             "files": [
                 "../../src/Mesh/Compression/babylon.dracoCompression.js"
             ]
@@ -1676,7 +1676,8 @@
                 "output": "babylon.viewer.js",
                 "webpack": "../../Viewer/webpack.gulp.config.js",
                 "bundle": "true",
-                "moduleDeclaration": "BabylonViewer"
+                "moduleDeclaration": "BabylonViewer",
+                "babylonIncluded": true
             }
         ],
         "build": {
@@ -1685,12 +1686,13 @@
                 {
                     "destination": [
                         {
-                            "filename": "viewer.min.js",
+                            "filename": "viewer.js",
                             "outputDirectory": "/../../Viewer/dist/"
                         },
                         {
                             "filename": "babylon.viewer.js",
-                            "outputDirectory": "/viewer/"
+                            "outputDirectory": "/viewer/",
+                            "addBabylonDeclaration": true
                         }
                     ],
                     "minified": true
@@ -1698,7 +1700,7 @@
                 {
                     "destination": [
                         {
-                            "filename": "viewer.js",
+                            "filename": "viewer.max.js",
                             "outputDirectory": "/../../Viewer/dist/"
                         },
                         {

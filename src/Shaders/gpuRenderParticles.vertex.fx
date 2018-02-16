@@ -16,6 +16,13 @@ in vec2 uv;
 out vec2 vUV;
 out vec4 vColor;
 
+#ifdef CLIPPLANE
+uniform vec4 vClipPlane;
+uniform mat4 invView;
+out float fClipDistance;
+#endif
+
+
 void main() {
   vUV = uv;
   float ratio = age / life;
@@ -24,4 +31,10 @@ void main() {
   // Expand position
   vec4 viewPosition = view * vec4(position, 1.0);
   gl_Position = projection * (viewPosition + vec4(offset * size, 0, 1.0));
+
+	// Clip plane
+#ifdef CLIPPLANE
+	vec4 worldPos = invView * viewPosition;
+	fClipDistance = dot(worldPos, vClipPlane);
+#endif  
 }

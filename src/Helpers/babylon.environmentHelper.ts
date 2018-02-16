@@ -476,7 +476,9 @@ module BABYLON {
                 return { groundSize, skyboxSize, rootPosition };
             }
 
-            const sceneExtends = this._scene.getWorldExtends();
+            const sceneExtends = this._scene.getWorldExtends((mesh) => {
+                return (mesh !== this._ground && mesh !== this._rootMesh && mesh !== this._skybox);
+            });
             const sceneDiagonal = sceneExtends.max.subtract(sceneExtends.min);
 
             if (this._options.sizeAuto) {
