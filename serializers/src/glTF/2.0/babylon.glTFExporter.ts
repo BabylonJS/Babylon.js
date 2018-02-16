@@ -190,7 +190,7 @@ module BABYLON.GLTF2 {
                 for (let i = vertexStart; i < end; ++i) {
                     let indexOffset = positionStrideSize * i;
 
-                    const position = new Vector3(positions[indexOffset], positions[indexOffset + 1], positions[indexOffset + 2]);
+                    const position = Vector3.FromArray(positions, indexOffset);
                     const vector = this.convertToRightHandedSystem ? _Exporter.GetRightHandedVector3(position).asArray() : position.asArray();
 
                     for (let j = 0; j < positionStrideSize; ++j) {
@@ -256,11 +256,11 @@ module BABYLON.GLTF2 {
                 let vector: number[] = [];
 
                 if (vertexBufferKind === VertexBuffer.PositionKind || vertexBufferKind === VertexBuffer.NormalKind) {
-                    const vertexData = new Vector3(meshAttributeArray[index], meshAttributeArray[index + 1], meshAttributeArray[index + 2]);
+                    const vertexData = Vector3.FromArray(meshAttributeArray, index);
                     vector = this.convertToRightHandedSystem ? _Exporter.GetRightHandedVector3(vertexData).asArray() : vertexData.asArray();
                 }
                 else if (vertexBufferKind === VertexBuffer.TangentKind || vertexBufferKind === VertexBuffer.ColorKind) {
-                    const vertexData = new Vector4(meshAttributeArray[index], meshAttributeArray[index + 1], meshAttributeArray[index + 2], meshAttributeArray[index + 3]);
+                    const vertexData = Vector4.FromArray(meshAttributeArray, index);
                     vector = (this.convertToRightHandedSystem && !(vertexBufferKind === VertexBuffer.ColorKind)) ? _Exporter.GetRightHandedVector4(vertexData).asArray() : vertexData.asArray();
                 }
                 else if (vertexBufferKind === VertexBuffer.UVKind || vertexBufferKind === VertexBuffer.UV2Kind) {
