@@ -66,7 +66,9 @@ module BABYLON {
         /**
          * Creates a new instance of @see DepthOfFieldEffect
          * @param scene The scene the effect belongs to.
-         * @param camera The camera to be used to generate the depth map/circle of confusion
+         * @param cameraMinZ The minZ value of the camera corrisponding to the the depth map
+         * @param cameraMaxZ The maxZ value of the camera corrisponding to the the depth map
+         * @param depthTexture The depth texture of the scene to compute the circle of confusion.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
         constructor(scene: Scene, cameraMinZ:number, cameraMaxZ:number, depthTexture: RenderTargetTexture, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
