@@ -13,6 +13,7 @@
 - Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
+- New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
@@ -52,7 +53,6 @@
 - SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
 - SPS particle parenting feature ([jbousquie](https://github.com/jbousquie))
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
-- AssetContainer Class and loading methods ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. Extra configuration can be loaded sync (if provided) ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
