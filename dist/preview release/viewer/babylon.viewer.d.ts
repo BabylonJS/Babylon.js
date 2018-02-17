@@ -1,5 +1,3 @@
-/// <reference path="../babylon.d.ts"/>
-
 declare module BabylonViewer {
 
     export let disableInit: boolean;
@@ -56,7 +54,7 @@ declare module BabylonViewer {
         selector: string;
         payload?: any;
     }
-    class TemplateManager {
+    interface TemplateManager {
         containerElement: HTMLElement;
         onInit: BABYLON.Observable<Template>;
         onLoaded: BABYLON.Observable<Template>;
@@ -64,20 +62,16 @@ declare module BabylonViewer {
         onAllLoaded: BABYLON.Observable<TemplateManager>;
         onEventTriggered: BABYLON.Observable<EventCallback>;
         eventManager: EventManager;
-        private templates;
         constructor(containerElement: HTMLElement);
         initTemplate(templates: {
             [key: string]: ITemplateConfiguration;
         }): void;
-        private buildHTMLTree(templates);
         getCanvas(): HTMLCanvasElement | null;
         getTemplate(name: string): Template | undefined;
-        private checkLoadedState();
     }
 
-    class Template {
+    interface Template {
         name: string;
-        private _configuration;
         onInit: BABYLON.Observable<Template>;
         onLoaded: BABYLON.Observable<Template>;
         onAppended: BABYLON.Observable<Template>;
@@ -87,7 +81,6 @@ declare module BabylonViewer {
         isShown: boolean;
         parent: HTMLElement;
         initPromise: Promise<Template>;
-        private fragment;
         constructor(name: string, _configuration: ITemplateConfiguration);
         readonly configuration: ITemplateConfiguration;
         getChildElements(): Array<string>;
@@ -95,11 +88,9 @@ declare module BabylonViewer {
         show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template>;
         hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template>;
         dispose(): void;
-        private registerEvents();
     }
 
-    class ViewerManager {
-        private viewers;
+    interface ViewerManager {
         onViewerAdded: (viewer: AbstractViewer) => void;
         onViewerAddedObservable: BABYLON.Observable<AbstractViewer>;
         constructor();
@@ -107,7 +98,6 @@ declare module BabylonViewer {
         getViewerById(id: string): AbstractViewer;
         getViewerByHTMLElement(element: HTMLElement): AbstractViewer | undefined;
         getViewerPromiseById(id: string): Promise<AbstractViewer>;
-        private _onViewerAdded(viewer);
     }
     export let viewerManager: ViewerManager;
 
@@ -119,37 +109,31 @@ declare module BabylonViewer {
 
     export function InitTags(selector?: string): void;
 
-    class EventManager {
-        private templateManager;
-        private callbacksContainer;
+    interface EventManager {
         constructor(templateManager: TemplateManager);
         registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
         unregisterCallback(templateName: string, callback?: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
-        private eventTriggered(data);
     }
 
-    class PromiseObservable<T> extends BABYLON.Observable<T> {
+    interface PromiseObservable<T> extends BABYLON.Observable<T> {
         notifyWithPromise(eventData: T, mask?: number, target?: any, currentTarget?: any): Promise<any>;
     }
 
     export interface IMapper {
         map(rawSource: any): ViewerConfiguration;
     }
-    class MapperManager {
-        private mappers;
-        static DefaultMapper: string;
+    interface MapperManager {
+        DefaultMapper: string;
         constructor();
         getMapper(type: string): IMapper;
         registerMapper(type: string, mapper: IMapper): void;
     }
     export let mapperManager: MapperManager;
 
-    class ConfigurationLoader {
-        private configurationCache;
+    interface ConfigurationLoader {
         constructor();
         loadConfiguration(initConfig?: ViewerConfiguration): Promise<ViewerConfiguration>;
         getConfigurationType(type: string): void;
-        private loadFile(url);
     }
     export let configurationLoader: ConfigurationLoader;
 

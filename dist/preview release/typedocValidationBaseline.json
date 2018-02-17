@@ -1,7 +1,7 @@
 {
-  "errors": 7253,
+  "errors": 7238,
   "babylon.typedoc.json": {
-    "errors": 7253,
+    "errors": 7238,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -8869,61 +8869,6 @@
         "PassPostProcessId": {
           "Naming": {
             "NotCamelCase": true
-          }
-        }
-      }
-    },
-    "DepthRenderer": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new DepthRenderer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "type": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Method": {
-        "dispose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "getDepthMap": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "isReady": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "subMesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "useInstances": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -27690,11 +27635,6 @@
             "MissingText": true
           }
         },
-        "disableDepthRenderer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "disableGeometryBufferRenderer": {
           "Comments": {
             "MissingText": true
@@ -27711,11 +27651,6 @@
           }
         },
         "disposeSounds": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "enableDepthRenderer": {
           "Comments": {
             "MissingText": true
           }
@@ -28271,11 +28206,6 @@
             "MissingText": true
           }
         },
-        "getWorldExtends": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "incrementRenderId": {
           "Comments": {
             "MissingText": true
@@ -28609,37 +28539,16 @@
         "simulatePointerDown": {
           "Comments": {
             "MissingReturn": true
-          },
-          "Parameter": {
-            "pickResult": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "simulatePointerMove": {
           "Comments": {
             "MissingReturn": true
-          },
-          "Parameter": {
-            "pickResult": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "simulatePointerUp": {
           "Comments": {
             "MissingReturn": true
-          },
-          "Parameter": {
-            "pickResult": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "sortLightsByPriority": {

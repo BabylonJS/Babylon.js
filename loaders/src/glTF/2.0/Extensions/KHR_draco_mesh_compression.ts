@@ -1,7 +1,7 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/KhronosGroup/glTF/pull/874
+    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
 
     const NAME = "KHR_draco_mesh_compression";
 
@@ -12,6 +12,25 @@ module BABYLON.GLTF2.Extensions {
 
     export class KHR_draco_mesh_compression extends GLTFLoaderExtension {
         public readonly name = NAME;
+
+        private _dracoCompression: Nullable<DracoCompression> = null;
+
+        constructor(loader: GLTFLoader) {
+            super(loader);
+
+            // Disable extension if decoder is not available.
+            if (!DracoCompression.DecoderUrl) {
+                this.enabled = false;
+            }
+        }
+
+        public dispose(): void {
+            if (this._dracoCompression) {
+                this._dracoCompression.dispose();
+            }
+
+            super.dispose();
+        }
 
         protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> {
             return this._loadExtensionAsync<IKHRDracoMeshCompression, VertexData>(context, primitive, (extensionContext, extension) => {
@@ -54,7 +73,11 @@ module BABYLON.GLTF2.Extensions {
                 var bufferView = GLTFLoader._GetProperty(extensionContext, this._loader._gltf.bufferViews, extension.bufferView);
                 return this._loader._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(data => {
                     try {
-                        return DracoCompression.Decode(data, attributes);
+                        if (!this._dracoCompression) {
+                            this._dracoCompression = new DracoCompression();
+                        }
+
+                        return this._dracoCompression.decodeMeshAsync(data, attributes);
                     }
                     catch (e) {
                         throw new Error(`${context}: ${e.message}`);
@@ -64,7 +87,5 @@ module BABYLON.GLTF2.Extensions {
         }
     }
 
-    if (DracoCompression.IsSupported) {
-        GLTFLoader._Register(NAME, loader => new KHR_draco_mesh_compression(loader));
-    }
+    GLTFLoader._Register(NAME, loader => new KHR_draco_mesh_compression(loader));
 }

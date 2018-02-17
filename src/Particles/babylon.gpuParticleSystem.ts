@@ -2,7 +2,7 @@
     /**
      * This represents a GPU particle system in Babylon
      * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
-     * @see https://www.babylonjs-playground.com/#PU4WYI
+     * @see https://www.babylonjs-playground.com/#PU4WYI#4
      */
     export class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
         /**
@@ -39,8 +39,8 @@
         private _buffer0: Buffer;
         private _buffer1: Buffer;
         private _spriteBuffer: Buffer;
-        private _updateVAO = new Array<WebGLVertexArrayObject>();
-        private _renderVAO = new Array<WebGLVertexArrayObject>()
+        private _updateVAO: Array<WebGLVertexArrayObject>;
+        private _renderVAO: Array<WebGLVertexArrayObject>;
 
         private _targetIndex = 0;
         private _sourceBuffer: Buffer;
@@ -158,7 +158,79 @@
          * The particle emitter type defines the emitter used by the particle system.
          * It can be for example box, sphere, or cone...
          */
-        public particleEmitterType: Nullable<IParticleEmitterType>;        
+        public particleEmitterType: Nullable<IParticleEmitterType>;    
+
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction1(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction1;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction1(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction1 = value;
+            }
+        }        
+        
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction2(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction2;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction2(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction2 = value;
+            }
+        }
+
+        /**
+         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get minEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).minEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set minEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).minEmitBox = value;
+            }
+        }      
+        
+        /**
+         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get maxEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set maxEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
+            }
+        }        
 
         /**
          * Gets the maximum number of particles active at the same time.
@@ -263,10 +335,6 @@
                 transformFeedbackVaryings: ["outPosition", "outAge", "outLife", "outSeed", "outSize", "outColor", "outDirection"]
             };
 
-            this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
-
-            this._renderEffect = new Effect("gpuRenderParticles", ["position", "age", "life", "size", "color", "offset", "uv"], ["view", "projection", "colorDead"], ["textureSampler"], this._scene.getEngine());
-
             // Random data
             var maxTextureSize = Math.min(this._engine.getCaps().maxTextureSize, fullOptions.randomTextureSize);
             var d = [];
@@ -281,6 +349,7 @@
             this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
 
             this._randomTextureSize = maxTextureSize;
+            this.particleEmitterType = new BoxParticleEmitter();
         }
 
         private _createUpdateVAO(source: Buffer): WebGLVertexArrayObject {            
@@ -363,10 +432,12 @@
             this._spriteBuffer = new Buffer(engine, spriteData, false, 4);                                      
 
             // Update VAO
+            this._updateVAO = [];
             this._updateVAO.push(this._createUpdateVAO(this._buffer0));
             this._updateVAO.push(this._createUpdateVAO(this._buffer1));
 
             // Render VAO
+            this._renderVAO = [];
             this._renderVAO.push(this._createRenderVAO(this._buffer1, this._spriteBuffer));
             this._renderVAO.push(this._createRenderVAO(this._buffer0, this._spriteBuffer));
 
@@ -377,13 +448,31 @@
         }
 
         /** @ignore */
-        public _recreateUpdateEffect(defines: string) {
-            if (this._updateEffectOptions.defines === defines) {
+        public _recreateUpdateEffect() {
+            let defines = this.particleEmitterType ? this.particleEmitterType.getEffectDefines() : "";
+            if (this._updateEffect && this._updateEffectOptions.defines === defines) {
                 return;
             }
             this._updateEffectOptions.defines = defines;
             this._updateEffect = new Effect("gpuUpdateParticles", this._updateEffectOptions, this._scene.getEngine());   
         }
+
+        /** @ignore */
+        public _recreateRenderEffect() {
+            let defines = "";
+            if (this._scene.clipPlane) {
+                defines = "\n#define CLIPPLANE";
+            }
+
+            if (this._renderEffect && this._renderEffect.defines === defines) {
+                return;
+            }
+
+            this._renderEffect = new Effect("gpuRenderParticles", 
+                                            ["position", "age", "life", "size", "color", "offset", "uv"], 
+                                            ["view", "projection", "colorDead", "invView", "vClipPlane"], 
+                                            ["textureSampler"], this._scene.getEngine(), defines);
+        }        
 
         /**
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
@@ -409,9 +498,8 @@
                 return 0;
             }
 
-            if (this.particleEmitterType) {
-                this._recreateUpdateEffect(this.particleEmitterType.getEffectDefines());
-            }
+            this._recreateUpdateEffect();
+            this._recreateRenderEffect();
 
             if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
                 return 0;
@@ -426,7 +514,7 @@
             // Get everything ready to render
             this. _initialize();
 
-            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + this.emitRate);
+            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + (this.emitRate * this._timeDelta) | 0);
             
             // Enable update effect
 
@@ -472,10 +560,20 @@
 
             // Enable render effect
             this._engine.enableEffect(this._renderEffect);
-            this._renderEffect.setMatrix("view", this._scene.getViewMatrix());
+            let viewMatrix = this._scene.getViewMatrix();
+            this._renderEffect.setMatrix("view", viewMatrix);
             this._renderEffect.setMatrix("projection", this._scene.getProjectionMatrix());
             this._renderEffect.setTexture("textureSampler", this.particleTexture);
             this._renderEffect.setDirectColor4("colorDead", this.colorDead);
+
+
+            if (this._scene.clipPlane) {
+                var clipPlane = this._scene.clipPlane;
+                var invView = viewMatrix.clone();
+                invView.invert();
+                this._renderEffect.setMatrix("invView", invView);
+                this._renderEffect.setFloat4("vClipPlane", clipPlane.normal.x, clipPlane.normal.y, clipPlane.normal.z, clipPlane.d);
+            }            
 
             // Draw order
             if (this.blendMode === ParticleSystem.BLENDMODE_ONEONE) {

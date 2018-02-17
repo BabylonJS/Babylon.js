@@ -23,7 +23,6 @@ module BABYLON {
         /**
          * Creates a new instance of @see CircleOfConfusionPostProcess
          * @param name The name of the effect.
-         * @param scene The scene the effect belongs to.
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.
@@ -32,7 +31,7 @@ module BABYLON {
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
-        constructor(name: string, scene: Scene, depthTexture: RenderTargetTexture, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
+        constructor(name: string, depthTexture: RenderTargetTexture, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
             super(name, "circleOfConfusion", ["cameraMinMaxZ", "focusDistance", "cocPrecalculation"], ["depthSampler"], options, camera, samplingMode, engine, reusable, null, textureType);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setTexture("depthSampler", depthTexture);
@@ -43,10 +42,7 @@ module BABYLON {
                 
                 effect.setFloat('focusDistance', this.focusDistance);
                 effect.setFloat('cocPrecalculation', cocPrecalculation);
-                
-                if(scene.activeCamera){
-                    effect.setFloat2('cameraMinMaxZ', scene.activeCamera.minZ, scene.activeCamera.maxZ);
-                }
+                effect.setFloat2('cameraMinMaxZ', depthTexture.activeCamera!.minZ, depthTexture.activeCamera!.maxZ);
             })
         }
     }

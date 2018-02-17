@@ -13,6 +13,8 @@
 - Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
+- New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
+- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
@@ -41,7 +43,6 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - (Viewer) initScene and initEngine can now be extended. onProgress during model loading is implemented as observable. ([RaananW](https://github.com/RaananW))
 - glTF loader now supports the KHR_lights extension ([MiiBond](https://github.com/MiiBond))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
 - The observable can now notify observers using promise-based callback chain. ([RaananW](https://github.com/RaananW))
 - Added base64 helper functions to `Tools` ([bghgary](https://github.com/bghgary))
 - Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))
@@ -52,7 +53,6 @@
 - SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
 - SPS particle parenting feature ([jbousquie](https://github.com/jbousquie))
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
-- AssetContainer Class and loading methods ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. Extra configuration can be loaded sync (if provided) ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
@@ -71,8 +71,12 @@
 - Add isThumbClamped option on GUI slider control ([JeanPhilippeKernel](https://github.com/JeanPhilippeKernel))
 - Add floating point texture support for RenderTargetCubeTexture ([PeapBoy](https://github.com/NicolasBuecher))
 - Support for mutli-touch when interacting with multiple gui elements simultaneously ([trevordev](https://github.com/trevordev))
-- (Viewer) Declaration file published. ([RaananW](https://github.com/RaananW))
+- (Viewer) Declaration file published, ready for npm. ([RaananW](https://github.com/RaananW))
 - Added Draco mesh compression support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
+- Support multiple simultaneous webVR controller gui interactions in WebVRExperienceHelper ([trevordev](https://github.com/trevordev))
+- (Viewer) XHR requests not use Tools.LoadFile and are disposed correctly - [#3671](https://github.com/BabylonJS/Babylon.js/issues/3671) ([RaananW](https://github.com/RaananW))
+- Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
+- Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
@@ -82,9 +86,11 @@
 - SPS internal temporary vector3 instead of Tmp.Vector3 to avoid possible concurrent uses ([jbousquie](https://github.com/jbousquie))
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
+- (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
 - Removed the unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
 - VertexData.merge no longer supports merging of data that do not have the same set of attributes. ([bghgary](https://github.com/bghgary)]
 - glTF 2.0 loader will now create a mesh for each primitive instead of merging the primitives together into one mesh. ([bghgary](https://github.com/bghgary)]
+- Engine's onCanvasPointerOutObservable will now return a PointerEvent instead of the Engine. ([trevordev](https://github.com/trevordev))
