@@ -943,7 +943,7 @@ module BABYLON.GUI {
             if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                 this._onPointerMove(this, this._dummyVector2);
 
-                var previousControlOver = this._host._lastControlOver;
+                var previousControlOver = this._host._lastControlOver[pointerId];
                 if (previousControlOver && previousControlOver !== this) {
                     previousControlOver._onPointerOut(this);
                 }
@@ -952,22 +952,22 @@ module BABYLON.GUI {
                     this._onPointerEnter(this);
                 }
 
-                this._host._lastControlOver = this;
+                this._host._lastControlOver[pointerId] = this;
                 return true;
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                 this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
-                this._host._lastControlDown = this;
+                this._host._lastControlDown[pointerId] = this;
                 this._host._lastPickedControl = this;
                 return true;
             }
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
-                if (this._host._lastControlDown) {
-                    this._host._lastControlDown._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
+                if (this._host._lastControlDown[pointerId]) {
+                    this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
                 }
-                this._host._lastControlDown = null;
+                delete this._host._lastControlDown[pointerId];
                 return true;
             }
 

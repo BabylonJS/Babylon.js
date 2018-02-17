@@ -39,7 +39,11 @@
         private _prefiltered: boolean;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
-            return new CubeTexture("", scene, null, noMipmap, files);
+            let rootUrlKey = "";
+            
+            files.forEach(url => rootUrlKey += url);
+
+            return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
         }
 
         public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null) {

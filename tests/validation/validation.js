@@ -305,6 +305,7 @@ function runTest(index, done) {
 BABYLON.SceneLoader.ShowLoadingScreen = false;
 BABYLON.Database.IDBStorageEnabled = false;
 BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
+BABYLON.DracoCompression.DecoderUrl = BABYLON.Tools.GetFolderPath(document.location.href) + "../../dist/preview%20release/draco_decoder.js";
 
 canvas = document.createElement("canvas");
 canvas.className = "renderCanvas";

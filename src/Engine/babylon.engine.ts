@@ -613,7 +613,7 @@
         /**
          * Observable event triggered each time the canvas receives pointerout event
          */
-        public onCanvasPointerOutObservable = new Observable<Engine>();
+        public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
         /**
          * Observable event triggered before each texture is initialized
@@ -694,7 +694,7 @@
         // Focus
         private _onFocus: () => void;
         private _onBlur: () => void;
-        private _onCanvasPointerOut: () => void;
+        private _onCanvasPointerOut: (event: PointerEvent) => void;
         private _onCanvasBlur: () => void;
         private _onCanvasFocus: () => void;
 
@@ -996,8 +996,8 @@
                     this._windowIsBackground = false;
                 };
 
-                this._onCanvasPointerOut = () => {
-                    this.onCanvasPointerOutObservable.notifyObservers(this);
+                this._onCanvasPointerOut = (ev) => {
+                    this.onCanvasPointerOutObservable.notifyObservers(ev);
                 };
 
                 window.addEventListener("blur", this._onBlur);
@@ -4268,7 +4268,7 @@
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
                 if (files && files.length === 6) {
-                    this._cascadeLoadFiles(rootUrl,
+                    this._cascadeLoadFiles(
                         scene,
                         imgs => {
                             var info: DDSInfo | undefined;
@@ -5883,7 +5883,7 @@
             this._loadFile(url, onload, undefined, undefined, true, onerror);
         }
 
-        private _cascadeLoadFiles(rootUrl: string, scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+        private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
             var loadedFiles: (string | ArrayBuffer)[] = [];
             (<any>loadedFiles)._internalCount = 0;
 
