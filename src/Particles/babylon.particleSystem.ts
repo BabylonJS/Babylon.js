@@ -575,7 +575,7 @@
 
             this.activeSubSystems.forEach(subSystem => {
                 subSystem.stop();
-                subSystem._stoppedEmitting(true);
+                subSystem._stoppedEmitting();
             });
             this.activeSubSystems = new Array<ParticleSystem>();
         }
@@ -585,7 +585,7 @@
         }
 
         // to be overriden by subSystems
-        private _stoppedEmitting: (overrideRemove: boolean) => void = () => {
+        private _stoppedEmitting: () => void = () => {
 
         }
 
@@ -620,18 +620,25 @@
         private _initSubSystem(rootParticleSystem: ParticleSystem): void {
             this._rootParticleSystem = rootParticleSystem;
 
-            this._stoppedEmitting = (overrideRemove = false) => {
+            this._stoppedEmitting = () => {
+                if(!this.subEmitters || this.subEmitters.length === 0){
+                    this.dispose();
+                    return;
+                }
 
-                if (overrideRemove){
-                    let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
-                    if (index > -1) {
-                        this._rootParticleSystem.activeSubSystems.splice(index, 1);
-                    }
+                let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
+                if (index > -1) {
+                    this._rootParticleSystem.activeSubSystems.splice(index, 1);
                 }
                 
-                var particleSystemArray = new Array<ParticleSystem>();
-                particleSystemArray.push(this);
-                this._rootParticleSystem.stockSubSystems.add(this._subEmitterIndex, particleSystemArray);
+                if(this._rootParticleSystem.stockSubSystems.contains(this._subEmitterIndex)){
+                    this._rootParticleSystem.stockSubSystems.get(this._subEmitterIndex)!.push(this);
+                }
+                else{
+                    var particleSystemArray = new Array<ParticleSystem>();
+                    particleSystemArray.push(this);
+                    this._rootParticleSystem.stockSubSystems.add(this._subEmitterIndex, particleSystemArray);
+                }
             }
 
             this.recycleParticle = (particle: Particle) => {
@@ -679,7 +686,7 @@
 
             if (!this._alive && this._isEmitting) {
                 this._isEmitting = false;
-                this._stoppedEmitting(false);
+                this._stoppedEmitting();
             }
 
             this.updateFunction(this._particles);
@@ -1062,9 +1069,10 @@
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
             Tools.DeepCopy(this, result, ["customShader"]);
-            result.name = name + "_Child_" + root.count++;
+            result.name = name + "_Child";
             result.id = result.name;
             result.emitter = newEmitter;
+            result.subEmitters = this.subEmitters;
             result.particleEmitterType = this.particleEmitterType;
             result._initSubSystem(root);
             if (this.particleTexture) {
@@ -1073,8 +1081,6 @@
 
             return result;
         }
-
-        private count = 0;
 
         // Clone
         /**
