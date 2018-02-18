@@ -37,7 +37,7 @@ module BABYLON.GUI {
         }
 
         // While being a container, the button behaves like a control.
-        public _processPicking(x: number, y: number, type: number, buttonIndex: number): boolean {
+        public _processPicking(x: number, y: number, type: number, pointerId:number, buttonIndex: number): boolean {
             if (!this.isHitTestVisible || !this.isVisible || this.notRenderable) {
                 return false;
             }
@@ -46,7 +46,7 @@ module BABYLON.GUI {
                 return false;
             }
 
-            this._processObservables(type, x, y, buttonIndex);
+            this._processObservables(type, x, y, pointerId, buttonIndex);
 
             return true;
         }
@@ -71,8 +71,8 @@ module BABYLON.GUI {
             super._onPointerOut(target);
         }
 
-        public _onPointerDown(target: Control, coordinates: Vector2, buttonIndex: number): boolean {
-            if (!super._onPointerDown(target, coordinates, buttonIndex)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }
 
@@ -84,12 +84,12 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
             if (this.pointerUpAnimation) {
                 this.pointerUpAnimation();
             }
 
-            super._onPointerUp(target, coordinates, buttonIndex);
+            super._onPointerUp(target, coordinates, pointerId, buttonIndex);
         }        
 
         // Statics

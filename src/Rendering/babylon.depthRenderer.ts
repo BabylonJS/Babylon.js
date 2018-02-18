@@ -1,13 +1,25 @@
 ﻿module BABYLON {
+    /**
+     * This represents a depth renderer in Babylon.
+     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
+     */
     export class DepthRenderer {
         private _scene: Scene;
         private _depthMap: RenderTargetTexture;
         private _effect: Effect;
 
         private _cachedDefines: string;
+        private _camera:Nullable<Camera>;
 
-        constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT) {
+        /**
+         * Instantiates a depth renderer
+         * @param scene The scene the renderer belongs to
+         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+         * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         */
+        constructor(scene: Scene, type: number = Engine.TEXTURETYPE_FLOAT, camera:Nullable<Camera> = null) {
             this._scene = scene;
+            this._camera = camera;
             var engine = scene.getEngine();
 
             // Render target
@@ -17,6 +29,11 @@
             this._depthMap.refreshRate = 1;
             this._depthMap.renderParticles = false;
             this._depthMap.renderList = null;
+
+            // Camera to get depth map from to support multiple concurrent cameras
+            this._depthMap.activeCamera = this._camera;
+            this._depthMap.ignoreCameraViewport = true;
+            this._depthMap.useCameraPostProcesses = false;
             
             // set default depth value to 1.0 (far away)
             this._depthMap.onClearObservable.add((engine: Engine) => {
@@ -45,14 +62,15 @@
                 }
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-
-                if (this.isReady(subMesh, hardwareInstancedRendering) && scene.activeCamera) {
+                
+                var camera = this._camera || scene.activeCamera;
+                if (this.isReady(subMesh, hardwareInstancedRendering) && camera) {
                     engine.enableEffect(this._effect);
                     mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
 
                     this._effect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-                    this._effect.setFloat2("depthValues", scene.activeCamera.minZ, scene.activeCamera.minZ + scene.activeCamera.maxZ);
+                    this._effect.setFloat2("depthValues", camera.minZ, camera.minZ + camera.maxZ);
 
                     // Alpha test
                     if (material && material.needAlphaTesting()) {
@@ -96,6 +114,12 @@
             };
         }
 
+        /**
+         * Creates the depth rendering effect and checks if the effect is ready.
+         * @param subMesh The submesh to be used to render the depth map of
+         * @param useInstances If multiple world instances should be used
+         * @returns if the depth renderer is ready to render the depth map
+         */
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var material: any = subMesh.getMaterial();
             if (material.disableDepthWrite) {
@@ -157,11 +181,17 @@
             return this._effect.isReady();
         }
 
+        /**
+         * Gets the texture which the depth map will be written to.
+         * @returns The depth map texture
+         */
         public getDepthMap(): RenderTargetTexture {
             return this._depthMap;
         }
 
-        // Methods
+        /**
+         * Disposes of the depth renderer.
+         */
         public dispose(): void {
             this._depthMap.dispose();
         }

@@ -3,50 +3,76 @@ import { ViewerConfiguration } from './configuration';
 import { getConfigurationType } from './types';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
+import { Tools, IFileRequest } from 'babylonjs';
 
 export class ConfigurationLoader {
 
     private configurationCache: { [url: string]: any };
 
+    private loadRequests: Array<IFileRequest>;
+
     constructor() {
         this.configurationCache = {};
+        this.loadRequests = [];
     }
 
-    public loadConfiguration(initConfig: ViewerConfiguration = {}): Promise<ViewerConfiguration> {
+    public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
 
-        let loadedConfig = deepmerge({}, initConfig);
+        let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
 
-        let extendedConfiguration = getConfigurationType(loadedConfig && loadedConfig.extends);
+        let extendedConfiguration = getConfigurationType(loadedConfig.extends || "");
 
         loadedConfig = deepmerge(extendedConfiguration, loadedConfig);
 
         if (loadedConfig.configuration) {
 
             let mapperType = "json";
-            let url = loadedConfig.configuration;
+            return Promise.resolve().then(() => {
+                if (typeof loadedConfig.configuration === "string" || (loadedConfig.configuration && loadedConfig.configuration.url)) {
+                    // a file to load
 
-            // if configuration is an object
-            if (loadedConfig.configuration.url) {
-                url = loadedConfig.configuration.url;
-                mapperType = loadedConfig.configuration.mapper;
-                if (!mapperType) {
-                    // load mapper type from filename / url
-                    mapperType = loadedConfig.configuration.url.split('.').pop();
+                    let url: string = '';
+                    if (typeof loadedConfig.configuration === "string") {
+                        url = loadedConfig.configuration;
+                    }
+
+                    // if configuration is an object
+                    if (typeof loadedConfig.configuration === "object" && loadedConfig.configuration.url) {
+                        url = loadedConfig.configuration.url;
+                        let type = loadedConfig.configuration.mapper;
+                        // empty string?
+                        if (!type) {
+                            // load mapper type from filename / url
+                            type = loadedConfig.configuration.url.split('.').pop();
+                        }
+                        mapperType = type || mapperType;
+                    }
+                    return this.loadFile(url);
+                } else {
+                    if (typeof loadedConfig.configuration === "object") {
+                        mapperType = loadedConfig.configuration.mapper || mapperType;
+                        return loadedConfig.configuration.payload || {};
+                    }
+                    return {};
+
                 }
-            }
-
-            let mapper = mapperManager.getMapper(mapperType);
-            return this.loadFile(url).then((data: any) => {
+            }).then((data: any) => {
+                let mapper = mapperManager.getMapper(mapperType);
                 let parsed = mapper.map(data);
-                return deepmerge(loadedConfig, parsed);
+                let merged = deepmerge(loadedConfig, parsed);
+                if (callback) callback(merged);
+                return merged;
             });
         } else {
+            if (callback) callback(loadedConfig);
             return Promise.resolve(loadedConfig);
         }
     }
 
-    public getConfigurationType(type: string) {
-
+    public dispose() {
+        this.loadRequests.forEach(request => {
+            request.abort();
+        });
     }
 
     private loadFile(url: string): Promise<any> {
@@ -55,26 +81,13 @@ export class ConfigurationLoader {
             return Promise.resolve(cacheReference[url]);
         }
 
-        return new Promise(function (resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url);
-            xhr.send();
-            xhr.onreadystatechange = function () {
-                var DONE = 4;
-                var OK = 200;
-                if (xhr.readyState === DONE) {
-                    if (xhr.status === OK) {
-                        cacheReference[url] = xhr.responseText;
-                        resolve(xhr.responseText); // 'This is the returned text.'
-                    } else {
-                        console.log('Error: ' + xhr.status, url);
-                        reject('Error: ' + xhr.status); // An error occurred during the request.
-                    }
-                }
-            }
+        return new Promise((resolve, reject) => {
+            let fileRequest = Tools.LoadFile(url, resolve, undefined, undefined, false, (request, error: any) => {
+                reject(error);
+            });
+            this.loadRequests.push(fileRequest);
         });
     }
-
 
 }
 

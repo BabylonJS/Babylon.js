@@ -5,7 +5,7 @@ var through = require('through2');
  * The parameters for this function has grown during development.
  * Eventually, this function will need to be reorganized. 
  */
-module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon) {
+module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon, noBabylonInit) {
     return through.obj(function (file, enc, cb) {
 
         var optionalRequire = `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
@@ -73,6 +73,10 @@ globalObject["${base}"] = f;` : '';
         if (file.isStream()) {
             //streams not supported, no need for now.
             return;
+        }
+
+        if (noBabylonInit) {
+            optionalRequire = '';
         }
 
         try {

@@ -27,12 +27,13 @@ var sass = require("gulp-sass");
 var webpack = require("webpack-stream");
 var typedoc = require("gulp-typedoc");
 var validateTypedoc = require("./gulp-validateTypedoc");
+var request = require('request');
+var fs = require("fs");
+var karmaServer = require('karma').Server;
 
 var config = require("./config.json");
 
 var del = require("del");
-
-var karmaServer = require('karma').Server;
 
 var debug = require("gulp-debug");
 var includeShadersStream;
@@ -59,7 +60,12 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 var tsProject = typescript.createProject(tsConfig);
 
@@ -75,7 +81,12 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
-    types: []
+    types: [],
+    lib: [
+        "dom",
+        "es2015.promise",
+        "es5"
+    ]
 };
 
 var minimist = require("minimist");
@@ -252,14 +263,11 @@ gulp.task("typescript-compile", function () {
 
     //If this gulp task is running on travis, file the build!
     if (process.env.TRAVIS) {
-        var error = false;
-        tsResult.on("error", function () {
-            error = true;
-        }).on("end", function () {
-            if (error) {
+        tsResult.once("error", function () {
+            tsResult.once("finish", function () {
                 console.log("Typescript compile failed");
                 process.exit(1);
-            }
+            });
         });
     }
 
@@ -317,7 +325,9 @@ var buildExternalLibraries = function (settings) {
             let dtsFiles = files.map(function (filename) {
                 return filename.replace(".js", ".d.ts");
             });
-
+            if (settings.build.extraDeclarations) {
+                settings.build.extraDeclarations.forEach(file => { dtsFiles.unshift(file) })
+            }
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat(settings.build.outputFilename + ".module.d.ts"))
                 .pipe(replace(referenceSearchRegex, ""))
@@ -397,6 +407,8 @@ var buildExternalLibrary = function (library, settings, watch) {
             .pipe(gulp.dest(outputDirectory));
         /*}*/
 
+
+
         var dts = tsProcess.dts
             .pipe(concat(library.output))
             .pipe(replace(referenceSearchRegex, ""))
@@ -418,14 +430,67 @@ var buildExternalLibrary = function (library, settings, watch) {
         }
 
         if (library.webpack) {
-            return waitAll.on("end", function () {
-                return webpack(require(library.webpack))
-                    .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
-                    .pipe(uglify())
-                    .pipe(optimisejs())
-                    .pipe(gulp.dest(outputDirectory))
-            });
+            let sequence = [waitAll];
+            let wpBuild = webpack(require(library.webpack));
+            if (settings.build.outputs) {
+                let build = wpBuild
+                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true, library.babylonIncluded));
+
+                let unminifiedOutpus = [];
+                let minifiedOutputs = [];
+                settings.build.outputs.forEach(out => {
+                    if (out.minified) {
+                        out.destination.forEach(dest => {
+                            minifiedOutputs.push(dest);
+                        });
+                    } else {
+                        out.destination.forEach(dest => {
+                            unminifiedOutpus.push(dest);
+                        });
+                    }
+                });
+
+                function processDestination(dest) {
+                    var outputDirectory = config.build.outputDirectory + dest.outputDirectory;
+                    build = build
+                        .pipe(rename(dest.filename.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                        .pipe(gulp.dest(outputDirectory));
+
+                    if (library.babylonIncluded && dest.addBabylonDeclaration) {
+                        // include the babylon declaration
+                        sequence.unshift(gulp.src(config.build.outputDirectory + '/' + config.build.declarationFilename)
+                            .pipe(gulp.dest(outputDirectory)))
+                    }
+                }
+
+                unminifiedOutpus.forEach(dest => {
+                    processDestination(dest);
+                });
+
+                if (minifiedOutputs.length) {
+                    build = build
+                        .pipe(uglify())
+                        .pipe(optimisejs())
+                }
+
+                minifiedOutputs.forEach(dest => {
+                    processDestination(dest);
+                });
+
+                sequence.push(build);
+
+            } else {
+                sequence.push(
+                    wpBuild
+                        .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
+                        .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
+                        .pipe(uglify())
+                        .pipe(optimisejs())
+                        .pipe(gulp.dest(outputDirectory))
+                )
+            }
+
+            return merge2(sequence);
         }
         else {
             return waitAll;
@@ -593,14 +658,11 @@ gulp.task("modules-compile", function () {
 
     // If this gulp task is running on travis
     if (process.env.TRAVIS) {
-        var error = false;
-        tsResult.on("error", function () {
-            error = true;
-        }).on("end", function () {
-            if (error) {
+        tsResult.once("error", function () {
+            tsResult.once("finish", function () {
                 console.log("Typescript compile failed");
                 process.exit(1);
-            }
+            });
         });
     }
 
@@ -906,7 +968,14 @@ gulp.task("tests-unit-transpile", function (done) {
 
     var tsResult = gulp.src("../../tests/unit/**/*.ts", { base: "../../" })
         .pipe(tsProject());
- 
+
+    tsResult.once("error", function () {
+        tsResult.once("finish", function () {
+            console.log("Typescript compile failed");
+            process.exit(1);
+        });
+    });
+
     return tsResult.js.pipe(gulp.dest("../../"));
 });
 
@@ -937,4 +1006,46 @@ gulp.task("tests-unit", ["tests-unit-transpile"], function (done) {
 
     var server = new karmaServer(kamaServerOptions, done);
     server.start();
+});
+
+gulp.task("tests-whatsnew", function (done) {
+    // Only checks on Travis
+    if (!process.env.TRAVIS) {
+        done();
+        return;
+    }
+
+    // Only checks on Pull Requests
+    if (process.env.TRAVIS_PULL_REQUEST == "false") {
+        done();
+        return;
+    }
+
+    // Do not check deploy
+    if (process.env.TRAVIS_BRANCH == "preview") {
+        done();
+        return;
+    }
+
+    // Compare what's new with the current one in the preview release folder.
+    const https = require("https");
+    const url = "https://rawgit.com/BabylonJS/Babylon.js/master/dist/preview%20release/what's%20new.md";
+    https.get(url, res => {
+        res.setEncoding("utf8");
+        let oldData = "";
+        res.on("data", data => {
+            oldData += data;
+        });
+        res.on("end", () => {
+            fs.readFile("../../dist/preview release/what's new.md", "utf-8", function (err, newData) {
+                if (err || oldData != newData) {
+                    done();
+                    return;
+                }
+
+                console.error("What's new file did not change.");
+                process.exit(1);
+            });
+        });
+    });
 });

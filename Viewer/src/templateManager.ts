@@ -1,6 +1,6 @@
 
-import { Observable } from 'babylonjs';
-import { isUrl, loadFile, camelToKebab, kebabToCamel } from './helper';
+import { Observable, IFileRequest, Tools } from 'babylonjs';
+import { isUrl, camelToKebab, kebabToCamel } from './helper';
 
 export interface ITemplateConfiguration {
     location?: string; // #template-id OR http://example.com/loading.html
@@ -89,8 +89,13 @@ export class TemplateManager {
         }
 
         //build the html tree
-        this.buildHTMLTree(templates).then(htmlTree => {
-            internalInit(htmlTree, 'main');
+        return this.buildHTMLTree(templates).then(htmlTree => {
+            if (this.templates['main']) {
+                internalInit(htmlTree, 'main');
+            } else {
+                this.checkLoadedState();
+            }
+            return;
         });
     }
 
@@ -105,7 +110,10 @@ export class TemplateManager {
      * @memberof TemplateManager
      */
     private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
-        let promises = Object.keys(templates).map(name => {
+        let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(name => {
+            // if the template was overridden
+            if (!templates[name]) return Promise.resolve(false);
+            // else - we have a template, let's do our job!
             let template = new Template(name, templates[name]);
             // make sure the global onEventTriggered is called as well
             template.onEventTriggered.add(eventData => this.onEventTriggered.notifyObservers(eventData));
@@ -123,8 +131,9 @@ export class TemplateManager {
                     buildTree(parentObject[element], element);
                 });
             }
-
-            buildTree(templateStructure, "main");
+            if (this.templates['main']) {
+                buildTree(templateStructure, "main");
+            }
             return templateStructure;
         });
     }
@@ -139,7 +148,7 @@ export class TemplateManager {
     }
 
     private checkLoadedState() {
-        let done = Object.keys(this.templates).every((key) => {
+        let done = Object.keys(this.templates).length === 0 || Object.keys(this.templates).every((key) => {
             return this.templates[key].isLoaded && !!this.templates[key].parent;
         });
 
@@ -148,11 +157,23 @@ export class TemplateManager {
         }
     }
 
+    public dispose() {
+        // dispose all templates
+        Object.keys(this.templates).forEach(template => {
+            this.templates[template].dispose();
+        });
+
+        this.onInit.clear();
+        this.onAllLoaded.clear();
+        this.onEventTriggered.clear();
+        this.onLoaded.clear();
+        this.onStateChange.clear();
+    }
+
 }
 
 
 import * as Handlebars from '../assets/handlebars.min.js';
-import { PromiseObservable } from './util/promiseObservable';
 import { EventManager } from './eventManager';
 // register a new helper. modified https://stackoverflow.com/questions/9838925/is-there-any-method-to-iterate-a-map-with-handlebars-js
 Handlebars.registerHelper('eachInMap', function (map, block) {
@@ -189,6 +210,9 @@ export class Template {
     public initPromise: Promise<Template>;
 
     private fragment: DocumentFragment;
+    private htmlTemplate: string;
+
+    private loadRequests: Array<IFileRequest>;
 
     constructor(public name: string, private _configuration: ITemplateConfiguration) {
         this.onInit = new Observable<Template>();
@@ -196,6 +220,8 @@ export class Template {
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
         this.onEventTriggered = new Observable<EventCallback>();
+
+        this.loadRequests = [];
 
         this.isLoaded = false;
         this.isShown = false;
@@ -206,10 +232,11 @@ export class Template {
         */
         this.onInit.notifyObservers(this);
 
-        let htmlContentPromise = getTemplateAsHtml(_configuration);
+        let htmlContentPromise = this.getTemplateAsHtml(_configuration);
 
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
+                this.htmlTemplate = htmlTemplate;
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
                 let config = this._configuration.params || {};
                 let rawHtml = compiledTemplate(config);
@@ -220,6 +247,21 @@ export class Template {
             }
             return this;
         });
+    }
+
+    public updateParams(params: { [key: string]: string | number | boolean | object }) {
+        this._configuration.params = params;
+        // update the template
+        if (this.isLoaded) {
+            this.dispose();
+        }
+        let compiledTemplate = Handlebars.compile(this.htmlTemplate);
+        let config = this._configuration.params || {};
+        let rawHtml = compiledTemplate(config);
+        this.fragment = document.createRange().createContextualFragment(rawHtml);
+        if (this.parent) {
+            this.appendTo(this.parent, true);
+        }
     }
 
     public get configuration(): ITemplateConfiguration {
@@ -240,27 +282,33 @@ export class Template {
         return childrenArray;
     }
 
-    public appendTo(parent: HTMLElement) {
+    public appendTo(parent: HTMLElement, forceRemove?: boolean) {
         if (this.parent) {
-            console.error('Already appanded to ', this.parent);
-        } else {
-            this.parent = parent;
-
-            if (this._configuration.id) {
-                this.parent.id = this._configuration.id;
+            if (forceRemove) {
+                this.parent.removeChild(this.fragment);
+            } else {
+                return;
             }
-            this.parent.appendChild(this.fragment);
-            // appended only one frame after.
-            setTimeout(() => {
-                this.registerEvents();
-                this.onAppended.notifyObservers(this);
-            });
         }
+        this.parent = parent;
 
+        if (this._configuration.id) {
+            this.parent.id = this._configuration.id;
+        }
+        this.fragment = this.parent.appendChild(this.fragment);
+        // appended only one frame after.
+        setTimeout(() => {
+            this.registerEvents();
+            this.onAppended.notifyObservers(this);
+        });
     }
 
+    private isShowing: boolean;
+    private isHiding: boolean;
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        if (this.isHiding) return Promise.resolve(this);
         return Promise.resolve().then(() => {
+            this.isShowing = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -270,13 +318,16 @@ export class Template {
             }
         }).then(() => {
             this.isShown = true;
+            this.isShowing = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
     }
 
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
+        if (this.isShowing) return Promise.resolve(this);
         return Promise.resolve().then(() => {
+            this.isHiding = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -286,6 +337,7 @@ export class Template {
             }
         }).then(() => {
             this.isShown = false;
+            this.isHiding = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
@@ -298,10 +350,53 @@ export class Template {
         this.onLoaded.clear();
         this.onStateChange.clear();
         this.isLoaded = false;
+        // remove from parent
+        this.parent.removeChild(this.fragment);
+
+        this.loadRequests.forEach(request => {
+            request.abort();
+        });
     }
+
+    private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
+        if (!templateConfig) {
+            return Promise.reject('No templateConfig provided');
+        } else if (templateConfig.html) {
+            return Promise.resolve(templateConfig.html);
+        } else {
+            let location = getTemplateLocation(templateConfig);
+            if (isUrl(location)) {
+                return new Promise((resolve, reject) => {
+                    let fileRequest = Tools.LoadFile(location, (data: string) => {
+                        resolve(data);
+                    }, undefined, undefined, false, (request, error: any) => {
+                        reject(error);
+                    });
+                    this.loadRequests.push(fileRequest);
+                });
+            } else {
+                location = location.replace('#', '');
+                let element = document.getElementById(location);
+                if (element) {
+                    return Promise.resolve(element.innerHTML);
+                } else {
+                    return Promise.reject('Template ID not found');
+                }
+            }
+        }
+    }
+
+    private registeredEvents: Array<{ htmlElement: HTMLElement, eventName: string, function: EventListenerOrEventListenerObject }>;
 
     // TODO - Should events be removed as well? when are templates disposed?
     private registerEvents() {
+        this.registeredEvents = this.registeredEvents || [];
+        if (this.registeredEvents.length) {
+            // first remove the registered events
+            this.registeredEvents.forEach(evt => {
+                evt.htmlElement.removeEventListener(evt.eventName, evt.function);
+            });
+        }
         if (this._configuration.events) {
             for (let eventName in this._configuration.events) {
                 if (this._configuration.events && this._configuration.events[eventName]) {
@@ -321,32 +416,18 @@ export class Template {
                                 selector = '#' + selector;
                             }
                             let htmlElement = <HTMLElement>this.parent.querySelector(selector);
-                            htmlElement && htmlElement.addEventListener(eventName, functionToFire.bind(this, selector), false)
+                            if (htmlElement) {
+                                let binding = functionToFire.bind(this, selector);
+                                htmlElement.addEventListener(eventName, binding, false);
+                                this.registeredEvents.push({
+                                    htmlElement: htmlElement,
+                                    eventName: eventName,
+                                    function: binding
+                                });
+                            }
                         });
                     }
                 }
-            }
-        }
-    }
-
-}
-
-export function getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
-    if (!templateConfig) {
-        return Promise.reject('No templateConfig provided');
-    } else if (templateConfig.html) {
-        return Promise.resolve(templateConfig.html);
-    } else {
-        let location = getTemplateLocation(templateConfig);
-        if (isUrl(location)) {
-            return loadFile(location);
-        } else {
-            location = location.replace('#', '');
-            let element = document.getElementById(location);
-            if (element) {
-                return Promise.resolve(element.innerHTML);
-            } else {
-                return Promise.reject('Template ID not found');
             }
         }
     }

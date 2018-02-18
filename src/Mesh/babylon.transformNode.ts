@@ -208,17 +208,33 @@ module BABYLON {
         }
 
         /**
-         * Sets a new pivot matrix to the mesh.  
-         * Returns the AbstractMesh.
+         * Sets a new matrix to apply before all other transformation
+         * @param matrix defines the transform matrix
+         * @returns the current TransformNode
+         */
+        public setPreTransformMatrix(matrix: Matrix): TransformNode {
+            return this.setPivotMatrix(matrix, false);
+        }
+
+        /**
+         * Sets a new pivot matrix to the current node
+         * @param matrix defines the new pivot matrix to use
+         * @param postMultiplyPivotMatrix defines if the pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect
+         * @returns the current TransformNode
         */
-        public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = false): TransformNode {
+        public setPivotMatrix(matrix: Matrix, postMultiplyPivotMatrix = true): TransformNode {
             this._pivotMatrix = matrix.clone();
             this._cache.pivotMatrixUpdated = true;
             this._postMultiplyPivotMatrix = postMultiplyPivotMatrix;
 
             if (this._postMultiplyPivotMatrix) {
-                this._pivotMatrixInverse = Matrix.Invert(matrix);
+                if (!this._pivotMatrixInverse) {
+                    this._pivotMatrixInverse = Matrix.Invert(this._pivotMatrix);
+                } else {
+                    this._pivotMatrix.invertToRef(this._pivotMatrixInverse);
+                }
             }
+
             return this;
         }
 
@@ -390,6 +406,12 @@ module BABYLON {
             return this;
         }
 
+        /**
+         * Sets a new pivot point to the current node
+         * @param point defines the new pivot point to use
+         * @param space defines if the point is in world or local space (local by default)
+         * @returns the current TransformNode
+        */        
         public setPivotPoint(point: Vector3, space: Space = Space.LOCAL): TransformNode {
             if (this.getScene().getRenderId() == 0) {
                 this.computeWorldMatrix(true);
@@ -403,12 +425,7 @@ module BABYLON {
                 point = Vector3.TransformCoordinates(point, tmat);
             }
 
-            Vector3.TransformCoordinatesToRef(point, wm, this.position);
-            this._pivotMatrix.m[12] = -point.x;
-            this._pivotMatrix.m[13] = -point.y;
-            this._pivotMatrix.m[14] = -point.z;
-            this._cache.pivotMatrixUpdated = true;
-            return this;
+            return this.setPivotMatrix(Matrix.Translation(-point.x, -point.y, -point.z), true);
         }
 
         /**
@@ -932,7 +949,7 @@ module BABYLON {
             }
 
             if (parsedTransformNode.localMatrix) {
-                transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
+                transformNode.setPreTransformMatrix(Matrix.FromArray(parsedTransformNode.localMatrix));
             } else if (parsedTransformNode.pivotMatrix) {
                 transformNode.setPivotMatrix(Matrix.FromArray(parsedTransformNode.pivotMatrix));
             }

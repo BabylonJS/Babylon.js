@@ -1,31 +1,91 @@
 ﻿module BABYLON {
+    /**
+	 * The default rendering pipeline can be added to a scene to apply common post processing effects such as anti-aliasing or depth of field.
+     * See https://doc.babylonjs.com/how_to/using_default_rendering_pipeline
+     */
     export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         private _scene: Scene;
 
+        /**
+		 * ID of the pass post process used for bloom,
+		 */
         readonly PassPostProcessId: string = "PassPostProcessEffect";
+        /**
+		 * ID of the highlight post process used for bloom,
+		 */
         readonly HighLightsPostProcessId: string = "HighLightsPostProcessEffect";
+        /**
+		 * ID of the blurX post process used for bloom,
+		 */
         readonly BlurXPostProcessId: string = "BlurXPostProcessEffect";
+        /**
+		 * ID of the blurY post process used for bloom,
+		 */
         readonly BlurYPostProcessId: string = "BlurYPostProcessEffect";
+        /**
+		 * ID of the copy back post process used for bloom,
+		 */
         readonly CopyBackPostProcessId: string = "CopyBackPostProcessEffect";
+        /**
+		 * ID of the image processing post process;
+		 */
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
+        /**
+		 * ID of the Fast Approximate Anti-Aliasing post process;
+		 */
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
+        /**
+		 * ID of the final merge post process;
+		 */
         readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
 
         // Post-processes
+        /**
+		 * First pass of bloom to capture the original image texture for later use.
+		 */
         public pass: PassPostProcess;
+        /**
+		 * Second pass of bloom used to brighten bright portions of the image.
+		 */
         public highlights: HighlightsPostProcess;
+        /**
+		 * BlurX post process used in coordination with blurY to guassian blur the highlighted image.
+		 */
         public blurX: BlurPostProcess;
+        /**
+		 * BlurY post process used in coordination with blurX to guassian blur the highlighted image.
+		 */
         public blurY: BlurPostProcess;
+        /**
+		 * Final pass run for bloom to copy the resulting bloom texture back to screen.
+		 */
         public copyBack: PassPostProcess;
+        /**
+         * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
+         */
+        public depthOfField: DepthOfFieldEffect;
+        /**
+         * The Fast Approximate Anti-Aliasing post process which attemps to remove aliasing from an image.
+         */
         public fxaa: FxaaPostProcess;
+        /**
+         * Image post processing pass used to perform operations such as tone mapping or color grading.
+         */
         public imageProcessing: ImageProcessingPostProcess;
+        /**
+         * Final post process to merge results of all previous passes
+         */
         public finalMerge: PassPostProcess;
 
-        // IAnimatable
+        /**
+         * Animations which can be used to tweak settings over a period of time
+         */
         public animations: Animation[] = [];
 
         // Values       
         private _bloomEnabled: boolean = false;
+        private _depthOfFieldEnabled: boolean = false;
+        private _depthOfFieldBlurLevel = DepthOfFieldEffectBlurLevel.Low;
         private _fxaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
@@ -48,6 +108,9 @@
         @serialize()
         private _hdr: boolean;
 
+        /**
+         * The strength of the bloom.
+         */
         public set bloomWeight(value: number) {
             if (this._bloomWeight === value) {
                 return;
@@ -64,6 +127,9 @@
             return this._bloomWeight;
         }
 
+        /**
+         * The scale of the bloom, lower value will provide better performance.
+         */
         public set bloomScale(value: number) {
             if (this._bloomScale === value) {
                 return;
@@ -78,6 +144,9 @@
             return this._bloomScale;
         }
 
+        /**
+         * Enable or disable the bloom from the pipeline
+         */
         public set bloomEnabled(enabled: boolean) {
             if (this._bloomEnabled === enabled) {
                 return;
@@ -92,6 +161,42 @@
             return this._bloomEnabled;
         }
 
+        /**
+         * If the depth of field is enabled.
+         */
+        @serialize()
+        public get depthOfFieldEnabled(): boolean {
+            return this._depthOfFieldEnabled;
+        }   
+        
+        public set depthOfFieldEnabled(enabled: boolean) {
+            if (this._depthOfFieldEnabled === enabled) {
+                return;
+            }
+            this._depthOfFieldEnabled = enabled;
+            
+            this._buildPipeline();
+        }
+
+        /**
+         * Blur level of the depth of field effect. (Higher blur will effect performance)
+         */
+        @serialize()
+        public get depthOfFieldBlurLevel(): DepthOfFieldEffectBlurLevel {
+            return this._depthOfFieldBlurLevel;
+        }   
+        
+        public set depthOfFieldBlurLevel(value: DepthOfFieldEffectBlurLevel) {
+            if (this._depthOfFieldBlurLevel === value) {
+                return;
+            }
+            this._depthOfFieldBlurLevel = value;
+            this._buildPipeline();
+        }
+
+        /**
+         * If the anti aliasing is enabled.
+         */
         public set fxaaEnabled(enabled: boolean) {
             if (this._fxaaEnabled === enabled) {
                 return;
@@ -106,6 +211,9 @@
             return this._fxaaEnabled;
         }
 
+        /**
+         * If image processing is enabled.
+         */
         public set imageProcessingEnabled(enabled: boolean) {
             if (this._imageProcessingEnabled === enabled) {
                 return;
@@ -176,6 +284,14 @@
 
             this._disposePostProcesses();
             this._reset();
+
+            if(this.depthOfFieldEnabled){
+                // Enable and get current depth map
+                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
+
+                this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+                this.addEffect(this.depthOfField);
+            }
 
             if (this.bloomEnabled) {
                 this.pass = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
@@ -303,6 +419,10 @@
                 if (this.finalMerge) {
                     this.finalMerge.dispose(camera);
                 }
+
+                if(this.depthOfField){
+                    this.depthOfField.disposeEffects(camera);
+                }
             }
 
             (<any>this.pass) = null;
@@ -313,9 +433,12 @@
             (<any>this.imageProcessing) = null;
             (<any>this.fxaa) = null;
             (<any>this.finalMerge) = null;
+            (<any>this.depthOfField) = null;
         }
 
-        // Dispose
+        /**
+         * Dispose of the pipeline and stop all post processes
+         */
         public dispose(): void {
             this._disposePostProcesses();
 
@@ -324,7 +447,10 @@
             super.dispose();
         }
 
-        // Serialize rendering pipeline
+        /**
+         * Serialize the rendering pipeline (Used when exporting)
+         * @returns the serialized object
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "DefaultRenderingPipeline";
@@ -332,7 +458,13 @@
             return serializationObject;
         }
 
-        // Parse serialized pipeline
+        /**
+         * Parse the serialized pipeline
+         * @param source Source pipeline.
+         * @param scene The scene to load the pipeline to.
+         * @param rootUrl The URL of the serialized pipeline.
+         * @returns An instantiated pipeline from the serialized object.
+         */
         public static Parse(source: any, scene: Scene, rootUrl: string): DefaultRenderingPipeline {
             return SerializationHelper.Parse(() => new DefaultRenderingPipeline(source._name, source._name._hdr, scene), source, scene, rootUrl);
         }

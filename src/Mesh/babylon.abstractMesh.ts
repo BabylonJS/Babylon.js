@@ -205,7 +205,24 @@
 
         private _occlusionQuery: Nullable<WebGLQuery>;
 
-        public visibility = 1.0;
+        private _visibility = 1.0;
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */
+        public get visibility(): number {
+            return this._visibility;
+        }
+        /**
+         * Gets or sets mesh visibility between 0 and 1 (defult is 1)
+         */        
+        public set visibility(value: number) {
+            if (this._visibility === value) {
+                return;
+            }
+
+            this._visibility = value;
+            this._markSubMeshesAsMiscDirty();
+        }        
         public alphaIndex = Number.MAX_VALUE;
         public isVisible = true;
         public isPickable = true;
@@ -269,6 +286,7 @@
 
             this._hasVertexAlpha = value;
             this._markSubMeshesAsAttributesDirty();
+            this._markSubMeshesAsMiscDirty();
         }
 
         private _useVertexColors = true;
@@ -394,7 +412,6 @@
         public _masterMesh: Nullable<AbstractMesh>;
 
         public _boundingInfo: Nullable<BoundingInfo>;
-        public _isDisposed = false;
         public _renderId = 0;
 
         public subMeshes: SubMesh[];
@@ -446,13 +463,6 @@
             this.getScene().addMesh(this);
 
             this._resyncLightSources();
-        }
-
-        /**
-         * Boolean : true if the mesh has been disposed.  
-         */
-        public isDisposed(): boolean {
-            return this._isDisposed;
         }
 
         /**
@@ -1437,8 +1447,6 @@
             this.onAfterWorldMatrixUpdateObservable.clear();
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
-
-            this._isDisposed = true;
 
             super.dispose(doNotRecurse);
         }

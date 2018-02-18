@@ -80,7 +80,18 @@ module INSPECTOR {
 
         /** Build the HTML of this item */
         protected _build() {
-            this._div.className = 'line';
+
+            /**
+             *  Hide the debug objects :
+             * - Axis : xline, yline, zline
+             * */
+            let adapterId = this._adapter.id();
+            if (adapterId == "xline"
+                || adapterId == "yline"
+                || adapterId == "zline") {
+                this._div.className = "line_invisible";
+            }
+            else this._div.className = 'line';
 
             // special class for transform node ONLY
             if (this.adapter instanceof MeshAdapter) {

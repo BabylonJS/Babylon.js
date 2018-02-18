@@ -113,6 +113,19 @@
             return fn;
         }
 
+        /**
+         * Provides a slice function that will work even on IE
+         * @param data defines the array to slice
+         * @returns the new sliced array
+         */
+        public static Slice(data: FloatArray): FloatArray {
+            if (data.slice) {
+                return data.slice();
+            }
+
+            return Array.prototype.slice.call(data);
+        }
+
         public static SetImmediate(action: () => void) {
             if (window.setImmediate) {
                 window.setImmediate(action);
@@ -199,10 +212,20 @@
             return path.substring(index + 1);
         }
 
-        public static GetFolderPath(uri: string): string {
+        /**
+         * Extracts the "folder" part of a path (everything before the filename).
+         * @param uri The URI to extract the info from
+         * @param returnUnchangedIfNoSlash Do not touch the URI if no slashes are present
+         * @returns The "folder" part of the path
+         */
+        public static GetFolderPath(uri: string, returnUnchangedIfNoSlash = false): string {
             var index = uri.lastIndexOf("/");
-            if (index < 0)
+            if (index < 0) {
+                if (returnUnchangedIfNoSlash) {
+                    return uri;
+                }
                 return "";
+            }
 
             return uri.substring(0, index + 1);
         }
@@ -471,17 +494,25 @@
             var img = new Image();
             Tools.SetCorsBehavior(url, img);
 
-            img.onload = () => {
+            const loadHandler = () => {
+                img.removeEventListener("load", loadHandler);
+                img.removeEventListener("error", errorHandler);
                 onLoad(img);
             };
 
-            img.onerror = err => {
+            const errorHandler = (err: any) => {
+                img.removeEventListener("load", loadHandler);
+                img.removeEventListener("error", errorHandler);
+
                 Tools.Error("Error while trying to load image: " + url);
 
                 if (onError) {
                     onError("Error while trying to load image: " + url, err);
                 }
             };
+
+            img.addEventListener("load", loadHandler);
+            img.addEventListener("error", errorHandler);
 
             var noIndexedDB = () => {
                 img.src = url;
@@ -576,7 +607,9 @@
                     }
 
                     const onLoadEnd = () => {
+                        request.removeEventListener("loadend", onLoadEnd);
                         fileRequest.onCompleteObservable.notifyObservers(fileRequest);
+                        fileRequest.onCompleteObservable.clear();
                     };
 
                     request.addEventListener("loadend", onLoadEnd);
@@ -1155,6 +1188,32 @@
             });
         }
 
+        /**
+        * Test if the given uri is a base64 string.
+        * @param uri The uri to test
+        * @return True if the uri is a base64 string or false otherwise.
+        */
+        public static IsBase64(uri: string): boolean {
+            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
+        }
+
+        /**
+        * Decode the given base64 uri.
+        * @param uri The uri to decode
+        * @return The decoded base64 data.
+        */
+        public static DecodeBase64(uri: string): ArrayBuffer {
+            const decodedString = atob(uri.split(",")[1]);
+            const bufferLength = decodedString.length;
+            const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+
+            for (let i = 0; i < bufferLength; i++) {
+                bufferView[i] = decodedString.charCodeAt(i);
+            }
+
+            return bufferView.buffer;
+        }
+
         // Logs
         private static _NoneLogLevel = 0;
         private static _MessageLogLevel = 1;
@@ -1476,6 +1535,19 @@
                 chr = feeder(index++);
             }
             return hash;
+        }
+
+        /**
+         * Returns a promise that resolves after the given amount of time.
+         * @param delay Number of milliseconds to delay
+         * @returns Promise that resolves after the given amount of time
+         */
+        public static DelayAsync(delay: number): Promise<void> {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, delay);
+            });
         }
     }
 

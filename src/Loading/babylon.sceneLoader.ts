@@ -21,23 +21,112 @@
     }
 
     export interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
         name: string;
+
+        /**
+         * The file extensions supported by this plugin.
+         */
         extensions: string | ISceneLoaderPluginExtensions;
-        importMesh: (meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void) => boolean;
-        load: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => boolean;
+
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
         canDirectLoad?: (data: string) => boolean;
+
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
         rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        loadAssets: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void) => Nullable<AssetContainer>;
+
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
     }
 
     export interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
         name: string;
+
+        /**
+         * The file extensions supported by this plugin.
+         */
         extensions: string | ISceneLoaderPluginExtensions;
-        importMeshAsync: (meshesNames: any, scene: Scene, data: any, rootUrl: string, onSuccess?: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
-        loadAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded meshes, particle systems, and skeletons
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }>;
+
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
         canDirectLoad?: (data: string) => boolean;
+
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
         rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        loadAssetsAsync: (scene: Scene, data: string, rootUrl: string, onSuccess?: (assets: Nullable<AssetContainer>) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string, exception?: any) => void) => void;
+
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
     }
 
     interface IRegisteredPlugin {
@@ -209,7 +298,7 @@
                 let url = rootUrl + sceneFilename;
                 request = Tools.LoadFile(url, dataCallback, onProgress ? event => {
                     onProgress(SceneLoaderProgressEvent.FromProgressEvent(event));
-                }: undefined, database, useArrayBuffer, (request, exception) => {
+                } : undefined, database, useArrayBuffer, (request, exception) => {
                     onError("Failed to load scene." + (exception ? "" : " " + exception.message), exception);
                 });
             };
@@ -272,15 +361,17 @@
         }
 
         /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported 
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        */
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported 
+         * @param rootUrl a string that defines the root url for scene and resources
+         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
         public static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
@@ -336,6 +427,12 @@
                     rootUrl = plugin.rewriteRootURL(rootUrl, responseURL);
                 }
 
+                if (sceneFilename === "") {
+                    if (sceneFilename === "") {
+                        rootUrl = Tools.GetFolderPath(rootUrl, true);
+                    }
+                }
+
                 if ((<any>plugin).importMesh) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     var meshes = new Array<AbstractMesh>();
@@ -351,12 +448,38 @@
                 }
                 else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                    asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
+                    asyncedPlugin.importMeshAsync(meshNames, scene, data, rootUrl, progressHandler).then(result => {
                         scene.loadingPluginName = plugin.name;
-                        successHandler(meshes, particleSystems, skeletons);
-                    }, progressHandler, errorHandler);
+                        successHandler(result.meshes, result.particleSystems, result.skeletons);
+                    }).catch(error => {
+                        errorHandler(error.message, error);
+                    });
                 }
             }, progressHandler, errorHandler, disposeHandler, pluginExtension);
+        }
+
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported 
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded list of imported meshes, particleSystems, and skeletons
+        */
+        public static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
+            return new Promise((resolve, reject) => {
+                SceneLoader.ImportMesh(meshNames, rootUrl, sceneFilename, scene, (meshes, particleSystems, skeletons) => {
+                    resolve({
+                        meshes: meshes,
+                        particleSystems: particleSystems,
+                        skeletons: skeletons
+                    });
+                }, onProgress, (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                });
+            });
         }
 
         /**
@@ -367,9 +490,30 @@
         * @param onSuccess a callback with the scene when import succeeds
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
         */
         public static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             return SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension);
+        }
+
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded scene
+        */
+        public static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
+            return new Promise((resolve, reject) => {
+                SceneLoader.Load(rootUrl, sceneFilename, engine, scene => {
+                    resolve(scene);
+                }, onProgress, (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                }, pluginExtension);
+            });
         }
 
         /**
@@ -380,6 +524,8 @@
         * @param onSuccess a callback with the scene when import succeeds
         * @param onProgress a callback with a progress event for each file being loaded
         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
         */
         public static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess: Nullable<(scene: Scene) => void> = null, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null, pluginExtension: Nullable<string> = null): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
             if (sceneFilename.substr && sceneFilename.substr(0, 1) === "/") {
@@ -434,6 +580,10 @@
             };
 
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
+                if (sceneFilename === "") {
+                    rootUrl = Tools.GetFolderPath(rootUrl, true);
+                }
+
                 if ((<any>plugin).load) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
                     if (!syncedPlugin.load(scene, data, rootUrl, errorHandler)) {
@@ -444,10 +594,12 @@
                     successHandler();
                 } else {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                    asyncedPlugin.loadAsync(scene, data, rootUrl, () => {
+                    asyncedPlugin.loadAsync(scene, data, rootUrl, progressHandler).then(() => {
                         scene.loadingPluginName = plugin.name;
                         successHandler();
-                    }, progressHandler, errorHandler);
+                    }).catch(error => {
+                        errorHandler(error.message, error);
+                    });
                 }
 
                 if (SceneLoader.ShowLoadingScreen) {
@@ -457,7 +609,37 @@
                 }
             }, progressHandler, errorHandler, disposeHandler, pluginExtension);
         }
-        
+
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The given scene
+        */
+        public static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<Scene> {
+            return new Promise((resolve, reject) => {
+                SceneLoader.Append(rootUrl, sceneFilename, scene, scene => {
+                    resolve(scene);
+                }, onProgress, (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                }, pluginExtension);
+            });
+        }
+
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
         public static LoadAssetContainer(
             rootUrl: string,
             sceneFilename: any,
@@ -514,25 +696,25 @@
             };
 
             return SceneLoader._loadData(rootUrl, sceneFilename, scene, (plugin, data, responseURL) => {
-                if ((<any>plugin).loadAssets) {
+                if ((<any>plugin).loadAssetContainer) {
                     var syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    var assetContainer = syncedPlugin.loadAssets(scene, data, rootUrl, errorHandler);
+                    var assetContainer = syncedPlugin.loadAssetContainer(scene, data, rootUrl, errorHandler);
                     if (!assetContainer) {
                         return;
                     }
 
                     scene.loadingPluginName = plugin.name;
                     successHandler(assetContainer);
-                } else if ((<any>plugin).loadAssetsAsync) {
+                } else if ((<any>plugin).loadAssetContainerAsync) {
                     var asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
-                    asyncedPlugin.loadAssetsAsync(scene, data, rootUrl, (assetContainer) => {
-                        if(assetContainer){
-                            scene.loadingPluginName = plugin.name;
-                            successHandler(assetContainer);
-                        }
-                    }, progressHandler, errorHandler);
-                }else{
-                    errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssets or loadAssetsAsync method.")
+                    asyncedPlugin.loadAssetContainerAsync(scene, data, rootUrl, progressHandler).then(assetContainer => {
+                        scene.loadingPluginName = plugin.name;
+                        successHandler(assetContainer);
+                    }).catch(error => {
+                        errorHandler(error.message, error);
+                    });
+                } else {
+                    errorHandler("LoadAssetContainer is not supported by this plugin. Plugin did not provide a loadAssetContainer or loadAssetContainerAsync method.")
                 }
 
                 if (SceneLoader.ShowLoadingScreen) {
@@ -541,6 +723,25 @@
                     });
                 }
             }, progressHandler, errorHandler, disposeHandler, pluginExtension);
+        }
+
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded asset container
+        */
+        public static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress: Nullable<(event: SceneLoaderProgressEvent) => void> = null, pluginExtension: Nullable<string> = null): Promise<AssetContainer> {
+            return new Promise((resolve, reject) => {
+                SceneLoader.LoadAssetContainer(rootUrl, sceneFilename, scene, assetContainer => {
+                    resolve(assetContainer);
+                }, onProgress, (scene, message, exception) => {
+                    reject(exception || new Error(message));
+                }, pluginExtension);
+            });
         }
     };
 }

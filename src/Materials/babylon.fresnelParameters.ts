@@ -10,7 +10,7 @@
             }
 
             this._isEnabled = value;
-            Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
+            Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag | Material.MiscDirtyFlag);
         }   
 
         public leftColor = Color3.White();

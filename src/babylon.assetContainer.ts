@@ -94,7 +94,7 @@ module BABYLON {
         /**
          * ParticleSystems populated in the container.
          */
-        public particleSystems = new Array<ParticleSystem>();
+        public particleSystems = new Array<IParticleSystem>();
         /**
          * Animations populated in the container.
          */
@@ -274,17 +274,16 @@ module BABYLON {
             this._moveAssets(this.scene.meshes, this.meshes, keepAssets.meshes);
             this._moveAssets(this.scene.getGeometries(), this.geometries, keepAssets.geometries);
             this._moveAssets(this.scene.materials, this.materials, keepAssets.materials);
-    
-            Array.prototype.push.apply(this.actionManagers, this.scene._actionManagers);
-            Array.prototype.push.apply(this.animations, this.scene.animations);
-            Array.prototype.push.apply(this.lensFlareSystems, this.scene.lensFlareSystems);
-            Array.prototype.push.apply(this.lights, this.scene.lights);
-            Array.prototype.push.apply(this.morphTargetManagers, this.scene.morphTargetManagers);
-            Array.prototype.push.apply(this.multiMaterials, this.scene.multiMaterials);
-            Array.prototype.push.apply(this.skeletons, this.scene.skeletons);
-            Array.prototype.push.apply(this.particleSystems, this.scene.particleSystems);
-            Array.prototype.push.apply(this.sounds, this.scene.mainSoundTrack.soundCollection);
-            Array.prototype.push.apply(this.transformNodes, this.scene.transformNodes);
+            this._moveAssets(this.scene._actionManagers, this.actionManagers, keepAssets.actionManagers);
+            this._moveAssets(this.scene.animations, this.animations, keepAssets.animations);
+            this._moveAssets(this.scene.lensFlareSystems, this.lensFlareSystems, keepAssets.lensFlareSystems);
+            this._moveAssets(this.scene.lights, this.lights, keepAssets.lights);
+            this._moveAssets(this.scene.morphTargetManagers, this.morphTargetManagers, keepAssets.morphTargetManagers);
+            this._moveAssets(this.scene.multiMaterials, this.multiMaterials, keepAssets.multiMaterials);
+            this._moveAssets(this.scene.skeletons, this.skeletons, keepAssets.skeletons);
+            this._moveAssets(this.scene.particleSystems, this.particleSystems, keepAssets.particleSystems);
+            this._moveAssets(this.scene.mainSoundTrack.soundCollection, this.sounds, keepAssets.sounds);
+            this._moveAssets(this.scene.transformNodes, this.transformNodes, keepAssets.transformNodes);
     
             this.removeAllFromScene();
         }
