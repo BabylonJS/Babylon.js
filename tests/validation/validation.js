@@ -7,7 +7,7 @@ var config;
 var justOnce;
 
 var threshold = 25;
-var errorRatio = 5;
+var errorRatio = 2.5;
 
 // Overload the random to make it deterministic
 var seed = 100000,
@@ -305,6 +305,7 @@ function runTest(index, done) {
 BABYLON.SceneLoader.ShowLoadingScreen = false;
 BABYLON.Database.IDBStorageEnabled = false;
 BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
+BABYLON.DracoCompression.DecoderUrl = BABYLON.Tools.GetFolderPath(document.location.href) + "../../dist/preview%20release/draco_decoder.js";
 
 canvas = document.createElement("canvas");
 canvas.className = "renderCanvas";

@@ -270,7 +270,7 @@
     }
 
     export interface IDisplayChangedEventArgs {
-        vrDisplay: any;
+        vrDisplay: Nullable<any>;
         vrSupported: boolean;
     }
 
@@ -282,7 +282,9 @@
         public static ExceptionList = [
             { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
             { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+            { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
             { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+            { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
         ];
 
         public static Instances = new Array<Engine>();
@@ -344,6 +346,10 @@
         private static _TEXTUREFORMAT_LUMINANCE_ALPHA = 2;
         private static _TEXTUREFORMAT_RGB = 4;
         private static _TEXTUREFORMAT_RGBA = 5;
+        private static _TEXTUREFORMAT_R32F = 6;
+        private static _TEXTUREFORMAT_RG32F = 7;
+        private static _TEXTUREFORMAT_RGB32F = 8;
+        private static _TEXTUREFORMAT_RGBA32F = 9;
 
         private static _TEXTURETYPE_UNSIGNED_INT = 0;
         private static _TEXTURETYPE_FLOAT = 1;
@@ -496,6 +502,34 @@
             return Engine._TEXTUREFORMAT_LUMINANCE;
         }
 
+        /**
+         * R32F
+         */
+        public static get TEXTUREFORMAT_R32F(): number {
+            return Engine._TEXTUREFORMAT_R32F;
+        }       
+        
+        /**
+         * RG32F
+         */
+        public static get TEXTUREFORMAT_RG32F(): number {
+            return Engine._TEXTUREFORMAT_RG32F;
+        }       
+        
+        /**
+         * RGB32F
+         */
+        public static get TEXTUREFORMAT_RGB32F(): number {
+            return Engine._TEXTUREFORMAT_RGB32F;
+        }       
+        
+        /**
+         * RGBA32F
+         */
+        public static get TEXTUREFORMAT_RGBA32F(): number {
+            return Engine._TEXTUREFORMAT_RGBA32F;
+        }             
+
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
         }
@@ -539,7 +573,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha5";
+            return "3.2.0-alpha8";
         }
 
         // Updatable statics so stick with vars here
@@ -579,7 +613,7 @@
         /**
          * Observable event triggered each time the canvas receives pointerout event
          */
-        public onCanvasPointerOutObservable = new Observable<Engine>();
+        public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
         /**
          * Observable event triggered before each texture is initialized
@@ -593,6 +627,7 @@
         private _oldSize: Size;
         private _oldHardwareScaleFactor: number;
         private _vrExclusivePointerMode = false;
+        private _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
 
         public get isInVRExclusivePointerMode(): boolean {
             return this._vrExclusivePointerMode;
@@ -659,7 +694,7 @@
         // Focus
         private _onFocus: () => void;
         private _onBlur: () => void;
-        private _onCanvasPointerOut: () => void;
+        private _onCanvasPointerOut: (event: PointerEvent) => void;
         private _onCanvasBlur: () => void;
         private _onCanvasFocus: () => void;
 
@@ -825,6 +860,10 @@
          * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
          */
         constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio: boolean = false) {
+
+            // Register promises
+            PromisePolyfill.Apply();
+
             let canvas: Nullable<HTMLCanvasElement> = null;
             Engine.Instances.push(this);
 
@@ -957,8 +996,8 @@
                     this._windowIsBackground = false;
                 };
 
-                this._onCanvasPointerOut = () => {
-                    this.onCanvasPointerOutObservable.notifyObservers(this);
+                this._onCanvasPointerOut = (ev) => {
+                    this.onCanvasPointerOutObservable.notifyObservers(ev);
                 };
 
                 window.addEventListener("blur", this._onBlur);
@@ -1348,10 +1387,14 @@
                 }
                 this._boundTexturesCache[key] = null;
             }
-            this._nextFreeTextureSlots = [];
-            for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
-                this._nextFreeTextureSlots.push(slot);
+
+            if (!this.disableTextureBindingOptimization) {
+                this._nextFreeTextureSlots = [];
+                for (let slot = 0; slot < this._maxSimultaneousTextures; slot++) {
+                    this._nextFreeTextureSlots.push(slot);
+                }
             }
+
             this._currentTextureChannel = -1;
         }
 
@@ -1775,13 +1818,29 @@
             return this._vrDisplay;
         }
 
-        public initWebVR(): Observable<{ vrDisplay: any, vrSupported: any }> {
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns The onVRDisplayChangedObservable.
+         */
+        public initWebVR(): Observable<IDisplayChangedEventArgs> {
+            this.initWebVRAsync();
+            return this.onVRDisplayChangedObservable;
+        }
+
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns A promise containing a VRDisplay and if vr is supported.
+         */
+        public initWebVRAsync(): Promise<IDisplayChangedEventArgs> {
             var notifyObservers = () => {
                 var eventArgs = {
                     vrDisplay: this._vrDisplay,
                     vrSupported: this._vrSupported
                 };
                 this.onVRDisplayChangedObservable.notifyObservers(eventArgs);
+                this._webVRInitPromise = new Promise((res)=>{res(eventArgs)});
             }
 
             if (!this._onVrDisplayConnect) {
@@ -1802,10 +1861,9 @@
                 window.addEventListener('vrdisplaydisconnect', this._onVrDisplayDisconnect);
                 window.addEventListener('vrdisplaypresentchange', this._onVrDisplayPresentChange);
             }
-
-            this._getVRDisplays(notifyObservers);
-
-            return this.onVRDisplayChangedObservable;
+            this._webVRInitPromise = this._webVRInitPromise || this._getVRDisplaysAsync();
+            this._webVRInitPromise.then(notifyObservers);
+            return this._webVRInitPromise;
         }
 
         public enableVR() {
@@ -1845,26 +1903,28 @@
             }
         }
 
-        private _getVRDisplays(callback: () => void) {
-            var getWebVRDevices = (devices: Array<any>) => {
-                this._vrSupported = true;
-                // note that devices may actually be an empty array. This is fine;
-                // we expect this._vrDisplay to be undefined in this case.
-                return this._vrDisplay = devices[0];
-            }
-
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then(getWebVRDevices).then(callback).catch((error: () => void) => {
-                    // TODO: System CANNOT support WebVR, despite API presence.
+        private _getVRDisplaysAsync():Promise<IDisplayChangedEventArgs> {
+            return new Promise((res, rej)=>{    
+                if (navigator.getVRDisplays) {
+                    navigator.getVRDisplays().then((devices: Array<any>)=>{
+                        this._vrSupported = true;
+                        // note that devices may actually be an empty array. This is fine;
+                        // we expect this._vrDisplay to be undefined in this case.
+                        this._vrDisplay = devices[0];
+                        res({
+                            vrDisplay: this._vrDisplay,
+                            vrSupported: this._vrSupported
+                        });
+                    });
+                } else {
+                    this._vrDisplay = undefined;
                     this._vrSupported = false;
-                    callback();
-                });
-            } else {
-                // TODO: Browser does not support WebVR
-                this._vrDisplay = undefined;
-                this._vrSupported = false;
-                callback();
-            }
+                    res({
+                        vrDisplay: this._vrDisplay,
+                        vrSupported: this._vrSupported
+                    });
+                }
+            });
         }
 
         public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
@@ -2620,6 +2680,7 @@
                 if (onCompiled && compiledEffect.isReady()) {
                     onCompiled(compiledEffect);
                 }
+
                 return compiledEffect;
             }
             var effect = new Effect(baseName, attributesNamesOrOptions, uniformsNamesOrEngine, samplers, this, defines, fallbacks, onCompiled, onError, indexParameters);
@@ -2914,6 +2975,18 @@
             this._gl.uniform4f(uniform, color3.r, color3.g, color3.b, alpha);
         }
 
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniform defines the uniform location
+         * @param color4 defines the value to be set
+         */
+        public setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void {
+            if (!uniform)
+                return;
+
+            this._gl.uniform4f(uniform, color4.r, color4.g, color4.b, color4.a);
+        }        
+
         // States
         public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false): void {
             // Culling
@@ -3132,8 +3205,8 @@
             // establish the file extension, if possible
             var lastDot = url.lastIndexOf('.');
             var extension = (lastDot > 0) ? url.substring(lastDot).toLowerCase() : "";
-            var isDDS = this.getCaps().s3tc && (extension === ".dds");
-            var isTGA = (extension === ".tga");
+            var isDDS = this.getCaps().s3tc && (extension.indexOf(".dds") === 0);
+            var isTGA = (extension.indexOf(".tga") === 0);
 
             // determine if a ktx file should be substituted
             var isKTX = false;
@@ -3342,11 +3415,19 @@
                     internalFormat = this._gl.LUMINANCE_ALPHA;
                     break;
                 case Engine.TEXTUREFORMAT_RGB:
+                case Engine.TEXTUREFORMAT_RGB32F:
                     internalFormat = this._gl.RGB;
                     break;
                 case Engine.TEXTUREFORMAT_RGBA:
+                case Engine.TEXTUREFORMAT_RGBA32F:
                     internalFormat = this._gl.RGBA;
                     break;
+                case Engine.TEXTUREFORMAT_R32F:
+                    internalFormat = this._gl.RED;
+                    break;       
+                case Engine.TEXTUREFORMAT_RG32F:
+                    internalFormat = this._gl.RG;
+                    break;                                    
             }
 
             return internalFormat;
@@ -3357,8 +3438,8 @@
                 return;
             }
 
+            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type, format);
             var internalFormat = this._getInternalFormat(format);
-            var internalSizedFomat = this._getRGBABufferInternalSizedFormat(type);
             var textureType = this._getWebGLTextureType(type);
             this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
             this._gl.pixelStorei(this._gl.UNPACK_FLIP_Y_WEBGL, invertY === undefined ? 1 : (invertY ? 1 : 0));
@@ -3977,37 +4058,35 @@
             this._gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, data);
         }
 
-        public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): InternalTexture {
-            var gl = this._gl;
+        public createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture {
+            let fullOptions = {
+              generateMipMaps: true,
+              generateDepthBuffer: true,
+              generateStencilBuffer: false,
+              type: Engine.TEXTURETYPE_UNSIGNED_INT,
+              samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+              ...options
+            };
+            fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
+
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
+              // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            else if (fullOptions.type === Engine.TEXTURETYPE_HALF_FLOAT && !this._caps.textureHalfFloatLinearFiltering) {
+              // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+              fullOptions.samplingMode = Texture.NEAREST_SAMPLINGMODE;
+            }
+            var gl = this._gl
 
             var texture = new InternalTexture(this, InternalTexture.DATASOURCE_RENDERTARGET);
-
-            var generateMipMaps = true;
-            var generateDepthBuffer = true;
-            var generateStencilBuffer = false;
-
-            var samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
-            if (options !== undefined) {
-                generateMipMaps = options.generateMipMaps === undefined ? true : options.generateMipMaps;
-                generateDepthBuffer = options.generateDepthBuffer === undefined ? true : options.generateDepthBuffer;
-                generateStencilBuffer = (generateDepthBuffer && options.generateStencilBuffer) ? true : false;
-
-                if (options.samplingMode !== undefined) {
-                    samplingMode = options.samplingMode;
-                }
-            }
-
-            texture.isCube = true;
-            texture.generateMipMaps = generateMipMaps;
-            texture.samples = 1;
-            texture.samplingMode = samplingMode;
-
-            var filters = getSamplingParameters(samplingMode, generateMipMaps, gl);
-
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
 
-            for (var face = 0; face < 6; face++) {
-                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            var filters = getSamplingParameters(fullOptions.samplingMode, fullOptions.generateMipMaps, gl);
+
+            if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloat) {
+              fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+              Tools.Warn("Float textures are not supported. Cube render target forced to TEXTURETYPE_UNESIGNED_BYTE type");
             }
 
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, filters.mag);
@@ -4015,15 +4094,19 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+            for (var face = 0; face < 6; face++) {
+                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), size, size, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
+            }
+
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
             this.bindUnboundFramebuffer(framebuffer);
 
-            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, size, size);
+            texture._depthStencilBuffer = this._setupFramebufferDepthAttachments(fullOptions.generateStencilBuffer, fullOptions.generateDepthBuffer, size, size);
 
-            // Mipmaps
-            if (texture.generateMipMaps) {
-                gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+            // MipMaps
+            if (fullOptions.generateMipMaps) {
+              gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
             }
 
             // Unbind
@@ -4035,8 +4118,13 @@
             texture.width = size;
             texture.height = size;
             texture.isReady = true;
-
-            //this.resetTextureCache();
+            texture.isCube = true;
+            texture.samples = 1;
+            texture.generateMipMaps = fullOptions.generateMipMaps;
+            texture.samplingMode = fullOptions.samplingMode;
+            texture.type = fullOptions.type;
+            texture._generateDepthBuffer = fullOptions.generateDepthBuffer;
+            texture._generateStencilBuffer = fullOptions.generateStencilBuffer;
 
             this._internalTexturesCache.push(texture);
 
@@ -4180,7 +4268,7 @@
                 }, undefined, undefined, true, onerror);
             } else if (isDDS) {
                 if (files && files.length === 6) {
-                    this._cascadeLoadFiles(rootUrl,
+                    this._cascadeLoadFiles(
                         scene,
                         imgs => {
                             var info: DDSInfo | undefined;
@@ -4801,6 +4889,10 @@
 
             internalTexture._designatedSlot = -1;
 
+            if (this.disableTextureBindingOptimization) {
+                return -1;
+            }
+
             // Remove from bound list
             this._linkTrackers(internalTexture.previous, internalTexture.next);
 
@@ -4827,7 +4919,7 @@
             let isTextureForRendering = texture && texture._initialSlot > -1;
 
             if (currentTextureBound !== texture) {
-                if (currentTextureBound && !this.disableTextureBindingOptimization) {
+                if (currentTextureBound) {
                     this._removeDesignatedSlot(currentTextureBound);
                 }
 
@@ -4994,7 +5086,7 @@
 
                 if (internalTexture && internalTexture._cachedWrapR !== texture.wrapR) {
                     internalTexture._cachedWrapR = texture.wrapR;
-                    switch (texture.wrapV) {
+                    switch (texture.wrapR) {
                         case Texture.WRAP_ADDRESSMODE:
                             this._gl.texParameteri(this._gl.TEXTURE_3D, this._gl.TEXTURE_WRAP_R, this._gl.REPEAT);
                             break;
@@ -5514,12 +5606,23 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
-        public _getRGBABufferInternalSizedFormat(type: number): number {
+        /** @ignore */
+        public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
                 return this._gl.RGBA;
             }
 
             if (type === Engine.TEXTURETYPE_FLOAT) {
+                if (format) {
+                    switch(format) {
+                        case Engine.TEXTUREFORMAT_R32F:
+                            return this._gl.R32F;
+                        case Engine.TEXTUREFORMAT_RG32F:
+                            return this._gl.RG32F;
+                            case Engine.TEXTUREFORMAT_RGB32F:
+                            return this._gl.RGB32F;                            
+                    }                    
+                }
                 return this._gl.RGBA32F;
             }
             else if (type === Engine.TEXTURETYPE_HALF_FLOAT) {
@@ -5750,6 +5853,17 @@
             return request;
         }
 
+        /** @ignore */
+        public _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
+            return new Promise((resolve, reject) => {
+                this._loadFile(url, (data) => {
+                    resolve(data);
+                }, undefined, database, useArrayBuffer, (request, exception) => {
+                    reject(exception);
+                })
+            });
+        }
+
         private _partialLoadFile(url: string, index: number, loadedFiles: (string | ArrayBuffer)[], scene: Nullable<Scene>, onfinish: (files: (string | ArrayBuffer)[]) => void, onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null): void {
             var onload = (data: string | ArrayBuffer) => {
                 loadedFiles[index] = data;
@@ -5769,7 +5883,7 @@
             this._loadFile(url, onload, undefined, undefined, true, onerror);
         }
 
-        private _cascadeLoadFiles(rootUrl: string, scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
+        private _cascadeLoadFiles(scene: Nullable<Scene>, onfinish: (images: (string | ArrayBuffer)[]) => void, files: string[], onError: Nullable<(message?: string, exception?: any) => void> = null): void {
             var loadedFiles: (string | ArrayBuffer)[] = [];
             (<any>loadedFiles)._internalCount = 0;
 

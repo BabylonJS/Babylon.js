@@ -18,7 +18,7 @@
       "sceneFolder": "/Scenes/Espilit/",
       "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
-    },
+    },    
     {
       "title": "The car",
       "sceneFolder": "/Scenes/TheCar/",
@@ -200,6 +200,24 @@
       "referenceImage": "gltfMaterialAlpha.png"
     },
     {
+      "title": "GLTF Material Alpha (Back)",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialAlphaFlippedScene",
+      "referenceImage": "gltfMaterialAlphaBack.png"
+    },
+    {
+      "title": "GLTF Mesh Primitives",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitivesScene",
+      "referenceImage": "gltfMeshPrimitives.png"
+    },
+    {
+      "title": "GLTF Mesh Primitives UV",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitivesUVScene",
+      "referenceImage": "gltfMeshPrimitivesUV.png"
+    },
+    {
       "title": "GLTF Primitive Attribute",
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createPrimitiveAttributeScene",
@@ -232,9 +250,25 @@
       "excludeFromAutomaticTesting": true
     },
     {
+      "title": "GLTF Buggy with Draco Mesh Compression",
+      "playgroundId": "#JNW207#1",
+      "referenceImage": "gltfBuggyDraco.png"
+    },
+    {
       "title": "Asset Containers",
       "playgroundId": "#P3U079#19",
       "referenceImage": "assetContainer.png"
+    },
+    {
+      "title": "Depth of field",
+      "playgroundId": "#IDSQK2#53",
+      "renderCount": 20,
+      "referenceImage": "depthOfField.png"
+    },
+    {
+      "title": "Kernel Blur",
+      "playgroundId": "#Y0WKT0",
+      "referenceImage": "KernelBlur.png"
     },
     {
       "title": "GLTF Mesh Primitive Attribute Test",
@@ -274,7 +308,7 @@
     },
     {
       "title": "PBR",
-      "playgroundId": "#LCA0Q4",
+      "playgroundId": "#LCA0Q4#0",
       "referenceImage": "pbr.png"
     },
     {
@@ -331,6 +365,21 @@
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",
       "replace": "Dude.babylon, dude.babylon"
+    },
+    {
+      "title": "Light Projection Texture",
+      "playgroundId": "#CQNGRK",
+      "referenceImage": "LightProjectionTexture.png"
+    },
+    {
+      "title": "GlowLayer",
+      "playgroundId": "#LRFB2D#1",
+      "referenceImage": "GlowLayer.png"
+    },
+    {
+      "title": "Local cubemaps",
+      "playgroundId": "#RNASML#4",
+      "referenceImage": "local cubemaps.png"
     }
   ]
 }

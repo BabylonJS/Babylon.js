@@ -92,18 +92,21 @@
             if (typeof src === "object") {
                 return src.toString();
             }
-    
+
             return src;
         };
     
         private _getVideo(src: string | string[] | HTMLVideoElement): HTMLVideoElement {
             if (src instanceof HTMLVideoElement) {
+                Tools.SetCorsBehavior(src.currentSrc, src);
                 return src;
             }
             const video: HTMLVideoElement = document.createElement("video");
             if (typeof src === "string") {
+                Tools.SetCorsBehavior(src, video);
                 video.src = src;
             } else {
+                Tools.SetCorsBehavior(src[0], video);
                 src.forEach(url => {
                     const source = document.createElement("source");
                     source.src = url;
@@ -136,11 +139,9 @@
                 this._generateMipMaps,
                 this._samplingMode
             );
-            this._texture.width;
-
-            this._updateInternalTexture();
 
             this._texture.isReady = true;
+            this._updateInternalTexture();
         };
 
         private reset = (): void => {

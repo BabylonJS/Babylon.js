@@ -55,6 +55,7 @@ function updateEngineVersion(newVersion) {
 
 function runGulp() {
     // run gulp typescript-all
+    console.log("Running gulp compilation");
     let exec = shelljs.exec("gulp typescript-all --gulpfile ../Gulp/gulpfile.js");
     if (exec.code) {
         console.log("error during compilation, aborting");
@@ -62,7 +63,7 @@ function runGulp() {
     }
 }
 
-function processPackages() {
+function processPackages(version) {
     packages.forEach((package) => {
         if (package.name === "core") {
             processCore(package, version);
@@ -82,7 +83,6 @@ function processPackages() {
 //check if logged in
 console.log("Using npm user:");
 let loginCheck = shelljs.exec('npm whoami');
-console.log("Not that I can check, but - did you run gulp typescript-all?");
 if (loginCheck.code === 0) {
     prompt.start();
 
@@ -90,7 +90,7 @@ if (loginCheck.code === 0) {
         let version = result.version;
         updateEngineVersion(version);
         runGulp();
-        processPackages();
+        processPackages(version);
 
         console.log("done, please tag git with " + version);
     });
@@ -166,7 +166,7 @@ function processCore(package, version) {
     });
     console.log("updating package.json");
     packageJson.files = packageFiles;
-    packageJson.main = "babylon.max.js";
+    packageJson.main = "babylon.js";
     packageJson.typings = "babylon.d.ts";
 
     fs.writeFileSync(basePath + '/package/' + 'package.json', JSON.stringify(packageJson, null, 4));
@@ -186,7 +186,7 @@ function processCore(package, version) {
             return file;
         }
     });
-    packageJson.main = "dist/preview release/babylon.max.js";
+    packageJson.main = "dist/preview release/babylon.js";
     packageJson.typings = "dist/preview release/babylon.d.ts";
 
     fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));

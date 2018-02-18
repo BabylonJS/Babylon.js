@@ -260,14 +260,11 @@ var BABYLON;
             //Get the 3D model
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
         };
-        OBJFileLoader.prototype.loadAssets = function (scene, data, rootUrl, onError) {
+        OBJFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
             var container = new BABYLON.AssetContainer(scene);
-            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-            if (result) {
-                container.removeAllFromScene();
-                return container;
-            }
-            return null;
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
         };
         /**
          * Read the OBJ file and create an Array of meshes.

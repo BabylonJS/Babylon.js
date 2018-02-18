@@ -264,14 +264,11 @@ module BABYLON {
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
         }
 
-        public loadAssets(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void):Nullable<AssetContainer>{
+        public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
             var container = new AssetContainer(scene);
-            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-            if(result){
-                container.removeAllFromScene();
-                return container;
-            }
-            return null;
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
         }
 
         /**

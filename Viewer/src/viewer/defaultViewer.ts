@@ -1,14 +1,12 @@
 
 
-import { ViewerConfiguration } from './../configuration/configuration';
+import { ViewerConfiguration, IModelConfiguration, ILightConfiguration } from './../configuration/configuration';
 import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
-import { MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
+import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
 
 export class DefaultViewer extends AbstractViewer {
-
-    public camera: ArcRotateCamera;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
@@ -105,6 +103,34 @@ export class DefaultViewer extends AbstractViewer {
         this.containerElement.style.display = 'flex';
     }
 
+    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        super.configureModel(modelConfiguration, focusMeshes);
+
+        let navbar = this.templateManager.getTemplate('navBar');
+        if (!navbar) return;
+
+        let metadataContainer = navbar.parent.querySelector('#model-metadata');
+        if (metadataContainer) {
+            if (modelConfiguration.title !== undefined) {
+                let element = metadataContainer.querySelector('span.model-title');
+                if (element) {
+                    element.innerHTML = modelConfiguration.title;
+                }
+            }
+
+            if (modelConfiguration.subtitle !== undefined) {
+                let element = metadataContainer.querySelector('span.model-subtitle');
+                if (element) {
+                    element.innerHTML = modelConfiguration.subtitle;
+                }
+            }
+
+            if (modelConfiguration.thumbnail !== undefined) {
+                (<HTMLDivElement>metadataContainer.querySelector('.thumbnail')).style.backgroundImage = `url('${modelConfiguration.thumbnail}')`;
+            }
+        }
+    }
+
     public loadModel(model: any = this.configuration.model): Promise<Scene> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
@@ -116,58 +142,21 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private onModelLoaded = (meshes: Array<AbstractMesh>) => {
-
-        // here we could set the navbar's model information:
-        this.setModelMetaData();
-
         // with a short timeout, making sure everything is there already.
+        let hideLoadingDelay = 500;
+        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        }
         setTimeout(() => {
             this.hideLoadingScreen();
-        }, 500);
-
-
-        // recreate the camera
-        this.scene.createDefaultCameraOrLight(true, true, true);
-        this.camera = <ArcRotateCamera>this.scene.activeCamera;
+        }, hideLoadingDelay);
 
         meshes[0].rotation.y += Math.PI;
 
-        this.setupCamera(meshes);
-        this.setupLights(meshes);
-
-        return this.initEnvironment(meshes);
+        return; //this.initEnvironment(meshes);
     }
 
-    private setModelMetaData() {
-        let navbar = this.templateManager.getTemplate('navBar');
-        if (!navbar) return;
-
-        let metadataContainer = navbar.parent.querySelector('#model-metadata');
-
-        //title
-        if (metadataContainer && typeof this.configuration.model === 'object') {
-            if (this.configuration.model.title) {
-                let element = metadataContainer.querySelector('span.model-title');
-                if (element) {
-                    element.innerHTML = this.configuration.model.title;
-                }
-            }
-
-            if (this.configuration.model.subtitle) {
-                let element = metadataContainer.querySelector('span.model-subtitle');
-                if (element) {
-                    element.innerHTML = this.configuration.model.subtitle;
-                }
-            }
-
-            if (this.configuration.model.thumbnail) {
-                (<HTMLDivElement>metadataContainer.querySelector('.thumbnail')).style.backgroundImage = `url('${this.configuration.model.thumbnail}')`;
-            }
-        }
-
-    }
-
-    public initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
+    /*protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
         if (this.configuration.skybox) {
             // Define a general environment textue
             let texture;
@@ -267,7 +256,7 @@ export class DefaultViewer extends AbstractViewer {
         }
 
         return Promise.resolve(this.scene);
-    }
+    }*/
 
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
@@ -356,144 +345,53 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
-    private setupLights(focusMeshes: Array<AbstractMesh> = []) {
-
-        let sceneConfig = this.configuration.scene || { defaultLight: true };
-
-        if (!sceneConfig.defaultLight && (this.configuration.lights && Object.keys(this.configuration.lights).length)) {
-            // remove old lights
-            this.scene.lights.forEach(l => {
-                l.dispose();
-            });
-
-            Object.keys(this.configuration.lights).forEach((name, idx) => {
-                let lightConfig = this.configuration.lights && this.configuration.lights[name] || { name: name, type: 0 };
-                lightConfig.name = name;
-                let constructor = Light.GetConstructorFromName(lightConfig.type, lightConfig.name, this.scene);
-                if (!constructor) return;
-                let light = constructor();
-
-                //enabled
-                if (light.isEnabled() !== !lightConfig.disabled) {
-                    light.setEnabled(!lightConfig.disabled);
+    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
+        super.configureLights(lightsConfiguration, focusMeshes);
+        console.log("flashlight", this.configuration.lab);
+        // labs feature - flashlight
+        if (this.configuration.lab && this.configuration.lab.flashlight) {
+            let pointerPosition = BABYLON.Vector3.Zero();
+            let lightTarget;
+            let angle = 0.5;
+            let exponent = Math.PI / 2;
+            if (typeof this.configuration.lab.flashlight === "object") {
+                exponent = this.configuration.lab.flashlight.exponent || exponent;
+                angle = this.configuration.lab.flashlight.angle || angle;
+            }
+            var flashlight = new SpotLight("flashlight", Vector3.Zero(),
+                Vector3.Zero(), exponent, angle, this.scene);
+            if (typeof this.configuration.lab.flashlight === "object") {
+                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this.configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
+                }
+                if (this.configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
                 }
 
-                this.extendClassWithConfig(light, lightConfig);
-
-                //position. Some lights don't support shadows
-                if (light instanceof ShadowLight) {
-                    if (lightConfig.shadowEnabled) {
-                        var shadowGenerator = new ShadowGenerator(512, light);
-                        this.extendClassWithConfig(shadowGenerator, lightConfig.shadowConfig || {});
-                        // add the focues meshes to the shadow list
-                        let shadownMap = shadowGenerator.getShadowMap();
-                        if (!shadownMap) return;
-                        let renderList = shadownMap.renderList;
-                        for (var index = 0; index < focusMeshes.length; index++) {
-                            renderList && renderList.push(focusMeshes[index]);
-                        }
+            }
+            this.scene.constantlyUpdateMeshUnderPointer = true;
+            this.scene.onPointerObservable.add((eventData, eventState) => {
+                if (eventData.type === 4 && eventData.pickInfo) {
+                    lightTarget = (eventData.pickInfo.pickedPoint);
+                } else {
+                    lightTarget = undefined;
+                }
+            });
+            let updateFlashlightFunction = () => {
+                if (this.camera && flashlight) {
+                    flashlight.position.copyFrom(this.camera.position);
+                    if (lightTarget) {
+                        lightTarget.subtractToRef(flashlight.position, flashlight.direction);
                     }
                 }
-            });
-        }
-    }
-
-    private setupCamera(focusMeshes: Array<AbstractMesh> = []) {
-
-        let cameraConfig = this.configuration.camera || {};
-        let sceneConfig = this.configuration.scene || { autoRotate: false, defaultCamera: true };
-
-        if (!this.configuration.camera && sceneConfig.defaultCamera) {
-            if (sceneConfig.autoRotate) {
-                this.camera.useAutoRotationBehavior = true;
             }
-            return;
+            this.scene.registerBeforeRender(updateFlashlightFunction);
+            this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
         }
-
-        if (cameraConfig.position) {
-            this.camera.position.copyFromFloats(cameraConfig.position.x || 0, cameraConfig.position.y || 0, cameraConfig.position.z || 0);
-        }
-
-        if (cameraConfig.rotation) {
-            this.camera.rotationQuaternion = new Quaternion(cameraConfig.rotation.x || 0, cameraConfig.rotation.y || 0, cameraConfig.rotation.z || 0, cameraConfig.rotation.w || 0)
-        }
-
-        this.camera.minZ = cameraConfig.minZ || this.camera.minZ;
-        this.camera.maxZ = cameraConfig.maxZ || this.camera.maxZ;
-
-        if (cameraConfig.behaviors) {
-            for (let name in cameraConfig.behaviors) {
-                this.setCameraBehavior(cameraConfig.behaviors[name], focusMeshes);
-            }
-        };
-
-        if (sceneConfig.autoRotate) {
-            this.camera.useAutoRotationBehavior = true;
-        }
-    }
-
-    private setCameraBehavior(behaviorConfig: number | {
-        type: number;
-        [propName: string]: any;
-    }, payload: any) {
-
-        let behavior: Behavior<ArcRotateCamera> | null;
-        let type = (typeof behaviorConfig !== "object") ? behaviorConfig : behaviorConfig.type;
-
-        let config: { [propName: string]: any } = (typeof behaviorConfig === "object") ? behaviorConfig : {};
-
-        // constructing behavior
-        switch (type) {
-            case CameraBehavior.AUTOROTATION:
-                behavior = new AutoRotationBehavior();
-                break;
-            case CameraBehavior.BOUNCING:
-                behavior = new BouncingBehavior();
-                break;
-            case CameraBehavior.FRAMING:
-                behavior = new FramingBehavior();
-                break;
-            default:
-                behavior = null;
-                break;
-        }
-
-        if (behavior) {
-            if (typeof behaviorConfig === "object") {
-                this.extendClassWithConfig(behavior, behaviorConfig);
-            }
-            this.camera.addBehavior(behavior);
-        }
-
-        // post attach configuration. Some functionalities require the attached camera.
-        switch (type) {
-            case CameraBehavior.AUTOROTATION:
-                break;
-            case CameraBehavior.BOUNCING:
-                break;
-            case CameraBehavior.FRAMING:
-                if (config.zoomOnBoundingInfo) {
-                    //payload is an array of meshes
-                    let meshes = <Array<AbstractMesh>>payload;
-                    let bounding = meshes[0].getHierarchyBoundingVectors();
-                    (<FramingBehavior>behavior).zoomOnBoundingInfo(bounding.min, bounding.max);
-                }
-                break;
-        }
-    }
-
-    private extendClassWithConfig(object: any, config: any) {
-        if (!config) return;
-        Object.keys(config).forEach(key => {
-            if (key in object && typeof object[key] !== 'function') {
-                if (typeof object[key] === 'function') return;
-                // if it is an object, iterate internally until reaching basic types
-                if (typeof object[key] === 'object') {
-                    this.extendClassWithConfig(object[key], config[key]);
-                } else {
-                    object[key] = config[key];
-                }
-            }
-        });
     }
 }

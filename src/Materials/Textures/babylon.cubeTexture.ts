@@ -3,6 +3,34 @@
         public url: string;
         public coordinatesMode = Texture.CUBIC_MODE;
 
+        /**
+         * Gets or sets the center of the bounding box associated with the cube texture
+         * It must define where the camera used to render the texture was set
+         */
+        public boundingBoxPosition = Vector3.Zero();
+
+        private _boundingBoxSize: Vector3;
+
+        /**
+         * Gets or sets the size of the bounding box associated with the cube texture
+         * When defined, the cubemap will switch to local mode
+         * @see https://community.arm.com/graphics/b/blog/posts/reflections-based-on-local-cubemaps-in-unity
+         * @example https://www.babylonjs-playground.com/#RNASML
+         */
+        public set boundingBoxSize(value: Vector3) {
+            if (this._boundingBoxSize && this._boundingBoxSize.equals(value)) {
+                return;
+            }
+            this._boundingBoxSize = value;
+            let scene = this.getScene();
+            if (scene) {
+                scene.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
+            }
+        }
+        public get boundingBoxSize(): Vector3 {
+            return this._boundingBoxSize;
+        }
+
         private _noMipmap: boolean;
         private _files: string[];
         private _extensions: string[];
@@ -11,7 +39,11 @@
         private _prefiltered: boolean;
 
         public static CreateFromImages(files: string[], scene: Scene, noMipmap?: boolean) {
-            return new CubeTexture("", scene, null, noMipmap, files);
+            let rootUrlKey = "";
+            
+            files.forEach(url => rootUrlKey += url);
+
+            return new CubeTexture(rootUrlKey, scene, null, noMipmap, files);
         }
 
         public static CreateFromPrefilteredData(url: string, scene: Scene, forcedExtension: any = null) {
@@ -112,11 +144,19 @@
         public setReflectionTextureMatrix(value: Matrix): void {
             this._textureMatrix = value;
         }
-
+        
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
                 return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
             }, parsedTexture, scene);
+            
+            // Local Cubemaps
+            if (parsedTexture.boundingBoxPosition) {
+                texture.boundingBoxPosition = BABYLON.Vector3.FromArray(parsedTexture.boundingBoxPosition);
+            }
+            if (parsedTexture.boundingBoxSize) {
+                texture.boundingBoxSize = BABYLON.Vector3.FromArray(parsedTexture.boundingBoxSize);
+            }
 
             // Animations
             if (parsedTexture.animations) {

@@ -13,7 +13,12 @@ module.exports = function (config) {
 
         files: [
             './Tools/DevLoader/BabylonLoader.js',
-            './tests/unit/**/*.js',
+            './tests/unit/babylon/babylon.example.tests.js',
+            './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
+            './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
+            './tests/unit/babylon/src/Material/babylon.material.tests.js',
+            './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
+            './tests/unit/babylon/src/Tools/babylon.promise.tests.js',
             { pattern: 'dist/**/*', watched: false, included: false, served: true },
             { pattern: 'assets/**/*', watched: false, included: false, served: true },
             { pattern: 'tests/**/*', watched: false, included: false, served: true },

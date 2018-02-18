@@ -100,6 +100,8 @@ module BABYLON {
                 }
             }
 
+            defines.ALPHATEST = this._opacityTexture ? true : false;
+
             // Misc.
             if (defines._areMiscDirty) {
                 defines.POINTSIZE = (this.pointsCloud || scene.forcePointsCloud);
@@ -107,7 +109,7 @@ module BABYLON {
             }
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, this._shouldTurnAlphaTestOn(mesh));
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);

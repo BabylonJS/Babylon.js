@@ -70,14 +70,11 @@ var BABYLON;
             }
             return result;
         };
-        STLFileLoader.prototype.loadAssets = function (scene, data, rootUrl, onError) {
+        STLFileLoader.prototype.loadAssetContainer = function (scene, data, rootUrl, onError) {
             var container = new BABYLON.AssetContainer(scene);
-            var result = this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
-            if (result) {
-                container.removeAllFromScene();
-                return container;
-            }
-            return null;
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
         };
         STLFileLoader.prototype.isBinary = function (data) {
             // check if file size is correct for binary stl
