@@ -351,19 +351,13 @@
         /**
         * The current active Sub-systems, this property is used by the root particle system only.
         */
-        public activeSubSystems: StringDictionary<ParticleSystem>;
-
-        /**
-        * This property is used to set the max number of sub emits. if this property is used the particle system everytime will pick a random template from the subEmitters property.
-        If this value is not set the ParticleSystem will pick the next emitter template based on order, this property is used by the root particle system only.
-        */
-        public maxNumberOfSubEmits = 0;
+        public activeSubSystems: Array<ParticleSystem>;
 
         private stockSubSystems: StringDictionary<Array<ParticleSystem>>;
-        private _generationString: string;
-        private _generation: number;
-        private _rootParticleSystem: ParticleSystem;
+        
         private _isEmitting = false;
+        private _rootParticleSystem: ParticleSystem;
+        private _subEmitterIndex = "";
         //end of Sub-emitter
 
         /**
@@ -498,7 +492,7 @@
             this._stopped = false;
             this._actualFrame = 0;
             if (this.subEmitters && this.subEmitters.length != 0) {
-                this.activeSubSystems = new StringDictionary<ParticleSystem>();
+                this.activeSubSystems = new Array<ParticleSystem>();
                 this.stockSubSystems = new StringDictionary<Array<ParticleSystem>>();
             }
         }
@@ -573,45 +567,17 @@
         };
 
         private _stopSubEmitters(): void {
-            this.stockSubSystems.forEach(generation => {
-                this.stockSubSystems.get(generation)!.forEach(subSystem => {
+            this.stockSubSystems.forEach(index => {
+                this.stockSubSystems.get(index)!.forEach(subSystem => {
                     subSystem.stop();
                 });
             });
 
-            this.activeSubSystems.forEach(subSystemName => {
-                var subSystem = this.activeSubSystems.get(subSystemName)!;
+            this.activeSubSystems.forEach(subSystem => {
                 subSystem.stop();
                 subSystem._stoppedEmitting(true);
             });
-            this.activeSubSystems = new StringDictionary<ParticleSystem>();
-        }
-
-        private _emitFromGenerationUsingSystem(rootSystem: ParticleSystem, particle: Particle, generation: number): void {
-            if (!rootSystem.subEmitters || rootSystem.subEmitters.length === 0 || (generation >= rootSystem.subEmitters.length && rootSystem.maxNumberOfSubEmits === 0) || (rootSystem.maxNumberOfSubEmits <= generation && rootSystem.maxNumberOfSubEmits !== 0)) {
-                return;
-            }
-
-            var generationString = generation.toString();
-
-            if (!rootSystem.stockSubSystems.contains(generationString) || (rootSystem.stockSubSystems.get(generationString) as (Array<ParticleSystem>)).length === 0) {
-
-                // get the current generation template and clone it to subSystem
-                var templateIndex = rootSystem.maxNumberOfSubEmits === 0 ? generation : Math.floor(Math.random() * rootSystem.subEmitters.length);
-                var subSystem = rootSystem.subEmitters[templateIndex]._cloneToSubSystem(rootSystem.name, particle.position, generation, rootSystem);
-                rootSystem.activeSubSystems.add(subSystem.name, subSystem);
-                subSystem.start();
-            }
-            else {
-                var stockSubSystem = (rootSystem.stockSubSystems.get(generationString)!).pop()!;
-                stockSubSystem.emitter = particle.position;
-                rootSystem.activeSubSystems.add(stockSubSystem.name, stockSubSystem);
-                // reset the manual emit count
-                if (rootSystem.subEmitters[generation].manualEmitCount != -1)
-                    stockSubSystem.manualEmitCount = rootSystem.subEmitters[generation].manualEmitCount;
-
-                stockSubSystem.start();
-            }
+            this.activeSubSystems = new Array<ParticleSystem>();
         }
 
         private _createParticle: () => Particle = () => {
@@ -624,31 +590,48 @@
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
-            this._emitFromGenerationUsingSystem(this, particle, 0);
+            if (!this.subEmitters || this.subEmitters.length === 0) {
+                return;
+            }
+
+            var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
+            var templateIndexString =templateIndex.toString();
+
+            if (!this.stockSubSystems.contains(templateIndexString) || (this.stockSubSystems.contains(templateIndexString) && this.stockSubSystems.get(templateIndexString)!.length === 0)) {
+                // get the current generation template and clone it to subSystem
+                var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position);
+                subSystem._subEmitterIndex = templateIndexString;
+                this.activeSubSystems.push(subSystem);
+                subSystem.start();
+            }
+            else {
+                var stockSubSystem = this.stockSubSystems.get(templateIndexString)!.pop()!;
+                stockSubSystem.emitter = particle.position;
+                this.activeSubSystems.push(stockSubSystem);
+
+                // reset the manual emit count
+                if (this.subEmitters[templateIndex].manualEmitCount != -1)
+                    stockSubSystem.manualEmitCount = this.subEmitters[templateIndex].manualEmitCount;
+
+                stockSubSystem.start();
+            }
         }
 
-        private _initSubSystem(rootParticleSystem: ParticleSystem, generation: number): void {
+        private _initSubSystem(rootParticleSystem: ParticleSystem): void {
             this._rootParticleSystem = rootParticleSystem;
-            this._generation = generation;
-            this._generationString = this._generation.toString();
 
             this._stoppedEmitting = (overrideRemove = false) => {
 
-                if (overrideRemove)
-                    this._rootParticleSystem.activeSubSystems.remove(this.name);
-
-                if (this._rootParticleSystem.stockSubSystems.contains(this._generationString)) {
-                    (this._rootParticleSystem.stockSubSystems.get(this._generationString)!).push(this);
+                if (overrideRemove){
+                    let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
+                    if (index > -1) {
+                        this._rootParticleSystem.activeSubSystems.splice(index, 1);
+                    }
                 }
-                else {
-                    var subSysArray = new Array<ParticleSystem>();
-                    subSysArray.push(this);
-                    this._rootParticleSystem.stockSubSystems.add(this._generationString, subSysArray);
-                }
-            }
-
-            this._emitFromParticle = (particle: Particle) => {
-                this._emitFromGenerationUsingSystem(this._rootParticleSystem, particle, this._generation + 1);
+                
+                var particleSystemArray = new Array<ParticleSystem>();
+                particleSystemArray.push(this);
+                this._rootParticleSystem.stockSubSystems.add(this._subEmitterIndex, particleSystemArray);
             }
 
             this.recycleParticle = (particle: Particle) => {
@@ -999,16 +982,16 @@
             }
 
             if (this.stockSubSystems) {
-                this.stockSubSystems.forEach(generation => {
-                    this.stockSubSystems.get(generation)!.forEach(subSystem => {
+                this.stockSubSystems.forEach(index => {
+                    this.stockSubSystems.get(index)!.forEach(subSystem => {
                         subSystem.dispose();
                     });
                 });
             }
 
             if (this.activeSubSystems) {
-                this.activeSubSystems.forEach(subSystemName => {
-                    this.activeSubSystems.get(subSystemName)!.dispose();
+                this.activeSubSystems.forEach(subSystem => {
+                    subSystem.dispose();
                 });
             }
         }
@@ -1068,7 +1051,7 @@
             return particleEmitter;
         }
 
-        private _cloneToSubSystem(name: string, newEmitter: Vector3, generation: number, root: ParticleSystem): ParticleSystem {
+        private _cloneToSubSystem(root: ParticleSystem, newEmitter: Vector3): ParticleSystem {
             var custom: Nullable<Effect> = null;
             var program: any = null;
             if (this.customShader != null) {
@@ -1079,11 +1062,11 @@
             var result = new ParticleSystem(name, this._capacity, this._scene, custom);
             result.customShader = program;
             Tools.DeepCopy(this, result, ["customShader"]);
-            result.name = name + "_Child_" + root.count++ + "_" + generation;
+            result.name = name + "_Child_" + root.count++;
             result.id = result.name;
             result.emitter = newEmitter;
             result.particleEmitterType = this.particleEmitterType;
-            result._initSubSystem(root, generation);
+            result._initSubSystem(root);
             if (this.particleTexture) {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }
