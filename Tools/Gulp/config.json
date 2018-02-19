@@ -1314,7 +1314,10 @@
             "buildAsModule": true,
             "moduleName": "babylonjs-materials",
             "outputFilename": "babylonjs.materials",
-            "moduleDeclaration": "BJSMaterials",
+            "moduleDeclaration": {
+                "name": "BJSMaterials",
+                "module": "babylonjs-materials"
+            },
             "extendsRoot": true
         }
     },
@@ -1345,7 +1348,10 @@
             "buildAsModule": true,
             "moduleName": "babylonjs-post-process",
             "outputFilename": "babylonjs.postProcess",
-            "moduleDeclaration": "BJSPostProcess",
+            "moduleDeclaration": {
+                "name": "PostProcesses",
+                "module": "babylonjs-post-process"
+            },
             "extendsRoot": true
         }
     },
@@ -1448,7 +1454,10 @@
             "buildAsModule": true,
             "moduleName": "babylonjs-procedural-textures",
             "outputFilename": "babylonjs.proceduralTextures",
-            "moduleDeclaration": "BJSProceduralTextures",
+            "moduleDeclaration": {
+                "name": "ProceduralTextures",
+                "module": "babylonjs-procedural-textures"
+            },
             "extendsRoot": true
         }
     },
@@ -1521,7 +1530,10 @@
             "buildAsModule": true,
             "moduleName": "babylonjs-loaders",
             "outputFilename": "babylonjs.loaders",
-            "moduleDeclaration": "BJSLoaders",
+            "moduleDeclaration": {
+                "name": "Loaders",
+                "module": "babylonjs-loaders"
+            },
             "extendsRoot": true
         }
     },
@@ -1552,7 +1564,10 @@
                 "../../dist/babylon.glTF2Interface.d.ts"
             ],
             "outputFilename": "babylonjs.serializers",
-            "moduleDeclaration": "BJSSerializers",
+            "moduleDeclaration": {
+                "name": "Serializers",
+                "module": "babylonjs-serializers"
+            },
             "extendsRoot": true
         }
     },
@@ -1583,7 +1598,10 @@
                 "output": "babylon.gui.js",
                 "buildAsModule": true,
                 "moduleName": "babylonjs-gui",
-                "moduleDeclaration": "GUI"
+                "moduleDeclaration": {
+                    "name": "GUI",
+                    "module": "babylonjs-gui"
+                }
             }
         ],
         "build": {
@@ -1659,7 +1677,10 @@
                 "output": "babylon.inspector.js",
                 "webpack": "../../inspector/webpack.config.js",
                 "bundle": "true",
-                "moduleDeclaration": "INSPECTOR"
+                "moduleDeclaration": {
+                    "name": "INSPECTOR",
+                    "module": "babylonjs-inspector"
+                }
             }
         ],
         "build": {
@@ -1675,7 +1696,10 @@
                 "output": "babylon.viewer.js",
                 "webpack": "../../Viewer/webpack.gulp.config.js",
                 "bundle": "true",
-                "moduleDeclaration": "BabylonViewer",
+                "moduleDeclaration": {
+                    "name": "BabylonViewer",
+                    "module": "babylonjs-viewer"
+                },
                 "babylonIncluded": true
             }
         ],
