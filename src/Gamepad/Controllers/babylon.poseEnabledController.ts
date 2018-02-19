@@ -5,6 +5,9 @@ module BABYLON {
         OCULUS,
         WINDOWS,
         GEAR_VR,
+        /**
+         * Google Daydream
+         */
         DAYDREAM,
         GENERIC
     }
