@@ -14,7 +14,7 @@ module BABYLON {
         public static MODEL_FILENAME: string = 'generic.babylon';
 
         /**
-         * Gamepad Id prefix used to identify Gear VR Controller.
+         * Gamepad Id prefix used to identify Daydream Controller.
          */
         public static readonly GAMEPAD_ID_PREFIX: string = 'Daydream'; // id is 'Daydream Controller'
 
