@@ -190,6 +190,10 @@ vec3 reflectionColor = vec3(1., 1., 1.);
         reflectionColor = toLinearSpace(reflectionColor.rgb);
     #endif
 
+    #ifdef REFLECTIONBGR
+        reflectionColor = reflectionColor.bgr;
+    #endif
+
     // _____________________________ Levels _____________________________________
     reflectionColor *= vReflectionInfos.x;
 #endif
