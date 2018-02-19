@@ -260,7 +260,7 @@ export class DefaultViewer extends AbstractViewer {
 
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
-        if (!template) return Promise.reject('Overlay template not found');
+        if (!template) return Promise.resolve('Overlay template not found');
 
         return template.show((template => {
 
@@ -285,7 +285,7 @@ export class DefaultViewer extends AbstractViewer {
 
     public hideOverlayScreen() {
         let template = this.templateManager.getTemplate('overlay');
-        if (!template) return Promise.reject('Overlay template not found');
+        if (!template) return Promise.resolve('Overlay template not found');
 
         return template.hide((template => {
             template.parent.style.opacity = "0";
@@ -313,7 +313,7 @@ export class DefaultViewer extends AbstractViewer {
 
     public showLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
-        if (!template) return Promise.reject('oading Screen template not found');
+        if (!template) return Promise.resolve('Loading Screen template not found');
 
         return template.show((template => {
 
@@ -332,7 +332,7 @@ export class DefaultViewer extends AbstractViewer {
 
     public hideLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
-        if (!template) return Promise.reject('oading Screen template not found');
+        if (!template) return Promise.resolve('Loading Screen template not found');
 
         return template.hide((template => {
             template.parent.style.opacity = "0";
@@ -347,7 +347,6 @@ export class DefaultViewer extends AbstractViewer {
 
     protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
         super.configureLights(lightsConfiguration, focusMeshes);
-        console.log("flashlight", this.configuration.lab);
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
             let pointerPosition = BABYLON.Vector3.Zero();
