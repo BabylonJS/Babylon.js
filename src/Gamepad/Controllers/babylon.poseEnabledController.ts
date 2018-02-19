@@ -5,6 +5,7 @@ module BABYLON {
         OCULUS,
         WINDOWS,
         GEAR_VR,
+        DAYDREAM,
         GENERIC
     }
 
@@ -37,6 +38,10 @@ module BABYLON {
             // Samsung/Oculus Gear VR
             else if (vrGamepad.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0) {
                 return new GearVRController(vrGamepad);
+            }
+            // Google Daydream
+            else if (vrGamepad.id.indexOf(DaydreamController.GAMEPAD_ID_PREFIX) === 0) {
+                return new DaydreamController(vrGamepad);
             }
             // Generic 
             else {
@@ -115,7 +120,6 @@ module BABYLON {
 
                     this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
-
                 }
                 let pose = this.rawPose;
                 if (poseData.orientation && pose.orientation) {
