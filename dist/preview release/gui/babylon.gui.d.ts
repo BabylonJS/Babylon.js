@@ -16,8 +16,12 @@ declare module BABYLON.GUI {
         private _background;
         _rootContainer: Container;
         _lastPickedControl: Control;
-        _lastControlOver: Nullable<Control>;
-        _lastControlDown: Nullable<Control>;
+        _lastControlOver: {
+            [pointerId: number]: Control;
+        };
+        _lastControlDown: {
+            [pointerId: number]: Control;
+        };
         _capturingControl: {
             [pointerId: number]: Control;
         };

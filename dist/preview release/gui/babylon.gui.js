@@ -33,6 +33,8 @@ var BABYLON;
                 var _this = _super.call(this, name, { width: width, height: height }, scene, generateMipMaps, samplingMode, BABYLON.Engine.TEXTUREFORMAT_RGBA) || this;
                 _this._isDirty = false;
                 _this._rootContainer = new GUI.Container("root");
+                _this._lastControlOver = {};
+                _this._lastControlDown = {};
                 _this._capturingControl = {};
                 _this._linkedControls = new Array();
                 _this._isFullscreen = false;
@@ -358,10 +360,10 @@ var BABYLON;
                 }
                 if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
                     if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                        if (this._lastControlOver) {
-                            this._lastControlOver._onPointerOut(this._lastControlOver);
+                        if (this._lastControlOver[pointerId]) {
+                            this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
                         }
-                        this._lastControlOver = null;
+                        delete this._lastControlOver[pointerId];
                     }
                 }
                 this._manageFocus();
@@ -417,17 +419,17 @@ var BABYLON;
                         }
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
-                        if (_this._lastControlDown) {
-                            _this._lastControlDown.forcePointerUp(pointerId);
+                        if (_this._lastControlDown[pointerId]) {
+                            _this._lastControlDown[pointerId].forcePointerUp(pointerId);
                         }
-                        _this._lastControlDown = null;
+                        delete _this._lastControlDown[pointerId];
                         _this.focusedControl = null;
                     }
                     else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                        if (_this._lastControlOver) {
-                            _this._lastControlOver._onPointerOut(_this._lastControlOver);
+                        if (_this._lastControlOver[pointerId]) {
+                            _this._lastControlOver[pointerId]._onPointerOut(_this._lastControlOver[pointerId]);
                         }
-                        _this._lastControlOver = null;
+                        delete _this._lastControlOver[pointerId];
                     }
                 });
                 mesh.enablePointerMoveEvents = supportPointerMove;
@@ -456,15 +458,15 @@ var BABYLON;
             };
             AdvancedDynamicTexture.prototype._attachToOnPointerOut = function (scene) {
                 var _this = this;
-                this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function () {
-                    if (_this._lastControlOver) {
-                        _this._lastControlOver._onPointerOut(_this._lastControlOver);
+                this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(function (pointerEvent) {
+                    if (_this._lastControlOver[pointerEvent.pointerId]) {
+                        _this._lastControlOver[pointerEvent.pointerId]._onPointerOut(_this._lastControlOver[pointerEvent.pointerId]);
                     }
-                    _this._lastControlOver = null;
-                    if (_this._lastControlDown) {
-                        _this._lastControlDown.forcePointerUp();
+                    delete _this._lastControlOver[pointerEvent.pointerId];
+                    if (_this._lastControlDown[pointerEvent.pointerId]) {
+                        _this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                     }
-                    _this._lastControlDown = null;
+                    delete _this._lastControlDown[pointerEvent.pointerId];
                 });
             };
             // Statics
@@ -1726,27 +1728,27 @@ var BABYLON;
                 this._dummyVector2.copyFromFloats(x, y);
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
                     this._onPointerMove(this, this._dummyVector2);
-                    var previousControlOver = this._host._lastControlOver;
+                    var previousControlOver = this._host._lastControlOver[pointerId];
                     if (previousControlOver && previousControlOver !== this) {
                         previousControlOver._onPointerOut(this);
                     }
                     if (previousControlOver !== this) {
                         this._onPointerEnter(this);
                     }
-                    this._host._lastControlOver = this;
+                    this._host._lastControlOver[pointerId] = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERDOWN) {
                     this._onPointerDown(this, this._dummyVector2, pointerId, buttonIndex);
-                    this._host._lastControlDown = this;
+                    this._host._lastControlDown[pointerId] = this;
                     this._host._lastPickedControl = this;
                     return true;
                 }
                 if (type === BABYLON.PointerEventTypes.POINTERUP) {
-                    if (this._host._lastControlDown) {
-                        this._host._lastControlDown._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
+                    if (this._host._lastControlDown[pointerId]) {
+                        this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
                     }
-                    this._host._lastControlDown = null;
+                    delete this._host._lastControlDown[pointerId];
                     return true;
                 }
                 return false;

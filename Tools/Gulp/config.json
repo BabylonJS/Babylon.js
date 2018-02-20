@@ -186,6 +186,7 @@
                 "../../src/Tools/babylon.smartArray.js",
                 "../../src/Tools/babylon.tools.js",
                 "../../src/Tools/babylon.promise.js",
+                "../../src/Tools/babylon.workerPool.js",
                 "../../src/States/babylon.alphaCullingState.js",
                 "../../src/States/babylon.depthCullingState.js",
                 "../../src/States/babylon.stencilState.js",
@@ -1534,6 +1535,10 @@
                 "name": "Loaders",
                 "module": "babylonjs-loaders"
             },
+            "extraTypesDependencies": [
+                "babylonjs",
+                "babylonjs-gltf2interface"
+            ],
             "extendsRoot": true
         }
     },
@@ -1560,8 +1565,9 @@
             "distOutputDirectory": "/serializers/",
             "buildAsModule": true,
             "moduleName": "babylonjs-serializers",
-            "extraDeclarations": [
-                "../../dist/babylon.glTF2Interface.d.ts"
+            "extraTypesDependencies": [
+                "babylonjs",
+                "babylonjs-gltf2interface"
             ],
             "outputFilename": "babylonjs.serializers",
             "moduleDeclaration": {
