@@ -37,7 +37,7 @@ globalObject["${base}"] = f;` : '';
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["${varName.module}"], ${subModule || extendsRoot ? '["BABYLON"],' : ''} factory);
+        define("${varName.module}", ${subModule || extendsRoot ? '["BABYLON"],' : ''} factory);
     else if(typeof exports === 'object')
         exports["${varName.module}"] = f;
     else {
