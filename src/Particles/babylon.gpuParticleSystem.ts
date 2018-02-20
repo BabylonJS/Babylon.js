@@ -638,9 +638,10 @@
         }
 
         /**
-         * Disposes the particle system and free the associated resources.
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
          */
-        public dispose(): void {
+        public dispose(disposeTexture = true): void {
             var index = this._scene.particleSystems.indexOf(this);
             if (index > -1) {
                 this._scene.particleSystems.splice(index, 1);
@@ -654,6 +655,11 @@
                 this._randomTexture.dispose();
                 (<any>this._randomTexture) = null;
             }
+
+            if (disposeTexture && this.particleTexture) {
+                this.particleTexture.dispose();
+                this.particleTexture = null;
+            }            
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);
