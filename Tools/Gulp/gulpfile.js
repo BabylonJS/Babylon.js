@@ -325,13 +325,10 @@ var buildExternalLibraries = function (settings) {
             let dtsFiles = files.map(function (filename) {
                 return filename.replace(".js", ".d.ts");
             });
-            if (settings.build.extraDeclarations) {
-                settings.build.extraDeclarations.forEach(file => { dtsFiles.unshift(file) })
-            }
             let dtsTask = gulp.src(dtsFiles)
                 .pipe(concat(settings.build.outputFilename + ".module.d.ts"))
                 .pipe(replace(referenceSearchRegex, ""))
-                .pipe(addDtsExport(settings.build.moduleDeclaration, settings.build.moduleName, true, settings.build.extendsRoot))
+                .pipe(addDtsExport(settings.build.moduleDeclaration, settings.build.moduleName, true, settings.build.extendsRoot, settings.build.extraTypesDependencies))
                 .pipe(gulp.dest(outputDirectory));
 
             return merge2([srcTask, dtsTask]);
@@ -421,7 +418,7 @@ var buildExternalLibrary = function (library, settings, watch) {
             var dts2 = tsProcess.dts
                 .pipe(concat(library.output))
                 .pipe(replace(referenceSearchRegex, ""))
-                .pipe(addDtsExport(library.moduleDeclaration, library.moduleName, true, library.extendsRoot))
+                .pipe(addDtsExport(library.moduleDeclaration, library.moduleName, true, library.extendsRoot, config.build.extraTypesDependencies))
                 .pipe(rename({ extname: ".module.d.ts" }))
                 .pipe(gulp.dest(outputDirectory));
             waitAll = merge2([dev, code, css, dts, dts2]);

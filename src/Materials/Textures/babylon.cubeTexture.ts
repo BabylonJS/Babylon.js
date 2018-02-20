@@ -144,11 +144,19 @@
         public setReflectionTextureMatrix(value: Matrix): void {
             this._textureMatrix = value;
         }
-
+        
         public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): CubeTexture {
             var texture = SerializationHelper.Parse(() => {
                 return new CubeTexture(rootUrl + parsedTexture.name, scene, parsedTexture.extensions);
             }, parsedTexture, scene);
+            
+            // Local Cubemaps
+            if (parsedTexture.boundingBoxPosition) {
+                texture.boundingBoxPosition = BABYLON.Vector3.FromArray(parsedTexture.boundingBoxPosition);
+            }
+            if (parsedTexture.boundingBoxSize) {
+                texture.boundingBoxSize = BABYLON.Vector3.FromArray(parsedTexture.boundingBoxSize);
+            }
 
             // Animations
             if (parsedTexture.animations) {

@@ -257,5 +257,5 @@ export interface IImageProcessingConfiguration {
     vignetteBlendMode?: number;
     vignetteM?: boolean;
     applyByPostProcess?: boolean;
-
+    isEnabled?: boolean;
 }
