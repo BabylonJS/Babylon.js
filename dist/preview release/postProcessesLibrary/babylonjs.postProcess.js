@@ -447,16 +447,14 @@ BABYLON.Effect.ShadersStore['digitalrainPixelShader'] = "\nvarying vec2 vUV;\nun
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["BJSPostProcess"], factory);
+        define("babylonjs-post-process", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["BJSPostProcess"] = f;
+        exports["babylonjs-post-process"] = f;
     else {
         root["BABYLON"] = f;
     }

@@ -2,7 +2,7 @@
 
 
 declare module 'babylonjs-gui' { 
-    export = BABYLON.GUI; 
+    export = BABYLON.[object Object]; 
 }
 
 declare module BABYLON.GUI {
