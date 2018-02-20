@@ -286,7 +286,10 @@
             this._reset();
 
             if(this.depthOfFieldEnabled){
-                this.depthOfField = new DepthOfFieldEffect(this._scene, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+                // Enable and get current depth map
+                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
+
+                this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
                 this.addEffect(this.depthOfField);
             }
 

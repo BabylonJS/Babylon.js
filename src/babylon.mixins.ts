@@ -60,6 +60,7 @@ interface WebGLRenderingContext {
     RED: number;
     RG: number;
 
+    UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
 
     /* Multiple Render Targets */

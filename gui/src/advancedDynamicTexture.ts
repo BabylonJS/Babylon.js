@@ -14,12 +14,12 @@ module BABYLON.GUI {
         private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
         private _pointerMoveObserver: Nullable<Observer<PointerInfoPre>>;
         private _pointerObserver: Nullable<Observer<PointerInfo>>;
-        private _canvasPointerOutObserver: Nullable<Observer<Engine>>;
+        private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
         private _background: string;
         public _rootContainer = new Container("root");
         public _lastPickedControl: Control;
-        public _lastControlOver: Nullable<Control>;
-        public _lastControlDown: Nullable<Control>;
+        public _lastControlOver: {[pointerId:number]:Control} = {};
+        public _lastControlDown: {[pointerId:number]:Control} = {};
         public _capturingControl: {[pointerId:number]:Control} = {};
         public _shouldBlockPointer: boolean;
         public _layerToDispose: Nullable<Layer>;
@@ -393,11 +393,11 @@ module BABYLON.GUI {
             if (!this._rootContainer._processPicking(x, y, type, pointerId, buttonIndex)) {
 
                 if (type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    if (this._lastControlOver) {
-                        this._lastControlOver._onPointerOut(this._lastControlOver);
+                    if (this._lastControlOver[pointerId]) {
+                        this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
                     }
 
-                    this._lastControlOver = null;
+                    delete this._lastControlOver[pointerId];
                 }
             }
 
@@ -461,17 +461,17 @@ module BABYLON.GUI {
                         this._doPicking(uv.x * size.width, (1.0 - uv.y) * size.height, pi.type, pointerId, pi.event.button);
                     }
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERUP) {
-                    if (this._lastControlDown) {
-                        this._lastControlDown.forcePointerUp(pointerId);
+                    if (this._lastControlDown[pointerId]) {
+                        this._lastControlDown[pointerId].forcePointerUp(pointerId);
                     }
-                    this._lastControlDown = null;
+                    delete this._lastControlDown[pointerId];
 
                     this.focusedControl = null;
                 } else if (pi.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    if (this._lastControlOver) {
-                        this._lastControlOver._onPointerOut(this._lastControlOver);
+                    if (this._lastControlOver[pointerId]) {
+                        this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId]);
                     }
-                    this._lastControlOver = null;
+                    delete this._lastControlOver[pointerId];
                 }
             });
 
@@ -505,16 +505,16 @@ module BABYLON.GUI {
         }
 
         private _attachToOnPointerOut(scene: Scene): void {
-            this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add(() => {
-                if (this._lastControlOver) {
-                    this._lastControlOver._onPointerOut(this._lastControlOver);
+            this._canvasPointerOutObserver = scene.getEngine().onCanvasPointerOutObservable.add((pointerEvent) => {
+                if (this._lastControlOver[pointerEvent.pointerId]) {
+                    this._lastControlOver[pointerEvent.pointerId]._onPointerOut(this._lastControlOver[pointerEvent.pointerId]);
                 }
-                this._lastControlOver = null;
+                delete this._lastControlOver[pointerEvent.pointerId];
 
-                if (this._lastControlDown) {
-                    this._lastControlDown.forcePointerUp();
+                if (this._lastControlDown[pointerEvent.pointerId]) {
+                    this._lastControlDown[pointerEvent.pointerId].forcePointerUp();
                 }
-                this._lastControlDown = null;
+                delete this._lastControlDown[pointerEvent.pointerId];
             });
         }
 

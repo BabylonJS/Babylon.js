@@ -25,6 +25,10 @@ let packages = [
         path: basePath + '/postProcessesLibrary/'
     },
     {
+        name: 'gltf2interface',
+        path: basePath + '/gltf2interface/'
+    },
+    {
         name: 'loaders',
         path: basePath + '/loaders/'
     },
@@ -70,6 +74,13 @@ function processPackages(version) {
         } else {
             let packageJson = require(package.path + 'package.json');
             packageJson.version = version;
+            if (packageJson.dependencies) {
+                Object.keys(packageJson.dependencies).forEach(key => {
+                    if (key.indexOf("babylonjs") !== -1) {
+                        packageJson.dependencies[key] = version;
+                    }
+                });
+            }
             if (packageJson.peerDependencies) packageJson.peerDependencies.babylonjs = minimumDependency;
             fs.writeFileSync(package.path + 'package.json', JSON.stringify(packageJson, null, 4));
             console.log('Publishing ' + package.name + " from " + package.path);

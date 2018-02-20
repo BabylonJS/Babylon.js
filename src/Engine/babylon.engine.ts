@@ -217,6 +217,18 @@
     }
 
     /**
+     * Define options used to create a depth texture
+     */
+    export class DepthTextureCreationOptions {
+        /** Specifies wether or not a stencil should be allocated in the texture */
+        generateStencil?: boolean;
+        /** Specifies wether or not bilinear filtering is enable on the texture */
+        bilinearFiltering?: boolean;
+        /** Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode */
+        comparisonFunction?: number;
+    }
+
+    /**
      * Regroup several parameters relative to the browser in use
      */
     export class EngineCapabilities {
@@ -613,7 +625,7 @@
         /**
          * Observable event triggered each time the canvas receives pointerout event
          */
-        public onCanvasPointerOutObservable = new Observable<Engine>();
+        public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
         /**
          * Observable event triggered before each texture is initialized
@@ -694,7 +706,7 @@
         // Focus
         private _onFocus: () => void;
         private _onBlur: () => void;
-        private _onCanvasPointerOut: () => void;
+        private _onCanvasPointerOut: (event: PointerEvent) => void;
         private _onCanvasBlur: () => void;
         private _onCanvasFocus: () => void;
 
@@ -996,8 +1008,8 @@
                     this._windowIsBackground = false;
                 };
 
-                this._onCanvasPointerOut = () => {
-                    this.onCanvasPointerOutObservable.notifyObservers(this);
+                this._onCanvasPointerOut = (ev) => {
+                    this.onCanvasPointerOutObservable.notifyObservers(ev);
                 };
 
                 window.addEventListener("blur", this._onBlur);
@@ -1290,6 +1302,7 @@
 
                 if (depthTextureExtension != null) {
                     this._caps.depthTextureExtension = true;
+                    this._gl.UNSIGNED_INT_24_8 = depthTextureExtension.UNSIGNED_INT_24_8_WEBGL;
                 }
             }
 
@@ -1927,7 +1940,16 @@
             });
         }
 
-        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+        /**
+         * Binds the frame buffer to the specified texture.
+         * @param texture The texture to render to or null for the default canvas
+         * @param faceIndex The face of the texture to render to in case of cube texture
+         * @param requiredWidth The width of the target to render to
+         * @param requiredHeight The height of the target to render to
+         * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
+         * @param depthStencilTexture The depth stencil texture to use to render
+         */
+        public bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture): void {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
             }
@@ -1939,6 +1961,15 @@
                     faceIndex = 0;
                 }
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, texture._webGLTexture, 0);
+
+                if (depthStencilTexture) {
+                    if (depthStencilTexture._generateStencilBuffer) {
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture, 0);
+                    }
+                    else {
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture, 0);
+                    }
+                }
             }
 
             if (this._cachedViewport && !forceFullscreenViewport) {
@@ -3635,6 +3666,212 @@
                 // Let's disable the texture
                 texture._isDisabled = true;
             }
+        }
+
+        /**
+         * Updates a depth texture Comparison Mode and Function.
+         * If the comparison Function is equal to 0, the mode will be set to none.
+         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+         * @param texture The texture to set the comparison function for
+         * @param comparisonFunction The comparison function to set, 0 if no comparison required
+         */
+        public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
+            if (this.webGLVersion === 1) {
+                Tools.Error("WebGL 1 does not support texture comparison.");
+                return;
+            }
+
+            var gl = this._gl;
+
+            if (texture.isCube) {
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
+
+                if (comparisonFunction === 0) {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Engine.LEQUAL);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+                }
+                else {
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+                }
+
+                this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
+            } else {
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
+
+                if (comparisonFunction === 0) {
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Engine.LEQUAL);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+                }
+                else {
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+                }
+
+                this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+            }
+
+            texture._comparisonFunction = comparisonFunction;
+        }
+
+        private _setupDepthStencilTexture(internalTexture: InternalTexture, size: number | { width: number, height: number }, generateStencil: boolean, bilinearFiltering: boolean, comparisonFunction: number) : void {
+            var width = (<{ width: number, height: number }>size).width || <number>size;
+            var height = (<{ width: number, height: number }>size).height || <number>size;
+            internalTexture.baseWidth = width;
+            internalTexture.baseHeight = height;
+            internalTexture.width = width;
+            internalTexture.height = height;
+            internalTexture.isReady = true;
+            internalTexture.samples = 1;
+            internalTexture.generateMipMaps = false;
+            internalTexture._generateDepthBuffer = true;
+            internalTexture._generateStencilBuffer = generateStencil;
+            internalTexture.samplingMode = bilinearFiltering ? Texture.NEAREST_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE;
+            internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
+            internalTexture._comparisonFunction = comparisonFunction;
+
+            var gl = this._gl;
+            var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+            var samplingParameters = getSamplingParameters(internalTexture.samplingMode, false, gl);
+            gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
+            gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
+            gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            if (comparisonFunction === 0) {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Engine.LEQUAL);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+            }
+            else {
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+            }
+        }
+
+        /**
+         * Creates a depth stencil texture.
+         * This is only available in WebGL 2 or with the depth texture extension available.
+         * @param size The size of face edge in the texture.
+         * @param options The options defining the texture.
+         * @returns The texture
+         */
+        public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
+            var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
+
+            if (!this._caps.depthTextureExtension) {
+                Tools.Error("Depth texture is not supported by your browser or hardware.");
+                return internalTexture;
+            }
+
+            var internalOptions = {
+                bilinearFiltering: false,
+                comparisonFunction: 0,
+                generateStencil: false,
+                ...options
+            }
+
+            var gl = this._gl;
+            this._bindTextureDirectly(gl.TEXTURE_2D, internalTexture, true);
+
+            this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+
+            if (this.webGLVersion > 1) {
+                if (internalOptions.generateStencil) {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, internalTexture.width, internalTexture.height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
+                }
+                else {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, internalTexture.width, internalTexture.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+                }
+            }
+            else {
+                if (internalOptions.generateStencil) {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_STENCIL, internalTexture.width, internalTexture.height, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
+                }
+                else {
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT, internalTexture.width, internalTexture.height, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+                }
+            }
+
+            this._bindTextureDirectly(gl.TEXTURE_2D, null);
+
+            return internalTexture;
+        }
+
+        /**
+         * Creates a depth stencil cube texture.
+         * This is only available in WebGL 2.
+         * @param size The size of face edge in the cube texture.
+         * @param options The options defining the cube texture.
+         * @returns The cube texture
+         */
+        public createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions) : InternalTexture {
+            var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN);
+            internalTexture.isCube = true;
+
+            if (this.webGLVersion === 1) {
+                Tools.Error("Depth cube texture is not supported by WebGL 1.");
+                return internalTexture;
+            }
+
+            var internalOptions = {
+                bilinearFiltering: false,
+                comparisonFunction: 0,
+                generateStencil: false,
+                ...options
+            }
+
+            var gl = this._gl;
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, internalTexture, true);
+
+            this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
+
+            // Create the depth/stencil buffer
+            for (var face = 0; face < 6; face++) {
+                if (internalOptions.generateStencil) {
+                    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, gl.DEPTH24_STENCIL8, size, size, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
+                }
+                else {
+                    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, gl.DEPTH_COMPONENT24, size, size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+                }
+            }
+
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+
+            return internalTexture;
+        }
+
+        /**
+         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
+         * @param renderTarget The render target to set the frame buffer for
+         */
+        public setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void {
+            // Create the framebuffer
+            var internalTexture = renderTarget.getInternalTexture();
+            if (!internalTexture || !internalTexture._framebuffer || !renderTarget.depthStencilTexture) {
+                return;
+            }
+
+            var gl = this._gl;
+            var depthStencilTexture = renderTarget.depthStencilTexture;
+
+            this.bindUnboundFramebuffer(internalTexture._framebuffer);
+            if (depthStencilTexture.isCube) {
+                if (depthStencilTexture._generateStencilBuffer) {
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture, 0);
+                }
+                else {
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture, 0);
+                }
+            }
+            else {
+                if (depthStencilTexture._generateStencilBuffer) {
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture, 0);
+                }
+                else {
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture, 0);
+                }
+            }
+            this.bindUnboundFramebuffer(null);
         }
 
         public createRenderTargetTexture(size: number | { width: number, height: number }, options: boolean | RenderTargetCreationOptions): InternalTexture {
