@@ -27,9 +27,6 @@
         "viewer"
     ],
     "license": "Apache-2.0",
-    "peerDependencies": {
-        "babylonjs": ">=3.2.0-alpha"
-    },
     "engines": {
         "node": "*"
     }
