@@ -78,7 +78,7 @@
 - Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
-- NPM package now has a dependency system, updated during build ([RaananW](https://github.com/RaananW))
+- NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
@@ -90,6 +90,7 @@
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
+- AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
