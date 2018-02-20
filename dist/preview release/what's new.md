@@ -50,7 +50,7 @@
 - (Viewer) Scene Optimizer intergrated in viewer. ([RaananW](https://github.com/RaananW))
 - (Viewer) The viewer supports custom shaders in the configuration. ([RaananW](https://github.com/RaananW))
 - Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager, Effect classes ([trevordev](https://github.com/trevordev))
-- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
+- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie))
 - SPS particle parenting feature ([jbousquie](https://github.com/jbousquie))
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
@@ -87,6 +87,7 @@
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
+- (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
