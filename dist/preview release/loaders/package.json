@@ -26,6 +26,9 @@
         "loaders"
     ],
     "license": "Apache-2.0",
+    "dependencies": {
+        "babylonjs-gltf2interface": "^3.2.0-alpha8"
+    },
     "peerDependencies": {
         "babylonjs": ">=3.2.0-alpha"
     },

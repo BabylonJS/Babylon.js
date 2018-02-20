@@ -13,6 +13,8 @@
 - Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
+- New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
+- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
@@ -41,7 +43,6 @@
    ([carloslanderas](https://github.com/carloslanderas))
 - (Viewer) initScene and initEngine can now be extended. onProgress during model loading is implemented as observable. ([RaananW](https://github.com/RaananW))
 - glTF loader now supports the KHR_lights extension ([MiiBond](https://github.com/MiiBond))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
 - The observable can now notify observers using promise-based callback chain. ([RaananW](https://github.com/RaananW))
 - Added base64 helper functions to `Tools` ([bghgary](https://github.com/bghgary))
 - Added `createDefaultCamera` and `createDefaultLight` functions to `Scene` ([bghgary](https://github.com/bghgary))
@@ -49,10 +50,9 @@
 - (Viewer) Scene Optimizer intergrated in viewer. ([RaananW](https://github.com/RaananW))
 - (Viewer) The viewer supports custom shaders in the configuration. ([RaananW](https://github.com/RaananW))
 - Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager, Effect classes ([trevordev](https://github.com/trevordev))
-- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
+- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie))
 - SPS particle parenting feature ([jbousquie](https://github.com/jbousquie))
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
-- AssetContainer Class and loading methods ([trevordev](https://github.com/trevordev))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
 - (Viewer) It is now possible to update parts of the configuration without rcreating the objects. Extra configuration can be loaded sync (if provided) ([RaananW](https://github.com/RaananW))
 - (Gulp) extra/external declarations can be prepended to final declarations during build. ([RaananW](https://github.com/RaananW))
@@ -76,7 +76,9 @@
 - Support multiple simultaneous webVR controller gui interactions in WebVRExperienceHelper ([trevordev](https://github.com/trevordev))
 - (Viewer) XHR requests not use Tools.LoadFile and are disposed correctly - [#3671](https://github.com/BabylonJS/Babylon.js/issues/3671) ([RaananW](https://github.com/RaananW))
 - Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
-- Support depth maps for multiple active cameras ([trevordev](https://github.com/trevordev))
+- Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
+- Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
+- NPM package now has a dependency system, updated during build ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
@@ -87,6 +89,7 @@
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
+- (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

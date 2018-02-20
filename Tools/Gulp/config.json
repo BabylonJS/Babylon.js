@@ -1523,6 +1523,10 @@
             "moduleName": "babylonjs-loaders",
             "outputFilename": "babylonjs.loaders",
             "moduleDeclaration": "BJSLoaders",
+            "extraTypesDependencies": [
+                "babylonjs",
+                "babylonjs-gltf2interface"
+            ],
             "extendsRoot": true
         }
     },
@@ -1549,8 +1553,9 @@
             "distOutputDirectory": "/serializers/",
             "buildAsModule": true,
             "moduleName": "babylonjs-serializers",
-            "extraDeclarations": [
-                "../../dist/babylon.glTF2Interface.d.ts"
+            "extraTypesDependencies": [
+                "babylonjs",
+                "babylonjs-gltf2interface"
             ],
             "outputFilename": "babylonjs.serializers",
             "moduleDeclaration": "BJSSerializers",
