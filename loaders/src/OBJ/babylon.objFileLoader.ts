@@ -121,7 +121,14 @@ module BABYLON {
                 } else if (key === "map_d" && material) {
                     // The dissolve of the material
                     material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-
+                } else if (key == 'bjs_diffuseHasAlpha' && ((material) && material.diffuseTexture)){
+                    //Alpha on diffuse Texture  
+                    if(value === '1'){
+                        material.diffuseTexture.hasAlpha = true;   
+                    }else{
+                        material.diffuseTexture.hasAlpha = false;
+                    }
+                }
 
                     //Options for illumination
                 } else if (key === "illum") {
