@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-procedural-textures",
     "description": "The Babylon.js materials library is a collection of advanced materials to be used in a Babylon.js scene.",
-    "version": "3.2.0-alpha8",
+    "version": "3.2.0-alpha10",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"

@@ -1295,16 +1295,14 @@ var BABYLON;
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["BJSSerializers"], factory);
+        define("babylonjs-serializers", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["BJSSerializers"] = f;
+        exports["babylonjs-serializers"] = f;
     else {
         root["BABYLON"] = f;
     }

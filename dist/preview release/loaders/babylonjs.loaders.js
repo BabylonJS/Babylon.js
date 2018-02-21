@@ -5460,16 +5460,14 @@ var BABYLON;
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["BJSLoaders"], factory);
+        define("babylonjs-loaders", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["BJSLoaders"] = f;
+        exports["babylonjs-loaders"] = f;
     else {
         root["BABYLON"] = f;
     }

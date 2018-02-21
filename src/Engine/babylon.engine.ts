@@ -297,6 +297,7 @@
             { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
             { key: "Macintosh", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
             { key: "iPhone", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] },
+            { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] }
         ];
 
         public static Instances = new Array<Engine>();
@@ -585,7 +586,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-alpha8";
+            return "3.2.0-alpha10";
         }
 
         // Updatable statics so stick with vars here

@@ -748,16 +748,14 @@ BABYLON.Effect.ShadersStore['perlinNoiseProceduralTexturePixelShader'] = "\nprec
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["BJSProceduralTextures"], factory);
+        define("babylonjs-procedural-textures", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["BJSProceduralTextures"] = f;
+        exports["babylonjs-procedural-textures"] = f;
     else {
         root["BABYLON"] = f;
     }
