@@ -3389,7 +3389,6 @@
             // Camera
             this.resetCachedMaterial();
             this._renderId++;
-            this.activeCamera.update();
             this.updateTransformMatrix();
 
             if (camera._alternateCamera) {
@@ -3568,11 +3567,6 @@
                 return;
             }
 
-            // Update camera
-            if (this.activeCamera) {
-                this.activeCamera.update();
-            }
-
             // rig cameras
             for (var index = 0; index < camera._rigCameras.length; index++) {
                 this._renderForCamera(camera._rigCameras[index], camera);
@@ -3714,6 +3708,28 @@
 
             // Before render
             this.onBeforeRenderObservable.notifyObservers(this);
+
+            // Update Cameras
+            if (this.activeCameras.length > 0) {
+                for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
+                    let camera = this.activeCameras[cameraIndex];
+                    camera.update();
+                    if (camera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                        // rig cameras
+                        for (var index = 0; index < camera._rigCameras.length; index++) {
+                            camera._rigCameras[index].update();
+                        }
+                    }
+                }
+            } else if (this.activeCamera) {
+                this.activeCamera.update();
+                if (this.activeCamera.cameraRigMode !== Camera.RIG_MODE_NONE) {
+                    // rig cameras
+                    for (var index = 0; index < this.activeCamera._rigCameras.length; index++) {
+                        this.activeCamera._rigCameras[index].update();
+                    }
+                }
+            }
 
             // Customs render targets
             this.OnBeforeRenderTargetsRenderObservable.notifyObservers(this);
