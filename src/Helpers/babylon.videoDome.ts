@@ -90,5 +90,17 @@ module BABYLON {
                 }
             }
         }
+
+        /**
+         * Releases all associated resources
+         */
+        public dispose(): void {
+            super.dispose();
+
+            this._videoTexture.dispose();
+            this._mesh.dispose();
+            this._material.dispose();
+
+        }
     }
 }
