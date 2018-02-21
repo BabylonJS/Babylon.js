@@ -6,7 +6,7 @@ module.exports = function (varName, moduleName, subModule, extendsRoot, dependen
 
         let exportText = "BABYLON";
         if (subModule && !extendsRoot) {
-            exportText += '.' + varName;
+            exportText += '.' + varName.name;
         }
 
         let referenceText = '';
