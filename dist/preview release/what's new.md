@@ -80,6 +80,7 @@
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
+- Default pipeline will use webGL 2.0 anti aliasing by default if supported, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
