@@ -100,7 +100,9 @@ if (loginCheck.code === 0) {
     prompt.get(['version'], function (err, result) {
         let version = result.version;
         updateEngineVersion(version);
-        runGulp();
+        if (process.argv.indexOf('--no-build') === -1) {
+            runGulp();
+        }
         processPackages(version);
 
         console.log("done, please tag git with " + version);
