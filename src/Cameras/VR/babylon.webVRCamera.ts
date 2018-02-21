@@ -649,7 +649,7 @@ module BABYLON {
                         this._rightController = null;
                     }
                     if (webVrController.hand === "left") {
-                        this._rightController = null;
+                        this._leftController = null;
                     }
                     const controllerIndex = this.controllers.indexOf(webVrController);
                     if (controllerIndex !== -1) {
