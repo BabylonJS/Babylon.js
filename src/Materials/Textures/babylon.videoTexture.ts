@@ -205,11 +205,12 @@
         }
 
         public dispose(): void {
-            super.dispose();
+            super.dispose();            
             this.video.removeEventListener("canplay", this._createInternalTexture);
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this.reset);
+            this.video.pause();
         }
 
         public static CreateFromWebCam(

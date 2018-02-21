@@ -368,7 +368,7 @@ module BABYLON {
 
                 if (x !== 0 || y !== 0 || z !== 0) {
                     var tmat2 = Tmp.Matrix[1];
-                    BABYLON.Matrix.IdentityToRef(tmat2);
+                    Matrix.IdentityToRef(tmat2);
                     tmat2.m[12] = x;
                     tmat2.m[13] = y;
                     tmat2.m[14] = z;
@@ -438,10 +438,10 @@ module BABYLON {
                 }
 
                 if (!this._debugMesh) {
-                    this._debugMesh = BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, this._scene);
+                    this._debugMesh = MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: null }, this._scene);
                     this._debugMesh.renderingGroupId = this.renderingGroupId;
                 } else {
-                    BABYLON.MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
+                    MeshBuilder.CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, this._scene);
                 }
                 this._debugMesh.position.copyFrom(this.mesh.position);
                 this._debugMesh.color = this.color;
