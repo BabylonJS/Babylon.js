@@ -531,7 +531,7 @@ module BABYLON {
 
                 // Update the gamepad to ensure the mesh is updated on the same frame as camera
                 this.controllers.forEach((controller) => {
-                    controller._deviceToWorld = this._deviceToWorld;
+                    controller._deviceToWorld.copyFrom(this._deviceToWorld);
                     controller.update();
                 });
             }
@@ -570,9 +570,13 @@ module BABYLON {
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
          */
         protected _getWebVRViewMatrix(): Matrix {
+            // Update the parent camera prior to using a child camera to avoid desynchronization
+            let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
+            parentCamera._updateCache();
+
             //WebVR 1.1
             var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
-
+            
             Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
             if (!this.getScene().useRightHandedSystem) {
@@ -587,8 +591,6 @@ module BABYLON {
 
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-
-            let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
             // should the view matrix be updated with scale and position offset?
             if (parentCamera.deviceScaleFactor !== 1) {
@@ -661,7 +663,7 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-                    webVrController._deviceToWorld = this._deviceToWorld;
+                    webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);
