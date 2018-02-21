@@ -831,9 +831,10 @@
         }
 
         /**
-         * Disposes the particle system and free the associated resources.
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
          */
-        public dispose(): void {
+        public dispose(disposeTexture = true): void {
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
@@ -844,7 +845,7 @@
                 this._indexBuffer = null;
             }
 
-            if (this.particleTexture) {
+            if (disposeTexture && this.particleTexture) {
                 this.particleTexture.dispose();
                 this.particleTexture = null;
             }

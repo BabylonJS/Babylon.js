@@ -6348,16 +6348,14 @@ BABYLON.Effect.ShadersStore['cellPixelShader'] = "precision highp float;\n\nunif
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["BJSMaterials"], factory);
+        define("babylonjs-materials", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["BJSMaterials"] = f;
+        exports["babylonjs-materials"] = f;
     else {
         root["BABYLON"] = f;
     }

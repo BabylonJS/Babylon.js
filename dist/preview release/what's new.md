@@ -19,6 +19,7 @@
 ## Updates
 
 - Tons of functions and classes received the code comments they deserved (All the community)
+- New `Texture.UseSerializedUrlIfAny` static property to let textures serialize complete URL instead of using side by side loading ([deltakosh](https://github.com/deltakosh))
 - Added `particleSystem.reset()` to clear a particle system ([deltakosh](https://github.com/deltakosh))
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
 - Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adaptability ([deltakosh](https://github.com/deltakosh))
@@ -77,6 +78,8 @@
 - (Viewer) XHR requests not use Tools.LoadFile and are disposed correctly - [#3671](https://github.com/BabylonJS/Babylon.js/issues/3671) ([RaananW](https://github.com/RaananW))
 - Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
+- Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
+- NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
@@ -88,6 +91,7 @@
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
+- AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
