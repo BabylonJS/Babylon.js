@@ -4,7 +4,7 @@
     },
     "name": "babylonjs-viewer",
     "description": "A simple-to-use viewer based on BabylonJS to display 3D elements natively",
-    "version": "3.2.0-alpha8",
+    "version": "3.2.0-alpha9",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"
