@@ -61,19 +61,24 @@ vec3 computeReflectionCoords(vec4 worldPos, vec3 worldNormal)
 #endif
 
 #ifdef REFLECTIONMAP_CUBIC
-	vec3 viewDir = worldPos.xyz - vEyePosition.xyz;
-	vec3 coords = reflect(viewDir, worldNormal);
-#ifdef INVERTCUBICMAP
-	coords.y = 1.0 - coords.y;
+    vec3 viewDir = normalize(worldPos.xyz - vEyePosition.xyz);
+
+    // worldNormal has already been normalized.
+    vec3 coords = reflect(viewDir, worldNormal);
+
+    #ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
+        coords = parallaxCorrectNormal(worldPos.xyz, coords, vReflectionSize, vReflectionPosition);
+    #endif
+
+    coords = vec3(reflectionMatrix * vec4(coords, 0));
+    
+    #ifdef INVERTCUBICMAP
+        coords.y *= -1.0;
+    #endif
+
+    return coords;
 #endif
 
-#ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
-	coords = parallaxCorrectNormal(worldPos.xyz, coords, vReflectionSize, vReflectionPosition );
-#endif
-
-
-	return vec3(reflectionMatrix * vec4(coords, 0));
-#endif
 
 #ifdef REFLECTIONMAP_PROJECTION
 	return vec3(reflectionMatrix * (view * worldPos));
