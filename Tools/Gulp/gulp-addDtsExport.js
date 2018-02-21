@@ -6,7 +6,7 @@ module.exports = function (varName, moduleName, subModule, extendsRoot, dependen
 
         let exportText = "BABYLON";
         if (subModule && !extendsRoot) {
-            exportText += '.' + varName;
+            exportText += '.' + varName.name;
         }
 
         let referenceText = '';
@@ -17,8 +17,9 @@ module.exports = function (varName, moduleName, subModule, extendsRoot, dependen
         if (dependencies) {
             referenceText = '';
             dependencies.forEach(element => {
-                referenceText += `/// <reference types="babylonjs/${element}"/>
-`
+                // was "babylonjs/${element}""
+                referenceText += `/// <reference types="${element}"/>
+`;
             });
         }
 

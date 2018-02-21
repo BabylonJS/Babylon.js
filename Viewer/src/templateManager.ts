@@ -125,6 +125,7 @@ export class TemplateManager {
             let templateStructure = {};
             // now iterate through all templates and check for children:
             let buildTree = (parentObject, name) => {
+                this.templates[name].isInHtmlTree = true;
                 let childNodes = this.templates[name].getChildElements().filter(n => !!this.templates[n]);
                 childNodes.forEach(element => {
                     parentObject[element] = {};
@@ -149,7 +150,7 @@ export class TemplateManager {
 
     private checkLoadedState() {
         let done = Object.keys(this.templates).length === 0 || Object.keys(this.templates).every((key) => {
-            return this.templates[key].isLoaded && !!this.templates[key].parent;
+            return (this.templates[key].isLoaded && !!this.templates[key].parent) || !this.templates[key].isInHtmlTree;
         });
 
         if (done) {
@@ -205,6 +206,8 @@ export class Template {
      */
     public isShown: boolean;
 
+    public isInHtmlTree: boolean;
+
     public parent: HTMLElement;
 
     public initPromise: Promise<Template>;
@@ -225,6 +228,7 @@ export class Template {
 
         this.isLoaded = false;
         this.isShown = false;
+        this.isInHtmlTree = false;
         /*
         if (configuration.id) {
             this.parent.id = configuration.id;
@@ -361,7 +365,7 @@ export class Template {
     private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject('No templateConfig provided');
-        } else if (templateConfig.html) {
+        } else if (templateConfig.html !== undefined) {
             return Promise.resolve(templateConfig.html);
         } else {
             let location = getTemplateLocation(templateConfig);
