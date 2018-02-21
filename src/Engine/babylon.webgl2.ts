@@ -5,8 +5,12 @@
 
 interface WebGLRenderingContext {
     readonly RASTERIZER_DISCARD: number;
+    readonly DEPTH_COMPONENT24: number;
     readonly TEXTURE_3D: number;
     readonly TEXTURE_2D_ARRAY: number;
+    readonly TEXTURE_COMPARE_FUNC: number;
+    readonly TEXTURE_COMPARE_MODE: number;
+    readonly COMPARE_REF_TO_TEXTURE: number;
     readonly TEXTURE_WRAP_R: number;
 
     texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;

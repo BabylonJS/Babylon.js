@@ -1,7 +1,7 @@
 {
-  "errors": 7238,
+  "errors": 7232,
   "babylon.typedoc.json": {
-    "errors": 7238,
+    "errors": 7232,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -10004,38 +10004,6 @@
               }
             },
             "effect": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "bindFramebuffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "texture": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "faceIndex": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "requiredWidth": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "requiredHeight": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "forceFullscreenViewport": {
               "Comments": {
                 "MissingText": true
               }

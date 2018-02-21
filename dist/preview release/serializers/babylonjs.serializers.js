@@ -291,7 +291,7 @@ var BABYLON;
                 if (vertexCount) {
                     for (var i = vertexStart; i < end; ++i) {
                         var indexOffset = positionStrideSize * i;
-                        var position = new BABYLON.Vector3(positions[indexOffset], positions[indexOffset + 1], positions[indexOffset + 2]);
+                        var position = BABYLON.Vector3.FromArray(positions, indexOffset);
                         var vector = this.convertToRightHandedSystem ? _Exporter.GetRightHandedVector3(position).asArray() : position.asArray();
                         for (var j = 0; j < positionStrideSize; ++j) {
                             var num = vector[j];
@@ -348,11 +348,11 @@ var BABYLON;
                     var index = k * strideSize;
                     var vector = [];
                     if (vertexBufferKind === BABYLON.VertexBuffer.PositionKind || vertexBufferKind === BABYLON.VertexBuffer.NormalKind) {
-                        var vertexData = new BABYLON.Vector3(meshAttributeArray[index], meshAttributeArray[index + 1], meshAttributeArray[index + 2]);
+                        var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
                         vector = this.convertToRightHandedSystem ? _Exporter.GetRightHandedVector3(vertexData).asArray() : vertexData.asArray();
                     }
                     else if (vertexBufferKind === BABYLON.VertexBuffer.TangentKind || vertexBufferKind === BABYLON.VertexBuffer.ColorKind) {
-                        var vertexData = new BABYLON.Vector4(meshAttributeArray[index], meshAttributeArray[index + 1], meshAttributeArray[index + 2], meshAttributeArray[index + 3]);
+                        var vertexData = BABYLON.Vector4.FromArray(meshAttributeArray, index);
                         vector = (this.convertToRightHandedSystem && !(vertexBufferKind === BABYLON.VertexBuffer.ColorKind)) ? _Exporter.GetRightHandedVector4(vertexData).asArray() : vertexData.asArray();
                     }
                     else if (vertexBufferKind === BABYLON.VertexBuffer.UVKind || vertexBufferKind === BABYLON.VertexBuffer.UV2Kind) {
@@ -1295,16 +1295,14 @@ var BABYLON;
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["BJSSerializers"], factory);
+        define("babylonjs-serializers", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["BJSSerializers"] = f;
+        exports["babylonjs-serializers"] = f;
     else {
         root["BABYLON"] = f;
     }

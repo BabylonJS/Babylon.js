@@ -5005,19 +5005,17 @@ var BABYLON;
 
 (function universalModuleDefinition(root, factory) {
                 var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
+                
                 
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = f;
     else if(typeof define === 'function' && define.amd)
-        define(["GUI"], factory);
+        define("babylonjs-gui", ["BABYLON"], factory);
     else if(typeof exports === 'object')
-        exports["GUI"] = f;
+        exports["babylonjs-gui"] = f;
     else {
-        root["BABYLON"]["GUI"] = f;
+        root["BABYLON"]["[object Object]"] = f;
     }
 })(this, function() {
-    return BABYLON.GUI;
+    return BABYLON.undefined;
 });
