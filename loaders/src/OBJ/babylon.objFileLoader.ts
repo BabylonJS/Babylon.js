@@ -60,23 +60,20 @@ module BABYLON {
                     material = new BABYLON.StandardMaterial(value, scene);
                 } else if (key === "kd" && material) {
                     // Diffuse color (color under white light) using RGB values
-
                     //value  = "r g b"
                     color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
-                    //Set tghe color into the material
+                    //Set the color into the material
                     material.diffuseColor = BABYLON.Color3.FromArray(color);
                 } else if (key === "ka" && material) {
                     // Ambient color (color under shadow) using RGB values
-
                     //value = "r g b"
                     color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
-                    //Set tghe color into the material
+                    //Set the color into the material
                     material.ambientColor = BABYLON.Color3.FromArray(color);
                 } else if (key === "ks" && material) {
                     // Specular color (color when light is reflected from shiny surface) using RGB values
-
                     //value = "r g b"
                     color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
@@ -97,14 +94,14 @@ module BABYLON {
                     //Texture
                     //This part can be improved by adding the possible options of texture
                 } else if (key === "map_ka" && material) {
-                    // ambient texture map with a loaded image
+                    //ambient texture map with a loaded image
                     //We must first get the folder of the image
                     material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_kd" && material) {
                     // Diffuse texture map with a loaded image
                     material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_ks" && material) {
-                    // Specular texture map with a loaded image
+                    //Specular texture map with a loaded image
                     //We must first get the folder of the image
                     material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
                 } else if (key === "map_ns") {
@@ -128,9 +125,7 @@ module BABYLON {
                     }else{
                         material.diffuseTexture.hasAlpha = false;
                     }
-                }
-
-                    //Options for illumination
+                //Options for illumination
                 } else if (key === "illum") {
                     //Illumination
                     if (value === "0") {
