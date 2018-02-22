@@ -72,6 +72,11 @@ module BABYLON {
 
         public _deviceToWorld = Matrix.Identity();
 
+        /**
+         * Node to be used when casting a ray from the controller
+         */
+        public _pointingPoseNode:Nullable<AbstractMesh> = null;
+
         constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);
             this.type = Gamepad.POSE_ENABLED;
@@ -174,7 +179,7 @@ module BABYLON {
                 return new Ray(Vector3.Zero(), new Vector3(0, 0, 1), length);
             }
 
-            var m = this.mesh.getWorldMatrix();
+            var m = this._pointingPoseNode ? this._pointingPoseNode.getWorldMatrix() : this.mesh.getWorldMatrix();
             var origin = m.getTranslation();
 
             var forward = new Vector3(0, 0, -1);
