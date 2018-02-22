@@ -867,6 +867,16 @@
         public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
             this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
+
+        /**
+         * Sets a depth stencil texture from a render target on the engine to be used in the shader.
+         * @param channel Name of the sampler variable.
+         * @param texture Texture to set.
+         */
+        public setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void {
+            this._engine.setDepthStencilTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        }
+
         /**
          * Sets an array of textures on the engine to be used in the shader.
          * @param channel Name of the variable.

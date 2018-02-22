@@ -553,6 +553,7 @@
         private _currentFaceIndexCache = 0;
         private _textureType: number;
         private _defaultTextureMatrix = Matrix.Identity();
+        private _useDepthStencilTexture = false;
 
         /**
          * Creates a ShadowGenerator object.
@@ -595,6 +596,7 @@
             }
 
             this._initializeGenerator();
+            this._applyFilterValues();
         }
 
         private _initializeGenerator(): void {
@@ -604,7 +606,14 @@
 
         private _initializeShadowMap(): void {
             // Render target
-            this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
+            let engine = this._scene.getEngine();
+            if (engine.webGLVersion > 1) {
+                this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube(), undefined, false, false);
+                this._shadowMap.createDepthStencilTexture(Engine.LESS, true);
+            }
+            else {
+                this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
+            }
             this._shadowMap.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._shadowMap.anisotropicFilteringLevel = 1;
@@ -615,6 +624,9 @@
             // Record Face Index before render.
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
+                if (this._useDepthStencilTexture) {
+                    //engine.setColorWrite(false);
+                }
             });
 
             // Custom render function.
@@ -622,6 +634,9 @@
 
             // Blur if required afer render.
             this._shadowMap.onAfterUnbindObservable.add(() => {
+                if (this._useDepthStencilTexture) {
+                    engine.setColorWrite(true);
+                }
                 if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
                     return;
                 }
@@ -632,13 +647,19 @@
                 }
             });
 
+            var clearZero = new Color4(0, 0, 0, 0);
+            var clearOne = new Color4(1.0, 1.0, 1.0, 1.0);
+
             // Clear according to the chosen filter.
             this._shadowMap.onClearObservable.add((engine: Engine) => {
-                if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
-                    engine.clear(new Color4(0, 0, 0, 0), true, true, true);
+                if (this._useDepthStencilTexture) {
+                    engine.clear(clearOne, false, true, false);
+                }
+                else if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
+                    engine.clear(clearZero, true, true, false);
                 }
                 else {
-                    engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+                    engine.clear(clearOne, true, true, false);
                 }
             });
         }
@@ -785,10 +806,22 @@
                 return;
             }
 
-            if (this.filter === ShadowGenerator.FILTER_NONE) {
-                this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
-            } else {
-                this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+            this._useDepthStencilTexture = false;
+            if (this._scene.getEngine().webGLVersion > 1) {
+                if (this.filter === ShadowGenerator.FILTER_NONE) {
+                    this._useDepthStencilTexture = true;
+                }
+                else {
+                    this._useDepthStencilTexture = false;
+                    this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+                }
+            }
+            else {
+                if (this.filter === ShadowGenerator.FILTER_NONE) {
+                    this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+                } else {
+                    this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
+                }
             }
         }
 
@@ -974,6 +1007,8 @@
                 return;
             }
 
+            defines["USEDEPTHSTENCILTEXTURE"] = defines["USEDEPTHSTENCILTEXTURE"] || this._useDepthStencilTexture;
+            defines["USEDEPTHSTENCILTEXTURE" + lightIndex] = this._useDepthStencilTexture;
             defines["SHADOW" + lightIndex] = true;
 
             if (this.usePoissonSampling) {
@@ -1019,7 +1054,13 @@
             if (!light.needCube()) {
                 effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
             }
-            effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+
+            if (this._useDepthStencilTexture) {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            }
+            else {
+                effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            }
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
             light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
         }

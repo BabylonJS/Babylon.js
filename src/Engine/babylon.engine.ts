@@ -220,12 +220,14 @@
      * Define options used to create a depth texture
      */
     export class DepthTextureCreationOptions {
-        /** Specifies wether or not a stencil should be allocated in the texture */
+        /** Specifies whether or not a stencil should be allocated in the texture */
         generateStencil?: boolean;
-        /** Specifies wether or not bilinear filtering is enable on the texture */
+        /** Specifies whether or not bilinear filtering is enable on the texture */
         bilinearFiltering?: boolean;
         /** Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode */
         comparisonFunction?: number;
+        /** Specifies if the created texture is a cube texture */
+        isCube?: boolean;
     }
 
     /**
@@ -1965,10 +1967,10 @@
 
                 if (depthStencilTexture) {
                     if (depthStencilTexture._generateStencilBuffer) {
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture, 0);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, 0);
                     }
                     else {
-                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture, 0);
+                        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._webGLTexture, 0);
                     }
                 }
             }
@@ -3727,7 +3729,7 @@
             internalTexture.generateMipMaps = false;
             internalTexture._generateDepthBuffer = true;
             internalTexture._generateStencilBuffer = generateStencil;
-            internalTexture.samplingMode = bilinearFiltering ? Texture.NEAREST_SAMPLINGMODE : Texture.BILINEAR_SAMPLINGMODE;
+            internalTexture.samplingMode = bilinearFiltering ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE;
             internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             internalTexture._comparisonFunction = comparisonFunction;
 
@@ -3757,6 +3759,22 @@
          * @returns The texture
          */
         public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
+            if (options.isCube) {
+                return this._createDepthStencilCubeTexture(size.width || size, options);
+            }
+            else {
+                return this._createDepthStencilTexture(size, options);
+            }
+        }
+
+        /**
+         * Creates a depth stencil texture.
+         * This is only available in WebGL 2 or with the depth texture extension available.
+         * @param size The size of face edge in the texture.
+         * @param options The options defining the texture.
+         * @returns The texture
+         */
+        private _createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_DEPTHTEXTURE);
 
             if (!this._caps.depthTextureExtension) {
@@ -3805,7 +3823,7 @@
          * @param options The options defining the cube texture.
          * @returns The cube texture
          */
-        public createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions) : InternalTexture {
+        private _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions) : InternalTexture {
             var internalTexture = new InternalTexture(this, InternalTexture.DATASOURCE_UNKNOWN);
             internalTexture.isCube = true;
 
@@ -3858,18 +3876,18 @@
             this.bindUnboundFramebuffer(internalTexture._framebuffer);
             if (depthStencilTexture.isCube) {
                 if (depthStencilTexture._generateStencilBuffer) {
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture, 0);
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
                 }
                 else {
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture, 0);
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_CUBE_MAP_POSITIVE_X, depthStencilTexture._webGLTexture, 0);
                 }
             }
             else {
                 if (depthStencilTexture._generateStencilBuffer) {
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture, 0);
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
                 }
                 else {
-                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture, 0);
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthStencilTexture._webGLTexture, 0);
                 }
             }
             this.bindUnboundFramebuffer(null);
@@ -5216,6 +5234,12 @@
             }
         }
 
+        /**
+         * Sets a texture to the according uniform.
+         * @param channel The texture channel
+         * @param uniform The uniform to set
+         * @param texture The texture to apply
+         */
         public setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void {
             if (channel < 0) {
                 return;
@@ -5228,6 +5252,29 @@
             this._setTexture(channel, texture);
         }
 
+        /**
+         * Sets a depth stencil texture from a render target to the according uniform.
+         * @param channel The texture channel
+         * @param uniform The uniform to set
+         * @param texture The render target texture containing the depth stencil texture to apply
+         */
+        public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void {
+            if (channel < 0) {
+                return;
+            }
+
+            if (uniform) {
+                this._boundUniforms[channel] = uniform;
+            }
+
+            if (!texture || !texture.depthStencilTexture) {
+                this._setTexture(channel, null);
+            }
+            else {
+                this._setTexture(channel, texture, false, true);
+            }
+        }
+
         private _bindSamplerUniformToChannel(sourceSlot: number, destination: number) {
             let uniform = this._boundUniforms[sourceSlot];
             if (uniform._currentState === destination) {
@@ -5237,7 +5284,7 @@
             uniform._currentState = destination;
         }
 
-        private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false): boolean {
+        private _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
             // Not ready?
             if (!texture) {
                 if (this._boundTexturesCache[channel] != null) {
@@ -5261,7 +5308,10 @@
             }
 
             let internalTexture: InternalTexture;
-            if (texture.isReady()) {
+            if (depthStencilTexture) {
+                internalTexture = (<RenderTargetTexture>texture).depthStencilTexture;
+            }
+            else if (texture.isReady()) {
                 internalTexture = <InternalTexture>texture.getInternalTexture();
             }
             else if (texture.isCube) {
