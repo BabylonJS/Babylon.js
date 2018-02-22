@@ -10,41 +10,42 @@ module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon
 
         if (typeof varName === 'string') {
             varName = {
-                base: varName,
+                name: varName,
                 module: varName
+            }
+            if (varName.name === 'BABYLON') {
+                varName.module = 'babylonjs';
             }
         }
 
-        var optionalRequire = `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+        var optionalRequire = ''; /* `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
 var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
 var BABYLON = babylonDependency;
-`;
+`;*/
         function moduleExportAddition(varName) {
 
-            let base = subModule ? 'BABYLON' : varName.base;
+            let base = subModule ? 'BABYLON' : varName.name;
 
-            let basicInit = `root["${base}"]${(subModule && !extendsRoot) ? '["' + varName + '"]' : ''} = f;`;
-            let sadGlobalPolution = (!subModule) ? `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-globalObject["${base}"] = f;` : '';
-            /*if (extendsRoot) {
-                basicInit = `__extends(root["BABYLON"], factory()); `
-            }*/
+            let sadGlobalPolution = /*(!subModule) ? `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+globalObject["${base}"] = f;` : */'';
 
             return `\n\n(function universalModuleDefinition(root, factory) {
-                var f = factory();
-                
                 ${sadGlobalPolution}
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = f;
+        module.exports = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else if(typeof define === 'function' && define.amd)
-        define("${varName.module}", ${subModule || extendsRoot ? '["BABYLON"],' : ''} factory);
+        define("${varName.module}", ${subModule || extendsRoot ? '["babylonjs"],' : ''} factory);
     else if(typeof exports === 'object')
-        exports["${varName.module}"] = f;
+        exports["${varName.module}"] = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else {
-        ${basicInit}
+        root["${base}"]${(subModule && !extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(root["BABYLON"]);
     }
-})(this, function() {
-    return ${base}${(subModule && !extendsRoot) ? '.' + varName.base : ''};
+})(this, function(BABYLON) {
+    ${String(file.contents)}
+    ${varName.name === 'BABYLON' ? `
+var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
+globalObject["${varName.name}"] = BABYLON` : ''}
+    return ${base}${(subModule && !extendsRoot) ? '.' + varName.name : ''};
 });
 `;
         }
@@ -86,10 +87,10 @@ globalObject["${base}"] = f;` : '';
 
         try {
             if (externalUsingBabylon) {
-                file.contents = new Buffer(optionalRequire.concat(new Buffer(String(file.contents).concat(moduleExportAddition(varName)))));
+                file.contents = new Buffer(optionalRequire.concat(new Buffer(String('').concat(moduleExportAddition(varName)))));
             } else {
                 let pretext = subModule ? optionalRequire : '';
-                file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String(file.contents)).concat(moduleExportAddition(varName)))));
+                file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String('')).concat(moduleExportAddition(varName)))));
             }
             this.push(file);
         } catch (err) {
