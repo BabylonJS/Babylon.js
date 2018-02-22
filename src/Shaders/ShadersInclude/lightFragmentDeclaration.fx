@@ -8,12 +8,20 @@
 	#endif
 	#ifdef SHADOW{X}
 		#if defined(SHADOWCUBE{X})
-			uniform samplerCube shadowSampler{X};
+			#if defined(USEDEPTHSTENCILTEXTURE{X})
+				uniform highp samplerCubeShadow shadowSampler{X};
+			#else
+				uniform samplerCube shadowSampler{X};
+			#endif
 		#else
 			varying vec4 vPositionFromLight{X};
 			varying float vDepthMetric{X};
 
-			uniform sampler2D shadowSampler{X};
+			#if defined(USEDEPTHSTENCILTEXTURE{X})
+				uniform highp sampler2DShadow shadowSampler{X};
+			#else
+				uniform sampler2D shadowSampler{X};
+			#endif
 			uniform mat4 lightMatrix{X};
 		#endif
 		uniform vec4 shadowsInfo{X};

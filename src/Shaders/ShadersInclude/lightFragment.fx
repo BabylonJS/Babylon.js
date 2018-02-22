@@ -49,10 +49,18 @@
 						shadow = computeShadowWithPCF(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
 					#endif
 				#else
-					#if defined(SHADOWCUBE{X})
-						shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+					#if defined(USEDEPTHSTENCILTEXTURE{X})
+						#if defined(SHADOWCUBE{X})
+							shadow = computeShadowFromDepthTextureCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+						#else
+							shadow = computeShadowFromDepthTexture(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+						#endif
 					#else
-						shadow = computeShadow(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+						#if defined(SHADOWCUBE{X})
+							shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+						#else
+							shadow = computeShadow(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+						#endif
 					#endif
 				#endif
 			#endif

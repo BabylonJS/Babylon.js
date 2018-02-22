@@ -106,6 +106,26 @@
 		return esm;
 	}
 
+#ifdef USEDEPTHSTENCILTEXTURE
+	float computeShadowFromDepthTexture(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
+	{
+		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+		vec3 uvDepth = vec3(0.5 * clipSpace.xy + vec2(0.5), 0.9);
+
+		if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
+		{
+			return 1.0;
+		}
+
+		float shadow = texture2D(shadowSampler, uvDepth);
+		// if (shadow < 1.0)
+		// {
+		// 	return computeFallOff((1. - shadow) * darkness, clipSpace.xy, frustumEdgeFalloff);
+		// }
+		return shadow;
+	}
+#endif
+
 	float computeShadow(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float darkness, float frustumEdgeFalloff)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
