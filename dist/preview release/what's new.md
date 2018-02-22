@@ -81,6 +81,7 @@
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
 - Default pipeline will use webGL 2.0 anti aliasing by default if supported, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- WebVRExperienceHelper will create an empty controller model so that controller interactions can be used while the actual model is still loading ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
