@@ -418,7 +418,7 @@ void main(void) {
 #endif
 
 #define CUSTOM_FRAGMENT_BEFORE_FOG
-
+color.rgb = max(color.rgb, 0.);
 #include<logDepthFragment>
 #include<fogFragment>
 

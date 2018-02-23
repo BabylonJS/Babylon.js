@@ -6,7 +6,7 @@
 - Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments and what's new updates are now mandatory ([sebavan](https://github.com/sebavan))
 - Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
-- `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
+- `WebVRCamera` add basic support for Daydream and Gear VR ([brianzinn](https://github.com/brianzinn))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
 - Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 - Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
@@ -80,7 +80,7 @@
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
-- Default pipeline will use webGL 2.0 anti aliasing by default if supported, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Default pipeline will use webGL 2.0 anti aliasing by default if supported, default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
