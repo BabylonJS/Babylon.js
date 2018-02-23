@@ -45,7 +45,7 @@ module BABYLON {
             }
         }
 
-        protected abstract handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
+        protected abstract _handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
 
         public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
 
@@ -69,7 +69,7 @@ module BABYLON {
             if (this._changes.changed) {
                 this._onButtonStateChange && this._onButtonStateChange(this.index, buttonIndex, newState);
 
-                this.handleButtonChange(buttonIndex, newState, this._changes);
+                this._handleButtonChange(buttonIndex, newState, this._changes);
             }
             this._buttons[buttonIndex].pressed = newState.pressed;
             this._buttons[buttonIndex].touched = newState.touched;
