@@ -221,6 +221,9 @@ module BABYLON.GLTF2 {
                     Tools.Warn(babylonStandardMaterial.name + ": glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
                 }
             }
+            if (babylonStandardMaterial.emissiveColor) {
+                glTFMaterial.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
+            }
 
             glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
 
