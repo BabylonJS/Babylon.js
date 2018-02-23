@@ -38,6 +38,8 @@ module INSPECTOR {
             this._detailsPanel = new DetailPanel();
             this._panel.appendChild(this._detailsPanel.toHtml());
 
+            //this._panel.appendChild(this._searchBar.toHtml());
+
             Split([this._treePanel, this._detailsPanel.toHtml()], {
                 blockDrag: this._inspector.popupMode,
                 direction: 'vertical'

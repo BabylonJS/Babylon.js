@@ -223,6 +223,8 @@ module INSPECTOR {
             if (this._parent) {
                 this._property.obj = this._parent.updateObject();
             }
+            
+            
             return this._property.value;
         }
 
@@ -319,6 +321,61 @@ module INSPECTOR {
                 this._rangeInput();
             } else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+
+                //Doing the Hexa convertion
+                if(this._property.type == "Color3" || this._property.type == "Color4"){
+                    if((this._property.type == "Color3" && this._children.length == 5 && this._children[1].value == true) || (this._property.type == "Color4" && this._children.length == 6 && this._children[1].value == true)){
+                    if(this._children[0] != undefined &&  this._children[0].name == "hex"){
+                        let hexLineString = this._children[0].value;
+                        let rValue = (parseInt((hexLineString.slice(1,3)), 16)) * (1/255);
+                        let rValueRound = Math.round(100*rValue)/100 ;
+                        this.value.r = rValueRound;
+                        let gValue = (parseInt((hexLineString.slice(3,5)), 16)) * (1/255);
+                        let gValueRound = Math.round(100*gValue)/100 ;
+                        this.value.g = gValueRound;
+                        let bValue = (parseInt((hexLineString.slice(5,7)), 16)) * (1/255);
+                        let bValueRound = Math.round(100*bValue)/100 ;
+                        this.value.b = bValueRound;
+                            if(this._children[2].name == "a"){
+                                let aValue = (parseInt((hexLineString.slice(7,9)), 16)) * (1/255);
+                                let aValueRound = Math.round(100*aValue)/100;
+                                this.value.a = aValueRound;
+                            }
+                        }
+                    }else{
+                        if(this._property.value.hex != undefined){
+                            let hexLineInfos = [];
+                            let valHexR = ((this._property.value.r * 255)|0).toString(16);
+                            hexLineInfos.push(valHexR);
+                            if(valHexR == "0"){
+                                hexLineInfos.push("0");
+                            }
+                            let valHexG = ((this._property.value.g * 255)|0).toString(16);
+                            hexLineInfos.push(valHexG);
+                            if(valHexG == "0"){
+                                hexLineInfos.push("0");
+                            }
+                            let valHexB = ((this._property.value.b * 255)|0).toString(16);
+                            hexLineInfos.push(valHexB);
+                            if(valHexB == "0"){
+                                hexLineInfos.push("0");
+                            }
+                            if(this._property.value.a != undefined){
+                                let valHexA = ((this._property.value.a * 255)|0).toString(16);
+                                hexLineInfos.push(valHexA);
+                                if(valHexA == "0"){
+                                    hexLineInfos.push("0");
+                                }
+                            }
+                            hexLineInfos.unshift("#");
+                            let hexLineString = hexLineInfos.join("");
+                            this._property.value.hex = hexLineString; 
+                            hexLineInfos.length = 0;
+                        }
+
+                    }
+            }
+
             }
             for (let elem of this._elements) {
                 elem.update(this.value);
@@ -386,22 +443,48 @@ module INSPECTOR {
                 // if children does not exists, generate it
                 this._div.classList.toggle('unfolded');
                 if (this._children.length == 0) {
+                    
                     let objToDetail = this.value;
+                    
                     // Display all properties that are not functions
                     let propToDisplay = Helpers.GetAllLinesPropertiesAsString(objToDetail);
-
                     // special case for color3
                     if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b')) == 0) {
                         propToDisplay.sort();
                     } else {
                         propToDisplay.sort().reverse();
                     }
-
                     for (let prop of propToDisplay) {
                         let infos = new Property(prop, this._property.value);
-                        let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
+                        let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);                   
                         this._children.push(child);
                     }
+                    //Add the Hexa converter
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0){
+                        let hexLineInfos = [];
+                        let hexLinePropCheck = new Property("hexEnable", this._property.value);
+                        hexLinePropCheck.type = "boolean";
+                        hexLinePropCheck.value = false;
+                        let hexLineCheck = new PropertyLine(hexLinePropCheck, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLineCheck);
+                        for (let prop of propToDisplay) {
+                                let infos = new Property(prop, this._property.value);
+                                let  valHex = ((infos.value * 255)|0).toString(16);
+                                hexLineInfos.push(valHex);
+                                if(valHex == "0"){
+                                    hexLineInfos.push("0");
+                                }
+                        }
+                        hexLineInfos.push("#");
+                        hexLineInfos.reverse();
+                        let hexLineString = hexLineInfos.join("");
+                        
+                        let hexLineProp = new Property("hex", this._property.value);
+                        hexLineProp.value = hexLineString;
+                        let hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                   
+                        this._children.unshift(hexLine);
+                    } 
                 }
                 // otherwise display it    
                 if (this._div.parentNode) {
