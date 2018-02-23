@@ -298,8 +298,14 @@
             if (parsedData.particleSystems !== undefined && parsedData.particleSystems !== null) {
                 for (index = 0, cache = parsedData.particleSystems.length; index < cache; index++) {
                     var parsedParticleSystem = parsedData.particleSystems[index];
-                    var ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
-                    container.particleSystems.push(ps);
+
+                    if (parsedParticleSystem.activeParticleCount) {
+                        let ps = GPUParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+                        container.particleSystems.push(ps);
+                    } else {
+                        let ps = ParticleSystem.Parse(parsedParticleSystem, scene, rootUrl);
+                        container.particleSystems.push(ps);
+                    }
                 }
             }
 
@@ -644,7 +650,7 @@
                 }
                 scene.workerCollisions = !!parsedData.workerCollisions;
 
-                var container = loadAssetContainer(scene, data, rootUrl, onerror, true);
+                var container = loadAssetContainer(scene, data, rootUrl, onError, true);
                 if (!container) {
                     return false;
                 }
@@ -684,7 +690,7 @@
             return false;
         },
         loadAssetContainer: (scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer => {
-            var container = loadAssetContainer(scene, data, rootUrl, onerror);
+            var container = loadAssetContainer(scene, data, rootUrl, onError);
             return container;
         }
     });

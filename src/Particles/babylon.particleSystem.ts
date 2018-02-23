@@ -1,67 +1,5 @@
 ﻿module BABYLON {
     /**
-     * Interface representing a particle system in Babylon.
-     * This groups the common functionalities that needs to be implemented in order to create a particle system.
-     * A particle system represents a way to manage particles (@see Particle) from their emission to their animation and rendering.
-     */
-    export interface IParticleSystem {
-        /**
-         * The id of the Particle system.
-         */
-        id: string;
-        /**
-         * The name of the Particle system.
-         */
-        name: string;
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        emitter: Nullable<AbstractMesh | Vector3>;
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
-        renderingGroupId: number;
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        layerMask: number;
-        /**
-         * Gets if the particle system has been started.
-         * @return true if the system has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Animates the particle system for this frame.
-         */
-        animate(): void;
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles.
-         */
-        render(): number;
-        /**
-         * Dispose the particle system and frees its associated resources.
-         */
-        dispose(): void;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /**
-         * Rebuild the particle system
-         */
-        rebuild(): void
-    }
-
-    /**
      * This represents a particle system in Babylon.
      * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
      * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
@@ -103,7 +41,7 @@
         public emitter: Nullable<AbstractMesh | Vector3> = null;
 
         /**
-         * The density of particles, the rate of particle flow
+         * The maximum number of particles to emit per frame
          */
         public emitRate = 10;
 
@@ -118,7 +56,7 @@
         public updateSpeed = 0.01;
 
         /**
-         * The amount of time the particle system is running (depends of the overall speed above).
+         * The amount of time the particle system is running (depends of the overall update speed).
          */
         public targetStopDuration = 0;
 
@@ -213,23 +151,77 @@
          */
         public gravity = Vector3.Zero();
 
+       /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction1(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction1;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction1(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction1 = value;
+            }
+        }
+
         /**
          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
-        public direction1 = new Vector3(0, 1.0, 0);
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         */
-        public direction2 = new Vector3(0, 1.0, 0);
+        public get direction2(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction2;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction2(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction2 = value;
+            }
+        }
 
         /**
          * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
-        public minEmitBox = new Vector3(-0.5, -0.5, -0.5);
+        public get minEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).minEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set minEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).minEmitBox = value;
+            }
+        }
+
         /**
          * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
          */
-        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);
+        public get maxEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set maxEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
+            }
+        }
 
         /**
          * Random color of each particle after it has been emitted, between color1 and color2 vectors.
@@ -341,6 +333,21 @@
         private _isAnimationSheetEnabled: boolean;
 
         /**
+         * Gets the current list of active particles
+         */
+        public get particles(): Particle[] {
+            return this._particles;
+        }
+
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "ParticleSystem";
+        }        
+
+        /**
          * Instantiates a particle system.
          * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
          * @param name The name of the particle system
@@ -387,8 +394,8 @@
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
 
-            // Default behaviors
-            this.particleEmitterType = new BoxParticleEmitter(this);
+            // Default emitter type
+            this.particleEmitterType = new BoxParticleEmitter();
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
@@ -491,6 +498,14 @@
          */
         public stop(): void {
             this._stopped = true;
+        }
+
+        /**
+         * Remove all active particles
+         */
+        public reset(): void {
+            this._stockParticles = [];
+            this._particles = [];
         }
 
         /**
@@ -759,14 +774,15 @@
 
         /**
          * Renders the particle system in its current state.
-         * @returns the current number of particles.
+         * @returns the current number of particles
          */
         public render(): number {
             var effect = this._getEffect();
 
             // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length)
+            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length) {
                 return 0;
+            }
 
             var engine = this._scene.getEngine();
 
@@ -815,9 +831,10 @@
         }
 
         /**
-         * Disposes the particle system and free the associated resources.
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
          */
-        public dispose(): void {
+        public dispose(disposeTexture = true): void {
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
@@ -828,7 +845,7 @@
                 this._indexBuffer = null;
             }
 
-            if (this.particleTexture) {
+            if (disposeTexture && this.particleTexture) {
                 this.particleTexture.dispose();
                 this.particleTexture = null;
             }
@@ -890,7 +907,7 @@
          * @returns the emitter
          */
         public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-            var particleEmitter = new BoxParticleEmitter(this);
+            var particleEmitter = new BoxParticleEmitter();
             this.direction1 = direction1;
             this.direction2 = direction2;
             this.minEmitBox = minEmitBox;
@@ -995,6 +1012,11 @@
             serializationObject.spriteCellHeight = this.spriteCellHeight;
 
             serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
+
+            // Emitter
+            if (this.particleEmitterType) {
+                serializationObject.particleEmitterType = this.particleEmitterType.serialize();
+            }            
 
             return serializationObject;
         }

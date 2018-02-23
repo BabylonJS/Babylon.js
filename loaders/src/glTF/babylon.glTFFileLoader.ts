@@ -35,18 +35,22 @@ module BABYLON {
         bin: Nullable<ArrayBufferView>;
     }
 
+    export interface IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+
+        /**
+         * Whether this extension is enabled.
+         */
+        enabled: boolean;
+    }
+
     export enum GLTFLoaderState {
         Loading,
         Ready,
         Complete
-    }
-
-    export interface IGLTFLoaderExtension {
-        enabled: boolean;
-    }
-
-    export interface IGLTFLoaderExtensions {
-        [name: string]: IGLTFLoaderExtension;
     }
 
     export interface IGLTFLoader extends IDisposable {
@@ -56,14 +60,14 @@ module BABYLON {
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
 
-        onDisposeObservable: Observable<IGLTFLoader>;
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
+        onDisposeObservable: Observable<IGLTFLoader>;
+        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
 
         state: Nullable<GLTFLoaderState>;
-        extensions: Nullable<IGLTFLoaderExtensions>;
 
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
@@ -195,17 +199,24 @@ module BABYLON {
         }
 
         /**
+         * Raised after a loader extension is created.
+         * Set additional options for a loader extension in this event.
+         */
+        public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
+
+        private _onExtensionLoadedObserver: Nullable<Observer<IGLTFLoaderExtension>>;
+        public set onExtensionLoaded(callback: (extension: IGLTFLoaderExtension) => void) {
+            if (this._onExtensionLoadedObserver) {
+                this.onExtensionLoadedObservable.remove(this._onExtensionLoadedObserver);
+            }
+            this._onExtensionLoadedObserver = this.onExtensionLoadedObservable.add(callback);
+        }
+
+        /**
          * The loader state or null if not active.
          */
         public get loaderState(): Nullable<GLTFLoaderState> {
             return this._loader ? this._loader.state : null;
-        }
-
-        /**
-         * The loader extensions or null if not active.
-         */
-        public get loaderExtensions(): Nullable<IGLTFLoaderExtensions> {
-            return this._loader ? this._loader.extensions : null;
         }
 
         // #endregion
@@ -228,11 +239,9 @@ module BABYLON {
                 this._loader = null;
             }
 
-            this.onParsedObservable.clear();
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
-            this.onCompleteObservable.clear();
 
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
@@ -292,6 +301,8 @@ module BABYLON {
             }
 
             this.onParsedObservable.notifyObservers(parsedData);
+            this.onParsedObservable.clear();
+
             return parsedData;
         }
 
@@ -335,7 +346,17 @@ module BABYLON {
             loader.onMeshLoadedObservable.add(mesh => this.onMeshLoadedObservable.notifyObservers(mesh));
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
-            loader.onCompleteObservable.add(() => this.onCompleteObservable.notifyObservers(this));
+            loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
+
+            loader.onCompleteObservable.add(() => {
+                this.onMeshLoadedObservable.clear();
+                this.onTextureLoadedObservable.clear();
+                this.onMaterialLoadedObservable.clear();
+
+                this.onCompleteObservable.notifyObservers(this);
+                this.onCompleteObservable.clear();
+            });
+
             return loader;
         }
 

@@ -57,6 +57,7 @@
         public TANGENT = false;
         public BUMP = false;
         public BUMPDIRECTUV = 0;
+        public OBJECTSPACE_NORMALMAP = false;
         public PARALLAX = false;
         public PARALLAXOCCLUSION = false;
         public NORMALXYSCALE = true;
@@ -385,6 +386,11 @@
          * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
          */
         protected _useRadianceOverAlpha = true;
+
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        protected _useObjectSpaceNormalMap = false;
 
         /**
          * Allows using the bump map in parallax mode.
@@ -932,7 +938,7 @@
                 "vAlbedoInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vReflectionPosition", "vReflectionSize", "vEmissiveInfos", "vReflectivityInfos", 
                 "vMicroSurfaceSamplerInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                 "mBones",
-                "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                "vClipPlane", "albedoMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "reflectivityMatrix", "normalMatrix", "microSurfaceSamplerMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
                 "vLightingIntensity",
                 "logarithmicDepthConstant",
                 "vSphericalX", "vSphericalY", "vSphericalZ",
@@ -1139,9 +1145,11 @@
                         else {
                             defines.PARALLAX = false;
                         }
+                        
+                        defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
-                    }
+                    }                
 
                     var refractionTexture = this._getRefractionTexture();
                     if (refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1226,11 +1234,19 @@
             };
 
             const defines = new PBRMaterialDefines();
-            this._prepareEffect(mesh, defines, () => {
+            const effect = this._prepareEffect(mesh, defines, undefined, undefined, undefined, localOptions.clipPlane)!;
+            if (effect.isReady()) {
                 if (onCompiled) {
                     onCompiled(this);
                 }
-            }, undefined, undefined, localOptions.clipPlane);
+            }
+            else {
+                effect.onCompileObservable.add(() => {
+                    if (onCompiled) {
+                        onCompiled(this);
+                    }
+                });
+            }
         }
 
         /**
@@ -1291,14 +1307,6 @@
         }
 
         /**
-         * Binds to the world matrix.
-         * @param world - The world matrix.
-         */
-        public bindOnlyWorldMatrix(world: Matrix): void {
-            this._activeEffect.setMatrix("world", world);
-        }
-
-        /**
          * Binds the submesh data.
          * @param world - The world matrix.
          * @param mesh - The BJS mesh.
@@ -1322,6 +1330,13 @@
 
             // Matrices
             this.bindOnlyWorldMatrix(world);
+
+            // Normal Matrix
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
+                world.toNormalMatrix(this._normalMatrix);
+                this.bindOnlyNormalMatrix(this._normalMatrix);                
+            }
 
             let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
 

@@ -35,6 +35,11 @@
         public static WRAP_ADDRESSMODE = 1;
         public static MIRROR_ADDRESSMODE = 2;
 
+        /**
+         * Gets or sets a boolean which defines if the texture url must be build from the serialized URL instead of just using the name and loading them side by side with the scene file
+         */
+        public static UseSerializedUrlIfAny = false;
+
         // Members
         @serialize()
         public url: Nullable<string>;
@@ -182,7 +187,7 @@
             if (!scene) {
                 return;
             }
-            
+
             this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
             this._texture = this._getFromCache(this.url, this._noMipmap, this._samplingMode);
 
@@ -192,19 +197,17 @@
                     delete this._buffer;
                 }
             } else {
-                if (this._texture.isReady) {
-                    Tools.SetImmediate(() => {
-                        if (!this._delayedOnLoad) {
-                            return;
-                        }
-                        this._delayedOnLoad();
-                    });
-                } else {
-                    if (this._delayedOnLoad) {
+                if (this._delayedOnLoad) {
+                    if (this._texture.isReady) {
+                        Tools.SetImmediate(this._delayedOnLoad);
+                    } else {
                         this._texture.onLoadedObservable.add(this._delayedOnLoad);
                     }
                 }
             }
+
+            this._delayedOnLoad = null;
+            this._delayedOnError = null;
         }
 
         public updateSamplingMode(samplingMode: number): void {
@@ -451,7 +454,12 @@
                     if (parsedTexture.base64String) {
                         texture = Texture.CreateFromBase64String(parsedTexture.base64String, parsedTexture.name, scene, !generateMipMaps);
                     } else {
-                        texture = new Texture(rootUrl + parsedTexture.name, scene, !generateMipMaps);
+                        let url = rootUrl + parsedTexture.name; 
+
+                        if (Texture.UseSerializedUrlIfAny && parsedTexture.url ) {
+                            url = parsedTexture.url;
+                        }
+                        texture = new Texture(url, scene, !generateMipMaps);
                     }
 
                     return texture;

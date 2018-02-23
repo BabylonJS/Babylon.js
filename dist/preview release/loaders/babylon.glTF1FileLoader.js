@@ -86,6 +86,11 @@ var BABYLON;
             * Raised when the loader is disposed.
             */
             this.onDisposeObservable = new BABYLON.Observable();
+            /**
+             * Raised after a loader extension is created.
+             * Set additional options for a loader extension in this event.
+             */
+            this.onExtensionLoadedObservable = new BABYLON.Observable();
             // #endregion
             this._loader = null;
             this.name = "gltf";
@@ -154,22 +159,22 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GLTFFileLoader.prototype, "onExtensionLoaded", {
+            set: function (callback) {
+                if (this._onExtensionLoadedObserver) {
+                    this.onExtensionLoadedObservable.remove(this._onExtensionLoadedObserver);
+                }
+                this._onExtensionLoadedObserver = this.onExtensionLoadedObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
             /**
              * The loader state or null if not active.
              */
             get: function () {
                 return this._loader ? this._loader.state : null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GLTFFileLoader.prototype, "loaderExtensions", {
-            /**
-             * The loader extensions or null if not active.
-             */
-            get: function () {
-                return this._loader ? this._loader.extensions : null;
             },
             enumerable: true,
             configurable: true
@@ -182,11 +187,9 @@ var BABYLON;
                 this._loader.dispose();
                 this._loader = null;
             }
-            this.onParsedObservable.clear();
             this.onMeshLoadedObservable.clear();
             this.onTextureLoadedObservable.clear();
             this.onMaterialLoadedObservable.clear();
-            this.onCompleteObservable.clear();
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         };
@@ -239,6 +242,7 @@ var BABYLON;
                 };
             }
             this.onParsedObservable.notifyObservers(parsedData);
+            this.onParsedObservable.clear();
             return parsedData;
         };
         GLTFFileLoader.prototype._getLoader = function (loaderData) {
@@ -275,7 +279,14 @@ var BABYLON;
             loader.onMeshLoadedObservable.add(function (mesh) { return _this.onMeshLoadedObservable.notifyObservers(mesh); });
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
-            loader.onCompleteObservable.add(function () { return _this.onCompleteObservable.notifyObservers(_this); });
+            loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
+            loader.onCompleteObservable.add(function () {
+                _this.onMeshLoadedObservable.clear();
+                _this.onTextureLoadedObservable.clear();
+                _this.onMaterialLoadedObservable.clear();
+                _this.onCompleteObservable.notifyObservers(_this);
+                _this.onCompleteObservable.clear();
+            });
             return loader;
         };
         GLTFFileLoader._parseBinary = function (data) {
@@ -1827,8 +1838,8 @@ var BABYLON;
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
+                this.onExtensionLoadedObservable = new BABYLON.Observable();
                 this.state = null;
-                this.extensions = null;
             }
             GLTFLoader.RegisterExtension = function (extension) {
                 if (GLTFLoader.Extensions[extension.name]) {

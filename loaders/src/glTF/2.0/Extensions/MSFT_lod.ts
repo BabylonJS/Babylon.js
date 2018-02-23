@@ -9,22 +9,25 @@ module BABYLON.GLTF2.Extensions {
         ids: number[];
     }
 
-    export class MSFTLOD extends GLTFLoaderExtension {
+    export class MSFT_lod extends GLTFLoaderExtension {
+        public readonly name = NAME;
+
+        /**
+         * Maximum number of LODs to load, starting from the lowest LOD.
+         */
+        public maxLODsToLoad = Number.MAX_VALUE;
+
         private _loadingNodeLOD: Nullable<ILoaderNode> = null;
         private _loadNodeSignals: { [nodeIndex: number]: Deferred<void> } = {};
 
         private _loadingMaterialLOD: Nullable<ILoaderMaterial> = null;
         private _loadMaterialSignals: { [materialIndex: number]: Deferred<void> } = {};
 
-        protected get _name() {
-            return NAME;
-        }
-
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> {
             return this._loadExtensionAsync<IMSFTLOD>(context, node, (context, extension) => {
                 let firstPromise: Promise<void>;
 
-                const nodeLODs = MSFTLOD._GetLODs(context, node, this._loader._gltf.nodes, extension.ids);
+                const nodeLODs = this._getLODs(context, node, this._loader._gltf.nodes, extension.ids);
                 for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                     const nodeLOD = nodeLODs[indexLOD];
 
@@ -60,10 +63,15 @@ module BABYLON.GLTF2.Extensions {
         }
 
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
+            // Don't load material LODs if already loading a node LOD.
+            if (this._loadingNodeLOD) {
+                return null;
+            }
+
             return this._loadExtensionAsync<IMSFTLOD>(context, material, (context, extension) => {
                 let firstPromise: Promise<void>;
 
-                const materialLODs = MSFTLOD._GetLODs(context, material, this._loader._gltf.materials, extension.ids);
+                const materialLODs = this._getLODs(context, material, this._loader._gltf.materials, extension.ids);
                 for (let indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
                     const materialLOD = materialLODs[indexLOD];
 
@@ -114,15 +122,24 @@ module BABYLON.GLTF2.Extensions {
         /**
          * Gets an array of LOD properties from lowest to highest.
          */
-        private static _GetLODs<T>(context: string, property: T, array: ArrayLike<T> | undefined, ids: number[]): T[] {
-            const properties = [property];
-            for (const id of ids) {
-                properties.push(GLTFLoader._GetProperty(context + "/ids/" + id, array, id));
+        private _getLODs<T>(context: string, property: T, array: ArrayLike<T> | undefined, ids: number[]): T[] {
+            if (this.maxLODsToLoad <= 0) {
+                throw new Error("maxLODsToLoad must be greater than zero");
             }
 
-            return properties.reverse();
+            const properties = new Array<T>();
+
+            for (let i = ids.length - 1; i >= 0; i--) {
+                properties.push(GLTFLoader._GetProperty(context + "/ids/" + ids[i], array, ids[i]));
+                if (properties.length === this.maxLODsToLoad) {
+                    return properties;
+                }
+            }
+
+            properties.push(property);
+            return properties;
         }
     }
 
-    GLTFLoader._Register(NAME, loader => new MSFTLOD(loader));
+    GLTFLoader._Register(NAME, loader => new MSFT_lod(loader));
 }

@@ -283,6 +283,8 @@
           background-color: #2c2c2c; }
         .insp-wrapper .insp-tree .line .line-content .line:hover:first-child {
           background-color: #404040; }
+    .insp-wrapper .insp-tree .line_invisible {
+      display: none; }
   .insp-wrapper .insp-details {
     background-color: #2c2c2c;
     overflow-y: auto;
@@ -303,7 +305,7 @@
         width: 35%; }
       .insp-wrapper .insp-details .base-row .prop-value, .insp-wrapper .insp-details .row .prop-value, .insp-wrapper .insp-details .header-row .prop-value {
         width: 59%;
-        padding-left: 10px; }
+        padding-left: 5px; }
         .insp-wrapper .insp-details .base-row .prop-value.clickable, .insp-wrapper .insp-details .row .prop-value.clickable, .insp-wrapper .insp-details .header-row .prop-value.clickable {
           cursor: pointer; }
           .insp-wrapper .insp-details .base-row .prop-value.clickable:hover, .insp-wrapper .insp-details .row .prop-value.clickable:hover, .insp-wrapper .insp-details .header-row .prop-value.clickable:hover {
@@ -340,7 +342,8 @@
       display: inline-block;
       margin-left: 5px; }
     .insp-wrapper .insp-details .color-element {
-      top: 2px; }
+      width: 20px;
+      height: 15px; }
     .insp-wrapper .insp-details .texture-element {
       color: #f29766;
       margin-left: 10px; }

@@ -18,6 +18,7 @@ interface Window {
     mozURL: typeof URL;
     msURL: typeof URL;
     VRFrameData: any; // WebVR, from specs 1.1
+    DracoDecoderModule: any;
 }
 
 interface WebGLRenderingContext {
@@ -53,7 +54,13 @@ interface WebGLRenderingContext {
     HALF_FLOAT_OES: number;
     RGBA16F: number;
     RGBA32F: number;
+    R32F: number;
+    RG32F: number;
+    RGB32F: number;
+    RED: number;
+    RG: number;
 
+    UNSIGNED_INT_24_8: number;
     DEPTH24_STENCIL8: number;
 
     /* Multiple Render Targets */

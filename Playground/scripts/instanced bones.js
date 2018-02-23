@@ -21,7 +21,7 @@ var createScene = function () {
 
     // Shadows
     var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
-    shadowGenerator.useBlurVarianceShadowMap = true;
+    shadowGenerator.useBlurExponentialShadowMap = true;
 
     // Dude
     BABYLON.SceneLoader.ImportMesh("him", "scenes/Dude/", "Dude.babylon", scene, function (newMeshes2, particleSystems2, skeletons2) {

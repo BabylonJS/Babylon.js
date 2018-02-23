@@ -18,11 +18,11 @@
             /**
              * Defines the red component (between 0 and 1, default is 0)
              */
-            public r: number = 0, 
+            public r: number = 0,
             /**
              * Defines the green component (between 0 and 1, default is 0) 
              */
-            public g: number = 0, 
+            public g: number = 0,
             /**
              * Defines the blue component (between 0 and 1, default is 0)
              */
@@ -175,9 +175,9 @@
          * @returns the original Color3
          */
         public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
-            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
-            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
-            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
+            result.r = Scalar.Clamp(this.r, min, max);
+            result.g = Scalar.Clamp(this.g, min, max);
+            result.b = Scalar.Clamp(this.b, min, max);
             return this;
         }
 
@@ -334,7 +334,6 @@
          */
         public static FromHexString(hex: string): Color3 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 7) {
-                //Tools.Warn("Color3.FromHexString must be called with a string like #FFFFFF");
                 return new Color3(0, 0, 0);
             }
 
@@ -388,58 +387,58 @@
         /**
          * Returns a Color3 value containing a green color
          * @returns a new Color3 object
-         */        
+         */
         public static Green(): Color3 { return new Color3(0, 1, 0); }
         /**
          * Returns a Color3 value containing a blue color
          * @returns a new Color3 object
-         */        
+         */
         public static Blue(): Color3 { return new Color3(0, 0, 1); }
         /**
          * Returns a Color3 value containing a black color
          * @returns a new Color3 object
-         */        
+         */
         public static Black(): Color3 { return new Color3(0, 0, 0); }
         /**
          * Returns a Color3 value containing a white color
          * @returns a new Color3 object
-         */        
+         */
         public static White(): Color3 { return new Color3(1, 1, 1); }
         /**
          * Returns a Color3 value containing a purple color
          * @returns a new Color3 object
-         */        
+         */
         public static Purple(): Color3 { return new Color3(0.5, 0, 0.5); }
         /**
          * Returns a Color3 value containing a magenta color
          * @returns a new Color3 object
-         */        
+         */
         public static Magenta(): Color3 { return new Color3(1, 0, 1); }
         /**
          * Returns a Color3 value containing a yellow color
          * @returns a new Color3 object
-         */        
+         */
         public static Yellow(): Color3 { return new Color3(1, 1, 0); }
         /**
          * Returns a Color3 value containing a gray color
          * @returns a new Color3 object
-         */        
+         */
         public static Gray(): Color3 { return new Color3(0.5, 0.5, 0.5); }
         /**
          * Returns a Color3 value containing a teal color
          * @returns a new Color3 object
-         */        
+         */
         public static Teal(): Color3 { return new Color3(0, 1.0, 1.0); }
         /**
          * Returns a Color3 value containing a random color
          * @returns a new Color3 object
-         */     
+         */
         public static Random(): Color3 { return new Color3(Math.random(), Math.random(), Math.random()); }
     }
 
     /**
      * Class used to hold a RBGA color
-     */    
+     */
     export class Color4 {
         /**
          * Creates a new Color4 object from red, green, blue values, all between 0 and 1
@@ -452,15 +451,15 @@
             /**
              * Defines the red component (between 0 and 1, default is 0)
              */
-            public r: number = 0, 
+            public r: number = 0,
             /**
              * Defines the green component (between 0 and 1, default is 0) 
              */
-            public g: number = 0, 
+            public g: number = 0,
             /**
              * Defines the blue component (between 0 and 1, default is 0)
              */
-            public b: number = 0, 
+            public b: number = 0,
             /**
              * Defines the alpha component (between 0 and 1, default is 1)
              */
@@ -572,10 +571,10 @@
          * @returns the cuurent Color4
          */
         public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
-            result.r = BABYLON.Scalar.Clamp(this.r, min, max);
-            result.g = BABYLON.Scalar.Clamp(this.g, min, max);
-            result.b = BABYLON.Scalar.Clamp(this.b, min, max);
-            result.a = BABYLON.Scalar.Clamp(this.a, min, max);
+            result.r = Scalar.Clamp(this.r, min, max);
+            result.g = Scalar.Clamp(this.g, min, max);
+            result.b = Scalar.Clamp(this.b, min, max);
+            result.a = Scalar.Clamp(this.a, min, max);
             return this;
         }
 
@@ -746,7 +745,6 @@
          */
         public static FromHexString(hex: string): Color4 {
             if (hex.substring(0, 1) !== "#" || hex.length !== 9) {
-                //Tools.Warn("Color4.FromHexString must be called with a string like #FFFFFFFF");
                 return new Color4(0.0, 0.0, 0.0, 0.0);
             }
 
@@ -1296,11 +1294,11 @@
             /**
              * Defines the first coordinates (on X axis)
              */
-            public x: number, 
+            public x: number,
             /**
              * Defines the second coordinates (on Y axis)
              */
-            public y: number, 
+            public y: number,
             /**
              * Defines the third coordinates (on Z axis)
              */
@@ -1800,10 +1798,10 @@
          * @param normal direction of the normal
          * @return the angle between vector0 and vector1
          */
-        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3):number {
-            var v0:Vector3 = vector0.clone().normalize();
-            var v1:Vector3 = vector1.clone().normalize();
-            var dot:number = Vector3.Dot(v0, v1);
+        public static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
+            var v0: Vector3 = vector0.clone().normalize();
+            var v1: Vector3 = vector1.clone().normalize();
+            var dot: number = Vector3.Dot(v0, v1);
             var n = Vector3.Cross(v0, v1);
             if (Vector3.Dot(n, normal) > 0) {
                 return Math.acos(dot);
@@ -2303,7 +2301,7 @@
          * @param left defines the first operand
          * @param right defines the second operand
          * @returns the new Vector3
-         */        
+         */
         public static Maximize(left: Vector3, right: Vector3): Vector3 {
             var max = left.clone();
             max.maximizeInPlace(right);
@@ -3894,6 +3892,22 @@
 
             return true;
         }
+
+        /**
+         * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).  
+         * @param ref matrix to store the result
+         */
+        public toNormalMatrix(ref: Matrix): void {
+            this.invertToRef(ref)
+            ref.transpose();
+            var m = ref.m;
+            Matrix.FromValuesToRef(
+                m[0], m[1], m[2], 0,
+                m[4], m[5], m[6], 0,
+                m[8], m[9], m[10], 0,
+                0, 0, 0, 1, ref);
+        }
+
         /**
          * Returns a new Matrix as the extracted rotation matrix from the current one.  
          */
@@ -3902,6 +3916,7 @@
             this.getRotationMatrixToRef(result);
             return result;
         }
+
         /**
          * Extracts the rotation matrix from the current one and sets it as the passed "result".  
          * Returns the current Matrix.  
@@ -5273,7 +5288,6 @@
          */
         public addLineTo(x: number, y: number): Path2 {
             if (this.closed) {
-                //Tools.Error("cannot add lines to closed paths");
                 return this;
             }
             var newPoint = new Vector2(x, y);
@@ -5289,7 +5303,6 @@
          */
         public addArcTo(midX: number, midY: number, endX: number, endY: number, numberOfSegments = 36): Path2 {
             if (this.closed) {
-                //Tools.Error("cannot add arcs to closed paths");
                 return this;
             }
             var startPoint = this._points[this._points.length - 1];
@@ -5344,7 +5357,6 @@
          */
         public getPointAtLengthPosition(normalizedLengthPosition: number): Vector2 {
             if (normalizedLengthPosition < 0 || normalizedLengthPosition > 1) {
-                //Tools.Error("normalized length position should be between 0 and 1.");
                 return Vector2.Zero();
             }
 
@@ -5371,7 +5383,6 @@
                 previousOffset = nextOffset;
             }
 
-            //Tools.Error("internal error");
             return Vector2.Zero();
         }
 

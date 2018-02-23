@@ -39,19 +39,34 @@ describe('Babylon Scene Loader', function () {
     describe('#glTF', () => {
         it('Load BoomBox', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(scene => {
+                expect(scene.meshes.length, "scene.meshes.length").to.equal(3);
+                expect(scene.materials.length, "scene.materials.length").to.equal(1);
+            });
         });
 
         it('Load BoomBox GLB', () => {
             const scene = new BABYLON.Scene(subject);
-            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "BoomBox.glb", scene);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/", "BoomBox.glb", scene).then(scene => {
+                expect(scene.meshes.length, "scene.meshes.length").to.equal(3);
+                expect(scene.materials.length, "scene.materials.length").to.equal(1);
+            });
+        });
+
+        it('Load BoomBox with ImportMesh', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(result => {
+                expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
+                expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
+                expect(result.skeletons.length, "skeletons.length").to.equal(0);
+            });
         });
 
         it('Load BoomBox with callbacks', () => {
             let parsedCount = 0;
-            let primaryMeshLoadCount = 0;
-            let primaryMaterialLoadCount = 0;
-            let textureLoadCounts: { [name: string]: number } = {};
+            let meshCount = 0;
+            let materialCount = 0;
+            let textureCounts: { [name: string]: number } = {};
             let ready = false;
 
             const deferred = new BABYLON.Deferred();
@@ -61,18 +76,14 @@ describe('Babylon Scene Loader', function () {
                 };
 
                 loader.onMeshLoaded = mesh => {
-                    if (mesh.name === "BoomBox") {
-                        primaryMeshLoadCount++;
-                    }
+                    meshCount++;
                 };
                 loader.onMaterialLoaded = material => {
-                    if (material.name === "BoomBox_Mat") {
-                        primaryMaterialLoadCount++;
-                    }
+                    materialCount++;
                 };
                 loader.onTextureLoaded = texture => {
-                    textureLoadCounts[texture.name] = textureLoadCounts[texture.name] || 0;
-                    textureLoadCounts[texture.name]++;
+                    textureCounts[texture.name] = textureCounts[texture.name] || 0;
+                    textureCounts[texture.name]++;
                 };
 
                 loader.onComplete = () => {
@@ -91,8 +102,8 @@ describe('Babylon Scene Loader', function () {
                 ready = true;
 
                 expect(parsedCount, "parsedCount").to.equal(1);
-                expect(primaryMeshLoadCount, "primaryMeshLoadCount").to.equal(1);
-                expect(primaryMaterialLoadCount, "primaryMaterialLoadCount").to.equal(1);
+                expect(meshCount, "meshCount").to.equal(scene.meshes.length);
+                expect(materialCount, "materialCount").to.equal(scene.materials.length);
 
                 const expectedTextureLoadCounts = {
                     "baseColor": 1,
@@ -100,9 +111,9 @@ describe('Babylon Scene Loader', function () {
                     "normal": 1,
                     "emissive": 1
                 };
-                expect(Object.keys(textureLoadCounts), "Object.keys(textureLoadCounts)").to.have.lengthOf(Object.keys(expectedTextureLoadCounts).length);
+                expect(Object.keys(textureCounts), "Object.keys(textureCounts)").to.have.lengthOf(Object.keys(expectedTextureLoadCounts).length);
                 for (const textureName in expectedTextureLoadCounts) {
-                    expect(textureLoadCounts, "textureLoadCounts").to.have.property(textureName, expectedTextureLoadCounts[textureName]);
+                    expect(textureCounts, "textureCounts").to.have.property(textureName, expectedTextureLoadCounts[textureName]);
                 }
             });
 
@@ -170,6 +181,29 @@ describe('Babylon Scene Loader', function () {
             return Promise.all([promise, deferred.promise, scene.whenReadyAsync()]);
         });
 
+        it('Load Alien', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/Alien/", "Alien.gltf", scene).then(result => {
+                expect(result.skeletons.length, "skeletons.length").to.equal(scene.skeletons.length);
+
+                const mapping = {
+                    "AlienHead_0": "skeleton0",
+                    "Collar_0": "skeleton1",
+                    "LeftEye_0": "skeleton2",
+                    "RightEye_0": "skeleton3",
+                    "CollarClasp_0": "skeleton1",
+                    "Shirt_0": "skeleton1",
+                    "ShirtPlate_0": "skeleton1",
+                    "Teeth_0": "skeleton1",
+                };
+
+                for (const meshName in mapping) {
+                    const skeletonName = mapping[meshName];
+                    expect(scene.getMeshByName(meshName).skeleton.name, `skeleton name of mesh '${meshName}'`).to.equal(skeletonName);
+                }
+            });
+        });
+
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name
         // TODO: test KHR_materials_pbrSpecularGlossiness
@@ -181,7 +215,7 @@ describe('Babylon Scene Loader', function () {
         it('should be loaded from BoomBox GLTF', () => {
             var scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.LoadAssetContainerAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(container => {
-                expect(container.meshes.length).to.eq(2);
+                expect(container.meshes.length).to.eq(3);
             });
         });
         it('should be adding and removing objects from scene', () => {

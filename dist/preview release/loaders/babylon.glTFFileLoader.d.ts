@@ -28,16 +28,20 @@ declare module BABYLON {
         json: Object;
         bin: Nullable<ArrayBufferView>;
     }
+    interface IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Whether this extension is enabled.
+         */
+        enabled: boolean;
+    }
     enum GLTFLoaderState {
         Loading = 0,
         Ready = 1,
         Complete = 2,
-    }
-    interface IGLTFLoaderExtension {
-        enabled: boolean;
-    }
-    interface IGLTFLoaderExtensions {
-        [name: string]: IGLTFLoaderExtension;
     }
     interface IGLTFLoader extends IDisposable {
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
@@ -45,13 +49,13 @@ declare module BABYLON {
         compileMaterials: boolean;
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
-        onDisposeObservable: Observable<IGLTFLoader>;
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
+        onDisposeObservable: Observable<IGLTFLoader>;
+        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
-        extensions: Nullable<IGLTFLoaderExtensions>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
@@ -125,13 +129,16 @@ declare module BABYLON {
         private _onDisposeObserver;
         onDispose: () => void;
         /**
+         * Raised after a loader extension is created.
+         * Set additional options for a loader extension in this event.
+         */
+        readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
+        private _onExtensionLoadedObserver;
+        onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
+        /**
          * The loader state or null if not active.
          */
         readonly loaderState: Nullable<GLTFLoaderState>;
-        /**
-         * The loader extensions or null if not active.
-         */
-        readonly loaderExtensions: Nullable<IGLTFLoaderExtensions>;
         private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
@@ -563,8 +570,8 @@ declare module BABYLON.GLTF1 {
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
+        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
-        extensions: Nullable<IGLTFLoaderExtensions>;
         dispose(): void;
         private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError);
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<{
@@ -838,10 +845,9 @@ declare module BABYLON.GLTF2 {
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
         readonly onMaterialLoadedObservable: Observable<Material>;
+        readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         readonly onCompleteObservable: Observable<IGLTFLoader>;
         readonly state: Nullable<GLTFLoaderState>;
-        readonly extensions: IGLTFLoaderExtensions;
-        constructor();
         dispose(): void;
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
@@ -850,8 +856,10 @@ declare module BABYLON.GLTF2 {
         }>;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         private _loadAsync(nodes, scene, data, rootUrl, onProgress?);
+        private _loadExtensions();
         private _loadData(data);
         private _setupData();
+        private _checkExtensions();
         private _createRootNode();
         private _loadNodesAsync(nodes);
         _loadSceneAsync(context: string, scene: ILoaderScene): Promise<void>;
@@ -879,7 +887,7 @@ declare module BABYLON.GLTF2 {
         private _loadAnimationChannelAsync(context, animationContext, animation, channel, babylonAnimationGroup);
         private _loadAnimationSamplerAsync(context, sampler);
         private _loadBufferAsync(context, buffer);
-        private _loadBufferViewAsync(context, bufferView);
+        _loadBufferViewAsync(context: string, bufferView: ILoaderBufferView): Promise<ArrayBufferView>;
         private _loadAccessorAsync(context, accessor);
         private _buildArrayBuffer<T>(typedArray, data, byteOffset, count, numComponents, byteStride?);
         private _getDefaultMaterial();
@@ -900,33 +908,37 @@ declare module BABYLON.GLTF2 {
         private static _ValidateUri(uri);
         private _compileMaterialsAsync();
         private _compileShadowGeneratorsAsync();
-        private _abortRequests();
-        private _releaseResources();
+        private _clear();
         _applyExtensions<T>(actionAsync: (extension: GLTFLoaderExtension) => Nullable<Promise<T>>): Nullable<Promise<T>>;
     }
 }
 
 
 declare module BABYLON.GLTF2 {
-    abstract class GLTFLoaderExtension {
+    abstract class GLTFLoaderExtension implements IGLTFLoaderExtension, IDisposable {
         enabled: boolean;
+        readonly abstract name: string;
         protected _loader: GLTFLoader;
         constructor(loader: GLTFLoader);
-        protected readonly abstract _name: string;
+        dispose(): void;
         /** Override this method to modify the default behavior for loading scenes. */
         protected _loadSceneAsync(context: string, node: ILoaderScene): Nullable<Promise<void>>;
         /** Override this method to modify the default behavior for loading nodes. */
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>>;
+        /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
+        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>>;
         /** Override this method to modify the default behavior for loading materials. */
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
         /** Override this method to modify the default behavior for loading uris. */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** Helper method called by a loader extension to load an glTF extension. */
-        protected _loadExtensionAsync<T>(context: string, property: IProperty, actionAsync: (context: string, extension: T) => Promise<void>): Nullable<Promise<void>>;
+        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (context: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>>;
         /** Helper method called by the loader to allow extensions to override loading scenes. */
         static _LoadSceneAsync(loader: GLTFLoader, context: string, scene: ILoaderScene): Nullable<Promise<void>>;
         /** Helper method called by the loader to allow extensions to override loading nodes. */
         static _LoadNodeAsync(loader: GLTFLoader, context: string, node: ILoaderNode): Nullable<Promise<void>>;
+        /** Helper method called by the loader to allow extensions to override loading mesh primitive vertex data. */
+        static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>>;
         /** Helper method called by the loader to allow extensions to override loading materials. */
         static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
         /** Helper method called by the loader to allow extensions to override loading uris. */
@@ -936,26 +948,41 @@ declare module BABYLON.GLTF2 {
 
 
 declare module BABYLON.GLTF2.Extensions {
-    class MSFTLOD extends GLTFLoaderExtension {
+    class MSFT_lod extends GLTFLoaderExtension {
+        readonly name: string;
+        /**
+         * Maximum number of LODs to load, starting from the lowest LOD.
+         */
+        maxLODsToLoad: number;
         private _loadingNodeLOD;
         private _loadNodeSignals;
         private _loadingMaterialLOD;
         private _loadMaterialSignals;
-        protected readonly _name: string;
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>>;
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /**
          * Gets an array of LOD properties from lowest to highest.
          */
-        private static _GetLODs<T>(context, property, array, ids);
+        private _getLODs<T>(context, property, array, ids);
     }
 }
 
 
 declare module BABYLON.GLTF2.Extensions {
-    class KHRMaterialsPbrSpecularGlossiness extends GLTFLoaderExtension {
-        protected readonly _name: string;
+    class KHR_draco_mesh_compression extends GLTFLoaderExtension {
+        readonly name: string;
+        private _dracoCompression;
+        constructor(loader: GLTFLoader);
+        dispose(): void;
+        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>>;
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
+        readonly name: string;
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
         private _loadSpecularGlossinessPropertiesAsync(loader, context, material, properties);
     }
@@ -963,8 +990,8 @@ declare module BABYLON.GLTF2.Extensions {
 
 
 declare module BABYLON.GLTF2.Extensions {
-    class KHRLights extends GLTFLoaderExtension {
-        protected readonly _name: string;
+    class KHR_lights extends GLTFLoaderExtension {
+        readonly name: string;
         protected _loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>>;
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>>;
         private readonly _lights;

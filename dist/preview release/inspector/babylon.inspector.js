@@ -383,7 +383,7 @@ var INSPECTOR;
         },
         'Color3': {
             type: BABYLON.Color3,
-            format: function (color) { return "R:" + color.r + ", G:" + color.g + ", B:" + color.b; },
+            format: function (color) { return "R:" + color.r.toPrecision(2) + ", G:" + color.g.toPrecision(2) + ", B:" + color.b.toPrecision(2); },
             slider: {
                 r: { min: 0, max: 1, step: 0.01 },
                 g: { min: 0, max: 1, step: 0.01 },
@@ -1680,56 +1680,62 @@ var INSPECTOR;
             }
             else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+                //Doing the Hexa convertion
                 if (this._property.type == "Color3" || this._property.type == "Color4") {
-                    console.log(this._property.type);
-                    console.log(this._children.length);
-                    console.log(this._children[0]);
-                    if ((this._property.type == "Color3" && this._children.length == 4 && this._children[0].value == true) || (this._property.type == "Color4" && this._children.length == 5 && this._children[0].value == true)) {
-                        var hexLineInfos = [];
-                        var propToDisplay = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(this.value);
-                        for (var _i = 0, propToDisplay_1 = propToDisplay; _i < propToDisplay_1.length; _i++) {
-                            var prop = propToDisplay_1[_i];
-                            //if(propToDisplay.indexOf('a'))
-                            var infos = new INSPECTOR.Property(prop, this._property.value);
-                            //let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
-                            //let hexLine = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
-                            var valHex = ((infos.value * 255) | 0).toString(16);
-                            hexLineInfos.push(valHex);
-                            if (valHex == "0") {
-                                hexLineInfos.push("0");
-                            }
-                        }
-                        hexLineInfos.push("#");
-                        hexLineInfos.reverse();
-                        var hexLineString = hexLineInfos.join("");
-                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value);
-                        hexLineProp.value = hexLineString;
-                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
-                        console.log(hexLine);
-                        this._children.unshift(hexLine);
-                        this._addDetails();
-                    }
-                    /*if(this._children[0] != undefined &&  this._children[0].name == "hex"){
-                        let hexLineString = this._children[0].value;
-                        let rValue = (parseInt((hexLineString.slice(1,3)), 16)) * (1/255);
-                        let rValueRound = Math.round(100*rValue)/100 ;
-                        this.value.r = rValueRound;
-                        let gValue = (parseInt((hexLineString.slice(3,5)), 16)) * (1/255);
-                        let gValueRound = Math.round(100*gValue)/100 ;
-                        this.value.g = gValueRound;
-                        let bValue = (parseInt((hexLineString.slice(5,7)), 16)) * (1/255);
-                        let bValueRound = Math.round(100*bValue)/100 ;
-                        this.value.b = bValueRound;
-                            if(this._children[1].name == "a"){
-                                let aValue = (parseInt((hexLineString.slice(7,9)), 16)) * (1/255);
-                                let aValueRound = Math.round(100*aValue)/100;
+                    if ((this._property.type == "Color3" && this._children.length == 5 && this._children[1].value == true) || (this._property.type == "Color4" && this._children.length == 6 && this._children[1].value == true)) {
+                        if (this._children[0] != undefined && this._children[0].name == "hex") {
+                            var hexLineString = this._children[0].value;
+                            var rValue = (parseInt((hexLineString.slice(1, 3)), 16)) * (1 / 255);
+                            var rValueRound = Math.round(100 * rValue) / 100;
+                            this.value.r = rValueRound;
+                            var gValue = (parseInt((hexLineString.slice(3, 5)), 16)) * (1 / 255);
+                            var gValueRound = Math.round(100 * gValue) / 100;
+                            this.value.g = gValueRound;
+                            var bValue = (parseInt((hexLineString.slice(5, 7)), 16)) * (1 / 255);
+                            var bValueRound = Math.round(100 * bValue) / 100;
+                            this.value.b = bValueRound;
+                            if (this._children[2].name == "a") {
+                                var aValue = (parseInt((hexLineString.slice(7, 9)), 16)) * (1 / 255);
+                                var aValueRound = Math.round(100 * aValue) / 100;
                                 this.value.a = aValueRound;
                             }
-                        }*/
+                        }
+                    }
+                    else {
+                        if (this._property.value.hex != undefined) {
+                            var hexLineInfos = [];
+                            var valHexR = ((this._property.value.r * 255) | 0).toString(16);
+                            hexLineInfos.push(valHexR);
+                            if (valHexR == "0") {
+                                hexLineInfos.push("0");
+                            }
+                            var valHexG = ((this._property.value.g * 255) | 0).toString(16);
+                            hexLineInfos.push(valHexG);
+                            if (valHexG == "0") {
+                                hexLineInfos.push("0");
+                            }
+                            var valHexB = ((this._property.value.b * 255) | 0).toString(16);
+                            hexLineInfos.push(valHexB);
+                            if (valHexB == "0") {
+                                hexLineInfos.push("0");
+                            }
+                            if (this._property.value.a != undefined) {
+                                var valHexA = ((this._property.value.a * 255) | 0).toString(16);
+                                hexLineInfos.push(valHexA);
+                                if (valHexA == "0") {
+                                    hexLineInfos.push("0");
+                                }
+                            }
+                            hexLineInfos.unshift("#");
+                            var hexLineString = hexLineInfos.join("");
+                            this._property.value.hex = hexLineString;
+                            hexLineInfos.length = 0;
+                        }
+                    }
                 }
             }
-            for (var _a = 0, _b = this._elements; _a < _b.length; _a++) {
-                var elem = _b[_a];
+            for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
+                var elem = _a[_i];
                 elem.update(this.value);
             }
         };
@@ -1805,46 +1811,42 @@ var INSPECTOR;
                     else {
                         propToDisplay.sort().reverse();
                     }
-                    for (var _b = 0, propToDisplay_2 = propToDisplay; _b < propToDisplay_2.length; _b++) {
-                        var prop = propToDisplay_2[_b];
+                    for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
+                        var prop = propToDisplay_1[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
                         var child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.push(child);
                     }
+                    //Add the Hexa converter
                     if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0) {
-                        //let hexLineInfos = [];
-                        var hexLineProp = new INSPECTOR.Property("hexEnable", this._property.value);
-                        hexLineProp.type = "boolean";
-                        hexLineProp.value = false;
-                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
-                        this._children.unshift(hexLine);
-                        /*for (let prop of propToDisplay) {
-                                //if(propToDisplay.indexOf('a'))
-                                let infos = new Property(prop, this._property.value);
-                                
-                                //let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
-                                //let hexLine = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
-                                let  valHex = ((infos.value * 255)|0).toString(16);
-                                hexLineInfos.push(valHex);
-                                if(valHex == "0"){
-                                    hexLineInfos.push("0");
-                                }
+                        var hexLineInfos = [];
+                        var hexLinePropCheck = new INSPECTOR.Property("hexEnable", this._property.value);
+                        hexLinePropCheck.type = "boolean";
+                        hexLinePropCheck.value = false;
+                        var hexLineCheck = new PropertyLine(hexLinePropCheck, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLineCheck);
+                        for (var _c = 0, propToDisplay_2 = propToDisplay; _c < propToDisplay_2.length; _c++) {
+                            var prop = propToDisplay_2[_c];
+                            var infos = new INSPECTOR.Property(prop, this._property.value);
+                            var valHex = ((infos.value * 255) | 0).toString(16);
+                            hexLineInfos.push(valHex);
+                            if (valHex == "0") {
+                                hexLineInfos.push("0");
+                            }
                         }
                         hexLineInfos.push("#");
                         hexLineInfos.reverse();
-                        let hexLineString = hexLineInfos.join("");
-                        
-                        let hexLineProp = new Property("hex", this._property.value);
+                        var hexLineString = hexLineInfos.join("");
+                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value);
                         hexLineProp.value = hexLineString;
-                        let hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
-                   
-                        this._children.unshift(hexLine);*/
+                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLine);
                     }
                 }
                 // otherwise display it    
                 if (this._div.parentNode) {
-                    for (var _c = 0, _d = this._children; _c < _d.length; _c++) {
-                        var child = _d[_c];
+                    for (var _d = 0, _e = this._children; _d < _e.length; _d++) {
+                        var child = _e[_d];
                         this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
                     }
                 }
@@ -4724,7 +4726,18 @@ var INSPECTOR;
         };
         /** Build the HTML of this item */
         TreeItem.prototype._build = function () {
-            this._div.className = 'line';
+            /**
+             *  Hide the debug objects :
+             * - Axis : xline, yline, zline
+             * */
+            var adapterId = this._adapter.id();
+            if (adapterId == "xline"
+                || adapterId == "yline"
+                || adapterId == "zline") {
+                this._div.className = "line_invisible";
+            }
+            else
+                this._div.className = 'line';
             // special class for transform node ONLY
             if (this.adapter instanceof INSPECTOR.MeshAdapter) {
                 var obj = this.adapter.object;

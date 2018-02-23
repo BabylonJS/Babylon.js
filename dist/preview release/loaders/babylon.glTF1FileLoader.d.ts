@@ -28,16 +28,20 @@ declare module BABYLON {
         json: Object;
         bin: Nullable<ArrayBufferView>;
     }
+    interface IGLTFLoaderExtension {
+        /**
+         * The name of this extension.
+         */
+        readonly name: string;
+        /**
+         * Whether this extension is enabled.
+         */
+        enabled: boolean;
+    }
     enum GLTFLoaderState {
         Loading = 0,
         Ready = 1,
         Complete = 2,
-    }
-    interface IGLTFLoaderExtension {
-        enabled: boolean;
-    }
-    interface IGLTFLoaderExtensions {
-        [name: string]: IGLTFLoaderExtension;
     }
     interface IGLTFLoader extends IDisposable {
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
@@ -45,13 +49,13 @@ declare module BABYLON {
         compileMaterials: boolean;
         useClipPlane: boolean;
         compileShadowGenerators: boolean;
-        onDisposeObservable: Observable<IGLTFLoader>;
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
+        onDisposeObservable: Observable<IGLTFLoader>;
+        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
-        extensions: Nullable<IGLTFLoaderExtensions>;
         importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
@@ -125,13 +129,16 @@ declare module BABYLON {
         private _onDisposeObserver;
         onDispose: () => void;
         /**
+         * Raised after a loader extension is created.
+         * Set additional options for a loader extension in this event.
+         */
+        readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
+        private _onExtensionLoadedObserver;
+        onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
+        /**
          * The loader state or null if not active.
          */
         readonly loaderState: Nullable<GLTFLoaderState>;
-        /**
-         * The loader extensions or null if not active.
-         */
-        readonly loaderExtensions: Nullable<IGLTFLoaderExtensions>;
         private _loader;
         name: string;
         extensions: ISceneLoaderPluginExtensions;
@@ -563,8 +570,8 @@ declare module BABYLON.GLTF1 {
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
         onCompleteObservable: Observable<IGLTFLoader>;
+        onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
-        extensions: Nullable<IGLTFLoaderExtensions>;
         dispose(): void;
         private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError);
         importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<{

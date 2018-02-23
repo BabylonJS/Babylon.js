@@ -85,6 +85,7 @@
         // Values       
         private _bloomEnabled: boolean = false;
         private _depthOfFieldEnabled: boolean = false;
+        private _depthOfFieldBlurLevel = DepthOfFieldEffectBlurLevel.Low;
         private _fxaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
@@ -174,6 +175,22 @@
             }
             this._depthOfFieldEnabled = enabled;
             
+            this._buildPipeline();
+        }
+
+        /**
+         * Blur level of the depth of field effect. (Higher blur will effect performance)
+         */
+        @serialize()
+        public get depthOfFieldBlurLevel(): DepthOfFieldEffectBlurLevel {
+            return this._depthOfFieldBlurLevel;
+        }   
+        
+        public set depthOfFieldBlurLevel(value: DepthOfFieldEffectBlurLevel) {
+            if (this._depthOfFieldBlurLevel === value) {
+                return;
+            }
+            this._depthOfFieldBlurLevel = value;
             this._buildPipeline();
         }
 
@@ -268,6 +285,14 @@
             this._disposePostProcesses();
             this._reset();
 
+            if(this.depthOfFieldEnabled){
+                // Enable and get current depth map
+                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
+
+                this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+                this.addEffect(this.depthOfField);
+            }
+
             if (this.bloomEnabled) {
                 this.pass = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.PassPostProcessId, () => { return this.pass; }, true));
@@ -308,11 +333,6 @@
                     this.copyBack.alphaMode = Engine.ALPHA_SCREENMODE;
                 }
                 this.copyBack.autoClear = false;
-            }
-
-            if(this.depthOfFieldEnabled){
-                this.depthOfField = new DepthOfFieldEffect(this._scene, this._defaultPipelineTextureType);
-                this.addEffect(this.depthOfField);
             }
 
             if (this._imageProcessingEnabled) {
@@ -362,6 +382,8 @@
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
+
+            this._enableMSAAOnFirstPostProcess();
         }
 
         private _disposePostProcesses(): void {

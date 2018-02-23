@@ -3,16 +3,20 @@ import { ViewerConfiguration } from './configuration';
 import { getConfigurationType } from './types';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
+import { Tools, IFileRequest } from 'babylonjs';
 
 export class ConfigurationLoader {
 
     private configurationCache: { [url: string]: any };
 
+    private loadRequests: Array<IFileRequest>;
+
     constructor() {
         this.configurationCache = {};
+        this.loadRequests = [];
     }
 
-    public loadConfiguration(initConfig: ViewerConfiguration = {}): Promise<ViewerConfiguration> {
+    public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
 
         let loadedConfig: ViewerConfiguration = deepmerge({}, initConfig);
 
@@ -55,11 +59,20 @@ export class ConfigurationLoader {
             }).then((data: any) => {
                 let mapper = mapperManager.getMapper(mapperType);
                 let parsed = mapper.map(data);
-                return deepmerge(loadedConfig, parsed);
+                let merged = deepmerge(loadedConfig, parsed);
+                if (callback) callback(merged);
+                return merged;
             });
         } else {
+            if (callback) callback(loadedConfig);
             return Promise.resolve(loadedConfig);
         }
+    }
+
+    public dispose() {
+        this.loadRequests.forEach(request => {
+            request.abort();
+        });
     }
 
     private loadFile(url: string): Promise<any> {
@@ -68,26 +81,13 @@ export class ConfigurationLoader {
             return Promise.resolve(cacheReference[url]);
         }
 
-        return new Promise(function (resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url);
-            xhr.send();
-            xhr.onreadystatechange = function () {
-                var DONE = 4;
-                var OK = 200;
-                if (xhr.readyState === DONE) {
-                    if (xhr.status === OK) {
-                        cacheReference[url] = xhr.responseText;
-                        resolve(xhr.responseText); // 'This is the returned text.'
-                    } else {
-                        console.log('Error: ' + xhr.status, url);
-                        reject('Error: ' + xhr.status); // An error occurred during the request.
-                    }
-                }
-            }
+        return new Promise((resolve, reject) => {
+            let fileRequest = Tools.LoadFile(url, resolve, undefined, undefined, false, (request, error: any) => {
+                reject(error);
+            });
+            this.loadRequests.push(fileRequest);
         });
     }
-
 
 }
 

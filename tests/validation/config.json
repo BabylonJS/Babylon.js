@@ -18,7 +18,7 @@
       "sceneFolder": "/Scenes/Espilit/",
       "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
-    },
+    },    
     {
       "title": "The car",
       "sceneFolder": "/Scenes/TheCar/",
@@ -250,13 +250,18 @@
       "excludeFromAutomaticTesting": true
     },
     {
+      "title": "GLTF Buggy with Draco Mesh Compression",
+      "playgroundId": "#JNW207#1",
+      "referenceImage": "gltfBuggyDraco.png"
+    },
+    {
       "title": "Asset Containers",
       "playgroundId": "#P3U079#19",
       "referenceImage": "assetContainer.png"
     },
     {
       "title": "Depth of field",
-      "playgroundId": "#IDSQK2#16",
+      "playgroundId": "#IDSQK2#53",
       "renderCount": 20,
       "referenceImage": "depthOfField.png"
     },
@@ -303,7 +308,7 @@
     },
     {
       "title": "PBR",
-      "playgroundId": "#LCA0Q4",
+      "playgroundId": "#LCA0Q4#0",
       "referenceImage": "pbr.png"
     },
     {
@@ -365,6 +370,16 @@
       "title": "Light Projection Texture",
       "playgroundId": "#CQNGRK",
       "referenceImage": "LightProjectionTexture.png"
+    },
+    {
+      "title": "GlowLayer",
+      "playgroundId": "#LRFB2D#1",
+      "referenceImage": "GlowLayer.png"
+    },
+    {
+      "title": "Local cubemaps",
+      "playgroundId": "#RNASML#4",
+      "referenceImage": "local cubemaps.png"
     }
   ]
 }
