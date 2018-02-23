@@ -119,7 +119,7 @@ module BABYLON {
 
             if(!webVRController.mesh){
                 // Create an empty mesh that is used prior to loading the high quality model
-                var preloadMesh = new Mesh("preloadContrllerMesh", scene);
+                var preloadMesh = new Mesh("preloadControllerMesh", scene);
                 var preloadPointerPose = new Mesh("POINTING_POSE", scene);
                 preloadPointerPose.rotation.x = -0.7;
                 preloadMesh.addChild(preloadPointerPose);
