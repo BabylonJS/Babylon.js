@@ -87,7 +87,7 @@ module BABYLON {
          4) B / Y 
          5) thumb rest
         */
-        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let notifyObject = state; //{ state: state, changes: changes };
             let triggerDirection = this.hand === 'right' ? -1 : 1;
             switch (buttonIdx) {

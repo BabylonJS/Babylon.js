@@ -18,7 +18,7 @@ module BABYLON {
             });
         }
 
-        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             console.log("Button id: " + buttonIdx + "state: ");
             console.dir(state);
         }
