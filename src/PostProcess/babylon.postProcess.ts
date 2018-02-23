@@ -349,6 +349,12 @@
             var requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
             var requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
 
+            // If rendering to a webvr camera's left or right eye only half the width should be used to avoid resize when rendered to screen
+            var webVRCamera = (<WebVRFreeCamera>camera.parent);
+            if(webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)){
+                requiredWidth/=2;
+            }
+
             var desiredWidth = ((<PostProcessOptions>this._options).width || requiredWidth);
             var desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
 
