@@ -8,7 +8,7 @@ module INSPECTOR {
         /** The property name */
         private _property   : string;
         /** The obj this property refers to */
-        private _obj        : any;
+        public _obj        : any;
         
         constructor(prop:string, obj:any) {
             this._property = prop;
@@ -22,12 +22,17 @@ module INSPECTOR {
         public get value() : any {
             return this._obj[this._property];
         }
+
         public set value(newValue:any) {
             this._obj[this._property] = newValue;
         }
         
         public get type() :string {
             return Helpers.GET_TYPE(this.value);
+        }
+
+        public set type(newType:string){
+            this._obj[this._property] = newType;
         }
         
         public get obj() : any {

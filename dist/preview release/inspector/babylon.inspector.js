@@ -1164,6 +1164,9 @@ var INSPECTOR;
         Object.defineProperty(DetailPanel.prototype, "details", {
             set: function (detailsRow) {
                 this.clean();
+                //add the searchBar
+                this._addSearchBarDetails();
+                this._details = INSPECTOR.Helpers.CreateDiv('details', this._div);
                 this._detailRows = detailsRow;
                 // Refresh HTML
                 this.update();
@@ -1179,16 +1182,49 @@ var INSPECTOR;
             this._div.appendChild(this._headerRow);
         };
         /** Updates the HTML of the detail panel */
-        DetailPanel.prototype.update = function () {
+        DetailPanel.prototype.update = function (_items) {
             this._sortDetails('name', 1);
-            this._addDetails();
+            // Check the searchbar
+            if (_items) {
+                this.cleanRow();
+                this._addSearchDetails(_items);
+                //console.log(_items);
+            }
+            else {
+                this._addDetails();
+                //console.log("np");
+            }
+        };
+        /** Add the search bar for the details */
+        DetailPanel.prototype._addSearchBarDetails = function () {
+            var searchDetails = INSPECTOR.Helpers.CreateDiv('searchbar-details', this._div);
+            // Create search bar
+            this._searchDetails = new INSPECTOR.SearchBarDetails(this);
+            searchDetails.appendChild(this._searchDetails.toHtml());
+            this._div.appendChild(searchDetails);
+        };
+        /** Search an element by name  */
+        DetailPanel.prototype.searchByName = function (searchName) {
+            var rows = [];
+            for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                if (row.name.indexOf(searchName) >= 0) {
+                    rows.push(row);
+                }
+            }
+            this.update(rows);
         };
         /** Add all lines in the html div. Does not sort them! */
         DetailPanel.prototype._addDetails = function () {
-            var details = INSPECTOR.Helpers.CreateDiv('details', this._div);
             for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
                 var row = _a[_i];
-                details.appendChild(row.toHtml());
+                this._details.appendChild(row.toHtml());
+            }
+        };
+        DetailPanel.prototype._addSearchDetails = function (_items) {
+            for (var _i = 0, _items_1 = _items; _i < _items_1.length; _i++) {
+                var row = _items_1[_i];
+                this._details.appendChild(row.toHtml());
             }
         };
         /**
@@ -1250,6 +1286,17 @@ var INSPECTOR;
             INSPECTOR.Helpers.CleanDiv(this._div);
             // Header row
             this._div.appendChild(this._headerRow);
+        };
+        /**
+         * Clean the rows only
+         */
+        DetailPanel.prototype.cleanRow = function () {
+            // Delete all details row
+            for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
+                var pline = _a[_i];
+                pline.dispose();
+            }
+            INSPECTOR.Helpers.CleanDiv(this._details);
         };
         /** Overrides basicelement.dispose */
         DetailPanel.prototype.dispose = function () {
@@ -1322,6 +1369,9 @@ var INSPECTOR;
         Object.defineProperty(Property.prototype, "type", {
             get: function () {
                 return INSPECTOR.Helpers.GET_TYPE(this.value);
+            },
+            set: function (newType) {
+                this._obj[this._property] = newType;
             },
             enumerable: true,
             configurable: true
@@ -1630,9 +1680,56 @@ var INSPECTOR;
             }
             else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+                if (this._property.type == "Color3" || this._property.type == "Color4") {
+                    console.log(this._property.type);
+                    console.log(this._children.length);
+                    console.log(this._children[0]);
+                    if ((this._property.type == "Color3" && this._children.length == 4 && this._children[0].value == true) || (this._property.type == "Color4" && this._children.length == 5 && this._children[0].value == true)) {
+                        var hexLineInfos = [];
+                        var propToDisplay = INSPECTOR.Helpers.GetAllLinesPropertiesAsString(this.value);
+                        for (var _i = 0, propToDisplay_1 = propToDisplay; _i < propToDisplay_1.length; _i++) {
+                            var prop = propToDisplay_1[_i];
+                            //if(propToDisplay.indexOf('a'))
+                            var infos = new INSPECTOR.Property(prop, this._property.value);
+                            //let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
+                            //let hexLine = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
+                            var valHex = ((infos.value * 255) | 0).toString(16);
+                            hexLineInfos.push(valHex);
+                            if (valHex == "0") {
+                                hexLineInfos.push("0");
+                            }
+                        }
+                        hexLineInfos.push("#");
+                        hexLineInfos.reverse();
+                        var hexLineString = hexLineInfos.join("");
+                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value);
+                        hexLineProp.value = hexLineString;
+                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                        console.log(hexLine);
+                        this._children.unshift(hexLine);
+                        this._addDetails();
+                    }
+                    /*if(this._children[0] != undefined &&  this._children[0].name == "hex"){
+                        let hexLineString = this._children[0].value;
+                        let rValue = (parseInt((hexLineString.slice(1,3)), 16)) * (1/255);
+                        let rValueRound = Math.round(100*rValue)/100 ;
+                        this.value.r = rValueRound;
+                        let gValue = (parseInt((hexLineString.slice(3,5)), 16)) * (1/255);
+                        let gValueRound = Math.round(100*gValue)/100 ;
+                        this.value.g = gValueRound;
+                        let bValue = (parseInt((hexLineString.slice(5,7)), 16)) * (1/255);
+                        let bValueRound = Math.round(100*bValue)/100 ;
+                        this.value.b = bValueRound;
+                            if(this._children[1].name == "a"){
+                                let aValue = (parseInt((hexLineString.slice(7,9)), 16)) * (1/255);
+                                let aValueRound = Math.round(100*aValue)/100;
+                                this.value.a = aValueRound;
+                            }
+                        }*/
+                }
             }
-            for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
-                var elem = _a[_i];
+            for (var _a = 0, _b = this._elements; _a < _b.length; _a++) {
+                var elem = _b[_a];
                 elem.update(this.value);
             }
         };
@@ -1708,11 +1805,40 @@ var INSPECTOR;
                     else {
                         propToDisplay.sort().reverse();
                     }
-                    for (var _b = 0, propToDisplay_1 = propToDisplay; _b < propToDisplay_1.length; _b++) {
-                        var prop = propToDisplay_1[_b];
+                    for (var _b = 0, propToDisplay_2 = propToDisplay; _b < propToDisplay_2.length; _b++) {
+                        var prop = propToDisplay_2[_b];
                         var infos = new INSPECTOR.Property(prop, this._property.value);
                         var child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.push(child);
+                    }
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0) {
+                        //let hexLineInfos = [];
+                        var hexLineProp = new INSPECTOR.Property("hexEnable", this._property.value);
+                        hexLineProp.type = "boolean";
+                        hexLineProp.value = false;
+                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLine);
+                        /*for (let prop of propToDisplay) {
+                                //if(propToDisplay.indexOf('a'))
+                                let infos = new Property(prop, this._property.value);
+                                
+                                //let child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
+                                //let hexLine = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
+                                let  valHex = ((infos.value * 255)|0).toString(16);
+                                hexLineInfos.push(valHex);
+                                if(valHex == "0"){
+                                    hexLineInfos.push("0");
+                                }
+                        }
+                        hexLineInfos.push("#");
+                        hexLineInfos.reverse();
+                        let hexLineString = hexLineInfos.join("");
+                        
+                        let hexLineProp = new Property("hex", this._property.value);
+                        hexLineProp.value = hexLineString;
+                        let hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                   
+                        this._children.unshift(hexLine);*/
                     }
                 }
                 // otherwise display it    
@@ -2112,7 +2238,7 @@ var INSPECTOR;
         __extends(SearchBar, _super);
         function SearchBar(tab) {
             var _this = _super.call(this) || this;
-            _this._tab = tab;
+            _this._propTab = tab;
             _this._div.classList.add('searchbar');
             var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
             filter.className = 'fa fa-search';
@@ -2123,7 +2249,7 @@ var INSPECTOR;
             _this._div.appendChild(_this._inputElement);
             _this._inputElement.addEventListener('keyup', function (evt) {
                 var filter = _this._inputElement.value;
-                _this._tab.filter(filter);
+                _this._propTab.filter(filter);
             });
             return _this;
         }
@@ -2137,6 +2263,35 @@ var INSPECTOR;
         return SearchBar;
     }(INSPECTOR.BasicElement));
     INSPECTOR.SearchBar = SearchBar;
+    var SearchBarDetails = /** @class */ (function (_super) {
+        __extends(SearchBarDetails, _super);
+        function SearchBarDetails(tab) {
+            var _this = _super.call(this) || this;
+            _this._detailTab = tab;
+            _this._div.classList.add('searchbar');
+            var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
+            filter.className = 'fa fa-search';
+            _this._div.appendChild(filter);
+            // Create input
+            _this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+            _this._inputElement.placeholder = 'Filter by name...';
+            _this._div.appendChild(_this._inputElement);
+            _this._inputElement.addEventListener('keyup', function (evt) {
+                var filter = _this._inputElement.value;
+                _this._detailTab.searchByName(filter);
+            });
+            return _this;
+        }
+        /** Delete all characters typped in the input element */
+        SearchBarDetails.prototype.reset = function () {
+            this._inputElement.value = '';
+        };
+        SearchBarDetails.prototype.update = function () {
+            // Nothing to update
+        };
+        return SearchBarDetails;
+    }(INSPECTOR.BasicElement));
+    INSPECTOR.SearchBarDetails = SearchBarDetails;
 })(INSPECTOR || (INSPECTOR = {}));
 
 var __extends = (this && this.__extends) || (function () {
@@ -2582,6 +2737,7 @@ var INSPECTOR;
             // Build the detail panel
             _this._detailsPanel = new INSPECTOR.DetailPanel();
             _this._panel.appendChild(_this._detailsPanel.toHtml());
+            //this._panel.appendChild(this._searchBar.toHtml());
             Split([_this._treePanel, _this._detailsPanel.toHtml()], {
                 blockDrag: _this._inspector.popupMode,
                 direction: 'vertical'
