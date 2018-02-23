@@ -395,6 +395,40 @@
         @serialize()
         public state = "";
 
+        private static _TRANSPARENCYMODE_OPAQUE = 0;
+        private static _TRANSPARENCYMODE_ALPHATEST = 1;
+        private static _TRANSPARENCYMODE_ALPHABLEND = 2;
+        private static _TRANSPARENCYMODE_ALPHATESTANDBLEND = 3;
+
+        /**
+         * TransparencyMode: No transparency mode, alpha channel is not use.
+         */
+        public static get TRANSPARENCYMODE_OPAQUE(): number {
+            return this._TRANSPARENCYMODE_OPAQUE;
+        }
+
+        /**
+         * TransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
+        public static get TRANSPARENCYMODE_ALPHATEST(): number {
+            return this._TRANSPARENCYMODE_ALPHATEST;
+        }
+
+        /**
+         * TransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
+        public static get TRANSPARENCYMODE_ALPHABLEND(): number {
+            return this._TRANSPARENCYMODE_ALPHABLEND;
+        }
+
+        /**
+         * TransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
+        public static get TRANSPARENCYMODE_ALPHATESTANDBLEND(): number {
+            return this._TRANSPARENCYMODE_ALPHATESTANDBLEND;
+        }
+
         /**
          * The alpha value of the material.
          */

@@ -38,20 +38,20 @@ describe('Babylon glTF Serializer', () => {
 
             const scene = new BABYLON.Scene(subject);
             const babylonMaterial = new BABYLON.PBRMetallicRoughnessMaterial("metallicroughness", scene);
-            babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
+            babylonMaterial.transparencyMode = BABYLON.Material.TRANSPARENCYMODE_OPAQUE;
 
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('OPAQUE');
 
-            babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+            babylonMaterial.transparencyMode = BABYLON.Material.TRANSPARENCYMODE_ALPHABLEND;
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
 
-            babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
+            babylonMaterial.transparencyMode = BABYLON.Material.TRANSPARENCYMODE_ALPHATESTANDBLEND;
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
 
-            babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
+            babylonMaterial.transparencyMode = BABYLON.Material.TRANSPARENCYMODE_ALPHATEST;
             alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('MASK');
         });
@@ -139,7 +139,7 @@ describe('Babylon glTF Serializer', () => {
 
             const plane = BABYLON.Mesh.CreatePlane('plane', 120, scene);
             const babylonPBRMetalRoughMaterial = new BABYLON.PBRMetallicRoughnessMaterial('metalRoughMat', scene);
-            babylonPBRMetalRoughMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+            babylonPBRMetalRoughMaterial.transparencyMode = BABYLON.Material.TRANSPARENCYMODE_ALPHABLEND;
             const alphaCutoff = 0.8;
             babylonPBRMetalRoughMaterial.alphaCutOff = alphaCutoff;
 

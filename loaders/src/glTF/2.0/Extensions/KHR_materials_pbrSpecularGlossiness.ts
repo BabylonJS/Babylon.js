@@ -32,7 +32,7 @@ module BABYLON.GLTF2.Extensions {
                 material._babylonMaterial = babylonMaterial;
 
                 promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material));
-                promises.push(this._loadSpecularGlossinessPropertiesAsync(this._loader, context, material, extension));
+                promises.push(this._loadSpecularGlossinessPropertiesAsync(context, material, extension));
 
                 this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 
@@ -42,7 +42,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        private _loadSpecularGlossinessPropertiesAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): Promise<void> {
+        private _loadSpecularGlossinessPropertiesAsync(context: string, material: ILoaderMaterial, properties: IKHRMaterialsPbrSpecularGlossiness): Promise<void> {
             const promises = new Array<Promise<void>>();
 
             const babylonMaterial = material._babylonMaterial as PBRMaterial;
@@ -59,13 +59,13 @@ module BABYLON.GLTF2.Extensions {
             babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                promises.push(loader._loadTextureAsync(context + "/diffuseTexture", properties.diffuseTexture, texture => {
+                promises.push(this._loader._loadTextureAsync(context + "/diffuseTexture", properties.diffuseTexture, texture => {
                     babylonMaterial.albedoTexture = texture;
                 }));
             }
 
             if (properties.specularGlossinessTexture) {
-                promises.push(loader._loadTextureAsync(context + "/specularGlossinessTexture", properties.specularGlossinessTexture, texture => {
+                promises.push(this._loader._loadTextureAsync(context + "/specularGlossinessTexture", properties.specularGlossinessTexture, texture => {
                     babylonMaterial.reflectivityTexture = texture;
                 }));
 
@@ -73,7 +73,7 @@ module BABYLON.GLTF2.Extensions {
                 babylonMaterial.useMicroSurfaceFromReflectivityMapAlpha = true;
             }
 
-            loader._loadMaterialAlphaProperties(context, material);
+            this._loader._loadMaterialAlphaProperties(context, material);
 
             return Promise.all(promises).then(() => {});
         }

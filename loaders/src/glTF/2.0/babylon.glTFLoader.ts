@@ -1122,7 +1122,7 @@ module BABYLON.GLTF2 {
             let babylonMaterial = <PBRMaterial>this._babylonScene.getMaterialByName(id);
             if (!babylonMaterial) {
                 babylonMaterial = new PBRMaterial(id, this._babylonScene);
-                babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
+                babylonMaterial.transparencyMode = Material.TRANSPARENCYMODE_OPAQUE;
                 babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
                 babylonMaterial.metallic = 1;
                 babylonMaterial.roughness = 1;
@@ -1260,11 +1260,11 @@ module BABYLON.GLTF2 {
             const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
             switch (alphaMode) {
                 case MaterialAlphaMode.OPAQUE: {
-                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
+                    babylonMaterial.transparencyMode = Material.TRANSPARENCYMODE_OPAQUE;
                     break;
                 }
                 case MaterialAlphaMode.MASK: {
-                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
+                    babylonMaterial.transparencyMode = Material.TRANSPARENCYMODE_ALPHATEST;
 
                     babylonMaterial.alphaCutOff = (material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff);
 
@@ -1285,7 +1285,7 @@ module BABYLON.GLTF2 {
                     break;
                 }
                 case MaterialAlphaMode.BLEND: {
-                    babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+                    babylonMaterial.transparencyMode = Material.TRANSPARENCYMODE_ALPHABLEND;
 
                     if (babylonMaterial.albedoTexture) {
                         babylonMaterial.albedoTexture.hasAlpha = true;
