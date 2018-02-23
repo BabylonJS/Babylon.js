@@ -125,7 +125,7 @@ module BABYLON {
          * @param state New state of the button
          * @param changes Which properties on the state changed since last frame
          */
-        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let buttonName = this._mapping.buttons[buttonIdx];
             if (!buttonName) {
                 return;

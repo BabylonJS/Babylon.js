@@ -1,7 +1,7 @@
 {
-  "errors": 7232,
+  "errors": 7231,
   "babylon.typedoc.json": {
-    "errors": 7232,
+    "errors": 7231,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -25311,11 +25311,6 @@
       },
       "Property": {
         "cubeTexture": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "invertYAxis": {
           "Comments": {
             "MissingText": true
           }

@@ -660,7 +660,8 @@
                 "../../src/Gamepad/Controllers/babylon.viveController.js",
                 "../../src/Gamepad/Controllers/babylon.genericController.js",
                 "../../src/Gamepad/Controllers/babylon.windowsMotionController.js",
-                "../../src/Gamepad/Controllers/babylon.gearVRController.js"
+                "../../src/Gamepad/Controllers/babylon.gearVRController.js",
+                "../../src/Gamepad/Controllers/babylon.daydreamController.js"
             ],
             "dependUpon": [
                 "core"
