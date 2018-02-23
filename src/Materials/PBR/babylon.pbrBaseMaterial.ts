@@ -604,7 +604,7 @@
 
             this._transparencyMode = value;
 
-            this._forceAlphaTest = (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND);
+            this._forceAlphaTest = (value === Material.TRANSPARENCYMODE_ALPHATESTANDBLEND);
 
             this._markAllSubMeshesAsTexturesAndMiscDirty();
         }
@@ -614,8 +614,8 @@
          */
         private get _disableAlphaBlending(): boolean {
             return (this._linkRefractionWithTransparency ||
-                this._transparencyMode === PBRMaterial.PBRMATERIAL_OPAQUE ||
-                this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST);
+                this._transparencyMode === Material.TRANSPARENCYMODE_OPAQUE ||
+                this._transparencyMode === Material.TRANSPARENCYMODE_ALPHATEST);
         }
 
         /**
@@ -653,14 +653,14 @@
                 return false;
             }
 
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST);
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && (this._transparencyMode == null || this._transparencyMode === Material.TRANSPARENCYMODE_ALPHATEST);
         }
 
         /**
          * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
          */
         protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE;
+            return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== Material.TRANSPARENCYMODE_OPAQUE;
         }
 
         /**
@@ -1221,7 +1221,7 @@
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);
 
             // Attribs
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE);
+            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== Material.TRANSPARENCYMODE_OPAQUE);
         }
 
         /**

@@ -7,50 +7,32 @@
      * http://doc.babylonjs.com/extensions/Physically_Based_Rendering
      */
     export class PBRMaterial extends PBRBaseMaterial {
-        private static _PBRMATERIAL_OPAQUE = 0;
         /**
-         * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
+         * Deprecated. Use Material.TRANSPARENCYMODE_OPAQUE instead.
          */
         public static get PBRMATERIAL_OPAQUE(): number {
-            return this._PBRMATERIAL_OPAQUE;
+            return this.TRANSPARENCYMODE_OPAQUE;
         }
 
         /**
-         * Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
-         */
-        private static _PBRMATERIAL_ALPHATEST = 1;
-
-        /**
-         * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         * Deprecated. Use Material.TRANSPARENCYMODE_ALPHATEST instead.
          */
         public static get PBRMATERIAL_ALPHATEST(): number {
-            return this._PBRMATERIAL_ALPHATEST;
+            return this.TRANSPARENCYMODE_ALPHATEST;
         }
 
         /**
-         * Represents the value for Alpha Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         */
-        private static _PBRMATERIAL_ALPHABLEND = 2;
-
-        /**
-         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * Deprecated. Use Material.TRANSPARENCYMODE_ALPHABLEND instead.
          */
         public static get PBRMATERIAL_ALPHABLEND(): number {
-            return this._PBRMATERIAL_ALPHABLEND;
+            return this.TRANSPARENCYMODE_ALPHABLEND;
         }
 
         /**
-         * Represents the value for Alpha Test and Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         * They are also discarded below the alpha cutoff threshold to improve performances.
-         */
-        private static _PBRMATERIAL_ALPHATESTANDBLEND = 3;
-
-        /**
-         * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
-         * They are also discarded below the alpha cutoff threshold to improve performances.
+         * Deprecated. Use Material.TRANSPARENCYMODE_ALPHATESTANDBLEND instead.
          */
         public static get PBRMATERIAL_ALPHATESTANDBLEND(): number {
-            return this._PBRMATERIAL_ALPHATESTANDBLEND;
+            return this.TRANSPARENCYMODE_ALPHATESTANDBLEND;
         }
 
         /**

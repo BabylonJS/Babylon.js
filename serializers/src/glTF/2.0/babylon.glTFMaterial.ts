@@ -140,16 +140,16 @@ module BABYLON.GLTF2 {
                 const babylonPBRMetallicRoughness = babylonMaterial as PBRMetallicRoughnessMaterial;
 
                 switch (babylonPBRMetallicRoughness.transparencyMode) {
-                    case PBRMaterial.PBRMATERIAL_OPAQUE: {
+                    case Material.TRANSPARENCYMODE_OPAQUE: {
                         return MaterialAlphaMode.OPAQUE;
                     }
-                    case PBRMaterial.PBRMATERIAL_ALPHABLEND: {
+                    case Material.TRANSPARENCYMODE_ALPHABLEND: {
                         return MaterialAlphaMode.BLEND;
                     }
-                    case PBRMaterial.PBRMATERIAL_ALPHATEST: {
+                    case Material.TRANSPARENCYMODE_ALPHATEST: {
                         return MaterialAlphaMode.MASK;
                     }
-                    case PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND: {
+                    case Material.TRANSPARENCYMODE_ALPHATESTANDBLEND: {
                         Tools.Warn(babylonMaterial.name + ": GLTF Exporter | Alpha test and blend mode not supported in glTF.  Alpha blend used instead.");
                         return MaterialAlphaMode.BLEND;
                     }
