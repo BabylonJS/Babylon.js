@@ -382,6 +382,8 @@
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
+
+            this._enableMSAAOnFirstPostProcess();
         }
 
         private _disposePostProcesses(): void {
