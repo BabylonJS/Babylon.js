@@ -5,9 +5,13 @@ module BABYLON {
      */
     export class SharpenPostProcess extends PostProcess{
         /**
+         * How much of the original color should be applied. Setting this to 0 will display edge detection. (default: 1)
+         */
+        public colorAmount:number = 1.0;
+        /**
          * How much sharpness should be applied (default: 0.3)
          */
-        public amount:number = 0.3;
+        public edgeAmount:number = 0.3;
         /**
          * Creates a new instance of @see ConvolutionPostProcess
          * @param name The name of the effect.
@@ -19,11 +23,11 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "sharpen", ["amount", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
+            super(name, "sharpen", ["sharpnessAmounts", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType);
 
             this.onApply = (effect: Effect) => {
                 effect.setFloat2("screenSize", this.width, this.height);
-                effect.setFloat("amount", this.amount);
+                effect.setFloat2("sharpnessAmounts", this.edgeAmount, this.colorAmount);
             };
         }
     }
