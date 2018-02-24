@@ -839,6 +839,7 @@
             "shaders": [
                 "refraction.fragment",
                 "blackAndWhite.fragment",
+                "convolution.fragment",
                 "sharpen.fragment",
                 "filter.fragment",
                 "fxaa.fragment",
