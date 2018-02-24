@@ -2,7 +2,7 @@
 varying vec2 vUV;
 uniform sampler2D textureSampler;
 uniform vec2 screenSize;
-uniform float amount;
+uniform vec2 sharpnessAmounts;
 
 void main(void)
 {
@@ -14,5 +14,5 @@ void main(void)
 		texture2D(textureSampler, vUV + onePixel * vec2(0, 1)) -
         color * 4.0;
 	
-	gl_FragColor = max(color - (amount * vec4(edgeDetection.rgb, 0)), 0.);
+	gl_FragColor = max(vec4(color.rgb * sharpnessAmounts.y, color.a) - (sharpnessAmounts.x * vec4(edgeDetection.rgb, 0)), 0.);
 }
