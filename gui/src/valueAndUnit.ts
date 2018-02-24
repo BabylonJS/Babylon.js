@@ -31,8 +31,8 @@ module BABYLON.GUI {
 
         public getValue(host: AdvancedDynamicTexture): number {
             if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
-                var width: number = (this._value * host.getSize().width) / host.idealWidth;
-                var height: number = (this._value * host.getSize().height) / host.idealHeight;
+                var width: number = host.idealWidth ? (this._value * host.getSize().width) / host.idealWidth : 0;
+                var height: number = host.idealHeight ? (this._value * host.getSize().height) / host.idealHeight : 0;
 
                 if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) return window.innerWidth < window.innerHeight ? width : height;
                 if (host.idealWidth) return width; // horizontal
