@@ -91,6 +91,12 @@ module BABYLON.GUI {
         public onPointerUpObservable = new Observable<Vector2WithInfo>();
 
         /**
+        * An event triggered when a control is clicked on
+        * @type {BABYLON.Observable}
+        */
+        public onPointerClickObservable = new Observable<Vector2WithInfo>();
+
+        /**
         * An event triggered when pointer enters the control
         * @type {BABYLON.Observable}
         */
@@ -918,22 +924,26 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
             this._downCount = 0;
 
             delete this._downPointerIds[pointerId];
 
-            var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+            var canNotifyClick: boolean = notifyClick;
+			if (notifyClick && this._enterCount > 0) {
+				canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+			}
+			var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex);
+            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
         }
 
         public forcePointerUp(pointerId:Nullable<number> = null) {
             if(pointerId !== null){
-                this._onPointerUp(this, Vector2.Zero(), pointerId, 0);
+                this._onPointerUp(this, Vector2.Zero(), pointerId, 0, true);
             }else{
                 for(var key in this._downPointerIds){
-                    this._onPointerUp(this, Vector2.Zero(), +key as number, 0);
+                    this._onPointerUp(this, Vector2.Zero(), +key as number, 0, true);
                 }
             }
         }
@@ -965,7 +975,7 @@ module BABYLON.GUI {
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown[pointerId]) {
-                    this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
+                    this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
                 }
                 delete this._host._lastControlDown[pointerId];
                 return true;
@@ -993,6 +1003,7 @@ module BABYLON.GUI {
             this.onPointerMoveObservable.clear();
             this.onPointerOutObservable.clear();
             this.onPointerUpObservable.clear();
+			this.onPointerClickObservable.clear();
 
             if (this._root) {
                 this._root.removeControl(this);
