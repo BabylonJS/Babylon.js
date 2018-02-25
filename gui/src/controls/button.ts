@@ -84,12 +84,12 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
             if (this.pointerUpAnimation) {
                 this.pointerUpAnimation();
             }
 
-            super._onPointerUp(target, coordinates, pointerId, buttonIndex);
+            super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
         }        
 
         // Statics
