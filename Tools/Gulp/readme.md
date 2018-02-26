@@ -66,11 +66,11 @@ gulp run
 ```
 
 you can now freely test in the following URLs:
-- [Playground]("http://localhost:1338/Playground/index-local.html")
-- [Materials Library]("http://localhost:1338/materialsLibrary/index.html")
-- [Postprocess Library]("http://localhost:1338/postProcessLibrary/index.html")
-- [Procedural Textures Library]("http://localhost:1338/proceduralTexturesLibrary/index.html")
-- [Local Dev Samples]("http://localhost:1338/localDev/index.html")
+- [Playground](http://localhost:1338/Playground/index-local.html)
+- [Materials Library](http://localhost:1338/materialsLibrary/index.html)
+- [Postprocess Library](http://localhost:1338/postProcessLibrary/index.html)
+- [Procedural Textures Library](http://localhost:1338/proceduralTexturesLibrary/index.html)
+- [Local Dev Samples](http://localhost:1338/localDev/index.html)
 
 ### Compile all the typscript files to their javascript respective files including declaration file
 ```

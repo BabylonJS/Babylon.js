@@ -19,6 +19,7 @@
 ## Updates
 
 - Tons of functions and classes received the code comments they deserved (All the community)
+- New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))
 - New `Texture.UseSerializedUrlIfAny` static property to let textures serialize complete URL instead of using side by side loading ([deltakosh](https://github.com/deltakosh))
 - Added `particleSystem.reset()` to clear a particle system ([deltakosh](https://github.com/deltakosh))
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
@@ -80,7 +81,8 @@
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
-- Default pipeline will use webGL 2.0 anti aliasing by default if supported, default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Add msaa and sharpening options to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
@@ -93,6 +95,9 @@
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 - AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
+- Collision worker didn't initialize instanced meshes correctly - [#3819](https://github.com/BabylonJS/Babylon.js/issues/3819) ([RaananW](https://github.com/RaananW))
+- postMessage calls in webworkers were fixed ([RaananW](https://github.com/RaananW))
+- fixed WebCam Texture on Firefox and Edge - [#3825](https://github.com/BabylonJS/Babylon.js/issues/3825) ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 

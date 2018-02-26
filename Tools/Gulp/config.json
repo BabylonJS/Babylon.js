@@ -385,6 +385,7 @@
         },
         "animations": {
             "files": [
+                "../../src/Animations/babylon.animationPropertiesOverride.js",
                 "../../src/Animations/babylon.animation.js",
                 "../../src/Animations/babylon.animationGroup.js",
                 "../../src/Animations/babylon.runtimeAnimation.js",
@@ -823,6 +824,7 @@
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
                 "../../src/PostProcess/babylon.blackAndWhitePostProcess.js",
                 "../../src/PostProcess/babylon.convolutionPostProcess.js",
+                "../../src/PostProcess/babylon.sharpenPostProcess.js",
                 "../../src/PostProcess/babylon.filterPostProcess.js",
                 "../../src/PostProcess/babylon.fxaaPostProcess.js",
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
@@ -839,6 +841,7 @@
                 "refraction.fragment",
                 "blackAndWhite.fragment",
                 "convolution.fragment",
+                "sharpen.fragment",
                 "filter.fragment",
                 "fxaa.fragment",
                 "volumetricLightScattering.fragment",
