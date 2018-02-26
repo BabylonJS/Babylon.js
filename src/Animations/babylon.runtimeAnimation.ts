@@ -197,7 +197,10 @@
             }
 
             // Blending
-            if (this._animation.enableBlending && this._blendingFactor <= 1.0) {
+            let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
+            let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+            
+            if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
                     if (destination[path].clone) {
                         this._originalBlendValue = destination[path].clone();
@@ -219,7 +222,7 @@
                 } else { // Direct value
                     destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
-                this._blendingFactor += this._animation.blendingSpeed;
+                this._blendingFactor += blendingSpeed;
             } else {
                 destination[path] = currentValue;
             }
@@ -227,6 +230,14 @@
             if (this._target.markAsDirty) {
                 this._target.markAsDirty(this._animation.targetProperty);
             }
+        }
+
+        private _getCorrectLoopMode(): number | undefined {
+            if ( this._target && this._target.animationPropertiesOverride) {
+                return this._target.loopMode;
+            }
+
+            return this._animation.loopMode;
         }
 
         public goToFrame(frame: number): void {
@@ -238,7 +249,7 @@
                 frame = keys[keys.length - 1].frame;
             }
 
-            var currentValue = this._interpolate(frame, 0, this._animation.loopMode);
+            var currentValue = this._interpolate(frame, 0, this._getCorrectLoopMode());
 
             this.setValue(currentValue);
         }
@@ -301,7 +312,7 @@
             } else {
                 // Get max value if required
 
-                if (this._animation.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
+                if (this._getCorrectLoopMode() !== Animation.ANIMATIONLOOPMODE_CYCLE) {
 
                     var keyOffset = to.toString() + from.toString();
                     if (!this._offsetsCache[keyOffset]) {
@@ -371,7 +382,7 @@
             // Compute value
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
-            var currentValue = this._interpolate(currentFrame, repeatCount, this._animation.loopMode, offsetValue, highLimitValue);
+            var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
             // Set value
             this.setValue(currentValue);

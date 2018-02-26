@@ -1,7 +1,7 @@
 {
-  "errors": 7225,
+  "errors": 7218,
   "babylon.typedoc.json": {
-    "errors": 7225,
+    "errors": 7218,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -8113,50 +8113,6 @@
         }
       }
     },
-    "ConvolutionPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EdgeDetect0Kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EdgeDetect1Kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EdgeDetect2Kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EmbossKernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "GaussianKernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SharpenKernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "CubeTexture": {
       "Class": {
         "Comments": {
@@ -8867,6 +8823,11 @@
           }
         },
         "PassPostProcessId": {
+          "Naming": {
+            "NotCamelCase": true
+          }
+        },
+        "SharpenPostProcessId": {
           "Naming": {
             "NotCamelCase": true
           }

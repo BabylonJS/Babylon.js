@@ -58,11 +58,11 @@ module BABYLON {
         positions: Float32Array;
         /**
          * Defines the array containing the indices
-         */        
+         */
         indices: Uint32Array;
         /**
          * Defines the array containing the normals
-         */        
+         */
         normals: Float32Array;
     }
 
@@ -173,7 +173,7 @@ module BABYLON {
                 let geometry = (<Mesh>mesh).geometry;
                 geometryId = geometry ? geometry.id : null;
             } else if (mesh instanceof InstancedMesh) {
-                let geometry = (<InstancedMesh>mesh).sourceMesh.geometry;
+                let geometry = (<InstancedMesh>mesh).sourceMesh && (<InstancedMesh>mesh).sourceMesh.geometry;
                 geometryId = geometry ? geometry.id : null;
             }
 

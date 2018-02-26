@@ -31,13 +31,27 @@ module BABYLON.GUI {
 
         public getValue(host: AdvancedDynamicTexture): number {
             if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
+                var width: number = 0;
+                var height: number = 0;
 
-                if (host.idealWidth) { // horizontal
-                    return (this._value * host.getSize().width) / host.idealWidth;
+                if (host.idealWidth) {
+                    width = (this._value * host.getSize().width) / host.idealWidth;
+                }
+                
+                if (host.idealHeight) {
+                    height = (this._value * host.getSize().height) / host.idealHeight;
                 }
 
+                if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {
+                    return window.innerWidth < window.innerHeight ? width : height;
+                }
+
+                if (host.idealWidth) { // horizontal
+                    return width;
+                }
+                
                 if (host.idealHeight) { // vertical
-                    return (this._value * host.getSize().height) / host.idealHeight;
+                    return height;
                 }
             }
             return this._value;
