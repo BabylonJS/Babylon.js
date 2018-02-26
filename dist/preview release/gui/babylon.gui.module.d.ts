@@ -193,6 +193,7 @@ declare module BABYLON.GUI {
         private _transformMatrix;
         protected _invertTransformMatrix: Matrix2D;
         protected _transformedPosition: Vector2;
+        private _onlyMeasureMode;
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;

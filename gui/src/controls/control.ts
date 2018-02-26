@@ -552,7 +552,9 @@ module BABYLON.GUI {
 
         public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
             if (!this._host || this._root && this._root !== this._host._rootContainer) {
-                Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                if (mesh) {
+                    Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                }
                 return;
             }
 
@@ -562,6 +564,8 @@ module BABYLON.GUI {
                 if (!mesh) {
                     this._host._linkedControls.splice(index, 1);
                 }
+                return;
+            } else if (!mesh) {
                 return;
             }
 

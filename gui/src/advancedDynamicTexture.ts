@@ -396,8 +396,8 @@ module BABYLON.GUI {
             var textureSize = this.getSize();
 
             if (this._isFullscreen) {
-                x = x * ((textureSize.width / this._renderScale) / engine.getRenderWidth());
-                y = y * ((textureSize.height / this._renderScale) / engine.getRenderHeight());
+                x = x * (textureSize.width / engine.getRenderWidth());
+                y = y * (textureSize.height / engine.getRenderHeight());
             }
 
             if (this._capturingControl[pointerId]) {

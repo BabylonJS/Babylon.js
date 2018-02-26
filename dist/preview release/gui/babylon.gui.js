@@ -377,8 +377,8 @@ var BABYLON;
                 var engine = scene.getEngine();
                 var textureSize = this.getSize();
                 if (this._isFullscreen) {
-                    x = x * ((textureSize.width / this._renderScale) / engine.getRenderWidth());
-                    y = y * ((textureSize.height / this._renderScale) / engine.getRenderHeight());
+                    x = x * (textureSize.width / engine.getRenderWidth());
+                    y = y * (textureSize.height / engine.getRenderHeight());
                 }
                 if (this._capturingControl[pointerId]) {
                     this._capturingControl[pointerId]._processObservables(type, x, y, pointerId, buttonIndex);
@@ -888,6 +888,7 @@ var BABYLON;
                 this._transformMatrix = GUI.Matrix2D.Identity();
                 this._invertTransformMatrix = GUI.Matrix2D.Identity();
                 this._transformedPosition = BABYLON.Vector2.Zero();
+                this._onlyMeasureMode = false;
                 this._isMatrixDirty = true;
                 this._isVisible = true;
                 this._fontSet = false;
@@ -1450,7 +1451,9 @@ var BABYLON;
             };
             Control.prototype.linkWithMesh = function (mesh) {
                 if (!this._host || this._root && this._root !== this._host._rootContainer) {
-                    BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                    if (mesh) {
+                        BABYLON.Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                    }
                     return;
                 }
                 var index = this._host._linkedControls.indexOf(this);
@@ -1461,9 +1464,13 @@ var BABYLON;
                     }
                     return;
                 }
+                else if (!mesh) {
+                    return;
+                }
                 this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
                 this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
                 this._linkedMesh = mesh;
+                this._onlyMeasureMode = true;
                 this._host._linkedControls.push(this);
             };
             Control.prototype._moveToProjectedPosition = function (projectedPosition) {
@@ -1565,6 +1572,10 @@ var BABYLON;
                 }
                 // Transform
                 this._transform(context);
+                if (this._onlyMeasureMode) {
+                    this._onlyMeasureMode = false;
+                    return false; // We do not want rendering for this frame as they are measure dependant information that need to be gathered
+                }
                 // Clip
                 this._clip(context);
                 context.clip();
@@ -2029,6 +2040,7 @@ var BABYLON;
                     this._children.splice(index, 1);
                     control.parent = null;
                 }
+                control.linkWithMesh(null);
                 this._markAsDirty();
                 return this;
             };
