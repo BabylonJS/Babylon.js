@@ -180,7 +180,7 @@ module BABYLON {
         // colors shifting and distortion
         private _createChromaticAberrationPostProcess(ratio: number): void {
             this._chromaticAberrationPostProcess = new PostProcess("LensChromaticAberration", "chromaticAberration",
-                ["chromatic_aberration", "screen_width", "screen_height", "direction"],      // uniforms
+                ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity"],      // uniforms
                 [],                                         // samplers
                 ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
                 this._scene.getEngine(), false);
