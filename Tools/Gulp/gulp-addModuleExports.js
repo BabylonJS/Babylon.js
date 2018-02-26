@@ -26,11 +26,7 @@ var BABYLON = babylonDependency;
 
             let base = subModule ? 'BABYLON' : varName.name;
 
-            let sadGlobalPolution = /*(!subModule) ? `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-globalObject["${base}"] = f;` : */'';
-
             return `\n\n(function universalModuleDefinition(root, factory) {
-                ${sadGlobalPolution}
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else if(typeof define === 'function' && define.amd)
