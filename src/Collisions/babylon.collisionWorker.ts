@@ -1,5 +1,8 @@
 declare function importScripts(...urls: string[]): void;
 
+// since typescript doesn't understand the file's execution context, we need to override postMessage's signature for error-free compilation
+const safePostMessage: any = self.postMessage;
+
 module BABYLON {
 
     //If this file is included in the main thread, this will be initialized.
@@ -192,7 +195,7 @@ module BABYLON {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.INIT
             }
-            postMessage(reply, "");
+            safePostMessage(reply);
         }
 
         public onUpdate(payload: UpdatePayload) {
@@ -226,7 +229,7 @@ module BABYLON {
             }
 
 
-            postMessage(replay, "");
+            safePostMessage(replay);
         }
 
         public onCollision(payload: CollidePayload) {
@@ -247,7 +250,7 @@ module BABYLON {
                 taskType: WorkerTaskType.COLLIDE,
                 payload: replyPayload
             }
-            postMessage(reply, "");
+            safePostMessage(reply);
         }
     }
 

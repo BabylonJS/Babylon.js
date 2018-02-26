@@ -96,6 +96,7 @@
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 - AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
 - Collision worker didn't initialize instanced meshes correctly - [#3819](https://github.com/BabylonJS/Babylon.js/issues/3819) ([RaananW](https://github.com/RaananW))
+- postMessage calls in webworkers were fixed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
