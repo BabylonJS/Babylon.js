@@ -3250,8 +3250,9 @@ var BABYLON;
                     node._babylonMesh.scaling = BABYLON.Vector3.One();
                 };
                 if (skin._loaded) {
-                    assignSkeleton();
-                    return skin._loaded;
+                    return skin._loaded.then(function () {
+                        assignSkeleton();
+                    });
                 }
                 // TODO: split into two parts so that bones are created before inverseBindMatricesData is loaded (for compiling materials).
                 return (skin._loaded = this._loadSkinInverseBindMatricesDataAsync(context, skin).then(function (inverseBindMatricesData) {

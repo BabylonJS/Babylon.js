@@ -934,7 +934,7 @@
 
         private _debugLayer: DebugLayer;
 
-        private _depthRenderer: {[id:string]:DepthRenderer} = {};
+        private _depthRenderer: { [id: string]: DepthRenderer } = {};
         private _geometryBufferRenderer: Nullable<GeometryBufferRenderer>;
 
         /**
@@ -1008,7 +1008,7 @@
                 return;
             }
 
-            enabled = (enabled && !!Worker);
+            enabled = (enabled && !!Worker && !!CollisionWorker);
 
             this._workerCollisions = enabled;
             if (this.collisionCoordinator) {
@@ -3420,7 +3420,7 @@
                 this._renderTargets.concatWithNoDuplicate(rigParent.customRenderTargets);
             }
 
-            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {                
+            if (this.renderTargetsEnabled && this._renderTargets.length > 0) {
                 this._intermediateRendering = true;
                 Tools.StartPerformanceCounter("Render targets", this._renderTargets.length > 0);
                 for (var renderIndex = 0; renderIndex < this._renderTargets.length; renderIndex++) {
@@ -3573,7 +3573,7 @@
             }
 
             this.activeCamera = camera;
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());           
+            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
         }
 
         private _checkIntersections(): void {
@@ -3803,7 +3803,7 @@
             }
 
             // Depth renderer
-            for(var key in this._depthRenderer){
+            for (var key in this._depthRenderer) {
                 this._renderTargets.push(this._depthRenderer[key].getDepthMap());
             }
 
@@ -3998,12 +3998,12 @@
          */
         public enableDepthRenderer(camera?: Nullable<Camera>): DepthRenderer {
             camera = camera || this.activeCamera;
-            if(!camera){
+            if (!camera) {
                 throw "No camera available to enable depth renderer";
             }
             if (!this._depthRenderer[camera.id]) {
                 this._depthRenderer[camera.id] = new DepthRenderer(this, Engine.TEXTURETYPE_FLOAT, camera);
-            }            
+            }
 
             return this._depthRenderer[camera.id];
         }
@@ -4069,7 +4069,7 @@
 
             this.resetCachedMaterial();
 
-            for(var key in this._depthRenderer){
+            for (var key in this._depthRenderer) {
                 this._depthRenderer[key].dispose();
             }
 

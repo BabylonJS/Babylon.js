@@ -81,7 +81,8 @@
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
 - WebVRExperienceHelper will create an empty controller model so that controller interactions can be used while the actual model is still loading ([trevordev](https://github.com/trevordev))
-- Default pipeline will use webGL 2.0 anti aliasing by default if supported, default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Add msaa and sharpening options to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
@@ -94,6 +95,8 @@
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 - AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
+- Collision worker didn't initialize instanced meshes correctly - [#3819](https://github.com/BabylonJS/Babylon.js/issues/3819) ([RaananW](https://github.com/RaananW))
+- postMessage calls in webworkers were fixed ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

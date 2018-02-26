@@ -449,8 +449,8 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
-            super._onPointerUp(target, coordinates, pointerId, buttonIndex);
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
+            super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
         }
 
         public dispose() {
