@@ -181,6 +181,29 @@ describe('Babylon Scene Loader', function () {
             return Promise.all([promise, deferred.promise, scene.whenReadyAsync()]);
         });
 
+        it('Load Alien', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/Alien/", "Alien.gltf", scene).then(result => {
+                expect(result.skeletons.length, "skeletons.length").to.equal(scene.skeletons.length);
+
+                const mapping = {
+                    "AlienHead_0": "skeleton0",
+                    "Collar_0": "skeleton1",
+                    "LeftEye_0": "skeleton2",
+                    "RightEye_0": "skeleton3",
+                    "CollarClasp_0": "skeleton1",
+                    "Shirt_0": "skeleton1",
+                    "ShirtPlate_0": "skeleton1",
+                    "Teeth_0": "skeleton1",
+                };
+
+                for (const meshName in mapping) {
+                    const skeletonName = mapping[meshName];
+                    expect(scene.getMeshByName(meshName).skeleton.name, `skeleton name of mesh '${meshName}'`).to.equal(skeletonName);
+                }
+            });
+        });
+
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name
         // TODO: test KHR_materials_pbrSpecularGlossiness

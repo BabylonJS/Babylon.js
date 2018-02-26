@@ -1,7 +1,7 @@
 {
-  "errors": 7232,
+  "errors": 7218,
   "babylon.typedoc.json": {
-    "errors": 7232,
+    "errors": 7218,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -8113,50 +8113,6 @@
         }
       }
     },
-    "ConvolutionPostProcess": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EdgeDetect0Kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EdgeDetect1Kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EdgeDetect2Kernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EmbossKernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "GaussianKernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SharpenKernel": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "CubeTexture": {
       "Class": {
         "Comments": {
@@ -8867,6 +8823,11 @@
           }
         },
         "PassPostProcessId": {
+          "Naming": {
+            "NotCamelCase": true
+          }
+        },
+        "SharpenPostProcessId": {
           "Naming": {
             "NotCamelCase": true
           }
@@ -14211,13 +14172,6 @@
             "MissingText": true
           }
         }
-      },
-      "Method": {
-        "handleButtonChange": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
-        }
       }
     },
     "GenericController": {
@@ -14235,13 +14189,6 @@
         "MODEL_FILENAME": {
           "Comments": {
             "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "handleButtonChange": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
           }
         }
       }
@@ -20416,13 +20363,6 @@
             "MissingText": true
           }
         }
-      },
-      "Method": {
-        "handleButtonChange": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
-        }
       }
     },
     "OimoJSPlugin": {
@@ -25311,11 +25251,6 @@
       },
       "Property": {
         "cubeTexture": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "invertYAxis": {
           "Comments": {
             "MissingText": true
           }
@@ -37371,13 +37306,6 @@
             "MissingText": true
           }
         }
-      },
-      "Method": {
-        "handleButtonChange": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
-        }
       }
     },
     "VolumetricLightScatteringPostProcess": {
@@ -37473,11 +37401,6 @@
         }
       },
       "Method": {
-        "handleButtonChange": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
-        },
         "initControllerMesh": {
           "Comments": {
             "MissingText": true
@@ -37583,11 +37506,6 @@
         }
       },
       "Method": {
-        "handleButtonChange": {
-          "Naming": {
-            "NotUnderscoreCamelCase": true
-          }
-        },
         "lerpAxisTransform": {
           "Naming": {
             "NotUnderscoreCamelCase": true
