@@ -3,6 +3,8 @@
 
         protected _activeEffect: Effect;
 
+        protected _normalMatrix : Matrix = new Matrix();
+
         constructor(name: string, scene: Scene) {
             super(name, scene);
             this.storeEffectOnSubMeshes = true;
@@ -24,8 +26,22 @@
             return this.isReadyForSubMesh(mesh, mesh.subMeshes[0], useInstances);
         }
 
+         /**
+         * Binds the given world matrix to the active effect
+         * 
+         * @param world the matrix to bind
+         */
         public bindOnlyWorldMatrix(world: Matrix): void {
             this._activeEffect.setMatrix("world", world);
+        }
+
+        /**
+         * Binds the given normal matrix to the active effect
+         * 
+         * @param normalMatrix the matrix to bind
+         */
+        public bindOnlyNormalMatrix(normalMatrix: Matrix): void {                        
+            this._activeEffect.setMatrix("normalMatrix", normalMatrix);
         }
 
         public bind(world: Matrix, mesh?: Mesh): void {
@@ -36,13 +52,13 @@
             this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
         }
 
-        protected _afterBind(mesh: Mesh, effect?: Effect): void {
+        protected _afterBind(mesh: Mesh, effect: Nullable<Effect> = null): void {
             super._afterBind(mesh);
             this.getScene()._cachedEffect = effect;
         }
 
-        protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 0) {
-            return scene.isCachedMaterialValid(this, effect, visibility);
+        protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 1) {
+            return scene.isCachedMaterialInvalid(this, effect, visibility);
         }
     }
 } 

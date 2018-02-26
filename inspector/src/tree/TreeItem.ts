@@ -80,7 +80,26 @@ module INSPECTOR {
 
         /** Build the HTML of this item */
         protected _build() {
-            this._div.className = 'line';
+
+            /**
+             *  Hide the debug objects :
+             * - Axis : xline, yline, zline
+             * */
+            let adapterId = this._adapter.id();
+            if (adapterId == "xline"
+                || adapterId == "yline"
+                || adapterId == "zline") {
+                this._div.className = "line_invisible";
+            }
+            else this._div.className = 'line';
+
+            // special class for transform node ONLY
+            if (this.adapter instanceof MeshAdapter) {
+                let obj = this.adapter.object;
+                if (obj instanceof BABYLON.TransformNode && !(obj instanceof BABYLON.AbstractMesh)) {
+                    this._div.className += ' transformNode';
+                }
+            }
 
 
             for (let tool of this._tools) {
@@ -133,7 +152,6 @@ module INSPECTOR {
         /**
          * Add an event listener on the item : 
          * - one click display details
-         * - on mouse hover the item is highlighted
          */
         protected _addEvent() {
             this._div.addEventListener('click', (e) => {
@@ -146,28 +164,6 @@ module INSPECTOR {
                 }
                 e.stopPropagation();
             });
-
-            // Highlight on mouse over
-            this._div.addEventListener('mouseover', (e) => {
-                this._tab.highlightNode(this);
-                e.stopPropagation();
-            });
-            // Remove highlight on mouse out
-            this._div.addEventListener('mouseout', (e) => {
-                this._tab.highlightNode();
-            });
-        }
-
-        /** Highlight or downplay this node */
-        public highlight(b: boolean) {
-            // Remove highlight for all children 
-            if (!b) {
-                for (let child of this.children) {
-                    child._adapter.highlight(b);
-                }
-            }
-            // Highlight this node
-            this._adapter.highlight(b);
         }
 
         /** Returns true if the node is folded, false otherwise */
@@ -184,6 +180,10 @@ module INSPECTOR {
             if (b) {
                 this._div.classList.add('active');
             }
+        }
+
+        public getDiv() {
+            return this._div;
         }
     }
 }

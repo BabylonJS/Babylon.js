@@ -1,56 +1,297 @@
 ﻿module BABYLON {
-    var randomNumber = (min: number, max: number): number => {
-        if (min === max) {
-            return (min);
-        }
-
-        var random = Math.random();
-
-        return ((random * (max - min)) + min);
-    }
-
-    export class ParticleSystem implements IDisposable, IAnimatable {
-        // Statics
+    /**
+     * This represents a particle system in Babylon.
+     * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+     * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
+     * @example https://doc.babylonjs.com/babylon101/particles
+     */
+    export class ParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
+        /**
+         * Source color is added to the destination color without alpha affecting the result.
+         */
         public static BLENDMODE_ONEONE = 0;
+        /**
+         * Blend current color and particle color using particle’s alpha.
+         */
         public static BLENDMODE_STANDARD = 1;
 
-        // Members
+        /**
+         * List of animations used by the particle system.
+         */
         public animations: Animation[] = [];
 
+        /**
+         * The id of the Particle system.
+         */
         public id: string;
+
+        /**
+         * The friendly name of the Particle system.
+         */
+        public name: string;
+
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
         public renderingGroupId = 0;
-        public emitter = null;
+
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        public emitter: Nullable<AbstractMesh | Vector3> = null;
+
+        /**
+         * The maximum number of particles to emit per frame
+         */
         public emitRate = 10;
+
+        /**
+         * If you want to launch only a few particles at once, that can be done, as well.
+         */
         public manualEmitCount = -1;
+
+        /**
+         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+         */
         public updateSpeed = 0.01;
+
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
         public targetStopDuration = 0;
+
+        /**
+         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
+         */
         public disposeOnStop = false;
 
+        /**
+         * Minimum power of emitting particles.
+         */
         public minEmitPower = 1;
+        /**
+         * Maximum power of emitting particles.
+         */
         public maxEmitPower = 1;
 
+        /**
+         * Minimum life time of emitting particles.
+         */
         public minLifeTime = 1;
+        /**
+         * Maximum life time of emitting particles.
+         */
         public maxLifeTime = 1;
 
+        /**
+         * Minimum Size of emitting particles.
+         */
         public minSize = 1;
+        /**
+         * Maximum Size of emitting particles.
+         */
         public maxSize = 1;
+
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
         public minAngularSpeed = 0;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
         public maxAngularSpeed = 0;
 
-        public particleTexture: Texture;
+        /**
+         * The texture used to render each particle. (this can be a spritesheet)
+         */
+        public particleTexture: Nullable<Texture>;
 
+        /**
+         * The layer mask we are rendering the particles through.
+         */
         public layerMask: number = 0x0FFFFFFF;
 
+        /**
+         * This can help using your own shader to render the particle system.
+         * The according effect will be created 
+         */
         public customShader: any = null;
+
+        /**
+         * By default particle system starts as soon as they are created. This prevents the 
+         * automatic start to happen and let you decide when to start emitting particles.
+         */
         public preventAutoStart: boolean = false;
-        
+
+        /**
+         * This function can be defined to provide custom update for active particles.
+         * This function will be called instead of regular update (age, position, color, etc.).
+         * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
+         */
+        public updateFunction: (particles: Particle[]) => void;
+
+        /**
+         * Callback triggered when the particle animation is ending.
+         */
+        public onAnimationEnd: Nullable<() => void> = null;
+
+        /**
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         */
+        public blendMode = ParticleSystem.BLENDMODE_ONEONE;
+
+        /**
+         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+         * to override the particles.
+         */
+        public forceDepthWrite = false;
+
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        public gravity = Vector3.Zero();
+
+       /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction1(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction1;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction1(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction1) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction1 = value;
+            }
+        }
+
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get direction2(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                return (<BoxParticleEmitter>this.particleEmitterType).direction2;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set direction2(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).direction2) {
+                (<BoxParticleEmitter>this.particleEmitterType).direction2 = value;
+            }
+        }
+
+        /**
+         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get minEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).minEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set minEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).minEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).minEmitBox = value;
+            }
+        }
+
+        /**
+         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        public get maxEmitBox(): Vector3 {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                return (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox;
+            }
+
+            return Vector3.Zero();
+        }
+
+        public set maxEmitBox(value: Vector3) {
+            if ((<BoxParticleEmitter>this.particleEmitterType).maxEmitBox) {
+                (<BoxParticleEmitter>this.particleEmitterType).maxEmitBox = value;
+            }
+        }
+
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        public color1 = new Color4(1.0, 1.0, 1.0, 1.0);
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
+        /**
+         * Color the particle will have at the end of its lifetime.
+         */
+        public colorDead = new Color4(0, 0, 0, 1.0);
+
+        /**
+         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel.
+         */
+        public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
+
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        public particleEmitterType: IParticleEmitterType;
+
+        /**
+         * This function can be defined to specify initial direction for every new particle.
+         * It by default use the emitterType defined function.
+         */
+        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        /**
+         * This function can be defined to specify initial position for every new particle.
+         * It by default use the emitterType defined function.
+         */
+        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not.
+         */
+        public spriteCellLoop = true;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop.
+         */
+        public spriteCellChangeSpeed = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display.
+         */
+        public startSpriteCellID = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display.
+         */
+        public endSpriteCellID = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use.
+         */
+        public spriteCellWidth = 0;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use.
+         */
+        public spriteCellHeight = 0;
+
         /**
         * An event triggered when the system is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<ParticleSystem>();
 
-        private _onDisposeObserver: Observer<ParticleSystem>;
+        private _onDisposeObserver: Nullable<Observer<ParticleSystem>>;
+        /**
+         * Sets a callback that will be triggered when the system is disposed.
+         */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -58,53 +299,75 @@
             this._onDisposeObserver = this.onDisposeObservable.add(callback);
         }
 
-        public updateFunction: (particles: Particle[]) => void;
+        /**
+         * Gets wether an animation sprite sheet is enabled or not on the particle system.
+         */
+        public get isAnimationSheetEnabled(): Boolean {
+            return this._isAnimationSheetEnabled;
+        }
 
-        public blendMode = ParticleSystem.BLENDMODE_ONEONE;
-
-        public forceDepthWrite = false;
-
-        public gravity = Vector3.Zero();
-        public direction1 = new Vector3(0, 1.0, 0);
-        public direction2 = new Vector3(0, 1.0, 0);
-        public minEmitBox = new Vector3(-0.5, -0.5, -0.5);
-        public maxEmitBox = new Vector3(0.5, 0.5, 0.5);
-        public color1 = new Color4(1.0, 1.0, 1.0, 1.0);
-        public color2 = new Color4(1.0, 1.0, 1.0, 1.0);
-        public colorDead = new Color4(0, 0, 0, 1.0);
-        public textureMask = new Color4(1.0, 1.0, 1.0, 1.0);
-        public startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
-        public startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
-
-        private particles = new Array<Particle>();
-
+        private _particles = new Array<Particle>();
+        private _epsilon: number;
         private _capacity: number;
         private _scene: Scene;
         private _stockParticles = new Array<Particle>();
         private _newPartsExcess = 0;
         private _vertexData: Float32Array;
-        private _vertexBuffer: Buffer;
+        private _vertexBuffer: Nullable<Buffer>;
         private _vertexBuffers: { [key: string]: VertexBuffer } = {};
-        private _indexBuffer: WebGLBuffer;
+        private _indexBuffer: Nullable<WebGLBuffer>;
         private _effect: Effect;
-        private _customEffect: Effect;
+        private _customEffect: Nullable<Effect>;
         private _cachedDefines: string;
-
         private _scaledColorStep = new Color4(0, 0, 0, 0);
         private _colorDiff = new Color4(0, 0, 0, 0);
         private _scaledDirection = Vector3.Zero();
         private _scaledGravity = Vector3.Zero();
         private _currentRenderId = -1;
-
         private _alive: boolean;
         private _started = false;
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
+        private _vertexBufferSize = 11;
+        private _isAnimationSheetEnabled: boolean;
 
-        constructor(public name: string, capacity: number, scene: Scene, customEffect?: Effect) {
+        /**
+         * Gets the current list of active particles
+         */
+        public get particles(): Particle[] {
+            return this._particles;
+        }
+
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        public getClassName(): string {
+            return "ParticleSystem";
+        }        
+
+        /**
+         * Instantiates a particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+         * @param epsilon Offset used to render the particles
+         */
+        constructor(name: string, capacity: number, scene: Scene, customEffect: Nullable<Effect> = null, isAnimationSheetEnabled: boolean = false, epsilon: number = 0.01) {
             this.id = name;
+            this.name = name;
+
             this._capacity = capacity;
+
+            this._epsilon = epsilon;
+            this._isAnimationSheetEnabled = isAnimationSheetEnabled;
+            if (isAnimationSheetEnabled) {
+                this._vertexBufferSize = 12;
+            }
 
             this._scene = scene || Engine.LastCreatedScene;
 
@@ -112,48 +375,27 @@
 
             scene.particleSystems.push(this);
 
-            var indices = [];
-            var index = 0;
-            for (var count = 0; count < capacity; count++) {
-                indices.push(index);
-                indices.push(index + 1);
-                indices.push(index + 2);
-                indices.push(index);
-                indices.push(index + 2);
-                indices.push(index + 3);
-                index += 4;
-            }
-
-            this._indexBuffer = scene.getEngine().createIndexBuffer(indices);
+            this._createIndexBuffer();
 
             // 11 floats per particle (x, y, z, r, g, b, a, angle, size, offsetX, offsetY) + 1 filler
-            this._vertexData = new Float32Array(capacity * 11 * 4);
-            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, 11);
+            this._vertexData = new Float32Array(capacity * this._vertexBufferSize * 4);
+            this._vertexBuffer = new Buffer(scene.getEngine(), this._vertexData, true, this._vertexBufferSize);
 
             var positions = this._vertexBuffer.createVertexBuffer(VertexBuffer.PositionKind, 0, 3);
             var colors = this._vertexBuffer.createVertexBuffer(VertexBuffer.ColorKind, 3, 4);
             var options = this._vertexBuffer.createVertexBuffer("options", 7, 4);
 
+            if (this._isAnimationSheetEnabled) {
+                var cellIndexBuffer = this._vertexBuffer.createVertexBuffer("cellIndex", 11, 1);
+                this._vertexBuffers["cellIndex"] = cellIndexBuffer;
+            }
+
             this._vertexBuffers[VertexBuffer.PositionKind] = positions;
             this._vertexBuffers[VertexBuffer.ColorKind] = colors;
             this._vertexBuffers["options"] = options;
 
-            // Default behaviors
-            this.startDirectionFunction = (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle): void => {
-                var randX = randomNumber(this.direction1.x, this.direction2.x);
-                var randY = randomNumber(this.direction1.y, this.direction2.y);
-                var randZ = randomNumber(this.direction1.z, this.direction2.z);
-
-                Vector3.TransformNormalFromFloatsToRef(randX * emitPower, randY * emitPower, randZ * emitPower, worldMatrix, directionToUpdate);
-            }
-
-            this.startPositionFunction = (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle): void => {
-                var randX = randomNumber(this.minEmitBox.x, this.maxEmitBox.x);
-                var randY = randomNumber(this.minEmitBox.y, this.maxEmitBox.y);
-                var randZ = randomNumber(this.minEmitBox.z, this.maxEmitBox.z);
-
-                Vector3.TransformCoordinatesFromFloatsToRef(randX, randY, randZ, worldMatrix, positionToUpdate);
-            }
+            // Default emitter type
+            this.particleEmitterType = new BoxParticleEmitter();
 
             this.updateFunction = (particles: Particle[]): void => {
                 for (var index = 0; index < particles.length; index++) {
@@ -179,13 +421,38 @@
 
                         this.gravity.scaleToRef(this._scaledUpdateSpeed, this._scaledGravity);
                         particle.direction.addInPlace(this._scaledGravity);
+
+                        if (this._isAnimationSheetEnabled) {
+                            particle.updateCellIndex(this._scaledUpdateSpeed);
+                        }
                     }
                 }
             }
         }
 
+        private _createIndexBuffer() {
+            var indices = [];
+            var index = 0;
+            for (var count = 0; count < this._capacity; count++) {
+                indices.push(index);
+                indices.push(index + 1);
+                indices.push(index + 2);
+                indices.push(index);
+                indices.push(index + 2);
+                indices.push(index + 3);
+                index += 4;
+            }
+
+            this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
+        }
+
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         * @param particle The particle to recycle
+         */
         public recycleParticle(particle: Particle): void {
-            var lastParticle = this.particles.pop();
+            var lastParticle = <Particle>this._particles.pop();
 
             if (lastParticle !== particle) {
                 lastParticle.copyTo(particle);
@@ -193,30 +460,59 @@
             }
         }
 
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
         public getCapacity(): number {
             return this._capacity;
         }
 
+        /**
+         * Gets Wether there are still active particles in the system.
+         * @returns True if it is alive, otherwise false.
+         */
         public isAlive(): boolean {
             return this._alive;
         }
 
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
         public isStarted(): boolean {
             return this._started;
         }
 
+        /**
+         * Starts the particle system and begins to emit.
+         */
         public start(): void {
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
         }
 
+        /**
+         * Stops the particle system.
+         */
         public stop(): void {
             this._stopped = true;
         }
 
+        /**
+         * Remove all active particles
+         */
+        public reset(): void {
+            this._stockParticles = [];
+            this._particles = [];
+        }
+
+        /**
+         * @ignore (for internal use only)
+         */
         public _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void {
-            var offset = index * 11;
+            var offset = index * this._vertexBufferSize;
             this._vertexData[offset] = particle.position.x;
             this._vertexData[offset + 1] = particle.position.y;
             this._vertexData[offset + 2] = particle.position.z;
@@ -230,46 +526,90 @@
             this._vertexData[offset + 10] = offsetY;
         }
 
+        /**
+         * @ignore (for internal use only)
+         */
+        public _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number): void {
+            if (offsetX === 0)
+                offsetX = this._epsilon;
+            else if (offsetX === 1)
+                offsetX = 1 - this._epsilon;
+
+            if (offsetY === 0)
+                offsetY = this._epsilon;
+            else if (offsetY === 1)
+                offsetY = 1 - this._epsilon;
+
+            var offset = index * this._vertexBufferSize;
+            this._vertexData[offset] = particle.position.x;
+            this._vertexData[offset + 1] = particle.position.y;
+            this._vertexData[offset + 2] = particle.position.z;
+            this._vertexData[offset + 3] = particle.color.r;
+            this._vertexData[offset + 4] = particle.color.g;
+            this._vertexData[offset + 5] = particle.color.b;
+            this._vertexData[offset + 6] = particle.color.a;
+            this._vertexData[offset + 7] = particle.angle;
+            this._vertexData[offset + 8] = particle.size;
+            this._vertexData[offset + 9] = offsetX;
+            this._vertexData[offset + 10] = offsetY;
+            this._vertexData[offset + 11] = particle.cellIndex;
+        }
+
         private _update(newParticles: number): void {
             // Update current
-            this._alive = this.particles.length > 0;
+            this._alive = this._particles.length > 0;
 
-            this.updateFunction(this.particles);
+            this.updateFunction(this._particles);
 
             // Add new ones
             var worldMatrix;
 
-            if (this.emitter.position) {
-                worldMatrix = this.emitter.getWorldMatrix();
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                worldMatrix = emitterMesh.getWorldMatrix();
             } else {
-                worldMatrix = Matrix.Translation(this.emitter.x, this.emitter.y, this.emitter.z);
+                var emitterPosition = (<Vector3>this.emitter);
+                worldMatrix = Matrix.Translation(emitterPosition.x, emitterPosition.y, emitterPosition.z);
             }
+
             var particle: Particle;
             for (var index = 0; index < newParticles; index++) {
-                if (this.particles.length === this._capacity) {
+                if (this._particles.length === this._capacity) {
                     break;
                 }
 
                 if (this._stockParticles.length !== 0) {
-                    particle = this._stockParticles.pop();
+                    particle = <Particle>this._stockParticles.pop();
                     particle.age = 0;
+                    particle.cellIndex = this.startSpriteCellID;
                 } else {
-                    particle = new Particle();
+                    particle = new Particle(this);
                 }
-                this.particles.push(particle);
 
-                var emitPower = randomNumber(this.minEmitPower, this.maxEmitPower);
+                this._particles.push(particle);
 
-                this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                var emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
 
-                particle.lifeTime = randomNumber(this.minLifeTime, this.maxLifeTime);
+                if (this.startPositionFunction) {
+                    this.startPositionFunction(worldMatrix, particle.position, particle);
+                }
+                else {
+                    this.particleEmitterType.startPositionFunction(worldMatrix, particle.position, particle);
+                }
 
-                particle.size = randomNumber(this.minSize, this.maxSize);
-                particle.angularSpeed = randomNumber(this.minAngularSpeed, this.maxAngularSpeed);
+                if (this.startDirectionFunction) {
+                    this.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
+                else {
+                    this.particleEmitterType.startDirectionFunction(emitPower, worldMatrix, particle.direction, particle);
+                }
 
-                this.startPositionFunction(worldMatrix, particle.position, particle);
+                particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
 
-                var step = randomNumber(0, 1.0);
+                particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
+
+                var step = Scalar.RandomRange(0, 1.0);
 
                 Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
@@ -289,21 +629,40 @@
                 defines.push("#define CLIPPLANE");
             }
 
+            if (this._isAnimationSheetEnabled) {
+                defines.push("#define ANIMATESHEET");
+            }
+
             // Effect
             var join = defines.join("\n");
             if (this._cachedDefines !== join) {
                 this._cachedDefines = join;
 
+                var attributesNamesOrOptions: any;
+                var effectCreationOption: any;
+
+                if (this._isAnimationSheetEnabled) {
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options", "cellIndex"];
+                    effectCreationOption = ["invView", "view", "projection", "particlesInfos", "vClipPlane", "textureMask"];
+                }
+                else {
+                    attributesNamesOrOptions = [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"];
+                    effectCreationOption = ["invView", "view", "projection", "vClipPlane", "textureMask"]
+                }
+
                 this._effect = this._scene.getEngine().createEffect(
                     "particles",
-                    [VertexBuffer.PositionKind, VertexBuffer.ColorKind, "options"],
-                    ["invView", "view", "projection", "vClipPlane", "textureMask"],
+                    attributesNamesOrOptions,
+                    effectCreationOption,
                     ["diffuseSampler"], join);
             }
 
             return this._effect;
         }
 
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
         public animate(): void {
             if (!this._started)
                 return;
@@ -322,7 +681,7 @@
 
             this._scaledUpdateSpeed = this.updateSpeed * this._scene.getAnimationRatio();
 
-            // determine the number of particles we need to create   
+            // determine the number of particles we need to create
             var newParticles;
 
             if (this.manualEmitCount > -1) {
@@ -356,32 +715,74 @@
             if (this._stopped) {
                 if (!this._alive) {
                     this._started = false;
+                    if (this.onAnimationEnd) {
+                        this.onAnimationEnd();
+                    }
                     if (this.disposeOnStop) {
                         this._scene._toBeDisposed.push(this);
                     }
                 }
             }
 
-            // Update VBO
-            var offset = 0;
-            for (var index = 0; index < this.particles.length; index++) {
-                var particle = this.particles[index];
-
-                this._appendParticleVertex(offset++, particle, 0, 0);
-                this._appendParticleVertex(offset++, particle, 1, 0);
-                this._appendParticleVertex(offset++, particle, 1, 1);
-                this._appendParticleVertex(offset++, particle, 0, 1);
+            // Animation sheet
+            if (this._isAnimationSheetEnabled) {
+                this._appendParticleVertexes = this._appenedParticleVertexesWithSheet;
+            }
+            else {
+                this._appendParticleVertexes = this._appenedParticleVertexesNoSheet;
             }
 
-            this._vertexBuffer.update(this._vertexData);
+            // Update VBO
+            var offset = 0;
+            for (var index = 0; index < this._particles.length; index++) {
+                var particle = this._particles[index];
+                this._appendParticleVertexes(offset, particle);
+                offset += 4;
+            }
+
+            if (this._vertexBuffer) {
+                this._vertexBuffer.update(this._vertexData);
+            }
         }
 
+        private _appendParticleVertexes: Nullable<(offset: number, particle: Particle) => void> = null;
+
+        private _appenedParticleVertexesWithSheet(offset: number, particle: Particle) {
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 0);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 0);
+            this._appendParticleVertexWithAnimation(offset++, particle, 1, 1);
+            this._appendParticleVertexWithAnimation(offset++, particle, 0, 1);
+        }
+
+        private _appenedParticleVertexesNoSheet(offset: number, particle: Particle) {
+            this._appendParticleVertex(offset++, particle, 0, 0);
+            this._appendParticleVertex(offset++, particle, 1, 0);
+            this._appendParticleVertex(offset++, particle, 1, 1);
+            this._appendParticleVertex(offset++, particle, 0, 1);
+        }
+
+        /**
+         * Rebuilds the particle system.
+         */
+        public rebuild(): void {
+            this._createIndexBuffer();
+
+            if (this._vertexBuffer) {
+                this._vertexBuffer._rebuild();
+            }
+        }
+
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
         public render(): number {
             var effect = this._getEffect();
 
             // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this.particles.length)
+            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length) {
                 return 0;
+            }
 
             var engine = this._scene.getEngine();
 
@@ -393,6 +794,12 @@
             effect.setTexture("diffuseSampler", this.particleTexture);
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
+
+            if (this._isAnimationSheetEnabled) {
+                var baseSize = this.particleTexture.getBaseSize();
+                effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
+            }
+
             effect.setFloat4("textureMask", this.textureMask.r, this.textureMask.g, this.textureMask.b, this.textureMask.a);
 
             if (this._scene.clipPlane) {
@@ -417,13 +824,17 @@
                 engine.setDepthWrite(true);
             }
 
-            engine.draw(true, 0, this.particles.length * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, this._particles.length * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
 
-            return this.particles.length;
+            return this._particles.length;
         }
 
-        public dispose(): void {
+        /**
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        public dispose(disposeTexture = true): void {
             if (this._vertexBuffer) {
                 this._vertexBuffer.dispose();
                 this._vertexBuffer = null;
@@ -434,23 +845,85 @@
                 this._indexBuffer = null;
             }
 
-            if (this.particleTexture) {
+            if (disposeTexture && this.particleTexture) {
                 this.particleTexture.dispose();
                 this.particleTexture = null;
             }
 
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
-            this._scene.particleSystems.splice(index, 1);
+            if (index > -1) {
+                this._scene.particleSystems.splice(index, 1);
+            }
 
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
         }
 
-        // Clone
+        /**
+         * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
+         * @param radius The radius of the sphere to emit from
+         * @returns the emitter
+         */
+        public createSphereEmitter(radius = 1): SphereParticleEmitter {
+            var particleEmitter = new SphereParticleEmitter(radius);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Directed Sphere Emitter for the particle system. (emits between direction1 and direction2)
+         * @param radius The radius of the sphere to emit from
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @returns the emitter
+         */
+        public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
+            var particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2)
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Creates a Cone Emitter for the particle system. (emits from the cone to the particle position)
+         * @param radius The radius of the cone to emit from
+         * @param angle The base angle of the cone
+         * @returns the emitter
+         */
+        public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
+            var particleEmitter = new ConeParticleEmitter(radius, angle);
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        // this method needs to be changed when breaking changes will be allowed to match the sphere and cone methods and properties direction1,2 and minEmitBox,maxEmitBox to be removed from the system.
+        /**
+         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @returns the emitter
+         */
+        public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
+            var particleEmitter = new BoxParticleEmitter();
+            this.direction1 = direction1;
+            this.direction2 = direction2;
+            this.minEmitBox = minEmitBox;
+            this.maxEmitBox = maxEmitBox;
+            this.particleEmitterType = particleEmitter;
+            return particleEmitter;
+        }
+
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
         public clone(name: string, newEmitter: any): ParticleSystem {
-            var custom: Effect = null;
+            var custom: Nullable<Effect> = null;
             var program: any = null;
             if (this.customShader != null) {
                 program = this.customShader;
@@ -478,6 +951,10 @@
             return result;
         }
 
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
         public serialize(): any {
             var serializationObject: any = {};
 
@@ -485,10 +962,12 @@
             serializationObject.id = this.id;
 
             // Emitter
-            if (this.emitter.position) {
-                serializationObject.emitterId = this.emitter.id;
+            if ((<AbstractMesh>this.emitter).position) {
+                var emitterMesh = (<AbstractMesh>this.emitter);
+                serializationObject.emitterId = emitterMesh.id;
             } else {
-                serializationObject.emitter = this.emitter.asArray();
+                var emitterPosition = (<Vector3>this.emitter);
+                serializationObject.emitter = emitterPosition.asArray();
             }
 
             serializationObject.capacity = this.getCapacity();
@@ -525,19 +1004,40 @@
             serializationObject.customShader = this.customShader;
             serializationObject.preventAutoStart = this.preventAutoStart;
 
+            serializationObject.startSpriteCellID = this.startSpriteCellID;
+            serializationObject.endSpriteCellID = this.endSpriteCellID;
+            serializationObject.spriteCellLoop = this.spriteCellLoop;
+            serializationObject.spriteCellChangeSpeed = this.spriteCellChangeSpeed;
+            serializationObject.spriteCellWidth = this.spriteCellWidth;
+            serializationObject.spriteCellHeight = this.spriteCellHeight;
+
+            serializationObject.isAnimationSheetEnabled = this._isAnimationSheetEnabled;
+
+            // Emitter
+            if (this.particleEmitterType) {
+                serializationObject.particleEmitterType = this.particleEmitterType.serialize();
+            }            
+
             return serializationObject;
         }
 
+        /**
+         * Parses a JSON object to create a particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the Parsed particle system
+         */
         public static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem {
             var name = parsedParticleSystem.name;
-            var custom: Effect = null;
+            var custom: Nullable<Effect> = null;
             var program: any = null;
             if (parsedParticleSystem.customShader) {
                 program = parsedParticleSystem.customShader;
                 var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
                 custom = scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
             }
-            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom);
+            var particleSystem = new ParticleSystem(name, parsedParticleSystem.capacity, scene, custom, parsedParticleSystem.isAnimationSheetEnabled);
             particleSystem.customShader = program;
 
             if (parsedParticleSystem.id) {
@@ -596,6 +1096,13 @@
             particleSystem.targetStopDuration = parsedParticleSystem.targetStopDuration;
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
             particleSystem.blendMode = parsedParticleSystem.blendMode;
+
+            particleSystem.startSpriteCellID = parsedParticleSystem.startSpriteCellID;
+            particleSystem.endSpriteCellID = parsedParticleSystem.endSpriteCellID;
+            particleSystem.spriteCellLoop = parsedParticleSystem.spriteCellLoop;
+            particleSystem.spriteCellChangeSpeed = parsedParticleSystem.spriteCellChangeSpeed;
+            particleSystem.spriteCellWidth = parsedParticleSystem.spriteCellWidth;
+            particleSystem.spriteCellHeight = parsedParticleSystem.spriteCellHeight;
 
             if (!particleSystem.preventAutoStart) {
                 particleSystem.start();

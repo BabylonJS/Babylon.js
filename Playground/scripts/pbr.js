@@ -5,7 +5,7 @@
     camera.minZ = 0.1;
     
     // Environment Texture
-    var hdrTexture = new BABYLON.HDRCubeTexture("textures/room.hdr", scene, 512);
+    var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("textures/environment.dds", scene);
 
     scene.imageProcessingConfiguration.exposure = 0.6;
     scene.imageProcessingConfiguration.contrast = 1.6;

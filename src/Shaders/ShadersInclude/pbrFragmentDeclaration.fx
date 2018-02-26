@@ -18,6 +18,7 @@ uniform vec3 vAmbientInfos;
 
 #ifdef BUMP
 uniform vec3 vBumpInfos;
+uniform vec2 vTangentSpaceParams;
 #endif
 
 #ifdef OPACITY	
@@ -32,7 +33,7 @@ uniform vec2 vEmissiveInfos;
 uniform vec2 vLightmapInfos;
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
+#ifdef REFLECTIVITY
 uniform vec3 vReflectivityInfos;
 #endif
 
@@ -57,4 +58,9 @@ uniform mat4 view;
     uniform vec2 vReflectionInfos;
     uniform mat4 reflectionMatrix;
     uniform vec3 vReflectionMicrosurfaceInfos;
+
+    #if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
+	    uniform vec3 vReflectionPosition;
+	    uniform vec3 vReflectionSize; 
+    #endif
 #endif

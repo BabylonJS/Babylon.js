@@ -4,22 +4,22 @@ module INSPECTOR {
 
         private static _instance: Scheduler;
 
-        /** The number of the set interval */
-        private _timer          : number;
         /** Is this scheduler in pause ? */
-        public pause            : boolean = false;
+        public pause: boolean = false;
 
         /** All properties are refreshed every 250ms */
-        public static REFRESH_TIME  : number = 250;
+        public static REFRESH_TIME: number = 250;
 
         /** The list of data to update */
         private _updatableProperties: Array<PropertyLine> = [];
 
-        constructor () {
-            this._timer = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
+        private interval: number;
+
+        constructor() {
+            this.interval = setInterval(this._update.bind(this), Scheduler.REFRESH_TIME);
         }
 
-        public static getInstance() : Scheduler {
+        public static getInstance(): Scheduler {
             if (!Scheduler._instance) {
                 Scheduler._instance = new Scheduler();
             }
@@ -27,12 +27,12 @@ module INSPECTOR {
         }
 
         /** Add a property line to be updated every X ms */
-        public add(prop:PropertyLine) {
+        public add(prop: PropertyLine) {
             this._updatableProperties.push(prop);
         }
-        
+
         /** Removes the given property from the list of properties to update */
-        public remove(prop:PropertyLine) {
+        public remove(prop: PropertyLine) {
             let index = this._updatableProperties.indexOf(prop);
             if (index != -1) {
                 this._updatableProperties.splice(index, 1);
@@ -46,6 +46,10 @@ module INSPECTOR {
                     prop.update();
                 }
             }
+        }
+
+        public dispose() {
+            window.clearInterval(this.interval);
         }
     }
 }

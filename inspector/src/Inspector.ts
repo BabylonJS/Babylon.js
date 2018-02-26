@@ -9,8 +9,6 @@ module INSPECTOR {
         private _tabPanel: HTMLElement;
         /** The panel containing the list if items */
         // private _treePanel   : HTMLElement;
-        /** The list if tree items displayed in the tree panel. */
-        private _items: Array<TreeItem>;
         private _tabbar: TabBar;
         private _scene: BABYLON.Scene;
         /** The HTML document relative to this inspector (the window or the popup depending on its mode) */
@@ -24,13 +22,13 @@ module INSPECTOR {
 
         private _initialTab: number;
 
-        private _parentElement: HTMLElement;
+        private _parentElement: BABYLON.Nullable<HTMLElement>;
 
         /** The inspector is created with the given engine.
          * If the parameter 'popup' is false, the inspector is created as a right panel on the main window.
          * If the parameter 'popup' is true, the inspector is created in another popup.
          */
-        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab?: number, parentElement?: HTMLElement, newColors?: {
+        constructor(scene: BABYLON.Scene, popup?: boolean, initialTab: number = 0, parentElement: BABYLON.Nullable<HTMLElement> = null, newColors?: {
             backgroundColor?: string,
             backgroundColorLighter?: string,
             backgroundColorLighter2?: string,
@@ -41,15 +39,15 @@ module INSPECTOR {
         }) {
 
             // Load GUI library if not already done
-            if(!BABYLON.GUI){
-            	BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => { 
+            if (!BABYLON.GUI) {
+                BABYLON.Tools.LoadScript("https://preview.babylonjs.com/gui/babylon.gui.js", () => {
                     //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
                     loadGUIProperties();
                 }, () => {
                     console.warn("Please add script https://preview.babylonjs.com/gui/babylon.gui.js to the HTML file")
                 });
             }
-            else{
+            else {
                 //Load properties of GUI objects now as BABYLON.GUI has to be declared before 
                 loadGUIProperties();
             }
@@ -73,9 +71,8 @@ module INSPECTOR {
                 this.openPopup(true);// set to true in order to NOT dispose the inspector (done in openPopup), as it's not existing yet
             } else {
                 // Get canvas and its DOM parent
-                let canvas = this._scene.getEngine().getRenderingCanvas();
+                let canvas = <HTMLElement>this._scene.getEngine().getRenderingCanvas();
                 let canvasParent = canvas.parentElement;
-                let canvasParentComputedStyle = Inspector.WINDOW.getComputedStyle(canvasParent);
 
                 // get canvas style                
                 let canvasComputedStyle = Inspector.WINDOW.getComputedStyle(canvas);
@@ -123,7 +120,11 @@ module INSPECTOR {
 
                     // copy style from canvas to wrapper
                     for (let prop in this._canvasStyle) {
-                        this._c2diwrapper.style[prop] = this._canvasStyle[prop];
+                        (<any>this._c2diwrapper.style)[prop] = this._canvasStyle[prop];
+                    }
+
+                    if (!canvasComputedStyle.width || !canvasComputedStyle.height || !canvasComputedStyle.left) {
+                        return;
                     }
 
                     // Convert wrapper size in % (because getComputedStyle returns px only)
@@ -138,6 +139,7 @@ module INSPECTOR {
                             this._c2diwrapper.style.maxWidth = `${widthPx - leftPx}px`;
                         }
                     }
+
 
                     // Check if the parent of the canvas is the body page. If yes, the size ratio is computed
                     let parent = this._getRelativeParent(canvas);
@@ -167,7 +169,9 @@ module INSPECTOR {
                     canvas.style.marginRight = "0";
 
                     // Replace canvas with the wrapper...
-                    canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    if (canvasParent) {
+                        canvasParent.replaceChild(this._c2diwrapper, canvas);
+                    }
                     // ... and add canvas to the wrapper
                     this._c2diwrapper.appendChild(canvas);
 
@@ -293,7 +297,11 @@ module INSPECTOR {
          * All item returned should have the given filter contained in the item id.
         */
         public filterItem(filter: string) {
-            this._tabbar.getActiveTab().filter(filter);
+            let tab = this._tabbar.getActiveTab();
+
+            if (tab) {
+                tab.filter(filter);
+            }
         }
 
         /** Display the mesh tab on the given object */
@@ -308,6 +316,10 @@ module INSPECTOR {
 
             // Get the active tab and its items
             let activeTab = this._tabbar.getActiveTab();
+
+            if (!activeTab) {
+                return;
+            }
             activeTab.update();
             this._tabPanel.appendChild(activeTab.getPanel());
             Helpers.SEND_EVENT('resize');
@@ -319,26 +331,33 @@ module INSPECTOR {
          */
         public dispose() {
             if (!this._popupMode) {
-                     
-                this._tabbar.getActiveTab().dispose();
+                let activeTab = this._tabbar.getActiveTab();
+                if (activeTab) {
+                    activeTab.dispose();
+                }
 
                 // Get canvas
-                let canvas = this._scene.getEngine().getRenderingCanvas();
+                let canvas = <HTMLElement>this._scene.getEngine().getRenderingCanvas();
 
                 // restore canvas style
                 for (let prop in this._canvasStyle) {
-                    canvas.style[prop] = this._canvasStyle[prop];
+                    (<any>canvas.style)[prop] = this._canvasStyle[prop];
                 }
                 // Get parent of the wrapper 
-                let canvasParent = canvas.parentElement.parentElement;
+                if (canvas.parentElement) {
+                    let canvasParent = canvas.parentElement.parentElement;
 
-                canvasParent.insertBefore(canvas, this._c2diwrapper);
-                // Remove wrapper
-                Helpers.CleanDiv(this._c2diwrapper);
-                this._c2diwrapper.remove();
-                // Send resize event to the window
-                Helpers.SEND_EVENT('resize');
+                    if (canvasParent) {
+                        canvasParent.insertBefore(canvas, this._c2diwrapper);
+                        // Remove wrapper
+                        Helpers.CleanDiv(this._c2diwrapper);
+                        this._c2diwrapper.remove();
+                        // Send resize event to the window
+                        Helpers.SEND_EVENT('resize');
+                    }
+                }
             }
+            Scheduler.getInstance().dispose();
         }
 
         /** Open the inspector in a new popup
@@ -351,6 +370,9 @@ module INSPECTOR {
             } else {
                 // Create popup
                 let popup = window.open('', 'Babylon.js INSPECTOR', 'toolbar=no,resizable=yes,menubar=no,width=750,height=1000');
+                if (!popup) {
+                    return;
+                }
                 popup.document.title = 'Babylon.js INSPECTOR';
                 // Get the inspector style      
                 let styles = Inspector.DOCUMENT.querySelectorAll('style');
@@ -391,8 +413,8 @@ module INSPECTOR {
             }
         }
 
-        public getActiveTabIndex():number {
-           return this._tabbar.getActiveTabIndex();
+        public getActiveTabIndex(): number {
+            return this._tabbar.getActiveTabIndex();
         }
     }
 }

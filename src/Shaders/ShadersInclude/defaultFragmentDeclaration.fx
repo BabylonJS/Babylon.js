@@ -27,6 +27,7 @@ uniform vec2 vLightmapInfos;
 
 #ifdef BUMP
 uniform vec3 vBumpInfos;
+uniform vec2 vTangentSpaceParams;
 #endif
 
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
@@ -73,6 +74,11 @@ uniform vec2 vReflectionInfos;
 
 #if defined(REFLECTIONMAP_PLANAR) || defined(REFLECTIONMAP_CUBIC) || defined(REFLECTIONMAP_PROJECTION)
 uniform mat4 reflectionMatrix;
+#endif
+
+#if defined(USE_LOCAL_REFLECTIONMAP_CUBIC) && defined(REFLECTIONMAP_CUBIC)
+	uniform vec3 vReflectionPosition;
+	uniform vec3 vReflectionSize; 
 #endif
 #endif
 

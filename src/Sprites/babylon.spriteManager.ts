@@ -14,7 +14,7 @@
         */
         public onDisposeObservable = new Observable<SpriteManager>();
 
-        private _onDisposeObserver: Observer<SpriteManager>;
+        private _onDisposeObserver: Nullable<Observer<SpriteManager>>;
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -137,12 +137,12 @@
             this._vertexData[arrayOffset + 15] = sprite.color.a;
         }
 
-        public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): PickingInfo {
+        public intersects(ray: Ray, camera:Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo> {
             var count = Math.min(this._capacity, this.sprites.length);
             var min = Vector3.Zero();
             var max = Vector3.Zero();
             var distance = Number.MAX_VALUE;
-            var currentSprite: Sprite;
+            var currentSprite: Nullable<Sprite> = null;
             var cameraSpacePosition = Vector3.Zero();
             var cameraView = camera.getViewMatrix();
 
@@ -250,29 +250,29 @@
             engine.setDepthFunctionToLessOrEqual();
             effect.setBool("alphaTest", true);
             engine.setColorWrite(false);
-            engine.draw(true, 0, max * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, max * 6);
             engine.setColorWrite(true);
             effect.setBool("alphaTest", false);
 
             engine.setAlphaMode(Engine.ALPHA_COMBINE);
-            engine.draw(true, 0, max * 6);
+            engine.drawElementsType(Material.TriangleFillMode, 0, max * 6);
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
         public dispose(): void {
             if (this._buffer) {
                 this._buffer.dispose();
-                this._buffer = null;
+                (<any>this._buffer) = null;
             }
 
             if (this._indexBuffer) {
                 this._scene.getEngine()._releaseBuffer(this._indexBuffer);
-                this._indexBuffer = null;
+                (<any>this._indexBuffer) = null;
             }
 
             if (this._spriteTexture) {
                 this._spriteTexture.dispose();
-                this._spriteTexture = null;
+                (<any>this._spriteTexture) = null;
             }
 
             // Remove from scene

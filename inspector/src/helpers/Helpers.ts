@@ -7,8 +7,12 @@ module INSPECTOR {
          * uses getClassName. If nothing is returned, used the type of the constructor
          */
         public static GET_TYPE(obj: any): string {
+            if (typeof obj === 'boolean') {
+                return 'boolean';
+            }
+
             if (obj != null && obj != undefined) {
-                let classname = BABYLON.Tools.getClassName(obj);
+                let classname = BABYLON.Tools.GetClassName(obj);
                 if (!classname || classname === 'object') {
                     classname = obj.constructor.name;
                     // classname is undefined in IE11
@@ -20,8 +24,10 @@ module INSPECTOR {
                 if (!this._CheckIfTypeExists(classname)) {
                     return this._GetTypeFor(obj);
                 }
+
                 return classname;
             } else {
+
                 return 'type_not_defined';
             }
         }
@@ -30,7 +36,7 @@ module INSPECTOR {
          * Check if some properties are defined for the given type.
          */
         private static _CheckIfTypeExists(type: string) {
-            let properties = PROPERTIES[type];
+            let properties = (<any>PROPERTIES)[type];
             if (properties) {
                 return true;
             }
@@ -45,6 +51,14 @@ module INSPECTOR {
             var regexp = /Edge/
             return regexp.test(navigator.userAgent);
         }
+        /**
+         * Returns true if the user browser is IE.
+         */
+        public static IsBrowserIE(): boolean {
+            //Detect if we are running on a faulty buggy OS.
+            var regexp = /Trident.*rv\:11\./
+            return regexp.test(navigator.userAgent);
+        }
 
         /** 
          * Returns the name of the type of the given object, where the name 
@@ -53,7 +67,7 @@ module INSPECTOR {
          */
         private static _GetTypeFor(obj: any) {
             for (let type in PROPERTIES) {
-                let typeBlock = PROPERTIES[type];
+                let typeBlock = (<any>PROPERTIES)[type];
                 if (typeBlock.type) {
                     if (obj instanceof typeBlock.type) {
                         return type;
@@ -65,7 +79,7 @@ module INSPECTOR {
         /**
          * Returns the name of a function (workaround to get object type for IE11)
          */
-        private static _GetFnName(fn) {
+        private static _GetFnName(fn: any) {
             var f = typeof fn == 'function';
             var s = f && ((fn.name && ['', fn.name]) || fn.toString().match(/function ([^\(]+)/));
             return (!f && 'not a function') || (s && s[1] || 'anonymous');
@@ -84,9 +98,12 @@ module INSPECTOR {
         }
 
         /** Returns the given number with 2 decimal number max if a decimal part exists */
-        public static Trunc(nb): number {
+        public static Trunc(nb: number): number {
+            if (typeof nb !== 'number') {
+                return 0;
+            }
             if (Math.round(nb) !== nb) {
-                return nb.toFixed(2);
+                return (<any>nb.toFixed(2));
             }
             return nb;
         };
@@ -94,11 +111,18 @@ module INSPECTOR {
         /**
          * Useful function used to create a div
          */
-        public static CreateDiv(className?: string, parent?: HTMLElement): HTMLElement {
+        public static CreateDiv(className: BABYLON.Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             return Helpers.CreateElement('div', className, parent);
         }
 
-        public static CreateElement(element: string, className?: string, parent?: HTMLElement): HTMLElement {
+        /**
+         * Useful function used to create a input
+         */
+        public static CreateInput(className?: string, parent?: HTMLElement): HTMLInputElement {
+            return <HTMLInputElement>Helpers.CreateElement('input', className, parent);
+        }
+
+        public static CreateElement(element: string, className: BABYLON.Nullable<string> = null, parent?: HTMLElement): HTMLElement {
             let elem = Inspector.DOCUMENT.createElement(element);
 
             if (className) {
@@ -127,31 +151,33 @@ module INSPECTOR {
             let div = Helpers.CreateDiv('', Inspector.DOCUMENT.body);
             div.style.display = 'none';
             div.appendChild(clone);
-            let value = Inspector.WINDOW.getComputedStyle(clone)[cssAttribute];
-            div.parentNode.removeChild(div);
+            let value = (<any>Inspector.WINDOW.getComputedStyle(clone))[cssAttribute];
+            if (div.parentNode) {
+                div.parentNode.removeChild(div);
+            }
             return value;
         }
 
         public static LoadScript() {
             BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js", (elem) => {
                 let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body);
-                script.textContent = elem;
+                script.textContent = elem as string;
 
                 // Load glsl detection
                 BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/languages/glsl.min.js", (elem) => {
                     let script = Helpers.CreateElement('script', '', Inspector.DOCUMENT.body);
-                    script.textContent = elem;
+                    script.textContent = elem as string;
 
                     // Load css style
                     BABYLON.Tools.LoadFile("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/zenburn.min.css", (elem) => {
                         let style = Helpers.CreateElement('style', '', Inspector.DOCUMENT.body);
-                        style.textContent = elem;
+                        style.textContent = elem as string;
                     });
-                }, null, null, null, () => {
+                }, undefined, undefined, undefined, () => {
                     console.log("erreur");
                 });
 
-            }, null, null, null, () => {
+            }, undefined, undefined, undefined, () => {
                 console.log("erreur");
             });
 
@@ -162,6 +188,42 @@ module INSPECTOR {
                 return false;
             }
             return name.indexOf("###") === 0 && name.lastIndexOf("###") === (name.length - 3);
+        }
+
+        /**
+         * Return an array of PropertyLine for an obj
+         * @param obj 
+         */
+        public static GetAllLinesProperties(obj: any): Array<PropertyLine> {
+            let propertiesLines: Array<PropertyLine> = [];
+            let props = Helpers.GetAllLinesPropertiesAsString(obj);
+
+            for (let prop of props) {
+                let infos = new Property(prop, obj);
+                propertiesLines.push(new PropertyLine(infos));
+            }
+            return propertiesLines;
+        }
+
+
+        /**
+         * Returns an array of string corresponding to tjhe list of properties of the object to be displayed
+         * @param obj 
+         */
+        public static GetAllLinesPropertiesAsString(obj: any, dontTakeThis: Array<string> = []): Array<string> {
+            let props: Array<string> = [];
+
+            for (let prop in obj) {
+                //No private and no function
+                if (dontTakeThis.indexOf(prop) === -1 && prop.substring(0, 1) !== '_' && typeof obj[prop] !== 'function') {
+                    props.push(prop);
+                }
+            }
+            return props;
+        }
+
+        public static Capitalize(str: string): string {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
     }
 }

@@ -1,9 +1,24 @@
 ﻿module BABYLON {
+    /**
+     * Class used to store geometry data (vertex buffers + index buffer)
+     */
     export class Geometry implements IGetSetVerticesData {
         // Members
+        /**
+         * Gets or sets the unique ID of the geometry
+         */
         public id: string;
+        /**
+         * Gets the delay loading state of the geometry (none by default which means not delayed)
+         */
         public delayLoadState = Engine.DELAYLOADSTATE_NONE;
-        public delayLoadingFile: string;
+        /**
+         * Gets the file containing the data to load when running in delay load state
+         */
+        public delayLoadingFile: Nullable<string>;
+        /**
+         * Callback called when the geometry is updated
+         */
         public onGeometryUpdated: (geometry: Geometry, kind?: string) => void;
 
         // Private
@@ -16,24 +31,33 @@
         private _isDisposed = false;
         private _extend: { minimum: Vector3, maximum: Vector3 };
         private _boundingBias: Vector2;
-        public _delayInfo; //ANY
-        private _indexBuffer: WebGLBuffer;
-        public _boundingInfo: BoundingInfo;
-        public _delayLoadingFunction: (any: any, geometry: Geometry) => void;
+        /** @ignore */
+        public _delayInfo: Array<string>;
+        private _indexBuffer: Nullable<WebGLBuffer>;
+        private _indexBufferIsUpdatable = false;
+        /** @ignore */
+        public _boundingInfo: Nullable<BoundingInfo>;
+        /** @ignore */
+        public _delayLoadingFunction: Nullable<(any: any, geometry: Geometry) => void>;
+        /** @ignore */
         public _softwareSkinningRenderId: number;
         private _vertexArrayObjects: { [key: string]: WebGLVertexArrayObject; };
+        private _updatable: boolean;
 
         // Cache
-        public _positions: Vector3[];
+        /** @ignore */
+        public _positions: Nullable<Vector3[]>;
 
         /**
-         *  The Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
-         * @returns The Bias Vector
+         *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
          */
         public get boundingBias(): Vector2 {
             return this._boundingBias;
         }
 
+        /**
+         *  Gets or sets the Bias Vector to apply on the bounding elements (box/sphere), the max extend is computed as v += v * bias.x + bias.y, the min is computed as v -= v * bias.x + bias.y
+         */
         public set boundingBias(value: Vector2) {
             if (this._boundingBias && this._boundingBias.equals(value)) {
                 return;
@@ -44,7 +68,28 @@
             this.updateBoundingInfo(true, null);
         }
 
-        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable?: boolean, mesh?: Mesh) {
+        /**
+         * Static function used to attach a new empty geometry to a mesh
+         * @param mesh defines the mesh to attach the geometry to
+         * @returns the new {BABYLON.Geometry}
+         */
+        public static CreateGeometryForMesh(mesh: Mesh): Geometry {
+            let geometry = new Geometry(Geometry.RandomId(), mesh.getScene());
+
+            geometry.applyToMesh(mesh);
+
+            return geometry;
+        }
+
+        /**
+         * Creates a new geometry
+         * @param id defines the unique ID
+         * @param scene defines the hosting scene
+         * @param vertexData defines the {BABYLON.VertexData} used to get geometry data
+         * @param updatable defines if geometry must be updatable (false by default)
+         * @param mesh defines the mesh that will be associated with the geometry
+         */
+        constructor(id: string, scene: Scene, vertexData?: VertexData, updatable: boolean = false, mesh: Nullable<Mesh> = null) {
             this.id = id;
             this._engine = scene.getEngine();
             this._meshes = [];
@@ -52,6 +97,7 @@
             //Init vertex buffer cache
             this._vertexBuffers = {};
             this._indices = [];
+            this._updatable = updatable;
 
             // vertexData
             if (vertexData) {
@@ -69,7 +115,7 @@
             // applyToMesh
             if (mesh) {
                 if (mesh.getClassName() === "LinesMesh") {
-                    this.boundingBias = new Vector2(0, (<LinesMesh> mesh).intersectionThreshold);
+                    this.boundingBias = new Vector2(0, (<LinesMesh>mesh).intersectionThreshold);
                     this.updateExtend();
                 }
 
@@ -78,22 +124,40 @@
             }
         }
 
+        /**
+         * Gets the current extend of the geometry
+         */
         public get extend(): { minimum: Vector3, maximum: Vector3 } {
             return this._extend;
         }
 
+        /**
+         * Gets the hosting scene
+         * @returns the hosting {BABYLON.Scene}
+         */
         public getScene(): Scene {
             return this._scene;
         }
 
+        /**
+         * Gets the hosting engine
+         * @returns the hosting {BABYLON.Engine}
+         */
         public getEngine(): Engine {
             return this._engine;
         }
 
+        /**
+         * Defines if the geometry is ready to use
+         * @returns true if the geometry is ready to be used
+         */
         public isReady(): boolean {
             return this.delayLoadState === Engine.DELAYLOADSTATE_LOADED || this.delayLoadState === Engine.DELAYLOADSTATE_NONE;
         }
 
+        /**
+         * Gets a value indicating that the geometry should not be serialized
+         */
         public get doNotSerialize(): boolean {
             for (var index = 0; index < this._meshes.length; index++) {
                 if (!this._meshes[index].doNotSerialize) {
@@ -104,17 +168,51 @@
             return true;
         }
 
+        /** @ignore */
+        public _rebuild(): void {
+            if (this._vertexArrayObjects) {
+                this._vertexArrayObjects = {};
+            }
+
+            // Index buffer
+            if (this._meshes.length !== 0 && this._indices) {
+                this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+            }
+
+            // Vertex buffers
+            for (var key in this._vertexBuffers) {
+                let vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
+                vertexBuffer._rebuild();
+            }
+        }
+
+        /**
+         * Affects all gemetry data in one call
+         * @param vertexData defines the geometry data
+         * @param updatable defines if the geometry must be flagged as updatable (false as default)
+         */
         public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
             vertexData.applyToGeometry(this, updatable);
             this.notifyUpdate();
         }
 
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): void {
+        /**
+         * Set specific vertex data
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @param data defines the vertex data to use
+         * @param updatable defines if the vertex must be flagged as updatable (false as default)
+         * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
+         */
+        public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
 
             this.setVerticesBuffer(buffer);
         }
 
+        /**
+         * Removes a specific vertex data
+         * @param kind defines the data kind (Position, normal, etc...)
+         */
         public removeVerticesData(kind: string) {
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
@@ -122,6 +220,10 @@
             }
         }
 
+        /**
+         * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
+         * @param buffer defines the vertex buffer to use
+         */
         public setVerticesBuffer(buffer: VertexBuffer): void {
             var kind = buffer.getKind();
             if (this._vertexBuffers[kind]) {
@@ -131,7 +233,7 @@
             this._vertexBuffers[kind] = buffer;
 
             if (kind === VertexBuffer.PositionKind) {
-                var data = buffer.getData();
+                var data = <FloatArray>buffer.getData();
                 var stride = buffer.getStrideSize();
 
                 this._totalVertices = data.length / stride;
@@ -145,7 +247,7 @@
                 for (var index = 0; index < numOfMeshes; index++) {
                     var mesh = meshes[index];
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
-                    mesh._createGlobalSubMesh();
+                    mesh._createGlobalSubMesh(false);
                     mesh.computeWorldMatrix(true);
                 }
             }
@@ -158,6 +260,14 @@
             }
         }
 
+        /**
+         * Update a specific vertex buffer
+         * This function will directly update the underlying WebGLBuffer according to the passed numeric array or Float32Array
+         * It will do nothing if the buffer is not updatable
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @param data defines the data to use 
+         * @param offset defines the offset in the target buffer where to store the data
+         */
         public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
@@ -169,7 +279,14 @@
             this.notifyUpdate(kind);
         }
 
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean): void {
+        /**
+         * Update a specific vertex buffer
+         * This function will create a new buffer if the current one is not updatable
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @param data defines the data to use 
+         * @param updateExtends defines if the geometry extends must be recomputed (false by default)
+         */        
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
@@ -188,7 +305,7 @@
             this.notifyUpdate(kind);
         }
 
-        private updateBoundingInfo(updateExtends: boolean, data: number[] | Float32Array) {
+        private updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>) {
             if (updateExtends) {
                 this.updateExtend(data);
             }
@@ -211,24 +328,38 @@
             }
         }
 
-        public _bind(effect: Effect, indexToBind: WebGLBuffer = undefined): void {
+        /** @ignore */
+        public _bind(effect: Nullable<Effect>, indexToBind?: Nullable<WebGLBuffer>): void {
+            if (!effect) {
+                return;
+            }
+
             if (indexToBind === undefined) {
                 indexToBind = this._indexBuffer;
             }
+            let vbs = this.getVertexBuffers();
+
+            if (!vbs) {
+                return;
+            }
 
             if (indexToBind != this._indexBuffer || !this._vertexArrayObjects) {
-                this._engine.bindBuffers(this.getVertexBuffers(), indexToBind, effect);
+                this._engine.bindBuffers(vbs, indexToBind, effect);
                 return;
             }
 
             // Using VAO
             if (!this._vertexArrayObjects[effect.key]) {
-                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(this.getVertexBuffers(), indexToBind, effect);
+                this._vertexArrayObjects[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect);
             }
 
             this._engine.bindVertexArrayObject(this._vertexArrayObjects[effect.key], indexToBind);
         }
 
+        /**
+         * Gets total number of vertices
+         * @returns the total number of vertices
+         */
         public getTotalVertices(): number {
             if (!this.isReady()) {
                 return 0;
@@ -237,12 +368,19 @@
             return this._totalVertices;
         }
 
-        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): number[] | Float32Array {
+        /**
+         * Gets a specific vertex data attached to this geometry
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @param copyWhenShared defines if the returned array must be cloned upon returning it if the current geometry is shared between multiple meshes
+         * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+         * @returns a float array containing vertex data
+         */
+        public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
             var vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            var orig = vertexBuffer.getData();
+            var orig = <FloatArray>vertexBuffer.getData();
             if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
                 return orig;
             } else {
@@ -255,20 +393,49 @@
             }
         }
 
-        public getVertexBuffer(kind: string): VertexBuffer {
+        /**
+         * Returns a boolean defining if the vertex data for the requested `kind` is updatable
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @returns true if the vertex buffer with the specified kind is updatable
+         */
+        public isVertexBufferUpdatable(kind: string): boolean {
+            let vb = this._vertexBuffers[kind];
+
+            if (!vb) {
+                return false;
+            }
+
+            return vb.isUpdatable();
+        }
+
+        /**
+         * Gets a specific vertex buffer
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @returns a {BABYLON.VertexBuffer}
+         */
+        public getVertexBuffer(kind: string): Nullable<VertexBuffer> {
             if (!this.isReady()) {
                 return null;
             }
             return this._vertexBuffers[kind];
         }
 
-        public getVertexBuffers(): { [key: string]: VertexBuffer; } {
+        /**
+         * Returns all vertex buffers
+         * @return an object holding all vertex buffers indexed by kind
+         */
+        public getVertexBuffers(): Nullable<{ [key: string]: VertexBuffer; }> {
             if (!this.isReady()) {
                 return null;
             }
             return this._vertexBuffers;
         }
 
+        /**
+         * Gets a boolean indicating if specific vertex buffer is present
+         * @param kind defines the data kind (Position, normal, etc...)
+         * @returns true if data is present
+         */
         public isVerticesDataPresent(kind: string): boolean {
             if (!this._vertexBuffers) {
                 if (this._delayInfo) {
@@ -279,6 +446,10 @@
             return this._vertexBuffers[kind] !== undefined;
         }
 
+        /**
+         * Gets a list of all attached data kinds (Position, normal, etc...)
+         * @returns a list of string containing all kinds
+         */
         public getVerticesDataKinds(): string[] {
             var result = [];
             var kind;
@@ -295,7 +466,30 @@
             return result;
         }
 
-        public setIndices(indices: IndicesArray, totalVertices?: number): void {
+        /**
+         * Update index buffer
+         * @param indices defines the indices to store in the index buffer
+         * @param offset defines the offset in the target buffer where to store the data
+         */
+        public updateIndices(indices: IndicesArray, offset?: number): void {
+            if (!this._indexBuffer) {
+                return;
+            }
+
+            if (!this._indexBufferIsUpdatable) {
+                this.setIndices(indices, null, true);
+            } else {
+                this._engine.updateDynamicIndexBuffer(this._indexBuffer, indices, offset);
+            }
+        }
+
+        /**
+         * Creates a new index buffer
+         * @param indices defines the indices to store in the index buffer
+         * @param totalVertices defines the total number of vertices (could be null)
+         * @param updatable defines if the index buffer must be flagged as updatable (false by default)
+         */
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): void {
             if (this._indexBuffer) {
                 this._engine._releaseBuffer(this._indexBuffer);
             }
@@ -303,11 +497,12 @@
             this._disposeVertexArrayObjects();
 
             this._indices = indices;
+            this._indexBufferIsUpdatable = updatable;
             if (this._meshes.length !== 0 && this._indices) {
-                this._indexBuffer = this._engine.createIndexBuffer(this._indices);
+                this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
             }
 
-            if (totalVertices !== undefined) {
+            if (totalVertices != undefined) { // including null and undefined
                 this._totalVertices = totalVertices;
             }
 
@@ -315,11 +510,15 @@
             var numOfMeshes = meshes.length;
 
             for (var index = 0; index < numOfMeshes; index++) {
-                meshes[index]._createGlobalSubMesh();
+                meshes[index]._createGlobalSubMesh(true);
             }
             this.notifyUpdate();
         }
 
+        /**
+         * Return the total number of indices
+         * @returns the total number of indices
+         */
         public getTotalIndices(): number {
             if (!this.isReady()) {
                 return 0;
@@ -327,7 +526,12 @@
             return this._indices.length;
         }
 
-        public getIndices(copyWhenShared?: boolean): IndicesArray {
+        /**
+         * Gets the index buffer array
+         * @param copyWhenShared defines if the returned array must be cloned upon returning it if the current geometry is shared between multiple meshes
+         * @returns the index buffer array
+         */
+        public getIndices(copyWhenShared?: boolean): Nullable<IndicesArray> {
             if (!this.isReady()) {
                 return null;
             }
@@ -344,14 +548,19 @@
             }
         }
 
-        public getIndexBuffer(): WebGLBuffer {
+        /**
+         * Gets the index buffer
+         * @return the index buffer
+         */
+        public getIndexBuffer(): Nullable<WebGLBuffer> {
             if (!this.isReady()) {
                 return null;
             }
             return this._indexBuffer;
         }
 
-        public _releaseVertexArrayObject(effect: Effect) {
+        /** @ignore */
+        public _releaseVertexArrayObject(effect: Nullable<Effect> = null) {
             if (!effect || !this._vertexArrayObjects) {
                 return;
             }
@@ -362,6 +571,11 @@
             }
         }
 
+        /**
+         * Release the associated resources for a specific mesh
+         * @param mesh defines the source mesh
+         * @param shouldDispose defines if the geometry must be disposed if there is no more mesh pointing to it
+         */
         public releaseForMesh(mesh: Mesh, shouldDispose?: boolean): void {
             var meshes = this._meshes;
             var index = meshes.indexOf(mesh);
@@ -379,6 +593,10 @@
             }
         }
 
+        /**
+         * Apply current geometry to a given mesh
+         * @param mesh defines the mesh to apply geometry to
+         */
         public applyToMesh(mesh: Mesh): void {
             if (mesh._geometry === this) {
                 return;
@@ -406,9 +624,9 @@
             }
         }
 
-        private updateExtend(data = null, stride? : number) {
+        private updateExtend(data: Nullable<FloatArray> = null, stride?: number) {
             if (!data) {
-                data = this._vertexBuffers[VertexBuffer.PositionKind].getData();
+                data = <FloatArray>this._vertexBuffers[VertexBuffer.PositionKind].getData();
             }
 
             this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, stride);
@@ -432,7 +650,7 @@
                     }
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
-                    mesh._createGlobalSubMesh();
+                    mesh._createGlobalSubMesh(false);
 
                     //bounding info was just created again, world matrix should be applied again.
                     mesh._updateBoundingInfo();
@@ -458,6 +676,11 @@
             }
         }
 
+        /**
+         * Load the geometry if it was flagged as delay loaded
+         * @param scene defines the hosting scene
+         * @param onLoaded defines a callback called when the geometry is loaded
+         */
         public load(scene: Scene, onLoaded?: () => void): void {
             if (this.delayLoadState === Engine.DELAYLOADSTATE_LOADING) {
                 return;
@@ -476,9 +699,17 @@
         }
 
         private _queueLoad(scene: Scene, onLoaded?: () => void): void {
+            if (!this.delayLoadingFile) {
+                return;
+            }
+
             scene._addPendingData(this);
-            Tools.LoadFile(this.delayLoadingFile, data => {
-                this._delayLoadingFunction(JSON.parse(data), this);
+            scene._loadFile(this.delayLoadingFile, data => {
+                if (!this._delayLoadingFunction) {
+                    return;
+                }
+
+                this._delayLoadingFunction(JSON.parse(data as string), this);
 
                 this.delayLoadState = Engine.DELAYLOADSTATE_LOADED;
                 this._delayInfo = [];
@@ -494,7 +725,7 @@
                 if (onLoaded) {
                     onLoaded();
                 }
-            }, () => { }, scene.database);
+            }, undefined, true);
         }
 
         /**
@@ -533,13 +764,13 @@
         }
 
         // Cache
-        public _resetPointsArrayCache(): void
-        {
+        /** @ignore */
+        public _resetPointsArrayCache(): void {
             this._positions = null;
         }
 
-        public _generatePointsArray(): boolean
-        {
+        /** @ignore */
+        public _generatePointsArray(): boolean {
             if (this._positions)
                 return true;
 
@@ -558,6 +789,10 @@
             return true;
         }
 
+        /**
+         * Gets a value indicating if the geometry is disposed
+         * @returns true if the geometry was disposed
+         */
         public isDisposed(): boolean {
             return this._isDisposed;
         }
@@ -571,6 +806,9 @@
             }
         }
 
+        /**
+         * Free all associated resources
+         */
         public dispose(): void {
             var meshes = this._meshes;
             var numOfMeshes = meshes.length;
@@ -605,14 +843,21 @@
             this._isDisposed = true;
         }
 
+        /**
+         * Clone the current geometry into a new geometry
+         * @param id defines the unique ID of the new geometry
+         * @returns a new geometry object
+         */
         public copy(id: string): Geometry {
             var vertexData = new VertexData();
 
             vertexData.indices = [];
 
             var indices = this.getIndices();
-            for (var index = 0; index < indices.length; index++) {
-                (<number[]>vertexData.indices).push(indices[index]);
+            if (indices) {
+                for (var index = 0; index < indices.length; index++) {
+                    (<number[]>vertexData.indices).push(indices[index]);
+                }
             }
 
             var updatable = false;
@@ -628,12 +873,16 @@
                     vertexData.set((<number[]>data).slice(0), kind);
                 }
                 if (!stopChecking) {
-                    updatable = this.getVertexBuffer(kind).isUpdatable();
-                    stopChecking = !updatable;
+                    let vb = this.getVertexBuffer(kind);
+
+                    if (vb) {
+                        updatable = vb.isUpdatable();
+                        stopChecking = !updatable;
+                    }
                 }
             }
 
-            var geometry = new Geometry(id, this._scene, vertexData, updatable, null);
+            var geometry = new Geometry(id, this._scene, vertexData, updatable);
 
             geometry.delayLoadState = this.delayLoadState;
             geometry.delayLoadingFile = this.delayLoadingFile;
@@ -650,10 +899,15 @@
             return geometry;
         }
 
+        /**
+         * Serialize the current geometry info (and not the vertices data) into a JSON object
+         * @return a JSON representation of the current geometry data (without the vertices data)
+         */
         public serialize(): any {
             var serializationObject: any = {};
 
             serializationObject.id = this.id;
+            serializationObject.updatable = this._updatable;
 
             if (Tags && Tags.HasTags(this)) {
                 serializationObject.tags = Tags.GetTags(this);
@@ -662,7 +916,7 @@
             return serializationObject;
         }
 
-        private toNumberArray(origin: Float32Array | IndicesArray) : number[] {
+        private toNumberArray(origin: Nullable<Float32Array | IndicesArray>): number[] {
             if (Array.isArray(origin)) {
                 return origin;
             } else {
@@ -670,68 +924,79 @@
             }
         }
 
+        /**
+         * Serialize all vertices data into a JSON oject
+         * @returns a JSON representation of the current geometry data
+         */
         public serializeVerticeData(): any {
             var serializationObject = this.serialize();
 
             if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
                 serializationObject.positions = this.toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
-                if (this.getVertexBuffer(VertexBuffer.PositionKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.PositionKind)) {
                     serializationObject.positions._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
                 serializationObject.normals = this.toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
-                if (this.getVertexBuffer(VertexBuffer.NormalKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.NormalKind)) {
                     serializationObject.normals._updatable = true;
                 }
             }
 
+            if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+                serializationObject.tangets = this.toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
+                if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
+                    serializationObject.tangets._updatable = true;
+                }
+            }            
+
             if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
                 serializationObject.uvs = this.toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
-                if (this.getVertexBuffer(VertexBuffer.UVKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UVKind)) {
                     serializationObject.uvs._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
                 serializationObject.uv2s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV2Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV2Kind)) {
                     serializationObject.uv2s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
                 serializationObject.uv3s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV3Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV3Kind)) {
                     serializationObject.uv3s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
                 serializationObject.uv4s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV4Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV4Kind)) {
                     serializationObject.uv4s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
                 serializationObject.uv5s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV5Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV5Kind)) {
                     serializationObject.uv5s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
                 serializationObject.uv6s = this.toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
-                if (this.getVertexBuffer(VertexBuffer.UV6Kind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.UV6Kind)) {
                     serializationObject.uv6s._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
                 serializationObject.colors = this.toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
-                if (this.getVertexBuffer(VertexBuffer.ColorKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.ColorKind)) {
                     serializationObject.colors._updatable = true;
                 }
             }
@@ -739,14 +1004,14 @@
             if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
                 serializationObject.matricesIndices = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
                 serializationObject.matricesIndices._isExpanded = true;
-                if (this.getVertexBuffer(VertexBuffer.MatricesIndicesKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.MatricesIndicesKind)) {
                     serializationObject.matricesIndices._updatable = true;
                 }
             }
 
             if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
                 serializationObject.matricesWeights = this.toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
-                if (this.getVertexBuffer(VertexBuffer.MatricesWeightsKind).isUpdatable) {
+                if (this.isVertexBufferUpdatable(VertexBuffer.MatricesWeightsKind)) {
                     serializationObject.matricesWeights._updatable = true;
                 }
             }
@@ -757,7 +1022,14 @@
         }
 
         // Statics
-        public static ExtractFromMesh(mesh: Mesh, id: string): Geometry {
+
+        /**
+         * Extracts a clone of a mesh geometry
+         * @param mesh defines the source mesh
+         * @param id defines the unique ID of the new geometry object
+         * @returns the new geometry object
+         */
+        public static ExtractFromMesh(mesh: Mesh, id: string): Nullable<Geometry> {
             var geometry = mesh._geometry;
 
             if (!geometry) {
@@ -772,12 +1044,14 @@
          * Implementation from http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/2117523#answer-2117523
          * Be aware Math.random() could cause collisions, but:
          * "All but 6 of the 128 bits of the ID are randomly generated, which means that for any two ids, there's a 1 in 2^^122 (or 5.3x10^^36) chance they'll collide"
+         * @returns a string containing a new GUID
          */
         public static RandomId(): string {
             return Tools.RandomId();
         }
 
-        public static ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
+        /** @ignore */
+        public static _ImportGeometry(parsedGeometry: any, mesh: Mesh): void {
             var scene = mesh.getScene();
 
             // Geometry
@@ -800,6 +1074,11 @@
                     var normalsData = new Float32Array(parsedGeometry, binaryInfo.normalsAttrDesc.offset, binaryInfo.normalsAttrDesc.count);
                     mesh.setVerticesData(VertexBuffer.NormalKind, normalsData, false);
                 }
+
+                if (binaryInfo.tangetsAttrDesc && binaryInfo.tangetsAttrDesc.count > 0) {
+                    var tangentsData = new Float32Array(parsedGeometry, binaryInfo.tangetsAttrDesc.offset, binaryInfo.tangetsAttrDesc.count);
+                    mesh.setVerticesData(VertexBuffer.TangentKind, tangentsData, false);
+                }                
 
                 if (binaryInfo.uvsAttrDesc && binaryInfo.uvsAttrDesc.count > 0) {
                     var uvsData = new Float32Array(parsedGeometry, binaryInfo.uvsAttrDesc.offset, binaryInfo.uvsAttrDesc.count);
@@ -848,7 +1127,7 @@
 
                 if (binaryInfo.indicesAttrDesc && binaryInfo.indicesAttrDesc.count > 0) {
                     var indicesData = new Int32Array(parsedGeometry, binaryInfo.indicesAttrDesc.offset, binaryInfo.indicesAttrDesc.count);
-                    mesh.setIndices(indicesData);
+                    mesh.setIndices(indicesData, null);
                 }
 
                 if (binaryInfo.subMeshesAttrDesc && binaryInfo.subMeshesAttrDesc.count > 0) {
@@ -862,13 +1141,17 @@
                         var indexStart = subMeshesData[(i * 5) + 3];
                         var indexCount = subMeshesData[(i * 5) + 4];
 
-                        var subMesh = new SubMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, mesh);
+                        SubMesh.AddToMesh(materialIndex, verticesStart, verticesCount, indexStart, indexCount, <AbstractMesh>mesh);
                     }
                 }
             } else if (parsedGeometry.positions && parsedGeometry.normals && parsedGeometry.indices) {
                 mesh.setVerticesData(VertexBuffer.PositionKind, parsedGeometry.positions, parsedGeometry.positions._updatable);
 
                 mesh.setVerticesData(VertexBuffer.NormalKind, parsedGeometry.normals, parsedGeometry.normals._updatable);
+
+                if (parsedGeometry.tangents) {
+                    mesh.setVerticesData(VertexBuffer.TangentKind, parsedGeometry.tangents, parsedGeometry.tangents._updatable);
+                }                
 
                 if (parsedGeometry.uvs) {
                     mesh.setVerticesData(VertexBuffer.UVKind, parsedGeometry.uvs, parsedGeometry.uvs._updatable);
@@ -939,6 +1222,7 @@
                 }
 
                 if (parsedGeometry.matricesWeights) {
+                    Geometry._CleanMatricesWeights(parsedGeometry, mesh);
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsKind, parsedGeometry.matricesWeights, parsedGeometry.matricesWeights._updatable);
                 }
 
@@ -946,7 +1230,7 @@
                     mesh.setVerticesData(VertexBuffer.MatricesWeightsExtraKind, parsedGeometry.matricesWeightsExtra, parsedGeometry.matricesWeights._updatable);
                 }
 
-                mesh.setIndices(parsedGeometry.indices);
+                mesh.setIndices(parsedGeometry.indices, null);
             }
 
             // SubMeshes
@@ -955,7 +1239,7 @@
                 for (var subIndex = 0; subIndex < parsedGeometry.subMeshes.length; subIndex++) {
                     var parsedSubMesh = parsedGeometry.subMeshes[subIndex];
 
-                    var subMesh = new SubMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, mesh);
+                    SubMesh.AddToMesh(parsedSubMesh.materialIndex, parsedSubMesh.verticesStart, parsedSubMesh.verticesCount, parsedSubMesh.indexStart, parsedSubMesh.indexCount, <AbstractMesh>mesh);
                 }
             }
 
@@ -969,17 +1253,97 @@
             mesh.computeWorldMatrix(true);
 
             // Octree
-            if (scene['_selectionOctree']) {
-                scene['_selectionOctree'].addMesh(mesh);
+            const sceneOctree = scene.selectionOctree;
+            if (sceneOctree !== undefined && sceneOctree !== null) {
+                sceneOctree.addMesh(<AbstractMesh>mesh);
             }
         }
 
-        public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Geometry {
+        private static _CleanMatricesWeights(parsedGeometry: any, mesh: Mesh): void {
+            const epsilon: number = 1e-3;
+            if (!SceneLoader.CleanBoneMatrixWeights) {
+                return;
+            }
+            let noInfluenceBoneIndex = 0.0;
+            if (parsedGeometry.skeletonId > -1) {
+                let skeleton = mesh.getScene().getLastSkeletonByID(parsedGeometry.skeletonId);
+
+                if (!skeleton) {
+                    return;
+                }
+                noInfluenceBoneIndex = skeleton.bones.length;
+            } else {
+                return;
+            }
+            let matricesIndices = (<FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesKind));
+            let matricesIndicesExtra = (<FloatArray>mesh.getVerticesData(VertexBuffer.MatricesIndicesExtraKind));
+            let matricesWeights = parsedGeometry.matricesWeights;
+            let matricesWeightsExtra = parsedGeometry.matricesWeightsExtra;
+            let influencers = parsedGeometry.numBoneInfluencer;
+            let size = matricesWeights.length;
+
+            for (var i = 0; i < size; i += 4) {
+                let weight = 0.0;
+                let firstZeroWeight = -1;
+                for (var j = 0; j < 4; j++) {
+                    let w = matricesWeights[i + j];
+                    weight += w;
+                    if (w < epsilon && firstZeroWeight < 0) {
+                        firstZeroWeight = j;
+                    }
+                }
+                if (matricesWeightsExtra) {
+                    for (var j = 0; j < 4; j++) {
+                        let w = matricesWeightsExtra[i + j];
+                        weight += w;
+                        if (w < epsilon && firstZeroWeight < 0) {
+                            firstZeroWeight = j + 4;
+                        }
+                    }
+                }
+                if (firstZeroWeight < 0 || firstZeroWeight > (influencers - 1)) {
+                    firstZeroWeight = influencers - 1;
+                }
+                if (weight > epsilon) {
+                    let mweight = 1.0 / weight;
+                    for (var j = 0; j < 4; j++) {
+                        matricesWeights[i + j] *= mweight;
+                    }
+                    if (matricesWeightsExtra) {
+                        for (var j = 0; j < 4; j++) {
+                            matricesWeightsExtra[i + j] *= mweight;
+                        }
+                    }
+                } else {
+                    if (firstZeroWeight >= 4) {
+                        matricesWeightsExtra[i + firstZeroWeight - 4] = 1.0 - weight;
+                        matricesIndicesExtra[i + firstZeroWeight - 4] = noInfluenceBoneIndex;
+                    } else {
+                        matricesWeights[i + firstZeroWeight] = 1.0 - weight;
+                        matricesIndices[i + firstZeroWeight] = noInfluenceBoneIndex;
+                    }
+                }
+            }
+
+            mesh.setVerticesData(VertexBuffer.MatricesIndicesKind, matricesIndices);
+            if (parsedGeometry.matricesWeightsExtra) {
+                mesh.setVerticesData(VertexBuffer.MatricesIndicesExtraKind, matricesIndicesExtra);
+            }
+        }
+
+        /**
+         * Create a new geometry from persisted data (Using .babylon file format)
+         * @param parsedVertexData defines the persisted data
+         * @param scene defines the hosting scene
+         * @param rootUrl defines the root url to use to load assets (like delayed data)
+         * @returns the new geometry object
+         */
+        public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
             if (scene.getGeometryByID(parsedVertexData.id)) {
                 return null; // null since geometry could be something else than a box...
             }
 
-            var geometry = new Geometry(parsedVertexData.id, scene);
+            var geometry = new Geometry(parsedVertexData.id, scene, undefined, parsedVertexData.updatable);
 
             if (Tags) {
                 Tags.AddTagsTo(geometry, parsedVertexData.tags);
@@ -1038,399 +1402,764 @@
         }
     }
 
-    /////// Primitives //////////////////////////////////////////////
-    export module Geometry.Primitives {
+    // Primitives
 
-        /// Abstract class
-        export class _Primitive extends Geometry {
+    /// Abstract class
+    /**
+     * Abstract class used to provide common services for all typed geometries
+     */
+    export class _PrimitiveGeometry extends Geometry {
 
-            private _beingRegenerated: boolean;
+        private _beingRegenerated: boolean;
 
-            constructor(id: string, scene: Scene, private _canBeRegenerated?: boolean, mesh?: Mesh) {
-                super(id, scene, null, false, mesh); // updatable = false to be sure not to update vertices
-                this._beingRegenerated = true;
-                this.regenerate();
-                this._beingRegenerated = false;
-            }
-
-            public canBeRegenerated(): boolean {
-                return this._canBeRegenerated;
-            }
-
-            public regenerate(): void {
-                if (!this._canBeRegenerated) {
-                    return;
-                }
-                this._beingRegenerated = true;
-                this.setAllVerticesData(this._regenerateVertexData(), false);
-                this._beingRegenerated = false;
-            }
-
-            public asNewGeometry(id: string): Geometry {
-                return super.copy(id);
-            }
-
-            // overrides
-            public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
-                if (!this._beingRegenerated) {
-                    return;
-                }
-                super.setAllVerticesData(vertexData, false);
-            }
-
-            public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean): void {
-                if (!this._beingRegenerated) {
-                    return;
-                }
-                super.setVerticesData(kind, data, false);
-            }
-
-            // to override
-            // protected
-            public _regenerateVertexData(): VertexData {
-                throw new Error("Abstract method");
-            }
-
-            public copy(id: string): Geometry {
-                throw new Error("Must be overriden in sub-classes.");
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.canBeRegenerated = this.canBeRegenerated();
-
-                return serializationObject;
-            }
+        /**
+         * Creates a new typed geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param _canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         */
+        constructor(id: string, scene: Scene, private _canBeRegenerated: boolean = false, mesh: Nullable<Mesh> = null) {
+            super(id, scene, undefined, false, mesh); // updatable = false to be sure not to update vertices
+            this._beingRegenerated = true;
+            this.regenerate();
+            this._beingRegenerated = false;
         }
 
-        export class Ribbon extends _Primitive {
-            // Members
-
-            constructor(id: string, scene: Scene, public pathArray: Vector3[][], public closeArray: boolean, public closePath: boolean, public offset: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Ribbon(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), null, this.side);
-            }
+        /**
+         * Gets a value indicating if the geometry supports being regenerated with new parameters (false by default)
+         * @returns true if the geometry can be regenerated
+         */
+        public canBeRegenerated(): boolean {
+            return this._canBeRegenerated;
         }
 
-        export class Box extends _Primitive {
-            // Members
-            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
+        /**
+         * If the geometry supports regeneration, the function will recreates the geometry with updated parameter values
+         */
+        public regenerate(): void {
+            if (!this._canBeRegenerated) {
+                return;
             }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Box(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.size = this.size;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedBox: any, scene: Scene): Box {
-                if (scene.getGeometryByID(parsedBox.id)) {
-                    return null; // null since geometry could be something else than a box...
-                }
-
-                var box = new Geometry.Primitives.Box(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(box, parsedBox.tags);
-                }
-
-                scene.pushGeometry(box, true);
-
-                return box;
-            }
+            this._beingRegenerated = true;
+            this.setAllVerticesData(this._regenerateVertexData(), false);
+            this._beingRegenerated = false;
         }
 
-        export class Sphere extends _Primitive {
-
-            constructor(id: string, scene: Scene, public segments: number, public diameter: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Sphere(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.segments = this.segments;
-                serializationObject.diameter = this.diameter;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedSphere: any, scene: Scene): Geometry.Primitives.Sphere {
-                if (scene.getGeometryByID(parsedSphere.id)) {
-                    return null; // null since geometry could be something else than a sphere...
-                }
-
-                var sphere = new Geometry.Primitives.Sphere(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(sphere, parsedSphere.tags);
-                }
-
-                scene.pushGeometry(sphere, true);
-
-                return sphere;
-            }
+        /**
+         * Clone the geometry
+         * @param id defines the unique ID of the new geometry
+         * @returns the new geometry
+         */
+        public asNewGeometry(id: string): Geometry {
+            return super.copy(id);
         }
 
-        export class Disc extends _Primitive {
-            // Members
-
-            constructor(id: string, scene: Scene, public radius: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
+        // overrides
+        public setAllVerticesData(vertexData: VertexData, updatable?: boolean): void {
+            if (!this._beingRegenerated) {
+                return;
             }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Disc(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
-            }
+            super.setAllVerticesData(vertexData, false);
         }
 
-
-        export class Cylinder extends _Primitive {
-
-            constructor(id: string, scene: Scene, public height: number, public diameterTop: number, public diameterBottom: number, public tessellation: number, public subdivisions: number = 1, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean): void {
+            if (!this._beingRegenerated) {
+                return;
             }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Cylinder(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.height = this.height;
-                serializationObject.diameterTop = this.diameterTop;
-                serializationObject.diameterBottom = this.diameterBottom;
-                serializationObject.tessellation = this.tessellation;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedCylinder: any, scene: Scene): Geometry.Primitives.Cylinder {
-                if (scene.getGeometryByID(parsedCylinder.id)) {
-                    return null; // null since geometry could be something else than a cylinder...
-                }
-
-                var cylinder = new Geometry.Primitives.Cylinder(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(cylinder, parsedCylinder.tags);
-                }
-
-                scene.pushGeometry(cylinder, true);
-
-                return cylinder;
-            }
+            super.setVerticesData(kind, data, false);
         }
 
-        export class Torus extends _Primitive {
-
-            constructor(id: string, scene: Scene, public diameter: number, public thickness: number, public tessellation: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Torus(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.diameter = this.diameter;
-                serializationObject.thickness = this.thickness;
-                serializationObject.tessellation = this.tessellation;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedTorus: any, scene: Scene): Geometry.Primitives.Torus {
-                if (scene.getGeometryByID(parsedTorus.id)) {
-                    return null; // null since geometry could be something else than a torus...
-                }
-
-                var torus = new Geometry.Primitives.Torus(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(torus, parsedTorus.tags);
-                }
-
-                scene.pushGeometry(torus, true);
-
-                return torus;
-            }
+        // to override
+        /** @ignore */
+        public _regenerateVertexData(): VertexData {
+            throw new Error("Abstract method");
         }
 
-        export class Ground extends _Primitive {
-
-            constructor(id: string, scene: Scene, public width: number, public height: number, public subdivisions: number, canBeRegenerated?: boolean, mesh?: Mesh) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
-            }
-
-            public copy(id: string): Geometry {
-                return new Ground(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.width = this.width;
-                serializationObject.height = this.height;
-                serializationObject.subdivisions = this.subdivisions;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedGround: any, scene: Scene): Geometry.Primitives.Ground {
-                if (scene.getGeometryByID(parsedGround.id)) {
-                    return null; // null since geometry could be something else than a ground...
-                }
-
-                var ground = new Geometry.Primitives.Ground(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(ground, parsedGround.tags);
-                }
-
-                scene.pushGeometry(ground, true);
-
-                return ground;
-            }
+        public copy(id: string): Geometry {
+            throw new Error("Must be overriden in sub-classes.");
         }
 
-        export class TiledGround extends _Primitive {
+        public serialize(): any {
+            var serializationObject = super.serialize();
 
-            constructor(id: string, scene: Scene, public xmin: number, public zmin: number, public xmax: number, public zmax: number, public subdivisions: { w: number; h: number; }, public precision: { w: number; h: number; }, canBeRegenerated?: boolean, mesh?: Mesh) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
+            serializationObject.canBeRegenerated = this.canBeRegenerated();
 
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
-            }
-
-            public copy(id: string): Geometry {
-                return new TiledGround(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
-            }
-        }
-
-        export class Plane extends _Primitive {
-
-            constructor(id: string, scene: Scene, public size: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new Plane(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.size = this.size;
-
-                return serializationObject;
-            }
-
-            public static Parse(parsedPlane: any, scene: Scene): Geometry.Primitives.Plane {
-                if (scene.getGeometryByID(parsedPlane.id)) {
-                    return null; // null since geometry could be something else than a ground...
-                }
-
-                var plane = new Geometry.Primitives.Plane(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(plane, parsedPlane.tags);
-                }
-
-                scene.pushGeometry(plane, true);
-
-                return plane;
-            }
-        }
-
-        export class TorusKnot extends _Primitive {
-
-            constructor(id: string, scene: Scene, public radius: number, public tube: number, public radialSegments: number, public tubularSegments: number, public p: number, public q: number, canBeRegenerated?: boolean, mesh?: Mesh, public side: number = Mesh.DEFAULTSIDE) {
-                super(id, scene, canBeRegenerated, mesh);
-            }
-
-            public _regenerateVertexData(): VertexData {
-                return VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
-            }
-
-            public copy(id: string): Geometry {
-                return new TorusKnot(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
-            }
-
-            public serialize(): any {
-                var serializationObject = super.serialize();
-
-                serializationObject.radius = this.radius;
-                serializationObject.tube = this.tube;
-                serializationObject.radialSegments = this.radialSegments;
-                serializationObject.tubularSegments = this.tubularSegments;
-                serializationObject.p = this.p;
-                serializationObject.q = this.q;
-
-                return serializationObject;
-            };
-
-            public static Parse(parsedTorusKnot: any, scene: Scene): Geometry.Primitives.TorusKnot {
-                if (scene.getGeometryByID(parsedTorusKnot.id)) {
-                    return null; // null since geometry could be something else than a ground...
-                }
-
-                var torusKnot = new Geometry.Primitives.TorusKnot(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
-                if (Tags) {
-                    Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
-                }
-
-                scene.pushGeometry(torusKnot, true);
-
-                return torusKnot;
-            }
+            return serializationObject;
         }
     }
+
+    /**
+     * Creates a ribbon geometry
+     * @description See http://doc.babylonjs.com/how_to/ribbon_tutorial, http://doc.babylonjs.com/resources/maths_make_ribbons 
+     */
+    export class RibbonGeometry extends _PrimitiveGeometry {
+       
+        /**
+         * Creates a ribbon geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param pathArray defines the array of paths to use
+         * @param closeArray defines if the last path and the first path must be  joined
+         * @param closePath defines if the last and first points of each path in your pathArray must be joined
+         * @param offset defines the offset between points 
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the array of paths to use
+             */
+            public pathArray: Vector3[][], 
+            /**
+             * Defines if the last and first points of each path in your pathArray must be joined
+             */
+            public closeArray: boolean, 
+            /**
+             * Defines if the last and first points of each path in your pathArray must be joined
+             */
+            public closePath: boolean, 
+            /**
+             * Defines the offset between points 
+             */
+            public offset: number, 
+            canBeRegenerated?: boolean, 
+            mesh?: Mesh, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        /** @ignore */
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateRibbon({ pathArray: this.pathArray, closeArray: this.closeArray, closePath: this.closePath, offset: this.offset, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new RibbonGeometry(id, this.getScene(), this.pathArray, this.closeArray, this.closePath, this.offset, this.canBeRegenerated(), undefined, this.side);
+        }
+    }
+
+    /**
+     * Creates a box geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#box
+     */
+    export class BoxGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a box geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param size defines the zise of the box (width, height and depth are the same)
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the zise of the box (width, height and depth are the same)
+             */
+            public size: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateBox({ size: this.size, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new BoxGeometry(id, this.getScene(), this.size, this.canBeRegenerated(), undefined, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.size = this.size;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedBox: any, scene: Scene): Nullable<BoxGeometry> {
+            if (scene.getGeometryByID(parsedBox.id)) {
+                return null; // null since geometry could be something else than a box...
+            }
+
+            var box = new BoxGeometry(parsedBox.id, scene, parsedBox.size, parsedBox.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(box, parsedBox.tags);
+            }
+
+            scene.pushGeometry(box, true);
+
+            return box;
+        }
+    }
+
+    /**
+     * Creates a sphere geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#sphere
+     */
+    export class SphereGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Create a new sphere geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param segments defines the number of segments to use to create the sphere
+         * @param diameter defines the diameter of the sphere
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the number of segments to use to create the sphere
+             */
+            public segments: number, 
+            /**
+             * Defines the diameter of the sphere
+             */
+            public diameter: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateSphere({ segments: this.segments, diameter: this.diameter, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new SphereGeometry(id, this.getScene(), this.segments, this.diameter, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.segments = this.segments;
+            serializationObject.diameter = this.diameter;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedSphere: any, scene: Scene): Nullable<SphereGeometry> {
+            if (scene.getGeometryByID(parsedSphere.id)) {
+                return null; // null since geometry could be something else than a sphere...
+            }
+
+            var sphere = new SphereGeometry(parsedSphere.id, scene, parsedSphere.segments, parsedSphere.diameter, parsedSphere.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(sphere, parsedSphere.tags);
+            }
+
+            scene.pushGeometry(sphere, true);
+
+            return sphere;
+        }
+    }
+
+    /**
+     * Creates a disc geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#disc-or-regular-polygon
+     */
+    export class DiscGeometry extends _PrimitiveGeometry {
+       
+        /**
+         * Creates a new disc geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param radius defines the radius of the disc
+         * @param tessellation defines the tesselation factor to apply to the disc
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the radius of the disc
+             */
+            public radius: number, 
+            /**
+             * Defines the tesselation factor to apply to the disc
+             */
+            public tessellation: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateDisc({ radius: this.radius, tessellation: this.tessellation, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new DiscGeometry(id, this.getScene(), this.radius, this.tessellation, this.canBeRegenerated(), null, this.side);
+        }
+    }
+
+
+    /**
+     * Creates a new cylinder geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#cylinder-or-cone
+     */
+    export class CylinderGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a new cylinder geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param height defines the height of the cylinder
+         * @param diameterTop defines the diameter of the cylinder's top cap
+         * @param diameterBottom defines the diameter of the cylinder's bottom cap
+         * @param tessellation defines the tessellation factor to apply to the cylinder (number of radial sides)
+         * @param subdivisions defines the number of subdivisions to apply to the cylinder (number of rings) (1 by default)
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the height of the cylinder
+             */
+            public height: number, 
+            /**
+             * Defines the diameter of the cylinder's top cap
+             */
+            public diameterTop: number, 
+            /**
+             * Defines the diameter of the cylinder's bottom cap
+             */
+            public diameterBottom: number, 
+            /**
+             * Defines the tessellation factor to apply to the cylinder
+             */
+            public tessellation: number,
+            /**
+             * Defines the number of subdivisions to apply to the cylinder (1 by default)
+             */
+            public subdivisions: number = 1, 
+            canBeRegenerated?: boolean, mesh: 
+            Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateCylinder({ height: this.height, diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, tessellation: this.tessellation, subdivisions: this.subdivisions, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new CylinderGeometry(id, this.getScene(), this.height, this.diameterTop, this.diameterBottom, this.tessellation, this.subdivisions, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.height = this.height;
+            serializationObject.diameterTop = this.diameterTop;
+            serializationObject.diameterBottom = this.diameterBottom;
+            serializationObject.tessellation = this.tessellation;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedCylinder: any, scene: Scene): Nullable<CylinderGeometry> {
+            if (scene.getGeometryByID(parsedCylinder.id)) {
+                return null; // null since geometry could be something else than a cylinder...
+            }
+
+            var cylinder = new CylinderGeometry(parsedCylinder.id, scene, parsedCylinder.height, parsedCylinder.diameterTop, parsedCylinder.diameterBottom, parsedCylinder.tessellation, parsedCylinder.subdivisions, parsedCylinder.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(cylinder, parsedCylinder.tags);
+            }
+
+            scene.pushGeometry(cylinder, true);
+
+            return cylinder;
+        }
+    }
+
+    /**
+     * Creates a new torus geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#torus
+     */
+    export class TorusGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a new torus geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param diameter defines the diameter of the torus
+         * @param thickness defines the thickness of the torus (ie. internal diameter)
+         * @param tessellation defines the tesselation factor to apply to the torus (number of segments along the circle)
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the diameter of the torus
+             */
+            public diameter: number, 
+            /**
+             * Defines the thickness of the torus (ie. internal diameter)
+             */
+            public thickness: number, 
+            /**
+             * Defines the tesselation factor to apply to the torus
+             */
+            public tessellation: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE) 
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateTorus({ diameter: this.diameter, thickness: this.thickness, tessellation: this.tessellation, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new TorusGeometry(id, this.getScene(), this.diameter, this.thickness, this.tessellation, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.diameter = this.diameter;
+            serializationObject.thickness = this.thickness;
+            serializationObject.tessellation = this.tessellation;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedTorus: any, scene: Scene): Nullable<TorusGeometry> {
+            if (scene.getGeometryByID(parsedTorus.id)) {
+                return null; // null since geometry could be something else than a torus...
+            }
+
+            var torus = new TorusGeometry(parsedTorus.id, scene, parsedTorus.diameter, parsedTorus.thickness, parsedTorus.tessellation, parsedTorus.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(torus, parsedTorus.tags);
+            }
+
+            scene.pushGeometry(torus, true);
+
+            return torus;
+        }
+    }
+
+    /**
+     * Creates a new ground geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#ground
+     */
+    export class GroundGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a new ground geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param width defines the width of the ground
+         * @param height defines the height of the ground
+         * @param subdivisions defines the subdivisions to apply to the ground
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the width of the ground
+             */
+            public width: number, 
+            /**
+             * Defines the height of the ground
+             */
+            public height: number, 
+            /**
+             * Defines the subdivisions to apply to the ground
+             */
+            public subdivisions: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateGround({ width: this.width, height: this.height, subdivisions: this.subdivisions });
+        }
+
+        public copy(id: string): Geometry {
+            return new GroundGeometry(id, this.getScene(), this.width, this.height, this.subdivisions, this.canBeRegenerated(), null);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.width = this.width;
+            serializationObject.height = this.height;
+            serializationObject.subdivisions = this.subdivisions;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedGround: any, scene: Scene): Nullable<GroundGeometry> {
+            if (scene.getGeometryByID(parsedGround.id)) {
+                return null; // null since geometry could be something else than a ground...
+            }
+
+            var ground = new GroundGeometry(parsedGround.id, scene, parsedGround.width, parsedGround.height, parsedGround.subdivisions, parsedGround.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(ground, parsedGround.tags);
+            }
+
+            scene.pushGeometry(ground, true);
+
+            return ground;
+        }
+    }
+
+    /**
+     * Creates a tiled ground geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#tiled-ground
+     */
+    export class TiledGroundGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a tiled ground geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param xmin defines the minimum value on X axis
+         * @param zmin defines the minimum value on Z axis
+         * @param xmax defines the maximum value on X axis
+         * @param zmax defines the maximum value on Z axis
+         * @param subdivisions defines the subdivisions to apply to the ground (number of subdivisions (tiles) on the height and the width of the map)
+         * @param precision defines the precision to use when computing the tiles
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the minimum value on X axis
+             */
+            public xmin: number, 
+            /**
+             * Defines the minimum value on Z axis
+             */
+            public zmin: number, 
+            /**
+             * Defines the maximum value on X axis
+             */
+            public xmax: number, 
+            /**
+             * Defines the maximum value on Z axis
+             */
+            public zmax: number, 
+            /**
+             * Defines the subdivisions to apply to the ground
+             */
+            public subdivisions: { w: number; h: number; }, 
+            /**
+             * Defines the precision to use when computing the tiles
+             */
+            public precision: { w: number; h: number; }, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateTiledGround({ xmin: this.xmin, zmin: this.zmin, xmax: this.xmax, zmax: this.zmax, subdivisions: this.subdivisions, precision: this.precision });
+        }
+
+        public copy(id: string): Geometry {
+            return new TiledGroundGeometry(id, this.getScene(), this.xmin, this.zmin, this.xmax, this.zmax, this.subdivisions, this.precision, this.canBeRegenerated(), null);
+        }
+    }
+
+    /**
+     * Creates a plane geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#plane
+     */
+    export class PlaneGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a plane geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param size defines the size of the plane (width === height)
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the size of the plane (width === height)
+             */
+            public size: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreatePlane({ size: this.size, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new PlaneGeometry(id, this.getScene(), this.size, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.size = this.size;
+
+            return serializationObject;
+        }
+
+        public static Parse(parsedPlane: any, scene: Scene): Nullable<PlaneGeometry> {
+            if (scene.getGeometryByID(parsedPlane.id)) {
+                return null; // null since geometry could be something else than a ground...
+            }
+
+            var plane = new PlaneGeometry(parsedPlane.id, scene, parsedPlane.size, parsedPlane.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(plane, parsedPlane.tags);
+            }
+
+            scene.pushGeometry(plane, true);
+
+            return plane;
+        }
+    }
+
+    /**
+     * Creates a torus knot geometry
+     * @description see http://doc.babylonjs.com/how_to/set_shapes#torus-knot
+     */
+    export class TorusKnotGeometry extends _PrimitiveGeometry {
+
+        /**
+         * Creates a torus knot geometry
+         * @param id defines the unique ID of the geometry
+         * @param scene defines the hosting scene
+         * @param radius defines the radius of the torus knot
+         * @param tube defines the thickness of the torus knot tube
+         * @param radialSegments defines the number of radial segments
+         * @param tubularSegments defines the number of tubular segments
+         * @param p defines the first number of windings
+         * @param q defines the second number of windings
+         * @param canBeRegenerated defines if the geometry supports being regenerated with new parameters (false by default)
+         * @param mesh defines the hosting mesh (can be null)
+         * @param side defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+         */
+        constructor(
+            id: string, scene: Scene, 
+            /**
+             * Defines the radius of the torus knot
+             */
+            public radius: number, 
+            /**
+             * Defines the thickness of the torus knot tube
+             */
+            public tube: number, 
+            /**
+             * Defines the number of radial segments
+             */
+            public radialSegments: number, 
+            /**
+             * Defines the number of tubular segments
+             */
+            public tubularSegments: number, 
+            /**
+             * Defines the first number of windings
+             */
+            public p: number, 
+            /**
+             * Defines the second number of windings
+             */
+            public q: number, 
+            canBeRegenerated?: boolean, 
+            mesh: Nullable<Mesh> = null, 
+            /**
+             * Defines if the created geometry is double sided or not (default is BABYLON.Mesh.DEFAULTSIDE)
+             */
+            public side: number = Mesh.DEFAULTSIDE) {
+            super(id, scene, canBeRegenerated, mesh);
+        }
+
+        public _regenerateVertexData(): VertexData {
+            return VertexData.CreateTorusKnot({ radius: this.radius, tube: this.tube, radialSegments: this.radialSegments, tubularSegments: this.tubularSegments, p: this.p, q: this.q, sideOrientation: this.side });
+        }
+
+        public copy(id: string): Geometry {
+            return new TorusKnotGeometry(id, this.getScene(), this.radius, this.tube, this.radialSegments, this.tubularSegments, this.p, this.q, this.canBeRegenerated(), null, this.side);
+        }
+
+        public serialize(): any {
+            var serializationObject = super.serialize();
+
+            serializationObject.radius = this.radius;
+            serializationObject.tube = this.tube;
+            serializationObject.radialSegments = this.radialSegments;
+            serializationObject.tubularSegments = this.tubularSegments;
+            serializationObject.p = this.p;
+            serializationObject.q = this.q;
+
+            return serializationObject;
+        };
+
+        public static Parse(parsedTorusKnot: any, scene: Scene): Nullable<TorusKnotGeometry> {
+            if (scene.getGeometryByID(parsedTorusKnot.id)) {
+                return null; // null since geometry could be something else than a ground...
+            }
+
+            var torusKnot = new TorusKnotGeometry(parsedTorusKnot.id, scene, parsedTorusKnot.radius, parsedTorusKnot.tube, parsedTorusKnot.radialSegments, parsedTorusKnot.tubularSegments, parsedTorusKnot.p, parsedTorusKnot.q, parsedTorusKnot.canBeRegenerated, null);
+            if (Tags) {
+                Tags.AddTagsTo(torusKnot, parsedTorusKnot.tags);
+            }
+
+            scene.pushGeometry(torusKnot, true);
+
+            return torusKnot;
+        }
+    }
+    //}
 }
 
 

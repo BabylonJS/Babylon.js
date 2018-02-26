@@ -1,11 +1,16 @@
+declare function importScripts(...urls: string[]): void;
+
+// since typescript doesn't understand the file's execution context, we need to override postMessage's signature for error-free compilation
+const safePostMessage: any = self.postMessage;
+
 module BABYLON {
 
     //If this file is included in the main thread, this will be initialized.
     export var WorkerIncluded: boolean = true;
 
     export class CollisionCache {
-        private _meshes: { [n: number]: SerializedMesh; } = {};
-        private _geometries: { [s: number]: SerializedGeometry; } = {};
+        private _meshes: { [n: string]: SerializedMesh; } = {};
+        private _geometries: { [s: string]: SerializedGeometry; } = {};
 
         public getMeshes(): { [n: number]: SerializedMesh; } {
             return this._meshes;
@@ -49,11 +54,11 @@ module BABYLON {
 
         }
 
-        public collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId?: number) {
+        public collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>) {
 
             //TODO CollisionsEpsilon should be defined here and not in the engine.
             const closeDistance = 0.01; //is initializing here correct? A quick look - looks like it is fine.
-            if (this.collider.retry >= maximumRetry) {
+            if (this.collider._retry >= maximumRetry) {
                 this.finalPosition.copyFrom(position);
                 return;
             }
@@ -64,12 +69,12 @@ module BABYLON {
             var meshes = this._collisionCache.getMeshes();
             var keys = Object.keys(meshes);
             var len = keys.length;
-            var uniqueId;
+            var uniqueId: string;
 
             for (var i = 0; i < len; ++i) {
                 uniqueId = keys[i];
                 if (parseInt(uniqueId) != excludedMeshUniqueId) {
-                    var mesh: SerializedMesh = meshes[uniqueId];
+                    var mesh: SerializedMesh = (<any>meshes)[uniqueId];
                     if (mesh.checkCollisions)
                         this.checkCollision(mesh);
                 }
@@ -89,7 +94,7 @@ module BABYLON {
                 return;
             }
 
-            this.collider.retry++;
+            this.collider._retry++;
             this.collideWithWorld(position, velocity, maximumRetry, excludedMeshUniqueId);
         }
 
@@ -100,7 +105,7 @@ module BABYLON {
             };
 
             // Transformation matrix
-            Matrix.ScalingToRef(1.0 / this.collider.radius.x, 1.0 / this.collider.radius.y, 1.0 / this.collider.radius.z, this.collisionsScalingMatrix);
+            Matrix.ScalingToRef(1.0 / this.collider._radius.x, 1.0 / this.collider._radius.y, 1.0 / this.collider._radius.z, this.collisionsScalingMatrix);
             var worldFromCache = Matrix.FromArray(mesh.worldMatrixFromCache);
             worldFromCache.multiplyToRef(this.collisionsScalingMatrix, this.collisionTranformationMatrix);
 
@@ -146,27 +151,27 @@ module BABYLON {
         }
 
         private collideForSubMesh(subMesh: SerializedSubMesh, transformMatrix: Matrix, meshGeometry: SerializedGeometry): void {
-            if (!meshGeometry['positionsArray']) {
-                meshGeometry['positionsArray'] = [];
+            if (!(<any>meshGeometry)['positionsArray']) {
+                (<any>meshGeometry)['positionsArray'] = [];
                 for (var i = 0, len = meshGeometry.positions.length; i < len; i = i + 3) {
                     var p = Vector3.FromArray([meshGeometry.positions[i], meshGeometry.positions[i + 1], meshGeometry.positions[i + 2]]);
-                    meshGeometry['positionsArray'].push(p);
+                    (<any>meshGeometry)['positionsArray'].push(p);
                 }
             }
 
-            if (!subMesh['_lastColliderWorldVertices'] || !subMesh['_lastColliderTransformMatrix'].equals(transformMatrix)) {
-                subMesh['_lastColliderTransformMatrix'] = transformMatrix.clone();
-                subMesh['_lastColliderWorldVertices'] = [];
-                subMesh['_trianglePlanes'] = [];
+            if (!(<any>subMesh)['_lastColliderWorldVertices'] || !(<any>subMesh)['_lastColliderTransformMatrix'].equals(transformMatrix)) {
+                (<any>subMesh)['_lastColliderTransformMatrix'] = transformMatrix.clone();
+                (<any>subMesh)['_lastColliderWorldVertices'] = [];
+                (<any>subMesh)['_trianglePlanes'] = [];
                 var start = subMesh.verticesStart;
                 var end = (subMesh.verticesStart + subMesh.verticesCount);
                 for (var i = start; i < end; i++) {
-                    subMesh['_lastColliderWorldVertices'].push(Vector3.TransformCoordinates(meshGeometry['positionsArray'][i], transformMatrix));
+                    (<any>subMesh)['_lastColliderWorldVertices'].push(Vector3.TransformCoordinates((<any>meshGeometry)['positionsArray'][i], transformMatrix));
                 }
-            }        
+            }
 
             // Collide
-            this.collider._collide(subMesh['_trianglePlanes'], subMesh['_lastColliderWorldVertices'], <any>meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
+            this.collider._collide((<any>subMesh)['_trianglePlanes'], (<any>subMesh)['_lastColliderWorldVertices'], <any>meshGeometry.indices, subMesh.indexStart, subMesh.indexStart + subMesh.indexCount, subMesh.verticesStart, subMesh.hasMaterial);
 
         }
 
@@ -190,7 +195,7 @@ module BABYLON {
                 error: WorkerReplyType.SUCCESS,
                 taskType: WorkerTaskType.INIT
             }
-            postMessage(reply, undefined);
+            safePostMessage(reply);
         }
 
         public onUpdate(payload: UpdatePayload) {
@@ -224,14 +229,14 @@ module BABYLON {
             }
 
 
-            postMessage(replay, undefined);
+            safePostMessage(replay);
         }
 
         public onCollision(payload: CollidePayload) {
             var finalPosition = Vector3.Zero();
             //create a new collider
             var collider = new Collider();
-            collider.radius = Vector3.FromArray(payload.collider.radius);
+            collider._radius = Vector3.FromArray(payload.collider.radius);
 
             var colliderWorker = new CollideWorker(collider, this._collisionCache, finalPosition);
             colliderWorker.collideWithWorld(Vector3.FromArray(payload.collider.position), Vector3.FromArray(payload.collider.velocity), payload.maximumRetry, payload.excludedMeshUniqueId);
@@ -245,7 +250,7 @@ module BABYLON {
                 taskType: WorkerTaskType.COLLIDE,
                 payload: replyPayload
             }
-            postMessage(reply, undefined);
+            safePostMessage(reply);
         }
     }
 
@@ -260,7 +265,7 @@ module BABYLON {
             window = <any>{};
 
             //scripts were not included, standalone worker
-            if (!BABYLON.Collider) {
+            if (!Collider) {
                 importScripts("./babylon.collisionCoordinator.js");
                 importScripts("./babylon.collider.js");
                 importScripts("../Math/babylon.math.js");
@@ -271,15 +276,15 @@ module BABYLON {
             var onNewMessage = (event: MessageEvent) => {
                 var message = <BabylonMessage>event.data;
                 switch (message.taskType) {
-                case WorkerTaskType.INIT:
-                    collisionDetector.onInit(<InitPayload>message.payload);
-                    break;
-                case WorkerTaskType.COLLIDE:
-                    collisionDetector.onCollision(<CollidePayload>message.payload);
-                    break;
-                case WorkerTaskType.UPDATE:
-                    collisionDetector.onUpdate(<UpdatePayload>message.payload);
-                    break;
+                    case WorkerTaskType.INIT:
+                        collisionDetector.onInit(<InitPayload>message.payload);
+                        break;
+                    case WorkerTaskType.COLLIDE:
+                        collisionDetector.onCollision(<CollidePayload>message.payload);
+                        break;
+                    case WorkerTaskType.UPDATE:
+                        collisionDetector.onUpdate(<UpdatePayload>message.payload);
+                        break;
                 }
             }
 

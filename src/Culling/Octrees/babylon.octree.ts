@@ -8,12 +8,12 @@
         public dynamicContent = new Array<T>();
 
         private _maxBlockCapacity: number;
-        private _selectionContent: SmartArray<T>;       
+        private _selectionContent: SmartArrayNoDuplicate<T>;       
         private _creationFunc: (entry: T, block: OctreeBlock<T>) => void;
 
         constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, public maxDepth = 2) {
             this._maxBlockCapacity = maxBlockCapacity || 64;
-            this._selectionContent = new SmartArray<T>(1024);
+            this._selectionContent = new SmartArrayNoDuplicate<T>(1024);
             this._creationFunc = creationFunc;
         }
 
@@ -96,13 +96,15 @@
         }
 
         public static CreationFuncForMeshes = (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>): void => {
-            if (!entry.isBlocked && entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            let boundingInfo = entry.getBoundingInfo();
+            if (!entry.isBlocked && boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         }
 
         public static CreationFuncForSubMeshes = (entry: SubMesh, block: OctreeBlock<SubMesh>): void => {
-            if (entry.getBoundingInfo().boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
+            let boundingInfo = entry.getBoundingInfo();
+            if (boundingInfo.boundingBox.intersectsMinMax(block.minPoint, block.maxPoint)) {
                 block.entries.push(entry);
             }
         }

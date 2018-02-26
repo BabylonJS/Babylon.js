@@ -1,6 +1,4 @@
-﻿/// <reference path="babylon.camera.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class TargetCamera extends Camera {
 
         public cameraDirection = new Vector3(0, 0, 0);
@@ -17,7 +15,7 @@ module BABYLON {
         public noRotationConstraint = false;
 
         @serializeAsMeshReference("lockedTargetId")
-        public lockedTarget = null;
+        public lockedTarget: any = null;
 
         public _currentTarget = Vector3.Zero();
         public _viewMatrix = Matrix.Zero();
@@ -27,7 +25,7 @@ module BABYLON {
         private _rigCamTransformMatrix: Matrix;
 
         public _referencePoint = new Vector3(0, 0, 1);
-        private _defaultUpVector = new Vector3(0, 1, 0);
+        private _currentUpVector = new Vector3(0, 1, 0);
         public _transformedReferencePoint = Vector3.Zero();
         public _lookAtTemp = Matrix.Zero();
         public _tempMatrix = Matrix.Zero();
@@ -39,13 +37,14 @@ module BABYLON {
         }
 
         public getFrontPosition(distance: number): Vector3 {
+            this.getWorldMatrix();
             var direction = this.getTarget().subtract(this.position);
             direction.normalize();
             direction.scaleInPlace(distance);
             return this.globalPosition.add(direction);
         }
 
-        public _getLockedTargetPosition(): Vector3 {
+        public _getLockedTargetPosition(): Nullable<Vector3> {
             if (!this.lockedTarget) {
                 return null;
             }
@@ -55,6 +54,46 @@ module BABYLON {
             }
 
             return this.lockedTarget.absolutePosition || this.lockedTarget;
+        }
+
+        // State
+
+        /**
+         * Store current camera state (fov, position, etc..)
+         */
+        private _storedPosition: Vector3;
+        private _storedRotation: Vector3;
+        private _storedRotationQuaternion: Quaternion;
+
+        public storeState(): Camera {
+            this._storedPosition = this.position.clone();
+            this._storedRotation = this.rotation.clone();
+            if (this.rotationQuaternion) {
+                this._storedRotationQuaternion = this.rotationQuaternion.clone();
+            }
+
+            return super.storeState();
+        }
+
+        /**
+         * Restored camera state. You must call storeState() first
+         */
+        public _restoreStateValues(): boolean {
+            if (!super._restoreStateValues()) {
+                return false;
+            }
+
+            this.position = this._storedPosition.clone();
+            this.rotation = this._storedRotation.clone();
+
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion = this._storedRotationQuaternion.clone();
+            }
+
+            this.cameraDirection.copyFromFloats(0, 0, 0);
+            this.cameraRotation.copyFromFloats(0, 0);
+
+            return true;
         }
 
         // Cache
@@ -110,7 +149,7 @@ module BABYLON {
         public setTarget(target: Vector3): void {
             this.upVector.normalize();
 
-            Matrix.LookAtLHToRef(this.position, target, this._defaultUpVector, this._camMatrix);
+            Matrix.LookAtLHToRef(this.position, target, this.upVector, this._camMatrix);
             this._camMatrix.invert();
 
             this.rotation.x = Math.atan(this._camMatrix.m[6] / this._camMatrix.m[10]);
@@ -230,30 +269,31 @@ module BABYLON {
         protected _updateCameraRotationMatrix() {
             if (this.rotationQuaternion) {
                 this.rotationQuaternion.toRotationMatrix(this._cameraRotationMatrix);
-                //update the up vector!
-                BABYLON.Vector3.TransformNormalToRef(this._defaultUpVector, this._cameraRotationMatrix, this.upVector);
             } else {
                 Matrix.RotationYawPitchRollToRef(this.rotation.y, this.rotation.x, this.rotation.z, this._cameraRotationMatrix);
             }
+
+            //update the up vector!
+            Vector3.TransformNormalToRef(this.upVector, this._cameraRotationMatrix, this._currentUpVector);
         }
 
         public _getViewMatrix(): Matrix {
-            if (!this.lockedTarget) {
-                // Compute
-                this._updateCameraRotationMatrix();
-
-                Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
-
-                // Computing target and final matrix
-                this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-            } else {
-                this._currentTarget.copyFrom(this._getLockedTargetPosition());
+            if (this.lockedTarget) {
+                this.setTarget(this._getLockedTargetPosition()!);
             }
 
+            // Compute
+            this._updateCameraRotationMatrix();
+
+            Vector3.TransformCoordinatesToRef(this._referencePoint, this._cameraRotationMatrix, this._transformedReferencePoint);
+
+            // Computing target and final matrix
+            this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
+
             if (this.getScene().useRightHandedSystem) {
-                Matrix.LookAtRHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                Matrix.LookAtRHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             } else {
-                Matrix.LookAtLHToRef(this.position, this._currentTarget, this.upVector, this._viewMatrix);
+                Matrix.LookAtLHToRef(this.position, this._currentTarget, this._currentUpVector, this._viewMatrix);
             }
 
             return this._viewMatrix;
@@ -263,7 +303,7 @@ module BABYLON {
          * @override
          * Override Camera.createRigCamera
          */
-        public createRigCamera(name: string, cameraIndex: number): Camera {
+        public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
             if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
                 var rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
                 if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {

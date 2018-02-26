@@ -55,12 +55,36 @@
             this.boundingSphere._update(world);
         }
 
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        public centerOn(center: Vector3, extend: Vector3): BoundingInfo {
+            this.minimum = center.subtract(extend);
+            this.maximum = center.add(extend);
+
+            this.boundingBox = new BoundingBox(this.minimum, this.maximum);
+            this.boundingSphere = new BoundingSphere(this.minimum, this.maximum);
+
+            return this;
+        }
+
         public isInFrustum(frustumPlanes: Plane[]): boolean {
             if (!this.boundingSphere.isInFrustum(frustumPlanes))
                 return false;
 
             return this.boundingBox.isInFrustum(frustumPlanes);
         }
+
+        /**
+		 * Gets the world distance between the min and max points of the bounding box
+		 */
+		public get diagonalLength(): number {
+            let boundingBox = this.boundingBox;
+            let size = boundingBox.maximumWorld.subtract(boundingBox.minimumWorld);
+		    return size.length();
+		}     
 
         public isCompletelyInFrustum(frustumPlanes: Plane[]): boolean {
             return this.boundingBox.isCompletelyInFrustum(frustumPlanes);

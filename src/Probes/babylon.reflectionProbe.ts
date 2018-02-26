@@ -8,7 +8,7 @@
         private _add = Vector3.Zero();
         private _attachedMesh: AbstractMesh;
 
-        public invertYAxis = false;
+        private _invertYAxis = false;
         public position = Vector3.Zero();
           
         constructor(public name: string, size: number, scene: Scene, generateMipMaps = true) {
@@ -27,10 +27,10 @@
                         this._add.copyFromFloats(-1, 0, 0);
                         break;
                     case 2:
-                        this._add.copyFromFloats(0, this.invertYAxis ? 1 : -1, 0);
+                        this._add.copyFromFloats(0, this._invertYAxis ? 1 : -1, 0);
                         break;
                     case 3:
-                        this._add.copyFromFloats(0, this.invertYAxis ? -1 : 1, 0);
+                        this._add.copyFromFloats(0, this._invertYAxis ? -1 : 1, 0);
                         break;
                     case 4:
                         this._add.copyFromFloats(0, 0, 1);
@@ -50,13 +50,18 @@
                 Matrix.LookAtLHToRef(this.position, this._target, Vector3.Up(), this._viewMatrix);
 
                 scene.setTransformMatrix(this._viewMatrix, this._projectionMatrix);
+
+                scene._forcedViewPosition = this.position;
             });
 
             this._renderTargetTexture.onAfterUnbindObservable.add(() => {
+                scene._forcedViewPosition = null;
                 scene.updateTransformMatrix(true);
             });
 
-            this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            if (scene.activeCamera) {
+                this._projectionMatrix = Matrix.PerspectiveFovLH(Math.PI / 2, 1, scene.activeCamera.minZ, scene.activeCamera.maxZ);
+            }
         }
 
         public get samples(): number {
@@ -83,7 +88,7 @@
             return this._renderTargetTexture;
         }
 
-        public get renderList(): AbstractMesh[] {
+        public get renderList(): Nullable<AbstractMesh[]> {
             return this._renderTargetTexture.renderList;
         }
 
@@ -111,7 +116,7 @@
 
             if (this._renderTargetTexture) {
                 this._renderTargetTexture.dispose();
-                this._renderTargetTexture = null;
+                (<any>this._renderTargetTexture) = null;
             }
         }
     }    

@@ -3,10 +3,8 @@
 module BABYLON {
     class GridMaterialDefines extends MaterialDefines {
         public TRANSPARENT = false;
-
         public FOG = false;
-
-        public USERIGHTHANDEDSYSTEM = false;
+        public PREMULTIPLYALPHA = false;
 
         constructor() {
             super();
@@ -24,19 +22,25 @@ module BABYLON {
          * Main color of the grid (e.g. between lines)
          */
         @serializeAsColor3()
-        public mainColor = Color3.White();
+        public mainColor = Color3.Black();
 
         /**
          * Color of the grid lines.
          */
         @serializeAsColor3()
-        public lineColor = Color3.Black();
+        public lineColor = Color3.Teal();
 
         /**
          * The scale of the grid compared to unit.
          */
         @serialize()
         public gridRatio = 1.0;
+
+        /**
+         * Allows setting an offset for the grid lines.
+         */
+        @serializeAsColor3()
+        public gridOffset = Vector3.Zero();
 
         /**
          * The frequency of thicker lines.
@@ -56,6 +60,12 @@ module BABYLON {
         @serialize()
         public opacity = 1.0;
 
+        /**
+         * Determine RBG output is premultiplied by alpha value.
+         */
+        @serialize()
+        public preMultiplyAlpha = false;        
+
         private _gridControl: Vector4 = new Vector4(this.gridRatio, this.majorUnitFrequency, this.minorUnitVisibility, this.opacity);
 
         private _renderId: number;
@@ -74,6 +84,10 @@ module BABYLON {
          */
         public needAlphaBlending(): boolean {
             return this.opacity < 1.0;
+        }
+
+        public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+            return this.needAlphaBlending();
         }
 
         public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
@@ -96,14 +110,17 @@ module BABYLON {
                 }
             }
 
-            var engine = scene.getEngine();
-
-            if (this.opacity < 1.0 && !defines.TRANSPARENT) {
-                defines.TRANSPARENT = true;
+            if (defines.TRANSPARENT !== (this.opacity < 1.0)) {
+                defines.TRANSPARENT = !defines.TRANSPARENT;
                 defines.markAsUnprocessed();
             }
 
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, defines);
+            if (defines.PREMULTIPLYALPHA != this.preMultiplyAlpha) {
+                defines.PREMULTIPLYALPHA = !defines.PREMULTIPLYALPHA;
+                defines.markAsUnprocessed();
+            }
+
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -113,22 +130,19 @@ module BABYLON {
                 // Attributes
                 var attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
-                // Effect
-                var shaderName = scene.getEngine().getCaps().standardDerivatives ? "grid" : "legacygrid";
-
                 // Defines
                 var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName,
+                subMesh.setEffect(scene.getEngine().createEffect("grid",
                     attribs,
-                    ["worldViewProjection", "mainColor", "lineColor", "gridControl", "vFogInfos", "vFogColor", "world", "view"],
+                    ["projection", "worldView", "mainColor", "lineColor", "gridControl", "gridOffset", "vFogInfos", "vFogColor", "world", "view"],
                     [],
                     join,
-                    null,
+                    undefined,
                     this.onCompiled,
                     this.onError), defines);
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -147,17 +161,23 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices
             this.bindOnlyWorldMatrix(world);
-            this._activeEffect.setMatrix("worldViewProjection", world.multiply(scene.getTransformMatrix()));
+            this._activeEffect.setMatrix("worldView", world.multiply(scene.getViewMatrix()));
             this._activeEffect.setMatrix("view", scene.getViewMatrix());
+            this._activeEffect.setMatrix("projection", scene.getProjectionMatrix());
 
             // Uniforms
             if (this._mustRebind(scene, effect)) {
                 this._activeEffect.setColor3("mainColor", this.mainColor);
                 this._activeEffect.setColor3("lineColor", this.lineColor);
+
+                this._activeEffect.setVector3("gridOffset", this.gridOffset);
 
                 this._gridControl.x = this.gridRatio;
                 this._gridControl.y = Math.round(this.majorUnitFrequency);
@@ -183,6 +203,10 @@ module BABYLON {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.GridMaterial";
             return serializationObject;
+        }
+
+        public getClassName(): string {
+            return "GridMaterial";
         }
 
         public static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {

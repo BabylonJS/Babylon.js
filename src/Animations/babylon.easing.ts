@@ -124,7 +124,7 @@
         }
     }
 
-    export class ExponentialEase  extends EasingFunction implements IEasingFunction {
+    export class ExponentialEase extends EasingFunction implements IEasingFunction {
         constructor(public exponent: number= 2) {
             super();
         }

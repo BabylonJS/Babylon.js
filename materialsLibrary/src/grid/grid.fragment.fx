@@ -8,8 +8,12 @@ precision highp float;
 uniform vec3 mainColor;
 uniform vec3 lineColor;
 uniform vec4 gridControl;
+uniform vec3 gridOffset;
 
 // Varying
+#ifdef TRANSPARENT
+varying vec4 vCameraSpacePosition;
+#endif
 varying vec3 vPosition;
 varying vec3 vNormal;
 
@@ -22,7 +26,7 @@ float getVisibility(float position) {
     {
         return 1.0;
     }  
-    
+
     return gridControl.z;
 }
 
@@ -46,7 +50,7 @@ float contributionOnAxis(float position) {
     
     // Is the point on the line.
     float result = isPointOnLine(position, differentialLength);
-    
+
     // Add dynamic visibility.
     float visibility = getVisibility(position);
     result *= visibility;
@@ -59,7 +63,7 @@ float contributionOnAxis(float position) {
 }
 
 float normalImpactOnAxis(float x) {
-    float normalImpact = clamp(1.0 - 2.8 * abs(x * x * x), 0.0, 1.0);
+    float normalImpact = clamp(1.0 - 3.0 * abs(x * x * x), 0.0, 1.0);
     return normalImpact;
 }
 
@@ -67,12 +71,12 @@ void main(void) {
     
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
-    vec3 gridPos = vPosition / gridRatio;
+    vec3 gridPos = (vPosition + gridOffset) / gridRatio;
     
     // Find the contribution of each coords.
     float x = contributionOnAxis(gridPos.x);
     float y = contributionOnAxis(gridPos.y);
-    float z = contributionOnAxis(gridPos.z); 
+    float z = contributionOnAxis(gridPos.z);
     
     // Find the normal contribution.
     vec3 normal = normalize(vNormal);
@@ -91,8 +95,16 @@ void main(void) {
 #endif
 
 #ifdef TRANSPARENT
-    float opacity = clamp(grid, 0.08, gridControl.w);
+    float distanceToFragment = length(vCameraSpacePosition.xyz);
+    float cameraPassThrough = clamp(distanceToFragment - 0.25, 0.0, 1.0);
+
+    float opacity = clamp(grid, 0.08, cameraPassThrough * gridControl.w * grid);
+
     gl_FragColor = vec4(color.rgb, opacity);
+
+    #ifdef PREMULTIPLYALPHA
+        gl_FragColor.rgb *= opacity;
+    #endif
 #else
     // Apply the color.
     gl_FragColor = vec4(color.rgb, 1.0);

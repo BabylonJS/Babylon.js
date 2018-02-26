@@ -6,40 +6,26 @@
         private _size: number;
         private _stride: number;
         private _ownsBuffer: boolean;
+        private _instanced: boolean;        
+        private _instanceDivisor: number;
 
-        constructor(engine: any, data: number[] | Float32Array | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
-            if (!stride) {
-                // Deduce stride from kind
-                switch (kind) {
-                    case VertexBuffer.PositionKind:
-                        stride = 3;
-                        break;
-                    case VertexBuffer.NormalKind:
-                        stride = 3;
-                        break;
-                    case VertexBuffer.UVKind:
-                    case VertexBuffer.UV2Kind:
-                    case VertexBuffer.UV3Kind:
-                    case VertexBuffer.UV4Kind:
-                    case VertexBuffer.UV5Kind:
-                    case VertexBuffer.UV6Kind:
-                        stride = 2;
-                        break;
-                    case VertexBuffer.TangentKind:
-                    case VertexBuffer.ColorKind:
-                        stride = 4;
-                        break;
-                    case VertexBuffer.MatricesIndicesKind:
-                    case VertexBuffer.MatricesIndicesExtraKind:
-                        stride = 4;
-                        break;
-                    case VertexBuffer.MatricesWeightsKind:
-                    case VertexBuffer.MatricesWeightsExtraKind:
-                        stride = 4;
-                        break;
-                }
+        /**
+         * Gets or sets the instance divisor when in instanced mode
+         */
+        public get instanceDivisor(): number {
+            return this._instanceDivisor;
+        }
+
+        public set instanceDivisor(value: number) {
+            this._instanceDivisor = value;
+            if (value == 0) {
+                this._instanced = false;
+            } else {
+                this._instanced = true;
             }
+        }        
 
+        constructor(engine: any, data: FloatArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number) {
             if (data instanceof Buffer) {
                 if (!stride) {
                     stride = data.getStrideSize();
@@ -47,17 +33,29 @@
                 this._buffer = data;
                 this._ownsBuffer = false;
             } else {
-                this._buffer = new Buffer(engine, <number[] | Float32Array>data, updatable, stride, postponeInternalCreation, instanced);
+                if (!stride) {
+                    stride = VertexBuffer.DeduceStride(kind);
+                }
+                this._buffer = new Buffer(engine, <FloatArray>data, updatable, stride, postponeInternalCreation, instanced);
                 this._ownsBuffer = true;
             }
 
             this._stride = stride;
-
+            this._instanced = instanced !== undefined ? instanced : false;
+            this._instanceDivisor = instanced ? 1 : 0;
 
             this._offset = offset ? offset : 0;
             this._size = size ? size : stride;
 
             this._kind = kind;
+        }
+
+        public _rebuild(): void {
+            if (!this._buffer) {
+                return;
+            }
+
+            this._buffer._rebuild();
         }
 
         /**
@@ -78,14 +76,14 @@
         /**
          * Returns an array of numbers or a Float32Array containing the VertexBuffer data.  
          */
-        public getData(): number[] | Float32Array {
+        public getData(): Nullable<FloatArray> {
             return this._buffer.getData();
         }
 
         /**
          * Returns the WebGLBuffer associated to the VertexBuffer.  
          */
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer.getBuffer();
         }
 
@@ -114,14 +112,14 @@
          * Boolean : is the WebGLBuffer of the VertexBuffer instanced now ?
          */
         public getIsInstanced(): boolean {
-            return this._buffer.getIsInstanced();
+            return this._instanced;
         }
 
         /**
          * Returns the instancing divisor, zero for non-instanced (integer).  
          */
         public getInstanceDivisor(): number {
-            return this._buffer.instanceDivisor;
+            return this._instanceDivisor;
         }
 
         // Methods
@@ -130,15 +128,16 @@
          * Creates the underlying WebGLBuffer from the passed numeric array or Float32Array.  
          * Returns the created WebGLBuffer.   
          */
-        public create(data?: number[] | Float32Array): void {
+        public create(data?: FloatArray): void {
             return this._buffer.create(data);
         }
 
         /**
          * Updates the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
+         * This function will create a new buffer if the current one is not updatable
          * Returns the updated WebGLBuffer.  
          */
-        public update(data: number[] | Float32Array): void {
+        public update(data: FloatArray): void {
             return this._buffer.update(data);
         }
 
@@ -229,6 +228,35 @@
 
         public static get MatricesWeightsExtraKind(): string {
             return VertexBuffer._MatricesWeightsExtraKind;
+        }
+
+        /**
+         * Deduces the stride given a kind.
+         * @param kind The kind string to deduce
+         * @returns The deduced stride
+         */
+        public static DeduceStride(kind: string): number {
+            switch (kind) {
+                case VertexBuffer.UVKind:
+                case VertexBuffer.UV2Kind:
+                case VertexBuffer.UV3Kind:
+                case VertexBuffer.UV4Kind:
+                case VertexBuffer.UV5Kind:
+                case VertexBuffer.UV6Kind:
+                    return 2;
+                case VertexBuffer.NormalKind:
+                case VertexBuffer.PositionKind:
+                    return 3;
+                case VertexBuffer.ColorKind:
+                case VertexBuffer.MatricesIndicesKind:
+                case VertexBuffer.MatricesIndicesExtraKind:
+                case VertexBuffer.MatricesWeightsKind:
+                case VertexBuffer.MatricesWeightsExtraKind:
+                case VertexBuffer.TangentKind:
+                    return 4;
+                default:
+                    throw new Error("Invalid kind '" + kind + "'");
+            }
         }
     }
 } 

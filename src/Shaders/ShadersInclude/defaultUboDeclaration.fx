@@ -15,6 +15,8 @@ uniform Material
 	vec2 vAmbientInfos;
 	vec2 vOpacityInfos;
 	vec2 vReflectionInfos;
+	vec3 vReflectionPosition;
+	vec3 vReflectionSize;
 	vec2 vEmissiveInfos;
 	vec2 vLightmapInfos;
 	vec2 vSpecularInfos;
@@ -27,6 +29,7 @@ uniform Material
 	mat4 lightmapMatrix;
 	mat4 specularMatrix;
 	mat4 bumpMatrix; 
+	vec4 vTangentSpaceParams;
 	mat4 refractionMatrix;
 	vec4 vRefractionInfos;
 	vec4 vSpecularColor;

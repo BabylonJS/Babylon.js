@@ -1,4 +1,10 @@
 ﻿module BABYLON {
+    /**
+     * A point light is a light defined by an unique point in world space. 
+     * The light is emitted in every direction from this point.
+     * A good example of a point light is a standard light bulb.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
     export class PointLight extends ShadowLight {
 
         private _shadowAngle = Math.PI / 2;
@@ -23,6 +29,10 @@
             this.forceProjectionMatrixCompute();
         }
 
+        /**
+         * Gets the direction if it has been set.
+         * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         */
         public get direction(): Vector3 {
             return this._direction;
         }
@@ -47,6 +57,9 @@
          * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
          * ```
          * Documentation : http://doc.babylonjs.com/tutorials/lights  
+         * @param name The light friendly name
+         * @param position The position of the point light in the scene
+         * @param scene The scene the lights belongs to
          */
         constructor(name: string, position: Vector3, scene: Scene) {
             super(name, scene);
@@ -55,13 +68,15 @@
 
         /**
          * Returns the string "PointLight"
+         * @returns the class name
          */
         public getClassName(): string {
             return "PointLight";
         }
         
         /**
-         * Returns the integer 0.  
+         * Returns the integer 0.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
          */
         public getTypeID(): number {
             return Light.LIGHTTYPEID_POINTLIGHT;
@@ -69,13 +84,16 @@
 
         /**
          * Specifies wether or not the shadowmap should be a cube texture.
+         * @returns true if the shadowmap needs to be a cube texture.
          */
         public needCube(): boolean {
             return !this.direction;
         }
 
         /**
-         * Returns a new Vector3 aligned with the PointLight cube system according to the passed cube face index (integer).  
+         * Returns a new Vector3 aligned with the PointLight cube system according to the passed cube face index (integer).
+         * @param faceIndex The index of the face we are computed the direction to generate shadow
+         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
          */
         public getShadowDirection(faceIndex?: number): Vector3 {
             if (this.direction) {
@@ -110,6 +128,11 @@
          */
         protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void {
             var activeCamera = this.getScene().activeCamera;
+
+            if (!activeCamera) {
+                return;
+            }
+
             Matrix.PerspectiveFovLHToRef(this.shadowAngle, 1.0, 
             this.getDepthMinZ(activeCamera), this.getDepthMaxZ(activeCamera), matrix);
         }
@@ -125,7 +148,9 @@
 
         /**
          * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).  
-         * Returns the PointLight.  
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The point light
          */
         public transferToEffect(effect: Effect, lightIndex: string): PointLight {
             if (this.computeTransformedInformation()) {

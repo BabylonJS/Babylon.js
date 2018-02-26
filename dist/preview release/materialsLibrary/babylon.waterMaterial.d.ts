@@ -66,36 +66,40 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        protected _renderTargets: SmartArray<RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
         private _reflectionRTT;
-        private _material;
         private _reflectionTransform;
         private _lastTime;
+        private _lastDeltaTime;
         private _renderId;
         private _useLogarithmicDepth;
+        private _waitingRenderList;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
         useLogarithmicDepth: boolean;
-        readonly refractionTexture: RenderTargetTexture;
-        readonly reflectionTexture: RenderTargetTexture;
+        readonly refractionTexture: Nullable<RenderTargetTexture>;
+        readonly reflectionTexture: Nullable<RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
-        getRenderList(): AbstractMesh[];
+        getRenderList(): Nullable<AbstractMesh[]>;
         readonly renderTargetsEnabled: boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
         bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);
         getAnimatables(): IAnimatable[];
         getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): WaterMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial;
         static CreateDefaultMesh(name: string, scene: Scene): Mesh;
     }

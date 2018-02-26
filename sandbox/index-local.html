@@ -3,9 +3,10 @@
 <head>
     <title>BabylonJS - Sandbox</title>
     <link href="index.css" rel="stylesheet" />
-    <script src="https://babylonjs.azurewebsites.net/cannon.js"></script>
-    <script src="https://babylonjs.azurewebsites.net/Oimo.js"></script>
-	<script src="../Tools/DevLoader/BabylonLoader.js"></script>
+    <script src="../dist/preview%20release/cannon.js"></script>
+    <script src="../dist/preview%20release/draco_decoder.js" type="text/x-draco-decoder"></script>
+    <script src="../dist/preview%20release/Oimo.js"></script>
+    <script src="../Tools/DevLoader/BabylonLoader.js"></script>
 </head>
 <body>
     <canvas id="renderCanvas"></canvas>
@@ -48,9 +49,10 @@
         </div>
     </div>
     <div id="loadingText" class="loadingText"></div>
+    <div id="errorZone"></div>
     <script>
         BABYLONDEVTOOLS.Loader.require('index.js')
             .load();
-    </script>	
+    </script>
 </body>
 </html>

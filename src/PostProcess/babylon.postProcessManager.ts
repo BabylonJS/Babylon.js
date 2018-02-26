@@ -1,9 +1,17 @@
 ﻿module BABYLON {
+    /**
+	 * PostProcessManager is used to manage one or more post processes or post process pipelines
+     * See https://doc.babylonjs.com/how_to/how_to_use_postprocesses
+     */
     export class PostProcessManager {
         private _scene: Scene;
-        private _indexBuffer: WebGLBuffer;
-        private _vertexBuffers: { [key: string]: VertexBuffer } = {};
+        private _indexBuffer: Nullable<WebGLBuffer>;
+        private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
 
+        /**
+         * Creates a new instance of @see PostProcess
+         * @param scene The scene that the post process is associated with.
+         */
         constructor(scene: Scene) {
             this._scene = scene;
         }
@@ -22,6 +30,10 @@
 
             this._vertexBuffers[VertexBuffer.PositionKind] = new VertexBuffer(this._scene.getEngine(), vertices, VertexBuffer.PositionKind, false, false, 2);
 
+            this._buildIndexBuffer();
+        }
+
+        private _buildIndexBuffer(): void {
             // Indices
             var indices = [];
             indices.push(0);
@@ -35,19 +47,49 @@
             this._indexBuffer = this._scene.getEngine().createIndexBuffer(indices);
         }
 
-        // Methods
-        public _prepareFrame(sourceTexture?: WebGLTexture, postProcesses?: PostProcess[]): boolean {
-            var postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
+        /**
+         * Rebuilds the vertex buffers of the manager.
+         */
+        public _rebuild(): void {
+            let vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
-            if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+            if (!vb) {
+                return;
+            }
+            vb._rebuild();
+            this._buildIndexBuffer();
+        }
+
+        // Methods
+        /**
+         * Prepares a frame to be run through a post process.
+         * @param sourceTexture The input texture to the post procesess. (default: null)
+         * @param postProcesses An array of post processes to be run. (default: null)
+         * @returns True if the post processes were able to be run.
+         */
+        public _prepareFrame(sourceTexture: Nullable<InternalTexture> = null, postProcesses: Nullable<PostProcess[]> = null): boolean {
+            let camera = this._scene.activeCamera;
+            if (!camera) {
                 return false;
             }
 
-            postProcesses[0].activate(this._scene.activeCamera, sourceTexture, postProcesses !== null && postProcesses !== undefined);
+            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses);
+
+            if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
+                return false;
+            }
+
+            postProcesses[0].activate(camera, sourceTexture, postProcesses !== null && postProcesses !== undefined);
             return true;
         }
 
-        public directRender(postProcesses: PostProcess[], targetTexture?: WebGLTexture): void {
+        /**
+         * Manually render a set of post processes to a texture.
+         * @param postProcesses An array of post processes to be run.
+         * @param targetTexture The target texture to render to.
+         * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight
+         */
+        public directRender(postProcesses: PostProcess[], targetTexture: Nullable<InternalTexture> = null, forceFullscreenViewport = false): void {
             var engine = this._scene.getEngine();
 
             for (var index = 0; index < postProcesses.length; index++) {
@@ -55,7 +97,7 @@
                     postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture);
+                        engine.bindFramebuffer(targetTexture, 0, undefined, undefined, forceFullscreenViewport);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }
@@ -72,7 +114,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
@@ -83,8 +125,22 @@
             engine.setDepthWrite(true);
         }
 
-        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: WebGLTexture, faceIndex?: number, postProcesses?: PostProcess[]): void {
-            postProcesses = postProcesses || this._scene.activeCamera._postProcesses;
+        /**
+         * Finalize the result of the output of the postprocesses.
+         * @param doNotPresent If true the result will not be displayed to the screen.
+         * @param targetTexture The target texture to render to.
+         * @param faceIndex The index of the face to bind the target texture to.
+         * @param postProcesses The array of post processes to render.
+         * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
+         */
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: PostProcess[], forceFullscreenViewport = false): void {
+            let camera = this._scene.activeCamera;
+
+            if (!camera) {
+                return;
+            }
+
+            postProcesses = postProcesses || camera._postProcesses;
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
@@ -92,10 +148,10 @@
 
             for (var index = 0, len = postProcesses.length; index < len; index++) {
                 if (index < len - 1) {
-                    postProcesses[index + 1].activate(this._scene.activeCamera, targetTexture);
+                    postProcesses[index + 1].activate(camera, targetTexture);
                 } else {
                     if (targetTexture) {
-                        engine.bindFramebuffer(targetTexture, faceIndex);
+                        engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
                     } else {
                         engine.restoreDefaultFramebuffer();
                     }
@@ -116,7 +172,7 @@
                     engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
 
                     // Draw order
-                    engine.draw(true, 0, 6);
+                    engine.drawElementsType(Material.TriangleFillMode, 0, 6);
 
                     pp.onAfterRenderObservable.notifyObservers(effect);
                 }
@@ -128,6 +184,9 @@
             engine.setAlphaMode(Engine.ALPHA_DISABLE);
         }
 
+        /**
+         * Disposes of the post process manager.
+         */
         public dispose(): void {
             var buffer = this._vertexBuffers[VertexBuffer.PositionKind];
             if (buffer) {

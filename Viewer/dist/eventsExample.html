@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>BabylonJS Viewer - Basic usage</title>
+        <style>
+            babylon {
+                max-width: 800px;
+                max-height: 500px;
+                width: 100%;
+                height: 600px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <babylon id="babylon-viewer" model.title="Amazing Rabbit" model.subtitle="BabylonJS" model.thumbnail="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png"
+            model.url="https://playground.babylonjs.com/scenes/Rabbit.babylon" observers.on-scene-init="globalSceneInitCallback"></babylon>
+        <script src="viewer.js"></script>
+        <script>
+            //get by id ONLY after viewer init
+            var willNotWork = BabylonViewer.viewerManager.getViewerById('babylon-viewer');
+            console.log('viewer not yet initialized');
+
+            // Pomise-based API:
+            BabylonViewer.viewerManager.getViewerPromiseById('babylon-viewer').then(function (viewer) {
+                // this will resolve only after the viewer with this specific ID is initialized
+                console.log('Using promises: ', 'viewer - ' + viewer.getBaseId());
+
+                viewerObservables(viewer);
+            });
+
+            // call back variant:
+            BabylonViewer.viewerManager.onViewerAdded = function (viewer) {
+                console.log('Using viewerManager.onViewerAdded: ', 'viewer - ' + viewer.getBaseId());
+            }
+
+            // using observers:
+            BabylonViewer.viewerManager.onViewerAddedObservable.add(function (viewer) {
+                console.log('Using viewerManager.onViewerAddedObservable: ', 'viewer - ' + viewer.getBaseId());
+            });
+
+            function viewerObservables(viewer) {
+                viewer.onEngineInitObservable.add(function (engine) {
+                    console.log('Engine initialized');
+                });
+
+                viewer.onSceneInitObservable.add(function (scene) {
+                    console.log('Scene initialized');
+                });
+
+                viewer.onModelLoadedObservable.add(function (meshes) {
+                    console.log('Model loaded');
+                });
+            }
+
+            function globalSceneInitCallback(scene) {
+                console.log('scene-init function defined in the configuration');
+            }
+
+        </script>
+    </body>
+
+</html>

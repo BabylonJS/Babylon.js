@@ -1,8 +1,34 @@
+sudo: required
+dist: trusty
 language: node_js
 node_js:
-  - "6"
+- '6'
+cache:
+  directories:
+    - Tools/Gulp/node_modules
+    - Playground/node_modules
+    - tests/unit/node_modules
+git:
+  depth: 3
 before_script:
-  - npm install -g gulp
-  - cd ./Tools/Gulp
-  - npm install
-script: gulp typescript
+- travis_retry npm install -g gulp
+- cd ./Tools/Gulp
+- travis_retry npm install
+- "export DISPLAY=:99.0"
+- "sh -e /etc/init.d/xvfb start"
+- sleep 3 # give xvfb some time to start
+script: 
+- gulp tests-whatsnew
+- set -e
+- gulp typescript-all
+- gulp typedoc-all
+- gulp tests-unit
+- travis_retry gulp tests-validation-virtualscreen
+- travis_retry gulp tests-validation-browserstack
+notifications:
+  slack:
+    secure: TBYDAN8Dlkx3dM+Q5ClAZem7agAhQ1oB/fGT665qn7D+j2YfWChvlfXegvXL4LPDmQgbI0UfazcjWId5a0EwmmPkRb+kMJItPiMt5jiIp2WKoZQ+qob6H9tBCRJbbpWM430wiPeKfBfbcZP/XSlpVMWhgU5ogAFDSUKjvHT7IuE=
+env:
+  global:
+  - secure: XVMhWPm3ByrZduLmbyBMsKU462bEbYPNRp+42HcdOuC3YOl2ODPvANrE/qZneZzGqlyiFAg6X4mDGD71Qw9ekbFt5q0PmvIxkRrX0KNJEJl9/gnFadOz3xFWEfFw4tiSHp36PUu9aT6ti9mn9gnM8C+vQZhqVpaMgkLpWzeEeXQ=
+  - secure: jaGc/NJwACWJPLfI/L1UfYvWKX6AGVjFwXA+31elOVNAmG4XRwaTUaugqP4FhjTw0g2pqTB1BlSML+Fs3dVaUGy3bpslQLL74iG06XZbFUqrtVV2/sOcJaoWxIc69ld0tcqLdPvMSrCIzGQYAWaNNllyMnBjsWBZ+0J0ghtbBDA=

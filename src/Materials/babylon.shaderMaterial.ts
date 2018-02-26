@@ -5,8 +5,10 @@
         private _textures: { [name: string]: Texture } = {};
         private _textureArrays: { [name: string]: Texture[] } = {};
         private _floats: { [name: string]: number } = {};
+        private _ints: { [name: string]: number } = {};
         private _floatsArrays: { [name: string]: number[] } = {};
         private _colors3: { [name: string]: Color3 } = {};
+        private _colors3Arrays: { [name: string]: number[] } = {};
         private _colors4: { [name: string]: Color4 } = {};
         private _vectors2: { [name: string]: Vector2 } = {};
         private _vectors3: { [name: string]: Vector3 } = {};
@@ -14,6 +16,7 @@
         private _matrices: { [name: string]: Matrix } = {};
         private _matrices3x3: { [name: string]: Float32Array } = {};
         private _matrices2x2: { [name: string]: Float32Array } = {};
+        private _vectors2Arrays: { [name: string]: number[] } = {};
         private _vectors3Arrays: { [name: string]: number[] } = {};
         private _cachedWorldViewMatrix = new Matrix();
         private _renderId: number;
@@ -45,7 +48,7 @@
             return this._options.needAlphaTesting;
         }
 
-        private _checkUniform(uniformName): void {
+        private _checkUniform(uniformName: string): void {
             if (this._options.uniforms.indexOf(uniformName) === -1) {
                 this._options.uniforms.push(uniformName);
             }
@@ -79,6 +82,13 @@
             return this;
         }
 
+        public setInt(name: string, value: number): ShaderMaterial {
+            this._checkUniform(name);
+            this._ints[name] = value;
+
+            return this;
+        }
+
         public setFloats(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._floatsArrays[name] = value;
@@ -90,6 +100,14 @@
             this._checkUniform(name);
             this._colors3[name] = value;
 
+            return this;
+        }
+        public setColor3Array(name: string, value: Color3[]): ShaderMaterial {
+            this._checkUniform(name);
+            this._colors3Arrays[name] = value.reduce((arr, color) => {
+                color.toArray(arr, arr.length);
+                return arr;
+            }, [])
             return this;
         }
 
@@ -142,6 +160,13 @@
             return this;
         }
 
+        public setArray2(name: string, value: number[]): ShaderMaterial {
+            this._checkUniform(name);
+            this._vectors2Arrays[name] = value;
+
+            return this;
+        }
+
         public setArray3(name: string, value: number[]): ShaderMaterial {
             this._checkUniform(name);
             this._vectors3Arrays[name] = value;
@@ -160,7 +185,7 @@
 
             return false;
         }
-        
+
         public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
             var scene = this.getScene();
             var engine = scene.getEngine();
@@ -193,9 +218,9 @@
                 attribs.push(VertexBuffer.ColorKind);
                 defines.push("#define VERTEXCOLOR");
             }
-            
+
             // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders) {
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 if (mesh.numBoneInfluencers > 4) {
@@ -212,7 +237,7 @@
 
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
-            }  
+            }
 
             // Textures
             for (var name in this._textures) {
@@ -222,7 +247,7 @@
             }
 
             // Alpha test
-            if (engine.getAlphaTesting()) {
+            if (mesh && this._shouldTurnAlphaTestOn(mesh)) {
                 defines.push("#define ALPHATEST");
             }
 
@@ -230,15 +255,15 @@
             var join = defines.join("\n");
 
             this._effect = engine.createEffect(this._shaderPath, <EffectCreationOptions>{
-                    attributes: attribs,
-                    uniformsNames: this._options.uniforms,
-                    uniformBuffersNames: this._options.uniformBuffers,
-                    samplers: this._options.samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError
-                }, engine);
+                attributes: attribs,
+                uniformsNames: this._options.uniforms,
+                uniformBuffersNames: this._options.uniformBuffers,
+                samplers: this._options.samplers,
+                defines: join,
+                fallbacks: fallbacks,
+                onCompiled: this.onCompiled,
+                onError: this.onError
+            }, engine);
 
             if (!this._effect.isReady()) {
                 return false;
@@ -255,6 +280,10 @@
 
         public bindOnlyWorldMatrix(world: Matrix): void {
             var scene = this.getScene();
+
+            if (!this._effect) {
+                return;
+            }
 
             if (this._options.uniforms.indexOf("world") !== -1) {
                 this._effect.setMatrix("world", world);
@@ -274,7 +303,7 @@
             // Std values
             this.bindOnlyWorldMatrix(world);
 
-            if (this.getScene().getCachedMaterial() !== this) {
+            if (this._effect && this.getScene().getCachedMaterial() !== this) {
                 if (this._options.uniforms.indexOf("view") !== -1) {
                     this._effect.setMatrix("view", this.getScene().getViewMatrix());
                 }
@@ -301,12 +330,17 @@
                     this._effect.setTextureArray(name, this._textureArrays[name]);
                 }
 
+                // Int    
+                for (name in this._ints) {
+                    this._effect.setInt(name, this._ints[name]);
+                }
+
                 // Float    
                 for (name in this._floats) {
                     this._effect.setFloat(name, this._floats[name]);
                 }
 
-                // Float s   
+                // Floats   
                 for (name in this._floatsArrays) {
                     this._effect.setArray(name, this._floatsArrays[name]);
                 }
@@ -314,6 +348,10 @@
                 // Color3        
                 for (name in this._colors3) {
                     this._effect.setColor3(name, this._colors3[name]);
+                }
+
+                for (name in this._colors3Arrays) {
+                    this._effect.setArray3(name, this._colors3Arrays[name]);
                 }
 
                 // Color4      
@@ -351,7 +389,12 @@
                 for (name in this._matrices2x2) {
                     this._effect.setMatrix2x2(name, this._matrices2x2[name]);
                 }
-                
+
+                // Vector2Array   
+                for (name in this._vectors2Arrays) {
+                    this._effect.setArray2(name, this._vectors2Arrays[name]);
+                }
+
                 // Vector3Array   
                 for (name in this._vectors3Arrays) {
                     this._effect.setArray3(name, this._vectors3Arrays[name]);
@@ -376,6 +419,29 @@
             }
 
             return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            for (var name in this._textures) {
+                if (this._textures[name] === texture) {
+                    return true;
+                }
+            }
+
+            for (var name in this._textureArrays) {
+                var array = this._textureArrays[name];
+                for (var index = 0; index < array.length; index++) {
+                    if (array[index] === texture) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public clone(name: string): ShaderMaterial {
@@ -408,7 +474,7 @@
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.ShaderMaterial";
-			
+
             serializationObject.options = this._options;
             serializationObject.shaderPath = this._shaderPath;
 
@@ -437,15 +503,21 @@
             }
 
             // Float s   
-            serializationObject.floatArrays = {};
+            serializationObject.FloatArrays = {};
             for (name in this._floatsArrays) {
-                serializationObject.floatArrays[name] = this._floatsArrays[name];
+                serializationObject.FloatArrays[name] = this._floatsArrays[name];
             }
 
             // Color3    
             serializationObject.colors3 = {};
             for (name in this._colors3) {
                 serializationObject.colors3[name] = this._colors3[name].asArray();
+            }
+
+            // Color3 array
+            serializationObject.colors3Arrays = {};
+            for (name in this._colors3Arrays) {
+                serializationObject.colors3Arrays[name] = this._colors3Arrays[name];
             }
 
             // Color4  
@@ -490,12 +562,18 @@
                 serializationObject.matrices2x2[name] = this._matrices2x2[name];
             }
 
+            // Vector2Array
+            serializationObject.vectors2Arrays = {};
+            for (name in this._vectors2Arrays) {
+                serializationObject.vectors2Arrays[name] = this._vectors2Arrays[name];
+            }
+
             // Vector3Array
             serializationObject.vectors3Arrays = {};
             for (name in this._vectors3Arrays) {
                 serializationObject.vectors3Arrays[name] = this._vectors3Arrays[name];
             }
-            
+
             return serializationObject;
         }
 
@@ -535,6 +613,19 @@
                 material.setColor3(name, Color3.FromArray(source.colors3[name]));
             }
 
+            // Color3 arrays
+            for (name in source.colors3Arrays) {
+                const colors: Color3[] = source.colors3Arrays[name].reduce((arr: Array<Array<number>>, num: number, i: number) => {
+                    if (i % 3 === 0) {
+                        arr.push([num]);
+                    } else {
+                        arr[arr.length - 1].push(num);
+                    }
+                    return arr;
+                }, []).map((color: ArrayLike<number>) => Color3.FromArray(color));
+                material.setColor3Array(name, colors);
+            }
+
             // Color4      
             for (name in source.colors4) {
                 material.setColor4(name, Color4.FromArray(source.colors4[name]));
@@ -570,12 +661,17 @@
                 material.setMatrix2x2(name, source.matrices2x2[name]);
             }
 
+            // Vector2Array
+            for (name in source.vectors2Arrays) {
+                material.setArray2(name, source.vectors2Arrays[name]);
+            }
+
             // Vector3Array
             for (name in source.vectors3Arrays) {
                 material.setArray3(name, source.vectors3Arrays[name]);
             }
-            
+
             return material;
         }
     }
-} 
+}

@@ -1,48 +1,44 @@
 {
-  "author": {
-    "name": "David CATUHE"
-  },
-  "contributors": [
-    "David ROUSSET",
-    "Sebastien VANDENBERGHE"
-  ],
-  "name": "babylonjs",
-  "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-  "version": "3.0.4-beta",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/BabylonJS/Babylon.js.git"
-  },
-  "main": "dist/preview release/babylon.max.js",
-  "files": [
-    "dist/preview release/babylon.d.ts",
-    "dist/preview release/babylon.module.d.ts",
-    "dist/preview release/babylon.js",
-    "dist/preview release/babylon.max.js",
-    "dist/preview release/babylon.worker.js",
-    "dist/preview release/gui/babylon.gui.js",
-    "dist/preview release/gui/babylon.gui.min.js",
-    "dist/preview release/gui/babylon.gui.d.ts",
-    "dist/preview release/loaders/babylon.glTFFileLoader.min.js",
-    "dist/preview release/loaders/babylon.objFileLoader.min.js",
-    "dist/preview release/loaders/babylon.stlFileLoader.min.js",
-    "dist/preview release/Oimo.js",
-    "package.json"
-  ],
-  "typings": "dist/preview release/babylon.module.d.ts",
-  "keywords": [
-    "3D",
-    "javascript",
-    "html5",
-    "webgl"
-  ],
-  "license": "Apache-2.0",
-  "dependencies": {},
-  "engines": {
-    "node": "*"
-  },
-  "readme": "Babylon.js is a 3D engine based on webgl and javascript",
-  "readmeFilename": "README.md",
-  "_id": "babylonjs@3.0.4",
-  "_from": "babylonjs@"
+    "author": {
+        "name": "David CATUHE"
+    },
+    "contributors": [
+        "David ROUSSET",
+        "Sebastien VANDENBERGHE",
+        "Raanan Weber"
+    ],
+    "name": "babylonjs",
+    "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
+    "version": "3.2.0-alphaA",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "main": "dist/preview release/babylon.js",
+    "files": [
+        "package.json",
+        "dist/preview release/babylon.d.ts",
+        "dist/preview release/es6.js",
+        "dist/preview release/babylon.js",
+        "dist/preview release/babylon.max.js",
+        "dist/preview release/babylon.worker.js",
+        "dist/preview release/Oimo.js",
+        "readme.md"
+    ],
+    "typings": "dist/preview release/babylon.d.ts",
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl"
+    ],
+    "license": "Apache-2.0",
+    "dependencies": {
+        "cannon": "0.6.2"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "readme": "Babylon.js is a 3D engine based on webgl and javascript",
+    "readmeFilename": "README.md"
 }

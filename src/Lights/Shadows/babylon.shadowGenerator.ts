@@ -3,21 +3,83 @@
      * Interface to implement to create a shadow generator compatible with BJS.
      */
     export interface IShadowGenerator {
-        getShadowMap(): RenderTargetTexture;
-        getShadowMapForRendering(): RenderTargetTexture;
- 
+        /**
+         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+         * @returns The render target texture if present otherwise, null
+         */
+        getShadowMap(): Nullable<RenderTargetTexture>;
+        /**
+         * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
+         * @returns The render target texture if the shadow map is present otherwise, null
+         */
+        getShadowMapForRendering(): Nullable<RenderTargetTexture>;
+
+        /**
+         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+         * @param subMesh The submesh we want to render in the shadow map
+         * @param useInstances Defines wether will draw in the map using instances
+         * @returns true if ready otherwise, false
+         */
         isReady(subMesh: SubMesh, useInstances: boolean): boolean;
 
+        /**
+         * Prepare all the defines in a material relying on a shadow map at the specified light index.
+         * @param defines Defines of the material we want to update
+         * @param lightIndex Index of the light in the enabled light list of the material
+         */
         prepareDefines(defines: MaterialDefines, lightIndex: number): void;
+        /**
+         * Binds the shadow related information inside of an effect (information like near, far, darkness...
+         * defined in the generator but impacting the effect).
+         * It implies the unifroms available on the materials are the standard BJS ones.
+         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
+         * @param effect The effect we are binfing the information for 
+         */
         bindShadowLight(lightIndex: string, effect: Effect): void;
+        /**
+         * Gets the transformation matrix used to project the meshes into the map from the light point of view.
+         * (eq to shadow prjection matrix * light transform matrix)
+         * @returns The transform matrix used to create the shadow map
+         */
         getTransformMatrix(): Matrix;
 
+        /**
+         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
+         * Cube and 2D textures for instance.
+         */
         recreateShadowMap(): void;
 
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param onCompiled Callback triggered at the and of the effects compilation
+         * @param options Sets of optional options forcing the compilation with different modes 
+         */
+        forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void;
+
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes 
+         * @returns A promise that resolves when the compilation completes
+         */
+        forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void>;
+
+        /**
+         * Serializes the shadow generator setup to a json object.
+         * @returns The serialized JSON object 
+         */
         serialize(): any;
+
+        /**
+         * Disposes the Shadow map and related Textures and effects.
+         */
         dispose(): void;
     }
- 
+
+    /**
+     * Default implementation of @see IShadowGenerator.
+     * This is the main object responsible of generating shadows in the framework.
+     * Documentation: https://doc.babylonjs.com/babylon101/shadows
+     */
     export class ShadowGenerator implements IShadowGenerator {
         private static _FILTER_NONE = 0;
         private static _FILTER_EXPONENTIALSHADOWMAP = 1;
@@ -26,44 +88,81 @@
         private static _FILTER_CLOSEEXPONENTIALSHADOWMAP = 4;
         private static _FILTER_BLURCLOSEEXPONENTIALSHADOWMAP = 5;
 
-        // Static
+        /**
+         * Shadow generator mode None: no filtering applied.
+         */
         public static get FILTER_NONE(): number {
             return ShadowGenerator._FILTER_NONE;
         }
 
+        /**
+         * Shadow generator mode Poisson Sampling: Percentage Closer Filtering.
+         * (Multiple Tap around evenly distributed around the pixel are used to evaluate the shadow strength)
+         */
         public static get FILTER_POISSONSAMPLING(): number {
             return ShadowGenerator._FILTER_POISSONSAMPLING;
         }
 
+        /**
+         * Shadow generator mode ESM: Exponential Shadow Mapping.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
         public static get FILTER_EXPONENTIALSHADOWMAP(): number {
             return ShadowGenerator._FILTER_EXPONENTIALSHADOWMAP;
         }
 
+        /**
+         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
         public static get FILTER_BLUREXPONENTIALSHADOWMAP(): number {
             return ShadowGenerator._FILTER_BLUREXPONENTIALSHADOWMAP;
         }
 
+        /**
+         * Shadow generator mode ESM: Exponential Shadow Mapping using the inverse of the exponential preventing 
+         * edge artifacts on steep falloff.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
         public static get FILTER_CLOSEEXPONENTIALSHADOWMAP(): number {
             return ShadowGenerator._FILTER_CLOSEEXPONENTIALSHADOWMAP;
         }
 
+        /**
+         * Shadow generator mode ESM: Blurred Exponential Shadow Mapping using the inverse of the exponential preventing 
+         * edge artifacts on steep falloff.
+         * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
+         */
         public static get FILTER_BLURCLOSEEXPONENTIALSHADOWMAP(): number {
             return ShadowGenerator._FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
         }
 
-        // Members
         private _bias = 0.00005;
+        /**
+         * Gets the bias: offset applied on the depth preventing acnea.
+         */
         public get bias(): number {
             return this._bias;
         }
+        /**
+         * Sets the bias: offset applied on the depth preventing acnea.
+         */
         public set bias(bias: number) {
             this._bias = bias;
         }
 
         private _blurBoxOffset = 1;
+        /**
+         * Gets the blur box offset: offset applied during the blur pass.
+         * Only usefull if useKernelBlur = false
+         */
         public get blurBoxOffset(): number {
             return this._blurBoxOffset;
         }
+        /**
+         * Sets the blur box offset: offset applied during the blur pass.
+         * Only usefull if useKernelBlur = false
+         */
         public set blurBoxOffset(value: number) {
             if (this._blurBoxOffset === value) {
                 return;
@@ -74,9 +173,17 @@
         }
 
         private _blurScale = 2;
+        /**
+         * Gets the blur scale: scale of the blurred texture compared to the main shadow map.
+         * 2 means half of the size.
+         */
         public get blurScale(): number {
             return this._blurScale;
         }
+        /**
+         * Sets the blur scale: scale of the blurred texture compared to the main shadow map.
+         * 2 means half of the size.
+         */
         public set blurScale(value: number) {
             if (this._blurScale === value) {
                 return;
@@ -87,9 +194,17 @@
         }
 
         private _blurKernel = 1;
+        /**
+         * Gets the blur kernel: kernel size of the blur pass.
+         * Only usefull if useKernelBlur = true
+         */
         public get blurKernel(): number {
             return this._blurKernel;
         }
+        /**
+         * Sets the blur kernel: kernel size of the blur pass.
+         * Only usefull if useKernelBlur = true
+         */
         public set blurKernel(value: number) {
             if (this._blurKernel === value) {
                 return;
@@ -100,9 +215,17 @@
         }
 
         private _useKernelBlur = false;
+        /**
+         * Gets whether the blur pass is a kernel blur (if true) or box blur.
+         * Only usefull in filtered mode (useBlurExponentialShadowMap...)
+         */
         public get useKernelBlur(): boolean {
             return this._useKernelBlur;
         }
+        /**
+         * Sets whether the blur pass is a kernel blur (if true) or box blur.
+         * Only usefull in filtered mode (useBlurExponentialShadowMap...)
+         */
         public set useKernelBlur(value: boolean) {
             if (this._useKernelBlur === value) {
                 return;
@@ -113,17 +236,32 @@
         }
 
         private _depthScale: number;
+        /**
+         * Gets the depth scale used in ESM mode.
+         */
         public get depthScale(): number {
             return this._depthScale !== undefined ? this._depthScale : this._light.getDepthScale();
         }
+        /**
+         * Sets the depth scale used in ESM mode.
+         * This can override the scale stored on the light.
+         */
         public set depthScale(value: number) {
             this._depthScale = value;
         }
 
         private _filter = ShadowGenerator.FILTER_NONE;
+        /**
+         * Gets the current mode of the shadow generator (normal, PCF, ESM...).
+         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
+         */
         public get filter(): number {
             return this._filter;
         }
+        /**
+         * Sets the current mode of the shadow generator (normal, PCF, ESM...).
+         * The returned value is a number equal to one of the available mode defined in ShadowMap.FILTER_x like _FILTER_NONE
+         */
         public set filter(value: number) {
             // Blurring the cubemap is going to be too expensive. Reverting to unblurred version
             if (this._light.needCube()) {
@@ -147,70 +285,138 @@
             this._light._markMeshesAsLightDirty();
         }
 
+        /**
+         * Gets if the current filter is set to Poisson Sampling aka PCF.
+         */
         public get usePoissonSampling(): boolean {
             return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
         }
-
+        /**
+         * Sets the current filter to Poisson Sampling aka PCF.
+         */
         public set usePoissonSampling(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_POISSONSAMPLING) {
+                return;
+            }
+
             this.filter = (value ? ShadowGenerator.FILTER_POISSONSAMPLING : ShadowGenerator.FILTER_NONE);
         }
 
+        /**
+         * Gets if the current filter is set to VSM.
+         * DEPRECATED. Should use useExponentialShadowMap instead.
+         */
         public get useVarianceShadowMap(): boolean {
             Tools.Warn("VSM are now replaced by ESM. Please use useExponentialShadowMap instead.");
             return this.useExponentialShadowMap;
         }
+        /**
+         * Sets the current filter is to VSM.
+         * DEPRECATED. Should use useExponentialShadowMap instead.
+         */
         public set useVarianceShadowMap(value: boolean) {
             Tools.Warn("VSM are now replaced by ESM. Please use useExponentialShadowMap instead.");
             this.useExponentialShadowMap = value;
         }
 
+        /**
+         * Gets if the current filter is set to blurred VSM.
+         * DEPRECATED. Should use useBlurExponentialShadowMap instead.
+         */
         public get useBlurVarianceShadowMap(): boolean {
             Tools.Warn("VSM are now replaced by ESM. Please use useBlurExponentialShadowMap instead.");
             return this.useBlurExponentialShadowMap;
         }
+        /**
+         * Sets the current filter is to blurred VSM.
+         * DEPRECATED. Should use useBlurExponentialShadowMap instead.
+         */
         public set useBlurVarianceShadowMap(value: boolean) {
             Tools.Warn("VSM are now replaced by ESM. Please use useBlurExponentialShadowMap instead.");
             this.useBlurExponentialShadowMap = value;
         }
 
+        /**
+         * Gets if the current filter is set to ESM.
+         */
         public get useExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP;
         }
+        /**
+         * Sets the current filter is to ESM.
+         */
         public set useExponentialShadowMap(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP) {
+                return;
+            }
             this.filter = (value ? ShadowGenerator.FILTER_EXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
+        /**
+         * Gets if the current filter is set to filtered ESM.
+         */
         public get useBlurExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP;
         }
+        /**
+         * Gets if the current filter is set to filtered  ESM.
+         */
         public set useBlurExponentialShadowMap(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP) {
+                return;
+            }
             this.filter = (value ? ShadowGenerator.FILTER_BLUREXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
+        /**
+         * Gets if the current filter is set to "close ESM" (using the inverse of the 
+         * exponential to prevent steep falloff artifacts).
+         */
         public get useCloseExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP;
         }
+        /**
+         * Sets the current filter to "close ESM" (using the inverse of the 
+         * exponential to prevent steep falloff artifacts).
+         */
         public set useCloseExponentialShadowMap(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP) {
+                return;
+            }
             this.filter = (value ? ShadowGenerator.FILTER_CLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
+        /**
+         * Gets if the current filter is set to filtered "close ESM" (using the inverse of the 
+         * exponential to prevent steep falloff artifacts).
+         */
         public get useBlurCloseExponentialShadowMap(): boolean {
             return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
         }
+        /**
+         * Sets the current filter to fileterd "close ESM" (using the inverse of the 
+         * exponential to prevent steep falloff artifacts).
+         */
         public set useBlurCloseExponentialShadowMap(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
+                return;
+            }
             this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
         }
 
         private _darkness = 0;
         /**
-         * Returns the darkness value (float).  
+         * Returns the darkness value (float). This can only decrease the actual darkness of a shadow.
+         * 0 means strongest and 1 would means no shadow.
+         * @returns the darkness.
          */
         public getDarkness(): number {
             return this._darkness;
         }
         /**
-         * Sets the ShadowGenerator darkness value (float <= 1.0).  
-         * Returns the ShadowGenerator.  
+         * Sets the darkness value (float). This can only decrease the actual darkness of a shadow.
+         * @param darkness The darkness value 0 means strongest and 1 would means no shadow.
+         * @returns the shadow generator allowing fluent coding.
          */
         public setDarkness(darkness: number): ShadowGenerator {
             if (darkness >= 1.0)
@@ -221,29 +427,32 @@
                 this._darkness = darkness;
             return this;
         }
-        
+
         private _transparencyShadow = false;
         /**
-         * Sets the ability to have transparent shadow (boolean).  
-         * Returns the ShadowGenerator.  
+         * Sets the ability to have transparent shadow (boolean).
+         * @param transparent True if transparent else False
+         * @returns the shadow generator allowing fluent coding
          */
-        public setTransparencyShadow(hasShadow: boolean): ShadowGenerator {
-            this._transparencyShadow = hasShadow;
+        public setTransparencyShadow(transparent: boolean): ShadowGenerator {
+            this._transparencyShadow = transparent;
             return this;
         }
 
-        private _shadowMap: RenderTargetTexture;
-        private _shadowMap2: RenderTargetTexture;
+        private _shadowMap: Nullable<RenderTargetTexture>;
+        private _shadowMap2: Nullable<RenderTargetTexture>;
         /**
-         * Returns a RenderTargetTexture object : the shadow map texture.  
+         * Gets the main RTT containing the shadow map (usually storing depth from the light point of view).
+         * @returns The render target texture if present otherwise, null
          */
-        public getShadowMap(): RenderTargetTexture {
+        public getShadowMap(): Nullable<RenderTargetTexture> {
             return this._shadowMap;
         }
         /**
-         * Returns the most ready computed shadow map as a RenderTargetTexture object.  
+         * Gets the RTT used during rendering (can be a blurred version of the shadow map or the shadow map itself).
+         * @returns The render target texture if the shadow map is present otherwise, null
          */
-        public getShadowMapForRendering(): RenderTargetTexture {
+        public getShadowMapForRendering(): Nullable<RenderTargetTexture> {
             if (this._shadowMap2) {
                 return this._shadowMap2;
             }
@@ -251,14 +460,76 @@
             return this._shadowMap;
         }
 
+        /**
+         * Helper function to add a mesh and its descendants to the list of shadow casters.
+         * @param mesh Mesh to add
+         * @param includeDescendants boolean indicating if the descendants should be added. Default to true
+         * @returns the Shadow Generator itself
+         */
+        public addShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
+            if (!this._shadowMap) {
+                return this;
+            }
+
+            if (!this._shadowMap.renderList) {
+                this._shadowMap.renderList = [];
+            }
+
+            this._shadowMap.renderList.push(mesh);
+
+            if (includeDescendants) {
+                this._shadowMap.renderList.push(...mesh.getChildMeshes());
+            }
+
+            return this;
+        }
+
+        /**
+         * Helper function to remove a mesh and its descendants from the list of shadow casters
+         * @param mesh Mesh to remove
+         * @param includeDescendants boolean indicating if the descendants should be removed. Default to true
+         * @returns the Shadow Generator itself
+         */
+        public removeShadowCaster(mesh: AbstractMesh, includeDescendants = true): ShadowGenerator {
+            if (!this._shadowMap || !this._shadowMap.renderList) {
+                return this;
+            }
+
+            var index = this._shadowMap.renderList.indexOf(mesh);
+
+            if (index !== -1) {
+                this._shadowMap.renderList.splice(index, 1);
+            }
+
+            if (includeDescendants) {
+                for (var child of mesh.getChildren()) {
+                    this.removeShadowCaster(<any>child);
+                }
+            }
+
+            return this;
+        }
+
+        /**
+         * Controls the extent to which the shadows fade out at the edge of the frustum
+         * Used only by directionals and spots
+         */
+        public frustumEdgeFalloff = 0;
+
         private _light: IShadowLight;
         /**
-         * Returns the associated light object.  
+         * Returns the associated light object.
+         * @returns the light generating the shadow
          */
         public getLight(): IShadowLight {
             return this._light;
         }
 
+        /**
+         * If true the shadow map is generated by rendering the back face of the mesh instead of the front face.
+         * This can help with self-shadowing as the geometry making up the back of objects is slightly offset.
+         * It might on the other hand introduce peter panning.
+         */
         public forceBackFacesOnly = false;
 
         private _scene: Scene;
@@ -269,32 +540,28 @@
         private _viewMatrix = Matrix.Zero();
         private _projectionMatrix = Matrix.Zero();
         private _transformMatrix = Matrix.Zero();
-        private _worldViewProjection = Matrix.Zero();
         private _cachedPosition: Vector3;
         private _cachedDirection: Vector3;
         private _cachedDefines: string;
         private _currentRenderID: number;
-        private _downSamplePostprocess: PassPostProcess;
-        private _boxBlurPostprocess: PostProcess;
-        private _kernelBlurXPostprocess: PostProcess;
-        private _kernelBlurYPostprocess: PostProcess;
+        private _boxBlurPostprocess: Nullable<PostProcess>;
+        private _kernelBlurXPostprocess: Nullable<PostProcess>;
+        private _kernelBlurYPostprocess: Nullable<PostProcess>;
         private _blurPostProcesses: PostProcess[];
         private _mapSize: number;
         private _currentFaceIndex = 0;
         private _currentFaceIndexCache = 0;
         private _textureType: number;
-        private _isCube = false;
         private _defaultTextureMatrix = Matrix.Identity();
 
         /**
-         * Creates a ShadowGenerator object.  
-         * A ShadowGenerator is the required tool to use the shadows.  
-         * Each light casting shadows needs to use its own ShadowGenerator.  
-         * Required parameters : 
-         * - `mapSize` (integer): the size of the texture what stores the shadows. Example : 1024.    
-         * - `light`: the light object generating the shadows.  
-         * - `useFullFloatFirst`: by default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
+         * Creates a ShadowGenerator object.
+         * A ShadowGenerator is the required tool to use the shadows.
+         * Each light casting shadows needs to use its own ShadowGenerator.
          * Documentation : http://doc.babylonjs.com/tutorials/shadows  
+         * @param mapSize The size of the texture what stores the shadows. Example : 1024.
+         * @param light The light object generating the shadows.  
+         * @param useFullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
          */
         constructor(mapSize: number, light: IShadowLight, useFullFloatFirst?: boolean) {
             this._mapSize = mapSize;
@@ -343,6 +610,7 @@
             this._shadowMap.anisotropicFilteringLevel = 1;
             this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             this._shadowMap.renderParticles = false;
+            this._shadowMap.ignoreCameraViewport = true;
 
             // Record Face Index before render.
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
@@ -357,12 +625,11 @@
                 if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
                     return;
                 }
+                let shadowMap = this.getShadowMapForRendering();
 
-                if (!this._blurPostProcesses) {
-                    this._initializeBlurRTTAndPostProcesses();
+                if (shadowMap) {
+                    this._scene.postProcessManager.directRender(this._blurPostProcesses, shadowMap.getInternalTexture(), true);
                 }
-
-                this._scene.postProcessManager.directRender(this._blurPostProcesses, this.getShadowMapForRendering().getInternalTexture());
             });
 
             // Clear according to the chosen filter.
@@ -420,8 +687,18 @@
             }
         }
 
-        private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void {
+        private _renderForShadowMap(opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void {
             var index: number;
+            let engine = this._scene.getEngine();
+
+            if (depthOnlySubMeshes.length) {
+                engine.setColorWrite(false);
+                for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                    this._renderSubMeshForShadowMap(depthOnlySubMeshes.data[index]);
+                }
+                engine.setColorWrite(true);
+            }
+
             for (index = 0; index < opaqueSubMeshes.length; index++) {
                 this._renderSubMeshForShadowMap(opaqueSubMeshes.data[index]);
             }
@@ -441,9 +718,14 @@
             var mesh = subMesh.getRenderingMesh();
             var scene = this._scene;
             var engine = scene.getEngine();
+            let material = subMesh.getMaterial();
+
+            if (!material) {
+                return;
+            }
 
             // Culling
-            engine.setState(subMesh.getMaterial().backFaceCulling);
+            engine.setState(material.backFaceCulling);
 
             // Managing instances
             var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -455,14 +737,15 @@
             if (this.isReady(subMesh, hardwareInstancedRendering)) {
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
-                var material = subMesh.getMaterial();
 
                 this._effect.setFloat2("biasAndScale", this.bias, this.depthScale);
 
                 this._effect.setMatrix("viewProjection", this.getTransformMatrix());
                 this._effect.setVector3("lightPosition", this.getLight().position);
-                
-                this._effect.setFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
+
+                if (scene.activeCamera) {
+                    this._effect.setFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
+                }
 
                 // Alpha test
                 if (material && material.needAlphaTesting()) {
@@ -475,7 +758,7 @@
 
                 // Bones
                 if (mesh.useBones && mesh.computeBonesUsingShaders) {
-                    this._effect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
+                    this._effect.setMatrices("mBones", (<Skeleton>mesh.skeleton).getTransformMatrices((mesh)));
                 }
 
                 if (this.forceBackFacesOnly) {
@@ -491,11 +774,17 @@
                 }
             } else {
                 // Need to reset refresh rate of the shadowMap
-                this._shadowMap.resetRefreshCounter();
+                if (this._shadowMap) {
+                    this._shadowMap.resetRefreshCounter();
+                }
             }
         }
 
         private _applyFilterValues(): void {
+            if (!this._shadowMap) {
+                return;
+            }
+
             if (this.filter === ShadowGenerator.FILTER_NONE) {
                 this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             } else {
@@ -504,7 +793,83 @@
         }
 
         /**
-         * Boolean : true when the ShadowGenerator is finally computed.  
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param onCompiled Callback triggered at the and of the effects compilation
+         * @param options Sets of optional options forcing the compilation with different modes 
+         */
+        public forceCompilation(onCompiled?: (generator: ShadowGenerator) => void, options?: Partial<{ useInstances: boolean }>): void {
+            let localOptions = {
+                useInstances: false,
+                ...options
+            };
+
+            let shadowMap = this.getShadowMap();
+            if (!shadowMap) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+
+            let renderList = shadowMap.renderList;
+            if (!renderList) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+
+            var subMeshes = new Array<SubMesh>();
+            for (var mesh of renderList) {
+                subMeshes.push(...mesh.subMeshes);
+            }
+            if (subMeshes.length === 0) {
+                if (onCompiled) {
+                    onCompiled(this);
+                }
+                return;
+            }
+
+            var currentIndex = 0;
+
+            var checkReady = () => {
+                if (!this._scene || !this._scene.getEngine()) {
+                    return;
+                }
+
+                while (this.isReady(subMeshes[currentIndex], localOptions.useInstances)) {
+                    currentIndex++;
+                    if (currentIndex >= subMeshes.length) {
+                        if (onCompiled) {
+                            onCompiled(this);
+                        }
+                        return;
+                    }
+                }
+                setTimeout(checkReady, 16);
+            };
+
+            checkReady();
+        }
+
+        /**
+         * Forces all the attached effect to compile to enable rendering only once ready vs. lazyly compiling effects.
+         * @param options Sets of optional options forcing the compilation with different modes 
+         * @returns A promise that resolves when the compilation completes
+         */
+        public forceCompilationAsync(options?: Partial<{ useInstances: boolean }>): Promise<void> {
+            return new Promise(resolve => {
+                this.forceCompilation(() => {
+                    resolve();
+                }, options);
+            });
+        }
+
+        /**
+         * Determine wheter the shadow generator is ready or not (mainly all effects and related post processes needs to be ready).
+         * @param subMesh The submesh we want to render in the shadow map
+         * @param useInstances Defines wether will draw in the map using instances
+         * @returns true if ready otherwise, false
          */
         public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var defines = [];
@@ -549,7 +914,7 @@
                     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + ((<Skeleton>mesh.skeleton).bones.length + 1));
             } else {
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
@@ -573,13 +938,35 @@
                     ["diffuseSampler"], join);
             }
 
-            return this._effect.isReady();
+            if (!this._effect.isReady()) {
+                return false;
+            }
+
+            if (this.useBlurExponentialShadowMap || this.useBlurCloseExponentialShadowMap) {
+                if (!this._blurPostProcesses || !this._blurPostProcesses.length) {
+                    this._initializeBlurRTTAndPostProcesses();
+                }
+            }
+
+            if (this._kernelBlurXPostprocess && !this._kernelBlurXPostprocess.isReady()) {
+                return false;
+            }
+            if (this._kernelBlurYPostprocess && !this._kernelBlurYPostprocess.isReady()) {
+                return false;
+            }
+            if (this._boxBlurPostprocess && !this._boxBlurPostprocess.isReady()) {
+                return false;
+            }
+
+            return true;
         }
 
         /**
-         * This creates the defines related to the standard BJS materials.
+         * Prepare all the defines in a material relying on a shadow map at the specified light index.
+         * @param defines Defines of the material we want to update
+         * @param lightIndex Index of the light in the enabled light list of the material
          */
-        public prepareDefines(defines: MaterialDefines, lightIndex: number): void {
+        public prepareDefines(defines: any, lightIndex: number): void {
             var scene = this._scene;
             var light = this._light;
 
@@ -591,7 +978,7 @@
 
             if (this.usePoissonSampling) {
                 defines["SHADOWPCF" + lightIndex] = true;
-            } 
+            }
             else if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 defines["SHADOWESM" + lightIndex] = true;
             }
@@ -605,8 +992,10 @@
         }
 
         /**
-         * This binds shadow lights related to the standard BJS materials.
-         * It implies the unifroms available on the materials are the standard BJS ones.
+         * Binds the shadow related information inside of an effect (information like near, far, darkness...
+         * defined in the generator but impacting the effect).
+         * @param lightIndex Index of the light in the enabled light list of the material owning the effect
+         * @param effect The effect we are binfing the information for 
          */
         public bindShadowLight(lightIndex: string, effect: Effect): void {
             var light = this._light;
@@ -616,17 +1005,29 @@
                 return;
             }
 
+            let camera = scene.activeCamera;
+            if (!camera) {
+                return;
+            }
+
+            let shadowMap = this.getShadowMap();
+
+            if (!shadowMap) {
+                return;
+            }
+
             if (!light.needCube()) {
                 effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
-            } 
+            }
             effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
-            light._uniformBuffer.updateFloat3("shadowsInfo", this.getDarkness(), this.blurScale / this.getShadowMap().getSize().width, this.depthScale, lightIndex);
-            light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera), lightIndex);
+            light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
+            light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
         }
 
-        // Methods
         /**
-         * Returns a Matrix object : the updated transformation matrix.  
+         * Gets the transformation matrix used to project the meshes into the map from the light point of view.
+         * (eq to shadow prjection matrix * light transform matrix)
+         * @returns The transform matrix used to create the shadow map
          */
         public getTransformMatrix(): Matrix {
             var scene = this._scene;
@@ -654,7 +1055,15 @@
 
                 Matrix.LookAtLHToRef(lightPosition, lightPosition.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
 
-                this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, this.getShadowMap().renderList);
+                let shadowMap = this.getShadowMap();
+
+                if (shadowMap) {
+                    let renderList = shadowMap.renderList;
+
+                    if (renderList) {
+                        this._light.setShadowProjectionMatrix(this._projectionMatrix, this._viewMatrix, renderList);
+                    }
+                }
 
                 this._viewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
             }
@@ -662,9 +1071,18 @@
             return this._transformMatrix;
         }
 
+        /**
+         * Recreates the shadow map dependencies like RTT and post processes. This can be used during the switch between
+         * Cube and 2D textures for instance.
+         */
         public recreateShadowMap(): void {
+            let shadowMap = this._shadowMap;
+            if (!shadowMap) {
+                return;
+            }
+
             // Track render list.
-            var renderList = this._shadowMap.renderList;
+            var renderList = shadowMap.renderList;
             // Clean up existing data.
             this._disposeRTTandPostProcesses();
             // Reinitializes.
@@ -674,18 +1092,13 @@
             // Reaffect the filter.
             this._applyFilterValues();
             // Reaffect Render List.
-            this._shadowMap.renderList = renderList;
+            this._shadowMap!.renderList = renderList;
         }
 
         private _disposeBlurPostProcesses(): void {
             if (this._shadowMap2) {
                 this._shadowMap2.dispose();
                 this._shadowMap2 = null;
-            }
-
-            if (this._downSamplePostprocess) {
-                this._downSamplePostprocess.dispose();
-                this._downSamplePostprocess = null;
             }
 
             if (this._boxBlurPostprocess) {
@@ -703,7 +1116,7 @@
                 this._kernelBlurYPostprocess = null;
             }
 
-            this._blurPostProcesses = null;
+            this._blurPostProcesses = [];
         }
 
         private _disposeRTTandPostProcesses(): void {
@@ -722,15 +1135,23 @@
         public dispose(): void {
             this._disposeRTTandPostProcesses();
 
-            this._light._shadowGenerator = null;
-            this._light._markMeshesAsLightDirty();
+            if (this._light) {
+                this._light._shadowGenerator = null;
+                this._light._markMeshesAsLightDirty();
+            }
         }
+
         /**
-         * Serializes the ShadowGenerator and returns a serializationObject.  
+         * Serializes the shadow generator setup to a json object.
+         * @returns The serialized JSON object 
          */
         public serialize(): any {
             var serializationObject: any = {};
             var shadowMap = this.getShadowMap();
+
+            if (!shadowMap) {
+                return serializationObject;
+            }
 
             serializationObject.lightId = this._light.id;
             serializationObject.mapSize = shadowMap.getRenderSize();
@@ -749,16 +1170,22 @@
             serializationObject.transparencyShadow = this._transparencyShadow;
 
             serializationObject.renderList = [];
-            for (var meshIndex = 0; meshIndex < shadowMap.renderList.length; meshIndex++) {
-                var mesh = shadowMap.renderList[meshIndex];
+            if (shadowMap.renderList) {
+                for (var meshIndex = 0; meshIndex < shadowMap.renderList.length; meshIndex++) {
+                    var mesh = shadowMap.renderList[meshIndex];
 
-                serializationObject.renderList.push(mesh.id);
+                    serializationObject.renderList.push(mesh.id);
+                }
             }
 
             return serializationObject;
         }
+
         /**
-         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.  
+         * Parses a serialized ShadowGenerator and returns a new ShadowGenerator.
+         * @param parsedShadowGenerator The JSON object to parse
+         * @param scene The scene to create the shadow map for
+         * @returns The parsed shadow generator
          */
         public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
             //casting to point light, as light is missing the position attr and typescript complains.
@@ -769,6 +1196,12 @@
             for (var meshIndex = 0; meshIndex < parsedShadowGenerator.renderList.length; meshIndex++) {
                 var meshes = scene.getMeshesByID(parsedShadowGenerator.renderList[meshIndex]);
                 meshes.forEach(function (mesh) {
+                    if (!shadowMap) {
+                        return;
+                    }
+                    if (!shadowMap.renderList) {
+                        shadowMap.renderList = [];
+                    }
                     shadowMap.renderList.push(mesh);
                 });
             }
@@ -785,7 +1218,7 @@
             else if (parsedShadowGenerator.useCloseExponentialShadowMap) {
                 shadowGenerator.useCloseExponentialShadowMap = true;
             }
-            else if (parsedShadowGenerator.useBlurExponentialShadowMap) {
+            else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
                 shadowGenerator.useBlurCloseExponentialShadowMap = true;
             }
 

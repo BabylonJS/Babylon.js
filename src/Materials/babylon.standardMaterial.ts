@@ -1,18 +1,28 @@
 module BABYLON {
-   export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    /** @ignore */
+    export class StandardMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+        public MAINUV1 = false;
+        public MAINUV2 = false;
         public DIFFUSE = false;
+        public DIFFUSEDIRECTUV = 0;
         public AMBIENT = false;
+        public AMBIENTDIRECTUV = 0;
         public OPACITY = false;
+        public OPACITYDIRECTUV = 0;
         public OPACITYRGB = false;
         public REFLECTION = false;
         public EMISSIVE = false;
+        public EMISSIVEDIRECTUV = 0;
         public SPECULAR = false;
+        public SPECULARDIRECTUV = 0;
         public BUMP = false;
+        public BUMPDIRECTUV = 0;
         public PARALLAX = false;
         public PARALLAXOCCLUSION = false;
         public SPECULAROVERALPHA = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public ALPHAFROMDIFFUSE = false;
         public POINTSIZE = false;
         public FOG = false;
@@ -37,11 +47,14 @@ module BABYLON {
         public LINKEMISSIVEWITHDIFFUSE = false;
         public REFLECTIONFRESNELFROMSPECULAR = false;
         public LIGHTMAP = false;
+        public LIGHTMAPDIRECTUV = 0;
+        public OBJECTSPACE_NORMALMAP = false;
         public USELIGHTMAPASSHADOWMAP = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
         public REFLECTIONMAP_CUBIC = false;
+        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
@@ -53,15 +66,14 @@ module BABYLON {
         public REFRACTION = false;
         public REFRACTIONMAP_3D = false;
         public REFLECTIONOVERALPHA = false;
-        public INVERTNORMALMAPX = false;
-        public INVERTNORMALMAPY = false;
         public TWOSIDEDLIGHTING = false;
         public SHADOWFLOAT = false;
         public MORPHTARGETS = false;
         public MORPHTARGETS_NORMAL = false;
         public MORPHTARGETS_TANGENT = false;
         public NUM_MORPH_INFLUENCERS = 0;
-        public USERIGHTHANDEDSYSTEM = false;
+        public NONUNIFORMSCALING = false; // https://playground.babylonjs.com#V6DWIH
+        public PREMULTIPLYALPHA = false; // https://playground.babylonjs.com#LNVJJ7
 
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
@@ -71,6 +83,7 @@ module BABYLON {
         public CONTRAST = false;
         public COLORCURVES = false;
         public COLORGRADING = false;
+        public COLORGRADING3D = false;
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
@@ -83,63 +96,63 @@ module BABYLON {
 
         public setReflectionMode(modeToEnable: string) {
             var modes = [
-                            "REFLECTIONMAP_CUBIC", "REFLECTIONMAP_EXPLICIT", "REFLECTIONMAP_PLANAR",
-                            "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_SKYBOX",
-                            "REFLECTIONMAP_SPHERICAL", "REFLECTIONMAP_EQUIRECTANGULAR", "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
-                            "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED"
-                        ];
+                "REFLECTIONMAP_CUBIC", "REFLECTIONMAP_EXPLICIT", "REFLECTIONMAP_PLANAR",
+                "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_SKYBOX",
+                "REFLECTIONMAP_SPHERICAL", "REFLECTIONMAP_EQUIRECTANGULAR", "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
+                "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED"
+            ];
 
             for (var mode of modes) {
-                this[mode] = (mode === modeToEnable);
+                (<any>this)[mode] = (mode === modeToEnable);
             }
         }
     }
 
     export class StandardMaterial extends PushMaterial {
         @serializeAsTexture("diffuseTexture")
-        private _diffuseTexture: BaseTexture;
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public diffuseTexture: BaseTexture;
+        private _diffuseTexture: Nullable<BaseTexture>;;
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+        public diffuseTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("ambientTexture")
-        private _ambientTexture: BaseTexture;
+        private _ambientTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public ambientTexture: BaseTexture;
+        public ambientTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("opacityTexture")
-        private _opacityTexture: BaseTexture;        
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public opacityTexture: BaseTexture;    
+        private _opacityTexture: Nullable<BaseTexture>;;
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+        public opacityTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("reflectionTexture")
-        private _reflectionTexture: BaseTexture;
+        private _reflectionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionTexture: BaseTexture;        
+        public reflectionTexture: Nullable<BaseTexture>;
 
         @serializeAsTexture("emissiveTexture")
-        private _emissiveTexture: BaseTexture;
+        private _emissiveTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public emissiveTexture: BaseTexture;     
+        public emissiveTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("specularTexture")
-        private _specularTexture: BaseTexture;
+        private _specularTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public specularTexture: BaseTexture;             
+        public specularTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("bumpTexture")
-        private _bumpTexture: BaseTexture;
+        private _bumpTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture: BaseTexture;         
+        public bumpTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("lightmapTexture")
-        private _lightmapTexture: BaseTexture;
+        private _lightmapTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public lightmapTexture: BaseTexture;            
+        public lightmapTexture: Nullable<BaseTexture>;;
 
         @serializeAsTexture("refractionTexture")
-        private _refractionTexture: BaseTexture;
+        private _refractionTexture: Nullable<BaseTexture>;;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public refractionTexture: BaseTexture;   
+        public refractionTexture: Nullable<BaseTexture>;;
 
         @serializeAsColor3("ambient")
         public ambientColor = new Color3(0, 0, 0);
@@ -159,42 +172,50 @@ module BABYLON {
         @serialize("useAlphaFromDiffuseTexture")
         private _useAlphaFromDiffuseTexture = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useAlphaFromDiffuseTexture: boolean;      
+        public useAlphaFromDiffuseTexture: boolean;
 
         @serialize("useEmissiveAsIllumination")
         private _useEmissiveAsIllumination = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useEmissiveAsIllumination: boolean;           
-      
+        public useEmissiveAsIllumination: boolean;
+
         @serialize("linkEmissiveWithDiffuse")
         private _linkEmissiveWithDiffuse = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public linkEmissiveWithDiffuse: boolean;                    
+        public linkEmissiveWithDiffuse: boolean;
 
         @serialize("useSpecularOverAlpha")
         private _useSpecularOverAlpha = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useSpecularOverAlpha: boolean;               
+        public useSpecularOverAlpha: boolean;
 
         @serialize("useReflectionOverAlpha")
         private _useReflectionOverAlpha = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useReflectionOverAlpha: boolean;               
+        public useReflectionOverAlpha: boolean;
 
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
 
+        @serialize("useObjectSpaceNormalMap")
+        private _useObjectSpaceNormalMap = false;
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useObjectSpaceNormalMap: boolean;
+
         @serialize("useParallax")
         private _useParallax = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useParallax: boolean;            
+        public useParallax: boolean;
 
         @serialize("useParallaxOcclusion")
         private _useParallaxOcclusion = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useParallaxOcclusion: boolean;                  
+        public useParallaxOcclusion: boolean;
 
         @serialize()
         public parallaxScaleBias = 0.05;
@@ -202,7 +223,7 @@ module BABYLON {
         @serialize("roughness")
         private _roughness = 0;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public roughness: number;            
+        public roughness: number;
 
         @serialize()
         public indexOfRefraction = 0.98;
@@ -213,49 +234,49 @@ module BABYLON {
         @serialize("useLightmapAsShadowmap")
         private _useLightmapAsShadowmap = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useLightmapAsShadowmap: boolean;             
+        public useLightmapAsShadowmap: boolean;
 
         // Fresnel
         @serializeAsFresnelParameters("diffuseFresnelParameters")
         private _diffuseFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public diffuseFresnelParameters: FresnelParameters;            
+        public diffuseFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters("opacityFresnelParameters")
         private _opacityFresnelParameters: FresnelParameters;
-        @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public opacityFresnelParameters: FresnelParameters;            
-           
+        @expandToProperty("_markAllSubMeshesAsFresnelAndMiscDirty")
+        public opacityFresnelParameters: FresnelParameters;
+
 
         @serializeAsFresnelParameters("reflectionFresnelParameters")
         private _reflectionFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public reflectionFresnelParameters: FresnelParameters;             
+        public reflectionFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters("refractionFresnelParameters")
         private _refractionFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public refractionFresnelParameters: FresnelParameters;           
+        public refractionFresnelParameters: FresnelParameters;
 
         @serializeAsFresnelParameters("emissiveFresnelParameters")
         private _emissiveFresnelParameters: FresnelParameters;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public emissiveFresnelParameters: FresnelParameters;            
+        public emissiveFresnelParameters: FresnelParameters;
 
         @serialize("useReflectionFresnelFromSpecular")
-        private _useReflectionFresnelFromSpecular = false;    
+        private _useReflectionFresnelFromSpecular = false;
         @expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        public useReflectionFresnelFromSpecular: boolean;                 
+        public useReflectionFresnelFromSpecular: boolean;
 
         @serialize("useGlossinessFromSpecularMapAlpha")
         private _useGlossinessFromSpecularMapAlpha = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public useGlossinessFromSpecularMapAlpha: boolean;           
-  
+        public useGlossinessFromSpecularMapAlpha: boolean;
+
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number;                   
+        public maxSimultaneousLights: number;
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
@@ -279,7 +300,7 @@ module BABYLON {
         @serialize("twoSidedLighting")
         private _twoSidedLighting = false;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public twoSidedLighting: boolean;     
+        public twoSidedLighting: boolean;
 
         /**
          * Default configuration related to image processing available in the standard Material.
@@ -308,13 +329,13 @@ module BABYLON {
         /**
          * Keep track of the image processing observer to allow dispose and replace.
          */
-        private _imageProcessingObserver: Observer<ImageProcessingConfiguration>;
+        private _imageProcessingObserver: Nullable<Observer<ImageProcessingConfiguration>>;
 
         /**
          * Attaches a new image processing configuration to the Standard Material.
          * @param configuration 
          */
-        protected _attachImageProcessingConfiguration(configuration: ImageProcessingConfiguration): void {
+        protected _attachImageProcessingConfiguration(configuration: Nullable<ImageProcessingConfiguration>): void {
             if (configuration === this._imageProcessingConfiguration) {
                 return;
             }
@@ -393,7 +414,7 @@ module BABYLON {
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
         };
-        
+
         /**
          * Gets The camera contrast used on this material.
          */
@@ -407,18 +428,37 @@ module BABYLON {
         public set cameraContrast(value: number) {
             this._imageProcessingConfiguration.contrast = value;
         }
-        
+
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
+        }
+
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public get cameraColorCurves(): Nullable<ColorCurves> {
+            return this._imageProcessingConfiguration.colorCurves;
+        }
+        /**
+         * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT). 
+         * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
+         * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
+         * corresponding to low luminance, medium luminance, and high luminance areas respectively.
+         */
+        public set cameraColorCurves(value: Nullable<ColorCurves>) {
+            this._imageProcessingConfiguration.colorCurves = value;
         }
 
         public customShaderNameResolve: (shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines) => string;
@@ -439,11 +479,11 @@ module BABYLON {
                 this._renderTargets.reset();
 
                 if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._reflectionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._reflectionTexture);
                 }
 
                 if (StandardMaterial.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._renderTargets.push(this._refractionTexture);
+                    this._renderTargets.push(<RenderTargetTexture>this._refractionTexture);
                 }
 
                 return this._renderTargets;
@@ -452,7 +492,7 @@ module BABYLON {
 
         public getClassName(): string {
             return "StandardMaterial";
-        }        
+        }
 
         @serialize()
         public get useLogarithmicDepth(): boolean {
@@ -477,15 +517,15 @@ module BABYLON {
             return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return this._diffuseTexture;
         }
 
         /**
          * Child classes can use it to update shaders
          */
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {            
-            if (this.isFrozen) {
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+            if (subMesh.effect && this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
                 }
@@ -511,13 +551,14 @@ module BABYLON {
             // Textures
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
+                defines.MAINUV1 = false;
+                defines.MAINUV2 = false;
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.DIFFUSE = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._diffuseTexture, defines, "DIFFUSE");
                         }
                     } else {
                         defines.DIFFUSE = false;
@@ -527,8 +568,7 @@ module BABYLON {
                         if (!this._ambientTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.AMBIENT = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
                         }
                     } else {
                         defines.AMBIENT = false;
@@ -538,8 +578,7 @@ module BABYLON {
                         if (!this._opacityTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.OPACITY = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
                             defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                         }
                     } else {
@@ -588,6 +627,8 @@ module BABYLON {
                                     defines.setReflectionMode("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
                                     break;
                             }
+
+                            defines.USE_LOCAL_REFLECTIONMAP_CUBIC = (<any>this._reflectionTexture).boundingBoxSize ? true : false;
                         }
                     } else {
                         defines.REFLECTION = false;
@@ -597,8 +638,7 @@ module BABYLON {
                         if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.EMISSIVE = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
                         }
                     } else {
                         defines.EMISSIVE = false;
@@ -608,8 +648,7 @@ module BABYLON {
                         if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.LIGHTMAP = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                             defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                         }
                     } else {
@@ -620,8 +659,7 @@ module BABYLON {
                         if (!this._specularTexture.isReadyOrNotBlocking()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.SPECULAR = true;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._specularTexture, defines, "SPECULAR");
                             defines.GLOSSINESS = this._useGlossinessFromSpecularMapAlpha;
                         }
                     } else {
@@ -633,15 +671,13 @@ module BABYLON {
                         if (!this._bumpTexture.isReady()) {
                             return false;
                         } else {
-                            defines._needUVs = true;
-                            defines.BUMP = true;
-
-                            defines.INVERTNORMALMAPX = this.invertNormalMapX;
-                            defines.INVERTNORMALMAPY = this.invertNormalMapY;
+                            MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                             defines.PARALLAX = this._useParallax;
                             defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                         }
+
+                        defines.OBJECTSPACE_NORMALMAP = this._useObjectSpaceNormalMap;
                     } else {
                         defines.BUMP = false;
                     }
@@ -675,9 +711,11 @@ module BABYLON {
 
                 defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
 
-                defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;       
+                defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;
 
                 defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
+
+                defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
             }
 
             if (defines._areImageProcessingDirty) {
@@ -703,9 +741,9 @@ module BABYLON {
 
                         defines.REFLECTIONFRESNELFROMSPECULAR = this._useReflectionFresnelFromSpecular;
 
-                        defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled) ;
+                        defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled);
 
-                        defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled) ;
+                        defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled);
 
                         defines._needNormals = true;
                         defines.FRESNEL = true;
@@ -716,19 +754,13 @@ module BABYLON {
             }
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
-
-            if (scene._mirroredCameraPosition && defines.BUMP) {
-                defines.INVERTNORMALMAPX = !this.invertNormalMapX;
-                defines.INVERTNORMALMAPY = !this.invertNormalMapY;
-                defines.markAsUnprocessed();
-            }
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -821,16 +853,17 @@ module BABYLON {
                 MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
                 MaterialHelper.PrepareAttributesForInstances(attribs, defines);
                 MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-                
+
                 var shaderName = "default";
-                
+
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
                     "vFogInfos", "vFogColor", "pointSize",
                     "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
                     "mBones",
-                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
+                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "normalMatrix", "lightmapMatrix", "refractionMatrix",
                     "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant"
+                    "vReflectionPosition", "vReflectionSize",
+                    "logarithmicDepthConstant", "vTangentSpaceParams"
                 ];
 
                 var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"]
@@ -841,10 +874,10 @@ module BABYLON {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this._maxSimultaneousLights
                 });
 
@@ -864,11 +897,11 @@ module BABYLON {
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
                 }, engine), defines);
-                
+
                 this.buildUniformLayout();
             }
 
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -894,6 +927,8 @@ module BABYLON {
             this._uniformBuffer.addUniform("vAmbientInfos", 2);
             this._uniformBuffer.addUniform("vOpacityInfos", 2);
             this._uniformBuffer.addUniform("vReflectionInfos", 2);
+            this._uniformBuffer.addUniform("vReflectionPosition", 3);
+            this._uniformBuffer.addUniform("vReflectionSize", 3);
             this._uniformBuffer.addUniform("vEmissiveInfos", 2);
             this._uniformBuffer.addUniform("vLightmapInfos", 2);
             this._uniformBuffer.addUniform("vSpecularInfos", 2);
@@ -907,6 +942,7 @@ module BABYLON {
             this._uniformBuffer.addUniform("lightmapMatrix", 16);
             this._uniformBuffer.addUniform("specularMatrix", 16);
             this._uniformBuffer.addUniform("bumpMatrix", 16);
+            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
             this._uniformBuffer.addUniform("refractionMatrix", 16);
             this._uniformBuffer.addUniform("vRefractionInfos", 4);
             this._uniformBuffer.addUniform("vSpecularColor", 4);
@@ -940,16 +976,29 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
             this.bindOnlyWorldMatrix(world);
 
+            // Normal Matrix
+            if (defines.OBJECTSPACE_NORMALMAP)
+            {
+                world.toNormalMatrix(this._normalMatrix);
+                this.bindOnlyNormalMatrix(this._normalMatrix);               
+            }
+
+            let mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect, mesh.visibility)) {
+
+            if (mustRebind) {
                 this._uniformBuffer.bindToEffect(effect, "Material");
-                
+
                 this.bindViewProjection(effect);
                 if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
 
@@ -984,42 +1033,55 @@ module BABYLON {
                     if (scene.texturesEnabled) {
                         if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                            this._uniformBuffer.updateMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._diffuseTexture, this._uniformBuffer, "diffuse");
                         }
 
                         if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
-                            this._uniformBuffer.updateMatrix("ambientMatrix", this._ambientTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._ambientTexture, this._uniformBuffer, "ambient");
                         }
 
                         if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                            this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._opacityTexture, this._uniformBuffer, "opacity");
                         }
 
                         if (this._reflectionTexture && StandardMaterial.ReflectionTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
                             this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
+
+                            if ((<any>this._reflectionTexture).boundingBoxSize) {
+                                let cubeTexture = <CubeTexture>this._reflectionTexture;
+
+                                this._uniformBuffer.updateVector3("vReflectionPosition", cubeTexture.boundingBoxPosition);
+                                this._uniformBuffer.updateVector3("vReflectionSize", cubeTexture.boundingBoxSize);
+                            }
                         }
 
                         if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                            this._uniformBuffer.updateMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._emissiveTexture, this._uniformBuffer, "emissive");
                         }
 
                         if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                            this._uniformBuffer.updateMatrix("lightmapMatrix", this._lightmapTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._lightmapTexture, this._uniformBuffer, "lightmap");
                         }
 
                         if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
                             this._uniformBuffer.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
-                            this._uniformBuffer.updateMatrix("specularMatrix", this._specularTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._specularTexture, this._uniformBuffer, "specular");
                         }
 
                         if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                             this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
-                            this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
+                            MaterialHelper.BindTextureMatrix(this._bumpTexture, this._uniformBuffer, "bump");
+
+                            if (scene._mirroredCameraPosition) {
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
+                            } else {
+                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
+                            }
                         }
 
                         if (this._refractionTexture && StandardMaterial.RefractionTextureEnabled) {
@@ -1032,7 +1094,7 @@ module BABYLON {
                                 }
                             }
                             this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
-                        }                    
+                        }
                     }
 
                     // Point size
@@ -1048,7 +1110,7 @@ module BABYLON {
                     // Diffuse
                     this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
                 }
-                
+
                 // Textures     
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
@@ -1103,11 +1165,11 @@ module BABYLON {
                 // Colors
                 scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
 
-                effect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                MaterialHelper.BindEyePosition(effect, scene);
                 effect.setColor3("vAmbientColor", this._globalAmbientColor);
             }
 
-            if (this._mustRebind(scene, effect) || !this.isFrozen) {
+            if (mustRebind || !this.isFrozen) {
                 // Lights
                 if (scene.lightsEnabled && !this._disableLighting) {
                     MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
@@ -1116,8 +1178,8 @@ module BABYLON {
                 // View
                 if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
                     this.bindView(effect);
-                }
-                
+                }              
+
                 // Fog
                 MaterialHelper.BindFogParameters(scene, mesh, effect);
 
@@ -1130,7 +1192,9 @@ module BABYLON {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
 
                 // image processing
-                this._imageProcessingConfiguration.bind(this._activeEffect);
+                if (!this._imageProcessingConfiguration.applyByPostProcess) {
+                    this._imageProcessingConfiguration.bind(this._activeEffect);
+                }
             }
 
             this._uniformBuffer.update();
@@ -1219,6 +1283,50 @@ module BABYLON {
             }
 
             return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._diffuseTexture === texture) {
+                return true;
+            }
+
+            if (this._ambientTexture === texture) {
+                return true;
+            }
+
+            if (this._opacityTexture === texture) {
+                return true;
+            }
+
+            if (this._reflectionTexture === texture) {
+                return true;
+            }
+
+            if (this._emissiveTexture === texture) {
+                return true;
+            }
+
+            if (this._specularTexture === texture) {
+                return true;
+            }
+
+            if (this._bumpTexture === texture) {
+                return true;
+            }
+
+            if (this._lightmapTexture === texture) {
+                return true;
+            }
+
+            if (this._refractionTexture === texture) {
+                return true;
+            }
+
+            return false;
         }
 
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
@@ -1337,8 +1445,8 @@ module BABYLON {
 
             StandardMaterial._ReflectionTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }        
-        
+        }
+
         static _EmissiveTextureEnabled = true;
         public static get EmissiveTextureEnabled(): boolean {
             return StandardMaterial._EmissiveTextureEnabled;
@@ -1350,7 +1458,7 @@ module BABYLON {
 
             StandardMaterial._EmissiveTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }       
+        }
 
         static _SpecularTextureEnabled = true;
         public static get SpecularTextureEnabled(): boolean {
@@ -1363,7 +1471,7 @@ module BABYLON {
 
             StandardMaterial._SpecularTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }     
+        }
 
         static _BumpTextureEnabled = true;
         public static get BumpTextureEnabled(): boolean {
@@ -1376,7 +1484,7 @@ module BABYLON {
 
             StandardMaterial._BumpTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }         
+        }
 
         static _LightmapTextureEnabled = true;
         public static get LightmapTextureEnabled(): boolean {
@@ -1389,9 +1497,9 @@ module BABYLON {
 
             StandardMaterial._LightmapTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }           
+        }
 
-        static _RefractionTextureEnabled = true;    
+        static _RefractionTextureEnabled = true;
         public static get RefractionTextureEnabled(): boolean {
             return StandardMaterial._RefractionTextureEnabled;
         }
@@ -1402,7 +1510,7 @@ module BABYLON {
 
             StandardMaterial._RefractionTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }    
+        }
 
         static _ColorGradingTextureEnabled = true;
         public static get ColorGradingTextureEnabled(): boolean {
@@ -1415,7 +1523,7 @@ module BABYLON {
 
             StandardMaterial._ColorGradingTextureEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.TextureDirtyFlag);
-        }           
+        }
 
         static _FresnelEnabled = true;
         public static get FresnelEnabled(): boolean {
@@ -1428,6 +1536,6 @@ module BABYLON {
 
             StandardMaterial._FresnelEnabled = value;
             Engine.MarkAllMaterialsAsDirty(Material.FresnelDirtyFlag);
-        }          
+        }
     }
 } 

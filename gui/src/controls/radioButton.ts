@@ -1,7 +1,5 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
-var DOMImage = Image;
-
 module BABYLON.GUI {
     export class RadioButton extends Control {
         private _isChecked = false;
@@ -104,12 +102,25 @@ module BABYLON.GUI {
                 let actualWidth = this._currentMeasure.width - this._thickness;
                 let actualHeight = this._currentMeasure.height - this._thickness;
 
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+                
                 // Outer
                 Control.drawEllipse(this._currentMeasure.left + this._currentMeasure.width / 2, this._currentMeasure.top + this._currentMeasure.height / 2, 
                             this._currentMeasure.width / 2 - this._thickness / 2, this._currentMeasure.height / 2 - this._thickness / 2, context);
                 
                 context.fillStyle = this._background;
                 context.fill();
+
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
 
                 context.strokeStyle = this.color;
                 context.lineWidth = this._thickness;
@@ -133,8 +144,8 @@ module BABYLON.GUI {
         }
 
         // Events
-        protected _onPointerDown(coordinates: Vector2): boolean {
-            if (!super._onPointerDown(coordinates)) {
+        public _onPointerDown(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): boolean {
+            if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex)) {
                 return false;
             }
             this.isChecked = !this.isChecked;

@@ -42,13 +42,17 @@
 	// Torus
 	var torus = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
 
+	// Box
+    var box = BABYLON.Mesh.CreateBox("box", 3);
+    box.parent = torus;	
+
 	// Shadows
 	var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
-	shadowGenerator.getShadowMap().renderList.push(torus);
+	shadowGenerator.addShadowCaster(torus);
 	shadowGenerator.useExponentialShadowMap = true;
 
 	var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, light2);
-	shadowGenerator2.getShadowMap().renderList.push(torus);
+	shadowGenerator2.addShadowCaster(torus);
 	shadowGenerator2.usePoissonSampling = true;
 
 	ground.receiveShadows = true;

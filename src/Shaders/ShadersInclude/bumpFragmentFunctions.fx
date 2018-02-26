@@ -1,8 +1,18 @@
 ﻿#ifdef BUMP
-	varying vec2 vBumpUV;
+	#if BUMPDIRECTUV == 1
+		#define vBumpUV vMainUV1
+	#elif BUMPDIRECTUV == 2
+		#define vBumpUV vMainUV2
+	#else
+		varying vec2 vBumpUV;
+	#endif
 	uniform sampler2D bumpSampler;
 #if defined(TANGENT) && defined(NORMAL) 
 	varying mat3 vTBN;
+#endif
+
+#ifdef OBJECTSPACE_NORMALMAP
+uniform mat4 normalMatrix;
 #endif
 
 	// Thanks to http://www.thetenthplanet.de/archives/1180
@@ -21,29 +31,26 @@
 		vec3 dp2perp = cross(dp2, normal);
 		vec3 dp1perp = cross(normal, dp1);
 		vec3 tangent = dp2perp * duv1.x + dp1perp * duv2.x;
-		vec3 binormal = dp2perp * duv1.y + dp1perp * duv2.y;
+		vec3 bitangent = dp2perp * duv1.y + dp1perp * duv2.y;
 
-	#ifdef USERIGHTHANDEDSYSTEM
-		binormal = -binormal;
-	#endif
+		// invert the tangent/bitangent if requested
+		tangent *= vTangentSpaceParams.x;
+		bitangent *= vTangentSpaceParams.y;
 
-		// construct a scale-invariant frame 
-		float invmax = inversesqrt(max(dot(tangent, tangent), dot(binormal, binormal)));
-		return mat3(tangent * invmax, binormal * invmax, normal);
+		// construct a scale-invariant frame
+		float invmax = inversesqrt(max(dot(tangent, tangent), dot(bitangent, bitangent)));
+		return mat3(tangent * invmax, bitangent * invmax, normal);
 	}
 
 	vec3 perturbNormal(mat3 cotangentFrame, vec2 uv)
 	{
 		vec3 map = texture2D(bumpSampler, uv).xyz;
+		map = map * 2.0 - 1.0;
 
-	#ifdef INVERTNORMALMAPX
-		map.x = 1.0 - map.x;
-	#endif
-	#ifdef INVERTNORMALMAPY
-		map.y = 1.0 - map.y;
-	#endif
+		#ifdef NORMALXYSCALE
+			map = normalize(map * vec3(vBumpInfos.y, vBumpInfos.y, 1.0));
+		#endif
 
-		map = map * 255. / 127. - 128. / 127.;
 		return normalize(cotangentFrame * map);
 	}
 

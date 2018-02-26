@@ -15,7 +15,11 @@
             return this._PBRMATERIAL_OPAQUE;
         }
 
+        /**
+         * Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
+         */
         private static _PBRMATERIAL_ALPHATEST = 1;
+
         /**
          * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
          */
@@ -23,7 +27,11 @@
             return this._PBRMATERIAL_ALPHATEST;
         }
 
+        /**
+         * Represents the value for Alpha Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         */
         private static _PBRMATERIAL_ALPHABLEND = 2;
+
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          */
@@ -31,7 +39,12 @@
             return this._PBRMATERIAL_ALPHABLEND;
         }
 
+        /**
+         * Represents the value for Alpha Test and Blend.  Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
+         * They are also discarded below the alpha cutoff threshold to improve performances.
+         */
         private static _PBRMATERIAL_ALPHATESTANDBLEND = 3;
+
         /**
          * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
          * They are also discarded below the alpha cutoff threshold to improve performances.
@@ -47,7 +60,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public directIntensity: number = 1.0;
-        
+
         /**
          * Intensity of the emissive part of the material.
          * This helps controlling the emissive effect without modifying the emissive color.
@@ -55,7 +68,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveIntensity: number = 1.0;
-        
+
         /**
          * Intensity of the environment e.g. how much the environment will light the object
          * either through harmonics for rough material or through the refelction for shiny ones.
@@ -63,7 +76,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public environmentIntensity: number = 1.0;
-        
+
         /**
          * This is a special control allowing the reduction of the specular highlights coming from the 
          * four lights of the scene. Those highlights may not be needed in full environment lighting.
@@ -85,7 +98,7 @@
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public albedoTexture: BaseTexture;
-        
+
         /**
          * AKA Occlusion Texture in other nomenclature.
          */
@@ -100,18 +113,27 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientTextureStrength: number = 1.0;
 
+        /**
+         * Stores the alpha values in a texture.
+         */
         @serializeAsTexture()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public opacityTexture: BaseTexture;
 
+        /**
+         * Stores the reflection values in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public reflectionTexture: BaseTexture;
+        public reflectionTexture: Nullable<BaseTexture>;
 
+        /**
+         * Stores the emissive values in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveTexture: BaseTexture;
-        
+
         /**
          * AKA Specular texture in other nomenclature.
          */
@@ -150,18 +172,30 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public microSurfaceTexture: BaseTexture;
 
+        /**
+         * Stores surface normal data used to displace a mesh in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public bumpTexture: BaseTexture;
 
+        /**
+         * Stores the pre-calculated light information of a mesh in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
         public lightmapTexture: BaseTexture;
 
+        /**
+         * Stores the refracted light information in a texture.
+         */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public refractionTexture: BaseTexture;
 
+        /**
+         * The color of a material in ambient lighting.
+         */
         @serializeAsColor3("ambient")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public ambientColor = new Color3(0, 0, 0);
@@ -172,7 +206,7 @@
         @serializeAsColor3("albedo")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public albedoColor = new Color3(1, 1, 1);
-        
+
         /**
          * AKA Specular Color in other nomenclature.
          */
@@ -180,20 +214,26 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectivityColor = new Color3(1, 1, 1);
 
+        /**
+         * The color reflected from the material.
+         */
         @serializeAsColor3("reflection")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public reflectionColor = new Color3(1.0, 1.0, 1.0);
 
+        /**
+         * The color emitted from the material.
+         */
         @serializeAsColor3("emissive")
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public emissiveColor = new Color3(0, 0, 0);
-        
+
         /**
          * AKA Glossiness in other nomenclature.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public microSurface = 0.9;
+        public microSurface = 1.0;
 
         /**
          * source material index of refraction (IOR)' / 'destination material IOR.
@@ -201,7 +241,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public indexOfRefraction = 0.66;
-        
+
         /**
          * Controls if refraction needs to be inverted on Y. This could be usefull for procedural texture.
          */
@@ -220,14 +260,28 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useLightmapAsShadowmap = false;
-        
+
         /**
-         * Specifies that the alpha is coming form the albedo channel alpha channel.
+         * Specifies that the alpha is coming form the albedo channel alpha channel for alpha blending.
          */
         @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
         public useAlphaFromAlbedoTexture = false;
-        
+
+        /**
+         * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+        public forceAlphaTest = false;
+
+        /**
+         * Defines the alpha limits in alpha test mode.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesAndMiscDirty")
+        public alphaCutOff = 0.4;
+
         /**
          * Specifies that the material will keeps the specular highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When sun reflects on it you can not see what is behind.
@@ -235,7 +289,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useSpecularOverAlpha = true;
-        
+
         /**
          * Specifies if the reflectivity texture contains the glossiness information in its alpha channel.
          */
@@ -277,7 +331,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAmbientInGrayScale = false;
-        
+
         /**
          * In case the reflectivity map does not contain the microsurface information in its alpha channel,
          * The material will try to infer what glossiness each pixel should be.
@@ -285,7 +339,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useAutoMicroSurfaceFromReflectivityMap = false;
-        
+
         /**
          * BJS is using an harcoded light falloff based on a manually sets up range.
          * In PBR, one way to represents the fallof is to use the inverse squared root algorythm.
@@ -294,7 +348,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public usePhysicalLightFalloff = true;
-        
+
         /**
          * Specifies that the material will keeps the reflection highlights over a transparent surface (only the most limunous ones).
          * A car glass is a good exemple of that. When the street lights reflects on it you can not see what is behind.
@@ -302,6 +356,13 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public useRadianceOverAlpha = true;
+
+        /**
+         * Allows using an object space normal map (instead of tangent space).
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useObjectSpaceNormalMap = false;
         
         /**
          * Allows using the bump map in parallax mode.
@@ -323,7 +384,7 @@
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public parallaxScaleBias = 0.05;
-        
+
         /**
          * If sets to true, disables all the lights affecting the material.
          */
@@ -332,11 +393,18 @@
         public disableLighting = false;
 
         /**
+         * Force the shader to compute irradiance in the fragment shader in order to take bump in account.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceIrradianceInFragment = false;
+
+        /**
          * Number of Simultaneous lights allowed on the material.
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights = 4;  
+        public maxSimultaneousLights = 4;
 
         /**
          * If sets to true, x component of normal map value will invert (x = 1.0 - x).
@@ -360,16 +428,8 @@
         public twoSidedLighting = false;
 
         /**
-         * Specifies that the alpha is premultiplied before output (this enables alpha premultiplied blending).
-         * in your scene composition.
-         */
-        @serialize()
-        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public premultiplyAlpha = false;
-
-        /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
-         * And/Or occlude the blended part.
+         * And/Or occlude the blended part. (alpha is converted to gamma to compute the fresnel)
          */
         @serialize()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -377,11 +437,42 @@
 
         /**
          * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
+         * And/Or occlude the blended part. (alpha stays linear to compute the fresnel)
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useLinearAlphaFresnel = false;
+
+        /**
+         * A fresnel is applied to the alpha of the model to ensure grazing angles edges are not alpha tested.
          * And/Or occlude the blended part.
          */
         @serializeAsTexture()
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public environmentBRDFTexture: BaseTexture = null;
+        public environmentBRDFTexture: Nullable<BaseTexture> = null;
+
+        /**
+         * Force normal to face away from face.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public forceNormalForward = false;
+
+        /**
+         * This parameters will enable/disable Horizon occlusion to prevent normal maps to look shiny when the normal
+         * makes the reflect vector face the model (under horizon).
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useHorizonOcclusion = true;
+
+        /**
+         * This parameters will enable/disable radiance occlusion by preventing the radiance to lit
+         * too much the area relying on ambient texture to define their ambient occlusion.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useRadianceOcclusion = true;
 
         /**
          * Gets the image processing configuration used either in this material.
@@ -457,7 +548,7 @@
         public set cameraExposure(value: number) {
             this._imageProcessingConfiguration.exposure = value;
         };
-        
+
         /**
          * Gets The camera contrast used on this material.
          */
@@ -471,17 +562,17 @@
         public set cameraContrast(value: number) {
             this._imageProcessingConfiguration.contrast = value;
         }
-        
+
         /**
          * Gets the Color Grading 2D Lookup Texture.
          */
-        public get cameraColorGradingTexture(): BaseTexture {
+        public get cameraColorGradingTexture(): Nullable<BaseTexture> {
             return this._imageProcessingConfiguration.colorGradingTexture;
         }
         /**
          * Sets the Color Grading 2D Lookup Texture.
          */
-        public set cameraColorGradingTexture(value: BaseTexture) {
+        public set cameraColorGradingTexture(value: Nullable<BaseTexture>) {
             this._imageProcessingConfiguration.colorGradingTexture = value;
         }
 
@@ -491,7 +582,7 @@
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        public get cameraColorCurves(): ColorCurves {
+        public get cameraColorCurves(): Nullable<ColorCurves> {
             return this._imageProcessingConfiguration.colorCurves;
         }
         /**
@@ -500,7 +591,7 @@
          * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image; 
          * corresponding to low luminance, medium luminance, and high luminance areas respectively.
          */
-        public set cameraColorCurves(value: ColorCurves) {
+        public set cameraColorCurves(value: Nullable<ColorCurves>) {
             this._imageProcessingConfiguration.colorCurves = value;
         }
 
@@ -516,10 +607,17 @@
             this._environmentBRDFTexture = TextureTools.GetEnvironmentBRDFTexture(scene);
         }
 
+        /**
+         * Returns the name of this material class.
+         */
         public getClassName(): string {
             return "PBRMaterial";
         }
 
+        /**
+         * Returns an array of the actively used textures.
+         * @returns - Array of BaseTextures
+         */
         public getActiveTextures(): BaseTexture[] {
             var activeTextures = super.getActiveTextures();
 
@@ -543,8 +641,8 @@
                 activeTextures.push(this._emissiveTexture);
             }
 
-            if (this._reflectionTexture) {
-                activeTextures.push(this._reflectionTexture);
+            if (this._reflectivityTexture) {
+                activeTextures.push(this._reflectivityTexture);
             }
 
             if (this._metallicTexture) {
@@ -570,10 +668,76 @@
             return activeTextures;
         }
 
-        public clone(name: string): PBRMaterial {
-            return SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+        /**
+         * Checks to see if a texture is used in the material.
+         * @param texture - Base texture to use.
+         * @returns - Boolean specifying if a texture is used in the material.
+         */
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._albedoTexture === texture) {
+                return true;
+            }
+
+            if (this._ambientTexture === texture) {
+                return true;
+            }
+
+            if (this._opacityTexture === texture) {
+                return true;
+            }
+
+            if (this._reflectionTexture === texture) {
+                return true;
+            }
+
+            if (this._reflectivityTexture === texture) {
+                return true;
+            }
+
+            if (this._metallicTexture === texture) {
+                return true;
+            }
+
+            if (this._microSurfaceTexture === texture) {
+                return true;
+            }
+
+            if (this._bumpTexture === texture) {
+                return true;
+            }
+
+            if (this._lightmapTexture === texture) {
+                return true;
+            }
+
+            if (this._refractionTexture === texture) {
+                return true;
+            }
+
+            return false;
         }
 
+        /**
+         * Makes a duplicate of the current material.
+         * @param name - name to use for the new material.
+         */
+        public clone(name: string): PBRMaterial {
+            var clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this);
+
+            clone.id = name;
+            clone.name = name;
+
+            return clone;
+        }
+
+        /**
+         * Serializes this PBR Material.
+         * @returns - An object with the serialized material.
+         */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.PBRMaterial";
@@ -581,6 +745,13 @@
         }
 
         // Statics
+        /**
+         * Parses a PBR Material from a serialized object.
+         * @param source - Serialized object.
+         * @param scene - BJS scene instance.
+         * @param rootUrl - url for the scene object
+         * @returns - PBRMaterial
+         */
         public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
             return SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
         }

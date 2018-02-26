@@ -6,6 +6,7 @@ module BABYLON {
         public REFLECTION = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public NORMAL = false;
@@ -21,62 +22,61 @@ module BABYLON {
         public FRESNELSEPARATE = false;
         public BUMPSUPERIMPOSE = false;
         public BUMPAFFECTSREFLECTION = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
             this.rebuild();
         }
     }
-	
-	export class WaterMaterial extends PushMaterial {
+
+    export class WaterMaterial extends PushMaterial {
 		/*
 		* Public members
 		*/
         @serializeAsTexture("bumpTexture")
         private _bumpTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture: BaseTexture;        
-        
+        public bumpTexture: BaseTexture;
+
         @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
-        
+
         @serializeAsColor3()
         public specularColor = new Color3(0, 0, 0);
-        
+
         @serialize()
         public specularPower = 64;
-        
+
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public disableLighting: boolean;
-        
+
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number;                   
-        
+        public maxSimultaneousLights: number;
+
         /**
         * @param {number}: Represents the wind force
         */
         @serialize()
-		public windForce: number = 6;
+        public windForce: number = 6;
         /**
         * @param {Vector2}: The direction of the wind in the plane (X, Z)
         */
         @serializeAsVector2()
-		public windDirection: Vector2 = new Vector2(0, 1);
+        public windDirection: Vector2 = new Vector2(0, 1);
         /**
         * @param {number}: Wave height, represents the height of the waves
         */
         @serialize()
-		public waveHeight: number = 0.4;
+        public waveHeight: number = 0.4;
         /**
         * @param {number}: Bump height, represents the bump height related to the bump map
         */
         @serialize()
-		public bumpHeight: number = 0.4;
+        public bumpHeight: number = 0.4;
         /**
          * @param {boolean}: Add a smaller moving bump to less steady waves.
          */
@@ -99,18 +99,18 @@ module BABYLON {
         @serialize("bumpAffectsReflection")
         private _bumpAffectsReflection = false;
         @expandToProperty("_markAllSubMeshesAsMiscDirty")
-        public bumpAffectsReflection: boolean;        
+        public bumpAffectsReflection: boolean;
 
         /**
         * @param {number}: The water color blended with the refraction (near)
         */
         @serializeAsColor3()
-		public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
+        public waterColor: Color3 = new Color3(0.1, 0.1, 0.6);
         /**
         * @param {number}: The blend factor related to the water color
         */
         @serialize()
-		public colorBlendFactor: number = 0.2;
+        public colorBlendFactor: number = 0.2;
         /**
          * @param {number}: The water color blended with the reflection (far)
          */
@@ -125,39 +125,51 @@ module BABYLON {
         * @param {number}: Represents the maximum length of a wave
         */
         @serialize()
-		public waveLength: number = 0.1;
-        
+        public waveLength: number = 0.1;
+
         /**
         * @param {number}: Defines the waves speed
         */
         @serialize()
         public waveSpeed: number = 1.0;
-		
+
+        protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
+
 		/*
 		* Private members
 		*/
-		private _mesh: AbstractMesh = null;
-		
-		private _refractionRTT: RenderTargetTexture;
-		private _reflectionRTT: RenderTargetTexture;
-		
-		private _material: ShaderMaterial;
-		
-		private _reflectionTransform: Matrix = Matrix.Zero();
-		private _lastTime: number = 0;
-        
+        private _mesh: Nullable<AbstractMesh> = null;
+
+        private _refractionRTT: Nullable<RenderTargetTexture>;
+        private _reflectionRTT: Nullable<RenderTargetTexture>;
+
+        private _reflectionTransform: Matrix = Matrix.Zero();
+        private _lastTime: number = 0;
+        private _lastDeltaTime: number = 0;
+
         private _renderId: number;
 
         private _useLogarithmicDepth: boolean;
 
+        private _waitingRenderList: Nullable<string[]>;
+
         /**
 		* Constructor
 		*/
-		constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
+        constructor(name: string, scene: Scene, public renderTargetSize: Vector2 = new Vector2(512, 512)) {
             super(name, scene);
-			
-			// Create render targets
-			this._createRenderTargets(scene, renderTargetSize);
+
+            this._createRenderTargets(scene, renderTargetSize);
+
+            // Create render targets
+            this.getRenderTargetTextures = (): SmartArray<RenderTargetTexture> => {
+                this._renderTargets.reset();
+                this._renderTargets.push(<RenderTargetTexture>this._reflectionRTT);
+                this._renderTargets.push(<RenderTargetTexture>this._refractionRTT);
+
+                return this._renderTargets;
+            }
+
         }
 
         @serialize()
@@ -171,36 +183,46 @@ module BABYLON {
         }
 
         // Get / Set
-        public get refractionTexture(): RenderTargetTexture {
+        public get refractionTexture(): Nullable<RenderTargetTexture> {
             return this._refractionRTT;
         }
-        
-        public get reflectionTexture(): RenderTargetTexture {
+
+        public get reflectionTexture(): Nullable<RenderTargetTexture> {
             return this._reflectionRTT;
         }
-		
+
         // Methods
         public addToRenderList(node: any): void {
-            this._refractionRTT.renderList.push(node);
-            this._reflectionRTT.renderList.push(node);
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                this._refractionRTT.renderList.push(node);
+            }
+
+            if (this._reflectionRTT && this._reflectionRTT.renderList) {
+                this._reflectionRTT.renderList.push(node);
+            }
         }
-        
+
         public enableRenderTargets(enable: boolean): void {
             var refreshRate = enable ? 1 : 0;
-            
-            this._refractionRTT.refreshRate = refreshRate;
-            this._reflectionRTT.refreshRate = refreshRate;
+
+            if (this._refractionRTT) {
+                this._refractionRTT.refreshRate = refreshRate;
+            }
+
+            if (this._reflectionRTT) {
+                this._reflectionRTT.refreshRate = refreshRate;
+            }
         }
-        
-        public getRenderList(): AbstractMesh[] {
-            return this._refractionRTT.renderList;
+
+        public getRenderList(): Nullable<AbstractMesh[]> {
+            return this._refractionRTT ? this._refractionRTT.renderList : [];
         }
-        
+
         public get renderTargetsEnabled(): boolean {
-            return !(this._refractionRTT.refreshRate === 0);
+            return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
         }
-        
-		public needAlphaBlending(): boolean {
+
+        public needAlphaBlending(): boolean {
             return (this.alpha < 1.0);
         }
 
@@ -208,11 +230,11 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
-		
-		public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -246,16 +268,16 @@ module BABYLON {
                             defines.BUMP = true;
                         }
                     }
-                    
+
                     if (StandardMaterial.ReflectionTextureEnabled) {
                         defines.REFLECTION = true;
                     }
                 }
             }
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
 
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             if (defines._areMiscDirty) {
                 if (this._fresnelSeparate) {
@@ -270,14 +292,23 @@ module BABYLON {
                     defines.BUMPAFFECTSREFLECTION = true;
                 }
             }
-           
+
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
-            
+
+            // Configure this
             this._mesh = mesh;
+
+            if (this._waitingRenderList) {
+                for (var i = 0; i < this._waitingRenderList.length; i++) {
+                    this.addToRenderList(scene.getNodeByID(this._waitingRenderList[i]));
+                }
+
+                this._waitingRenderList = null;
+            }
 
             // Get correct effect      
             if (defines.isDirty) {
@@ -285,7 +316,7 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
@@ -295,7 +326,7 @@ module BABYLON {
                 }
 
                 MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
-             
+
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -327,7 +358,7 @@ module BABYLON {
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vNormalInfos", 
+                    "vNormalInfos",
                     "mBones",
                     "vClipPlane", "normalMatrix",
                     "logarithmicDepthConstant",
@@ -340,13 +371,13 @@ module BABYLON {
                     // Water
                     "refractionSampler", "reflectionSampler"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
@@ -363,7 +394,7 @@ module BABYLON {
                     }, engine), defines);
 
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -371,9 +402,9 @@ module BABYLON {
             this._wasPreviouslyReady = true;
 
             return true;
-		}
-        
-		public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+        }
+
+        public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
             var scene = this.getScene();
 
             var defines = <WaterMaterialDefines>subMesh._materialDefines;
@@ -382,6 +413,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect || !this._mesh) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -407,11 +441,11 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-            
+
             if (defines.SPECULARTERM) {
                 this._activeEffect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
             }
@@ -436,102 +470,107 @@ module BABYLON {
                 this._activeEffect.setTexture("refractionSampler", this._refractionRTT);
                 this._activeEffect.setTexture("reflectionSampler", this._reflectionRTT);
             }
-            
-			var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
-			this._lastTime += scene.getEngine().getDeltaTime();
-			
-			this._activeEffect.setMatrix("worldReflectionViewProjection", wrvp);
-			this._activeEffect.setVector2("windDirection", this.windDirection);
-			this._activeEffect.setFloat("waveLength", this.waveLength);
-			this._activeEffect.setFloat("time", this._lastTime / 100000);
-			this._activeEffect.setFloat("windForce", this.windForce);
-			this._activeEffect.setFloat("waveHeight", this.waveHeight);
+
+            var wrvp = this._mesh.getWorldMatrix().multiply(this._reflectionTransform).multiply(scene.getProjectionMatrix());
+
+            // Add delta time. Prevent adding delta time if it hasn't changed.
+            let deltaTime = scene.getEngine().getDeltaTime();
+            if (deltaTime !== this._lastDeltaTime) {
+                this._lastDeltaTime = deltaTime;
+                this._lastTime += this._lastDeltaTime;
+            }
+
+            this._activeEffect.setMatrix("worldReflectionViewProjection", wrvp);
+            this._activeEffect.setVector2("windDirection", this.windDirection);
+            this._activeEffect.setFloat("waveLength", this.waveLength);
+            this._activeEffect.setFloat("time", this._lastTime / 100000);
+            this._activeEffect.setFloat("windForce", this.windForce);
+            this._activeEffect.setFloat("waveHeight", this.waveHeight);
             this._activeEffect.setFloat("bumpHeight", this.bumpHeight);
-			this._activeEffect.setColor4("waterColor", this.waterColor, 1.0);
-			this._activeEffect.setFloat("colorBlendFactor", this.colorBlendFactor);
+            this._activeEffect.setColor4("waterColor", this.waterColor, 1.0);
+            this._activeEffect.setFloat("colorBlendFactor", this.colorBlendFactor);
             this._activeEffect.setColor4("waterColor2", this.waterColor2, 1.0);
             this._activeEffect.setFloat("colorBlendFactor2", this.colorBlendFactor2);
             this._activeEffect.setFloat("waveSpeed", this.waveSpeed);
 
             this._afterBind(mesh, this._activeEffect);
-		}
-		
-		private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {
-			// Render targets
-			this._refractionRTT = new RenderTargetTexture(name + "_refraction", {width: renderTargetSize.x, height: renderTargetSize.y}, scene, false, true);
+        }
+
+        private _createRenderTargets(scene: Scene, renderTargetSize: Vector2): void {
+            // Render targets
+            this._refractionRTT = new RenderTargetTexture(name + "_refraction", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._refractionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._refractionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._refractionRTT.ignoreCameraViewport = true;
 
-			this._reflectionRTT = new RenderTargetTexture(name + "_reflection", {width: renderTargetSize.x, height: renderTargetSize.y}, scene, false, true);
+            this._reflectionRTT = new RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
             this._reflectionRTT.wrapU = BABYLON.Texture.MIRROR_ADDRESSMODE;
             this._reflectionRTT.wrapV = BABYLON.Texture.MIRROR_ADDRESSMODE;
+            this._reflectionRTT.ignoreCameraViewport = true;
 
-			scene.customRenderTargets.push(this._refractionRTT);
-			scene.customRenderTargets.push(this._reflectionRTT);
-			
-			var isVisible: boolean;
-			var clipPlane = null;
-			var savedViewMatrix;
-			var mirrorMatrix = Matrix.Zero();
-            
-			this._refractionRTT.onBeforeRender = () => {
+            var isVisible: boolean;
+            var clipPlane: Nullable<Plane> = null;
+            var savedViewMatrix: Matrix;
+            var mirrorMatrix = Matrix.Zero();
+
+            this._refractionRTT.onBeforeRender = () => {
                 if (this._mesh) {
                     isVisible = this._mesh.isVisible;
                     this._mesh.isVisible = false;
                 }
-				// Clip plane
-				clipPlane = scene.clipPlane;
-                
+                // Clip plane
+                clipPlane = scene.clipPlane;
+
                 var positiony = this._mesh ? this._mesh.position.y : 0.0;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
-			};
-			
-			this._refractionRTT.onAfterRender = () => {
+                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony + 0.05, 0), new Vector3(0, 1, 0));
+            };
+
+            this._refractionRTT.onAfterRender = () => {
                 if (this._mesh) {
-				    this._mesh.isVisible = isVisible;
+                    this._mesh.isVisible = isVisible;
                 }
-                
-				// Clip plane
-				scene.clipPlane = clipPlane;
-			};
-			
-			this._reflectionRTT.onBeforeRender = () => {
+
+                // Clip plane 
+                scene.clipPlane = clipPlane;
+            };
+
+            this._reflectionRTT.onBeforeRender = () => {
                 if (this._mesh) {
                     isVisible = this._mesh.isVisible;
                     this._mesh.isVisible = false;
                 }
-                
-				// Clip plane
-				clipPlane = scene.clipPlane;
-                
+
+                // Clip plane
+                clipPlane = scene.clipPlane;
+
                 var positiony = this._mesh ? this._mesh.position.y : 0.0;
-				scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
-				
-				// Transform
-				Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
-				savedViewMatrix = scene.getViewMatrix();
-				
-				mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
-				scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
-				scene.getEngine().cullBackFaces = false;
-                scene._mirroredCameraPosition = Vector3.TransformCoordinates(scene.activeCamera.position, mirrorMatrix);
-			};
-			
-			this._reflectionRTT.onAfterRender = () => {
+                scene.clipPlane = Plane.FromPositionAndNormal(new Vector3(0, positiony - 0.05, 0), new Vector3(0, -1, 0));
+
+                // Transform
+                Matrix.ReflectionToRef(scene.clipPlane, mirrorMatrix);
+                savedViewMatrix = scene.getViewMatrix();
+
+                mirrorMatrix.multiplyToRef(savedViewMatrix, this._reflectionTransform);
+                scene.setTransformMatrix(this._reflectionTransform, scene.getProjectionMatrix());
+                scene.getEngine().cullBackFaces = false;
+                scene._mirroredCameraPosition = Vector3.TransformCoordinates((<Camera>scene.activeCamera).position, mirrorMatrix);
+            };
+
+            this._reflectionRTT.onAfterRender = () => {
                 if (this._mesh) {
-				    this._mesh.isVisible = isVisible;
+                    this._mesh.isVisible = isVisible;
                 }
-                
-				// Clip plane
-				scene.clipPlane = clipPlane;
-				
-				// Transform
-				scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
+
+                // Clip plane
+                scene.clipPlane = clipPlane;
+
+                // Transform
+                scene.setTransformMatrix(savedViewMatrix, scene.getProjectionMatrix());
                 scene.getEngine().cullBackFaces = true;
                 scene._mirroredCameraPosition = null;
-			};
-		}
-        
+            };
+        }
+
         public getAnimatables(): IAnimatable[] {
             var results = [];
 
@@ -558,18 +597,30 @@ module BABYLON {
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._bumpTexture === texture) {
+                return true;
+            }
+
+            return false;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.bumpTexture) {
                 this.bumpTexture.dispose();
             }
 
-            var index = this.getScene().customRenderTargets.indexOf(this._refractionRTT);
-            if (index != -1){
+            var index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._refractionRTT);
+            if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
             index = -1;
-            index = this.getScene().customRenderTargets.indexOf(this._reflectionRTT);
-            if (index != -1){
+            index = this.getScene().customRenderTargets.indexOf(<RenderTargetTexture>this._reflectionRTT);
+            if (index != -1) {
                 this.getScene().customRenderTargets.splice(index, 1);
             }
 
@@ -590,19 +641,32 @@ module BABYLON {
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.WaterMaterial";
-            serializationObject.reflectionTexture.isRenderTarget = true;
-            serializationObject.refractionTexture.isRenderTarget = true;
+
+            serializationObject.renderList = [];
+            if (this._refractionRTT && this._refractionRTT.renderList) {
+                for (var i = 0; i < this._refractionRTT.renderList.length; i++) {
+                    serializationObject.renderList.push(this._refractionRTT.renderList[i].id);
+                }
+            }
+
             return serializationObject;
+        }
+
+        public getClassName(): string {
+            return "WaterMaterial";
         }
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
-            return SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+            var mat = SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
+            mat._waitingRenderList = source.renderList;
+
+            return mat;
         }
-		
-		public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
-			var mesh = Mesh.CreateGround(name, 512, 512, 32, scene, false);
-			return mesh;
-		}
-	}
+
+        public static CreateDefaultMesh(name: string, scene: Scene): Mesh {
+            var mesh = Mesh.CreateGround(name, 512, 512, 32, scene, false);
+            return mesh;
+        }
+    }
 }

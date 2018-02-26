@@ -1,12 +1,15 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
-    class WaterMaterial extends Material {
+    class WaterMaterial extends PushMaterial {
         renderTargetSize: Vector2;
+        private _bumpTexture;
         bumpTexture: BaseTexture;
         diffuseColor: Color3;
         specularColor: Color3;
         specularPower: number;
+        private _disableLighting;
         disableLighting: boolean;
+        private _maxSimultaneousLights;
         maxSimultaneousLights: number;
         /**
         * @param {number}: Represents the wind force
@@ -27,14 +30,17 @@ declare module BABYLON {
         /**
          * @param {boolean}: Add a smaller moving bump to less steady waves.
          */
+        private _bumpSuperimpose;
         bumpSuperimpose: boolean;
         /**
          * @param {boolean}: Color refraction and reflection differently with .waterColor2 and .colorBlendFactor2. Non-linear (physically correct) fresnel.
          */
+        private _fresnelSeparate;
         fresnelSeparate: boolean;
         /**
          * @param {boolean}: bump Waves modify the reflection.
          */
+        private _bumpAffectsReflection;
         bumpAffectsReflection: boolean;
         /**
         * @param {number}: The water color blended with the refraction (near)
@@ -60,39 +66,40 @@ declare module BABYLON {
         * @param {number}: Defines the waves speed
         */
         waveSpeed: number;
+        protected _renderTargets: SmartArray<RenderTargetTexture>;
         private _mesh;
         private _refractionRTT;
         private _reflectionRTT;
-        private _material;
         private _reflectionTransform;
         private _lastTime;
+        private _lastDeltaTime;
         private _renderId;
-        private _defines;
-        private _cachedDefines;
         private _useLogarithmicDepth;
+        private _waitingRenderList;
         /**
         * Constructor
         */
         constructor(name: string, scene: Scene, renderTargetSize?: Vector2);
         useLogarithmicDepth: boolean;
-        readonly refractionTexture: RenderTargetTexture;
-        readonly reflectionTexture: RenderTargetTexture;
+        readonly refractionTexture: Nullable<RenderTargetTexture>;
+        readonly reflectionTexture: Nullable<RenderTargetTexture>;
         addToRenderList(node: any): void;
         enableRenderTargets(enable: boolean): void;
-        getRenderList(): AbstractMesh[];
+        getRenderList(): Nullable<AbstractMesh[]>;
         readonly renderTargetsEnabled: boolean;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         private _createRenderTargets(scene, renderTargetSize);
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): WaterMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial;
         static CreateDefaultMesh(name: string, scene: Scene): Mesh;
     }

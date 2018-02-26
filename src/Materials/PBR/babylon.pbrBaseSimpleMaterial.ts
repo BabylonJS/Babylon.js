@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     /**
      * The Physically based simple base material of BJS.
      * 
@@ -84,32 +84,6 @@
         @expandToProperty("_markAllSubMeshesAsTexturesDirty", "_alphaCutOff")
         public alphaCutOff: number;
 
-        protected _transparencyMode: number = PBRMaterial.PBRMATERIAL_OPAQUE;
-        /**
-         * Gets the current transparency mode.
-         */
-        @serialize()
-        public get transparencyMode(): number {
-            return this._transparencyMode;
-        }
-        /**
-         * Sets the transparency mode of the material.
-         */
-        public set transparencyMode(value: number) {
-            if (this._transparencyMode === value) {
-                return;
-            }
-            this._transparencyMode = value;
-            if (value === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND) {
-                this._forceAlphaTest = true;
-            }
-            else {
-                this._forceAlphaTest = false;
-            }
-            
-            this._markAllSubMeshesAsTexturesDirty();
-        }
-
         /**
          * Gets the current double sided mode.
          */
@@ -129,37 +103,53 @@
             this._markAllSubMeshesAsTexturesDirty();
         }
 
-        /**
-         * Specifies wether or not the alpha value of the albedo texture should be used.
-         */
-        protected _shouldUseAlphaFromAlbedoTexture(): boolean {
-            return this._albedoTexture && this._albedoTexture.hasAlpha && this._transparencyMode !== PBRMaterial.PBRMATERIAL_OPAQUE;
-        }
+        @serializeAsTexture()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty", null)
+        public lightmapTexture: BaseTexture;
+
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+        public useLightmapAsShadowmap = false;
 
         /**
-         * Specifies wether or not the meshes using this material should be rendered in alpha blend mode.
+         * Return the active textures of the material.
          */
-        public needAlphaBlending(): boolean {
-            if (this._linkRefractionWithTransparency) {
-                return false;
+        public getActiveTextures(): BaseTexture[] {
+            var activeTextures = super.getActiveTextures();
+
+            if (this.environmentTexture) {
+                activeTextures.push(this.environmentTexture);
             }
 
-            return (this.alpha < 1.0) || 
-                    (this._shouldUseAlphaFromAlbedoTexture() &&
-                        (this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHABLEND ||
-                            this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND));
-        }
-
-        /**
-         * Specifies wether or not the meshes using this material should be rendered in alpha test mode.
-         */
-        public needAlphaTesting(): boolean {
-            if (this._linkRefractionWithTransparency) {
-                return false;
+            if (this.normalTexture) {
+                activeTextures.push(this.normalTexture);
             }
 
-            return this._shouldUseAlphaFromAlbedoTexture() &&
-                 this._transparencyMode === PBRMaterial.PBRMATERIAL_ALPHATEST;
+            if (this.emissiveTexture) {
+                activeTextures.push(this.emissiveTexture);
+            }
+
+            if (this.occlusionTexture) {
+                activeTextures.push(this.occlusionTexture);
+            }
+
+            if (this.lightmapTexture) {
+                activeTextures.push(this.lightmapTexture);
+            }
+
+            return activeTextures;
+        }
+
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.lightmapTexture === texture) {
+                return true;
+            }
+
+            return false;
         }
 
         /**
@@ -171,7 +161,12 @@
         constructor(name: string, scene: Scene) {
             super(name, scene);
 
+            this._useAlphaFromAlbedoTexture = true;
             this._useAmbientInGrayScale = true;
+        }
+
+        public getClassName(): string {
+            return "PBRBaseSimpleMaterial";
         }
     }
 }

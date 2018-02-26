@@ -44,12 +44,12 @@ module BABYLON {
             this._rightjoystick.setJoystickColor("yellow");
         }
 
-        detachControl(element : HTMLElement) {
+        detachControl(element: Nullable<HTMLElement>) {
             this._leftjoystick.releaseCanvas();
             this._rightjoystick.releaseCanvas();
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "FreeCameraVirtualJoystickInput";
         }
         
@@ -58,5 +58,5 @@ module BABYLON {
         }
     }
     
-    CameraInputTypes["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
+    (<any>CameraInputTypes)["FreeCameraVirtualJoystickInput"] = FreeCameraVirtualJoystickInput;
 }

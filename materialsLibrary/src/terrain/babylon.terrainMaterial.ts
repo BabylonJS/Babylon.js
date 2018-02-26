@@ -7,6 +7,7 @@ module BABYLON {
         public BUMP = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public SPECULARTERM = false;
@@ -18,7 +19,6 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -30,8 +30,8 @@ module BABYLON {
         @serializeAsTexture("mixTexture")
         private _mixTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public mixTexture: BaseTexture;        
-        
+        public mixTexture: BaseTexture;
+
         @serializeAsTexture("diffuseTexture1")
         private _diffuseTexture1: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -41,47 +41,46 @@ module BABYLON {
         private _diffuseTexture2: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture2: Texture;
-        
+
         @serializeAsTexture("diffuseTexture3")
         private _diffuseTexture3: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture3: Texture;
-        
+
         @serializeAsTexture("bumpTexture1")
         private _bumpTexture1: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture1: Texture;        
-        
+        public bumpTexture1: Texture;
+
         @serializeAsTexture("bumpTexture2")
         private _bumpTexture2: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture2: Texture;        
-        
+        public bumpTexture2: Texture;
+
         @serializeAsTexture("bumpTexture3")
         private _bumpTexture3: Texture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        public bumpTexture3: Texture;   
-        
+        public bumpTexture3: Texture;
+
         @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
-        
+
         @serializeAsColor3()
         public specularColor = new Color3(0, 0, 0);
-        
+
         @serialize()
         public specularPower = 64;
-        
+
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public disableLighting: boolean;   
-        
+        public disableLighting: boolean;
+
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number; 
+        public maxSimultaneousLights: number;
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _renderId: number;
 
         constructor(name: string, scene: Scene) {
@@ -96,12 +95,12 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -139,16 +138,16 @@ module BABYLON {
                     defines.BUMP = true;
                 }
             }
-            
+
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
-            
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
@@ -158,13 +157,13 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
                 MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
-             
+
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -196,7 +195,7 @@ module BABYLON {
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vDiffuseColor", "vSpecularColor",
                     "vFogInfos", "vFogColor", "pointSize",
-                    "vTextureInfos", 
+                    "vTextureInfos",
                     "mBones",
                     "vClipPlane", "textureMatrix",
                     "diffuse1Infos", "diffuse2Infos", "diffuse3Infos"
@@ -205,16 +204,16 @@ module BABYLON {
                     "bump1Sampler", "bump2Sampler", "bump3Sampler"
                 ];
 
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
-                
+
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     <EffectCreationOptions>{
                         attributes: attribs,
@@ -228,7 +227,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -247,6 +246,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -262,7 +264,7 @@ module BABYLON {
                     this._activeEffect.setTexture("textureSampler", this._mixTexture);
                     this._activeEffect.setFloat2("vTextureInfos", this._mixTexture.coordinatesIndex, this._mixTexture.level);
                     this._activeEffect.setMatrix("textureMatrix", this._mixTexture.getTextureMatrix());
-                    
+
                     if (StandardMaterial.DiffuseTextureEnabled) {
                         if (this._diffuseTexture1) {
                             this._activeEffect.setTexture("diffuse1Sampler", this._diffuseTexture1);
@@ -277,7 +279,7 @@ module BABYLON {
                             this._activeEffect.setFloat2("diffuse3Infos", this._diffuseTexture3.uScale, this._diffuseTexture3.vScale);
                         }
                     }
-                    
+
                     if (StandardMaterial.BumpTextureEnabled && scene.getEngine().getCaps().standardDerivatives) {
                         if (this._bumpTexture1) {
                             this._activeEffect.setTexture("bump1Sampler", this._bumpTexture1);
@@ -298,11 +300,11 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-            
+
             if (defines.SPECULARTERM) {
                 this._activeEffect.setColor4("vSpecularColor", this.specularColor, this.specularPower);
             }
@@ -366,6 +368,42 @@ module BABYLON {
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this._mixTexture === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture1 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture2 === texture) {
+                return true;
+            }
+
+            if (this._diffuseTexture3 === texture) {
+                return true;
+            }
+
+            if (this._bumpTexture1 === texture) {
+                return true;
+            }
+
+            if (this._bumpTexture2 === texture) {
+                return true;
+            }
+
+            if (this._bumpTexture3 === texture) {
+                return true;
+            }
+
+            return false;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.mixTexture) {
                 this.mixTexture.dispose();
@@ -373,7 +411,7 @@ module BABYLON {
 
             super.dispose(forceDisposeEffect);
         }
-        
+
         public clone(name: string): TerrainMaterial {
             return SerializationHelper.Clone(() => new TerrainMaterial(name, this.getScene()), this);
         }
@@ -384,10 +422,14 @@ module BABYLON {
             return serializationObject;
         }
 
+        public getClassName(): string {
+            return "TerrainMaterial";
+        }
+
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): TerrainMaterial {
             return SerializationHelper.Parse(() => new TerrainMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
+}
 

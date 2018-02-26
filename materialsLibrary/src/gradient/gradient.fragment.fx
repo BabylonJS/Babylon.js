@@ -21,8 +21,10 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
-// Lights
+// Helper functions
+#include<helperFunctions>
 
+// Lights
 #include<__decl__lightFragment>[0]
 #include<__decl__lightFragment>[1]
 #include<__decl__lightFragment>[2]
@@ -65,6 +67,8 @@ void main(void) {
 	if (baseColor.a < 0.4)
 		discard;
 #endif
+
+#include<depthPrePass>
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;

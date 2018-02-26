@@ -9,7 +9,6 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -18,11 +17,8 @@ module BABYLON {
     }
 
     export class ShadowOnlyMaterial extends PushMaterial {
-        @serialize()
-
-        private _worldViewProjectionMatrix = Matrix.Zero();
-        private _scaledDiffuse = new Color3();
         private _renderId: number;
+        private _activeLight: IShadowLight;
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -36,12 +32,20 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
+        public get activeLight(): IShadowLight {
+            return this._activeLight;
+        }
+
+        public set activeLight(light: IShadowLight) {
+            this._activeLight = light;
+        }
+
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -63,9 +67,28 @@ module BABYLON {
 
             var engine = scene.getEngine();
 
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
+            // Ensure that active light is the first shadow light
+            if (this._activeLight) {
+                for (var light of mesh._lightSources) {
+                    if (light.shadowEnabled) {
+                        if (this._activeLight === light) {
+                            break; // We are good
+                        }
 
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+                        var lightPosition = mesh._lightSources.indexOf(this._activeLight);
+
+                        if (lightPosition !== -1) {
+                            mesh._lightSources.splice(lightPosition, 1);
+                            mesh._lightSources.splice(0, 0, this._activeLight);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
 
@@ -79,13 +102,13 @@ module BABYLON {
                 scene.resetCachedMaterial();
 
                 // Fallbacks
-                var fallbacks = new EffectFallbacks();             
+                var fallbacks = new EffectFallbacks();
                 if (defines.FOG) {
                     fallbacks.addFallback(1, "FOG");
                 }
 
                 MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, 1);
-                
+
                 if (defines.NUM_BONE_INFLUENCERS > 0) {
                     fallbacks.addCPUSkinningFallback(0, mesh);
                 }
@@ -103,22 +126,22 @@ module BABYLON {
                 var shaderName = "shadowOnly";
                 var join = defines.toString();
                 var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType",
-                                "vFogInfos", "vFogColor", "pointSize",
-                                "mBones",
-                                "vClipPlane"
+                    "vFogInfos", "vFogColor", "pointSize", "alpha",
+                    "mBones",
+                    "vClipPlane"
                 ];
-                var samplers = [];
-                
-                var uniformBuffers = [];
+                var samplers = new Array<string>();
+
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: 1
                 });
-                
+
                 subMesh.setEffect(scene.getEngine().createEffect(shaderName,
                     <EffectCreationOptions>{
                         attributes: attribs,
@@ -132,7 +155,7 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: 1 }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -151,6 +174,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -169,12 +195,14 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);                
+                this._activeEffect.setFloat("alpha", this.alpha);
+
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             // Lights
             if (scene.lightsEnabled) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);          
+                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);
             }
 
             // View
@@ -191,11 +219,15 @@ module BABYLON {
         public clone(name: string): ShadowOnlyMaterial {
             return SerializationHelper.Clone<ShadowOnlyMaterial>(() => new ShadowOnlyMaterial(name, this.getScene()), this);
         }
-        
+
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.ShadowOnlyMaterial";
             return serializationObject;
+        }
+
+        public getClassName(): string {
+            return "ShadowOnlyMaterial";
         }
 
         // Statics
@@ -203,5 +235,5 @@ module BABYLON {
             return SerializationHelper.Parse(() => new ShadowOnlyMaterial(source.name, scene), source, scene, rootUrl);
         }
     }
-} 
+}
 

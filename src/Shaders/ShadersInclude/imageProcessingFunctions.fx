@@ -1,52 +1,52 @@
-﻿#ifdef COLORGRADING
-/** 
- * Polyfill for SAMPLE_TEXTURE_3D, which is unsupported in WebGL.
- * sampler3dSetting.x = textureOffset (0.5 / textureSize).
- * sampler3dSetting.y = textureSize.
- */
-vec3 sampleTexture3D(sampler2D colorTransform, vec3 color, vec2 sampler3dSetting)
-{
-	float sliceSize = 2.0 * sampler3dSetting.x; // Size of 1 slice relative to the texture, for example 1/8
+﻿#if defined(COLORGRADING) && !defined(COLORGRADING3D)
+	/** 
+	* Polyfill for SAMPLE_TEXTURE_3D, which is unsupported in WebGL.
+	* sampler3dSetting.x = textureOffset (0.5 / textureSize).
+	* sampler3dSetting.y = textureSize.
+	*/
+	vec3 sampleTexture3D(sampler2D colorTransform, vec3 color, vec2 sampler3dSetting)
+	{
+		float sliceSize = 2.0 * sampler3dSetting.x; // Size of 1 slice relative to the texture, for example 1/8
 
-#ifdef SAMPLER3DGREENDEPTH
-	float sliceContinuous = (color.g - sampler3dSetting.x) * sampler3dSetting.y;
-#else
-	float sliceContinuous = (color.b - sampler3dSetting.x) * sampler3dSetting.y;
-#endif
-	float sliceInteger = floor(sliceContinuous);
+	#ifdef SAMPLER3DGREENDEPTH
+		float sliceContinuous = (color.g - sampler3dSetting.x) * sampler3dSetting.y;
+	#else
+		float sliceContinuous = (color.b - sampler3dSetting.x) * sampler3dSetting.y;
+	#endif
+		float sliceInteger = floor(sliceContinuous);
 
-	// Note: this is mathematically equivalent to fract(sliceContinuous); but we use explicit subtract
-	// rather than separate fract() for correct results near slice boundaries (matching sliceInteger choice)
-	float sliceFraction = sliceContinuous - sliceInteger;
+		// Note: this is mathematically equivalent to fract(sliceContinuous); but we use explicit subtract
+		// rather than separate fract() for correct results near slice boundaries (matching sliceInteger choice)
+		float sliceFraction = sliceContinuous - sliceInteger;
 
-#ifdef SAMPLER3DGREENDEPTH
-	vec2 sliceUV = color.rb;
-#else
-	vec2 sliceUV = color.rg;
-#endif
-	
-	sliceUV.x *= sliceSize;
-	sliceUV.x += sliceInteger * sliceSize;
+	#ifdef SAMPLER3DGREENDEPTH
+		vec2 sliceUV = color.rb;
+	#else
+		vec2 sliceUV = color.rg;
+	#endif
+		
+		sliceUV.x *= sliceSize;
+		sliceUV.x += sliceInteger * sliceSize;
 
-	sliceUV = clamp(sliceUV, 0., 1.);
+		sliceUV = clamp(sliceUV, 0., 1.);
 
-	vec4 slice0Color = texture2D(colorTransform, sliceUV);
+		vec4 slice0Color = texture2D(colorTransform, sliceUV);
 
-	sliceUV.x += sliceSize;
-	
-	sliceUV = clamp(sliceUV, 0., 1.);
-	vec4 slice1Color = texture2D(colorTransform, sliceUV);
+		sliceUV.x += sliceSize;
+		
+		sliceUV = clamp(sliceUV, 0., 1.);
+		vec4 slice1Color = texture2D(colorTransform, sliceUV);
 
-	vec3 result = mix(slice0Color.rgb, slice1Color.rgb, sliceFraction);
+		vec3 result = mix(slice0Color.rgb, slice1Color.rgb, sliceFraction);
 
-#ifdef SAMPLER3DBGRMAP
-	color.rgb = result.rgb;
-#else
-	color.rgb = result.bgr;
-#endif
+	#ifdef SAMPLER3DBGRMAP
+		color.rgb = result.rgb;
+	#else
+		color.rgb = result.bgr;
+	#endif
 
-	return color;
-}
+		return color;
+	}
 #endif
 
 vec4 applyImageProcessing(vec4 result) {
@@ -101,7 +101,11 @@ vec4 applyImageProcessing(vec4 result) {
 	// Apply Color Transform
 #ifdef COLORGRADING
 	vec3 colorTransformInput = result.rgb * colorTransformSettings.xxx + colorTransformSettings.yyy;
-	vec3 colorTransformOutput = sampleTexture3D(txColorTransform, colorTransformInput, colorTransformSettings.yz).rgb;
+	#ifdef COLORGRADING3D
+		vec3 colorTransformOutput = texture(txColorTransform, colorTransformInput).rgb;
+	#else
+		vec3 colorTransformOutput = sampleTexture3D(txColorTransform, colorTransformInput, colorTransformSettings.yz).rgb;
+	#endif
 
 	result.rgb = mix(result.rgb, colorTransformOutput, colorTransformSettings.www);
 #endif

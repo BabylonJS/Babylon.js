@@ -10,7 +10,7 @@
 
         public gravity: Vector3;
 
-        constructor(gravity?: Vector3, private _physicsPlugin: IPhysicsEnginePlugin = new CannonJSPlugin()) {
+        constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = new CannonJSPlugin()) {
             if (!this._physicsPlugin.isSupported()) {
                 throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. "
                     + "Please make sure it is included.")
@@ -24,16 +24,23 @@
             this.gravity = gravity;
             this._physicsPlugin.setGravity(this.gravity);
         }
-        
+
         /**
          * Set the time step of the physics engine.
-         * default is 1/60. 
+         * default is 1/60.
          * To slow it down, enter 1/600 for example.
          * To speed it up, 1/30
          * @param {number} newTimeStep the new timestep to apply to this world.
          */
         public setTimeStep(newTimeStep: number = 1 / 60) {
             this._physicsPlugin.setTimeStep(newTimeStep);
+        }
+
+        /**
+         * Get the time step of the physics engine.
+         */
+        public getTimeStep(): number {
+            return this._physicsPlugin.getTimeStep();
         }
 
         public dispose(): void {
@@ -51,10 +58,10 @@
         public static Epsilon = 0.001;
 
         //new methods and parameters
-        
+
         private _impostors: Array<PhysicsImpostor> = [];
         private _joints: Array<PhysicsImpostorJoint> = [];
-
+        
         /**
          * Adding a new impostor for the impostor tracking.
          * This will be done by the impostor itself.
@@ -84,7 +91,7 @@
                 }
             }
         }
-        
+
         /**
          * Add a joint to the physics engine
          * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
@@ -111,7 +118,7 @@
             if (matchingJoints.length) {
                 this._physicsPlugin.removeJoint(matchingJoints[0]);
                 //TODO remove it from the list as well
-                
+
             }
         }
 
@@ -140,57 +147,68 @@
             return this._physicsPlugin;
         }
         
-        public getImpostorForPhysicsObject(object: IPhysicsEnabledObject) {
+        public getImpostors(): Array<PhysicsImpostor> {
+            return this._impostors;
+        }
+
+        public getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
             for (var i = 0; i < this._impostors.length; ++i) {
                 if (this._impostors[i].object === object) {
                     return this._impostors[i];
                 }
             }
+
+            return null;
         }
 
-        public getImpostorWithPhysicsBody(body: any): PhysicsImpostor {
+        public getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor> {
             for (var i = 0; i < this._impostors.length; ++i) {
                 if (this._impostors[i].physicsBody === body) {
                     return this._impostors[i];
                 }
             }
+
+            return null;
         }
+
     }
 
     export interface IPhysicsEnginePlugin {
         world: any;
         name: string;
-        setGravity(gravity: Vector3);
-        setTimeStep(timeStep: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
         executeStep(delta: number, impostors: Array<PhysicsImpostor>): void; //not forgetting pre and post events
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3);
-        generatePhysicsBody(impostor: PhysicsImpostor);
-        removePhysicsBody(impostor: PhysicsImpostor);
-        generateJoint(joint: PhysicsImpostorJoint);
-        removeJoint(joint: PhysicsImpostorJoint)
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(joint: PhysicsImpostorJoint): void;
+        removeJoint(joint: PhysicsImpostorJoint): void;
         isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor);
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion);
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3);
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3);
-        getLinearVelocity(impostor: PhysicsImpostor) : Vector3;
-        getAngularVelocity(impostor: PhysicsImpostor) : Vector3;
-        setBodyMass(impostor: PhysicsImpostor, mass: number);
-        getBodyMass(impostor: PhysicsImpostor);
-        getBodyFriction(impostor: PhysicsImpostor);
-        setBodyFriction(impostor: PhysicsImpostor, friction: number);
-        getBodyRestitution(impostor: PhysicsImpostor);
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number);
-        sleepBody(impostor: PhysicsImpostor);
-        wakeUpBody(impostor: PhysicsImpostor);
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
         //Joint Update
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number);
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number);
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number);
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance:number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
         getRadius(impostor: PhysicsImpostor):number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3);
-        syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor);
-        dispose();
+        getBoxSizeToRef(impostor: PhysicsImpostor, result:Vector3): void;
+        syncMeshWithImpostor(mesh:AbstractMesh, impostor:PhysicsImpostor): void;
+        dispose(): void;
     }
+    
 }

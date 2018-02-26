@@ -15,9 +15,11 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+// Helper functions
+#include<helperFunctions>
+
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
-
 
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
@@ -53,6 +55,8 @@ void main(void) {
 	if (baseColor.a < 0.4)
 		discard;
 #endif
+
+#include<depthPrePass>
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif

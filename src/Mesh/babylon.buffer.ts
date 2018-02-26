@@ -1,14 +1,13 @@
 ﻿module BABYLON {
     export class Buffer {
         private _engine: Engine;
-        private _buffer: WebGLBuffer;
-        private _data: number[] | Float32Array;
+        private _buffer: Nullable<WebGLBuffer>;
+        private _data: Nullable<FloatArray>;
         private _updatable: boolean;
         private _strideSize: number;
         private _instanced: boolean;
-        private _instanceDivisor: number;
 
-        constructor(engine: any, data: number[] | Float32Array, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced?: boolean) {
+        constructor(engine: any, data: FloatArray, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced: boolean = false) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -17,6 +16,7 @@
             }
 
             this._updatable = updatable;
+            this._instanced = instanced;
 
             this._data = data;
 
@@ -25,14 +25,20 @@
             if (!postponeInternalCreation) { // by default
                 this.create();
             }
-
-            this._instanced = instanced;
-            this._instanceDivisor = instanced ? 1 : 0;
         }
 
-        public createVertexBuffer(kind: string, offset: number, size: number, stride?: number): VertexBuffer {
+        /**
+         * Create a new {BABYLON.VertexBuffer} based on the current buffer
+         * @param kind defines the vertex buffer kind (position, normal, etc.)
+         * @param offset defines offset in the buffer (0 by default)
+         * @param size defines the size in floats of attributes (position is 3 for instance)
+         * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
+         * @param instanced defines if the vertex buffer contains indexed data
+         * @returns the new vertex buffer
+         */
+        public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean): VertexBuffer {
             // a lot of these parameters are ignored as they are overriden by the buffer
-            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, this._instanced, offset, size);
+            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced === undefined ? this._instanced : instanced, offset, size);
         }
 
         // Properties
@@ -40,11 +46,11 @@
             return this._updatable;
         }
 
-        public getData(): number[] | Float32Array {
+        public getData(): Nullable<FloatArray> {
             return this._data;
         }
 
-        public getBuffer(): WebGLBuffer {
+        public getBuffer(): Nullable<WebGLBuffer> {
             return this._buffer;
         }
 
@@ -52,30 +58,34 @@
             return this._strideSize;
         }
 
-        public getIsInstanced(): boolean {
-            return this._instanced;
-        }
+        // public getIsInstanced(): boolean {
+        //     return this._instanced;
+        // }
 
-        public get instanceDivisor(): number {
-            return this._instanceDivisor;
-        }
+        // public get instanceDivisor(): number {
+        //     return this._instanceDivisor;
+        // }
 
-        public set instanceDivisor(value: number) {
-            this._instanceDivisor = value;
-            if (value == 0) {
-                this._instanced = false;
-            } else {
-                this._instanced = true;
-            }
-        }
+        // public set instanceDivisor(value: number) {
+        //     this._instanceDivisor = value;
+        //     if (value == 0) {
+        //         this._instanced = false;
+        //     } else {
+        //         this._instanced = true;
+        //     }
+        // }
 
         // Methods
-        public create(data?: number[] | Float32Array): void {
+        public create(data: Nullable<FloatArray> = null): void {
             if (!data && this._buffer) {
                 return; // nothing to do
             }
 
             data = data || this._data;
+
+            if (!data) {
+                return;
+            }
 
             if (!this._buffer) { // create buffer
                 if (this._updatable) {
@@ -90,7 +100,12 @@
             }
         }
 
-        public update(data: number[] | Float32Array): void {
+        public _rebuild(): void {
+            this._buffer = null;
+            this.create(this._data);
+        }
+
+        public update(data: FloatArray): void {
             this.create(data);
         }
 

@@ -2,9 +2,9 @@ module BABYLON {
     export class MorphTarget {
         public animations = new Array<Animation>();
 
-        private _positions: Float32Array;
-        private _normals: Float32Array;
-        private _tangents: Float32Array;
+        private _positions: Nullable<FloatArray> = null;
+        private _normals: Nullable<FloatArray> = null;
+        private _tangents: Nullable<FloatArray> = null;
         private _influence: number;
 
         public onInfluenceChanged = new Observable<boolean>();
@@ -30,35 +30,39 @@ module BABYLON {
             this.influence = influence;
         }
 
+        public get hasPositions(): boolean {
+            return !!this._positions;
+        }
+
         public get hasNormals(): boolean {
-            return this._normals !== undefined;
+            return !!this._normals;
         }
 
         public get hasTangents(): boolean {
-            return this._tangents !== undefined;
+            return !!this._tangents;
         }
 
-        public setPositions(data: Float32Array | number[]) {
-            this._positions = new Float32Array(data);
+        public setPositions(data: Nullable<FloatArray>) {
+            this._positions = data;
         }
 
-        public getPositions(): Float32Array {
+        public getPositions(): Nullable<FloatArray> {
             return this._positions;
         }
 
-        public setNormals(data: Float32Array | number[]) {
-            this._normals = new Float32Array(data);
+        public setNormals(data: Nullable<FloatArray>) {
+            this._normals = data;
         }
 
-        public getNormals(): Float32Array {
+        public getNormals(): Nullable<FloatArray> {
             return this._normals;
         }
 
-        public setTangents(data: Float32Array | number[]) {
-            this._tangents = new Float32Array(data);
+        public setTangents(data: Nullable<FloatArray>) {
+            this._tangents = data;
         }
 
-        public getTangents(): Float32Array {
+        public getTangents(): Nullable<FloatArray> {
             return this._tangents;
         }
 
@@ -80,6 +84,9 @@ module BABYLON {
                 serializationObject.tangents = Array.prototype.slice.call(this.getTangents());
             }
 
+            // Animations
+            Animation.AppendSerializedAnimations(this, serializationObject);
+
             return serializationObject;
         }
 
@@ -96,6 +103,15 @@ module BABYLON {
                 result.setTangents(serializationObject.tangents);
             }
 
+            // Animations
+            if (serializationObject.animations) {
+                for (var animationIndex = 0; animationIndex < serializationObject.animations.length; animationIndex++) {
+                    var parsedAnimation = serializationObject.animations[animationIndex];
+
+                    result.animations.push(Animation.Parse(parsedAnimation));
+                }
+            }
+
             return result;
         }
 
@@ -106,13 +122,13 @@ module BABYLON {
 
             var result = new MorphTarget(name, influence);
 
-            result.setPositions(mesh.getVerticesData(VertexBuffer.PositionKind));
+            result.setPositions(<FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind));
 
             if (mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                result.setNormals(mesh.getVerticesData(VertexBuffer.NormalKind));
+                result.setNormals(<FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind));
             }
             if (mesh.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-                result.setTangents(mesh.getVerticesData(VertexBuffer.TangentKind));
+                result.setTangents(<FloatArray>mesh.getVerticesData(VertexBuffer.TangentKind));
             }
 
             return result;

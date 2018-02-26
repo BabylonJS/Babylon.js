@@ -42,7 +42,7 @@
         @serializeAsMeshReference()
         public mesh: Mesh;
 
-        
+
         public get useDiffuseColor(): boolean {
             Tools.Warn("VolumetricLightScatteringPostProcess.useDiffuseColor is no longer used, use the mesh material directly instead");
             return false;
@@ -100,13 +100,13 @@
          */
         constructor(name: string, ratio: any, camera: Camera, mesh?: Mesh, samples: number = 100, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, scene?: Scene) {
             super(name, "volumetricLightScattering", ["decay", "exposure", "weight", "meshPositionOnScreen", "density"], ["lightScatteringSampler"], ratio.postProcessRatio || ratio, camera, samplingMode, engine, reusable, "#define NUM_SAMPLES " + samples);
-            scene = (camera === null) ? scene : camera.getScene(); // parameter "scene" can be null.
+            scene = <Scene>((camera === null) ? scene : camera.getScene()) // parameter "scene" can be null.
 
-            var engine = scene.getEngine();
+            engine = scene.getEngine();
             this._viewPort = new Viewport(0, 0, 1, 1).toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
 
             // Configure mesh
-            this.mesh = (mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene);
+            this.mesh = (<Mesh>((mesh !== null) ? mesh : VolumetricLightScatteringPostProcess.CreateDefaultMesh("VolumetricLightScatteringMesh", scene)));
 
             // Configure
             this._createPass(scene, ratio.passRatio || ratio);
@@ -120,7 +120,7 @@
             };
 
             this.onApplyObservable.add((effect: Effect) => {
-                this._updateMeshScreenCoordinates(scene);
+                this._updateMeshScreenCoordinates(<Scene>scene);
 
                 effect.setTexture("lightScatteringSampler", this._volumetricLightScatteringRTT);
                 effect.setFloat("exposure", this.exposure);
@@ -131,18 +131,21 @@
             });
         }
 
-        public isReady(subMesh: SubMesh, useInstances: boolean): boolean {
+        public getClassName(): string {
+            return "VolumetricLightScatteringPostProcess";
+        }
+
+        private _isReady(subMesh: SubMesh, useInstances: boolean): boolean {
             var mesh = subMesh.getMesh();
 
             // Render this.mesh as default
-            if (mesh === this.mesh) {
+            if (mesh === this.mesh && mesh.material) {
                 return mesh.material.isReady(mesh);
             }
 
             var defines = [];
             var attribs = [VertexBuffer.PositionKind];
             var material: any = subMesh.getMaterial();
-            var needUV: boolean = false;
 
             // Alpha test
             if (material) {
@@ -165,11 +168,11 @@
                 attribs.push(VertexBuffer.MatricesIndicesKind);
                 attribs.push(VertexBuffer.MatricesWeightsKind);
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-                defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
+                defines.push("#define BonesPerMesh " + (mesh.skeleton ? (mesh.skeleton.bones.length + 1) : 0));
             } else {
-                defines.push("#define NUM_BONE_INFLUENCERS 0"); 
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
-            
+
 
             // Instances
             if (useInstances) {
@@ -218,7 +221,7 @@
             if (rttIndex !== -1) {
                 camera.getScene().customRenderTargets.splice(rttIndex, 1);
             }
-                
+
             this._volumetricLightScatteringRTT.dispose();
             super.dispose(camera);
         }
@@ -248,7 +251,14 @@
             this._volumetricLightScatteringRTT.wrapV = Texture.CLAMP_ADDRESSMODE;
             this._volumetricLightScatteringRTT.renderList = null;
             this._volumetricLightScatteringRTT.renderParticles = false;
-            scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            this._volumetricLightScatteringRTT.ignoreCameraViewport = true;
+
+            var camera = this.getCamera();
+            if (camera) {
+                camera.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            } else {
+                scene.customRenderTargets.push(this._volumetricLightScatteringRTT);
+            }
 
             // Custom render function for submeshes
             var renderSubMesh = (subMesh: SubMesh): void => {
@@ -257,11 +267,17 @@
                     return;
                 }
 
+                let material = subMesh.getMaterial();
+
+                if (!material) {
+                    return;
+                }
+
                 var scene = mesh.getScene();
                 var engine = scene.getEngine();
 
                 // Culling
-                engine.setState(subMesh.getMaterial().backFaceCulling);
+                engine.setState(material.backFaceCulling);
 
                 // Managing instances
                 var batch = mesh._getInstancesRenderList(subMesh._id);
@@ -271,14 +287,14 @@
                 }
 
                 var hardwareInstancedRendering = (engine.getCaps().instancedArrays) && (batch.visibleInstances[subMesh._id] !== null);
-                
-                if (this.isReady(subMesh, hardwareInstancedRendering)) {
+
+                if (this._isReady(subMesh, hardwareInstancedRendering)) {
                     var effect: Effect = this._volumetricLightScatteringPass;
                     if (mesh === this.mesh) {
                         if (subMesh.effect) {
                             effect = subMesh.effect;
                         } else {
-                            effect = subMesh.getMaterial().getEffect();
+                            effect = <Effect>material.getEffect();
                         }
                     }
 
@@ -286,17 +302,15 @@
                     mesh._bind(subMesh, effect, Material.TriangleFillMode);
 
                     if (mesh === this.mesh) {
-                        subMesh.getMaterial().bind(mesh.getWorldMatrix(), mesh);
+                        material.bind(mesh.getWorldMatrix(), mesh);
                     }
                     else {
-                        var material: any = subMesh.getMaterial();
-
                         this._volumetricLightScatteringPass.setMatrix("viewProjection", scene.getTransformMatrix());
 
                         // Alpha test
                         if (material && material.needAlphaTesting()) {
                             var alphaTexture = material.getAlphaTestTexture();
-                            
+
                             this._volumetricLightScatteringPass.setTexture("diffuseSampler", alphaTexture);
 
                             if (alphaTexture) {
@@ -305,7 +319,7 @@
                         }
 
                         // Bones
-                        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+                        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                             this._volumetricLightScatteringPass.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                         }
                     }
@@ -328,27 +342,37 @@
             this._volumetricLightScatteringRTT.onAfterRenderObservable.add((): void => {
                 scene.clearColor = savedSceneClearColor;
             });
-            
-            this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>): void => {
+
+            this._volumetricLightScatteringRTT.customRenderFunction = (opaqueSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>): void => {
                 var engine = scene.getEngine();
                 var index: number;
+
+                if (depthOnlySubMeshes.length) {
+                    engine.setColorWrite(false);
+                    for (index = 0; index < depthOnlySubMeshes.length; index++) {
+                        renderSubMesh(depthOnlySubMeshes.data[index]);
+                    }
+                    engine.setColorWrite(true);
+                }
 
                 for (index = 0; index < opaqueSubMeshes.length; index++) {
                     renderSubMesh(opaqueSubMeshes.data[index]);
                 }
 
-                engine.setAlphaTesting(true);
                 for (index = 0; index < alphaTestSubMeshes.length; index++) {
                     renderSubMesh(alphaTestSubMeshes.data[index]);
                 }
-                engine.setAlphaTesting(false);
 
                 if (transparentSubMeshes.length) {
                     // Sort sub meshes
                     for (index = 0; index < transparentSubMeshes.length; index++) {
                         var submesh = transparentSubMeshes.data[index];
-                        submesh._alphaIndex = submesh.getMesh().alphaIndex;
-                        submesh._distanceToCamera = submesh.getBoundingInfo().boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                        let boundingInfo = submesh.getBoundingInfo();
+
+                        if (boundingInfo && scene.activeCamera) {
+                            submesh._alphaIndex = submesh.getMesh().alphaIndex;
+                            submesh._distanceToCamera = boundingInfo.boundingSphere.centerWorld.subtract(scene.activeCamera.position).length();
+                        }
                     }
 
                     var sortedArray = transparentSubMeshes.data.slice(0, transparentSubMeshes.length);
@@ -373,11 +397,11 @@
                     });
 
                     // Render sub meshes
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_COMBINE);
+                    engine.setAlphaMode(Engine.ALPHA_COMBINE);
                     for (index = 0; index < sortedArray.length; index++) {
                         renderSubMesh(sortedArray[index]);
                     }
-                    engine.setAlphaMode(BABYLON.Engine.ALPHA_DISABLE);
+                    engine.setAlphaMode(Engine.ALPHA_DISABLE);
                 }
             };
         }

@@ -1,29 +1,131 @@
 ﻿module BABYLON {
-    function generateSerializableMember(type: number, sourceName?: string) {
-        return (target: any, propertyKey: string | symbol) => {
-            if (!target.__serializableMembers) {
-                target.__serializableMembers = {};
+    var __decoratorInitialStore = {};
+    var __mergedStore = {};
+
+    var _copySource = function <T>(creationFunction: () => T, source: T, instanciate: boolean): T {
+        var destination = creationFunction();
+
+        // Tags
+        if (Tags) {
+            Tags.AddTagsTo(destination, (<any>source).tags);
+        }
+
+        var classStore = getMergedStore(destination);
+
+        // Properties
+        for (var property in classStore) {
+            var propertyDescriptor = classStore[property];
+            var sourceProperty = (<any>source)[property];
+            var propertyType = propertyDescriptor.type;
+
+            if (sourceProperty !== undefined && sourceProperty !== null) {
+                switch (propertyType) {
+                    case 0:     // Value
+                    case 6:     // Mesh reference
+                        (<any>destination)[property] = sourceProperty;
+                        break;
+                    case 1:     // Texture
+                        (<any>destination)[property] = (instanciate || sourceProperty.isRenderTarget) ? sourceProperty : sourceProperty.clone();
+                        break;
+                    case 2:     // Color3
+                    case 3:     // FresnelParameters
+                    case 4:     // Vector2
+                    case 5:     // Vector3
+                    case 7:     // Color Curves
+                    case 10:    // Quaternion
+                        (<any>destination)[property] = instanciate ? sourceProperty : sourceProperty.clone();
+                        break;
+                }
+            }
+        }
+
+        return destination;
+    };
+
+    function getDirectStore(target: any): any {
+        var classKey = target.getClassName();
+
+        if (!(<any>__decoratorInitialStore)[classKey]) {
+            (<any>__decoratorInitialStore)[classKey] = {};
+        }
+
+        return (<any>__decoratorInitialStore)[classKey];
+    }
+
+    /**
+     * Return the list of properties flagged as serializable
+     * @param target: host object
+     */
+    function getMergedStore(target: any): any {
+        let classKey = target.getClassName();
+
+        if ((<any>__mergedStore)[classKey]) {
+            return (<any>__mergedStore)[classKey];
+        }
+
+        (<any>__mergedStore)[classKey] = {};
+
+        let store = (<any>__mergedStore)[classKey];
+        let currentTarget = target;
+        let currentKey = classKey;
+        while (currentKey) {
+            let initialStore = (<any>__decoratorInitialStore)[currentKey];
+            for (var property in initialStore) {
+                store[property] = initialStore[property];
             }
 
-            if (!target.__serializableMembers[propertyKey]) {
-                target.__serializableMembers[propertyKey] = { type: type, sourceName: sourceName };
+            let parent: any;
+            let done = false;
+
+            do {
+                parent = Object.getPrototypeOf(currentTarget);
+                if (!parent.getClassName) {
+                    done = true;
+                    break;
+                }
+
+                if (parent.getClassName() !== currentKey) {
+                    break;
+                }
+
+                currentTarget = parent;
+            }
+            while (parent);
+
+            if (done) {
+                break;
+            }
+
+            currentKey = parent.getClassName();
+            currentTarget = parent;
+        }
+
+        return store;
+    }
+
+    function generateSerializableMember(type: number, sourceName?: string) {
+        return (target: any, propertyKey: string | symbol) => {
+            var classStore = getDirectStore(target);
+
+            if (!classStore[propertyKey]) {
+                classStore[propertyKey] = { type: type, sourceName: sourceName };
             }
         }
     }
 
-    function generateExpandMember(setCallback: string, targetKey: string) {
+    function generateExpandMember(setCallback: string, targetKey: Nullable<string> = null) {
         return (target: any, propertyKey: string) => {
             var key = targetKey || ("_" + propertyKey);
             Object.defineProperty(target, propertyKey, {
-                get: function () {
+                get: function (this: any) {
                     return this[key];
                 },
-                set: function (value) {
+                set: function (this: any, value) {
                     if (this[key] === value) {
                         return;
                     }
                     this[key] = value;
-                    
+
                     target[setCallback].apply(this);
                 },
                 enumerable: true,
@@ -32,7 +134,7 @@
         }
     }
 
-    export function expandToProperty(callback: string, targetKey?: string) {
+    export function expandToProperty(callback: string, targetKey: Nullable<string> = null) {
         return generateExpandMember(callback, targetKey);
     }
 
@@ -63,7 +165,7 @@
     export function serializeAsMeshReference(sourceName?: string) {
         return generateSerializableMember(6, sourceName); // mesh reference member
     }
-    
+
     export function serializeAsColorCurves(sourceName?: string) {
         return generateSerializableMember(7, sourceName); // color curves
     }
@@ -74,6 +176,10 @@
 
     export function serializeAsImageProcessingConfiguration(sourceName?: string) {
         return generateSerializableMember(9, sourceName); // image processing
+    }
+
+    export function serializeAsQuaternion(sourceName?: string) {
+        return generateSerializableMember(10, sourceName); // quaternion member
     }
 
 
@@ -89,12 +195,14 @@
                 serializationObject.tags = Tags.GetTags(entity);
             }
 
+            var serializedProperties = getMergedStore(entity);
+
             // Properties
-            for (var property in (<any>entity).__serializableMembers) {
-                var propertyDescriptor = (<any>entity).__serializableMembers[property];
+            for (var property in serializedProperties) {
+                var propertyDescriptor = serializedProperties[property];
                 var targetPropertyName = propertyDescriptor.sourceName || property;
                 var propertyType = propertyDescriptor.type;
-                var sourceProperty = entity[property];
+                var sourceProperty = (<any>entity)[property];
 
                 if (sourceProperty !== undefined && sourceProperty !== null) {
                     switch (propertyType) {
@@ -135,51 +243,62 @@
             return serializationObject;
         }
 
-        public static Parse<T>(creationFunction: () => T, source: any, scene: Scene, rootUrl?: string): T {
+        public static Parse<T>(creationFunction: () => T, source: any, scene: Nullable<Scene>, rootUrl: Nullable<string> = null): T {
             var destination = creationFunction();
+
+            if (!rootUrl) {
+                rootUrl = "";
+            }
 
             // Tags
             if (Tags) {
                 Tags.AddTagsTo(destination, source.tags);
             }
 
+            var classStore = getMergedStore(destination);
+
             // Properties
-            for (var property in (<any>destination).__serializableMembers) {
-                var propertyDescriptor = (<any>destination).__serializableMembers[property];
+            for (var property in classStore) {
+                var propertyDescriptor = classStore[property];
                 var sourceProperty = source[propertyDescriptor.sourceName || property];
                 var propertyType = propertyDescriptor.type;
 
                 if (sourceProperty !== undefined && sourceProperty !== null) {
+                    var dest = <any>destination;
                     switch (propertyType) {
                         case 0:     // Value
-                            destination[property] = sourceProperty;
+                            dest[property] = sourceProperty;
                             break;
                         case 1:     // Texture
-                            destination[property] = Texture.Parse(sourceProperty, scene, rootUrl);
+                            if (scene) {
+                                dest[property] = Texture.Parse(sourceProperty, scene, rootUrl);
+                            }
                             break;
                         case 2:     // Color3
-                            destination[property] = Color3.FromArray(sourceProperty);
+                            dest[property] = Color3.FromArray(sourceProperty);
                             break;
                         case 3:     // FresnelParameters
-                            destination[property] = FresnelParameters.Parse(sourceProperty);
+                            dest[property] = FresnelParameters.Parse(sourceProperty);
                             break;
                         case 4:     // Vector2
-                            destination[property] = Vector2.FromArray(sourceProperty);
+                            dest[property] = Vector2.FromArray(sourceProperty);
                             break;
                         case 5:     // Vector3
-                            destination[property] = Vector3.FromArray(sourceProperty);
+                            dest[property] = Vector3.FromArray(sourceProperty);
                             break;
                         case 6:     // Mesh reference
-                            destination[property] = scene.getLastMeshByID(sourceProperty);
+                            if (scene) {
+                                dest[property] = scene.getLastMeshByID(sourceProperty);
+                            }
                             break;
                         case 7:     // Color Curves
-                            destination[property] = ColorCurves.Parse(sourceProperty);
+                            dest[property] = ColorCurves.Parse(sourceProperty);
                             break;
                         case 8:     // Color 4
-                            destination[property] = Color4.FromArray(sourceProperty);
+                            dest[property] = Color4.FromArray(sourceProperty);
                             break;
                         case 9:     // Image Processing
-                            destination[property] = ImageProcessingConfiguration.Parse(sourceProperty);
+                            dest[property] = ImageProcessingConfiguration.Parse(sourceProperty);
                             break;
                     }
                 }
@@ -189,38 +308,11 @@
         }
 
         public static Clone<T>(creationFunction: () => T, source: T): T {
-            var destination = creationFunction();
+            return _copySource(creationFunction, source, false);
+        }
 
-            // Tags
-            if (Tags) {
-                Tags.AddTagsTo(destination, (<any>source).tags);
-            }
-
-            // Properties
-            for (var property in (<any>destination).__serializableMembers) {
-                var propertyDescriptor = (<any>destination).__serializableMembers[property];
-                var sourceProperty = source[property];
-                var propertyType = propertyDescriptor.type;
-
-                if (sourceProperty !== undefined && sourceProperty !== null) {
-                    switch (propertyType) {
-                        case 0:     // Value
-                        case 6:     // Mesh reference
-                            destination[property] = sourceProperty;
-                            break;
-                        case 1:     // Texture
-                        case 2:     // Color3
-                        case 3:     // FresnelParameters
-                        case 4:     // Vector2
-                        case 5:     // Vector3
-                        case 7:     // Color Curves
-                            destination[property] = sourceProperty.clone();
-                            break;
-                    }
-                }
-            }
-
-            return destination;
+        public static Instanciate<T>(creationFunction: () => T, source: T): T {
+            return _copySource(creationFunction, source, true);
         }
     }
 }

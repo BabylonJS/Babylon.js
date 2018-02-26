@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     export class AnaglyphPostProcess extends PostProcess {
-        private _passedProcess : PostProcess;
+        private _passedProcess : Nullable<PostProcess>;
 
         constructor(name: string, options: number | PostProcessOptions,  rigCameras: Camera[], samplingMode?: number, engine?: Engine, reusable?: boolean) {
             super(name, "anaglyph", null, ["leftSampler"], options, rigCameras[1], samplingMode, engine, reusable);

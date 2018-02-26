@@ -16,44 +16,51 @@ attribute vec2 uv;
 #ifdef UV2
 attribute vec2 uv2;
 #endif
+#ifdef MAINUV1
+varying vec2 vMainUV1;
+#endif
+#ifdef MAINUV2
+varying vec2 vMainUV2; 
+#endif 
 #ifdef VERTEXCOLOR
 attribute vec4 color;
 #endif
 
+#include<helperFunctions>
 #include<bonesDeclaration>
 
 // Uniforms
 #include<instancesDeclaration>
 
-#ifdef ALBEDO
+#if defined(ALBEDO) && ALBEDODIRECTUV == 0
 varying vec2 vAlbedoUV;
 #endif
 
-#ifdef AMBIENT
+#if defined(AMBIENT) && AMBIENTDIRECTUV == 0
 varying vec2 vAmbientUV;
 #endif
 
-#ifdef OPACITY
+#if defined(OPACITY) && OPACITYDIRECTUV == 0
 varying vec2 vOpacityUV;
 #endif
 
-#ifdef EMISSIVE
+#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0
 varying vec2 vEmissiveUV;
 #endif
 
-#ifdef LIGHTMAP
+#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0
 varying vec2 vLightmapUV;
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
+#if defined(REFLECTIVITY) && REFLECTIVITYDIRECTUV == 0
 varying vec2 vReflectivityUV;
 #endif
 
-#ifdef MICROSURFACEMAP
+#if defined(MICROSURFACEMAP) && MICROSURFACEMAPDIRECTUV == 0
 varying vec2 vMicroSurfaceSamplerUV;
 #endif
 
-#ifdef BUMP
+#if defined(BUMP) && BUMPDIRECTUV == 0
 varying vec2 vBumpUV;
 #endif
 
@@ -61,8 +68,10 @@ varying vec2 vBumpUV;
 varying vec3 vPositionW;
 #ifdef NORMAL
     varying vec3 vNormalW;
-    #ifdef USESPHERICALFROMREFLECTIONMAP
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         varying vec3 vEnvironmentIrradiance;
+        
+        #include<harmonicsFunctions>
     #endif
 #endif
 
@@ -88,8 +97,6 @@ varying vec3 vDirectionW;
 
 #include<logDepthDeclaration>
 
-#include<harmonicsFunctions>
-
 void main(void) {
 	vec3 positionUpdated = position;
 #ifdef NORMAL
@@ -114,8 +121,15 @@ void main(void) {
     vPositionW = vec3(worldPos);
 
 #ifdef NORMAL
-    vNormalW = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
-    #ifdef USESPHERICALFROMREFLECTIONMAP
+	mat3 normalWorld = mat3(finalWorld);
+
+	#ifdef NONUNIFORMSCALING
+		normalWorld = transposeMat3(inverseMat3(normalWorld));
+	#endif
+
+	vNormalW = normalize(normalWorld * normalUpdated);
+
+    #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
         vec3 reflectionVector = vec3(reflectionMatrix * vec4(vNormalW, 0)).xyz;
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
@@ -136,7 +150,15 @@ void main(void) {
     vec2 uv2 = vec2(0., 0.);
 #endif
 
-#ifdef ALBEDO
+#ifdef MAINUV1
+	vMainUV1 = uv;
+#endif 
+
+#ifdef MAINUV2
+	vMainUV2 = uv2;
+#endif 
+
+#if defined(ALBEDO) && ALBEDODIRECTUV == 0 
     if (vAlbedoInfos.x == 0.)
     {
         vAlbedoUV = vec2(albedoMatrix * vec4(uv, 1.0, 0.0));
@@ -147,7 +169,7 @@ void main(void) {
     }
 #endif
 
-#ifdef AMBIENT
+#if defined(AMBIENT) && AMBIENTDIRECTUV == 0 
     if (vAmbientInfos.x == 0.)
     {
         vAmbientUV = vec2(ambientMatrix * vec4(uv, 1.0, 0.0));
@@ -158,7 +180,7 @@ void main(void) {
     }
 #endif
 
-#ifdef OPACITY
+#if defined(OPACITY) && OPACITYDIRECTUV == 0 
     if (vOpacityInfos.x == 0.)
     {
         vOpacityUV = vec2(opacityMatrix * vec4(uv, 1.0, 0.0));
@@ -169,7 +191,7 @@ void main(void) {
     }
 #endif
 
-#ifdef EMISSIVE
+#if defined(EMISSIVE) && EMISSIVEDIRECTUV == 0 
     if (vEmissiveInfos.x == 0.)
     {
         vEmissiveUV = vec2(emissiveMatrix * vec4(uv, 1.0, 0.0));
@@ -180,7 +202,7 @@ void main(void) {
     }
 #endif
 
-#ifdef LIGHTMAP
+#if defined(LIGHTMAP) && LIGHTMAPDIRECTUV == 0 
     if (vLightmapInfos.x == 0.)
     {
         vLightmapUV = vec2(lightmapMatrix * vec4(uv, 1.0, 0.0));
@@ -191,7 +213,7 @@ void main(void) {
     }
 #endif
 
-#if defined(REFLECTIVITY) || defined(METALLICWORKFLOW) 
+#if defined(REFLECTIVITY) && REFLECTIVITYDIRECTUV == 0 
     if (vReflectivityInfos.x == 0.)
     {
         vReflectivityUV = vec2(reflectivityMatrix * vec4(uv, 1.0, 0.0));
@@ -202,7 +224,7 @@ void main(void) {
     }
 #endif
 
-#ifdef MICROSURFACEMAP
+#if defined(MICROSURFACEMAP) && MICROSURFACEMAPDIRECTUV == 0 
     if (vMicroSurfaceSamplerInfos.x == 0.)
     {
         vMicroSurfaceSamplerUV = vec2(microSurfaceSamplerMatrix * vec4(uv, 1.0, 0.0));
@@ -213,7 +235,7 @@ void main(void) {
     }
 #endif
 
-#ifdef BUMP
+#if defined(BUMP) && BUMPDIRECTUV == 0 
     if (vBumpInfos.x == 0.)
     {
         vBumpUV = vec2(bumpMatrix * vec4(uv, 1.0, 0.0));

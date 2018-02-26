@@ -4,9 +4,24 @@ var engine;
 var canvas;
 var currentScene;
 var config;
+var justOnce;
 
 var threshold = 25;
-var errorRatio = 5;
+var errorRatio = 2.5;
+
+// Overload the random to make it deterministic
+var seed = 100000,
+    constant = Math.pow(2, 13) + 1,
+    prime = 37,
+    maximum = Math.pow(2, 50);
+
+Math.random = function () {
+    seed *= constant;
+    seed += prime;
+    seed %= maximum;
+
+    return seed / maximum;
+}
 
 function compare(renderData, referenceCanvas) {
     var width = referenceCanvas.width;
@@ -75,48 +90,72 @@ function saveRenderImage(data, canvas) {
     return screenshotCanvas.toDataURL();
 }
 
-function evaluate(test, resultCanvas, result, renderImage, index, waitRing) {
+function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done) {
+    seed = 100000;
     var renderData = getRenderData(canvas, engine);
-    if (!test.onlyVisual) {
+    var testRes = true;
 
-        if (compare(renderData, resultCanvas)) { 
-            result.classList.add("failed");
-            result.innerHTML = "×";
-            console.log("failed");
-        } else {
-            result.innerHTML = "✔";
-            console.log("validated");
+    // gl check
+    var gl = engine._gl;
+    if (gl.getError() !== 0) {
+        result.classList.add("failed");
+        result.innerHTML = "×";
+        testRes = false;
+        console.log('%c failed (gl error)', 'color: red');
+    } else {
+
+        // Visual check
+        if (!test.onlyVisual) {
+            if (compare(renderData, resultCanvas)) {
+                result.classList.add("failed");
+                result.innerHTML = "×";
+                testRes = false;
+                console.log('%c failed', 'color: red');
+            } else {
+                result.innerHTML = "✔";
+                testRes = true;
+                console.log('%c validated', 'color: green');
+            }
         }
     }
     waitRing.classList.add("hidden");
 
-    renderImage.src = saveRenderImage(renderData, canvas);
+    var renderB64 = saveRenderImage(renderData, canvas);
+    renderImage.src = renderB64;
 
     currentScene.dispose();
+    engine.setHardwareScalingLevel(1);
 
-    runTest(index + 1);
+    done(testRes, renderB64);
 }
 
-function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing) {
+function processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done) {
     currentScene.executeWhenReady(function () {
         var renderCount = test.renderCount || 1;
 
-        engine.runRenderLoop(function() {
-            currentScene.render();
-            renderCount--;
+        currentScene.useConstantAnimationDeltaTime = true;
+        engine.runRenderLoop(function () {
+            try {
+                currentScene.render();
+                renderCount--;
 
-            if (renderCount === 0) {
-                engine.stopRenderLoop();
-                evaluate(test, resultCanvas, result, renderImage, index, waitRing);
+                if (renderCount === 0) {
+                    engine.stopRenderLoop();
+                    evaluate(test, resultCanvas, result, renderImage, index, waitRing, done);
+                }
+            }
+            catch (e) {
+                console.error(e);
+                done(false);
             }
         });
 
     });
 }
 
-function runTest(index) {
+function runTest(index, done) {
     if (index >= config.tests.length) {
-        return;
+        done(false);
     }
 
     var test = config.tests[index];
@@ -140,7 +179,7 @@ function runTest(index) {
     var waitRing = document.createElement("img");
     waitRing.className = "waitRing";
     titleContainer.appendChild(waitRing);
-    waitRing.src = "loading.gif";
+    waitRing.src = "/tests/validation/loading.gif";
 
     var resultCanvas = document.createElement("canvas");
     resultCanvas.className = "resultImage";
@@ -158,7 +197,7 @@ function runTest(index) {
         resultContext.drawImage(img, 0, 0);
     }
 
-    img.src = "ReferenceImages/" + test.referenceImage;
+    img.src = "/tests/validation/ReferenceImages/" + test.referenceImage;
 
     var renderImage = new Image();
     renderImage.className = "renderImage";
@@ -169,8 +208,44 @@ function runTest(index) {
     if (test.sceneFolder) {
         BABYLON.SceneLoader.Load(config.root + test.sceneFolder, test.sceneFilename, engine, function (newScene) {
             currentScene = newScene;
-            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
-        });
+            processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+        },
+            null,
+            function (loadedScene, msg) {
+                console.error(msg);
+                done(false);
+            });
+    }
+    else if (test.playgroundId) {
+        var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
+        var pgRoot = "/Playground"
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState === 4) {
+                try {
+                    xmlHttp.onreadystatechange = null;
+                    var snippet = JSON.parse(xmlHttp.responseText)[0];
+                    var code = JSON.parse(snippet.jsonPayload).code.toString();
+                    code = code.replace(/\/textures\//g, pgRoot + "/textures/");
+                    code = code.replace(/"textures\//g, "\"" + pgRoot + "/textures/");
+                    code = code.replace(/\/scenes\//g, pgRoot + "/scenes/");
+                    code = code.replace(/"scenes\//g, "\"" + pgRoot + "/scenes/");
+                    currentScene = eval(code + "\r\ncreateScene(engine)");
+                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                }
+                catch (e) {
+                    console.error(e);
+                    done(false);
+                }
+            }
+        }
+        xmlHttp.onerror = function () {
+            console.error("Network error during test load.");
+            done(false);
+        }
+
+        xmlHttp.open("GET", snippetUrl + test.playgroundId.replace(/#/g, "/"));
+        xmlHttp.send();
     } else {
         // Fix references
         if (test.specificRoot) {
@@ -182,65 +257,58 @@ function runTest(index) {
 
         request.onreadystatechange = () => {
             if (request.readyState === 4) {
-                request.onreadystatechange = null; 
+                try {
+                    request.onreadystatechange = null;
 
-                var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
-                scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
-                scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
-                scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
+                    var scriptToRun = request.responseText.replace(/..\/..\/assets\//g, config.root + "/Assets/");
+                    scriptToRun = scriptToRun.replace(/..\/..\/Assets\//g, config.root + "/Assets/");
+                    scriptToRun = scriptToRun.replace(/\/assets\//g, config.root + "/Assets/");
+                    scriptToRun = scriptToRun.replace(/\/Assets\//g, config.root + "/Assets/");
 
-                if (test.replace) {
-                    var split = test.replace.split(",");
-                    for (var i = 0; i < split.length; i+= 2) {
-                        var source = split[i].trim();
-                        var destination = split[i + 1].trim();
-                        scriptToRun = scriptToRun.replace(source, destination);
+                    if (test.replace) {
+                        var split = test.replace.split(",");
+                        for (var i = 0; i < split.length; i += 2) {
+                            var source = split[i].trim();
+                            var destination = split[i + 1].trim();
+                            scriptToRun = scriptToRun.replace(source, destination);
+                        }
                     }
-                }
 
-                if (test.replaceUrl) {
-                    var split = test.replaceUrl.split(",");
-                    for (var i = 0; i < split.length; i++) {
-                        var source = split[i].trim();
-                        var regex = new RegExp(source, "g");
-                        scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
+                    if (test.replaceUrl) {
+                        var split = test.replaceUrl.split(",");
+                        for (var i = 0; i < split.length; i++) {
+                            var source = split[i].trim();
+                            var regex = new RegExp(source, "g");
+                            scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
+                        }
                     }
-                }
 
-                currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
-                processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing);
+                    currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
+                    processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
+                }
+                catch (e) {
+                    console.error(e);
+                    done(false);
+                }
             }
         };
+        request.onerror = function () {
+            console.error("Network error during test load.");
+            done(false);
+        }
 
         request.send(null);
-        
+
     }
 }
 
 BABYLON.SceneLoader.ShowLoadingScreen = false;
 BABYLON.Database.IDBStorageEnabled = false;
 BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
+BABYLON.DracoCompression.DecoderUrl = BABYLON.Tools.GetFolderPath(document.location.href) + "../../dist/preview%20release/draco_decoder.js";
 
 canvas = document.createElement("canvas");
 canvas.className = "renderCanvas";
 document.body.appendChild(canvas);
 engine = new BABYLON.Engine(canvas, false);
 engine.setDitheringState(false);
-
-// Loading tests
-var xhr = new XMLHttpRequest();
-
-xhr.open("GET", "config.json", true);
-
-xhr.addEventListener("load",function() {
-    if (xhr.status === 200) {
-
-        config = JSON.parse(xhr.responseText);
-
-        // Run tests
-        runTest(0, engine);
-
-    }
-}, false);
-
-xhr.send();

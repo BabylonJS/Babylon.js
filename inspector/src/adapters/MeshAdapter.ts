@@ -5,10 +5,11 @@ module INSPECTOR {
         implements IToolVisible, IToolDebug, IToolBoundingBox, IToolInfo {
 
         /** Keep track of the axis of the actual object */
-        private _axis: Array<BABYLON.Mesh> = [];
+        private _axesViewer: BABYLON.Nullable<any>;
+        private onBeforeRenderObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.Scene>>;
 
-        constructor(obj: BABYLON.AbstractMesh) {
-            super(obj);
+        constructor(mesh: BABYLON.Node) {
+            super(mesh);
         }
 
         /** Returns the name displayed in the tree */
@@ -27,22 +28,19 @@ module INSPECTOR {
 
         /** Returns the list of properties to be displayed for this adapter */
         public getProperties(): Array<PropertyLine> {
-            let propertiesLines: Array<PropertyLine> = [];
-
-            for (let dirty of PROPERTIES['Mesh'].properties) {
-                let infos = new Property(dirty, this._obj);
-                propertiesLines.push(new PropertyLine(infos));
-            }
-            return propertiesLines;
+            return Helpers.GetAllLinesProperties(this._obj);
         }
 
         public getTools(): Array<AbstractTreeTool> {
             let tools = [];
             tools.push(new Checkbox(this));
             tools.push(new DebugArea(this));
-            if ((this._obj as BABYLON.AbstractMesh).getTotalVertices() > 0) {
-                tools.push(new BoundingBox(this));
+            if (this._obj instanceof BABYLON.AbstractMesh) {
+                if ((this._obj as BABYLON.AbstractMesh).getTotalVertices() > 0) {
+                    tools.push(new BoundingBox(this));
+                }
             }
+
 
             tools.push(new Info(this));
             return tools;
@@ -53,7 +51,7 @@ module INSPECTOR {
             this._obj.isVisible = b;
         }
         public isVisible(): boolean {
-            return this._obj.isEnabled() && this._obj.isVisible;
+            return this._obj.isEnabled() && (this._obj.isVisible === undefined || this._obj.isVisible);
         }
         public isBoxVisible(): boolean {
             return (this._obj as BABYLON.AbstractMesh).showBoundingBox;
@@ -62,72 +60,51 @@ module INSPECTOR {
             return (this._obj as BABYLON.AbstractMesh).showBoundingBox = b;
         }
 
-        public debug(b: boolean) {
+        public debug(enable: boolean) {
             // Draw axis the first time
-            if (this._axis.length == 0) {
+            if (!this._axesViewer) {
                 this._drawAxis();
             }
             // Display or hide axis
-            for (let ax of this._axis) {
-                ax.setEnabled(b);
+            if (!enable && this._axesViewer) {
+                let mesh = this._obj as BABYLON.AbstractMesh;
+                mesh.getScene().onBeforeRenderObservable.remove(this.onBeforeRenderObserver);
+                this._axesViewer.dispose();
+                this._axesViewer = null;
             }
         }
 
         /** Returns some information about this mesh */
         public getInfo(): string {
-            return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
+            if (this._obj instanceof BABYLON.AbstractMesh) {
+                return `${(this._obj as BABYLON.AbstractMesh).getTotalVertices()} vertices`;
+            }
+            return '0 vertices';
         }
 
-        /** Overrides super.highlight */
-        public highlight(b: boolean) {
-            this.actualObject.renderOutline = b;
-            this.actualObject.outlineWidth = 0.25;
-            this.actualObject.outlineColor = BABYLON.Color3.Yellow();
-        }
         /** Draw X, Y and Z axis for the actual object if this adapter.
          * Should be called only one time as it will fill this._axis
          */
         private _drawAxis() {
             this._obj.computeWorldMatrix();
-            var m = this._obj.getWorldMatrix();
 
             // Axis
-            var x = new BABYLON.Vector3(8 / (this._obj as BABYLON.AbstractMesh).scaling.x, 0, 0);
-            var y = new BABYLON.Vector3(0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.y, 0);
-            var z = new BABYLON.Vector3(0, 0, 8 / (this._obj as BABYLON.AbstractMesh).scaling.z);
-            
-            // Draw an axis of the given color
-            let _drawAxis = (color, start, end): BABYLON.LinesMesh => {
-                let axis = BABYLON.Mesh.CreateLines("###axis###", [
-                    start,
-                    end
-                ], this._obj.getScene());
-                axis.color = color;
-                axis.renderingGroupId = 1;
-                return axis;
-            };
+            var x = new BABYLON.Vector3(1, 0, 0);
+            var y = new BABYLON.Vector3(0, 1, 0);
+            var z = new BABYLON.Vector3(0, 0, 1);
 
-            // X axis
-            let xAxis = _drawAxis(
-                BABYLON.Color3.Red(),
-                BABYLON.Vector3.Zero(),
-                x);
-            xAxis.parent = this._obj;
-            this._axis.push(xAxis);
-            // Y axis        
-            let yAxis = _drawAxis(
-                BABYLON.Color3.Green(),
-                BABYLON.Vector3.Zero(),
-                y);
-            yAxis.parent = this._obj;
-            this._axis.push(yAxis);
-            // Z axis
-            let zAxis = _drawAxis(
-                BABYLON.Color3.Blue(),
-                BABYLON.Vector3.Zero(),
-                z);
-            zAxis.parent = this._obj;
-            this._axis.push(zAxis);
+            this._axesViewer = new BABYLON.Debug.AxesViewer(this._obj.getScene());
+
+            let mesh = this._obj as BABYLON.TransformNode;
+            this.onBeforeRenderObserver = mesh.getScene().onBeforeRenderObservable.add(() => {
+                let matrix = mesh.getWorldMatrix();
+                let extend = new BABYLON.Vector3(1, 1, 1);
+                if (mesh instanceof BABYLON.AbstractMesh) {
+                    extend = mesh.getBoundingInfo().boundingBox.extendSizeWorld;
+                }
+                this._axesViewer!.scaleLines = Math.max(extend.x, extend.y, extend.z) * 2;
+                this._axesViewer!.update(this._obj.position, BABYLON.Vector3.TransformNormal(x, matrix), BABYLON.Vector3.TransformNormal(y, matrix), BABYLON.Vector3.TransformNormal(z, matrix));
+            });
         }
     }
 }

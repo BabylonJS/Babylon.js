@@ -35,14 +35,14 @@
          */
         public getClassName(): string {
             return "InstancedMesh";
-        }          
+        }
 
-        // Methods
+        // Methods      
         public get receiveShadows(): boolean {
             return this._sourceMesh.receiveShadows;
         }
 
-        public get material(): Material {
+        public get material(): Nullable<Material> {
             return this._sourceMesh.material;
         }
 
@@ -50,7 +50,7 @@
             return this._sourceMesh.visibility;
         }
 
-        public get skeleton(): Skeleton {
+        public get skeleton(): Nullable<Skeleton> {
             return this._sourceMesh.skeleton;
         }
 
@@ -70,9 +70,18 @@
         }
 
         /**
+         * Is this node ready to be used/rendered
+         * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
+         * @return {boolean} is it ready
+         */
+        public isReady(completeCheck = false): boolean {
+            return this._sourceMesh.isReady(completeCheck, true);
+        }
+
+        /**
          * Returns a float array or a Float32Array of the requested kind of data : positons, normals, uvs, etc.  
          */
-        public getVerticesData(kind: string, copyWhenShared?: boolean): number[] | Float32Array {
+        public getVerticesData(kind: string, copyWhenShared?: boolean): Nullable<FloatArray> {
             return this._sourceMesh.getVerticesData(kind, copyWhenShared);
         }
 
@@ -101,9 +110,9 @@
          * 
          * Returns the Mesh.  
          */
-        public setVerticesData(kind: string, data: number[] | Float32Array, updatable?: boolean, stride?: number): Mesh {
+        public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): Mesh {
             if (this.sourceMesh) {
-               this.sourceMesh.setVerticesData(kind, data, updatable, stride);
+                this.sourceMesh.setVerticesData(kind, data, updatable, stride);
             }
             return this.sourceMesh;
         }
@@ -132,9 +141,9 @@
          * 
          * Returns the Mesh.  
          */
-        public updateVerticesData(kind: string, data: number[] | Float32Array, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+        public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
             if (this.sourceMesh) {
-               this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
+                this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
             }
             return this.sourceMesh;
         }
@@ -146,9 +155,9 @@
          * This method creates a new index buffer each call.  
          * Returns the Mesh.  
          */
-        public setIndices(indices: IndicesArray, totalVertices?: number): Mesh {
+        public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
             if (this.sourceMesh) {
-               this.sourceMesh.setIndices(indices, totalVertices);
+                this.sourceMesh.setIndices(indices, totalVertices);
             }
             return this.sourceMesh;
         }
@@ -163,11 +172,11 @@
         /**
          * Returns an array of indices (IndicesArray).  
          */
-        public getIndices(): IndicesArray {
+        public getIndices(): Nullable<IndicesArray> {
             return this._sourceMesh.getIndices();
         }
 
-        public get _positions(): Vector3[] {
+        public get _positions(): Nullable<Vector3[]> {
             return this._sourceMesh._positions;
         }
 
@@ -202,7 +211,13 @@
          * Returns the current associated LOD AbstractMesh.  
          */
         public getLOD(camera: Camera): AbstractMesh {
-            this._currentLOD = <Mesh>this.sourceMesh.getLOD(this.getScene().activeCamera, this.getBoundingInfo().boundingSphere);
+            if (!camera) {
+                return this;
+            }
+
+            let boundingInfo = this.getBoundingInfo();
+
+            this._currentLOD = <Mesh>this.sourceMesh.getLOD(camera, boundingInfo.boundingSphere);
 
             if (this._currentLOD === this.sourceMesh) {
                 return this;

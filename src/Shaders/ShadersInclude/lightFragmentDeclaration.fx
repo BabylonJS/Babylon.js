@@ -16,7 +16,7 @@
 			uniform sampler2D shadowSampler{X};
 			uniform mat4 lightMatrix{X};
 		#endif
-		uniform vec3 shadowsInfo{X};
+		uniform vec4 shadowsInfo{X};
 		uniform vec2 depthValues{X};
 	#endif
 	#ifdef SPOTLIGHT{X}
@@ -24,5 +24,9 @@
 	#endif
 	#ifdef HEMILIGHT{X}
 		uniform vec3 vLightGround{X};
+	#endif
+	#ifdef PROJECTEDLIGHTTEXTURE{X}
+		uniform mat4 textureProjectionMatrix{X};
+		uniform sampler2D projectionLightSampler{X};
 	#endif
 #endif

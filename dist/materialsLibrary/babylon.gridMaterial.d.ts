@@ -1,10 +1,10 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
     /**
      * The grid materials allows you to wrap any shape with a grid.
      * Colors are customizable.
      */
-    class GridMaterial extends BABYLON.Material {
+    class GridMaterial extends BABYLON.PushMaterial {
         /**
          * Main color of the grid (e.g. between lines)
          */
@@ -18,6 +18,10 @@ declare module BABYLON {
          */
         gridRatio: number;
         /**
+         * Allows setting an offset for the grid lines.
+         */
+        gridOffset: Vector3;
+        /**
          * The frequency of thicker lines.
          */
         majorUnitFrequency: number;
@@ -29,10 +33,12 @@ declare module BABYLON {
          * The grid opacity outside of the lines.
          */
         opacity: number;
+        /**
+         * Determine RBG output is premultiplied by alpha value.
+         */
+        preMultiplyAlpha: boolean;
         private _gridControl;
         private _renderId;
-        private _defines;
-        private _cachedDefines;
         /**
          * constructor
          * @param name The name given to the material in order to identify it afterwards.
@@ -43,13 +49,13 @@ declare module BABYLON {
          * Returns wehter or not the grid requires alpha blending.
          */
         needAlphaBlending(): boolean;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        needAlphaBlendingForMesh(mesh: AbstractMesh): boolean;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): GridMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial;
     }
 }

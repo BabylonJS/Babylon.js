@@ -297,6 +297,10 @@
             this._shadowsExposure = value;
             this._dirty = true;
         }
+
+        public getClassName(): string {
+            return "ColorCurves";
+        }          
         
         /**
          * Binds the color curves to the shader.
@@ -505,7 +509,7 @@
          * @param max The maximum of value
          * @returns The clamped value.
          */
-        private static clamp(value, min, max): number {
+        private static clamp(value: number, min: number, max: number): number {
             return Math.min(Math.max(value, min), max);
         }
 

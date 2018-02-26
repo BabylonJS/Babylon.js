@@ -1,4 +1,4 @@
-﻿module BABYLON.Internals {
+﻿module BABYLON {
     /*
     * Based on jsTGALoader - Javascript loader for TGA file
     * By Vincent Thibault
@@ -6,7 +6,7 @@
     */
     export class TGATools {
 
-        private static _TYPE_NO_DATA = 0;
+        //private static _TYPE_NO_DATA = 0;
         private static _TYPE_INDEXED = 1;
         private static _TYPE_RGB = 2;
         private static _TYPE_GREY = 3;
@@ -65,7 +65,6 @@
 
             var use_rle = false;
             var use_pal = false;
-            var use_rgb = false;
             var use_grey = false;
 
             // Get some informations.
@@ -79,7 +78,7 @@
                 case TGATools._TYPE_RLE_RGB:
                     use_rle = true;
                 case TGATools._TYPE_RGB:
-                    use_rgb = true;
+                    // use_rgb = true;
                     break;
 
                 case TGATools._TYPE_RLE_GREY:
@@ -91,7 +90,7 @@
 
             var pixel_data;
 
-            var numAlphaBits = header.flags & 0xf;
+            // var numAlphaBits = header.flags & 0xf;
             var pixel_size = header.pixel_size >> 3;
             var pixel_total = header.width * header.height * pixel_size;
 
@@ -143,7 +142,7 @@
                 pixel_data = data.subarray(
                     offset,
                     offset += (use_pal ? header.width * header.height : pixel_total)
-                    );
+                );
             }
 
             // Load to texture
@@ -190,7 +189,7 @@
 
             // Load the specify method
             var func = '_getImageData' + (use_grey ? 'Grey' : '') + (header.pixel_size) + 'bits';
-            var imageData = TGATools[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
+            var imageData = (<any>TGATools)[func](header, palettes, pixel_data, y_start, y_step, y_end, x_start, x_step, x_end);
 
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, header.width, header.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
 

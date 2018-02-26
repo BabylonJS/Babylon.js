@@ -1,96 +1,88 @@
 module BABYLON {
+    /**
+     * This represents a set of one or more post processes in Babylon.
+     * A post process can be used to apply a shader to a texture after it is rendered.
+     * @example https://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+     */
     export class PostProcessRenderEffect {
-        private _engine: Engine;
-
-        private _postProcesses: any;
-        private _getPostProcess: () => PostProcess;
+        private _postProcesses: {[Key:string]:Array<PostProcess>};
+        private _getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>;
 
         private _singleInstance: boolean;
 
-        private _cameras: Camera[];
-        private _indicesForCamera: number[][];
+        private _cameras: { [key: string]: Nullable<Camera> };
+        private _indicesForCamera: { [key: string]: number[] };
 
-        private _renderPasses: any;
-        private _renderEffectAsPasses: any;
-
-        // private
+        /**
+         * Name of the effect
+         */
         public _name: string;
-
-        public applyParameters: (postProcess: PostProcess) => void;
-
-        constructor(engine: Engine, name: string, getPostProcess: () => PostProcess, singleInstance?: boolean) {
-            this._engine = engine;
+        
+        /**
+         * Instantiates a post process render effect.
+         * A post process can be used to apply a shader to a texture after it is rendered.
+         * @param engine The engine the effect is tied to
+         * @param name The name of the effect
+         * @param getPostProcesses A function that returns a set of post processes which the effect will run in order to be run.
+         * @param singleInstance False if this post process can be run on multiple cameras. (default: true)
+         */
+        constructor(engine: Engine, name: string, getPostProcesses: () => Nullable<PostProcess | Array<PostProcess>>, singleInstance?: boolean) {
             this._name = name;
             this._singleInstance = singleInstance || true;
 
-            this._getPostProcess = getPostProcess;
+            this._getPostProcesses = getPostProcesses;
 
-            this._cameras = [];
-            this._indicesForCamera = [];
+            this._cameras = {};
+            this._indicesForCamera = {};
 
             this._postProcesses = {};
-
-            this._renderPasses = {};
-            this._renderEffectAsPasses = {};
         }
 
+        /**
+         * Checks if all the post processes in the effect are supported.
+         */
         public get isSupported(): boolean {
             for (var index in this._postProcesses) {
-                if (!this._postProcesses[index].isSupported) {
-                    return false;
+                for(var ppIndex in this._postProcesses[index]){
+                    if (!this._postProcesses[index][ppIndex].isSupported) {
+                        return false;
+                    }
                 }
             }
             return true;
         }
 
+        /**
+         * Updates the current state of the effect
+         */
         public _update(): void {
-            for (var renderPassName in this._renderPasses) {
-                this._renderPasses[renderPassName]._update();
-            }
         }
 
-        public addPass(renderPass: PostProcessRenderPass): void {
-            this._renderPasses[renderPass._name] = renderPass;
-
-            this._linkParameters();
-        }
-
-        public removePass(renderPass: PostProcessRenderPass): void {
-            delete this._renderPasses[renderPass._name];
-
-            this._linkParameters();
-        }
-
-        public addRenderEffectAsPass(renderEffect: PostProcessRenderEffect): void {
-            this._renderEffectAsPasses[renderEffect._name] = renderEffect;
-
-            this._linkParameters();
-        }
-
-        public getPass(passName: string): void {
-            for (var renderPassName in this._renderPasses) {
-                if (renderPassName === passName) {
-                    return this._renderPasses[passName];
-                }
-            }
-        }
-
-        public emptyPasses(): void {
-            this._renderPasses = {};
-
-            this._linkParameters();
-        }
-
-        // private
-        public _attachCameras(cameras: Camera);
-        public _attachCameras(cameras: Camera[]);
+        /**
+         * Attaches the effect on cameras
+         * @param cameras The camera to attach to.
+         */
+        public _attachCameras(cameras: Camera): void;
+        /**
+         * Attaches the effect on cameras
+         * @param cameras The camera to attach to.
+         */
+        public _attachCameras(cameras: Camera[]): void;
+        /**
+         * Attaches the effect on cameras
+         * @param cameras The camera to attach to.
+         */
         public _attachCameras(cameras: any): void {
             var cameraKey;
 
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            if (!cams) {
+                return;
+            }
+
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
 
                 if (this._singleInstance) {
@@ -100,119 +92,144 @@ module BABYLON {
                     cameraKey = cameraName;
                 }
 
-                this._postProcesses[cameraKey] = this._postProcesses[cameraKey] || this._getPostProcess();
-
-                var index = camera.attachPostProcess(this._postProcesses[cameraKey]);
+                if(!this._postProcesses[cameraKey]){
+                    var postProcess = this._getPostProcesses();
+                    if(postProcess){
+                        this._postProcesses[cameraKey] = Array.isArray(postProcess) ? postProcess :[postProcess];
+                    }
+                }
 
                 if (!this._indicesForCamera[cameraName]) {
                     this._indicesForCamera[cameraName] = [];
                 }
 
-                this._indicesForCamera[cameraName].push(index);
-
-                if (this._cameras.indexOf(camera) === -1) {
+                this._postProcesses[cameraKey].forEach((postProcess:PostProcess) => {
+                    var index = camera.attachPostProcess(postProcess);
+    
+                    this._indicesForCamera[cameraName].push(index);
+                });
+                
+                if (!this._cameras[cameraName]) {
                     this._cameras[cameraName] = camera;
                 }
 
-                for (var passName in this._renderPasses) {
-                    this._renderPasses[passName]._incRefCount();
-                }
             }
-
-            this._linkParameters();
         }
 
-        // private
-        public _detachCameras(cameras: Camera);
-        public _detachCameras(cameras: Camera[]);
+        /**
+         * Detatches the effect on cameras
+         * @param cameras The camera to detatch from.
+         */
+        public _detachCameras(cameras: Camera): void;
+        /**
+         * Detatches the effect on cameras
+         * @param cameras The camera to detatch from.
+         */
+        public _detachCameras(cameras: Camera[]): void;
+        /**
+         * Detatches the effect on cameras
+         * @param cameras The camera to detatch from.
+         */
         public _detachCameras(cameras: any): void {
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
-                var cameraName = camera.name;
+            if (!cams) {
+                return;
+            }
 
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
+            for (var i = 0; i < cams.length; i++) {
+                var camera: Camera = cams[i];
+                var cameraName: string = camera.name;
+                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess:PostProcess)=>{
+                    camera.detachPostProcess(postProcess);
+                })
 
-                var index = this._cameras.indexOf(cameraName);
-
-                this._indicesForCamera.splice(index, 1);
-                this._cameras.splice(index, 1);
-
-                for (var passName in this._renderPasses) {
-                    this._renderPasses[passName]._decRefCount();
+                if (this._cameras[cameraName]) {
+                    //this._indicesForCamera.splice(index, 1);
+                    this._cameras[cameraName] = null;
                 }
             }
         }
 
-        // private
-        public _enable(cameras: Camera);
-        public _enable(cameras: Camera[]);
+        /**
+         * Enables the effect on given cameras
+         * @param cameras The camera to enable.
+         */
+        public _enable(cameras: Camera): void;
+        /**
+         * Enables the effect on given cameras
+         * @param cameras The camera to enable.
+         */
+        public _enable(cameras: Nullable<Camera[]>): void;
+        /**
+         * Enables the effect on given cameras
+         * @param cameras The camera to enable.
+         */
         public _enable(cameras: any): void {
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams:Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
+            if (!cams) {
+                return;
+            }
+
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
                 var cameraName = camera.name;
 
                 for (var j = 0; j < this._indicesForCamera[cameraName].length; j++) {
                     if (camera._postProcesses[this._indicesForCamera[cameraName][j]] === undefined) {
-                        cameras[i].attachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName][j]);
+                        this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess)=>{
+                            cams![i].attachPostProcess(postProcess, this._indicesForCamera[cameraName][j]);
+                        });
                     }
                 }
-
-                for (var passName in this._renderPasses) {
-                    this._renderPasses[passName]._incRefCount();
-                }
             }
         }
 
-        // private
-        public _disable(cameras: Camera);
-        public _disable(cameras: Camera[]);
+        /**
+         * Disables the effect on the given cameras
+         * @param cameras The camera to disable.
+         */
+        public _disable(cameras: Camera): void;
+        /**
+         * Disables the effect on the given cameras
+         * @param cameras The camera to disable.
+         */
+        public _disable(cameras: Nullable<Camera[]>): void;
+        /**
+         * Disables the effect on the given cameras
+         * @param cameras The camera to disable.
+         */
         public _disable(cameras: any): void {
-            var _cam = Tools.MakeArray(cameras || this._cameras);
+            var cams:Nullable<Array<Camera>> = Tools.MakeArray(cameras || this._cameras);
 
-            for (var i = 0; i < _cam.length; i++) {
-                var camera = _cam[i];
-                var cameraName = camera.Name;
-
-                camera.detachPostProcess(this._postProcesses[this._singleInstance ? 0 : cameraName], this._indicesForCamera[cameraName]);
-
-                for (var passName in this._renderPasses) {
-                    this._renderPasses[passName]._decRefCount();
-                }
+            if (!cams) {
+                return;
             }
-        }
 
-        public getPostProcess(camera?: Camera): PostProcess {
-            if (this._singleInstance) {
-                return this._postProcesses[0];
-            }
-            else {
-                return this._postProcesses[camera.name];
-            }
-        }
-
-        private _linkParameters(): void {
-            for (var index in this._postProcesses) {
-                if (this.applyParameters) {
-                    this.applyParameters(this._postProcesses[index]);
-                }
-
-                this._postProcesses[index].onBeforeRenderObservable.add((effect: Effect) => {
-                    this._linkTextures(effect);
+            for (var i = 0; i < cams.length; i++) {
+                var camera = cams[i];
+                var cameraName = camera.name;
+                this._postProcesses[this._singleInstance ? 0 : cameraName].forEach((postProcess)=>{
+                    camera.detachPostProcess(postProcess);
                 });
             }
         }
 
-        private _linkTextures(effect): void {
-            for (var renderPassName in this._renderPasses) {
-                effect.setTexture(renderPassName, this._renderPasses[renderPassName].getRenderTexture());
+        /**
+         * Gets a list of the post processes contained in the effect.
+         * @param camera The camera to get the post processes on.
+         * @returns The list of the post processes in the effect.
+         */
+        public getPostProcesses(camera?: Camera): Nullable<Array<PostProcess>> {
+            if (this._singleInstance) {
+                return this._postProcesses[0];
             }
-
-            for (var renderEffectName in this._renderEffectAsPasses) {
-                effect.setTextureFromPostProcess(renderEffectName + "Sampler", this._renderEffectAsPasses[renderEffectName].getPostProcess());
+            else {
+                if (!camera) {
+                    return null;
+                }
+                return this._postProcesses[camera.name];
             }
         }
     }

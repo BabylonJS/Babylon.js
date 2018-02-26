@@ -20,7 +20,7 @@ module BABYLON {
          * @param data
          * @param rootUrl
          */
-        public parseMTL = function (scene: BABYLON.Scene, data: string, rootUrl: string) {
+        public parseMTL(scene: BABYLON.Scene, data: string, rootUrl: string) {
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char
@@ -28,7 +28,7 @@ module BABYLON {
             //Array with RGB colors
             var color: number[];
             //New material
-            var material: BABYLON.StandardMaterial;
+            var material: Nullable<BABYLON.StandardMaterial> = null;
 
             //Look at each line
             for (var i = 0; i < lines.length; i++) {
@@ -45,7 +45,7 @@ module BABYLON {
                 key = key.toLowerCase();
 
                 //Get the data following the key
-                var value: any = (pos >= 0) ? line.substring(pos + 1).trim() : "";
+                var value: string = (pos >= 0) ? line.substring(pos + 1).trim() : "";
 
                 //This mtl keyword will create the new material
                 if (key === "newmtl") {
@@ -58,48 +58,52 @@ module BABYLON {
                     //Create a new material.
                     // value is the name of the material read in the mtl file
                     material = new BABYLON.StandardMaterial(value, scene);
-                } else if (key === "kd") {
+                } else if (key === "kd" && material) {
                     // Diffuse color (color under white light) using RGB values
 
                     //value  = "r g b"
-                    color = <number[]>value.split(delimiter_pattern, 3);
+                    color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
                     //Set tghe color into the material
                     material.diffuseColor = BABYLON.Color3.FromArray(color);
-                } else if (key === "ka") {
+                } else if (key === "ka" && material) {
                     // Ambient color (color under shadow) using RGB values
 
                     //value = "r g b"
-                    color = <number[]>value.split(delimiter_pattern, 3);
+                    color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
                     //Set tghe color into the material
                     material.ambientColor = BABYLON.Color3.FromArray(color);
-                } else if (key === "ks") {
+                } else if (key === "ks" && material) {
                     // Specular color (color when light is reflected from shiny surface) using RGB values
 
                     //value = "r g b"
-                    color = <number[]>value.split(delimiter_pattern, 3);
+                    color = <number[]>value.split(delimiter_pattern, 3).map(parseFloat);
                     //color = [r,g,b]
                     //Set the color into the material
                     material.specularColor = BABYLON.Color3.FromArray(color);
-                } else if (key === "ns") {
+                } else if (key === "ke" && material) {
+                    // Emissive color using RGB values
+                    color = value.split(delimiter_pattern, 3).map(parseFloat);
+                    material.emissiveColor = BABYLON.Color3.FromArray(color);
+                } else if (key === "ns" && material) {
 
                     //value = "Integer"
-                    material.specularPower = value;
-                } else if (key === "d") {
+                    material.specularPower = parseFloat(value);
+                } else if (key === "d" && material) {
                     //d is dissolve for current material. It mean alpha for BABYLON
-                    material.alpha = value;
+                    material.alpha = parseFloat(value);
 
                     //Texture
                     //This part can be improved by adding the possible options of texture
-                } else if (key === "map_ka") {
+                } else if (key === "map_ka" && material) {
                     // ambient texture map with a loaded image
                     //We must first get the folder of the image
                     material.ambientTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                } else if (key === "map_kd") {
+                } else if (key === "map_kd" && material) {
                     // Diffuse texture map with a loaded image
                     material.diffuseTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                } else if (key === "map_ks") {
+                } else if (key === "map_ks" && material) {
                     // Specular texture map with a loaded image
                     //We must first get the folder of the image
                     material.specularTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
@@ -111,10 +115,10 @@ module BABYLON {
                     //Not supported by BABYLON
                     //
                     //    continue;
-                } else if (key === "map_bump") {
+                } else if (key === "map_bump" && material) {
                     //The bump texture
                     material.bumpTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
-                } else if (key === "map_d") {
+                } else if (key === "map_d" && material) {
                     // The dissolve of the material
                     material.opacityTexture = MTLFileLoader._getTexture(rootUrl, value, scene);
 
@@ -150,7 +154,9 @@ module BABYLON {
                 }
             }
             //At the end of the file, add the last material
-            this.materials.push(material);
+            if (material) {
+                this.materials.push(material);
+            }
         }
 
         /**
@@ -163,7 +169,11 @@ module BABYLON {
          * @param value The value stored in the mtl
          * @return The Texture
          */
-        private static _getTexture(rootUrl: string, value: string, scene: Scene): Texture {
+        private static _getTexture(rootUrl: string, value: string, scene: Scene): Nullable<Texture> {
+            if (!value) {
+                return null;
+            }
+
             var url = rootUrl;
             // Load from input file.
             if (rootUrl === "file:") {
@@ -191,7 +201,7 @@ module BABYLON {
     export class OBJFileLoader implements ISceneLoaderPlugin {
 
         public static OPTIMIZE_WITH_UV = false;
-
+        public name = "obj";
         public extensions = ".obj";
         public obj = /^o/;
         public group = /^g/;
@@ -229,15 +239,15 @@ module BABYLON {
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
 
             // Loads through the babylon tools to allow fileInput search.
-            BABYLON.Tools.LoadFile(pathOfFile, 
-                onSuccess, 
-                null, 
-                null, 
-                false, 
+            BABYLON.Tools.LoadFile(pathOfFile,
+                onSuccess,
+                undefined,
+                undefined,
+                false,
                 () => { console.warn("Error - Unable to load " + pathOfFile); });
         }
 
-        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
+        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
             //get the meshes from OBJ file
             var loadedMeshes = this._parseSolid(meshesNames, scene, data, rootUrl);
             //Push meshes from OBJ file into the variable mesh of this function
@@ -252,6 +262,13 @@ module BABYLON {
         public load(scene: Scene, data: string, rootUrl: string): boolean {
             //Get the 3D model
             return this.importMesh(null, scene, data, rootUrl, null, null, null);
+        }
+
+        public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+            var container = new AssetContainer(scene);
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
         }
 
         /**
@@ -674,10 +691,10 @@ module BABYLON {
                     //Definition of the mesh
                     var objMesh: {
                         name: string;
-                        indices: Array<number>;
-                        positions: Array<number>;
-                        normals: Array<number>;
-                        uvs: Array<number>;
+                        indices?: Array<number>;
+                        positions?: Array<number>;
+                        normals?: Array<number>;
+                        uvs?: Array<number>;
                         materialName: string;
                     } =
                         //Set the name of the current obj mesh
@@ -711,10 +728,10 @@ module BABYLON {
                         //Create a new mesh
                         var objMesh: {
                             name: string;
-                            indices: Array<number>;
-                            positions: Array<number>;
-                            normals: Array<number>;
-                            uvs: Array<number>;
+                            indices?: Array<number>;
+                            positions?: Array<number>;
+                            normals?: Array<number>;
+                            uvs?: Array<number>;
                             materialName: string;
                         } =
                             //Set the name of the current obj mesh
@@ -788,7 +805,7 @@ module BABYLON {
 
             //Create a BABYLON.Mesh list
             var babylonMeshesArray: Array<BABYLON.Mesh> = []; //The mesh for babylon
-            var materialToUse = [];
+            var materialToUse = new Array<string>();
 
             //Set data for each mesh
             for (var j = 0; j < meshesFromObj.length; j++) {

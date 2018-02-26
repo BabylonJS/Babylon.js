@@ -2,7 +2,6 @@
 
 #if defined(BUMP) || defined(PARALLAX)
 	#ifdef NORMALXYSCALE
-		normalW = normalize(normalW * vec3(vBumpInfos.y, vBumpInfos.y, 1.0));
 		float normalScale = 1.0;
 	#else		
 		float normalScale = vBumpInfos.y;
@@ -26,5 +25,10 @@
 #endif
 
 #ifdef BUMP
+#ifdef OBJECTSPACE_NORMALMAP
+	normalW = normalize(texture2D(bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
+	normalW = normalize(mat3(normalMatrix) * normalW);	
+#else
 	normalW = perturbNormal(TBN, vBumpUV + uvOffset);
+#endif
 #endif

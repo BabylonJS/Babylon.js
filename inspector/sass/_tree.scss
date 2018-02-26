@@ -35,7 +35,7 @@
             line-height: 1em;
             display    : inline-block;
             font-family: 'FontAwesome', sans-serif;
-            content    : "\f078";
+            content    : "\f078";            
         }
         &.folded:before{            
             width      : 1em;
@@ -44,6 +44,13 @@
             display    : inline-block;
             font-family: 'FontAwesome', sans-serif;
             content    : "\f054";
+        }
+        
+        &.unfolded.transformNode > span:first-of-type{
+            color:$color-top;
+        }
+        &.folded.transformNode > span:first-of-type{ 
+            color:$color-top;
         }
 
         // Sub lines
@@ -57,5 +64,8 @@
             }
             
         }
+    }
+    .line_invisible {
+        display: none;
     }
 }

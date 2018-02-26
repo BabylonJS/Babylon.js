@@ -31,7 +31,7 @@ module BABYLON.GUI {
             return "Container";
         }           
 
-        public getChildByName(name: string): Control {
+        public getChildByName(name: string): Nullable<Control> {
             for (var child of this._children) {
                 if (child.name === name) {
                     return child;
@@ -41,7 +41,7 @@ module BABYLON.GUI {
             return null;
         }       
 
-        public getChildByType(name: string, type: string): Control {
+        public getChildByType(name: string, type: string): Nullable<Control> {
             for (var child of this._children) {
                 if (child.typeName === type) {
                     return child;
@@ -63,6 +63,8 @@ module BABYLON.GUI {
             }
             control._link(this, this._host);
 
+            control._markAllAsDirty();
+
             this._reOrderControl(control);
 
             this._markAsDirty();
@@ -74,6 +76,8 @@ module BABYLON.GUI {
 
             if (index !== -1) {
                 this._children.splice(index, 1);
+
+                control.parent = null;
             }
 
             this._markAsDirty();
@@ -91,6 +95,8 @@ module BABYLON.GUI {
             }
 
             this._children.push(control);
+
+            control.parent = this;
 
             this._markAsDirty();
         }
@@ -113,12 +119,25 @@ module BABYLON.GUI {
 
         protected _localDraw(context: CanvasRenderingContext2D): void {
             if (this._background) {
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowColor = this.shadowColor;
+                    context.shadowBlur = this.shadowBlur;
+                    context.shadowOffsetX = this.shadowOffsetX;
+                    context.shadowOffsetY = this.shadowOffsetY;
+                }
+                
                 context.fillStyle = this._background;
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
+                
+                if(this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY){
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
             }
         }
 
-        public _link(root: Container, host: AdvancedDynamicTexture): void {
+        public _link(root: Nullable<Container>, host: AdvancedDynamicTexture): void {
             super._link(root, host);
 
             for (var child of this._children) {
@@ -127,7 +146,7 @@ module BABYLON.GUI {
         }
 
         public _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void {      
-            if (!this.isVisible) {
+            if (!this.isVisible || this.notRenderable) {
                 return;
             }
             context.save();
@@ -139,16 +158,25 @@ module BABYLON.GUI {
 
                 this._clipForChildren(context);
                 for (var child of this._children) {
-                    if (child.isVisible) {
+                    if (child.isVisible && !child.notRenderable) {
+                        child._tempParentMeasure.copyFrom(this._measureForChildren);
                         child._draw(this._measureForChildren, context);
+
+                        if (child.onAfterDrawObservable.hasObservers()) {
+                            child.onAfterDrawObservable.notifyObservers(child);
+                        }
                     }
                 }
             }
             context.restore();
+
+            if (this.onAfterDrawObservable.hasObservers()) {
+                this.onAfterDrawObservable.notifyObservers(this);
+            }
         }
 
-        public _processPicking(x: number, y: number, type: number): boolean {
-            if (!this.isHitTestVisible || !this.isVisible) {
+        public _processPicking(x: number, y: number, type: number, pointerId:number, buttonIndex: number): boolean {
+            if (!this.isVisible || this.notRenderable) {
                 return false;
             }
 
@@ -159,12 +187,16 @@ module BABYLON.GUI {
             // Checking backwards to pick closest first
             for (var index = this._children.length - 1; index >= 0; index--) {
                 var child = this._children[index];
-                if (child._processPicking(x, y, type)) {
+                if (child._processPicking(x, y, type, pointerId, buttonIndex)) {
                     return true;
                 }
             }
 
-            return this._processObservables(type, x, y);
+            if (!this.isHitTestVisible) {
+                return false;
+            }
+
+            return this._processObservables(type, x, y, pointerId, buttonIndex);
         }
 
         protected _clipForChildren(context: CanvasRenderingContext2D): void {
@@ -175,6 +207,14 @@ module BABYLON.GUI {
             super._additionalProcessing(parentMeasure, context);
 
             this._measureForChildren.copyFrom(this._currentMeasure);
+        }
+
+        public dispose() {
+            super.dispose();
+
+            for (var control of this._children) {
+                control.dispose();
+            }
         }
     }    
 }

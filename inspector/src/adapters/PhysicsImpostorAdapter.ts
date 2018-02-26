@@ -4,10 +4,10 @@ module INSPECTOR {
         extends Adapter
         implements IToolVisible {
 
-        private _viewer:BABYLON.Debug.PhysicsViewer;
+        private _viewer: any;
         private _isVisible = false;
 
-        constructor(obj: BABYLON.PhysicsImpostor, viewer:BABYLON.Debug.PhysicsViewer) {
+        constructor(obj: BABYLON.PhysicsImpostor, viewer: any) {
             super(obj);
             this._viewer = viewer;
         }
@@ -17,7 +17,7 @@ module INSPECTOR {
             let str = '';
             let physicsImposter = (<BABYLON.PhysicsImpostor>this._obj);
             if (physicsImposter && physicsImposter.object) {
-                str = (<BABYLON.AbstractMesh>physicsImposter.object).name;
+                str = (<BABYLON.AbstractMesh>physicsImposter.object).name || "";
             } // otherwise nothing displayed        
             return str;
         }
@@ -29,13 +29,7 @@ module INSPECTOR {
 
         /** Returns the list of properties to be displayed for this adapter */
         public getProperties(): Array<PropertyLine> {
-            let propertiesLines: Array<PropertyLine> = [];
-
-            for (let dirty of PROPERTIES['PhysicsImpostor'].properties) {
-                let infos = new Property(dirty, this._obj);
-                propertiesLines.push(new PropertyLine(infos));
-            }
-            return propertiesLines;
+            return Helpers.GetAllLinesProperties(this._obj);
         }
 
         public getTools(): Array<AbstractTreeTool> {
@@ -46,16 +40,16 @@ module INSPECTOR {
 
         public setVisible(b: boolean) {
             this._isVisible = b;
-            if(b){
+            if (b) {
                 this._viewer.showImpostor(this._obj);
-            }else{
+            } else {
                 this._viewer.hideImpostor(this._obj);
             }
         }
-        
+
         public isVisible(): boolean {
             return this._isVisible;
         }
-        
+
     }
 }

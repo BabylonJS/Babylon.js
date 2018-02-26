@@ -2,6 +2,7 @@
 
 // Constants
 uniform vec3 vEyePosition;
+uniform float alpha;
 
 // Input
 varying vec3 vPositionW;
@@ -9,6 +10,9 @@ varying vec3 vPositionW;
 #ifdef NORMAL
 varying vec3 vNormalW;
 #endif
+
+// Helper functions
+#include<helperFunctions>
 
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
@@ -42,7 +46,7 @@ void main(void) {
 #include<lightFragment>[0..1]
 
 	// Composition
-	vec4 color = vec4(0., 0., 0., 1.0 - clamp(shadow, 0., 1.));
+	vec4 color = vec4(0., 0., 0., (1.0 - clamp(shadow, 0., 1.)) * alpha);
 
 #include<fogFragment>
 

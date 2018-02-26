@@ -1,6 +1,4 @@
-﻿/// <reference path="..\babylon.node.ts" />
-
-module BABYLON {
+﻿module BABYLON {
     export class Bone extends Node {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero()];
@@ -11,6 +9,10 @@ module BABYLON {
         public animations = new Array<Animation>();
         public length: number;
 
+        // Set this value to map this bone to a different index in the transform matrices.
+        // Set this value to -1 to exclude the bone from the transform matrices.
+        public _index: Nullable<number> = null;
+
         private _skeleton: Skeleton;
         private _localMatrix: Matrix;
         private _restPose: Matrix;
@@ -18,7 +20,7 @@ module BABYLON {
         private _worldTransform = new Matrix();
         private _absoluteTransform = new Matrix();
         private _invertedAbsoluteTransform = new Matrix();
-        private _parent: Bone;
+        private _parent: Nullable<Bone>;
 
         private _scaleMatrix = Matrix.Identity();
         private _scaleVector = Vector3.One();
@@ -37,12 +39,14 @@ module BABYLON {
             }
         }
 
-        constructor(public name: string, skeleton: Skeleton, parentBone: Bone = null, matrix?: Matrix, restPose?: Matrix) {
+        constructor(public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
+            restPose: Nullable<Matrix> = null, baseMatrix: Nullable<Matrix> = null, index: Nullable<number> = null) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
-            this._localMatrix = matrix ? matrix : Matrix.Identity();
-            this._baseMatrix = this._localMatrix.clone();
+            this._localMatrix = localMatrix ? localMatrix : Matrix.Identity();
             this._restPose = restPose ? restPose : this._localMatrix.clone();
+            this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
+            this._index = index;
 
             skeleton.bones.push(this);
 
@@ -56,11 +60,11 @@ module BABYLON {
             return this._skeleton;
         }
 
-        public getParent(): Bone {
+        public getParent(): Nullable<Bone> {
             return this._parent;
         }
 
-        public setParent(parent: Bone, updateDifferenceMatrix: boolean = true): void {
+        public setParent(parent: Nullable<Bone>, updateDifferenceMatrix: boolean = true): void {
             if (this._parent === parent) {
                 return;
             }
@@ -68,7 +72,7 @@ module BABYLON {
             if (this._parent) {
                 var index = this._parent.children.indexOf(this);
                 if (index !== -1) {
-                    this._parent.children.splice(index);
+                    this._parent.children.splice(index, 1);
                 }
             }
 
@@ -93,7 +97,7 @@ module BABYLON {
 
         public getRestPose(): Matrix {
             return this._restPose;
-        }      
+        }
 
         public returnToRest(): void {
             this.updateMatrix(this._restPose.clone());
@@ -181,7 +185,7 @@ module BABYLON {
             this._skeleton._markAsDirty();
         }
 
-        public copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio : Vector3 = null): boolean {
+        public copyAnimationRange(source: Bone, rangeName: string, frameOffset: number, rescaleAsRequired = false, skelDimensionsRatio: Nullable<Vector3> = null): boolean {
             // all animation may be coming from a library skeleton, so may need to create animation
             if (this.animations.length === 0) {
                 this.animations.push(new Animation(this.name, "_matrix", source.animations[0].framePerSecond, Animation.ANIMATIONTYPE_MATRIX, 0));
@@ -196,21 +200,21 @@ module BABYLON {
             var from = sourceRange.from;
             var to = sourceRange.to;
             var sourceKeys = source.animations[0].getKeys();
-            
+
             // rescaling prep
             var sourceBoneLength = source.length;
             var sourceParent = source.getParent();
             var parent = this.getParent();
             var parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
-            var parentRatio = parentScalingReqd ? parent.length / sourceParent.length : null;
-            
-            var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);           
-            
+            var parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
+
+            var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
+
             var destKeys = this.animations[0].getKeys();
-            
+
             // loop vars declaration
             var orig: { frame: number, value: Matrix };
-            var origTranslation : Vector3;
+            var origTranslation: Vector3;
             var mat: Matrix;
 
             for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
@@ -218,20 +222,20 @@ module BABYLON {
                 if (orig.frame >= from && orig.frame <= to) {
                     if (rescaleAsRequired) {
                         mat = orig.value.clone();
-                        
+
                         // scale based on parent ratio, when bone has parent
                         if (parentScalingReqd) {
                             origTranslation = mat.getTranslation();
                             mat.setTranslation(origTranslation.scaleInPlace(parentRatio));
-                            
-                        // scale based on skeleton dimension ratio when root bone, and value is passed
-                        } else if (dimensionsScalingReqd) {
-                            origTranslation = mat.getTranslation();
-                            mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));                            
 
-                        // use original when root bone, and no data for skelDimensionsRatio
+                            // scale based on skeleton dimension ratio when root bone, and value is passed
+                        } else if (dimensionsScalingReqd && skelDimensionsRatio) {
+                            origTranslation = mat.getTranslation();
+                            mat.setTranslation(origTranslation.multiplyInPlace(skelDimensionsRatio));
+
+                            // use original when root bone, and no data for skelDimensionsRatio
                         } else {
-                            mat = orig.value;                            
+                            mat = orig.value;
                         }
                     } else {
                         mat = orig.value;
@@ -249,22 +253,18 @@ module BABYLON {
          * @param space The space that the translation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public translate (vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
-
+        public translate(vec: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
             var lm = this.getLocalMatrix();
 
-            if(space == Space.LOCAL){
-
+            if (space == Space.LOCAL) {
                 lm.m[12] += vec.x;
                 lm.m[13] += vec.y;
                 lm.m[14] += vec.z;
-
-            }else{
-
-                var wm:Matrix;
+            } else {
+                var wm: Nullable<Matrix> = null;
 
                 //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-                if(mesh){
+                if (mesh) {
                     wm = mesh.getWorldMatrix();
                 }
 
@@ -272,11 +272,13 @@ module BABYLON {
                 var tmat = Bone._tmpMats[0];
                 var tvec = Bone._tmpVecs[0];
 
-                if (mesh) {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
-                    tmat.multiplyToRef(wm, tmat);
-                }else {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                if (this._parent) {
+                    if (mesh && wm) {
+                        tmat.copyFrom(this._parent.getAbsoluteTransform());
+                        tmat.multiplyToRef(wm, tmat);
+                    } else {
+                        tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    }
                 }
 
                 tmat.m[12] = 0;
@@ -293,7 +295,7 @@ module BABYLON {
             }
 
             this.markAsDirty();
-	        
+
         }
 
         /**
@@ -302,22 +304,19 @@ module BABYLON {
          * @param space The space that the position is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setPosition (position: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setPosition(position: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lm = this.getLocalMatrix();
 
-            if(space == Space.LOCAL){
-
+            if (space == Space.LOCAL) {
                 lm.m[12] = position.x;
                 lm.m[13] = position.y;
                 lm.m[14] = position.z;
-
-            }else{
-
-                var wm:Matrix;
+            } else {
+                var wm: Nullable<Matrix> = null;
 
                 //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-                if(mesh){
+                if (mesh) {
                     wm = mesh.getWorldMatrix();
                 }
 
@@ -326,11 +325,13 @@ module BABYLON {
                 var tmat = Bone._tmpMats[0];
                 var vec = Bone._tmpVecs[0];
 
-                if (mesh) {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
-                    tmat.multiplyToRef(wm, tmat);
-                }else {
-                    tmat.copyFrom(this._parent.getAbsoluteTransform());
+                if (this._parent) {
+                    if (mesh && wm) {
+                        tmat.copyFrom(this._parent.getAbsoluteTransform());
+                        tmat.multiplyToRef(wm, tmat);
+                    } else {
+                        tmat.copyFrom(this._parent.getAbsoluteTransform());
+                    }
                 }
 
                 tmat.invert();
@@ -343,7 +344,7 @@ module BABYLON {
             }
 
             this.markAsDirty();
-	        
+
         }
 
         /**
@@ -351,7 +352,7 @@ module BABYLON {
          * @param position The position to set the bone.
          * @param mesh The mesh that this bone is attached to.
          */
-        public setAbsolutePosition(position:Vector3, mesh?: AbstractMesh){
+        public setAbsolutePosition(position: Vector3, mesh?: AbstractMesh) {
 
             this.setPosition(position, Space.WORLD, mesh);
 
@@ -364,13 +365,13 @@ module BABYLON {
          * @param z The scale of the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
-        public setScale (x: number, y: number, z: number, scaleChildren = false): void {
+        public setScale(x: number, y: number, z: number, scaleChildren = false): void {
 
-            if (this.animations[0] && !this.animations[0].isStopped()) {
+            if (this.animations[0] && !this.animations[0].hasRunningRuntimeAnimations) {
                 if (!scaleChildren) {
-                    this._negateScaleChildren.x = 1/x;
-                    this._negateScaleChildren.y = 1/y;
-                    this._negateScaleChildren.z = 1/z;
+                    this._negateScaleChildren.x = 1 / x;
+                    this._negateScaleChildren.y = 1 / y;
+                    this._negateScaleChildren.z = 1 / z;
                 }
                 this._syncScaleVector();
             }
@@ -386,8 +387,8 @@ module BABYLON {
          * @param z The amount to scale the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
-        public scale (x: number, y: number, z: number, scaleChildren = false): void {
-	
+        public scale(x: number, y: number, z: number, scaleChildren = false): void {
+
             var locMat = this.getLocalMatrix();
             var origLocMat = Bone._tmpMats[0];
             origLocMat.copyFrom(locMat);
@@ -411,14 +412,14 @@ module BABYLON {
 
             if (parent) {
                 locMat.multiplyToRef(parent.getAbsoluteTransform(), this.getAbsoluteTransform());
-            }else {
+            } else {
                 this.getAbsoluteTransform().copyFrom(locMat);
             }
 
             var len = this.children.length;
 
             scaleMat.invert();
-            
+
             for (var i = 0; i < len; i++) {
                 var child = this.children[i];
                 var cm = child.getLocalMatrix();
@@ -430,12 +431,12 @@ module BABYLON {
             }
 
             this.computeAbsoluteTransforms();
-            
+
             if (scaleChildren) {
                 for (var i = 0; i < len; i++) {
                     this.children[i].scale(x, y, z, scaleChildren);
                 }
-            }          
+            }
 
             this.markAsDirty();
 
@@ -449,19 +450,19 @@ module BABYLON {
          * @param space The space that the axes of rotation are in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setYawPitchRoll (yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
-	
+        public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+
             var rotMat = Bone._tmpMats[0];
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
-            
+
             var rotMatInv = Bone._tmpMats[1];
-            
+
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
-	
+
             rotMatInv.multiplyToRef(rotMat, rotMat);
-            
+
             this._rotateWithMatrix(rotMat, space, mesh);
-            
+
         }
 
         /**
@@ -471,17 +472,17 @@ module BABYLON {
          * @param space The space that the axis is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public rotate (axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
-            
+        public rotate(axis: Vector3, amount: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+
             var rmat = Bone._tmpMats[0];
             rmat.m[12] = 0;
             rmat.m[13] = 0;
             rmat.m[14] = 0;
-            
+
             Matrix.RotationAxisToRef(axis, amount, rmat);
-            
+
             this._rotateWithMatrix(rmat, space, mesh);
-            
+
         }
 
         /**
@@ -491,14 +492,14 @@ module BABYLON {
          * @param space The space that the axis is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setAxisAngle (axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMat = Bone._tmpMats[0];
             Matrix.RotationAxisToRef(axis, angle, rotMat);
             var rotMatInv = Bone._tmpMats[1];
-            
+
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
-            
+
             rotMatInv.multiplyToRef(rotMat, rotMat);
             this._rotateWithMatrix(rotMat, space, mesh);
 
@@ -510,8 +511,8 @@ module BABYLON {
          * @param space The space that the rotation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setRotation (rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
-            
+        public setRotation(rotation: Vector3, space = Space.LOCAL, mesh?: AbstractMesh): void {
+
             this.setYawPitchRoll(rotation.y, rotation.x, rotation.z, space, mesh);
 
         }
@@ -522,7 +523,7 @@ module BABYLON {
          * @param space The space that the rotation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setRotationQuaternion (quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setRotationQuaternion(quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Bone._tmpMats[0];
 
@@ -543,22 +544,22 @@ module BABYLON {
          * @param space The space that the rotation is in.
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          */
-        public setRotationMatrix (rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Bone._tmpMats[0];
-            
+
             this._getNegativeRotationToRef(rotMatInv, space, mesh);
 
             var rotMat2 = Bone._tmpMats[1];
             rotMat2.copyFrom(rotMat);
 
             rotMatInv.multiplyToRef(rotMat, rotMat2);
-            
+
             this._rotateWithMatrix(rotMat2, space, mesh);
 
         }
 
-        private _rotateWithMatrix (rmat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        private _rotateWithMatrix(rmat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var lmat = this.getLocalMatrix();
             var lx = lmat.m[12];
@@ -573,10 +574,10 @@ module BABYLON {
                     if (mesh) {
                         parentScale.copyFrom(mesh.getWorldMatrix());
                         parent.getAbsoluteTransform().multiplyToRef(parentScale, parentScale);
-                    }else {
+                    } else {
                         parentScale.copyFrom(parent.getAbsoluteTransform());
                     }
-                }else {
+                } else {
                     parentScale = parent._scaleMatrix;
                 }
                 parentScaleInv.copyFrom(parentScale);
@@ -584,7 +585,7 @@ module BABYLON {
                 lmat.multiplyToRef(parentScale, lmat);
                 lmat.multiplyToRef(rmat, lmat);
                 lmat.multiplyToRef(parentScaleInv, lmat);
-            }else {
+            } else {
                 if (space == Space.WORLD && mesh) {
                     parentScale.copyFrom(mesh.getWorldMatrix());
                     parentScaleInv.copyFrom(parentScale);
@@ -592,7 +593,7 @@ module BABYLON {
                     lmat.multiplyToRef(parentScale, lmat);
                     lmat.multiplyToRef(rmat, lmat);
                     lmat.multiplyToRef(parentScaleInv, lmat);
-                }else {
+                } else {
                     lmat.multiplyToRef(rmat, lmat);
                 }
             }
@@ -613,7 +614,7 @@ module BABYLON {
                 var scaleMatrix = Bone._tmpMats[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
                 rotMatInv.copyFrom(this.getAbsoluteTransform());
-                
+
                 if (mesh) {
                     rotMatInv.multiplyToRef(mesh.getWorldMatrix(), rotMatInv);
                     var meshScale = Bone._tmpMats[3];
@@ -649,9 +650,9 @@ module BABYLON {
          * @returns the scale of the bone
          */
         public getScale(): Vector3 {
-            
+
             return this._scaleVector.clone();
-            
+
         }
 
         /**
@@ -659,9 +660,9 @@ module BABYLON {
          * @param result The vector3 to copy the scale to
          */
         public getScaleToRef(result: Vector3): void {
-	
+
             result.copyFrom(this._scaleVector);
-            
+
         }
 
         /**
@@ -670,14 +671,12 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @returns The position of the bone
          */
-        public getPosition (space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
-
+        public getPosition(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null): Vector3 {
             var pos = Vector3.Zero();
 
             this.getPositionToRef(space, mesh, pos);
 
             return pos;
-
         }
 
         /**
@@ -686,42 +685,37 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @param result The vector3 to copy the position to.
          */
-        public getPositionToRef (space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
+        public getPositionToRef(space = Space.LOCAL, mesh: Nullable<AbstractMesh>, result: Vector3): void {
 
-            if(space == Space.LOCAL){
-
+            if (space == Space.LOCAL) {
                 var lm = this.getLocalMatrix();
 
                 result.x = lm.m[12];
                 result.y = lm.m[13];
                 result.z = lm.m[14];
+            } else {
+                var wm: Nullable<Matrix> = null;
 
-            }else{
-                
-                var wm;
-                
                 //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-                if(mesh){
+                if (mesh) {
                     wm = mesh.getWorldMatrix();
                 }
-                
+
                 this._skeleton.computeAbsoluteTransforms();
-                
+
                 var tmat = Bone._tmpMats[0];
 
-                if (mesh) {
+                if (mesh && wm) {
                     tmat.copyFrom(this.getAbsoluteTransform());
                     tmat.multiplyToRef(wm, tmat);
-                }else{
+                } else {
                     tmat = this.getAbsoluteTransform();
                 }
 
                 result.x = tmat.m[12];
                 result.y = tmat.m[13];
                 result.z = tmat.m[14];
-
             }
-
         }
 
         /**
@@ -729,7 +723,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @returns The absolute position of the bone
          */
-        public getAbsolutePosition (mesh?: AbstractMesh): Vector3 {
+        public getAbsolutePosition(mesh: Nullable<AbstractMesh> = null): Vector3 {
 
             var pos = Vector3.Zero();
 
@@ -744,7 +738,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @param result The vector3 to copy the absolute position to.
          */
-        public getAbsolutePositionToRef (mesh: AbstractMesh, result: Vector3) {
+        public getAbsolutePositionToRef(mesh: AbstractMesh, result: Vector3) {
 
             this.getPositionToRef(Space.WORLD, mesh, result);
 
@@ -753,7 +747,7 @@ module BABYLON {
         /**
          * Compute the absolute transforms of this bone and its children.
          */
-        public computeAbsoluteTransforms (): void {
+        public computeAbsoluteTransforms(): void {
 
             if (this._parent) {
                 this._localMatrix.multiplyToRef(this._parent._absoluteTransform, this._absoluteTransform);
@@ -762,8 +756,8 @@ module BABYLON {
 
                 var poseMatrix = this._skeleton.getPoseMatrix();
 
-                if(poseMatrix){
-                    this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);					
+                if (poseMatrix) {
+                    this._absoluteTransform.multiplyToRef(poseMatrix, this._absoluteTransform);
                 }
             }
 
@@ -776,29 +770,29 @@ module BABYLON {
 
         }
 
-        private _syncScaleVector(): void{
-            
+        private _syncScaleVector(): void {
+
             var lm = this.getLocalMatrix();
-            
+
             var xsq = (lm.m[0] * lm.m[0] + lm.m[1] * lm.m[1] + lm.m[2] * lm.m[2]);
             var ysq = (lm.m[4] * lm.m[4] + lm.m[5] * lm.m[5] + lm.m[6] * lm.m[6]);
             var zsq = (lm.m[8] * lm.m[8] + lm.m[9] * lm.m[9] + lm.m[10] * lm.m[10]);
-            
+
             var xs = lm.m[0] * lm.m[1] * lm.m[2] * lm.m[3] < 0 ? -1 : 1;
             var ys = lm.m[4] * lm.m[5] * lm.m[6] * lm.m[7] < 0 ? -1 : 1;
             var zs = lm.m[8] * lm.m[9] * lm.m[10] * lm.m[11] < 0 ? -1 : 1;
-            
+
             this._scaleVector.x = xs * Math.sqrt(xsq);
             this._scaleVector.y = ys * Math.sqrt(ysq);
             this._scaleVector.z = zs * Math.sqrt(zsq);
-            
+
             if (this._parent) {
                 this._scaleVector.x /= this._parent._negateScaleChildren.x;
                 this._scaleVector.y /= this._parent._negateScaleChildren.y;
                 this._scaleVector.z /= this._parent._negateScaleChildren.z;
             }
-            
-            Matrix.FromValuesToRef(this._scaleVector.x, 0, 0, 0, 0,  this._scaleVector.y, 0, 0, 0, 0,  this._scaleVector.z, 0, 0, 0, 0, 1, this._scaleMatrix);
+
+            Matrix.FromValuesToRef(this._scaleVector.x, 0, 0, 0, 0, this._scaleVector.y, 0, 0, 0, 0, this._scaleVector.z, 0, 0, 0, 0, 1, this._scaleMatrix);
 
         }
 
@@ -808,12 +802,12 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @returns The world direction
          */
-        public getDirection (localAxis: Vector3, mesh?: AbstractMesh): Vector3{
+        public getDirection(localAxis: Vector3, mesh: Nullable<AbstractMesh> = null): Vector3 {
 
             var result = Vector3.Zero();
 
             this.getDirectionToRef(localAxis, mesh, result);
-            
+
             return result;
 
         }
@@ -824,22 +818,22 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @param result The vector3 that the world direction will be copied to.
          */
-        public getDirectionToRef (localAxis: Vector3, mesh: AbstractMesh, result: Vector3): void {
+        public getDirectionToRef(localAxis: Vector3, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
 
-            var wm:Matrix;
+            var wm: Nullable<Matrix> = null;
 
             //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-            if(mesh){
+            if (mesh) {
                 wm = mesh.getWorldMatrix();
             }
 
             this._skeleton.computeAbsoluteTransforms();
-            
+
             var mat = Bone._tmpMats[0];
 
             mat.copyFrom(this.getAbsoluteTransform());
 
-            if(mesh){
+            if (mesh && wm) {
                 mat.multiplyToRef(wm, mat);
             }
 
@@ -855,12 +849,12 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @returns The euler rotation
          */
-        public getRotation(space = Space.LOCAL, mesh?: AbstractMesh): Vector3 {
+        public getRotation(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null): Vector3 {
 
             var result = Vector3.Zero();
 
             this.getRotationToRef(space, mesh, result);
-            
+
             return result;
 
         }
@@ -871,12 +865,12 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @param result The vector3 that the rotation should be copied to.
          */
-        public getRotationToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Vector3): void {
+        public getRotationToRef(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
 
             var quat = Bone._tmpQuat;
 
             this.getRotationQuaternionToRef(space, mesh, quat);
-            
+
             quat.toEulerAnglesToRef(result);
 
         }
@@ -887,7 +881,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @returns The quaternion rotation
          */
-        public getRotationQuaternion(space = Space.LOCAL, mesh?: AbstractMesh): Quaternion {
+        public getRotationQuaternion(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null): Quaternion {
 
             var result = Quaternion.Identity();
 
@@ -903,20 +897,20 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @param result The quaternion that the rotation should be copied to.
          */
-        public getRotationQuaternionToRef( space = Space.LOCAL, mesh: AbstractMesh, result: Quaternion): void{
+        public getRotationQuaternionToRef(space = Space.LOCAL, mesh: Nullable<AbstractMesh> = null, result: Quaternion): void {
 
-            if(space == Space.LOCAL){
+            if (space == Space.LOCAL) {
 
                 this.getLocalMatrix().decompose(Bone._tmpVecs[0], result, Bone._tmpVecs[1]);
 
-            }else{
+            } else {
 
                 var mat = Bone._tmpMats[0];
                 var amat = this.getAbsoluteTransform();
 
-                if(mesh){
+                if (mesh) {
                     amat.multiplyToRef(mesh.getWorldMatrix(), mat);
-                }else{
+                } else {
                     mat.copyFrom(amat);
                 }
 
@@ -951,20 +945,20 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.  This is only used in world space.
          * @param result The quaternion that the rotation should be copied to.
          */
-        public getRotationMatrixToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Matrix): void{
+        public getRotationMatrixToRef(space = Space.LOCAL, mesh: AbstractMesh, result: Matrix): void {
 
-            if(space == Space.LOCAL){
+            if (space == Space.LOCAL) {
 
                 this.getLocalMatrix().getRotationMatrixToRef(result);
 
-            }else{
+            } else {
 
                 var mat = Bone._tmpMats[0];
                 var amat = this.getAbsoluteTransform();
 
-                if(mesh){
+                if (mesh) {
                     amat.multiplyToRef(mesh.getWorldMatrix(), mat);
-                }else{
+                } else {
                     mat.copyFrom(amat);
                 }
 
@@ -973,7 +967,7 @@ module BABYLON {
                 mat.m[2] *= this._scalingDeterminant;
 
                 mat.getRotationMatrixToRef(result);
-                
+
             }
 
         }
@@ -984,7 +978,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @returns The world position
          */
-        public getAbsolutePositionFromLocal(position:Vector3, mesh?:AbstractMesh): Vector3{
+        public getAbsolutePositionFromLocal(position: Vector3, mesh: Nullable<AbstractMesh> = null): Vector3 {
 
             var result = Vector3.Zero();
 
@@ -1000,23 +994,23 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @param result The vector3 that the world position should be copied to.
          */
-        public getAbsolutePositionFromLocalToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
+        public getAbsolutePositionFromLocalToRef(position: Vector3, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
 
-            var wm:Matrix;
+            var wm: Nullable<Matrix> = null;
 
             //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-            if(mesh){
+            if (mesh) {
                 wm = mesh.getWorldMatrix();
             }
 
             this._skeleton.computeAbsoluteTransforms();
 
             var tmat = Bone._tmpMats[0];
-            
-            if (mesh) {
+
+            if (mesh && wm) {
                 tmat.copyFrom(this.getAbsoluteTransform());
                 tmat.multiplyToRef(wm, tmat);
-            }else{
+            } else {
                 tmat = this.getAbsoluteTransform();
             }
 
@@ -1030,7 +1024,7 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @returns The local position
          */
-        public getLocalPositionFromAbsolute(position:Vector3, mesh?:AbstractMesh): Vector3{
+        public getLocalPositionFromAbsolute(position: Vector3, mesh: Nullable<AbstractMesh> = null): Vector3 {
 
             var result = Vector3.Zero();
 
@@ -1046,12 +1040,12 @@ module BABYLON {
          * @param mesh The mesh that this bone is attached to.
          * @param result The vector3 that the local position should be copied to.
          */
-        public getLocalPositionFromAbsoluteToRef(position:Vector3, mesh:AbstractMesh, result:Vector3): void{
+        public getLocalPositionFromAbsoluteToRef(position: Vector3, mesh: Nullable<AbstractMesh> = null, result: Vector3): void {
 
-            var wm:Matrix;
+            var wm: Nullable<Matrix> = null;
 
             //mesh.getWorldMatrix() needs to be called before skeleton.computeAbsoluteTransforms()
-            if(mesh){
+            if (mesh) {
                 wm = mesh.getWorldMatrix();
             }
 
@@ -1060,8 +1054,8 @@ module BABYLON {
             var tmat = Bone._tmpMats[0];
 
             tmat.copyFrom(this.getAbsoluteTransform());
-            
-            if (mesh) {
+
+            if (mesh && wm) {
                 tmat.multiplyToRef(wm, tmat);
             }
 

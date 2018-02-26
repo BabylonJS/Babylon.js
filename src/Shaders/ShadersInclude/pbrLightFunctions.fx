@@ -18,12 +18,11 @@ float computeDistanceLightFalloff(vec3 lightOffset, float lightDistanceSquared, 
     return lightDistanceFalloff;
 }
 
-float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightCenterW, float lightAngle, float exponent)
+float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightCenterW, float cosHalfAngle, float exponent)
 {
     float falloff = 0.0;
     
     #ifdef USEPHYSICALLIGHTFALLOFF
-        float cosHalfAngle = cos(lightAngle * 0.5);
         const float kMinusLog2ConeAngleIntensityRatio = 6.64385618977; // -log2(0.01)
 
         // Calculate a Spherical Gaussian (von Mises-Fisher distribution, not angle-based Gaussian) such that the peak is in the light direction,
@@ -39,7 +38,7 @@ float computeDirectionalLightFalloff(vec3 lightDirection, vec3 directionToLightC
         falloff = exp2(dot(vec4(directionToLightCenterW, 1.0), lightDirectionSpreadSG));
     #else
         float cosAngle = max(0.000000000000001, dot(-lightDirection, directionToLightCenterW));
-        if (cosAngle >= lightAngle)
+        if (cosAngle >= cosHalfAngle)
         {
             falloff = max(0., pow(cosAngle, exponent));
         }

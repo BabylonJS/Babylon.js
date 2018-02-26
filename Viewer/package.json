@@ -1,0 +1,36 @@
+{
+    "name": "babylonjs-viewer",
+    "version": "0.2.0",
+    "description": "A viewer using BabylonJS to display 3D elements natively",
+    "scripts": {
+        "start:server": "webpack-dev-server",
+        "build": "webpack",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "keywords": [
+        "3d",
+        "webgl",
+        "viewer"
+    ],
+    "author": "Raanan Weber",
+    "license": "Apache2",
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    },
+    "homepage": "https://github.com/BabylonJS/Babylon.js#readme",
+    "devDependencies": {
+        "@types/node": "^8.5.8",
+        "base64-image-loader": "^1.2.1",
+        "html-loader": "^0.5.4",
+        "json-loader": "^0.5.7",
+        "ts-loader": "^2.3.7",
+        "typescript": "^2.6.2",
+        "uglifyjs-webpack-plugin": "^1.1.6",
+        "webpack": "^3.10.0",
+        "webpack-dev-server": "^2.11.0"
+    }
+}

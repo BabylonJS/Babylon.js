@@ -1,0 +1,46 @@
+<style>
+    overlay {
+        position: absolute;
+        z-index: 99;
+        opacity: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        -webkit-transition: opacity 1s ease;
+        -moz-transition: opacity 1s ease;
+        transition: opacity 1s ease;
+    }
+
+    .overlay-item {
+        width: 100%;
+        height: 100%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(121, 121, 121, 0.3);
+    }
+
+    error.overlay-item {
+        background-color: rgba(121, 121, 121, 1);
+    }
+
+    div#close-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
+
+    div#close-button img {
+        width: 100%;
+    }
+</style>
+
+<div id="close-button">
+    <img src="{{closeImage}}" alt="{{closeText}}">
+</div>
+<help class="overlay-item"></help>
+<error class="overlay-item"></error>
+<share class="overlay-item"></share>

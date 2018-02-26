@@ -15,6 +15,9 @@ varying vec3 vPositionW;
 varying vec4 vColor;
 #endif
 
+// Helper functions
+#include<helperFunctions>
+
 // Lights
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -104,6 +107,8 @@ void main(void) {
 	if (baseColor.a < 0.4)
 		discard;
 #endif
+
+#include<depthPrePass>
 
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;

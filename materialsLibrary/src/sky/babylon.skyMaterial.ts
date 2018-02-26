@@ -7,7 +7,6 @@ module BABYLON {
         public FOG = false;
         public VERTEXCOLOR = false;
         public VERTEXALPHA = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -64,7 +63,7 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
@@ -89,9 +88,7 @@ module BABYLON {
                 }
             }
 
-            var engine = scene.getEngine();
-
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
             
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
@@ -129,7 +126,7 @@ module BABYLON {
                     join, fallbacks, this.onCompiled, this.onError), defines);
             }
             
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
@@ -148,6 +145,9 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -225,6 +225,10 @@ module BABYLON {
             serializationObject.customType  = "BABYLON.SkyMaterial";
             return serializationObject;
         }
+
+        public getClassName(): string {
+            return "SkyMaterial";
+        }            
 
         // Statics
         public static Parse(source: any, scene: Scene, rootUrl: string): SkyMaterial {

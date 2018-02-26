@@ -2,11 +2,18 @@ module BABYLON {
     export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
         camera: ArcRotateCamera;
 
-        private _wheel: (p: PointerInfo, s: EventState) => void;
-        private _observer: Observer<PointerInfo>;
+        private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
+        private _observer: Nullable<Observer<PointerInfo>>;
 
         @serialize()
         public wheelPrecision = 3.0;
+
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0. 
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        @serialize()
+        public wheelDeltaPercentage = 0;
 
         public attachControl(element: HTMLElement, noPreventDefault?: boolean) {
             this._wheel = (p, s) => {
@@ -14,8 +21,9 @@ module BABYLON {
                 if (p.type !== PointerEventTypes.POINTERWHEEL) return;
                 var event = <MouseWheelEvent>p.event;
                 var delta = 0;
+
                 if (event.wheelDelta) {
-                    delta = event.wheelDelta / (this.wheelPrecision * 40);
+                    delta = this.wheelDeltaPercentage ? (event.wheelDelta * 0.01) * this.camera.radius * this.wheelDeltaPercentage : event.wheelDelta / (this.wheelPrecision * 40);
                 } else if (event.detail) {
                     delta = -event.detail / this.wheelPrecision;
                 }
@@ -33,7 +41,7 @@ module BABYLON {
             this._observer = this.camera.getScene().onPointerObservable.add(this._wheel, PointerEventTypes.POINTERWHEEL);
         }
 
-        public detachControl(element: HTMLElement) {
+        public detachControl(element: Nullable<HTMLElement>) {
             if (this._observer && element) {
                 this.camera.getScene().onPointerObservable.remove(this._observer);
                 this._observer = null;
@@ -41,7 +49,7 @@ module BABYLON {
             }
         }
 
-        getTypeName(): string {
+        getClassName(): string {
             return "ArcRotateCameraMouseWheelInput";
         }
 
@@ -50,5 +58,5 @@ module BABYLON {
         }
     }
 
-    CameraInputTypes["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
+    (<any>CameraInputTypes)["ArcRotateCameraMouseWheelInput"] = ArcRotateCameraMouseWheelInput;
 }

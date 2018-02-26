@@ -14,7 +14,7 @@ module BABYLON.GLTF1 {
          * @param shaderMaterial: the shader material
          */
         public static SetMatrix(scene: Scene, source: Node, parameter: IGLTFTechniqueParameter, uniformName: string, shaderMaterial: ShaderMaterial | Effect): void {
-            var mat: Matrix = null;
+            var mat: Nullable<Matrix> = null;
 
             if (parameter.semantic === "MODEL") {
                 mat = source.getWorldMatrix();
@@ -56,11 +56,13 @@ module BABYLON.GLTF1 {
                 debugger;
             }
 
-            switch (parameter.type) {
-                case EParameterType.FLOAT_MAT2: shaderMaterial.setMatrix2x2(uniformName, Matrix.GetAsMatrix2x2(mat)); break;
-                case EParameterType.FLOAT_MAT3: shaderMaterial.setMatrix3x3(uniformName, Matrix.GetAsMatrix3x3(mat)); break;
-                case EParameterType.FLOAT_MAT4: shaderMaterial.setMatrix(uniformName, mat); break;
-                default: break;
+            if (mat) {
+                switch (parameter.type) {
+                    case EParameterType.FLOAT_MAT2: shaderMaterial.setMatrix2x2(uniformName, Matrix.GetAsMatrix2x2(mat)); break;
+                    case EParameterType.FLOAT_MAT3: shaderMaterial.setMatrix3x3(uniformName, Matrix.GetAsMatrix3x3(mat)); break;
+                    case EParameterType.FLOAT_MAT4: shaderMaterial.setMatrix(uniformName, mat); break;
+                    default: break;
+                }
             }
         }
 
@@ -79,30 +81,6 @@ module BABYLON.GLTF1 {
                 case EParameterType.FLOAT_VEC4: shaderMaterial.setVector4(uniform, Vector4.FromArray(value)); return true;
                 default: return false;
             }
-        }
-
-        /**
-        * If the uri is a base64 string
-        * @param uri: the uri to test
-        */
-        public static IsBase64(uri: string): boolean {
-            return uri.length < 5 ? false : uri.substr(0, 5) === "data:";
-        }
-
-        /**
-        * Decode the base64 uri
-        * @param uri: the uri to decode
-        */
-        public static DecodeBase64(uri: string): ArrayBuffer {
-            var decodedString = atob(uri.split(",")[1]);
-            var bufferLength = decodedString.length;
-            var bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
-
-            for (var i = 0; i < bufferLength; i++) {
-                bufferView[i] = decodedString.charCodeAt(i);
-            }
-
-            return bufferView.buffer;
         }
 
         /**
@@ -192,7 +170,7 @@ module BABYLON.GLTF1 {
             var length = view.byteLength;
 
             for (var i = 0; i < length; ++i) {
-                result += String.fromCharCode(view[i]);
+                result += String.fromCharCode((<any>view)[i]);
             }
 
             return result;
@@ -238,7 +216,7 @@ module BABYLON.GLTF1 {
                 var options = {
                     attributes: ["position"],
                     uniforms: ["worldView", "projection", "u_emission"],
-                    samplers: [],
+                    samplers: new Array<string>(),
                     needAlphaBlending: false
                 };
 
@@ -250,6 +228,6 @@ module BABYLON.GLTF1 {
         }
 
         // The GLTF default material
-        private static _DefaultMaterial: ShaderMaterial = null;
+        private static _DefaultMaterial: Nullable<ShaderMaterial> = null;
     }
 }

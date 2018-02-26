@@ -1,7 +1,9 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
+
 declare module BABYLON {
-    class FurMaterial extends Material {
+    class FurMaterial extends PushMaterial {
+        private _diffuseTexture;
         diffuseTexture: BaseTexture;
+        private _heightTexture;
         heightTexture: BaseTexture;
         diffuseColor: Color3;
         furLength: number;
@@ -13,29 +15,29 @@ declare module BABYLON {
         furSpeed: number;
         furDensity: number;
         furTexture: DynamicTexture;
+        private _disableLighting;
         disableLighting: boolean;
-        highLevelFur: boolean;
+        private _maxSimultaneousLights;
         maxSimultaneousLights: number;
+        highLevelFur: boolean;
         _meshes: AbstractMesh[];
-        private _worldViewProjectionMatrix;
         private _renderId;
         private _furTime;
-        private _defines;
-        private _cachedDefines;
         constructor(name: string, scene: Scene);
         furTime: number;
         needAlphaBlending(): boolean;
         needAlphaTesting(): boolean;
-        getAlphaTestTexture(): BaseTexture;
+        getAlphaTestTexture(): Nullable<BaseTexture>;
         updateFur(): void;
-        private _checkCache(scene, mesh?, useInstances?);
-        isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean;
-        bindOnlyWorldMatrix(world: Matrix): void;
-        bind(world: Matrix, mesh?: Mesh): void;
+        isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void;
         getAnimatables(): IAnimatable[];
+        getActiveTextures(): BaseTexture[];
+        hasTexture(texture: BaseTexture): boolean;
         dispose(forceDisposeEffect?: boolean): void;
         clone(name: string): FurMaterial;
         serialize(): any;
+        getClassName(): string;
         static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial;
         static GenerateTexture(name: string, scene: Scene): DynamicTexture;
         static FurifyMesh(sourceMesh: Mesh, quality: number): Mesh[];

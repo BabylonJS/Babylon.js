@@ -9,13 +9,16 @@ module BABYLON {
         public normalPattern = /normal[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
         public vertexPattern = /vertex[\s]+([\-+]?[0-9]+\.?[0-9]*([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+[\s]+([\-+]?[0-9]*\.?[0-9]+([eE][\-+]?[0-9]+)?)+/g;
 
+
+        public name = "stl";
+
         // force data to come in as an ArrayBuffer
         // we'll convert to string if it looks like it's an ASCII .stl
         public extensions: ISceneLoaderPluginExtensions = {
             ".stl": {isBinary: true},
         };
 
-        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]): boolean {
+        public importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: Nullable<AbstractMesh[]>, particleSystems: Nullable<ParticleSystem[]>, skeletons: Nullable<Skeleton[]>): boolean {
             var matches;
 
             if (this.isBinary(data)) {
@@ -83,6 +86,13 @@ module BABYLON {
             return result;
         }
 
+        public loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer {
+            var container = new AssetContainer(scene);
+            this.importMesh(null, scene, data, rootUrl, container.meshes, null, null);
+            container.removeAllFromScene();
+            return container;
+        }
+
         private isBinary (data: any) {
 
             // check if file size is correct for binary stl
@@ -98,7 +108,7 @@ module BABYLON {
             // check characters higher than ASCII to confirm binary
             var fileLength = reader.byteLength;
             for (var index=0; index < fileLength; index++) {
-                if (reader.getUint8( index, false ) > 127) {
+                if (reader.getUint8( index ) > 127) {
                     return true;
                 }
             }

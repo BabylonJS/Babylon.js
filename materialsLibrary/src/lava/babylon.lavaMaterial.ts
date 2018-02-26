@@ -5,6 +5,7 @@ module BABYLON {
         public DIFFUSE = false;
         public CLIPPLANE = false;
         public ALPHATEST = false;
+        public DEPTHPREPASS = false;
         public POINTSIZE = false;
         public FOG = false;
         public LIGHT0 = false;
@@ -48,7 +49,6 @@ module BABYLON {
         public NUM_BONE_INFLUENCERS = 0;
         public BonesPerMesh = 0;
         public INSTANCES = false;
-        public USERIGHTHANDEDSYSTEM = false;
 
         constructor() {
             super();
@@ -61,41 +61,40 @@ module BABYLON {
         private _diffuseTexture: BaseTexture;
         @expandToProperty("_markAllSubMeshesAsTexturesDirty")
         public diffuseTexture: BaseTexture;
-        
+
         @serializeAsTexture()
         public noiseTexture: BaseTexture;
-        
+
         @serializeAsColor3()
         public fogColor: Color3;
-        
-        @serialize()
-        public speed : number = 1;
-        
-        @serialize()
-        public movingSpeed : number = 1;
-        
-        @serialize()
-        public lowFrequencySpeed : number = 1;
-        
-        @serialize()
-        public fogDensity : number = 0.15;
 
-        private _lastTime : number = 0;
+        @serialize()
+        public speed: number = 1;
+
+        @serialize()
+        public movingSpeed: number = 1;
+
+        @serialize()
+        public lowFrequencySpeed: number = 1;
+
+        @serialize()
+        public fogDensity: number = 0.15;
+
+        private _lastTime: number = 0;
 
         @serializeAsColor3()
         public diffuseColor = new Color3(1, 1, 1);
-        
+
         @serialize("disableLighting")
         private _disableLighting = false;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public disableLighting: boolean;   
+        public disableLighting: boolean;
 
         @serialize("maxSimultaneousLights")
         private _maxSimultaneousLights = 4;
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
-        public maxSimultaneousLights: number; 
+        public maxSimultaneousLights: number;
 
-        private _worldViewProjectionMatrix = Matrix.Zero();
         private _scaledDiffuse = new Color3();
         private _renderId: number;
 
@@ -111,12 +110,12 @@ module BABYLON {
             return false;
         }
 
-        public getAlphaTestTexture(): BaseTexture {
+        public getAlphaTestTexture(): Nullable<BaseTexture> {
             return null;
         }
 
         // Methods   
-        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {   
+        public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
             if (this.isFrozen) {
                 if (this._wasPreviouslyReady && subMesh.effect) {
                     return true;
@@ -149,19 +148,19 @@ module BABYLON {
                             defines._needUVs = true;
                             defines.DIFFUSE = true;
                         }
-                    }                
+                    }
                 }
             }
 
-               // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, defines);
+            // Misc.
+            MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
             // Lights
             defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
             // Values that need to be evaluated on every frame
-            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances);
-            
+            MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
+
             // Attribs
             MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
 
@@ -213,20 +212,20 @@ module BABYLON {
                     "vDiffuseInfos",
                     "mBones",
                     "vClipPlane", "diffuseMatrix",
-                    "time", "speed","movingSpeed",
-                    "fogColor","fogDensity", "lowFrequencySpeed"
+                    "time", "speed", "movingSpeed",
+                    "fogColor", "fogDensity", "lowFrequencySpeed"
                 ];
 
                 var samplers = ["diffuseSampler",
                     "noiseTexture"
                 ];
-                var uniformBuffers = [];
+                var uniformBuffers = new Array<string>()
 
                 MaterialHelper.PrepareUniformsAndSamplersList(<EffectCreationOptions>{
-                    uniformsNames: uniforms, 
+                    uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
-                    samplers: samplers, 
-                    defines: defines, 
+                    samplers: samplers,
+                    defines: defines,
                     maxSimultaneousLights: this.maxSimultaneousLights
                 });
 
@@ -243,13 +242,13 @@ module BABYLON {
                         indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights }
                     }, engine), defines);
             }
-            if (!subMesh.effect.isReady()) {
+            if (!subMesh.effect || !subMesh.effect.isReady()) {
                 return false;
             }
 
             this._renderId = scene.getRenderId();
             this._wasPreviouslyReady = true;
-            
+
             return true;
         }
 
@@ -262,6 +261,10 @@ module BABYLON {
             }
 
             var effect = subMesh.effect;
+
+            if (!effect) {
+                return;
+            }
             this._activeEffect = effect;
 
             // Matrices        
@@ -292,7 +295,7 @@ module BABYLON {
                     this._activeEffect.setFloat("pointSize", this.pointSize);
                 }
 
-                this._activeEffect.setVector3("vEyePosition", scene._mirroredCameraPosition ? scene._mirroredCameraPosition : scene.activeCamera.position);
+                MaterialHelper.BindEyePosition(effect, scene);
             }
 
             this._activeEffect.setColor4("vDiffuseColor", this._scaledDiffuse, this.alpha * mesh.visibility);
@@ -313,7 +316,7 @@ module BABYLON {
             this._lastTime += scene.getEngine().getDeltaTime();
             this._activeEffect.setFloat("time", this._lastTime * this.speed / 1000);
 
-            if (! this.fogColor) {
+            if (!this.fogColor) {
                 this.fogColor = Color3.Black();
             }
             this._activeEffect.setColor3("fogColor", this.fogColor);
@@ -349,6 +352,18 @@ module BABYLON {
             return activeTextures;
         }
 
+        public hasTexture(texture: BaseTexture): boolean {
+            if (super.hasTexture(texture)) {
+                return true;
+            }
+
+            if (this.diffuseTexture === texture) {
+                return true;
+            }
+
+            return false;
+        }
+
         public dispose(forceDisposeEffect?: boolean): void {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();
@@ -368,6 +383,10 @@ module BABYLON {
             var serializationObject = SerializationHelper.Serialize(this);
             serializationObject.customType = "BABYLON.LavaMaterial";
             return serializationObject;
+        }
+
+        public getClassName(): string {
+            return "LavaMaterial";
         }
 
         // Statics

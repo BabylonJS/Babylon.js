@@ -5,30 +5,38 @@ module BABYLON {
         friction?: number;
         restitution?: number;
         nativeOptions?: any;
+        ignoreParent?: boolean;
+        disableBidirectionalTransformation?: boolean;
     }
 
     export interface IPhysicsEnabledObject {
         position: Vector3;
-        rotationQuaternion: Quaternion;
+        rotationQuaternion: Nullable<Quaternion>;
         scaling: Vector3;
         rotation?: Vector3;
         parent?: any;
-        getBoundingInfo?(): BoundingInfo;
-        computeWorldMatrix?(force: boolean): void;
+        getBoundingInfo(): BoundingInfo;
+        computeWorldMatrix(force: boolean): Matrix;
         getWorldMatrix?(): Matrix;
-        getChildMeshes?(): Array<AbstractMesh>;
-        getVerticesData?(kind: string): Array<number> | Float32Array;
-        getIndices?(): IndicesArray;
+        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
+        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+        getIndices?(): Nullable<IndicesArray>;
         getScene?(): Scene;
+        getAbsolutePosition(): Vector3;
+        getAbsolutePivotPoint(): Vector3;
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        getClassName(): string;
     }
 
     export class PhysicsImpostor {
 
-        public static DEFAULT_OBJECT_SIZE: Vector3 = new BABYLON.Vector3(1, 1, 1);
+        public static DEFAULT_OBJECT_SIZE: Vector3 = new Vector3(1, 1, 1);
 
         public static IDENTITY_QUATERNION = Quaternion.Identity();
 
-        private _physicsEngine: PhysicsEngine;
+        private _physicsEngine: Nullable<PhysicsEngine>;
         //The native cannon/oimo/energy physics body object.
         private _physicsBody: any;
         private _bodyUpdateRequired: boolean = false;
@@ -42,35 +50,44 @@ module BABYLON {
         private _deltaRotationConjugated: Quaternion;
 
         //If set, this is this impostor's parent
-        private _parent: PhysicsImpostor;
+        private _parent: Nullable<PhysicsImpostor>;
 
         private _isDisposed = false;
 
-        get isDisposed():boolean{
+        private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
+        private static _tmpQuat: Quaternion = Quaternion.Identity();
+
+        get isDisposed(): boolean {
             return this._isDisposed;
         }
 
-        get mass():number{
-            return this._physicsEngine.getPhysicsPlugin().getBodyMass(this);
+        get mass(): number {
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyMass(this) : 0;
         }
 
-        set mass(value:number){
+        set mass(value: number) {
             this.setMass(value);
         }
 
-        get friction():number{
-            return this._physicsEngine.getPhysicsPlugin().getBodyFriction(this);
+        get friction(): number {
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyFriction(this) : 0;
         }
 
-        set friction(value:number){
+        set friction(value: number) {
+            if (!this._physicsEngine) {
+                return;
+            }
             this._physicsEngine.getPhysicsPlugin().setBodyFriction(this, value);
         }
 
-        get restitution():number {
-            return this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this);
+        get restitution(): number {
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getBodyRestitution(this) : 0;
         }
 
-        set restitution(value:number){
+        set restitution(value: number) {
+            if (!this._physicsEngine) {
+                return;
+            }
             this._physicsEngine.getPhysicsPlugin().setBodyRestitution(this, value);
         }
 
@@ -95,6 +112,10 @@ module BABYLON {
                 this._scene = object.getScene()
             }
 
+            if (!this._scene) {
+                return;
+            }
+
             this._physicsEngine = this._scene.getPhysicsEngine();
             if (!this._physicsEngine) {
                 Tools.Error("Physics not enabled. Please use scene.enablePhysics(...) before creating impostors.")
@@ -112,9 +133,10 @@ module BABYLON {
                 this._options.mass = (_options.mass === void 0) ? 0 : _options.mass
                 this._options.friction = (_options.friction === void 0) ? 0.2 : _options.friction
                 this._options.restitution = (_options.restitution === void 0) ? 0.2 : _options.restitution
+
                 this._joints = [];
                 //If the mesh has a parent, don't initialize the physicsBody. Instead wait for the parent to do that.
-                if (!this.object.parent) {
+                if (!this.object.parent || this._options.ignoreParent) {
                     this._init();
                 } else if (this.object.parent.physicsImpostor) {
                     Tools.Warn("You must affect impostors to children before affecting impostor to parent.");
@@ -129,20 +151,24 @@ module BABYLON {
          * of the child mesh.
          */
         public _init() {
+            if (!this._physicsEngine) {
+                return;
+            }
+
             this._physicsEngine.removeImpostor(this);
             this.physicsBody = null;
             this._parent = this._parent || this._getPhysicsParent();
-            if (!this.parent) {
+            if (!this._isDisposed && (!this.parent || this._options.ignoreParent)) {
                 this._physicsEngine.addImpostor(this);
             }
         }
 
-        private _getPhysicsParent(): PhysicsImpostor {
+        private _getPhysicsParent(): Nullable<PhysicsImpostor> {
             if (this.object.parent instanceof AbstractMesh) {
                 var parentMesh: AbstractMesh = <AbstractMesh>this.object.parent;
                 return parentMesh.physicsImpostor;
             }
-            return;
+            return null;
         }
 
         /**
@@ -162,7 +188,7 @@ module BABYLON {
          */
         public forceUpdate() {
             this._init();
-            if (this.parent) {
+            if (this.parent && !this._options.ignoreParent) {
                 this.parent.forceUpdate();
             }
         }
@@ -175,14 +201,14 @@ module BABYLON {
          * Gets the body that holds this impostor. Either its own, or its parent.
          */
         public get physicsBody(): any {
-            return this._parent ? this._parent.physicsBody : this._physicsBody;
+            return (this._parent && !this._options.ignoreParent) ? this._parent.physicsBody : this._physicsBody;
         }
 
-        public get parent(): PhysicsImpostor {
-            return this._parent;
+        public get parent(): Nullable<PhysicsImpostor> {
+            return !this._options.ignoreParent && this._parent ? this._parent : null;
         }
 
-        public set parent(value: PhysicsImpostor) {
+        public set parent(value: Nullable<PhysicsImpostor>) {
             this._parent = value;
         }
 
@@ -190,7 +216,7 @@ module BABYLON {
          * Set the physics body. Used mainly by the physics engine/plugin
          */
         public set physicsBody(physicsBody: any) {
-            if (this._physicsBody) {
+            if (this._physicsBody && this._physicsEngine) {
                 this._physicsEngine.getPhysicsPlugin().removePhysicsBody(this);
             }
             this._physicsBody = physicsBody;
@@ -208,7 +234,9 @@ module BABYLON {
                 this.object.rotationQuaternion = PhysicsImpostor.IDENTITY_QUATERNION;
                 //calculate the world matrix with no rotation
                 this.object.computeWorldMatrix && this.object.computeWorldMatrix(true);
-                let size = this.object.getBoundingInfo().boundingBox.extendSizeWorld.scale(2)
+                let boundingInfo = this.object.getBoundingInfo();
+                let size = boundingInfo.boundingBox.extendSizeWorld.scale(2)
+
                 //bring back the rotation
                 this.object.rotationQuaternion = q;
                 //calculate the world matrix with the new rotation
@@ -222,7 +250,8 @@ module BABYLON {
 
         public getObjectCenter(): Vector3 {
             if (this.object.getBoundingInfo) {
-                return this.object.getBoundingInfo().boundingBox.centerWorld;
+                let boundingInfo = this.object.getBoundingInfo();
+                return boundingInfo.boundingBox.centerWorld;
             } else {
                 return this.object.position;
             }
@@ -232,14 +261,14 @@ module BABYLON {
          * Get a specific parametes from the options parameter.
          */
         public getParam(paramName: string) {
-            return this._options[paramName];
+            return (<any>this._options)[paramName];
         }
 
         /**
          * Sets a specific parameter in the options given to the physics plugin
          */
         public setParam(paramName: string, value: number) {
-            this._options[paramName] = value;
+            (<any>this._options)[paramName] = value;
             this._bodyUpdateRequired = true;
         }
 
@@ -250,23 +279,29 @@ module BABYLON {
             if (this.getParam("mass") !== mass) {
                 this.setParam("mass", mass);
             }
-            this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().setBodyMass(this, mass);
+            }
         }
 
-        public getLinearVelocity(): Vector3 {
-            return this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this);
+        public getLinearVelocity(): Nullable<Vector3> {
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getLinearVelocity(this) : Vector3.Zero();
         }
 
-        public setLinearVelocity(velocity: Vector3) {
-            this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+        public setLinearVelocity(velocity: Nullable<Vector3>) {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().setLinearVelocity(this, velocity);
+            }
         }
 
-        public getAngularVelocity(): Vector3 {
-            return this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this);
+        public getAngularVelocity(): Nullable<Vector3> {
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getAngularVelocity(this) : Vector3.Zero();
         }
 
-        public setAngularVelocity(velocity: Vector3) {
-            this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
+        public setAngularVelocity(velocity: Nullable<Vector3>) {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().setAngularVelocity(this, velocity);
+            }
         }
 
         /**
@@ -274,7 +309,9 @@ module BABYLON {
          * Provide a function the will have two variables - the world object and the physics body object.
          */
         public executeNativeFunction(func: (world: any, physicsBody: any) => void) {
-            func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
+            if (this._physicsEngine) {
+                func(this._physicsEngine.getPhysicsPlugin().world, this.physicsBody);
+            }
         }
 
         /**
@@ -330,23 +367,46 @@ module BABYLON {
             }
         }
 
-        private _tmpPositionWithDelta: Vector3 = Vector3.Zero();
-        private _tmpRotationWithDelta: Quaternion = new Quaternion();
+        //temp variables for parent rotation calculations
+        //private _mats: Array<Matrix> = [new Matrix(), new Matrix()];
+        private _tmpQuat: Quaternion = new Quaternion();
+        private _tmpQuat2: Quaternion = new Quaternion();
+
+        public getParentsRotation() {
+            let parent = this.object.parent;
+            this._tmpQuat.copyFromFloats(0, 0, 0, 1);
+            while (parent) {
+                if (parent.rotationQuaternion) {
+                    this._tmpQuat2.copyFrom(parent.rotationQuaternion);
+                } else {
+                    Quaternion.RotationYawPitchRollToRef(parent.rotation.y, parent.rotation.x, parent.rotation.z, this._tmpQuat2)
+                }
+                this._tmpQuat.multiplyToRef(this._tmpQuat2, this._tmpQuat);
+                parent = parent.parent;
+            }
+            return this._tmpQuat;
+        }
 
         /**
          * this function is executed by the physics engine.
          */
         public beforeStep = () => {
-
-            this.object.position.subtractToRef(this._deltaPosition, this._tmpPositionWithDelta);
-            //conjugate deltaRotation
-            if (this._deltaRotationConjugated) {
-                this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this._tmpRotationWithDelta);
-            } else {
-                this._tmpRotationWithDelta.copyFrom(this.object.rotationQuaternion);
+            if (!this._physicsEngine) {
+                return;
             }
 
-            this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, this._tmpPositionWithDelta, this._tmpRotationWithDelta);
+            this.object.translate(this._deltaPosition, -1);
+            this._deltaRotationConjugated && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotationConjugated, this.object.rotationQuaternion);
+            this.object.computeWorldMatrix(false);
+            if (this.object.parent && this.object.rotationQuaternion) {
+                this.getParentsRotation();
+                this._tmpQuat.multiplyToRef(this.object.rotationQuaternion, this._tmpQuat);
+            } else {
+                this._tmpQuat.copyFrom(this.object.rotationQuaternion || new Quaternion());
+            }
+            if (!this._options.disableBidirectionalTransformation) {
+                this.object.rotationQuaternion && this._physicsEngine.getPhysicsPlugin().setPhysicsBodyTransformation(this, /*bInfo.boundingBox.centerWorld*/ this.object.getAbsolutePivotPoint(), this._tmpQuat);
+            }
 
             this._onBeforePhysicsStepCallbacks.forEach((func) => {
                 func(this);
@@ -357,26 +417,42 @@ module BABYLON {
          * this function is executed by the physics engine.
          */
         public afterStep = () => {
+            if (!this._physicsEngine) {
+                return;
+            }
+
             this._onAfterPhysicsStepCallbacks.forEach((func) => {
                 func(this);
             });
 
             this._physicsEngine.getPhysicsPlugin().setTransformationFromPhysicsBody(this);
-
-            this.object.position.addInPlace(this._deltaPosition)
-            if (this._deltaRotation) {
-                this.object.rotationQuaternion.multiplyInPlace(this._deltaRotation);
+            // object has now its world rotation. needs to be converted to local.
+            if (this.object.parent && this.object.rotationQuaternion) {
+                this.getParentsRotation();
+                this._tmpQuat.conjugateInPlace();
+                this._tmpQuat.multiplyToRef(this.object.rotationQuaternion, this.object.rotationQuaternion);
             }
+            // take the position set and make it the absolute position of this object.
+            this.object.setAbsolutePosition(this.object.position);
+            this._deltaRotation && this.object.rotationQuaternion && this.object.rotationQuaternion.multiplyToRef(this._deltaRotation, this.object.rotationQuaternion);
+            this.object.translate(this._deltaPosition, 1);
         }
 
         /**
          * Legacy collision detection event support
          */
-        public onCollideEvent: (collider: BABYLON.PhysicsImpostor, collidedWith: BABYLON.PhysicsImpostor) => void = null;
+        public onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void> = null;
 
         //event and body object due to cannon's event-based architecture.
         public onCollide = (e: { body: any }) => {
-            if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) return;
+            if (!this._onPhysicsCollideCallbacks.length && !this.onCollideEvent) {
+                return;
+            }
+
+            if (!this._physicsEngine) {
+                return;
+
+            }
             var otherImpostor = this._physicsEngine.getImpostorWithPhysicsBody(e.body);
             if (otherImpostor) {
                 // Legacy collision detection event support
@@ -384,9 +460,9 @@ module BABYLON {
                     this.onCollideEvent(this, otherImpostor);
                 }
                 this._onPhysicsCollideCallbacks.filter((obj) => {
-                    return obj.otherImpostors.indexOf(otherImpostor) !== -1
+                    return obj.otherImpostors.indexOf((<PhysicsImpostor>otherImpostor)) !== -1
                 }).forEach((obj) => {
-                    obj.callback(this, otherImpostor);
+                    obj.callback(this, <PhysicsImpostor>otherImpostor);
                 })
             }
         }
@@ -394,51 +470,73 @@ module BABYLON {
         /**
          * Apply a force 
          */
-        public applyForce(force: Vector3, contactPoint: Vector3) {
-            this._physicsEngine.getPhysicsPlugin().applyForce(this, force, contactPoint);
+        public applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().applyForce(this, force, contactPoint);
+            }
+            return this;
         }
 
         /**
          * Apply an impulse
          */
-        public applyImpulse(force: Vector3, contactPoint: Vector3) {
-            this._physicsEngine.getPhysicsPlugin().applyImpulse(this, force, contactPoint);
+        public applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().applyImpulse(this, force, contactPoint);
+            }
+
+            return this;
         }
 
         /**
          * A help function to create a joint.
          */
-        public createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData) {
+        public createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor {
             var joint = new PhysicsJoint(jointType, jointData);
             this.addJoint(otherImpostor, joint);
+
+            return this;
         }
 
         /**
          * Add a joint to this impostor with a different impostor.
          */
-        public addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint) {
+        public addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor {
             this._joints.push({
                 otherImpostor: otherImpostor,
                 joint: joint
-            })
-            this._physicsEngine.addJoint(this, otherImpostor, joint);
+            });
+
+            if (this._physicsEngine) {
+                this._physicsEngine.addJoint(this, otherImpostor, joint);
+            }
+
+            return this;
         }
 
         /**
          * Will keep this body still, in a sleep mode.
          */
-        public sleep() {
-            this._physicsEngine.getPhysicsPlugin().sleepBody(this);
+        public sleep(): PhysicsImpostor {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().sleepBody(this);
+            }
+
+            return this;
         }
 
         /**
          * Wake the body up.
          */
-        public wakeUp() {
-            this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
+        public wakeUp(): PhysicsImpostor {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().wakeUpBody(this);
+            }
+
+            return this;
         }
 
-        public clone(newObject: IPhysicsEnabledObject) {
+        public clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor> {
             if (!newObject) return null;
             return new PhysicsImpostor(newObject, this.type, this._options, this._scene);
         }
@@ -450,7 +548,9 @@ module BABYLON {
             }
 
             this._joints.forEach((j) => {
-                this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
+                if (this._physicsEngine) {
+                    this._physicsEngine.removeJoint(this, j.otherImpostor, j.joint);
+                }
             })
             //dispose the physics body
             this._physicsEngine.removeImpostor(this);
@@ -482,12 +582,121 @@ module BABYLON {
             this._deltaRotationConjugated = this._deltaRotation.conjugate();
         }
 
-        public getBoxSizeToRef(result:Vector3){
-            this._physicsEngine.getPhysicsPlugin().getBoxSizeToRef(this, result);
+        public getBoxSizeToRef(result: Vector3): PhysicsImpostor {
+            if (this._physicsEngine) {
+                this._physicsEngine.getPhysicsPlugin().getBoxSizeToRef(this, result);
+            }
+
+            return this;
         }
 
-        public getRadius():number{
-            return this._physicsEngine.getPhysicsPlugin().getRadius(this);
+        public getRadius(): number {
+            return this._physicsEngine ? this._physicsEngine.getPhysicsPlugin().getRadius(this) : 0;
+        }
+
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         */
+        public syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion) {
+
+            var tempVec = PhysicsImpostor._tmpVecs[0];
+            var mesh = <AbstractMesh>this.object;
+
+            if (mesh.rotationQuaternion) {
+                if (adjustRotation) {
+                    var tempQuat = PhysicsImpostor._tmpQuat;
+                    mesh.rotationQuaternion.multiplyToRef(adjustRotation, tempQuat);
+                    bone.setRotationQuaternion(tempQuat, Space.WORLD, boneMesh);
+                } else {
+                    bone.setRotationQuaternion(mesh.rotationQuaternion, Space.WORLD, boneMesh);
+                }
+            }
+
+            tempVec.x = 0;
+            tempVec.y = 0;
+            tempVec.z = 0;
+
+            if (jointPivot) {
+                tempVec.x = jointPivot.x;
+                tempVec.y = jointPivot.y;
+                tempVec.z = jointPivot.z;
+
+                bone.getDirectionToRef(tempVec, boneMesh, tempVec);
+
+                if (distToJoint === undefined || distToJoint === null) {
+                    distToJoint = jointPivot.length();
+                }
+
+                tempVec.x *= distToJoint;
+                tempVec.y *= distToJoint;
+                tempVec.z *= distToJoint;
+            }
+
+            if (bone.getParent()) {
+                tempVec.addInPlace(mesh.getAbsolutePosition());
+                bone.setAbsolutePosition(tempVec, boneMesh);
+            } else {
+                boneMesh.setAbsolutePosition(mesh.getAbsolutePosition());
+                boneMesh.position.x -= tempVec.x;
+                boneMesh.position.y -= tempVec.y;
+                boneMesh.position.z -= tempVec.z;
+            }
+
+        }
+
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        public syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
+
+            var mesh = <AbstractMesh>this.object;
+
+            if (mesh.rotationQuaternion) {
+                if (adjustRotation) {
+                    var tempQuat = PhysicsImpostor._tmpQuat;
+                    bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, tempQuat);
+                    tempQuat.multiplyToRef(adjustRotation, mesh.rotationQuaternion);
+                } else {
+                    bone.getRotationQuaternionToRef(Space.WORLD, boneMesh, mesh.rotationQuaternion);
+                }
+            }
+
+            var pos = PhysicsImpostor._tmpVecs[0];
+            var boneDir = PhysicsImpostor._tmpVecs[1];
+
+            if (!boneAxis) {
+                boneAxis = PhysicsImpostor._tmpVecs[2];
+                boneAxis.x = 0;
+                boneAxis.y = 1;
+                boneAxis.z = 0;
+            }
+
+            bone.getDirectionToRef(boneAxis, boneMesh, boneDir);
+            bone.getAbsolutePositionToRef(boneMesh, pos);
+
+            if ((distToJoint === undefined || distToJoint === null) && jointPivot) {
+                distToJoint = jointPivot.length();
+            }
+
+            if (distToJoint !== undefined && distToJoint !== null) {
+                pos.x += boneDir.x * distToJoint;
+                pos.y += boneDir.y * distToJoint;
+                pos.z += boneDir.z * distToJoint;
+            }
+
+            mesh.setAbsolutePosition(pos);
+
         }
 
         //Impostor types

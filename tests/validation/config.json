@@ -1,12 +1,12 @@
 ﻿{
   "root": "https://rawgit.com/BabylonJS/Website/master",
-  "tests": [   
- {
+  "tests": [
+    {
       "title": "Sponza",
       "sceneFolder": "/Scenes/Sponza/",
       "sceneFilename": "Sponza.babylon",
       "referenceImage": "Sponza.png"
-    },    
+    },
     {
       "title": "Windows cafe",
       "sceneFolder": "/Scenes/WCafe/",
@@ -16,9 +16,9 @@
     {
       "title": "Espilit",
       "sceneFolder": "/Scenes/Espilit/",
-      "sceneFilename": "Espilit.binary.babylon",
+      "sceneFilename": "espilit.babylon",
       "referenceImage": "Espilit.png"
-    },
+    },    
     {
       "title": "The car",
       "sceneFolder": "/Scenes/TheCar/",
@@ -35,25 +35,26 @@
       "title": "Retail",
       "sceneFolder": "/Scenes/Retail/",
       "sceneFilename": "Retail.babylon",
-      "referenceImage": "Retail.png"
+      "referenceImage": "retail.png"
     },
     {
       "title": "Hill Valley",
       "sceneFolder": "/Scenes/hillvalley/",
       "sceneFilename": "HillValley.incremental.babylon",
-      "referenceImage": "HillValley.png"
+      "referenceImage": "Hillvalley.png"
     },
     {
       "title": "Heart",
       "sceneFolder": "/Scenes/Heart/",
       "sceneFilename": "Heart.babylon",
-      "referenceImage": "heart.png"
+      "referenceImage": "Heart.png"
     },
     {
       "title": "Mansion",
       "sceneFolder": "/Scenes/Mansion/",
       "sceneFilename": "Mansion.babylon",
-      "referenceImage": "Mansion.png"
+      "referenceImage": "mansion.png",
+      "excludeFromAutomaticTesting": true
     },
     {
       "title": "SpaceDeK",
@@ -75,6 +76,7 @@
     },
     {
       "title": "Charting",
+      "renderCount": 20,
       "scriptToRun": "/Demos/Charting/charting.js",
       "functionToCall": "CreateChartingTestScene",
       "referenceImage": "charting.png"
@@ -90,10 +92,9 @@
       "scriptToRun": "/Demos/Polygon/polygon.js",
       "functionToCall": "CreatePolygonScene",
       "referenceImage": "polygon.png"
-    },        
+    },
     {
       "title": "Soft Shadows",
-      "renderCount": 5,
       "scriptToRun": "/Demos/SoftShadows/softShadows.js",
       "functionToCall": "CreateSoftShadowsTestScene",
       "referenceImage": "softShadows.png"
@@ -103,10 +104,9 @@
       "scriptToRun": "/Demos/Fresnel/fresnel.js",
       "functionToCall": "CreateFresnelTestScene",
       "referenceImage": "fresnel.png"
-    }, 
+    },
     {
       "title": "Highlights",
-      "renderCount": 10,
       "scriptToRun": "/Demos/Highlights/highlights.js",
       "functionToCall": "CreateHighlightsScene",
       "referenceImage": "highlights.png",
@@ -144,14 +144,12 @@
     },
     {
       "title": "Self shadowing",
-      "renderCount": 10,
       "scriptToRun": "/Demos/SelfShadowing/shadows.js",
       "functionToCall": "CreateShadowsTestScene",
       "referenceImage": "selfShadowing.png"
     },
     {
       "title": "Advanced shadows",
-      "renderCount": 10,
       "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
       "functionToCall": "CreateAdvancedShadowsTestScene",
       "referenceImage": "advancedShadows.png",
@@ -159,7 +157,6 @@
     },
     {
       "title": "point light shadows",
-      "renderCount": 10,
       "scriptToRun": "/Demos/PointLightShadowMap/pointLightShadows.js",
       "functionToCall": "CreatePointLightShadowScene",
       "referenceImage": "pointLightShadows.png",
@@ -173,39 +170,216 @@
       "replace": "/Scenes/Customs/skybox/, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Assets/skybox/"
     },
     {
-      "title": "Water material (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/WaterMaterial/water.js",
-      "functionToCall": "CreateWaterTestScene",
-      "referenceImage": "waterMaterial.png",
-      "onlyVisual": true 
+      "title": "Normals",
+      "playgroundId": "#WXKLLJ#2",
+      "referenceImage": "normals.png"
     },
     {
-      "title": "Instances (only visual check)",
-      "renderCount": 10,
-      "scriptToRun": "/Demos/Instances/instances.js",
-      "functionToCall": "CreateInstancesTestScene",
-      "referenceImage": "instances.png",
-      "replace": "ground., Ground.",
-      "onlyVisual": true
+      "title": "Custom render target",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/CustomRenderTarget/customRenderTarget.js",
+      "functionToCall": "CreateCustomRenderTargetTestScene",
+      "referenceImage": "customRTT.png"
     },
     {
-      "title": "Procedural textures (only visual check)",
-      "renderCount": 10,
+      "title": "GLTF Normals",
+      "scriptToRun": "/Demos/GLTFNormals/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfnormals.png"
+    },
+    {
+      "title": "GLTF Material",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialScene",
+      "referenceImage": "gltfMaterial.png"
+    },
+    {
+      "title": "GLTF Material Alpha",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialAlphaScene",
+      "referenceImage": "gltfMaterialAlpha.png"
+    },
+    {
+      "title": "GLTF Material Alpha (Back)",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialAlphaFlippedScene",
+      "referenceImage": "gltfMaterialAlphaBack.png"
+    },
+    {
+      "title": "GLTF Mesh Primitives",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitivesScene",
+      "referenceImage": "gltfMeshPrimitives.png"
+    },
+    {
+      "title": "GLTF Mesh Primitives UV",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitivesUVScene",
+      "referenceImage": "gltfMeshPrimitivesUV.png"
+    },
+    {
+      "title": "GLTF Primitive Attribute",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createPrimitiveAttributeScene",
+      "referenceImage": "gltfPrimitiveAttribute.png"
+    },
+    {
+      "title": "GLTF Metallic Roughness",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialMetallicRoughnessScene",
+      "referenceImage": "gltfMaterialMetallicRoughness.png"
+    },
+    {
+      "title": "GLTF Specular Glossiness",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialSpecularGlossinessScene",
+      "referenceImage": "gltfMaterialSpecularGlossiness.png"
+    },
+    {
+      "title": "GLTF Texture Sampler",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createTextureSamplerScene",
+      "referenceImage": "gltfTextureSampler.png"
+    },
+    {
+      "title": "GLTF 1.0 Skin Animation Test",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltf1CesiumMan.png",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "GLTF Buggy with Draco Mesh Compression",
+      "playgroundId": "#JNW207#1",
+      "referenceImage": "gltfBuggyDraco.png"
+    },
+    {
+      "title": "Asset Containers",
+      "playgroundId": "#P3U079#19",
+      "referenceImage": "assetContainer.png"
+    },
+    {
+      "title": "Depth of field",
+      "playgroundId": "#IDSQK2#53",
+      "renderCount": 20,
+      "referenceImage": "depthOfField.png"
+    },
+    {
+      "title": "Kernel Blur",
+      "playgroundId": "#Y0WKT0",
+      "referenceImage": "KernelBlur.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Attribute Test",
+      "scriptToRun": "/Demos/GLTFMeshPrimitiveAttributeTest/index.js",
+      "functionToCall": "createScene",
+      "referenceImage": "gltfMeshPrimAttribTest.png"
+    },
+    {
+      "title": "PBR glossy",
+      "replace": "engine.setHardwareScalingLevel, //engine.setHardwareScalingLevel",
+      "scriptToRun": "/Demos/PBRGlossy/index.js",
+      "functionToCall": "CreatePBRGlossyScene",
+      "referenceImage": "pbrglossy.png"
+    },
+    {
+      "title": "PBR rough",
+      "scriptToRun": "/Demos/PBRRough/index.js",
+      "functionToCall": "CreatePBRRoughScene",
+      "referenceImage": "pbrrough.png"
+    },
+    {
+      "title": "Reflection probes",
+      "renderCount": 20,
+      "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
+      "functionToCall": "CreateReflectionProbeTestScene ",
+      "referenceImage": "refprobe.png"
+    },
+    {
+      "title": "PBRMetallicRoughnessMaterial",
+      "playgroundId": "#2FDQT5#13",
+      "referenceImage": "PBRMetallicRoughnessMaterial.png"
+    },
+    {
+      "title": "PBRSpecularGlossinessMaterial",
+      "playgroundId": "#Z1VL3V#4",
+      "referenceImage": "PBRSpecularGlossinessMaterial.png"
+    },
+    {
+      "title": "PBR",
+      "playgroundId": "#LCA0Q4#0",
+      "referenceImage": "pbr.png"
+    },
+    {
+      "title": "MultiSample render targets",
+      "renderCount": 20,
+      "playgroundId": "#12MKMN#0",
+      "referenceImage": "MultiSample render targets.png"
+    },
+    {
+      "title": "Default rendering pipeline",
+      "playgroundId": "#5XB8YT#2",
+      "referenceImage": "DefaultRenderingPipeline.png"
+    },
+    {
+      "title": "Billboard",
+      "playgroundId": "#UJEIL#13",
+      "referenceImage": "Billboard.png"
+    },
+    {
+      "title": "setParent",
+      "playgroundId": "#JD49CT#2",
+      "referenceImage": "setParent.png"
+    },
+    {
+      "title": "GUI",
+      "scriptToRun": "/Demos/GUI/gui.js",
+      "functionToCall": "createScene",
+      "referenceImage": "GUI.png"
+    },
+    {
+      "title": "Up Vector",
+      "playgroundId": "#2FNBTG#27",
+      "referenceImage": "upVector.png"
+    },
+    {
+      "title": "Procedural textures",
       "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
       "functionToCall": "CreateProceduralTextureTestScene",
       "referenceImage": "procedural.png",
       "replace": "./land, https://cdn.rawgit.com/BabylonJS/Website/06ecbea7/Demos/Procedural/land",
-      "onlyVisual": true
+      "excludeFromAutomaticTesting": true
     },
     {
-      "title": "Instanced Bones (only visual check)",
-      "renderCount": 10,
+      "title": "Instances",
+      "scriptToRun": "/Demos/Instances/instances.js",
+      "functionToCall": "CreateInstancesTestScene",
+      "referenceImage": "instances.png",
+      "replace": "ground., Ground.",
+      "excludeFromAutomaticTesting": true
+    },
+    {
+      "title": "Instanced Bones",
       "scriptToRun": "/Demos/InstancedBones/bones2.js",
       "functionToCall": "CreateBones2TestScene",
       "referenceImage": "instancedBones.png",
-      "replace": "Dude.babylon, dude.babylon",
-      "onlyVisual": true
+      "replace": "Dude.babylon, dude.babylon"
+    },
+    {
+      "title": "Light Projection Texture",
+      "playgroundId": "#CQNGRK",
+      "referenceImage": "LightProjectionTexture.png"
+    },
+    {
+      "title": "GlowLayer",
+      "playgroundId": "#LRFB2D#1",
+      "referenceImage": "GlowLayer.png"
+    },
+    {
+      "title": "Local cubemaps",
+      "playgroundId": "#RNASML#4",
+      "referenceImage": "local cubemaps.png"
     }
   ]
 }

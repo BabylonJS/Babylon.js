@@ -18,7 +18,7 @@ module BABYLON.GLTF1 {
     };
 
     interface IGLTFRuntimeCommonExtension {
-        lights: Object;
+        lights: {[key: string]: IGLTFLightCommonExtension};
     }
 
     interface IGLTFLightCommonExtension {
@@ -61,14 +61,14 @@ module BABYLON.GLTF1 {
             super("KHR_materials_common");
         }
 
-        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): boolean {
+        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
             if (!gltfRuntime.extensions) return false;
 
-            var extension = gltfRuntime.extensions[this.name];
+            var extension: IGLTFRuntimeCommonExtension = gltfRuntime.extensions[this.name];
             if (!extension) return false;
 
             // Create lights
-            var lights: IGLTFRuntimeCommonExtension = extension.lights;
+            var lights = extension.lights;
             if (lights) {
                 for (var thing in lights) {
                     var light: IGLTFLightCommonExtension = lights[thing];
@@ -77,25 +77,33 @@ module BABYLON.GLTF1 {
                         case "ambient":
                             var ambientLight = new HemisphericLight(light.name, new Vector3(0, 1, 0), gltfRuntime.scene);
                             var ambient = light.ambient;
-                            ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
+                            if (ambient) {
+                                ambientLight.diffuse = Color3.FromArray(ambient.color || [1, 1, 1]);
+                            }
                             break;
                         case "point":
                             var pointLight = new PointLight(light.name, new Vector3(10, 10, 10), gltfRuntime.scene);
                             var point = light.point;
-                            pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
+                            if (point) {
+                                pointLight.diffuse = Color3.FromArray(point.color || [1, 1, 1]);
+                            }
                             break;
                         case "directional":
                             var dirLight = new DirectionalLight(light.name, new Vector3(0, -1, 0), gltfRuntime.scene);
                             var directional = light.directional;
-                            dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
+                            if (directional) {
+                                dirLight.diffuse = Color3.FromArray(directional.color || [1, 1, 1]);
+                            }
                             break;
                         case "spot":
                             var spot = light.spot;
-                            var spotLight = new SpotLight(light.name, new Vector3(0, 10, 0), new Vector3(0, -1, 0),
-                                                          light.spot.fallOffAngle || Math.PI,
-                                                          light.spot.fallOffExponent || 0.0,
-                                                          gltfRuntime.scene);
-                            spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
+                            if (spot) {
+                                var spotLight = new SpotLight(light.name, new Vector3(0, 10, 0), new Vector3(0, -1, 0),
+                                                            spot.fallOffAngle || Math.PI,
+                                                            spot.fallOffExponent || 0.0,
+                                                            gltfRuntime.scene);
+                                spotLight.diffuse = Color3.FromArray(spot.color || [1, 1, 1]);
+                            }
                             break;
                         default: Tools.Warn("GLTF Material Common extension: light type \"" + light.type + "\” not supported"); break;
                     }
@@ -105,7 +113,7 @@ module BABYLON.GLTF1 {
             return false;
         }
 
-        public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean {
+        public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
             var material: IGLTFMaterial = gltfRuntime.materials[id];
             if (!material || !material.extensions) return false;
 
@@ -158,11 +166,11 @@ module BABYLON.GLTF1 {
             return true;
         }
 
-        private _loadTexture(gltfRuntime: IGLTFRuntime, id: string, material: StandardMaterial, propertyPath: string, onError: () => void): void {
+        private _loadTexture(gltfRuntime: IGLTFRuntime, id: string, material: StandardMaterial, propertyPath: string, onError: (message: string) => void): void {
             // Create buffer from texture url
             GLTFLoaderBase.LoadTextureBufferAsync(gltfRuntime, id, (buffer) => {
                 // Create texture from buffer
-                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => material[propertyPath] = texture, onError);
+                GLTFLoaderBase.CreateTextureAsync(gltfRuntime, id, buffer, (texture) => (<any>material)[propertyPath] = texture, onError);
             }, onError);
         }
     }

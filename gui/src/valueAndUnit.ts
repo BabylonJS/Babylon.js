@@ -5,7 +5,7 @@ module BABYLON.GUI {
         private _value = 1;
         public ignoreAdaptiveScaling = false;
 
-        public constructor(value, public unit = ValueAndUnit.UNITMODE_PIXEL, public negativeValueAllowed = true) {
+        public constructor(value: number, public unit = ValueAndUnit.UNITMODE_PIXEL, public negativeValueAllowed = true) {
             this._value = value;
         }
 
@@ -21,15 +21,37 @@ module BABYLON.GUI {
             return this._value;
         }
 
+        public getValueInPixel(host: AdvancedDynamicTexture, refValue: number): number {
+            if (this.isPixel) {
+                return this.getValue(host);
+            }
+
+            return this.getValue(host) * refValue;
+        }
+
         public getValue(host: AdvancedDynamicTexture): number {
             if (host && !this.ignoreAdaptiveScaling && this.unit !== ValueAndUnit.UNITMODE_PERCENTAGE) {
+                var width: number = 0;
+                var height: number = 0;
 
-                if (host.idealWidth) { // horizontal
-                    return (this._value * host.getSize().width) / host.idealWidth;
+                if (host.idealWidth) {
+                    width = (this._value * host.getSize().width) / host.idealWidth;
+                }
+                
+                if (host.idealHeight) {
+                    height = (this._value * host.getSize().height) / host.idealHeight;
                 }
 
+                if (host.useSmallestIdeal && host.idealWidth && host.idealHeight) {
+                    return window.innerWidth < window.innerHeight ? width : height;
+                }
+
+                if (host.idealWidth) { // horizontal
+                    return width;
+                }
+                
                 if (host.idealHeight) { // vertical
-                    return (this._value * host.getSize().height) / host.idealHeight;
+                    return height;
                 }
             }
             return this._value;

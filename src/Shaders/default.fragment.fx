@@ -1,8 +1,10 @@
 ﻿#include<__decl__defaultFragment>
 
-#ifdef BUMP
+#if defined(BUMP) || !defined(NORMAL)
 #extension GL_OES_standard_derivatives : enable
 #endif
+
+#define CUSTOM_FRAGMENT_BEGIN
 
 #ifdef LOGARITHMICDEPTH
 #extension GL_EXT_frag_depth : enable
@@ -25,6 +27,14 @@ varying vec3 vNormalW;
 varying vec4 vColor;
 #endif
 
+#ifdef MAINUV1
+	varying vec2 vMainUV1;
+#endif
+
+#ifdef MAINUV2
+	varying vec2 vMainUV2;
+#endif
+
 // Helper functions
 #include<helperFunctions>
 
@@ -36,28 +46,58 @@ varying vec4 vColor;
 
 // Samplers
 #ifdef DIFFUSE
-varying vec2 vDiffuseUV;
-uniform sampler2D diffuseSampler;
+	#if DIFFUSEDIRECTUV == 1
+		#define vDiffuseUV vMainUV1
+	#elif DIFFUSEDIRECTUV == 2
+		#define vDiffuseUV vMainUV2
+	#else
+		varying vec2 vDiffuseUV;
+	#endif
+	uniform sampler2D diffuseSampler;
 #endif
 
 #ifdef AMBIENT
-varying vec2 vAmbientUV;
-uniform sampler2D ambientSampler;
+	#if AMBIENTDIRECTUV == 1
+		#define vAmbientUV vMainUV1
+	#elif AMBIENTDIRECTUV == 2
+		#define vAmbientUV vMainUV2
+	#else
+		varying vec2 vAmbientUV;
+	#endif
+	uniform sampler2D ambientSampler;
 #endif
 
 #ifdef OPACITY	
-varying vec2 vOpacityUV;
-uniform sampler2D opacitySampler;
+	#if OPACITYDIRECTUV == 1
+		#define vOpacityUV vMainUV1
+	#elif OPACITYDIRECTUV == 2
+		#define vOpacityUV vMainUV2
+	#else
+		varying vec2 vOpacityUV;
+	#endif
+	uniform sampler2D opacitySampler;
 #endif
 
 #ifdef EMISSIVE
-varying vec2 vEmissiveUV;
-uniform sampler2D emissiveSampler;
+	#if EMISSIVEDIRECTUV == 1
+		#define vEmissiveUV vMainUV1
+	#elif EMISSIVEDIRECTUV == 2
+		#define vEmissiveUV vMainUV2
+	#else
+		varying vec2 vEmissiveUV;
+	#endif
+	uniform sampler2D emissiveSampler;
 #endif
 
 #ifdef LIGHTMAP
-varying vec2 vLightmapUV;
-uniform sampler2D lightmapSampler;
+	#if LIGHTMAPDIRECTUV == 1
+		#define vLightmapUV vMainUV1
+	#elif LIGHTMAPDIRECTUV == 2
+		#define vLightmapUV vMainUV2
+	#else
+		varying vec2 vLightmapUV;
+	#endif
+	uniform sampler2D lightmapSampler;
 #endif
 
 #ifdef REFRACTION
@@ -71,8 +111,14 @@ uniform sampler2D refraction2DSampler;
 #endif
 
 #if defined(SPECULAR) && defined(SPECULARTERM)
-varying vec2 vSpecularUV;
-uniform sampler2D specularSampler;
+	#if SPECULARDIRECTUV == 1
+		#define vSpecularUV vMainUV1
+	#elif SPECULARDIRECTUV == 2
+		#define vSpecularUV vMainUV2
+	#else
+		varying vec2 vSpecularUV;
+	#endif
+	uniform sampler2D specularSampler;
 #endif
 
 // Fresnel
@@ -108,14 +154,23 @@ varying vec3 vDirectionW;
 #include<logDepthDeclaration>
 #include<fogFragmentDeclaration>
 
+#define CUSTOM_FRAGMENT_DEFINITIONS
+
 void main(void) {
+
+#define CUSTOM_FRAGMENT_MAIN_BEGIN
+
 #include<clipPlaneFragment>
+
+
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
 	// Base color
 	vec4 baseColor = vec4(1., 1., 1., 1.);
 	vec3 diffuseColor = vDiffuseColor.rgb;
+	
+	
 
 	// Alpha
 	float alpha = vDiffuseColor.a;
@@ -124,7 +179,7 @@ void main(void) {
 #ifdef NORMAL
 	vec3 normalW = normalize(vNormalW);
 #else
-	vec3 normalW = vec3(1.0, 1.0, 1.0);
+	vec3 normalW = normalize(-cross(dFdx(vPositionW), dFdy(vPositionW)));
 #endif
 
 #include<bumpFragment>
@@ -136,21 +191,29 @@ void main(void) {
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
-#ifdef ALPHATEST
-	if (baseColor.a < 0.4)
-		discard;
-#endif
+	#ifdef ALPHATEST
+		if (baseColor.a < 0.4)
+			discard;
+	#endif
 
-#ifdef ALPHAFROMDIFFUSE
-	alpha *= baseColor.a;
-#endif
+	#ifdef ALPHAFROMDIFFUSE
+		alpha *= baseColor.a;
+	#endif
+	
+	#define CUSTOM_FRAGMENT_UPDATE_ALPHA
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
 
+
+
+#include<depthPrePass>
+
 #ifdef VERTEXCOLOR
 	baseColor.rgb *= vColor.rgb;
 #endif
+
+#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE
 
 	// Ambient color
 	vec3 baseAmbientColor = vec3(1., 1., 1.);
@@ -158,6 +221,8 @@ void main(void) {
 #ifdef AMBIENT
 	baseAmbientColor = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
 #endif
+
+#define CUSTOM_FRAGMENT_BEFORE_LIGHTS
 
 	// Specular map
 #ifdef SPECULARTERM
@@ -352,6 +417,8 @@ void main(void) {
     #endif
 #endif
 
+#define CUSTOM_FRAGMENT_BEFORE_FOG
+color.rgb = max(color.rgb, 0.);
 #include<logDepthFragment>
 #include<fogFragment>
 
@@ -366,5 +433,11 @@ void main(void) {
 	#endif
 #endif
 
+#ifdef PREMULTIPLYALPHA
+	// Convert to associative (premultiplied) format if needed.
+	color.rgb *= color.a;
+#endif
+
+#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 	gl_FragColor = color;
 }

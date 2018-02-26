@@ -16,7 +16,7 @@ module BABYLON.GLTF1 {
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime
         */
-        public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): boolean {
+        public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean {
             return false;
         }
 
@@ -24,7 +24,7 @@ module BABYLON.GLTF1 {
          * Defines an onverride for creating gltf runtime
          * Return true to stop further extensions from creating the runtime
          */
-        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): boolean {
+        public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean {
             return false;
         }
 
@@ -32,7 +32,7 @@ module BABYLON.GLTF1 {
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
         */
-        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): boolean {
+        public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): boolean {
             return false;
         }
 
@@ -40,7 +40,7 @@ module BABYLON.GLTF1 {
         * Defines an override for loading texture buffers
         * Return true to stop further extensions from loading this texture data
         */
-        public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): boolean {
+        public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
             return false;
         }
 
@@ -48,7 +48,7 @@ module BABYLON.GLTF1 {
         * Defines an override for creating textures
         * Return true to stop further extensions from loading this texture
         */
-        public createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: () => void): boolean {
+        public createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): boolean {
             return false;
         }
 
@@ -56,7 +56,7 @@ module BABYLON.GLTF1 {
         * Defines an override for loading shader strings
         * Return true to stop further extensions from loading this shader data
         */
-        public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: () => void): boolean {
+        public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean {
             return false;
         }
 
@@ -64,7 +64,7 @@ module BABYLON.GLTF1 {
         * Defines an override for loading materials
         * Return true to stop further extensions from loading this material
         */
-        public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): boolean {
+        public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
             return false;
         }
 
@@ -72,7 +72,7 @@ module BABYLON.GLTF1 {
         // Utilities
         // ---------
 
-        public static LoadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: () => void): void {
+        public static LoadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
             }, () => {
@@ -82,7 +82,7 @@ module BABYLON.GLTF1 {
             });
         }
 
-        public static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: () => void): void {
+        public static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadRuntimeExtensionsAsync(gltfRuntime, onSuccess, onError);
             }, () => {
@@ -92,7 +92,7 @@ module BABYLON.GLTF1 {
             });
         }
 
-        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: () => void, onProgress?: () => void): void {
+        public static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadBufferAsync(gltfRuntime, id, onSuccess, onError, onProgress);
             }, () => {
@@ -100,13 +100,13 @@ module BABYLON.GLTF1 {
             });
         }
 
-        public static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: () => void): void {
+        public static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.LoadTextureBufferAsync(gltfRuntime, id,
                 buffer => GLTFLoaderExtension.CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError),
                 onError);
         }
 
-        public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: () => void): void {
+        public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadShaderStringAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
@@ -114,7 +114,7 @@ module BABYLON.GLTF1 {
             });
         }
 
-        public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: () => void): void {
+        public static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadMaterialAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
@@ -122,7 +122,7 @@ module BABYLON.GLTF1 {
             });
         }
 
-        private static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: () => void): void {
+        private static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.loadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
             }, () => {
@@ -130,7 +130,7 @@ module BABYLON.GLTF1 {
             });
         }
 
-        private static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: () => void): void {
+        private static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void {
             GLTFLoaderExtension.ApplyExtensions(loaderExtension => {
                 return loaderExtension.createTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
             }, () => {
