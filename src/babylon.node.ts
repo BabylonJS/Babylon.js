@@ -70,6 +70,11 @@
         private _children: Node[];
 
         /**
+         * Gets or sets the animation properties override
+         */
+        public animationPropertiesOverride: AnimationPropertiesOverride;
+
+        /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
          */
