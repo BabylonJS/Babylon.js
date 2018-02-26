@@ -1,7 +1,7 @@
 {
-  "errors": 7218,
+  "errors": 7219,
   "babylon.typedoc.json": {
-    "errors": 7218,
+    "errors": 7219,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -8793,6 +8793,11 @@
           }
         },
         "BlurYPostProcessId": {
+          "Naming": {
+            "NotCamelCase": true
+          }
+        },
+        "ChromaticAberrationPostProcessId": {
           "Naming": {
             "NotCamelCase": true
           }

@@ -42,6 +42,10 @@
 		 * ID of the final merge post process;
 		 */
         readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
+        /**
+		 * ID of the chromatic aberration post process,
+		 */
+        readonly ChromaticAberrationPostProcessId: string = "ChromaticAberrationPostProcessEffect";
 
         // Post-processes
         /**
@@ -84,6 +88,10 @@
          * Final post process to merge results of all previous passes
          */
         public finalMerge: PassPostProcess;
+        /**
+		 * Chromatic aberration post process which will shift rgb colors in the image
+		 */
+        public chromaticAberration: ChromaticAberrationPostProcess;
 
         /**
          * Animations which can be used to tweak settings over a period of time
@@ -100,6 +108,7 @@
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.6;
+        private _chromaticAberrationEnabled:boolean = false;  
 
         private _buildAllowed = true;
 
@@ -274,6 +283,23 @@
         }
 
         /**
+         * Enable or disable the chromaticAberration process from the pipeline
+         */
+        public set chromaticAberrationEnabled(enabled: boolean) {
+            if (this._chromaticAberrationEnabled === enabled) {
+                return;
+            }
+            this._chromaticAberrationEnabled = enabled;
+
+            this._buildPipeline();
+        }
+
+        @serialize()
+        public get chromaticAberrationEnabled(): boolean {
+            return this._chromaticAberrationEnabled;
+        }
+
+        /**
          * @constructor
          * @param {string} name - The rendering pipeline name
          * @param {BABYLON.Scene} scene - The scene linked to this pipeline
@@ -429,6 +455,12 @@
                 }
             }
 
+            if (this.chromaticAberrationEnabled) {
+                this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true));
+            }
+
+
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
@@ -483,6 +515,10 @@
                 if(this.depthOfField){
                     this.depthOfField.disposeEffects(camera);
                 }
+
+                if(this.chromaticAberration){
+                    this.chromaticAberration.dispose(camera);
+                }
             }
 
             (<any>this.sharpen) = null;
@@ -495,6 +531,7 @@
             (<any>this.fxaa) = null;
             (<any>this.finalMerge) = null;
             (<any>this.depthOfField) = null;
+            (<any>this.chromaticAberration) = null;
         }
 
         /**
