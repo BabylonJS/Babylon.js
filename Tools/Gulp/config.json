@@ -385,6 +385,7 @@
         },
         "animations": {
             "files": [
+                "../../src/Animations/babylon.animationPropertiesOverride.js",
                 "../../src/Animations/babylon.animation.js",
                 "../../src/Animations/babylon.animationGroup.js",
                 "../../src/Animations/babylon.runtimeAnimation.js",
