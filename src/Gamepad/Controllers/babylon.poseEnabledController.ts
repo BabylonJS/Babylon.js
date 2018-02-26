@@ -84,6 +84,10 @@ module BABYLON {
          * Node to be used when casting a ray from the controller
          */
         public _pointingPoseNode:Nullable<AbstractMesh> = null;
+        /**
+         * Name of the child mesh that can be used to cast a ray from the controller
+         */
+        public static readonly POINTING_POSE = "POINTING_POSE";
 
         constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);

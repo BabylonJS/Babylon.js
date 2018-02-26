@@ -62,7 +62,7 @@ module BABYLON {
                 'TOUCHPAD_TOUCH_X',
                 'TOUCHPAD_TOUCH_Y'
             ],
-            pointingPoseMeshName: 'POINTING_POSE'
+            pointingPoseMeshName: PoseEnabledController.POINTING_POSE
         };
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();

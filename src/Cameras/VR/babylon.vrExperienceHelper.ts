@@ -120,7 +120,7 @@ module BABYLON {
             if(!webVRController.mesh){
                 // Create an empty mesh that is used prior to loading the high quality model
                 var preloadMesh = new Mesh("preloadControllerMesh", scene);
-                var preloadPointerPose = new Mesh("POINTING_POSE", scene);
+                var preloadPointerPose = new Mesh(PoseEnabledController.POINTING_POSE, scene);
                 preloadPointerPose.rotation.x = -0.7;
                 preloadMesh.addChild(preloadPointerPose);
                 webVRController.attachToMesh(preloadMesh);
@@ -158,7 +158,7 @@ module BABYLON {
             var childMeshes = mesh.getChildMeshes();
 
             for (var i = 0; i < childMeshes.length; i++) {
-                if (childMeshes[i].name && childMeshes[i].name.indexOf("POINTING_POSE") >= 0) {
+                if (childMeshes[i].name && childMeshes[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
                     mesh = childMeshes[i];
                     this.webVRController._pointingPoseNode = mesh;
                     break;
