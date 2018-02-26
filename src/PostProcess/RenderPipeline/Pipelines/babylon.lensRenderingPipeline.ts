@@ -180,7 +180,7 @@ module BABYLON {
         // colors shifting and distortion
         private _createChromaticAberrationPostProcess(ratio: number): void {
             this._chromaticAberrationPostProcess = new PostProcess("LensChromaticAberration", "chromaticAberration",
-                ["chromatic_aberration", "screen_width", "screen_height"],      // uniforms
+                ["chromatic_aberration", "screen_width", "screen_height", "direction"],      // uniforms
                 [],                                         // samplers
                 ratio, null, Texture.TRILINEAR_SAMPLINGMODE,
                 this._scene.getEngine(), false);
@@ -189,6 +189,8 @@ module BABYLON {
                 effect.setFloat('chromatic_aberration', this._chromaticAberration);
                 effect.setFloat('screen_width', this._scene.getEngine().getRenderWidth());
                 effect.setFloat('screen_height', this._scene.getEngine().getRenderHeight());
+                effect.setFloat('radialIntensity', 1);
+                effect.setFloat2('direction', 17, 17);
             };
         }
 
