@@ -150,6 +150,7 @@
     },
     {
       "title": "Advanced shadows",
+      "renderCount": 2,
       "scriptToRun": "/Demos/AdvancedShadows/advancedShadows.js",
       "functionToCall": "CreateAdvancedShadowsTestScene",
       "referenceImage": "advancedShadows.png",
