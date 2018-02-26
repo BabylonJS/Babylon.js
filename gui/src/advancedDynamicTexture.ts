@@ -28,6 +28,7 @@ module BABYLON.GUI {
         private _fullscreenViewport = new Viewport(0, 0, 1, 1);
         private _idealWidth = 0;
         private _idealHeight = 0;
+        private _useSmallestIdeal: boolean = false;
         private _renderAtIdealSize = false;
         private _focusedControl: Nullable<IFocusableControl>;
         private _blockNextFocusCheck = false;
@@ -84,6 +85,20 @@ module BABYLON.GUI {
             }
 
             this._idealHeight = value;
+            this.markAsDirty();
+            this._rootContainer._markAllAsDirty();
+        }
+
+        public get useSmallestIdeal(): boolean {
+            return this._useSmallestIdeal;
+        }
+
+        public set useSmallestIdeal(value: boolean) {
+            if (this._useSmallestIdeal === value) {
+                return;
+            }
+
+            this._useSmallestIdeal = value;
             this.markAsDirty();
             this._rootContainer._markAllAsDirty();
         }

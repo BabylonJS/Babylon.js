@@ -7,6 +7,10 @@
         private _scene: Scene;
 
         /**
+		 * ID of the sharpen post process,
+		 */
+        readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
+        /**
 		 * ID of the pass post process used for bloom,
 		 */
         readonly PassPostProcessId: string = "PassPostProcessEffect";
@@ -40,6 +44,10 @@
         readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
 
         // Post-processes
+        /**
+		 * Sharpen post process which will apply a sharpen convolution to enhance edges
+		 */
+        public sharpen: SharpenPostProcess;
         /**
 		 * First pass of bloom to capture the original image texture for later use.
 		 */
@@ -82,16 +90,36 @@
          */
         public animations: Animation[] = [];
 
-        // Values       
+        // Values   
+        private _sharpenEnabled:boolean = false;    
         private _bloomEnabled: boolean = false;
         private _depthOfFieldEnabled: boolean = false;
         private _depthOfFieldBlurLevel = DepthOfFieldEffectBlurLevel.Low;
         private _fxaaEnabled: boolean = false;
+        private _msaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.6;
 
         private _buildAllowed = true;
+
+        /**
+         * Enable or disable the sharpen process from the pipeline
+         */
+        public set sharpenEnabled(enabled: boolean) {
+            if (this._sharpenEnabled === enabled) {
+                return;
+            }
+            this._sharpenEnabled = enabled;
+
+            this._buildPipeline();
+        }
+
+        @serialize()
+        public get sharpenEnabled(): boolean {
+            return this._sharpenEnabled;
+        }
+
 
         /**
 		 * Specifies the size of the bloom blur kernel, relative to the final output size
@@ -212,6 +240,23 @@
         }
 
         /**
+         * If the multisample anti-aliasing is enabled.
+         */
+        public set msaaEnabled(enabled: boolean) {
+            if (this._msaaEnabled === enabled) {
+                return;
+            }
+            this._msaaEnabled = enabled;
+
+            this._buildPipeline();
+        }
+
+        @serialize()
+        public get msaaEnabled(): boolean {
+            return this._msaaEnabled;
+        }
+
+        /**
          * If image processing is enabled.
          */
         public set imageProcessingEnabled(enabled: boolean) {
@@ -284,6 +329,11 @@
 
             this._disposePostProcesses();
             this._reset();
+
+            if (this.sharpenEnabled) {
+                this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true));
+            }
 
             if(this.depthOfFieldEnabled){
                 // Enable and get current depth map
@@ -382,13 +432,21 @@
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
-
-            this._enableMSAAOnFirstPostProcess();
+            
+            if(this.msaaEnabled){
+                if(!this._enableMSAAOnFirstPostProcess()){
+                    BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
+                }
+            }
         }
 
         private _disposePostProcesses(): void {
             for (var i = 0; i < this._cameras.length; i++) {
                 var camera = this._cameras[i];
+
+                if (this.sharpen) {
+                    this.sharpen.dispose(camera);
+                }
 
                 if (this.pass) {
                     this.pass.dispose(camera);
@@ -427,6 +485,7 @@
                 }
             }
 
+            (<any>this.sharpen) = null;
             (<any>this.pass) = null;
             (<any>this.highlights) = null;
             (<any>this.blurX) = null;

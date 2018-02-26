@@ -50,7 +50,7 @@ module BABYLON {
          * 2: left AND right buttons
          * 3: menu button
          */
-        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             let notifyObject = state; //{ state: state, changes: changes };
             switch (buttonIdx) {
                 case 0:
