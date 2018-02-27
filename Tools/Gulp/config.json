@@ -1691,7 +1691,8 @@
                 "moduleDeclaration": {
                     "name": "INSPECTOR",
                     "module": "babylonjs-inspector"
-                }
+                },
+                "extendsRoot": true
             }
         ],
         "build": {
