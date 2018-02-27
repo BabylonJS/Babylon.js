@@ -511,7 +511,9 @@
         public stop(stopSubEmitters = true): void {
             this._stopped = true;
 
-            this._stopSubEmitters();
+            if(stopSubEmitters) {
+                this._stopSubEmitters();
+            }
         }
 
         // animation sheet
@@ -578,7 +580,12 @@
          * Its lifetime will start back at 0.
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
-            this._recycleParticleUsingSystem(this, this, particle);
+            var lastParticle = <Particle>this._particles.pop();
+
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
+                this._stockParticles.push(lastParticle);
+            }
         };
 
         private _stopSubEmitters(): void {
@@ -589,19 +596,48 @@
             });
 
             this.activeSubSystems.forEach(subSystem => {
-                subSystem.stop();
+                subSystem.stop(true);
                 subSystem._stoppedEmitting();
             });
             this.activeSubSystems = new Array<ParticleSystem>();
         }
 
         private _createParticle: () => Particle = () => {
-            return this._createParticleUsingSystem(this, this);
+            var particle: Particle;
+            if (this._stockParticles.length !== 0) {
+                particle = <Particle>this._stockParticles.pop();
+                particle.age = 0;
+                particle.cellIndex = this.startSpriteCellID;
+            } else {
+                particle = new Particle(this);
+            }
+            return particle;
         }
 
         // to be overriden by subSystems
         private _stoppedEmitting: () => void = () => {
+            if(!this._rootParticleSystem){
+                return;
+            }
+            
+            if(!this.subEmitters || this.subEmitters.length === 0){
+                this.dispose();
+                return;
+            }
 
+            let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
+            if (index > -1) {
+                this._rootParticleSystem.activeSubSystems.splice(index, 1);
+            }
+            
+            if(this._rootParticleSystem.stockSubSystems.contains(this._subEmitterIndex)){
+                this._rootParticleSystem.stockSubSystems.get(this._subEmitterIndex)!.push(this);
+            }
+            else{
+                var particleSystemArray = new Array<ParticleSystem>();
+                particleSystemArray.push(this);
+                this._rootParticleSystem.stockSubSystems.add(this._subEmitterIndex, particleSystemArray);
+            }
         }
 
         private _emitFromParticle: (particle: Particle) => void = (particle) => {
@@ -632,63 +668,6 @@
             }
         }
 
-        private _initSubSystem(rootParticleSystem: ParticleSystem): void {
-            this._rootParticleSystem = rootParticleSystem;
-
-            this._stoppedEmitting = () => {
-                if(!this.subEmitters || this.subEmitters.length === 0){
-                    this.dispose();
-                    return;
-                }
-
-                let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
-                if (index > -1) {
-                    this._rootParticleSystem.activeSubSystems.splice(index, 1);
-                }
-                
-                if(this._rootParticleSystem.stockSubSystems.contains(this._subEmitterIndex)){
-                    this._rootParticleSystem.stockSubSystems.get(this._subEmitterIndex)!.push(this);
-                }
-                else{
-                    var particleSystemArray = new Array<ParticleSystem>();
-                    particleSystemArray.push(this);
-                    this._rootParticleSystem.stockSubSystems.add(this._subEmitterIndex, particleSystemArray);
-                }
-            }
-
-            this.recycleParticle = (particle: Particle) => {
-                this._recycleParticleUsingSystem(this._rootParticleSystem, this, particle);
-            }
-
-            this._createParticle = () => {
-                return this._createParticleUsingSystem(this._rootParticleSystem, this);
-            }
-        }
-
-        private _createParticleUsingSystem(rootSystem: ParticleSystem, currentSystem: ParticleSystem): Particle {
-            let particle: Particle;
-            if (rootSystem._stockParticles.length !== 0) {
-                particle = <Particle>rootSystem._stockParticles.pop();
-                particle.age = 0;
-                particle.cellIndex = currentSystem.startSpriteCellID;
-                if (currentSystem !== particle.particleSystem) {
-                    particle.particleSystem = currentSystem;
-                    particle.updateCellInfoFromSystem();
-                }
-            } else {
-                particle = new Particle(currentSystem);
-            }
-            return particle;
-        }
-
-        private _recycleParticleUsingSystem(rootSystem: ParticleSystem, currentSystem: ParticleSystem, particle: Particle) {
-            var lastParticle = <Particle>currentSystem._particles.pop();
-
-            if (lastParticle !== particle) {
-                lastParticle.copyTo(particle);
-                rootSystem._stockParticles.push(lastParticle);
-            }
-        }
         // end of sub system methods
 
         private _update(newParticles: number): void {
@@ -1090,7 +1069,7 @@
             result.emitter = newEmitter;
             result.subEmitters = this.subEmitters;
             result.particleEmitterType = this.particleEmitterType;
-            result._initSubSystem(root);
+            result._rootParticleSystem = root;
             if (this.particleTexture) {
                 result.particleTexture = new Texture(this.particleTexture.url, this._scene);
             }
