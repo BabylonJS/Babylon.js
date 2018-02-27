@@ -577,8 +577,24 @@ module BABYLON.GUI {
         }
 
         public _moveToProjectedPosition(projectedPosition: Vector3): void {
-            this.left = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2) + "px";
-            this.top = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2) + "px";
+            let oldLeft = this._left.getValue(this._host);
+            let oldTop = this._top.getValue(this._host);
+            
+            var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
+            var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
+
+            if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
+                if (Math.abs(newLeft - oldLeft) < 0.5) {
+                    newLeft = oldLeft;
+                }
+
+                if (Math.abs(newTop - oldTop) < 0.5) {
+                    newTop = oldTop;
+                }                
+            }
+
+            this.left = newLeft + "px";
+            this.top = newTop + "px";
 
             this._left.ignoreAdaptiveScaling = true;
             this._top.ignoreAdaptiveScaling = true;

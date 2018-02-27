@@ -14,7 +14,7 @@
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
+- Added depth of field, MSAA, sharpening and chromatic aberration effect to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
@@ -81,8 +81,8 @@
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
+- WebVRExperienceHelper will create an empty controller model so that controller interactions can be used while the actual model is still loading ([trevordev](https://github.com/trevordev))
 - Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
-- Add msaa and sharpening options to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
@@ -93,10 +93,11 @@
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
+- Scale vr controllers by deviceScale when it is set in VRExperienceHelper ([trevordev](https://github.com/trevordev))
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 - AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
 - Collision worker didn't initialize instanced meshes correctly - [#3819](https://github.com/BabylonJS/Babylon.js/issues/3819) ([RaananW](https://github.com/RaananW))
-- postMessage calls in webworkers were fixed ([RaananW](https://github.com/RaananW))
+- postMessage calls in webworkers were fixed. ([RaananW](https://github.com/RaananW))
 - fixed WebCam Texture on Firefox and Edge - [#3825](https://github.com/BabylonJS/Babylon.js/issues/3825) ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
