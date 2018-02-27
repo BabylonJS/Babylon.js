@@ -335,6 +335,7 @@
     },
     {
       "title": "GUI",
+      "renderCount": 2,
       "scriptToRun": "/Demos/GUI/gui.js",
       "functionToCall": "createScene",
       "referenceImage": "GUI.png"
