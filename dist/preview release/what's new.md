@@ -14,7 +14,7 @@
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
+- Added depth of field, MSAA, sharpening and chromatic aberration effect to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
@@ -82,7 +82,6 @@
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
 - Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
-- Add msaa and sharpening options to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
