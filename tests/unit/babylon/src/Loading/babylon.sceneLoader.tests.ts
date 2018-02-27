@@ -204,10 +204,48 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
+        it('Load TwoQuads', () => {
+            const materials: { [name: string]: BABYLON.Material } = {};
+
+            const deferred = new BABYLON.Deferred();
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                loader.onMaterialLoaded = material => {
+                    expect(materials[material.name], `materials["${material.name}"]`).to.be.undefined;
+                    materials[material.name] = material;
+                };
+
+                loader.onComplete = () => {
+                    try {
+                        expect(materials["LOD0"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 0 ready").to.be.true;
+                        expect(materials["LOD1"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 1 ready").to.be.true;
+                        expect(materials["LOD2"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 2 ready").to.be.true;
+                        deferred.resolve();
+                    }
+                    catch (e) {
+                        deferred.reject(e);
+                    }
+                };
+            }, undefined, undefined, undefined, true);
+
+            const scene = new BABYLON.Scene(subject);
+            const promise = BABYLON.SceneLoader.AppendAsync("/Playground/scenes/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+                expect(Object.keys(materials), "materials").to.have.lengthOf(3);
+
+                expect(materials["LOD0"].getActiveTextures(), "material LOD 0 active textures").to.have.lengthOf(1);
+                expect(materials["LOD1"].getActiveTextures(), "material LOD 1 active textures").to.have.lengthOf(1);
+                expect(materials["LOD2"].getActiveTextures(), "material LOD 2 active textures").to.have.lengthOf(1);
+
+                expect(materials["LOD0"].getActiveTextures().some(texture => texture.isReady()), "Some textures of LOD 0 ready").to.be.false;
+                expect(materials["LOD1"].getActiveTextures().some(texture => texture.isReady()), "Some textures of LOD 1 ready").to.be.false;
+                expect(materials["LOD2"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 2 ready").to.be.true;
+            });
+
+            return Promise.all([promise, deferred.promise]);
+        });
+
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name
         // TODO: test KHR_materials_pbrSpecularGlossiness
-        // TODO: test MSFT_lod
         // TODO: test KHR_lights
     });
 
