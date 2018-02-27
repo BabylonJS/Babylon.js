@@ -17,6 +17,10 @@ module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        /** 
+         * If the dithering should be performed in the image processing shader.
+         */
+        DITHERING: boolean;
     }
 
     /**
@@ -216,6 +220,23 @@ module BABYLON {
         public vignetteCameraFov = 0.5;
 
         @serialize()
+        private _ditheringVarianceAmount = 0;
+        /**
+         * Amount of dithering to be applied by the dithering effect.
+         */
+        public get ditheringVarianceAmount(): number {
+            return this._ditheringVarianceAmount;
+        }
+        public set ditheringVarianceAmount(value: number) {
+            if (this._ditheringVarianceAmount === value) {
+                return;
+            }
+
+            this._ditheringVarianceAmount = value;
+            this._updateParameters();
+        }
+
+        @serialize()
         private _vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
         /**
          * Gets the vignette blend mode allowing different kind of effect.
@@ -335,6 +356,9 @@ module BABYLON {
             if (defines.COLORCURVES) {
                 ColorCurves.PrepareUniforms(uniforms);
             }
+            if (defines.DITHERING){
+                uniforms.push("ditherVarianceAmount");
+            }
         }
 
         /**
@@ -383,6 +407,7 @@ module BABYLON {
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
             defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
+            defines.DITHERING = (this.ditheringVarianceAmount != 0.0);
         }
 
         /**
@@ -440,6 +465,8 @@ module BABYLON {
                     this.colorGradingTexture.level // weight
                 );
             }
+
+            effect.setFloat("ditherVarianceAmount", this.ditheringVarianceAmount);
         }
 
         /**

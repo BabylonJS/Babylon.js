@@ -88,6 +88,7 @@ module BABYLON {
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
+        public DITHERING = false;
 
         constructor() {
             super();

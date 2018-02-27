@@ -38928,6 +38928,11 @@
           "Comments": {
             "MissingText": true
           }
+        },
+        "DITHERING": {
+          "Naming": {
+            "NotCamelCase": true
+          }
         }
       }
     },
