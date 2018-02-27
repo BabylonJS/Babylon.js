@@ -7,7 +7,6 @@ var through = require('through2');
  */
 module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon, noBabylonInit) {
     return through.obj(function (file, enc, cb) {
-
         if (typeof varName === 'string') {
             varName = {
                 name: varName,
@@ -36,11 +35,11 @@ var BABYLON = babylonDependency;
     else {
         root["${base}"]${(subModule && !extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(root["BABYLON"]);
     }
-})(this, function(BABYLON) {
+})(this, function(${varName.name === 'BABYLON' ? '' : 'BABYLON'}) {
     ${String(file.contents)}
-    ${varName.name === 'BABYLON' ? `
+    ${varName.name === 'BABYLON' || varName.name === 'INSPECTOR' ? `
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-globalObject["${varName.name}"] = BABYLON` : ''}
+globalObject["${varName.name}"] = ${varName.name}` : ''}
     return ${base}${(subModule && !extendsRoot) ? '.' + varName.name : ''};
 });
 `;
