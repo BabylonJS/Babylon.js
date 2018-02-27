@@ -480,7 +480,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                 sequence.push(
                     wpBuild
                         .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                        .pipe(addModuleExports(library.moduleDeclaration, false, false, true))
+                        .pipe(addModuleExports(library.moduleDeclaration, false, library.extendsRoot, true))
                         .pipe(uglify())
                         .pipe(optimisejs())
                         .pipe(gulp.dest(outputDirectory))
