@@ -625,7 +625,7 @@
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
                 if (this._useDepthStencilTexture) {
-                    //engine.setColorWrite(false);
+                    engine.setColorWrite(false);
                 }
             });
 
