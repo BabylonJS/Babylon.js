@@ -83,6 +83,7 @@
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
 - WebVRExperienceHelper will create an empty controller model so that controller interactions can be used while the actual model is still loading ([trevordev](https://github.com/trevordev))
 - Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Supports Environment Drag and Drop in Sandbox ([sebavan](https://github.com/sebavan))
 
 ## Bug fixes
 
