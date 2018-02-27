@@ -17,10 +17,6 @@ module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon
             }
         }
 
-        var optionalRequire = ''; /* `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
-var BABYLON = babylonDependency;
-`;*/
         function moduleExportAddition(varName) {
 
             let base = subModule ? 'BABYLON' : varName.name;
@@ -35,7 +31,7 @@ var BABYLON = babylonDependency;
     else {
         root["${base}"]${(subModule && !extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(root["BABYLON"]);
     }
-})(this, function(${varName.name === 'BABYLON' ? '' : 'BABYLON'}) {
+})(this, function(${varName.name === 'BABYLON' || noBabylonInit ? '' : 'BABYLON'}) {
     ${String(file.contents)}
     ${varName.name === 'BABYLON' || varName.name === 'INSPECTOR' ? `
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
@@ -74,10 +70,6 @@ globalObject["${varName.name}"] = ${varName.name}` : ''}
         if (file.isStream()) {
             //streams not supported, no need for now.
             return;
-        }
-
-        if (noBabylonInit) {
-            optionalRequire = '';
         }
 
         try {
