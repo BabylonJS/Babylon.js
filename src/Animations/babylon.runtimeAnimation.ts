@@ -234,7 +234,7 @@
 
         private _getCorrectLoopMode(): number | undefined {
             if ( this._target && this._target.animationPropertiesOverride) {
-                return this._target.loopMode;
+                return this._target.animationPropertiesOverride.loopMode;
             }
 
             return this._animation.loopMode;
