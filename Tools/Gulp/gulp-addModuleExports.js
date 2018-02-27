@@ -72,6 +72,8 @@ globalObject["${varName.name}"] = ${varName.name}` : ''}
             return;
         }
 
+        var optionalRequire = '';
+
         try {
             if (externalUsingBabylon) {
                 file.contents = new Buffer(optionalRequire.concat(new Buffer(String('').concat(moduleExportAddition(varName)))));
