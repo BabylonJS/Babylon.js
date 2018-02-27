@@ -62,7 +62,7 @@ module BABYLON {
                 'TOUCHPAD_TOUCH_X',
                 'TOUCHPAD_TOUCH_Y'
             ],
-            pointingPoseMeshName: 'POINTING_POSE'
+            pointingPoseMeshName: PoseEnabledController.POINTING_POSE
         };
 
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
@@ -104,15 +104,14 @@ module BABYLON {
          */
         public update() {
             super.update();
-
-            // Only need to animate axes if there is a loaded mesh
-            if (this._loadedMeshInfo) {
-                if (this.browserGamepad.axes) {
-                    if (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y) {
-                        this.trackpad.x = this.browserGamepad["axes"][2];
-                        this.trackpad.y = this.browserGamepad["axes"][3];
-                        this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
-                    }
+            if (this.browserGamepad.axes) {
+                if (this.browserGamepad.axes[2] != this.trackpad.x || this.browserGamepad.axes[3] != this.trackpad.y) {
+                    this.trackpad.x = this.browserGamepad["axes"][2];
+                    this.trackpad.y = this.browserGamepad["axes"][3];
+                    this.onTrackpadValuesChangedObservable.notifyObservers(this.trackpad);
+                }
+                // Only need to animate axes if there is a loaded mesh
+                if (this._loadedMeshInfo) {
                     for (let axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
                         this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
                     }
