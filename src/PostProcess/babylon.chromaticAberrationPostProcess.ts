@@ -14,9 +14,14 @@ module BABYLON {
         radialIntensity = 0;
 
         /**
-         * The normilized direction in which the rgb channels should be seperated (default: Vector2(0.707,0.707))
+         * The normilized direction in which the rgb channels should be seperated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
          */
         direction = new Vector2(0.707,0.707);
+
+        /**
+         * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corder] (default: Vector2(0.5 ,0.5))
+         */
+        centerPosition = new Vector2(0.5,0.5);
         
         /**
          * Creates a new instance of @see ChromaticAberrationPostProcess
@@ -31,13 +36,14 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          */
         constructor(name: string, screenWidth:number, screenHeight:number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity"], [], options, camera, samplingMode, engine, reusable, null, textureType);
+            super(name, "chromaticAberration", ["chromatic_aberration", "screen_width", "screen_height", "direction", "radialIntensity", "centerPosition"], [], options, camera, samplingMode, engine, reusable, null, textureType);
             this.onApplyObservable.add((effect: Effect) => {
                 effect.setFloat('chromatic_aberration', this.aberrationAmount);
                 effect.setFloat('screen_width', screenWidth);
                 effect.setFloat('screen_height', screenHeight);
                 effect.setFloat('radialIntensity', this.radialIntensity);
                 effect.setFloat2('direction', this.direction.x,this.direction.y);
+                effect.setFloat2('centerPosition', this.centerPosition.x,this.centerPosition.y);
             })
         }
     }
