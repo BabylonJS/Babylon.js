@@ -36,6 +36,7 @@ module BABYLON.GUI {
         private _transformMatrix = Matrix2D.Identity();
         protected _invertTransformMatrix = Matrix2D.Identity();
         protected _transformedPosition = Vector2.Zero();
+        private _onlyMeasureMode = false;
         private _isMatrixDirty = true;
         private _cachedOffsetX: number;
         private _cachedOffsetY: number;
@@ -89,6 +90,12 @@ module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         public onPointerUpObservable = new Observable<Vector2WithInfo>();
+
+        /**
+        * An event triggered when a control is clicked on
+        * @type {BABYLON.Observable}
+        */
+        public onPointerClickObservable = new Observable<Vector2WithInfo>();
 
         /**
         * An event triggered when pointer enters the control
@@ -545,7 +552,9 @@ module BABYLON.GUI {
 
         public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
             if (!this._host || this._root && this._root !== this._host._rootContainer) {
-                Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                if (mesh) {
+                    Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                }
                 return;
             }
 
@@ -556,17 +565,36 @@ module BABYLON.GUI {
                     this._host._linkedControls.splice(index, 1);
                 }
                 return;
+            } else if (!mesh) {
+                return;
             }
 
             this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
             this._linkedMesh = mesh;
+            this._onlyMeasureMode = true;
             this._host._linkedControls.push(this);
         }
 
         public _moveToProjectedPosition(projectedPosition: Vector3): void {
-            this.left = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2) + "px";
-            this.top = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2) + "px";
+            let oldLeft = this._left.getValue(this._host);
+            let oldTop = this._top.getValue(this._host);
+            
+            var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
+            var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
+
+            if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
+                if (Math.abs(newLeft - oldLeft) < 0.5) {
+                    newLeft = oldLeft;
+                }
+
+                if (Math.abs(newTop - oldTop) < 0.5) {
+                    newTop = oldTop;
+                }                
+            }
+
+            this.left = newLeft + "px";
+            this.top = newTop + "px";
 
             this._left.ignoreAdaptiveScaling = true;
             this._top.ignoreAdaptiveScaling = true;
@@ -694,6 +722,11 @@ module BABYLON.GUI {
 
             // Transform
             this._transform(context);
+
+            if (this._onlyMeasureMode) {
+                this._onlyMeasureMode = false;
+                return false; // We do not want rendering for this frame as they are measure dependant information that need to be gathered
+            }
 
             // Clip
             this._clip(context);
@@ -918,22 +951,26 @@ module BABYLON.GUI {
             return true;
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
             this._downCount = 0;
 
             delete this._downPointerIds[pointerId];
 
-            var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+            var canNotifyClick: boolean = notifyClick;
+			if (notifyClick && this._enterCount > 0) {
+				canNotifyClick = this.onPointerClickObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
+			}
+			var canNotify: boolean = this.onPointerUpObservable.notifyObservers(new Vector2WithInfo(coordinates, buttonIndex), -1, target, this);
 
-            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex);
+            if (canNotify && this.parent != null) this.parent._onPointerUp(target, coordinates, pointerId, buttonIndex, canNotifyClick);
         }
 
         public forcePointerUp(pointerId:Nullable<number> = null) {
             if(pointerId !== null){
-                this._onPointerUp(this, Vector2.Zero(), pointerId, 0);
+                this._onPointerUp(this, Vector2.Zero(), pointerId, 0, true);
             }else{
                 for(var key in this._downPointerIds){
-                    this._onPointerUp(this, Vector2.Zero(), +key as number, 0);
+                    this._onPointerUp(this, Vector2.Zero(), +key as number, 0, true);
                 }
             }
         }
@@ -965,7 +1002,7 @@ module BABYLON.GUI {
 
             if (type === BABYLON.PointerEventTypes.POINTERUP) {
                 if (this._host._lastControlDown[pointerId]) {
-                    this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex);
+                    this._host._lastControlDown[pointerId]._onPointerUp(this, this._dummyVector2, pointerId, buttonIndex, true);
                 }
                 delete this._host._lastControlDown[pointerId];
                 return true;
@@ -993,6 +1030,7 @@ module BABYLON.GUI {
             this.onPointerMoveObservable.clear();
             this.onPointerOutObservable.clear();
             this.onPointerUpObservable.clear();
+			this.onPointerClickObservable.clear();
 
             if (this._root) {
                 this._root.removeControl(this);

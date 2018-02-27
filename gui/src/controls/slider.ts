@@ -287,11 +287,11 @@ module BABYLON.GUI {
             super._onPointerMove(target, coordinates);
         }
 
-        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number): void {
+        public _onPointerUp(target: Control, coordinates: Vector2, pointerId:number, buttonIndex: number, notifyClick: boolean): void {
             this._pointerIsDown = false;
 
             delete this._host._capturingControl[pointerId];
-            super._onPointerUp(target, coordinates, pointerId, buttonIndex);
+            super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
         }
     }
 }
