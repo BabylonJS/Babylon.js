@@ -287,8 +287,10 @@ vec4 color = vec4(finalColor, finalAlpha);
     color.rgb *= color.a;
 #endif
 
-#ifdef NOISE
-    color.rgb = dither(vPositionW.xy, color.rgb);
+#ifdef DITHERING
+    // Handled in image processing shader
+#elif NOISE
+    color.rgb = dither(vPositionW.xy, color.rgb, 0.5);
 #endif
 
     gl_FragColor = color;

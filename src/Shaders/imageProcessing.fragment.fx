@@ -26,5 +26,8 @@ void main(void)
 	#endif
 #endif
 
+#ifdef DITHERING
+	result.rgb = dither(vUV, result.rgb, ditherVarianceAmount);
+#endif
 	gl_FragColor = result;
 }
