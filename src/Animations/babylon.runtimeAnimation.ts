@@ -197,8 +197,8 @@
             }
 
             // Blending
-            let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
-            let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+            let enableBlending = (this._target && this._target._skeleton && this._target._skeleton.animationPropertiesOverride) ? this._target._skeleton.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
+            let blendingSpeed = (this._target && this._target._skeleton && this._target._skeleton.animationPropertiesOverride) ? this._target._skeleton.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             
             if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
@@ -233,8 +233,8 @@
         }
 
         private _getCorrectLoopMode(): number | undefined {
-            if ( this._target && this._target.animationPropertiesOverride) {
-                return this._target.loopMode;
+            if (this._target && this._target._skeleton && this._target._skeleton.animationPropertiesOverride) {
+                return this._target._skeleton.animationPropertiesOverride.loopMode;
             }
 
             return this._animation.loopMode;
