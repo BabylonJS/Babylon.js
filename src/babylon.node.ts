@@ -70,11 +70,6 @@
         private _children: Node[];
 
         /**
-         * Gets or sets the animation properties override
-         */
-        public animationPropertiesOverride: AnimationPropertiesOverride;
-
-        /**
          * Gets a boolean indicating if the node has been disposed
          * @returns true if the node was disposed
          */
@@ -112,6 +107,20 @@
 
         public get parent(): Nullable<Node> {
             return this._parentNode;
+        }
+
+        
+        private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
+
+        /**
+         * Gets or sets the animation properties override
+         */
+        public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            return this._animationPropertiesOverride;
+        }
+
+        public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+            this._animationPropertiesOverride = value;
         }
 
         /**
