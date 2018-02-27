@@ -32,6 +32,7 @@ declare module BABYLON.GUI {
         private _fullscreenViewport;
         private _idealWidth;
         private _idealHeight;
+        private _useSmallestIdeal;
         private _renderAtIdealSize;
         private _focusedControl;
         private _blockNextFocusCheck;
@@ -40,6 +41,7 @@ declare module BABYLON.GUI {
         background: string;
         idealWidth: number;
         idealHeight: number;
+        useSmallestIdeal: boolean;
         renderAtIdealSize: boolean;
         readonly layer: Nullable<Layer>;
         readonly rootContainer: Container;
@@ -185,6 +187,7 @@ declare module BABYLON.GUI {
         private _transformMatrix;
         protected _invertTransformMatrix: Matrix2D;
         protected _transformedPosition: Vector2;
+        private _onlyMeasureMode;
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;
@@ -226,6 +229,11 @@ declare module BABYLON.GUI {
         * @type {BABYLON.Observable}
         */
         onPointerUpObservable: Observable<Vector2WithInfo>;
+        /**
+        * An event triggered when a control is clicked on
+        * @type {BABYLON.Observable}
+        */
+        onPointerClickObservable: Observable<Vector2WithInfo>;
         /**
         * An event triggered when pointer enters the control
         * @type {BABYLON.Observable}
@@ -311,7 +319,7 @@ declare module BABYLON.GUI {
         _onPointerEnter(target: Control): boolean;
         _onPointerOut(target: Control): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         forcePointerUp(pointerId?: Nullable<number>): void;
         _processObservables(type: number, x: number, y: number, pointerId: number, buttonIndex: number): boolean;
         private _prepareFont();
@@ -496,7 +504,7 @@ declare module BABYLON.GUI {
         private _updateValueFromPointer(x, y);
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: Vector2): void;
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
     }
 }
 
@@ -710,7 +718,7 @@ declare module BABYLON.GUI {
         _onPointerEnter(target: Control): boolean;
         _onPointerOut(target: Control): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         static CreateImageButton(name: string, text: string, imageUrl: string): Button;
         static CreateImageOnlyButton(name: string, imageUrl: string): Button;
         static CreateSimpleButton(name: string, text: string): Button;
@@ -753,7 +761,7 @@ declare module BABYLON.GUI {
         private _isPointOnWheel(coordinates);
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
         _onPointerMove(target: Control, coordinates: Vector2): void;
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
     }
 }
 
@@ -801,7 +809,7 @@ declare module BABYLON.GUI {
         processKeyboard(evt: KeyboardEvent): void;
         _draw(parentMeasure: Measure, context: CanvasRenderingContext2D): void;
         _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): boolean;
-        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number): void;
+        _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void;
         dispose(): void;
     }
 }

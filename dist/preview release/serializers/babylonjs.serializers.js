@@ -1,6 +1,3 @@
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
-var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -18,6 +15,19 @@ var __extends = (this && this.__extends) || (function () {
             };
         })();
         
+
+(function universalModuleDefinition(root, factory) {
+    if(typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory(require("babylonjs"));
+    else if(typeof define === 'function' && define.amd)
+        define("babylonjs-serializers", ["babylonjs"], factory);
+    else if(typeof exports === 'object')
+        exports["babylonjs-serializers"] = factory(require("babylonjs"));
+    else {
+        root["BABYLON"] = factory(root["BABYLON"]);
+    }
+})(this, function(BABYLON) {
+    
 var BABYLON;
 (function (BABYLON) {
     var OBJExport = /** @class */ (function () {
@@ -1117,6 +1127,9 @@ var BABYLON;
                         BABYLON.Tools.Warn(babylonStandardMaterial.name + ": glTF 2.0 does not support alpha mode: " + babylonStandardMaterial.alphaMode.toString());
                     }
                 }
+                if (babylonStandardMaterial.emissiveColor) {
+                    glTFMaterial.emissiveFactor = babylonStandardMaterial.emissiveColor.asArray();
+                }
                 glTFMaterial.pbrMetallicRoughness = glTFPbrMetallicRoughness;
                 materials.push(glTFMaterial);
             };
@@ -1292,20 +1305,6 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFMaterial.js.map
 
-
-(function universalModuleDefinition(root, factory) {
-                var f = factory();
-                
-                
-    if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = f;
-    else if(typeof define === 'function' && define.amd)
-        define("babylonjs-serializers", ["BABYLON"], factory);
-    else if(typeof exports === 'object')
-        exports["babylonjs-serializers"] = f;
-    else {
-        root["BABYLON"] = f;
-    }
-})(this, function() {
+    
     return BABYLON;
 });
