@@ -7,6 +7,25 @@
 		}
 	#endif
 
+#ifdef USEDEPTHSTENCILTEXTURE
+	float computeShadowFromDepthTextureCube(vec3 lightPosition, samplerCubeShadow shadowSampler, float darkness, vec2 depthValues)
+	{
+		vec4 directionToLight = vec4(vPositionW - lightPosition, 1.0);
+		directionToLight.w = length(directionToLight.xyz);
+		directionToLight.w = (directionToLight.w + depthValues.x) / (depthValues.y);
+		directionToLight.w = clamp(directionToLight.w, 0., 1.0);
+
+		directionToLight.xyz = normalize(directionToLight.xyz);
+		directionToLight.y = -directionToLight.y;
+		
+		float shadow = textureCube(shadowSampler, directionToLight);
+		if (shadow < 1.0)
+		{
+			return shadow * (1. - darkness) + darkness;
+		}
+		return 1.0;
+	}
+#else
 	float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, vec2 depthValues)
 	{
 		vec3 directionToLight = vPositionW - lightPosition;
@@ -29,6 +48,7 @@
 		}
 		return 1.0;
 	}
+#endif
 
 	float computeShadowWithPCFCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float darkness, vec2 depthValues)
 	{
@@ -110,7 +130,8 @@
 	float computeShadowFromDepthTexture(vec4 vPositionFromLight, float depthMetric, sampler2DShadow shadowSampler, float darkness, float frustumEdgeFalloff)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
-		vec3 uvDepth = vec3(0.5 * clipSpace.xy + vec2(0.5), 0.9);
+		//vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+		vec3 uvDepth = vec3(0.5 * clipSpace.xy + vec2(0.5), depthMetric);
 
 		if (uvDepth.x < 0. || uvDepth.x > 1.0 || uvDepth.y < 0. || uvDepth.y > 1.0)
 		{
@@ -118,14 +139,14 @@
 		}
 
 		float shadow = texture2D(shadowSampler, uvDepth);
-		// if (shadow < 1.0)
-		// {
-		// 	return computeFallOff((1. - shadow) * darkness, clipSpace.xy, frustumEdgeFalloff);
-		// }
-		return shadow;
+		if (shadow < 1.0)
+		{
+			shadow = shadow * (1. - darkness) + darkness;
+			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
+		}
+		return 1.0;
 	}
-#endif
-
+#else
 	float computeShadow(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float darkness, float frustumEdgeFalloff)
 	{
 		vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
@@ -150,6 +171,7 @@
 		}
 		return 1.;
 	}
+#endif
 
 	float computeShadowWithPCF(vec4 vPositionFromLight, float depthMetric, sampler2D shadowSampler, float mapSize, float darkness, float frustumEdgeFalloff)
 	{

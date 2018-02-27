@@ -3732,7 +3732,7 @@
             internalTexture.samplingMode = bilinearFiltering ? Texture.BILINEAR_SAMPLINGMODE : Texture.NEAREST_SAMPLINGMODE;
             internalTexture.type = Engine.TEXTURETYPE_UNSIGNED_INT;
             internalTexture._comparisonFunction = comparisonFunction;
-
+            
             var gl = this._gl;
             var target = internalTexture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
             var samplingParameters = getSamplingParameters(internalTexture.samplingMode, false, gl);
@@ -3760,7 +3760,8 @@
          */
         public createDepthStencilTexture(size: number | { width: number, height: number }, options: DepthTextureCreationOptions) : InternalTexture {
             if (options.isCube) {
-                return this._createDepthStencilCubeTexture(size.width || size, options);
+                let width = (<{ width: number, height: number }>size).width || <number>size;
+                return this._createDepthStencilCubeTexture(width, options);
             }
             else {
                 return this._createDepthStencilTexture(size, options);
@@ -5309,7 +5310,7 @@
 
             let internalTexture: InternalTexture;
             if (depthStencilTexture) {
-                internalTexture = (<RenderTargetTexture>texture).depthStencilTexture;
+                internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
             }
             else if (texture.isReady()) {
                 internalTexture = <InternalTexture>texture.getInternalTexture();
