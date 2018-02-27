@@ -1,5 +1,3 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
-
 declare var DracoDecoderModule: any;
 
 module BABYLON {
@@ -184,7 +182,7 @@ module BABYLON {
             };
         }
 
-        private static _WorkerBlobUrl = URL.createObjectURL(new Blob([`(${DracoCompression._Worker.toString()})()`], { type: "application/javascript" }));
+        private static _WorkerBlobUrl = URL && URL.createObjectURL && URL.createObjectURL(new Blob([`(${DracoCompression._Worker.toString()})()`], { type: "application/javascript" }));
 
         private static _GetDefaultDecoderUrl(): Nullable<string> {
             for (let i = 0; i < document.scripts.length; i++) {
