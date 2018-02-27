@@ -109,12 +109,12 @@ module BABYLON {
         customVRButton?: HTMLButtonElement;
 
         /**
-         * To change the length of the ray for gaze/controllers. (default: 100)
+         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
          */
         rayLength?: number;
 
         /**
-         * To change the default offset from the ground to account for user's height in meters. (default: 1.7)
+         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
          */
         defaultHeight?: number;
 
@@ -663,6 +663,7 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
+                    webVrController.deviceScaleFactor = this.deviceScaleFactor;
                     webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
@@ -670,6 +671,7 @@ module BABYLON {
                         } else {
                             // Load the meshes
                             webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
+                                loadedMesh.scaling.scaleInPlace(this.deviceScaleFactor);
                                 this.onControllerMeshLoadedObservable.notifyObservers(webVrController);
                                 if (this.webVROptions.defaultLightingOnControllers) {
                                     if (!this._lightOnControllers) {
