@@ -344,12 +344,9 @@
         * The current active Sub-systems, this property is used by the root particle system only.
         */
         public activeSubSystems: Array<ParticleSystem>;
-
-        private stockSubSystems: StringDictionary<Array<ParticleSystem>>;
         
         private _isEmitting = false;
         private _rootParticleSystem: ParticleSystem;
-        private _subEmitterIndex = "";
         //end of Sub-emitter
 
         /**
@@ -500,7 +497,6 @@
             this._actualFrame = 0;
             if (this.subEmitters && this.subEmitters.length != 0) {
                 this.activeSubSystems = new Array<ParticleSystem>();
-                this.stockSubSystems = new StringDictionary<Array<ParticleSystem>>();
             }
         }
 
@@ -589,12 +585,6 @@
         };
 
         private _stopSubEmitters(): void {
-            this.stockSubSystems.forEach(index => {
-                this.stockSubSystems.get(index)!.forEach(subSystem => {
-                    subSystem.stop();
-                });
-            });
-
             this.activeSubSystems.forEach(subSystem => {
                 subSystem.stop(true);
                 subSystem._stoppedEmitting();
@@ -621,22 +611,14 @@
             }
             
             if(!this.subEmitters || this.subEmitters.length === 0){
-                this.dispose();
+                this._scene._toBeDisposed.push(this);
                 return;
             }
 
             let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
             if (index > -1) {
                 this._rootParticleSystem.activeSubSystems.splice(index, 1);
-            }
-            
-            if(this._rootParticleSystem.stockSubSystems.contains(this._subEmitterIndex)){
-                this._rootParticleSystem.stockSubSystems.get(this._subEmitterIndex)!.push(this);
-            }
-            else{
-                var particleSystemArray = new Array<ParticleSystem>();
-                particleSystemArray.push(this);
-                this._rootParticleSystem.stockSubSystems.add(this._subEmitterIndex, particleSystemArray);
+                this._scene._toBeDisposed.push(this);
             }
         }
 
@@ -646,26 +628,10 @@
             }
 
             var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
-            var templateIndexString =templateIndex.toString();
 
-            if (!this.stockSubSystems.contains(templateIndexString) || (this.stockSubSystems.contains(templateIndexString) && this.stockSubSystems.get(templateIndexString)!.length === 0)) {
-                // get the current generation template and clone it to subSystem
-                var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position);
-                subSystem._subEmitterIndex = templateIndexString;
-                this.activeSubSystems.push(subSystem);
-                subSystem.start();
-            }
-            else {
-                var stockSubSystem = this.stockSubSystems.get(templateIndexString)!.pop()!;
-                stockSubSystem.emitter = particle.position;
-                this.activeSubSystems.push(stockSubSystem);
-
-                // reset the manual emit count
-                if (this.subEmitters[templateIndex].manualEmitCount != -1)
-                    stockSubSystem.manualEmitCount = this.subEmitters[templateIndex].manualEmitCount;
-
-                stockSubSystem.start();
-            }
+            var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position);
+            this.activeSubSystems.push(subSystem);
+            subSystem.start();
         }
 
         // end of sub system methods
@@ -976,26 +942,6 @@
             // Callback
             this.onDisposeObservable.notifyObservers(this);
             this.onDisposeObservable.clear();
-
-            if (this.subEmitters) {
-                this.subEmitters.forEach(emitter => {
-                    emitter.dispose();
-                });
-            }
-
-            if (this.stockSubSystems) {
-                this.stockSubSystems.forEach(index => {
-                    this.stockSubSystems.get(index)!.forEach(subSystem => {
-                        subSystem.dispose();
-                    });
-                });
-            }
-
-            if (this.activeSubSystems) {
-                this.activeSubSystems.forEach(subSystem => {
-                    subSystem.dispose();
-                });
-            }
         }
 
         /**
