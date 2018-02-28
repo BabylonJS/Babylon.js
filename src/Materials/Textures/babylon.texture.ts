@@ -93,7 +93,7 @@
         protected _format: Nullable<number>;
         private _delayedOnLoad: Nullable<() => void>;
         private _delayedOnError: Nullable<() => void>;
-        private _onLoadObservable: Nullable<Observable<Texture>>;
+        protected _onLoadObservable: Nullable<Observable<Texture>>;
 
         protected _isBlocking: boolean = true;
         public set isBlocking(value: boolean) {
