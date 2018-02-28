@@ -114,7 +114,7 @@ module BABYLON.GLTF2 {
             this.materials = new Array<IMaterial>();
             this.textures = new Array<ITexture>();
             this.imageData = {};
-            this.convertToRightHandedSystem = !this.babylonScene.useRightHandedSystem;
+            this.convertToRightHandedSystem = this.babylonScene.useRightHandedSystem ? false : true;
 
             if (options) {
                 this.options = options;
@@ -268,7 +268,6 @@ module BABYLON.GLTF2 {
                 }
                 else {
                     Tools.Warn("Unsupported Vertex Buffer Type: " + vertexBufferKind);
-                    
                 }
 
                 for (let i = 0; i < vector.length; ++i) {
@@ -498,11 +497,12 @@ module BABYLON.GLTF2 {
          * @param babylonMesh - Babylon mesh used as the source for the transformation data.
          */
         private setNodeTransformation(node: INode, babylonMesh: AbstractMesh): void {
-            if (!(babylonMesh.position.x === 0 && babylonMesh.position.y === 0 && babylonMesh.position.z === 0)) {
+            
+            if (!babylonMesh.position.equalsToFloats(0, 0, 0)) {
                 node.translation = this.convertToRightHandedSystem ? _Exporter.GetRightHandedVector3(babylonMesh.position).asArray() : babylonMesh.position.asArray();
             }
 
-            if (!(babylonMesh.scaling.x === 1 && babylonMesh.scaling.y === 1 && babylonMesh.scaling.z === 1)) {
+            if (!babylonMesh.scaling.equalsToFloats(1, 1, 1)) {
                 node.scale = babylonMesh.scaling.asArray();
             }
 
@@ -629,6 +629,7 @@ module BABYLON.GLTF2 {
                 }
 
                 if (babylonMesh.subMeshes) {
+                    let uvCoordsPresent = false;
                     // go through all mesh primitives (submeshes)
                     for (const submesh of babylonMesh.subMeshes) {
                         const meshPrimitive: IMeshPrimitive = { attributes: {} };
@@ -676,10 +677,12 @@ module BABYLON.GLTF2 {
                                                     }
                                                     case VertexBuffer.UVKind: {
                                                         meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
+                                                        uvCoordsPresent = true;
                                                         break;
                                                     }
                                                     case VertexBuffer.UV2Kind: {
                                                         meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
+                                                        uvCoordsPresent = true;
                                                         break;
                                                     }
                                                     default: {
@@ -697,13 +700,12 @@ module BABYLON.GLTF2 {
                                 this.accessors.push(accessor);
 
                                 meshPrimitive.indices = this.accessors.length - 1;
-
                             }
                         }
                         if (bufferMesh.material) {
-                            if (bufferMesh.material instanceof StandardMaterial || bufferMesh.material instanceof PBRMetallicRoughnessMaterial) {
-                                const materialIndex = babylonMesh.getScene().materials.indexOf(bufferMesh.material);
-                                meshPrimitive.material = materialIndex;
+                            let materialIndex: Nullable<number> = null;
+                            if (bufferMesh.material instanceof StandardMaterial || bufferMesh.material instanceof PBRMetallicRoughnessMaterial || bufferMesh.material instanceof PBRMaterial) {
+                                materialIndex = babylonMesh.getScene().materials.indexOf(bufferMesh.material);
                             }
                             else if (bufferMesh.material instanceof MultiMaterial) {
                                 const babylonMultiMaterial = bufferMesh.material as MultiMaterial;
@@ -711,16 +713,25 @@ module BABYLON.GLTF2 {
                                 const material = babylonMultiMaterial.subMaterials[submesh.materialIndex];
 
                                 if (material) {
-                                    const materialIndex = babylonMesh.getScene().materials.indexOf(material);
-                                    meshPrimitive.material = materialIndex;
+                                    materialIndex = babylonMesh.getScene().materials.indexOf(material);
                                 }
                             }
                             else {
                                 Tools.Warn("Material type " + bufferMesh.material.getClassName() + " for material " + bufferMesh.material.name + " is not yet implemented in glTF serializer.");
                             }
+                            if (materialIndex != null) {
+                                if (uvCoordsPresent || !_GLTFMaterial.HasTexturesPresent(this.materials[materialIndex])) {
+                                    meshPrimitive.material = materialIndex;
+                                }
+                                else {
+                                    // If no texture coordinate information is present, make a copy of the material without the textures to be glTF compliant.
+                                    const newMat = _GLTFMaterial.StripTexturesFromMaterial(this.materials[materialIndex]);
+                                    this.materials.push(newMat);
+                                    meshPrimitive.material = this.materials.length - 1;
+                                }
+                            }
                         }
                         mesh.primitives.push(meshPrimitive);
-
                     }
                 }
             }
@@ -749,32 +760,32 @@ module BABYLON.GLTF2 {
 
 
                 for (let i = 0; i < babylonMeshes.length; ++i) {
-                    if (this.options &&
-                        this.options.shouldExportMesh != undefined &&
-                        !this.options.shouldExportMesh(babylonMeshes[i])) {
-                        continue;
-                    }
-                    else {
-                        const babylonMesh = babylonMeshes[i];
+                    const babylonMesh = babylonMeshes[i];
 
-                        // Build Hierarchy with the node map.
-                        const glTFNodeIndex = this.nodeMap[babylonMesh.uniqueId];
-                        const glTFNode = this.nodes[glTFNodeIndex];
-                        if (!babylonMesh.parent) {
+                    // Build Hierarchy with the node map.
+                    const glTFNodeIndex = this.nodeMap[babylonMesh.uniqueId];
+                    const glTFNode = this.nodes[glTFNodeIndex];
+                    if (!babylonMesh.parent) {
+                        if (this.options &&
+                            this.options.shouldExportMesh != undefined &&
+                            !this.options.shouldExportMesh(babylonMesh)) {
+                            Tools.Log("Omitting " + babylonMesh.name + " from scene.");
+                        }
+                        else {
                             scene.nodes.push(glTFNodeIndex);
                         }
 
-                        const directDescendents = babylonMesh.getDescendants(true);
-                        if (!glTFNode.children && directDescendents && directDescendents.length) {
-                            glTFNode.children = [];
-                            for (let descendent of directDescendents) {
-                                glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
-                            }
-                        }
-
-                        const mesh = { primitives: new Array<IMeshPrimitive>() };
-                        byteOffset = this.setPrimitiveAttributes(mesh, babylonMesh, byteOffset, dataBuffer);
                     }
+
+                    const directDescendents = babylonMesh.getDescendants(true);
+                    if (!glTFNode.children && directDescendents && directDescendents.length) {
+                        glTFNode.children = [];
+                        for (let descendent of directDescendents) {
+                            glTFNode.children.push(this.nodeMap[descendent.uniqueId]);
+                        }
+                    }
+                    const mesh = { primitives: new Array<IMeshPrimitive>() };
+                    byteOffset = this.setPrimitiveAttributes(mesh, babylonMesh, byteOffset, dataBuffer);
                 }
                 this.scenes.push(scene);
             }

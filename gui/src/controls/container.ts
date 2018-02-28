@@ -80,6 +80,8 @@ module BABYLON.GUI {
                 control.parent = null;
             }
 
+            control.linkWithMesh(null);
+
             this._markAsDirty();
             return this;
         }

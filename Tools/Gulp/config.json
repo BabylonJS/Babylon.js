@@ -385,6 +385,7 @@
         },
         "animations": {
             "files": [
+                "../../src/Animations/babylon.animationPropertiesOverride.js",
                 "../../src/Animations/babylon.animation.js",
                 "../../src/Animations/babylon.animationGroup.js",
                 "../../src/Animations/babylon.runtimeAnimation.js",
@@ -660,7 +661,8 @@
                 "../../src/Gamepad/Controllers/babylon.viveController.js",
                 "../../src/Gamepad/Controllers/babylon.genericController.js",
                 "../../src/Gamepad/Controllers/babylon.windowsMotionController.js",
-                "../../src/Gamepad/Controllers/babylon.gearVRController.js"
+                "../../src/Gamepad/Controllers/babylon.gearVRController.js",
+                "../../src/Gamepad/Controllers/babylon.daydreamController.js"
             ],
             "dependUpon": [
                 "core"
@@ -822,6 +824,8 @@
                 "../../src/PostProcess/babylon.refractionPostProcess.js",
                 "../../src/PostProcess/babylon.blackAndWhitePostProcess.js",
                 "../../src/PostProcess/babylon.convolutionPostProcess.js",
+                "../../src/PostProcess/babylon.sharpenPostProcess.js",
+                "../../src/PostProcess/babylon.chromaticAberrationPostProcess.js",
                 "../../src/PostProcess/babylon.filterPostProcess.js",
                 "../../src/PostProcess/babylon.fxaaPostProcess.js",
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
@@ -838,6 +842,7 @@
                 "refraction.fragment",
                 "blackAndWhite.fragment",
                 "convolution.fragment",
+                "sharpen.fragment",
                 "filter.fragment",
                 "fxaa.fragment",
                 "volumetricLightScattering.fragment",
@@ -1686,7 +1691,8 @@
                 "moduleDeclaration": {
                     "name": "INSPECTOR",
                     "module": "babylonjs-inspector"
-                }
+                },
+                "extendsRoot": true
             }
         ],
         "build": {

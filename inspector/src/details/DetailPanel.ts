@@ -11,6 +11,9 @@
         private _detailRows : Array<PropertyLine> = [];
         // Store the sort direction of each header column
         private _sortDirection : SortDirection = {};
+        // The search bar
+        private _searchDetails : SearchBarDetails;
+        private _details : HTMLElement;
 
         constructor(dr? : Array<PropertyLine>) {
             super();
@@ -23,34 +26,70 @@
         }
 
         set details(detailsRow : Array<PropertyLine>) {
-            this.clean();   
+            this.clean();
+            //add the searchBar
+            this._addSearchBarDetails();
+            this._details = Helpers.CreateDiv('details', this._div);
             this._detailRows = detailsRow;
-            
             // Refresh HTML
             this.update();
         }
-        protected _build() {            
+
+        protected _build() {
             this._div.className = 'insp-details';
             this._div.id = 'insp-details';
-            
             // Create header row
             this._createHeaderRow();
             this._div.appendChild(this._headerRow);
             
-        }
+        } 
         
         /** Updates the HTML of the detail panel */
-        public update() {                 
-            this._sortDetails('name', 1);  
-            this._addDetails();
+        public update(_items?: Array<PropertyLine>) {            
+            this._sortDetails('name', 1);
+            // Check the searchbar
+            if (_items) {
+                this.cleanRow();
+                this._addSearchDetails(_items);
+                //console.log(_items);
+            } else {
+                this._addDetails();
+                //console.log("np");
+            }
+        }
+
+         /** Add the search bar for the details */
+        private _addSearchBarDetails() {
+            let searchDetails = Helpers.CreateDiv('searchbar-details', this._div);
+            // Create search bar
+            this._searchDetails = new SearchBarDetails(this);
+
+            searchDetails.appendChild(this._searchDetails.toHtml());
+            this._div.appendChild(searchDetails);
+        }
+
+        /** Search an element by name  */
+        public searchByName(searchName: string) {
+            let rows = [];
+            for (let row of this._detailRows) {
+                if(row.name.indexOf(searchName) >= 0){
+                    rows.push(row);
+                }
+            }
+            this.update(rows);
         }
 
         /** Add all lines in the html div. Does not sort them! */
         private _addDetails() {
-            let details = Helpers.CreateDiv('details', this._div);
             for (let row of this._detailRows) {
-                details.appendChild(row.toHtml());
+                this._details.appendChild(row.toHtml());
             }
+        }
+
+        private _addSearchDetails(_items: Array<PropertyLine>) {
+            for (let row of _items) {
+                this._details.appendChild(row.toHtml());
+            }   
         }
 
         /**
@@ -108,16 +147,25 @@
         /**
          * Removes all data in the detail panel but keep the header row
          */
-        public clean() {   
-                        
+        public clean() {         
             // Delete all details row
             for (let pline of this._detailRows) {
                 pline.dispose();
             }
-            
             Helpers.CleanDiv(this._div);
             // Header row
             this._div.appendChild(this._headerRow);
+        }
+
+        /**
+         * Clean the rows only
+         */
+        public cleanRow() {           
+            // Delete all details row
+            for (let pline of this._detailRows) {
+                pline.dispose();
+            }
+            Helpers.CleanDiv(this._details);
         }
 
         /** Overrides basicelement.dispose */
@@ -139,7 +187,7 @@
 
                 // Column title - first letter in uppercase
                 let spanName = Inspector.DOCUMENT.createElement('span');
-                spanName.textContent = name.charAt(0).toUpperCase() + name.slice(1); 
+                spanName.textContent = name.charAt(0).toUpperCase() + name.slice(1);
                 
                 // sort direction
                 let spanDirection = Inspector.DOCUMENT.createElement('i');
