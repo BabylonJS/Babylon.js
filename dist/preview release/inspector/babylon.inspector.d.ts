@@ -420,13 +420,20 @@ declare module INSPECTOR {
         private _headerRow;
         private _detailRows;
         private _sortDirection;
+        private _searchDetails;
+        private _details;
         constructor(dr?: Array<PropertyLine>);
         details: Array<PropertyLine>;
         protected _build(): void;
         /** Updates the HTML of the detail panel */
-        update(): void;
+        update(_items?: Array<PropertyLine>): void;
+        /** Add the search bar for the details */
+        private _addSearchBarDetails();
+        /** Search an element by name  */
+        searchByName(searchName: string): void;
         /** Add all lines in the html div. Does not sort them! */
         private _addDetails();
+        private _addSearchDetails(_items);
         /**
          * Sort the details row by comparing the given property of each row
          */
@@ -435,6 +442,10 @@ declare module INSPECTOR {
          * Removes all data in the detail panel but keep the header row
          */
         clean(): void;
+        /**
+         * Clean the rows only
+         */
+        cleanRow(): void;
         /** Overrides basicelement.dispose */
         dispose(): void;
         /**
@@ -670,9 +681,17 @@ declare module INSPECTOR {
      * At each keypress on the input, the treepanel will be filtered.
      */
     class SearchBar extends BasicElement {
-        private _tab;
+        private _propTab;
         private _inputElement;
         constructor(tab: PropertyTab);
+        /** Delete all characters typped in the input element */
+        reset(): void;
+        update(): void;
+    }
+    class SearchBarDetails extends BasicElement {
+        private _detailTab;
+        private _inputElement;
+        constructor(tab: DetailPanel);
         /** Delete all characters typped in the input element */
         reset(): void;
         update(): void;
