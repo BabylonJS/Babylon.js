@@ -33,7 +33,10 @@ module BABYLON.GLTF2.Extensions {
 
                     if (indexLOD !== 0) {
                         this._loadingNodeLOD = nodeLOD;
-                        this._loadNodeSignals[nodeLOD._index] = new Deferred<void>();
+
+                        if (!this._loadNodeSignals[nodeLOD._index]) {
+                            this._loadNodeSignals[nodeLOD._index] = new Deferred<void>();
+                        }
                     }
 
                     const promise = this._loader._loadNodeAsync("#/nodes/" + nodeLOD._index, nodeLOD).then(() => {
@@ -44,8 +47,11 @@ module BABYLON.GLTF2.Extensions {
 
                         if (indexLOD !== nodeLODs.length - 1) {
                             const nodeIndex = nodeLODs[indexLOD + 1]._index;
-                            this._loadNodeSignals[nodeIndex].resolve();
-                            delete this._loadNodeSignals[nodeIndex];
+
+                            if (this._loadNodeSignals[nodeIndex]) {
+                                this._loadNodeSignals[nodeIndex].resolve();
+                                delete this._loadNodeSignals[nodeIndex];
+                            }
                         }
                     });
 
@@ -77,14 +83,19 @@ module BABYLON.GLTF2.Extensions {
 
                     if (indexLOD !== 0) {
                         this._loadingMaterialLOD = materialLOD;
-                        this._loadMaterialSignals[materialLOD._index] = new Deferred<void>();
+
+                        if (!this._loadMaterialSignals[materialLOD._index]) {
+                            this._loadMaterialSignals[materialLOD._index] = new Deferred<void>();
+                        }
                     }
 
                     const promise = this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh).then(() => {
                         if (indexLOD !== materialLODs.length - 1) {
                             const materialIndex = materialLODs[indexLOD + 1]._index;
-                            this._loadMaterialSignals[materialIndex].resolve();
-                            delete this._loadMaterialSignals[materialIndex];
+                            if (this._loadMaterialSignals[materialIndex]) {
+                                this._loadMaterialSignals[materialIndex].resolve();
+                                delete this._loadMaterialSignals[materialIndex];
+                            }
                         }
                     });
 

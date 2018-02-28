@@ -5,6 +5,10 @@ module BABYLON {
         OCULUS,
         WINDOWS,
         GEAR_VR,
+        /**
+         * Google Daydream
+         */
+        DAYDREAM,
         GENERIC
     }
 
@@ -37,6 +41,10 @@ module BABYLON {
             // Samsung/Oculus Gear VR
             else if (vrGamepad.id.indexOf(GearVRController.GAMEPAD_ID_PREFIX) === 0) {
                 return new GearVRController(vrGamepad);
+            }
+            // Google Daydream
+            else if (vrGamepad.id.indexOf(DaydreamController.GAMEPAD_ID_PREFIX) === 0) {
+                return new DaydreamController(vrGamepad);
             }
             // Generic 
             else {
@@ -71,6 +79,15 @@ module BABYLON {
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
 
         public _deviceToWorld = Matrix.Identity();
+
+        /**
+         * Node to be used when casting a ray from the controller
+         */
+        public _pointingPoseNode:Nullable<AbstractMesh> = null;
+        /**
+         * Name of the child mesh that can be used to cast a ray from the controller
+         */
+        public static readonly POINTING_POSE = "POINTING_POSE";
 
         constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);
@@ -115,7 +132,6 @@ module BABYLON {
 
                     this._deviceRoomPosition.scaleToRef(this.deviceScaleFactor, this._calculatedPosition);
                     this._calculatedPosition.addInPlace(this.position);
-
                 }
                 let pose = this.rawPose;
                 if (poseData.orientation && pose.orientation) {
@@ -174,7 +190,7 @@ module BABYLON {
                 return new Ray(Vector3.Zero(), new Vector3(0, 0, 1), length);
             }
 
-            var m = this.mesh.getWorldMatrix();
+            var m = this._pointingPoseNode ? this._pointingPoseNode.getWorldMatrix() : this.mesh.getWorldMatrix();
             var origin = m.getTranslation();
 
             var forward = new Vector3(0, 0, -1);

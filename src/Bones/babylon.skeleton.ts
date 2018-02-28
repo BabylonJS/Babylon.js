@@ -23,6 +23,11 @@
          */
         public doNotSerialize = false;        
 
+        /**
+         * Gets or sets the animation properties override
+         */
+        public animationPropertiesOverride: AnimationPropertiesOverride;        
+
         // Events
         /**
          * An event triggered before computing the skeleton's matrices
