@@ -18,9 +18,9 @@ module BABYLON {
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
         /** 
-         * If the dithering should be performed in the image processing shader.
+         * If the grain should be performed in the image processing shader.
          */
-        DITHERING: boolean;
+        GRAIN: boolean;
     }
 
     /**
@@ -220,19 +220,37 @@ module BABYLON {
         public vignetteCameraFov = 0.5;
 
         @serialize()
-        private _ditheringVarianceAmount = 0;
+        private _grainVarianceAmount = 0;
         /**
-         * Amount of dithering to be applied by the dithering effect.
+         * Amount of grain to be applied by the grain effect.
          */
-        public get ditheringVarianceAmount(): number {
-            return this._ditheringVarianceAmount;
+        public get grainVarianceAmount(): number {
+            return this._grainVarianceAmount;
         }
-        public set ditheringVarianceAmount(value: number) {
-            if (this._ditheringVarianceAmount === value) {
+        public set grainVarianceAmount(value: number) {
+            if (this._grainVarianceAmount === value) {
                 return;
             }
 
-            this._ditheringVarianceAmount = value;
+            this._grainVarianceAmount = value;
+            this._updateParameters();
+        }
+
+        @serialize()
+        private _grainAnimated = false;
+
+        /**
+         * If the grain effect should be animated.
+         */
+        public get grainAnimated(): boolean {
+            return this._grainAnimated;
+        }
+        public set grainAnimated(value: boolean) {
+            if (this._grainAnimated === value) {
+                return;
+            }
+
+            this._grainAnimated = value;
             this._updateParameters();
         }
 
@@ -356,8 +374,9 @@ module BABYLON {
             if (defines.COLORCURVES) {
                 ColorCurves.PrepareUniforms(uniforms);
             }
-            if (defines.DITHERING){
-                uniforms.push("ditherVarianceAmount");
+            if (defines.GRAIN){
+                uniforms.push("grainVarianceAmount");
+                uniforms.push("grainAnimatedSeed");
             }
         }
 
@@ -407,7 +426,7 @@ module BABYLON {
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
             defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
-            defines.DITHERING = (this.ditheringVarianceAmount != 0.0);
+            defines.GRAIN = (this.grainVarianceAmount != 0.0);
         }
 
         /**
@@ -466,7 +485,8 @@ module BABYLON {
                 );
             }
 
-            effect.setFloat("ditherVarianceAmount", this.ditheringVarianceAmount);
+            effect.setFloat("grainVarianceAmount", this.grainVarianceAmount);
+            effect.setFloat("grainAnimatedSeed", this.grainAnimated ? Math.random() : 1);
         }
 
         /**

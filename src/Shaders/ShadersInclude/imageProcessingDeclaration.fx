@@ -27,6 +27,7 @@
 	uniform vec4 colorTransformSettings;
 #endif
 
-#ifdef DITHERING
-	uniform float ditherVarianceAmount;
+#ifdef GRAIN
+	uniform float grainVarianceAmount;
+	uniform float grainAnimatedSeed;
 #endif
