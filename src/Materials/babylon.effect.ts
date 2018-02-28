@@ -527,7 +527,7 @@
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
             // Rebuild shaders source code
-            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
+            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
             var prefix = shaderVersion + (defines ? defines + "\n" : "");
             vertexCode = prefix + vertexCode;
             fragmentCode = prefix + fragmentCode;

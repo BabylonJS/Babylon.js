@@ -239,6 +239,7 @@ module BABYLON {
                     // Shadows
                     defines["SHADOW" + lightIndex] = false;
                     defines["SHADOWPCF" + lightIndex] = false;
+                    defines["SHADOWPOISSON" + lightIndex] = false;
                     defines["SHADOWESM" + lightIndex] = false;
                     defines["SHADOWCUBE" + lightIndex] = false;
 
@@ -385,6 +386,10 @@ module BABYLON {
 
                     if (defines["SHADOWPCF" + lightIndex]) {
                         fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
+                    }
+
+                    if (defines["SHADOWPOISSON" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWPOISSON" + lightIndex);
                     }
 
                     if (defines["SHADOWESM" + lightIndex]) {
