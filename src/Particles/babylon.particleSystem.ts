@@ -576,11 +576,10 @@
          * Its lifetime will start back at 0.
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
-            var lastParticle = <Particle>this._particles.pop();
-
-            if (lastParticle !== particle) {
-                lastParticle.copyTo(particle);
-                this._stockParticles.push(lastParticle);
+            var index = this._particles.indexOf(particle, 0);
+            if (index > -1) {
+                this._particles.splice(index, 1);
+                this._stockParticles.push(particle);
             }
         };
 
