@@ -38929,7 +38929,7 @@
             "MissingText": true
           }
         },
-        "DITHERING": {
+        "GRAIN": {
           "Naming": {
             "NotCamelCase": true
           }

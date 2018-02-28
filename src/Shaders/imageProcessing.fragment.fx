@@ -26,8 +26,8 @@ void main(void)
 	#endif
 #endif
 
-#ifdef DITHERING
-	result.rgb = dither(vUV, result.rgb, ditherVarianceAmount);
+#ifdef GRAIN
+	result.rgb = dither(vUV*(grainAnimatedSeed+1.), result.rgb, grainVarianceAmount);
 #endif
 	gl_FragColor = result;
 }

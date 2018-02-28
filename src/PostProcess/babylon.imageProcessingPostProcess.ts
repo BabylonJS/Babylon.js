@@ -310,7 +310,7 @@
             SAMPLER3DBGRMAP: false,
             IMAGEPROCESSINGPOSTPROCESS: false,
             EXPOSURE: false,
-            DITHERING: false,
+            GRAIN: false,
         }
 
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera> = null, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, imageProcessingConfiguration?: ImageProcessingConfiguration) {

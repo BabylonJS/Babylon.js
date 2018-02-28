@@ -72,7 +72,16 @@ float getRand(vec2 seed) {
 
 vec3 dither(vec2 seed, vec3 color, float varianceAmount) {
 	float rand = getRand(seed);
-	color += mix(-varianceAmount/255.0, varianceAmount/255.0, rand);
+	float grain = mix(-varianceAmount/255.0, varianceAmount/255.0, rand);
+	
+	// Add less grain when luminance is high or low
+	float lum = getLuminance(color);	
+	if(lum > 0.5){
+		lum = 0.5-(lum-0.5);
+	}
+	float grainAmount = smoothstep(0., 1., lum/0.5);
+	color += grain * grainAmount;
+
 	color = max(color, 0.0);
 	return color;
 }

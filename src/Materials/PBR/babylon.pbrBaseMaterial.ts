@@ -119,7 +119,7 @@
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
-        public DITHERING = false;
+        public GRAIN = false;
 
         public USEPHYSICALLIGHTFALLOFF = false;
         public TWOSIDEDLIGHTING = false;
