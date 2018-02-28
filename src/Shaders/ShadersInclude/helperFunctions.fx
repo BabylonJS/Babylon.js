@@ -70,7 +70,7 @@ float getRand(vec2 seed) {
 	return fract(sin(dot(seed.xy ,vec2(12.9898,78.233))) * 43758.5453);
 }
 
-float dither(vec2 seed, vec3 color, float varianceAmount) {
+float dither(vec2 seed, float varianceAmount) {
 	float rand = getRand(seed);
 	float dither = mix(-varianceAmount/255.0, varianceAmount/255.0, rand);
 	

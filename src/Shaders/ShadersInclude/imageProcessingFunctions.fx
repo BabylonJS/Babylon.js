@@ -83,7 +83,7 @@ vec4 applyImageProcessing(vec4 result) {
 
 #ifdef GRAIN
 	vec2 seed = vUV*(grainAnimatedSeed);
-	float grain = dither(seed, result.rgb, grainVarianceAmount);
+	float grain = dither(seed, grainVarianceAmount);
 
 	// Add less grain when luminance is high or low
 	float lum = getLuminance(result.rgb);
