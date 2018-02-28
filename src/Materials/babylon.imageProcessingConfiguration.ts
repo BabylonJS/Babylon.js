@@ -220,20 +220,36 @@ module BABYLON {
         public vignetteCameraFov = 0.5;
 
         @serialize()
-        private _grainVarianceAmount = 0;
+        private _grainEnabled = false;
+
         /**
-         * Amount of grain to be applied by the grain effect.
+         * If the grain effect should be enabled.
          */
-        public get grainVarianceAmount(): number {
-            return this._grainVarianceAmount;
+        public get grainEnabled(): boolean {
+            return this._grainEnabled;
         }
-        public set grainVarianceAmount(value: number) {
-            if (this._grainVarianceAmount === value) {
+        public set grainEnabled(value: boolean) {
+            if (this._grainEnabled === value) {
                 return;
             }
 
-            this._grainVarianceAmount = value;
+            this._grainEnabled = value;
             this._updateParameters();
+        }
+
+        @serialize()
+        private _grainIntensity = 30;
+        /**
+         * Amount of grain to be applied by the grain effect.
+         */
+        public get grainIntensity(): number {
+            return this._grainIntensity;
+        }
+        public set grainIntensity(value: number) {
+            if (this._grainIntensity === value) {
+                return;
+            }
+            this._grainIntensity = value;
         }
 
         @serialize()
@@ -426,7 +442,7 @@ module BABYLON {
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
             defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
-            defines.GRAIN = (this.grainVarianceAmount != 0.0);
+            defines.GRAIN = this.grainEnabled;
         }
 
         /**
@@ -485,8 +501,8 @@ module BABYLON {
                 );
             }
 
-            effect.setFloat("grainVarianceAmount", this.grainVarianceAmount);
-            effect.setFloat("grainAnimatedSeed", this.grainAnimated ? Math.random() : 1);
+            effect.setFloat("grainVarianceAmount", this.grainIntensity);
+            effect.setFloat("grainAnimatedSeed", this.grainAnimated ? Math.random() + 1 : 1);
         }
 
         /**

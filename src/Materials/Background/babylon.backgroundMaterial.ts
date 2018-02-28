@@ -64,8 +64,6 @@
          */
         public NOISE = false;
 
-
-
         /**
          * is the reflection texture in BGR color scheme? 
          * Mainly used to solve a bug in ios10 video tag
