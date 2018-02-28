@@ -294,6 +294,7 @@
 
         /**
          * Defines cache preventing GC.
+         * @ignore
          */
         private _defines: IImageProcessingConfigurationDefines & { FROMLINEARSPACE: boolean } = {
             IMAGEPROCESSING: false,

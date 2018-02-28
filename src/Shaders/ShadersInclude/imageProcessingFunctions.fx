@@ -82,7 +82,15 @@ vec4 applyImageProcessing(vec4 result) {
 #endif
 
 #ifdef GRAIN
-	result.rgb = dither(vUV*(grainAnimatedSeed+1.), result.rgb, grainVarianceAmount);
+	vec2 seed = vUV*(grainAnimatedSeed);
+	float grain = dither(seed, result.rgb, grainVarianceAmount);
+
+	// Add less grain when luminance is high or low
+	float lum = getLuminance(result.rgb);
+	float grainAmount = (cos(-PI + (lum*PI*2.))+1.)/2.;
+	result.rgb += grain * grainAmount;
+
+	result.rgb = max(result.rgb, 0.0);
 #endif
 
 	// Going back to gamma space
