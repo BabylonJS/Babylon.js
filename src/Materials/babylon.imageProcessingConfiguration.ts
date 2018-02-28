@@ -2,6 +2,7 @@ module BABYLON {
     /**
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.
+     * @ignore
      */
     export interface IImageProcessingConfigurationDefines {
         IMAGEPROCESSING: boolean;

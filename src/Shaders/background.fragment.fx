@@ -289,7 +289,7 @@ vec4 color = vec4(finalColor, finalAlpha);
 
 #ifndef GRAIN // Do not apply noise multiple times
     #ifdef NOISE
-        color.rgb += dither(vPositionW.xy, color.rgb, 0.5);
+        color.rgb += dither(vPositionW.xy, 0.5);
         color = max(color, 0.0);
     #endif
 #endif
