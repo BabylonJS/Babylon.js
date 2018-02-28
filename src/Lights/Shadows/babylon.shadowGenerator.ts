@@ -87,6 +87,7 @@
         private static _FILTER_BLUREXPONENTIALSHADOWMAP = 3;
         private static _FILTER_CLOSEEXPONENTIALSHADOWMAP = 4;
         private static _FILTER_BLURCLOSEEXPONENTIALSHADOWMAP = 5;
+        private static _FILTER_PCF = 6;
 
         /**
          * Shadow generator mode None: no filtering applied.
@@ -135,6 +136,15 @@
          */
         public static get FILTER_BLURCLOSEEXPONENTIALSHADOWMAP(): number {
             return ShadowGenerator._FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
+        }
+
+        /**
+         * Shadow generator mode PCF: Percentage Closer Filtering 
+         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
+         * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
+         */
+        public static get FILTER_PCF(): number {
+            return ShadowGenerator._FILTER_PCF;
         }
 
         private _bias = 0.00005;
@@ -275,6 +285,18 @@
                 }
             }
 
+            // Weblg1 fallback for PCF.
+            if (value === ShadowGenerator.FILTER_PCF) {
+                if (this._scene.getEngine().webGLVersion === 1) {
+                    this.usePoissonSampling = true;
+                    return;
+                }
+                this._useDepthStencilTexture = true;
+            }
+            else {
+                this._useDepthStencilTexture = false;
+            }
+
             if (this._filter === value) {
                 return;
             }
@@ -286,13 +308,13 @@
         }
 
         /**
-         * Gets if the current filter is set to Poisson Sampling aka PCF.
+         * Gets if the current filter is set to Poisson Sampling.
          */
         public get usePoissonSampling(): boolean {
             return this.filter === ShadowGenerator.FILTER_POISSONSAMPLING;
         }
         /**
-         * Sets the current filter to Poisson Sampling aka PCF.
+         * Sets the current filter to Poisson Sampling.
          */
         public set usePoissonSampling(value: boolean) {
             if (!value && this.filter !== ShadowGenerator.FILTER_POISSONSAMPLING) {
@@ -394,7 +416,7 @@
             return this.filter === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
         }
         /**
-         * Sets the current filter to fileterd "close ESM" (using the inverse of the 
+         * Sets the current filter to filtered "close ESM" (using the inverse of the 
          * exponential to prevent steep falloff artifacts).
          */
         public set useBlurCloseExponentialShadowMap(value: boolean) {
@@ -402,6 +424,22 @@
                 return;
             }
             this.filter = (value ? ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP : ShadowGenerator.FILTER_NONE);
+        }
+
+        /**
+         * Gets if the current filter is set to "PCF" (percentage closer filtering).
+         */
+        public get usePercentageCloserFiltering(): boolean {
+            return this.filter === ShadowGenerator.FILTER_PCF;
+        }
+        /**
+         * Sets the current filter to "PCF" (percentage closer filtering).
+         */
+        public set usePercentageCloserFiltering(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_PCF) {
+                return;
+            }
+            this.filter = (value ? ShadowGenerator.FILTER_PCF : ShadowGenerator.FILTER_NONE);
         }
 
         private _darkness = 0;
@@ -806,22 +844,10 @@
                 return;
             }
 
-            this._useDepthStencilTexture = false;
-            if (this._scene.getEngine().webGLVersion > 1) {
-                if (this.filter === ShadowGenerator.FILTER_NONE) {
-                    this._useDepthStencilTexture = true;
-                }
-                else {
-                    this._useDepthStencilTexture = false;
-                    this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
-                }
-            }
-            else {
-                if (this.filter === ShadowGenerator.FILTER_NONE) {
-                    this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
-                } else {
-                    this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
-                }
+            if (this.filter === ShadowGenerator.FILTER_NONE) {
+                this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
+            } else {
+                this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
             }
         }
 
@@ -913,6 +939,9 @@
 
             if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 defines.push("#define ESM");
+            }
+            else if (this.usePercentageCloserFiltering) {
+                defines.push("#define PCF");
             }
 
             var attribs = [VertexBuffer.PositionKind];
@@ -1007,12 +1036,13 @@
                 return;
             }
 
-            defines["USEDEPTHSTENCILTEXTURE"] = defines["USEDEPTHSTENCILTEXTURE"] || this._useDepthStencilTexture;
-            defines["USEDEPTHSTENCILTEXTURE" + lightIndex] = this._useDepthStencilTexture;
             defines["SHADOW" + lightIndex] = true;
 
-            if (this.usePoissonSampling) {
+            if (this.usePercentageCloserFiltering) {
                 defines["SHADOWPCF" + lightIndex] = true;
+            }
+            else if (this.usePoissonSampling) {
+                defines["SHADOWPOISSON" + lightIndex] = true;
             }
             else if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 defines["SHADOWESM" + lightIndex] = true;

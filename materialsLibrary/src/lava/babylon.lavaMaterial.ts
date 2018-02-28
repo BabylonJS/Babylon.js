@@ -37,6 +37,10 @@ module BABYLON {
         public SHADOWESM1 = false;
         public SHADOWESM2 = false;
         public SHADOWESM3 = false;
+        public SHADOWPOISSON0 = false;
+        public SHADOWPOISSON1 = false;
+        public SHADOWPOISSON2 = false;
+        public SHADOWPOISSON3 = false;
         public SHADOWPCF0 = false;
         public SHADOWPCF1 = false;
         public SHADOWPCF2 = false;

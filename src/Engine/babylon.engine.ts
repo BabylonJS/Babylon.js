@@ -2751,7 +2751,7 @@
 
             this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-            var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n" : "";
+            var shaderVersion = (this._webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
             var vertexShader = compileShader(context, vertexCode, "vertex", defines, shaderVersion);
             var fragmentShader = compileShader(context, fragmentCode, "fragment", defines, shaderVersion);
 
