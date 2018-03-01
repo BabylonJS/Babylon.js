@@ -1074,8 +1074,9 @@ var BABYLON;
                     node._babylonMesh.scaling = BABYLON.Vector3.One();
                 };
                 if (skin._loaded) {
-                    assignSkeleton();
-                    return skin._loaded;
+                    return skin._loaded.then(function () {
+                        assignSkeleton();
+                    });
                 }
                 // TODO: split into two parts so that bones are created before inverseBindMatricesData is loaded (for compiling materials).
                 return (skin._loaded = this._loadSkinInverseBindMatricesDataAsync(context, skin).then(function (inverseBindMatricesData) {
@@ -1962,7 +1963,9 @@ var BABYLON;
                             var nodeLOD = nodeLODs[indexLOD];
                             if (indexLOD !== 0) {
                                 _this._loadingNodeLOD = nodeLOD;
-                                _this._loadNodeSignals[nodeLOD._index] = new BABYLON.Deferred();
+                                if (!_this._loadNodeSignals[nodeLOD._index]) {
+                                    _this._loadNodeSignals[nodeLOD._index] = new BABYLON.Deferred();
+                                }
                             }
                             var promise = _this._loader._loadNodeAsync("#/nodes/" + nodeLOD._index, nodeLOD).then(function () {
                                 if (indexLOD !== 0) {
@@ -1971,8 +1974,10 @@ var BABYLON;
                                 }
                                 if (indexLOD !== nodeLODs.length - 1) {
                                     var nodeIndex = nodeLODs[indexLOD + 1]._index;
-                                    _this._loadNodeSignals[nodeIndex].resolve();
-                                    delete _this._loadNodeSignals[nodeIndex];
+                                    if (_this._loadNodeSignals[nodeIndex]) {
+                                        _this._loadNodeSignals[nodeIndex].resolve();
+                                        delete _this._loadNodeSignals[nodeIndex];
+                                    }
                                 }
                             });
                             if (indexLOD === 0) {
@@ -2002,13 +2007,17 @@ var BABYLON;
                             var materialLOD = materialLODs[indexLOD];
                             if (indexLOD !== 0) {
                                 _this._loadingMaterialLOD = materialLOD;
-                                _this._loadMaterialSignals[materialLOD._index] = new BABYLON.Deferred();
+                                if (!_this._loadMaterialSignals[materialLOD._index]) {
+                                    _this._loadMaterialSignals[materialLOD._index] = new BABYLON.Deferred();
+                                }
                             }
                             var promise = _this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh).then(function () {
                                 if (indexLOD !== materialLODs.length - 1) {
                                     var materialIndex = materialLODs[indexLOD + 1]._index;
-                                    _this._loadMaterialSignals[materialIndex].resolve();
-                                    delete _this._loadMaterialSignals[materialIndex];
+                                    if (_this._loadMaterialSignals[materialIndex]) {
+                                        _this._loadMaterialSignals[materialIndex].resolve();
+                                        delete _this._loadMaterialSignals[materialIndex];
+                                    }
                                 }
                             });
                             if (indexLOD === 0) {

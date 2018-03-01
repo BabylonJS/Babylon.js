@@ -62,18 +62,18 @@ module BABYLON {
             options.size = Math.abs(options.size as any) || (scene.activeCamera ? scene.activeCamera.maxZ * 0.48 : 1000);
 
             // create
-            let tempOptions:VideoTextureSettings = {loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true};
-            let material = this._material = new BABYLON.BackgroundMaterial(name+"_material", scene);
-            let texture = this._videoTexture = new BABYLON.VideoTexture(name+"_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
-            this._mesh = BABYLON.MeshBuilder.CreateIcoSphere(name+"_mesh", {
+            let tempOptions: VideoTextureSettings = { loop: options.loop, autoPlay: options.autoPlay, autoUpdateTexture: true };
+            let material = this._material = new BackgroundMaterial(name + "_material", scene);
+            let texture = this._videoTexture = new VideoTexture(name + "_texture", urlsOrVideo, scene, false, false, Texture.TRILINEAR_SAMPLINGMODE, tempOptions);
+            this._mesh = MeshBuilder.CreateIcoSphere(name + "_mesh", {
                 flat: false, // saves on vertex data
                 radius: options.size,
                 subdivisions: options.resolution,
-                sideOrientation: BABYLON.Mesh.BACKSIDE // needs to be inside out
+                sideOrientation: Mesh.BACKSIDE // needs to be inside out
             }, scene);
 
             // configure material
-            texture.coordinatesMode = BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
+            texture.coordinatesMode = Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE; // matches orientation
             texture.wrapV = Texture.CLAMP_ADDRESSMODE; // always clamp the up/down
             material.reflectionTexture = this._videoTexture;
             material.useEquirectangularFOV = true;
@@ -84,11 +84,23 @@ module BABYLON {
             this._mesh.parent = this;
 
             // optional configuration
-            if(options.clickToPlay) {
+            if (options.clickToPlay) {
                 scene.onPointerUp = () => {
                     this._videoTexture.video.play();
                 }
             }
+        }
+
+        /**
+         * Releases all associated resources
+         */
+        public dispose(): void {
+            super.dispose();
+
+            this._videoTexture.dispose();
+            this._mesh.dispose();
+            this._material.dispose();
+
         }
     }
 }

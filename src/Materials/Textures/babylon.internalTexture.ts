@@ -49,6 +49,10 @@ module BABYLON {
          * Texture content is raw 3D data
          */
         public static DATASOURCE_RAW3D = 10;
+        /**
+         * Texture content is a depth texture
+         */
+        public static DATASOURCE_DEPTHTEXTURE = 11;
 
         /**
          * Defines if the texture is ready
@@ -180,6 +184,8 @@ module BABYLON {
         /** @ignore */
         public _generateDepthBuffer: boolean;
         /** @ignore */
+        public _comparisonFunction: number = 0;
+        /** @ignore */
         public _sphericalPolynomial: Nullable<SphericalPolynomial>;
         /** @ignore */
         public _lodGenerationScale: number;
@@ -306,6 +312,22 @@ module BABYLON {
                         }
 
                         proxy = this._engine.createRenderTargetTexture(size, options);
+                    }
+                    proxy._swapAndDie(this);
+
+                    this.isReady = true;
+                    return;
+                case InternalTexture.DATASOURCE_DEPTHTEXTURE:
+                    let depthTextureOptions = {
+                        bilinearFiltering: this.samplingMode !== Texture.BILINEAR_SAMPLINGMODE,
+                        comparisonFunction: this._comparisonFunction,
+                        generateStencil: this._generateStencilBuffer,
+                    };
+
+                    if (this.isCube) {
+                        proxy = this._engine.createDepthStencilTexture({ width: this.width, height: this.height }, depthTextureOptions);
+                    } else {
+                        proxy = this._engine.createDepthStencilCubeTexture(this.width, depthTextureOptions);
                     }
                     proxy._swapAndDie(this);
 

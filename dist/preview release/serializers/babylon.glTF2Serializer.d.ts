@@ -295,6 +295,7 @@ declare module BABYLON.GLTF2 {
          * Allows the maximum specular power to be defined for material calculations.
          */
         private static maxSpecularPower;
+        private static epsilon;
         /**
          * Gets the materials from a Babylon scene and converts them to glTF materials.
          * @param scene
@@ -311,6 +312,18 @@ declare module BABYLON.GLTF2 {
                 mimeType: ImageMimeType;
             };
         }, hasTextureCoords: boolean): void;
+        /**
+         * Makes a copy of the glTF material without the texture parameters.
+         * @param originalMaterial - original glTF material.
+         * @returns glTF material without texture parameters
+         */
+        static StripTexturesFromMaterial(originalMaterial: IMaterial): IMaterial;
+        /**
+         * Specifies if the material has any texture parameters present.
+         * @param material - glTF Material.
+         * @returns boolean specifying if texture parameters are present
+         */
+        static HasTexturesPresent(material: IMaterial): boolean;
         /**
          * Converts a Babylon StandardMaterial to a glTF Metallic Roughness Material.
          * @param babylonStandardMaterial
@@ -358,6 +371,35 @@ declare module BABYLON.GLTF2 {
          * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
          */
         static ConvertPBRMetallicRoughnessMaterial(babylonPBRMetalRoughMaterial: PBRMetallicRoughnessMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
+            [fileName: string]: {
+                data: Uint8Array;
+                mimeType: ImageMimeType;
+            };
+        }, hasTextureCoords: boolean): void;
+        /**
+         * See link below for info on the material conversions from PBR Metallic/Roughness and Specular/Glossiness
+         * @link https://github.com/KhronosGroup/glTF/blob/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples/convert-between-workflows-bjs/js/babylon.pbrUtilities.js
+         * @param color - Color source to calculate brightness from.
+         * @returns number representing the perceived brightness, or zero if color is undefined.
+         */
+        static GetPerceivedBrightness(color: Color3): number;
+        /**
+         * Returns the maximum color component value.
+         * @param color
+         * @returns maximum color component value, or zero if color is null or undefined.
+         */
+        static GetMaxComponent(color: Color3): number;
+        /**
+         * Converts a Babylon PBR Metallic Roughness Material to a glTF Material.
+         * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
+         * @param mimeType - mime type to use for the textures.
+         * @param images - array of glTF image interfaces.
+         * @param textures - array of glTF texture interfaces.
+         * @param materials - array of glTF material interfaces.
+         * @param imageData - map of image file name to data.
+         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         */
+        static ConvertPBRMaterial(babylonPBRMaterial: PBRMaterial, mimeType: ImageMimeType, images: IImage[], textures: ITexture[], materials: IMaterial[], imageData: {
             [fileName: string]: {
                 data: Uint8Array;
                 mimeType: ImageMimeType;

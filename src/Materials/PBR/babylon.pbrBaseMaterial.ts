@@ -119,6 +119,7 @@
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
+        public GRAIN = false;
 
         public USEPHYSICALLIGHTFALLOFF = false;
         public TWOSIDEDLIGHTING = false;
@@ -477,11 +478,6 @@
         protected _forceNormalForward = false;
 
         /**
-         * Force metallic workflow.
-         */
-        protected _forceMetallicWorkflow = false;
-
-        /**
          * Default configuration related to image processing available in the PBR Material.
          */
         @serializeAsImageProcessingConfiguration()
@@ -822,6 +818,18 @@
             return true;
         }
 
+        /** 
+         * Specifies if the material uses metallic roughness workflow.
+         * @returns boolean specifiying if the material uses metallic roughness workflow.
+        */
+        public isMetallicWorkflow(): boolean {
+            if (this._metallic != null || this._roughness != null || this._metallicTexture) {
+                return true;
+            }
+
+            return false;
+        }
+
         private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
             this._prepareDefines(mesh, defines, useInstances, useClipPlane);
             if (!defines.isDirty) {
@@ -989,7 +997,8 @@
             defines._needNormals = true;
 
             // Textures
-            if (defines._areTexturesDirty) {
+            defines.METALLICWORKFLOW = this.isMetallicWorkflow();
+            if (defines._areTexturesDirty) {     
                 defines._needUVs = false;
                 if (scene.texturesEnabled) {
                     if (scene.getEngine().getCaps().textureLOD) {
@@ -1109,19 +1118,16 @@
                     if (StandardMaterial.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._metallicTexture, defines, "REFLECTIVITY");
-                            defines.METALLICWORKFLOW = true;
                             defines.ROUGHNESSSTOREINMETALMAPALPHA = this._useRoughnessFromMetallicTextureAlpha;
                             defines.ROUGHNESSSTOREINMETALMAPGREEN = !this._useRoughnessFromMetallicTextureAlpha && this._useRoughnessFromMetallicTextureGreen;
                             defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallnessFromMetallicTextureBlue;
                             defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                         }
                         else if (this._reflectivityTexture) {
-                            defines.METALLICWORKFLOW = false;
                             MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         } else {
-                            defines.METALLICWORKFLOW = false;
                             defines.REFLECTIVITY = false;
                         }
 
@@ -1184,12 +1190,6 @@
                 defines.USEPHYSICALLIGHTFALLOFF = this._usePhysicalLightFalloff;
 
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
-
-                if (this._forceMetallicWorkflow || (this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
-                    defines.METALLICWORKFLOW = true;
-                } else {
-                    defines.METALLICWORKFLOW = false;
-                }
 
                 if (!this.backFaceCulling && this._twoSidedLighting) {
                     defines.TWOSIDEDLIGHTING = true;

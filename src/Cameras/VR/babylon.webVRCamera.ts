@@ -109,12 +109,12 @@ module BABYLON {
         customVRButton?: HTMLButtonElement;
 
         /**
-         * To change the length of the ray for gaze/controllers. (default: 100)
+         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
          */
         rayLength?: number;
 
         /**
-         * To change the default offset from the ground to account for user's height in meters. (default: 1.7)
+         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
          */
         defaultHeight?: number;
 
@@ -531,7 +531,7 @@ module BABYLON {
 
                 // Update the gamepad to ensure the mesh is updated on the same frame as camera
                 this.controllers.forEach((controller) => {
-                    controller._deviceToWorld = this._deviceToWorld;
+                    controller._deviceToWorld.copyFrom(this._deviceToWorld);
                     controller.update();
                 });
             }
@@ -570,9 +570,13 @@ module BABYLON {
          * 'this' is the left or right camera (and NOT (!!!) the WebVRFreeCamera instance)
          */
         protected _getWebVRViewMatrix(): Matrix {
+            // Update the parent camera prior to using a child camera to avoid desynchronization
+            let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
+            parentCamera._updateCache();
+
             //WebVR 1.1
             var viewArray = this._cameraRigParams["left"] ? this._cameraRigParams["frameData"].leftViewMatrix : this._cameraRigParams["frameData"].rightViewMatrix;
-
+            
             Matrix.FromArrayToRef(viewArray, 0, this._webvrViewMatrix);
 
             if (!this.getScene().useRightHandedSystem) {
@@ -587,8 +591,6 @@ module BABYLON {
 
             // Computing target and final matrix
             this.position.addToRef(this._transformedReferencePoint, this._currentTarget);
-
-            let parentCamera: WebVRFreeCamera = this._cameraRigParams["parentCamera"];
 
             // should the view matrix be updated with scale and position offset?
             if (parentCamera.deviceScaleFactor !== 1) {
@@ -649,7 +651,7 @@ module BABYLON {
                         this._rightController = null;
                     }
                     if (webVrController.hand === "left") {
-                        this._rightController = null;
+                        this._leftController = null;
                     }
                     const controllerIndex = this.controllers.indexOf(webVrController);
                     if (controllerIndex !== -1) {
@@ -661,13 +663,15 @@ module BABYLON {
             this._onGamepadConnectedObserver = manager.onGamepadConnectedObservable.add((gamepad) => {
                 if (gamepad.type === Gamepad.POSE_ENABLED) {
                     let webVrController: WebVRController = <WebVRController>gamepad;
-                    webVrController._deviceToWorld = this._deviceToWorld;
+                    webVrController.deviceScaleFactor = this.deviceScaleFactor;
+                    webVrController._deviceToWorld.copyFrom(this._deviceToWorld);
                     if (this.webVROptions.controllerMeshes) {
                         if (webVrController.defaultModel) {
                             webVrController.defaultModel.setEnabled(true);
                         } else {
                             // Load the meshes
                             webVrController.initControllerMesh(this.getScene(), (loadedMesh) => {
+                                loadedMesh.scaling.scaleInPlace(this.deviceScaleFactor);
                                 this.onControllerMeshLoadedObservable.notifyObservers(webVrController);
                                 if (this.webVROptions.defaultLightingOnControllers) {
                                     if (!this._lightOnControllers) {

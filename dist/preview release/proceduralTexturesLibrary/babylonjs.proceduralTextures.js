@@ -1,6 +1,3 @@
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
-var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -18,6 +15,19 @@ var __extends = (this && this.__extends) || (function () {
             };
         })();
         
+
+(function universalModuleDefinition(root, factory) {
+    if(typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory(require("babylonjs"));
+    else if(typeof define === 'function' && define.amd)
+        define("babylonjs-procedural-textures", ["babylonjs"], factory);
+    else if(typeof exports === 'object')
+        exports["babylonjs-procedural-textures"] = factory(require("babylonjs"));
+    else {
+        root["BABYLON"] = factory(root["BABYLON"]);
+    }
+})(this, function(BABYLON) {
+    
 
 var BABYLON;
 (function (BABYLON) {
@@ -745,22 +755,6 @@ var BABYLON;
 
 BABYLON.Effect.ShadersStore['perlinNoiseProceduralTexturePixelShader'] = "\nprecision highp float;\n\nuniform float size;\nuniform float time;\nuniform float translationSpeed;\n\nvarying vec2 vUV;\n\nfloat r(float n)\n{\nreturn fract(cos(n*89.42)*343.42);\n}\nvec2 r(vec2 n)\n{\nreturn vec2(r(n.x*23.62-300.0+n.y*34.35),r(n.x*45.13+256.0+n.y*38.89)); \n}\nfloat worley(vec2 n,float s)\n{\nfloat dis=1.0;\nfor(int x=-1; x<=1; x++)\n{\nfor(int y=-1; y<=1; y++)\n{\nvec2 p=floor(n/s)+vec2(x,y);\nfloat d=length(r(p)+vec2(x,y)-fract(n/s));\nif (dis>d)\ndis=d;\n}\n}\nreturn 1.0-dis;\n}\nvec3 hash33(vec3 p3)\n{\np3=fract(p3*vec3(0.1031,0.11369,0.13787));\np3+=dot(p3,p3.yxz+19.19);\nreturn -1.0+2.0*fract(vec3((p3.x+p3.y)*p3.z,(p3.x+p3.z)*p3.y,(p3.y+p3.z)*p3.x));\n}\nfloat perlinNoise(vec3 p)\n{\nvec3 pi=floor(p);\nvec3 pf=p-pi;\nvec3 w=pf*pf*(3.0-2.0*pf);\nreturn mix(\nmix(\nmix(\ndot(pf-vec3(0,0,0),hash33(pi+vec3(0,0,0))),\ndot(pf-vec3(1,0,0),hash33(pi+vec3(1,0,0))),\nw.x\n),\nmix(\ndot(pf-vec3(0,0,1),hash33(pi+vec3(0,0,1))),\ndot(pf-vec3(1,0,1),hash33(pi+vec3(1,0,1))),\nw.x\n),\nw.z\n),\nmix(\nmix(\ndot(pf-vec3(0,1,0),hash33(pi+vec3(0,1,0))),\ndot(pf-vec3(1,1,0),hash33(pi+vec3(1,1,0))),\nw.x\n),\nmix(\ndot(pf-vec3(0,1,1),hash33(pi+vec3(0,1,1))),\ndot(pf-vec3(1,1,1),hash33(pi+vec3(1,1,1))),\nw.x\n),\nw.z\n),\nw.y\n);\n}\n\nvoid main(void)\n{\nvec2 uv=gl_FragCoord.xy+translationSpeed;\nfloat dis=(\n1.0+perlinNoise(vec3(uv/vec2(size,size),time*0.05)*8.0))\n*(1.0+(worley(uv,32.0)+ 0.5*worley(2.0*uv,32.0)+0.25*worley(4.0*uv,32.0))\n);\ngl_FragColor=vec4(vec3(dis/4.0),1.0);\n}\n";
 
-
-(function universalModuleDefinition(root, factory) {
-                var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
-                
-    if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = f;
-    else if(typeof define === 'function' && define.amd)
-        define(["BJSProceduralTextures"], factory);
-    else if(typeof exports === 'object')
-        exports["BJSProceduralTextures"] = f;
-    else {
-        root["BABYLON"] = f;
-    }
-})(this, function() {
+    
     return BABYLON;
 });

@@ -706,8 +706,9 @@ module BABYLON.GLTF2 {
             };
 
             if (skin._loaded) {
-                assignSkeleton();
-                return skin._loaded;
+                return skin._loaded.then(() => {
+                    assignSkeleton();
+                });
             }
 
             // TODO: split into two parts so that bones are created before inverseBindMatricesData is loaded (for compiling materials).

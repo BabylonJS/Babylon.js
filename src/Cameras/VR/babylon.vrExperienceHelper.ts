@@ -116,7 +116,17 @@ module BABYLON {
             this._laserPointer.rotation.x = Math.PI / 2;
             this._laserPointer.position.z = -0.5;
             this._laserPointer.isVisible = false;
-            this._laserPointer.parent = webVRController.mesh;
+
+            if(!webVRController.mesh){
+                // Create an empty mesh that is used prior to loading the high quality model
+                var preloadMesh = new Mesh("preloadControllerMesh", scene);
+                var preloadPointerPose = new Mesh(PoseEnabledController.POINTING_POSE, scene);
+                preloadPointerPose.rotation.x = -0.7;
+                preloadMesh.addChild(preloadPointerPose);
+                webVRController.attachToMesh(preloadMesh);
+            }
+
+            this._setLaserPointerParent(webVRController.mesh!);
         }
 
         _getForwardRay(length:number):Ray{
@@ -138,6 +148,22 @@ module BABYLON {
         }
 
         public _setLaserPointerParent(mesh:AbstractMesh){
+            var makeNotPick = (root: AbstractMesh) => {
+                root.name += " laserPointer";
+                root.getChildMeshes().forEach((c) => {
+                    makeNotPick(c);
+                });
+            }
+            makeNotPick(mesh);
+            var childMeshes = mesh.getChildMeshes();
+
+            for (var i = 0; i < childMeshes.length; i++) {
+                if (childMeshes[i].name && childMeshes[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
+                    mesh = childMeshes[i];
+                    this.webVRController._pointingPoseNode = mesh;
+                    break;
+                }
+            }
             this._laserPointer.parent = mesh;
         }
 
@@ -486,6 +512,11 @@ module BABYLON {
             }
             this._defaultHeight = webVROptions.defaultHeight;
 
+            if(webVROptions.positionScale){
+                this._rayLength *= webVROptions.positionScale;
+                this._defaultHeight *= webVROptions.positionScale;
+            }
+
             // Set position
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
@@ -527,6 +558,8 @@ module BABYLON {
             }
             this._webVRCamera = new WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
             this._webVRCamera.useStandingMatrix()
+
+            this._cameraGazer = new VRExperienceHelperCameraGazer(()=>{return this.currentVRCamera;}, scene);
             // Create default button
             if (!this._useCustomVRButton) {
                 this._btnVR = <HTMLButtonElement>document.createElement("BUTTON");
@@ -624,17 +657,19 @@ module BABYLON {
             //create easing functions
             this._circleEase = new CircleEase();
             this._circleEase.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-
-            this._cameraGazer = new VRExperienceHelperCameraGazer(()=>{return this.currentVRCamera;}, scene)
         }
 
         // Raised when one of the controller has loaded successfully its associated default mesh
         private _onDefaultMeshLoaded(webVRController: WebVRController) {
             if(this.leftController && this.leftController.webVRController == webVRController){
-                this._tryEnableInteractionOnController(this.leftController);
+                if(webVRController.mesh){
+                    this.leftController._setLaserPointerParent(webVRController.mesh)
+                }
             }
             if(this.rightController && this.rightController.webVRController == webVRController){
-                this._tryEnableInteractionOnController(this.rightController);
+                if(webVRController.mesh){
+                    this.rightController._setLaserPointerParent(webVRController.mesh)
+                }
             }
             
             try {
@@ -973,6 +1008,7 @@ module BABYLON {
                 this._teleportationInitialized = true;
                 if (this._isDefaultTeleportationTarget) {
                     this._createTeleportationCircles();
+                    this._teleportationTarget.scaling.scaleInPlace(this._webVRCamera.deviceScaleFactor);
                 }
             }
         }
@@ -1052,22 +1088,7 @@ module BABYLON {
         private _enableInteractionOnController(controller: VRExperienceHelperControllerGazer) {
             var controllerMesh = controller.webVRController.mesh;
             if (controllerMesh) {
-                var makeNotPick = (root: AbstractMesh) => {
-                    root.name += " laserPointer";
-                    root.getChildMeshes().forEach((c) => {
-                        makeNotPick(c);
-                    });
-                }
-                makeNotPick(controllerMesh);
-                var childMeshes = controllerMesh.getChildMeshes();
-
-                for (var i = 0; i < childMeshes.length; i++) {
-                    if (childMeshes[i].name && childMeshes[i].name.indexOf("POINTING_POSE") >= 0) {
-                        controllerMesh = childMeshes[i];
-                        break;
-                    }
-                }
-                controller._setLaserPointerParent(controllerMesh);
+                
                 controller._interactionsEnabled = true;
                 controller._activatePointer();
                 controller.webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
@@ -1429,7 +1450,7 @@ module BABYLON {
             }
             // Add height to account for user's height offset
             if (this.isInVRMode) {
-                this._workingVector.y += this.webVRCamera.deviceDistanceToRoomGround();
+                this._workingVector.y += this.webVRCamera.deviceDistanceToRoomGround() * this._webVRCamera.deviceScaleFactor;
             } else {
                 this._workingVector.y += this._defaultHeight;
             }
@@ -1673,7 +1694,7 @@ module BABYLON {
             if (this.isInVRMode) {
                 this.exitVR();
             }
-
+            
             if (this._postProcessMove) {
                 this._postProcessMove.dispose();
             }

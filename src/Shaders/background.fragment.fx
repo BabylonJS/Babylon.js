@@ -190,6 +190,10 @@ vec3 reflectionColor = vec3(1., 1., 1.);
         reflectionColor = toLinearSpace(reflectionColor.rgb);
     #endif
 
+    #ifdef REFLECTIONBGR
+        reflectionColor = reflectionColor.bgr;
+    #endif
+
     // _____________________________ Levels _____________________________________
     reflectionColor *= vReflectionInfos.x;
 #endif
@@ -283,8 +287,11 @@ vec4 color = vec4(finalColor, finalAlpha);
     color.rgb *= color.a;
 #endif
 
-#ifdef NOISE
-    color.rgb = dither(vPositionW.xy, color.rgb);
+#ifndef GRAIN // Do not apply noise multiple times
+    #ifdef NOISE
+        color.rgb += dither(vPositionW.xy, 0.5);
+        color = max(color, 0.0);
+    #endif
 #endif
 
     gl_FragColor = color;

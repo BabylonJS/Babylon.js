@@ -1,6 +1,3 @@
-var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
-var BABYLON = babylonDependency;
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
 var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -18,6 +15,19 @@ var __extends = (this && this.__extends) || (function () {
             };
         })();
         
+
+(function universalModuleDefinition(root, factory) {
+    if(typeof exports === 'object' && typeof module === 'object')
+        module.exports = factory(require("babylonjs"));
+    else if(typeof define === 'function' && define.amd)
+        define("babylonjs-loaders", ["babylonjs"], factory);
+    else if(typeof exports === 'object')
+        exports["babylonjs-loaders"] = factory(require("babylonjs"));
+    else {
+        root["BABYLON"] = factory(root["BABYLON"]);
+    }
+})(this, function(BABYLON) {
+    
 var BABYLON;
 (function (BABYLON) {
     var STLFileLoader = /** @class */ (function () {
@@ -4218,8 +4228,9 @@ var BABYLON;
                     node._babylonMesh.scaling = BABYLON.Vector3.One();
                 };
                 if (skin._loaded) {
-                    assignSkeleton();
-                    return skin._loaded;
+                    return skin._loaded.then(function () {
+                        assignSkeleton();
+                    });
                 }
                 // TODO: split into two parts so that bones are created before inverseBindMatricesData is loaded (for compiling materials).
                 return (skin._loaded = this._loadSkinInverseBindMatricesDataAsync(context, skin).then(function (inverseBindMatricesData) {
@@ -5097,7 +5108,9 @@ var BABYLON;
                             var nodeLOD = nodeLODs[indexLOD];
                             if (indexLOD !== 0) {
                                 _this._loadingNodeLOD = nodeLOD;
-                                _this._loadNodeSignals[nodeLOD._index] = new BABYLON.Deferred();
+                                if (!_this._loadNodeSignals[nodeLOD._index]) {
+                                    _this._loadNodeSignals[nodeLOD._index] = new BABYLON.Deferred();
+                                }
                             }
                             var promise = _this._loader._loadNodeAsync("#/nodes/" + nodeLOD._index, nodeLOD).then(function () {
                                 if (indexLOD !== 0) {
@@ -5106,8 +5119,10 @@ var BABYLON;
                                 }
                                 if (indexLOD !== nodeLODs.length - 1) {
                                     var nodeIndex = nodeLODs[indexLOD + 1]._index;
-                                    _this._loadNodeSignals[nodeIndex].resolve();
-                                    delete _this._loadNodeSignals[nodeIndex];
+                                    if (_this._loadNodeSignals[nodeIndex]) {
+                                        _this._loadNodeSignals[nodeIndex].resolve();
+                                        delete _this._loadNodeSignals[nodeIndex];
+                                    }
                                 }
                             });
                             if (indexLOD === 0) {
@@ -5137,13 +5152,17 @@ var BABYLON;
                             var materialLOD = materialLODs[indexLOD];
                             if (indexLOD !== 0) {
                                 _this._loadingMaterialLOD = materialLOD;
-                                _this._loadMaterialSignals[materialLOD._index] = new BABYLON.Deferred();
+                                if (!_this._loadMaterialSignals[materialLOD._index]) {
+                                    _this._loadMaterialSignals[materialLOD._index] = new BABYLON.Deferred();
+                                }
                             }
                             var promise = _this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh).then(function () {
                                 if (indexLOD !== materialLODs.length - 1) {
                                     var materialIndex = materialLODs[indexLOD + 1]._index;
-                                    _this._loadMaterialSignals[materialIndex].resolve();
-                                    delete _this._loadMaterialSignals[materialIndex];
+                                    if (_this._loadMaterialSignals[materialIndex]) {
+                                        _this._loadMaterialSignals[materialIndex].resolve();
+                                        delete _this._loadMaterialSignals[materialIndex];
+                                    }
                                 }
                             });
                             if (indexLOD === 0) {
@@ -5457,22 +5476,6 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_lights.js.map
 
-
-(function universalModuleDefinition(root, factory) {
-                var f = factory();
-                if (root && root["BABYLON"]) {
-                    return;
-                }
-                
-    if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = f;
-    else if(typeof define === 'function' && define.amd)
-        define(["BJSLoaders"], factory);
-    else if(typeof exports === 'object')
-        exports["BJSLoaders"] = f;
-    else {
-        root["BABYLON"] = f;
-    }
-})(this, function() {
+    
     return BABYLON;
 });

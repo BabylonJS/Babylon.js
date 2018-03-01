@@ -6,7 +6,7 @@
 - Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments and what's new updates are now mandatory ([sebavan](https://github.com/sebavan))
 - Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
-- `WebVRCamera` now supports GearVR ([brianzinn](https://github.com/brianzinn))
+- `WebVRCamera` add basic support for Daydream and Gear VR ([brianzinn](https://github.com/brianzinn))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
 - Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 - Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
@@ -14,12 +14,13 @@
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
-- Particle System SubEmitters- Spawn new Sub emitter when particles dies and Cone/Sphere shapes emitters ([IbraheemOsama](https://github.com/IbraheemOsama))
+- Added depth of field, MSAA, sharpening, grain and chromatic aberration effect to the default pipeline ([trevordev](https://github.com/trevordev))
 
 ## Updates
 
 - Tons of functions and classes received the code comments they deserved (All the community)
+- New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))
+- New `Texture.UseSerializedUrlIfAny` static property to let textures serialize complete URL instead of using side by side loading ([deltakosh](https://github.com/deltakosh))
 - Added `particleSystem.reset()` to clear a particle system ([deltakosh](https://github.com/deltakosh))
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
 - Improved [SceneOptimizer](http://doc.babylonjs.com/how_to/how_to_use_sceneoptimizer) to provide better adaptability ([deltakosh](https://github.com/deltakosh))
@@ -51,7 +52,7 @@
 - (Viewer) Scene Optimizer intergrated in viewer. ([RaananW](https://github.com/RaananW))
 - (Viewer) The viewer supports custom shaders in the configuration. ([RaananW](https://github.com/RaananW))
 - Documented PostProcessRenderEffect, DefaultRenderingPipeline, BlurPostProcess, DepthOfFieldEffect, PostProcess, PostProcessManager, Effect classes ([trevordev](https://github.com/trevordev))
-- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie)) 
+- SPS internal storage of each solid particle rotation matrix ([jbousquie](https://github.com/jbousquie))
 - SPS particle parenting feature ([jbousquie](https://github.com/jbousquie))
 - (Viewer) Introducing the viewer labs - testing new features. ([RaananW](https://github.com/RaananW))
 - KeepAssets class and AssetContainer.moveAllFromScene ([HoloLite](http://www.html5gamedevs.com/profile/28694-hololite/) [trevordev](https://github.com/trevordev))
@@ -78,6 +79,11 @@
 - (Viewer) XHR requests not use Tools.LoadFile and are disposed correctly - [#3671](https://github.com/BabylonJS/Babylon.js/issues/3671) ([RaananW](https://github.com/RaananW))
 - Added `Tools.WorkerPool` class for web worker management. ([bghgary](https://github.com/bghgary))
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
+- Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
+- NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
+- WebVRExperienceHelper will create an empty controller model so that controller interactions can be used while the actual model is still loading ([trevordev](https://github.com/trevordev))
+- Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
+- Supports Environment Drag and Drop in Sandbox ([sebavan](https://github.com/sebavan))
 
 ## Bug fixes
 
@@ -88,6 +94,13 @@
 - Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
+- Scale vr controllers by deviceScale when it is set in VRExperienceHelper ([trevordev](https://github.com/trevordev))
+- (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
+- AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
+- Collision worker didn't initialize instanced meshes correctly - [#3819](https://github.com/BabylonJS/Babylon.js/issues/3819) ([RaananW](https://github.com/RaananW))
+- postMessage calls in webworkers were fixed. ([RaananW](https://github.com/RaananW))
+- Fixed WebCam Texture on Firefox and Edge - [#3825](https://github.com/BabylonJS/Babylon.js/issues/3825) ([sebavan](https://github.com/sebavan))
+- Add onLoadObservable on VideoTexture - [#3845](https://github.com/BabylonJS/Babylon.js/issues/3845) ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 
