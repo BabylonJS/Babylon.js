@@ -389,6 +389,11 @@
             }
             this._reset();
             
+            if (this.fxaaEnabled) {
+                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
+            }
+
             if (this.sharpenEnabled) {
                 this.addEffect(this._sharpenEffect);
             }
@@ -448,12 +453,7 @@
                 }
             }
 
-            if (this.fxaaEnabled) {
-                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
-
-                this.fxaa.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
-            } else if (this._hdr && this.imageProcessing) {
+            if (this._hdr && this.imageProcessing) {
                 this.finalMerge = this.imageProcessing;
             }
             else {
@@ -469,17 +469,11 @@
                     if (this.imageProcessing) {
                         this.imageProcessing.shareOutputWith(this.pass);
                         this.imageProcessing.autoClear = false;
-                    } else if (this.fxaa) {
-                        this.fxaa.shareOutputWith(this.pass);
                     } else {
                         this.finalMerge.shareOutputWith(this.pass);
                     }
                 } else {
-                    if (this.fxaa) {
-                        this.fxaa.shareOutputWith(this.pass);
-                    } else {
-                        this.finalMerge.shareOutputWith(this.pass);
-                    }
+                    this.finalMerge.shareOutputWith(this.pass);
                 }
             }
 
