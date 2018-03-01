@@ -5,7 +5,7 @@
      */
     export class DefaultRenderingPipeline extends PostProcessRenderPipeline implements IDisposable, IAnimatable {
         private _scene: Scene;
-
+        private _originalCameras:Array<Camera> = [];
         /**
 		 * ID of the sharpen post process,
 		 */
@@ -52,6 +52,7 @@
 		 * Sharpen post process which will apply a sharpen convolution to enhance edges
 		 */
         public sharpen: SharpenPostProcess;
+        private _sharpenEffect: PostProcessRenderEffect;
         /**
 		 * First pass of bloom to capture the original image texture for later use.
 		 */
@@ -92,6 +93,7 @@
 		 * Chromatic aberration post process which will shift rgb colors in the image
 		 */
         public chromaticAberration: ChromaticAberrationPostProcess;
+        private _chromaticAberrationEffect: PostProcessRenderEffect;
 
         /**
          * Animations which can be used to tweak settings over a period of time
@@ -228,6 +230,21 @@
                 return;
             }
             this._depthOfFieldBlurLevel = value;
+            
+            // recreate dof and dispose old as this setting is not dynamic
+            var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
+            var oldDof = this.depthOfField;
+
+            this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+            this.depthOfField.focalLength = oldDof.focalLength;
+            this.depthOfField.focusDistance = oldDof.focusDistance;
+            this.depthOfField.fStop = oldDof.fStop;
+            this.depthOfField.lensSize = oldDof.lensSize;
+            
+            for (var i = 0; i < this._cameras.length; i++) {
+                oldDof.disposeEffects(this._cameras[i]);
+            }
+
             this._buildPipeline();
         }
 
@@ -310,6 +327,7 @@
         constructor(name: string, hdr: boolean, scene: Scene, cameras?: Camera[], automaticBuild = true) {
             super(scene.getEngine(), name);
             this._cameras = cameras ||  [];
+            this._originalCameras = this._cameras.slice();
 
             this._buildAllowed = automaticBuild;
 
@@ -333,6 +351,16 @@
             // Attach
             scene.postProcessRenderPipelineManager.addPipeline(this);
 
+            var engine = this._scene.getEngine();
+            this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
+
+            var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
+            this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+
+            this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
+            
             this._buildPipeline();
         }
 
@@ -354,18 +382,18 @@
             var engine = this._scene.getEngine();
 
             this._disposePostProcesses();
+            if (this._cameras !== null) {
+                this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
+                // get back cameras to be used to reattach pipeline
+                this._cameras = this._originalCameras.slice();
+            }
             this._reset();
-
+            
             if (this.sharpenEnabled) {
-                this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true));
+                this.addEffect(this._sharpenEffect);
             }
 
-            if(this.depthOfFieldEnabled){
-                // Enable and get current depth map
-                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
-
-                this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+            if (this.depthOfFieldEnabled) {
                 this.addEffect(this.depthOfField);
             }
 
@@ -456,15 +484,13 @@
             }
 
             if (this.chromaticAberrationEnabled) {
-                this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true));
+                this.addEffect(this._chromaticAberrationEffect);
             }
-
 
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
-            
+
             if(this.msaaEnabled){
                 if(!this._enableMSAAOnFirstPostProcess()){
                     BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
@@ -472,13 +498,9 @@
             }
         }
 
-        private _disposePostProcesses(): void {
+        private _disposePostProcesses(disposeNonRecreated = false): void {
             for (var i = 0; i < this._cameras.length; i++) {
                 var camera = this._cameras[i];
-
-                if (this.sharpen) {
-                    this.sharpen.dispose(camera);
-                }
 
                 if (this.pass) {
                     this.pass.dispose(camera);
@@ -512,16 +534,22 @@
                     this.finalMerge.dispose(camera);
                 }
 
-                if(this.depthOfField){
-                    this.depthOfField.disposeEffects(camera);
-                }
-
-                if(this.chromaticAberration){
-                    this.chromaticAberration.dispose(camera);
+                // These are created in the constructor and should not be disposed on every pipeline change
+                if(disposeNonRecreated){
+                    if (this.sharpen) {
+                        this.sharpen.dispose(camera);
+                    }
+    
+                    if(this.depthOfField){
+                        this.depthOfField.disposeEffects(camera);
+                    }
+    
+                    if(this.chromaticAberration){
+                        this.chromaticAberration.dispose(camera);
+                    }
                 }
             }
 
-            (<any>this.sharpen) = null;
             (<any>this.pass) = null;
             (<any>this.highlights) = null;
             (<any>this.blurX) = null;
@@ -530,15 +558,19 @@
             (<any>this.imageProcessing) = null;
             (<any>this.fxaa) = null;
             (<any>this.finalMerge) = null;
-            (<any>this.depthOfField) = null;
-            (<any>this.chromaticAberration) = null;
+
+            if(disposeNonRecreated){
+                (<any>this.sharpen) = null;
+                (<any>this.depthOfField) = null;
+                (<any>this.chromaticAberration) = null;
+            } 
         }
 
         /**
          * Dispose of the pipeline and stop all post processes
          */
         public dispose(): void {
-            this._disposePostProcesses();
+            this._disposePostProcesses(true);
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
 
