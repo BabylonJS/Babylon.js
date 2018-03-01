@@ -77,10 +77,10 @@
             this.cellIndex = this.particleSystem.startSpriteCellID;
 
             if (this.particleSystem.spriteCellChangeSpeed == 0) {
-                this.updateCellIndex = this.updateCellIndexWithSpeedCalculated;
+                this.updateCellIndex = this._updateCellIndexWithSpeedCalculated;
             }
             else {
-                this.updateCellIndex = this.updateCellIndexWithCustomSpeed;
+                this.updateCellIndex = this._updateCellIndexWithCustomSpeed;
             }
         }
 
@@ -90,7 +90,7 @@
          */
         public updateCellIndex: (scaledUpdateSpeed: number) => void;
 
-        private updateCellIndexWithSpeedCalculated(scaledUpdateSpeed: number): void {
+        private _updateCellIndexWithSpeedCalculated(scaledUpdateSpeed: number): void {
             //   (ageOffset / scaledUpdateSpeed) / available cells
             var numberOfScaledUpdatesPerCell = ((this.lifeTime - this.age) / scaledUpdateSpeed) / (this.particleSystem.endSpriteCellID + 1 - this.cellIndex);
 
@@ -104,7 +104,7 @@
             }
         }
 
-        private updateCellIndexWithCustomSpeed(): void {
+        private _updateCellIndexWithCustomSpeed(): void {
             if (this._currentFrameCounter >= this.particleSystem.spriteCellChangeSpeed) {
                 this.cellIndex++;
                 this._currentFrameCounter = 0;
