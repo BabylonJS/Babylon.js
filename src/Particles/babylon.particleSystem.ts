@@ -420,9 +420,9 @@
                     particle.age += this._scaledUpdateSpeed;
 
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                        this._emitFromParticle(particle);
                         this.recycleParticle(particle);
                         index--;
-                        this._emitFromParticle(particle);
                         continue;
                     }
                     else {
@@ -576,11 +576,12 @@
          * Its lifetime will start back at 0.
          */
         public recycleParticle: (particle: Particle) => void = (particle) => {
-            var index = this._particles.indexOf(particle, 0);
-            if (index > -1) {
-                this._particles.splice(index, 1);
-                this._stockParticles.push(particle);
+            var lastParticle = <Particle>this._particles.pop();
+
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
             }
+            this._stockParticles.push(lastParticle);
         };
 
         private _stopSubEmitters(): void {
@@ -628,7 +629,7 @@
 
             var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
 
-            var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position);
+            var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position.clone());
             this.activeSubSystems.push(subSystem);
             subSystem.start();
         }
