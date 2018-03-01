@@ -81,71 +81,56 @@
      * Documentation: https://doc.babylonjs.com/babylon101/shadows
      */
     export class ShadowGenerator implements IShadowGenerator {
-        private static _FILTER_NONE = 0;
-        private static _FILTER_EXPONENTIALSHADOWMAP = 1;
-        private static _FILTER_POISSONSAMPLING = 2;
-        private static _FILTER_BLUREXPONENTIALSHADOWMAP = 3;
-        private static _FILTER_CLOSEEXPONENTIALSHADOWMAP = 4;
-        private static _FILTER_BLURCLOSEEXPONENTIALSHADOWMAP = 5;
-        private static _FILTER_PCF = 6;
-
         /**
          * Shadow generator mode None: no filtering applied.
          */
-        public static get FILTER_NONE(): number {
-            return ShadowGenerator._FILTER_NONE;
-        }
-
-        /**
-         * Shadow generator mode Poisson Sampling: Percentage Closer Filtering.
-         * (Multiple Tap around evenly distributed around the pixel are used to evaluate the shadow strength)
-         */
-        public static get FILTER_POISSONSAMPLING(): number {
-            return ShadowGenerator._FILTER_POISSONSAMPLING;
-        }
-
+        public static readonly FILTER_NONE = 0;
         /**
          * Shadow generator mode ESM: Exponential Shadow Mapping.
          * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
          */
-        public static get FILTER_EXPONENTIALSHADOWMAP(): number {
-            return ShadowGenerator._FILTER_EXPONENTIALSHADOWMAP;
-        }
-
+        public static readonly FILTER_EXPONENTIALSHADOWMAP = 1;
+        /**
+         * Shadow generator mode Poisson Sampling: Percentage Closer Filtering.
+         * (Multiple Tap around evenly distributed around the pixel are used to evaluate the shadow strength)
+         */
+        public static readonly FILTER_POISSONSAMPLING = 2;
         /**
          * Shadow generator mode ESM: Blurred Exponential Shadow Mapping.
          * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
          */
-        public static get FILTER_BLUREXPONENTIALSHADOWMAP(): number {
-            return ShadowGenerator._FILTER_BLUREXPONENTIALSHADOWMAP;
-        }
-
+        public static readonly FILTER_BLUREXPONENTIALSHADOWMAP = 3;
         /**
          * Shadow generator mode ESM: Exponential Shadow Mapping using the inverse of the exponential preventing 
          * edge artifacts on steep falloff.
          * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
          */
-        public static get FILTER_CLOSEEXPONENTIALSHADOWMAP(): number {
-            return ShadowGenerator._FILTER_CLOSEEXPONENTIALSHADOWMAP;
-        }
-
+        public static readonly FILTER_CLOSEEXPONENTIALSHADOWMAP = 4;
         /**
          * Shadow generator mode ESM: Blurred Exponential Shadow Mapping using the inverse of the exponential preventing 
          * edge artifacts on steep falloff.
          * (http://developer.download.nvidia.com/presentations/2008/GDC/GDC08_SoftShadowMapping.pdf)
          */
-        public static get FILTER_BLURCLOSEEXPONENTIALSHADOWMAP(): number {
-            return ShadowGenerator._FILTER_BLURCLOSEEXPONENTIALSHADOWMAP;
-        }
-
+        public static readonly FILTER_BLURCLOSEEXPONENTIALSHADOWMAP = 5;
         /**
          * Shadow generator mode PCF: Percentage Closer Filtering 
          * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
          * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
          */
-        public static get FILTER_PCF(): number {
-            return ShadowGenerator._FILTER_PCF;
-        }
+        public static readonly FILTER_PCF = 6;
+
+        /**
+         * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
+         */
+        public static readonly PCF_HIGH_QUALITY = 0;
+        /**
+         * Execute PCF on a 3*3 kernel being a good tradeoff for quality/perf cross devices.
+         */
+        public static readonly PCF_MEDIUM_QUALITY = 1;
+        /**
+         * Execute PCF on a 1*1 kernel being a the lowest quality but the fastest.
+         */
+        public static readonly PCF_LOW_QUALITY = 2;
 
         private _bias = 0.00005;
         /**
@@ -281,6 +266,11 @@
                 }
                 else if (value === ShadowGenerator.FILTER_BLURCLOSEEXPONENTIALSHADOWMAP) {
                     this.useCloseExponentialShadowMap = true;
+                    return;
+                }
+                // PCF on cubemap would also be expensive
+                else if (value === ShadowGenerator.FILTER_PCF) {
+                    this.usePoissonSampling = true;
                     return;
                 }
             }
@@ -440,6 +430,22 @@
                 return;
             }
             this.filter = (value ? ShadowGenerator.FILTER_PCF : ShadowGenerator.FILTER_NONE);
+        }
+
+        private _percentageCloserFilteringQuality = ShadowGenerator.PCF_HIGH_QUALITY;
+        /**
+         * Gets the PCF Quality.
+         * Only valid if usePercentageCloserFiltering is true.
+         */
+        public get percentageCloserFilteringQuality(): number {
+            return this._percentageCloserFilteringQuality;
+        }
+        /**
+         * Sets the PCF Quality.
+         * Only valid if usePercentageCloserFiltering is true.
+         */
+        public set percentageCloserFilteringQuality(percentageCloserFilteringQuality: number) {
+            this._percentageCloserFilteringQuality = percentageCloserFilteringQuality;
         }
 
         private _darkness = 0;
@@ -1040,6 +1046,13 @@
 
             if (this.usePercentageCloserFiltering) {
                 defines["SHADOWPCF" + lightIndex] = true;
+                if (this._percentageCloserFilteringQuality === ShadowGenerator.PCF_LOW_QUALITY) {
+                    defines["SHADOWLOWQUALITY" + lightIndex] = true;
+                }
+                else if (this._percentageCloserFilteringQuality === ShadowGenerator.PCF_MEDIUM_QUALITY) {
+                    defines["SHADOWMEDIUMQUALITY" + lightIndex] = true;
+                }
+                // else default to low.
             }
             else if (this.usePoissonSampling) {
                 defines["SHADOWPOISSON" + lightIndex] = true;
@@ -1085,13 +1098,16 @@
                 effect.setMatrix("lightMatrix" + lightIndex, this.getTransformMatrix());
             }
 
+            // Only PCF uses depth stencil texture.
             if (this._useDepthStencilTexture) {
                 effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+                light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), shadowMap.getSize().width, 1 / shadowMap.getSize().width, this.frustumEdgeFalloff, lightIndex);
             }
             else {
                 effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+                light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
             }
-            light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
+
             light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
         }
 

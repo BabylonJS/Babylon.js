@@ -50,10 +50,12 @@
 					#endif
 				#else
 					#if defined(SHADOWPCF{X})
-						#if defined(SHADOWCUBE{X})
-							shadow = computeShadowWithPCFCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+						#if defined(SHADOWLOWQUALITY{X})
+							shadow = computeShadowWithPCF1(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+						#elif defined(SHADOWMEDIUMQUALITY{X})
+							shadow = computeShadowWithPCF3(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
 						#else
-							shadow = computeShadowWithPCF(vPositionFromLight{X}, vDepthMetric{X}, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+							shadow = computeShadowWithPCF5(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
 						#endif
 					#else
 						#if defined(SHADOWCUBE{X})

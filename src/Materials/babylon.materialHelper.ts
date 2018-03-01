@@ -242,6 +242,8 @@ module BABYLON {
                     defines["SHADOWPOISSON" + lightIndex] = false;
                     defines["SHADOWESM" + lightIndex] = false;
                     defines["SHADOWCUBE" + lightIndex] = false;
+                    defines["SHADOWLOWQUALITY" + lightIndex] = false;
+                    defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
 
                     if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
