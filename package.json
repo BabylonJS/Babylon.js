@@ -9,7 +9,7 @@
     ],
     "name": "babylonjs",
     "description": "Babylon.js is a JavaScript 3D engine based on webgl.",
-    "version": "3.2.0-alphaA",
+    "version": "3.2.0-alphaB",
     "repository": {
         "type": "git",
         "url": "https://github.com/BabylonJS/Babylon.js.git"

@@ -4101,6 +4101,7 @@ var BABYLON;
             _this.SAMPLER3DBGRMAP = false;
             _this.IMAGEPROCESSINGPOSTPROCESS = false;
             _this.EXPOSURE = false;
+            _this.GRAIN = false;
             _this.rebuild();
             return _this;
         }

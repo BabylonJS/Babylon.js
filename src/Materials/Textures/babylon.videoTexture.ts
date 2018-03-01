@@ -142,6 +142,10 @@
 
             this._texture.isReady = true;
             this._updateInternalTexture();
+
+            if (this._onLoadObservable && this._onLoadObservable.hasObservers()) {
+                this.onLoadObservable.notifyObservers(this);
+            }
         };
 
         private reset = (): void => {
