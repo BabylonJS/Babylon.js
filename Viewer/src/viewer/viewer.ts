@@ -600,10 +600,8 @@ export abstract class AbstractViewer {
 
             if (unitSize) {
                 meshesToNormalize.forEach(mesh => {
-                    console.log(mesh.scaling.x)
                     mesh.normalizeToUnitCube(true);
                     mesh.computeWorldMatrix(true);
-                    console.log(mesh.scaling.x)
                 });
             }
             if (center) {

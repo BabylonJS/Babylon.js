@@ -64,7 +64,12 @@
          */
         public NOISE = false;
 
-        // Image Processing Configuration.
+        /**
+         * is the reflection texture in BGR color scheme? 
+         * Mainly used to solve a bug in ios10 video tag
+         */
+        public REFLECTIONBGR = false;
+
         public IMAGEPROCESSING = false;
         public VIGNETTE = false;
         public VIGNETTEBLENDMODEMULTIPLY = false;
@@ -78,6 +83,7 @@
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
+        public GRAIN = false;
 
         // Reflection.
         public REFLECTION = false;
@@ -521,6 +527,12 @@
             (<ImageProcessingConfiguration>this.imageProcessingConfiguration).colorCurves = value;
         }
 
+        /**
+         * Due to a bug in iOS10, video tags (which are using the background material) are in BGR and not RGB.
+         * Setting this flag to true (not done automatically!) will convert it back to RGB.
+         */
+        public switchToBGR: boolean = false;
+
         // Temp values kept as cache in the material.
         private _renderTargets = new SmartArray<RenderTargetTexture>(16);
         private _reflectionControls = Vector4.Zero();
@@ -635,6 +647,7 @@
                         defines.REFLECTIONMAP_OPPOSITEZ = this.getScene().useRightHandedSystem ? !reflectionTexture.invertZ : reflectionTexture.invertZ;
                         defines.LODINREFLECTIONALPHA = reflectionTexture.lodLevelInAlpha;
                         defines.EQUIRECTANGULAR_RELFECTION_FOV = this.useEquirectangularFOV;
+                        defines.REFLECTIONBGR = this.switchToBGR;
 
                         if (reflectionTexture.coordinatesMode === Texture.INVCUBIC_MODE) {
                             defines.INVERTCUBICMAP = true;

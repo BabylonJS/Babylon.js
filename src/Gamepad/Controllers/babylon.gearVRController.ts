@@ -26,7 +26,7 @@ module BABYLON {
             });
         }
 
-        protected handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
+        protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             if (buttonIdx < this._buttonIndexToObservableNameMap.length) {
                 const observableName : string = this._buttonIndexToObservableNameMap[buttonIdx];
                 

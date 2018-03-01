@@ -147,6 +147,13 @@
         public set scaling(newScaling: Vector3) {
             this.setScale(newScaling.x, newScaling.y, newScaling.z);
         }
+        
+        /**
+         * Gets the animation properties override
+         */
+        public get animationPropertiesOverride(): AnimationPropertiesOverride {
+            return this._skeleton.animationPropertiesOverride;
+        }
 
         // Methods
         public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {

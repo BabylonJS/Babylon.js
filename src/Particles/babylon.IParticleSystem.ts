@@ -131,8 +131,9 @@ module BABYLON {
         render(): number;
         /**
          * Dispose the particle system and frees its associated resources.
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
          */
-        dispose(): void;
+        dispose(disposeTexture?: boolean): void;
         /**
          * Clones the particle system.
          * @param name The name of the cloned object

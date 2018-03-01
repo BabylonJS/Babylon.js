@@ -84,7 +84,7 @@ module BABYLON {
         public get boundingBoxSize(): Vector3 {
             return this._boundingBoxSize;
         }
-        
+
         /**
          * Instantiates an HDRTexture from the following parameters.
          * 
@@ -472,10 +472,10 @@ module BABYLON {
             }
             if (texture) {
                 if (parsedTexture.boundingBoxPosition) {
-                    (<any>texture).boundingBoxPosition = BABYLON.Vector3.FromArray(parsedTexture.boundingBoxPosition);
+                    (<any>texture).boundingBoxPosition = Vector3.FromArray(parsedTexture.boundingBoxPosition);
                 }
                 if (parsedTexture.boundingBoxSize) {
-                    (<any>texture).boundingBoxSize = BABYLON.Vector3.FromArray(parsedTexture.boundingBoxSize);
+                    (<any>texture).boundingBoxSize = Vector3.FromArray(parsedTexture.boundingBoxSize);
                 }
             }
             return texture;
