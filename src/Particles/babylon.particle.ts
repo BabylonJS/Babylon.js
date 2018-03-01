@@ -73,10 +73,7 @@
             this.updateCellInfoFromSystem();
         }
 
-        /**
-         * This method update the current particle cell info from the particle system.
-         */
-        public updateCellInfoFromSystem(): void {
+        private updateCellInfoFromSystem(): void {
             this.cellIndex = this.particleSystem.startSpriteCellID;
 
             if (this.particleSystem.spriteCellChangeSpeed == 0) {
