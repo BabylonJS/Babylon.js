@@ -122,17 +122,32 @@
         public static readonly FILTER_PCSS = 7;
 
         /**
+         * Reserved for PCF and PCSS
+         * Highest Quality.
+         * 
          * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
+         * 
+         * Execute PCSS with 32 taps blocker search and 64 taps PCF.
          */
-        public static readonly PCF_HIGH_QUALITY = 0;
+        public static readonly QUALITY_HIGH = 0;
         /**
-         * Execute PCF on a 3*3 kernel being a good tradeoff for quality/perf cross devices.
+         * Reserved for PCF and PCSS
+         * Good tradeoff for quality/perf cross devices
+         * 
+         * Execute PCF on a 3*3 kernel.
+         * 
+         * Execute PCSS with 16 taps blocker search and 32 taps PCF.
          */
-        public static readonly PCF_MEDIUM_QUALITY = 1;
+        public static readonly QUALITY_MEDIUM = 1;
         /**
-         * Execute PCF on a 1*1 kernel being a the lowest quality but the fastest.
+         * Reserved for PCF and PCSS
+         * The lowest quality but the fastest.
+         * 
+         * Execute PCF on a 1*1 kernel.
+         * 
+         * Execute PCSS with 16 taps blocker search and 16 taps PCF.
          */
-        public static readonly PCF_LOW_QUALITY = 2;
+        public static readonly QUALITY_LOW = 2;
 
         private _bias = 0.00005;
         /**
@@ -430,20 +445,20 @@
             this.filter = (value ? ShadowGenerator.FILTER_PCF : ShadowGenerator.FILTER_NONE);
         }
 
-        private _percentageCloserFilteringQuality = ShadowGenerator.PCF_HIGH_QUALITY;
+        private _filteringQuality = ShadowGenerator.QUALITY_HIGH;
         /**
-         * Gets the PCF Quality.
-         * Only valid if usePercentageCloserFiltering is true.
+         * Gets the PCF or PCSS Quality.
+         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
          */
-        public get percentageCloserFilteringQuality(): number {
-            return this._percentageCloserFilteringQuality;
+        public get filteringQuality(): number {
+            return this._filteringQuality;
         }
         /**
-         * Sets the PCF Quality.
-         * Only valid if usePercentageCloserFiltering is true.
+         * Sets the PCF or PCSS Quality.
+         * Only valid if usePercentageCloserFiltering or usePercentageCloserFiltering is true.
          */
-        public set percentageCloserFilteringQuality(percentageCloserFilteringQuality: number) {
-            this._percentageCloserFilteringQuality = percentageCloserFilteringQuality;
+        public set filteringQuality(filteringQuality: number) {
+            this._filteringQuality = filteringQuality;
         }
 
         /**
@@ -1075,16 +1090,23 @@
 
             if (this.useContactHardeningShadow) {
                 defines["SHADOWPCSS" + lightIndex] = true;
+                if (this._filteringQuality === ShadowGenerator.QUALITY_LOW) {
+                    defines["SHADOWLOWQUALITY" + lightIndex] = true;
+                }
+                else if (this._filteringQuality === ShadowGenerator.QUALITY_MEDIUM) {
+                    defines["SHADOWMEDIUMQUALITY" + lightIndex] = true;
+                }
+                // else default to high.
             }
             if (this.usePercentageCloserFiltering) {
                 defines["SHADOWPCF" + lightIndex] = true;
-                if (this._percentageCloserFilteringQuality === ShadowGenerator.PCF_LOW_QUALITY) {
+                if (this._filteringQuality === ShadowGenerator.QUALITY_LOW) {
                     defines["SHADOWLOWQUALITY" + lightIndex] = true;
                 }
-                else if (this._percentageCloserFilteringQuality === ShadowGenerator.PCF_MEDIUM_QUALITY) {
+                else if (this._filteringQuality === ShadowGenerator.QUALITY_MEDIUM) {
                     defines["SHADOWMEDIUMQUALITY" + lightIndex] = true;
                 }
-                // else default to low.
+                // else default to high.
             }
             else if (this.usePoissonSampling) {
                 defines["SHADOWPOISSON" + lightIndex] = true;

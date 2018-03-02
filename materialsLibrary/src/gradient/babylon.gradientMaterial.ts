@@ -45,6 +45,10 @@ module BABYLON {
         public SHADOWPCF1 = false;
         public SHADOWPCF2 = false;
         public SHADOWPCF3 = false;
+        public SHADOWPCSS0 = false;
+        public SHADOWPCSS1 = false;
+        public SHADOWPCSS2 = false;
+        public SHADOWPCSS3 = false;
         public NORMAL = false;
         public UV1 = false;
         public UV2 = false;

@@ -393,6 +393,10 @@ module BABYLON {
                         fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
                     }
 
+                    if (defines["SHADOWPCSS" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWPCSS" + lightIndex);
+                    }
+
                     if (defines["SHADOWPOISSON" + lightIndex]) {
                         fallbacks.addFallback(rank, "SHADOWPOISSON" + lightIndex);
                     }
