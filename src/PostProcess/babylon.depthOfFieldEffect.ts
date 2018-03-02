@@ -24,7 +24,7 @@ module BABYLON {
         private _circleOfConfusion: CircleOfConfusionPostProcess;
         private _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
         private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
-        private _depthOfFieldMerge: DepthOfFieldMergePostProcess;
+        public _depthOfFieldMerge: DepthOfFieldMergePostProcess;
 
         private _effects: Array<PostProcess> = [];
 

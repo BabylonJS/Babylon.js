@@ -85,7 +85,7 @@
         private _parameters: string[];
         private _scaleRatio = new Vector2(1, 1);
         protected _indexParameters: any;
-        private _shareOutputWithPostProcess: PostProcess;
+        private _shareOutputWithPostProcess: Nullable<PostProcess>;
         private _texelSize = Vector2.Zero();
         private _forcedOutputTexture: InternalTexture;
 
@@ -292,6 +292,16 @@
             this._disposeTextures();
 
             this._shareOutputWithPostProcess = postProcess;
+
+            return this;
+        }
+
+        public useOwnOutput(): PostProcess {
+            if(this._textures.length == 0){
+                this._textures = new SmartArray<InternalTexture>(2);
+            }
+
+            this._shareOutputWithPostProcess = null;
 
             return this;
         }
