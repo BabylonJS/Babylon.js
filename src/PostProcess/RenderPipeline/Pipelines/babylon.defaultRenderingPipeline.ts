@@ -374,6 +374,21 @@
             this._buildAllowed = previousState;
         }
 
+        private _prevPostProcess:Nullable<PostProcess> = null;
+        private _prevPrevPostProcess:Nullable<PostProcess> = null;
+
+        private _setOutputTexture(postProcess:PostProcess){
+            if(this._prevPrevPostProcess){
+                postProcess.shareOutputWith(this._prevPrevPostProcess);
+            }else{
+                postProcess.useOwnOutput();
+            }
+            if(this._prevPostProcess){
+                this._prevPrevPostProcess = this._prevPostProcess;
+            }
+            this._prevPostProcess = postProcess;
+        }
+
         private _buildPipeline() {
             if (!this._buildAllowed) {
                 return;
@@ -388,18 +403,24 @@
                 this._cameras = this._originalCameras.slice();
             }
             this._reset();
-            
+            this._prevPostProcess = null;
+            this._prevPrevPostProcess = null;
+
             if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
+                this._setOutputTexture(this.fxaa);
+                
             }
 
             if (this.sharpenEnabled) {
                 this.addEffect(this._sharpenEffect);
+                this._setOutputTexture(this.sharpen);
             }
 
             if (this.depthOfFieldEnabled) {
                 this.addEffect(this.depthOfField);
+                this._setOutputTexture(this.depthOfField._depthOfFieldMerge);
             }
 
             if (this.bloomEnabled) {
@@ -459,7 +480,8 @@
             else {
                 this.finalMerge = new PassPostProcess("finalMerge", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true));
-
+                this._setOutputTexture(this.finalMerge);
+                
                 this.finalMerge.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
             }
 
@@ -479,6 +501,7 @@
 
             if (this.chromaticAberrationEnabled) {
                 this.addEffect(this._chromaticAberrationEffect);
+                this._setOutputTexture(this.chromaticAberration);
             }
 
             if (this._cameras !== null) {
