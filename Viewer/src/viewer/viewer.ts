@@ -21,9 +21,6 @@ export abstract class AbstractViewer {
 
     /**
      * The last loader used to load a model. 
-     * 
-     * @type {(ISceneLoaderPlugin | ISceneLoaderPluginAsync)}
-     * @memberof AbstractViewer
      */
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
@@ -71,6 +68,7 @@ export abstract class AbstractViewer {
         this.onLoaderInitObservable = new Observable();
 
         this.registeredOnBeforerenderFunctions = [];
+        this.models = [];
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
@@ -795,6 +793,7 @@ export abstract class AbstractViewer {
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
                 let model = new ViewerModel(<IModelConfiguration>this.configuration.model, this.scene);
+                this.models.push(model);
                 this.lastUsedLoader = model.loader;
                 model.onLoadedObservable.add((model) => {
                     resolve(model);
