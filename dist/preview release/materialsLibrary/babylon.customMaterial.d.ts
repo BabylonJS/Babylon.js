@@ -73,6 +73,7 @@ declare module BABYLON {
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
         EXPOSURE: boolean;
+        GRAIN: boolean;
         constructor();
         setReflectionMode(modeToEnable: string): void;
     }
