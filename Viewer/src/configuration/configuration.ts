@@ -86,7 +86,7 @@ export interface IModelConfiguration {
     thumbnail?: string; // URL or data-url
 
     animation?: {
-        autoStart?: string;
+        autoStart?: boolean | string;
         playOnce?: boolean;
     }
 

@@ -96,7 +96,9 @@ export class ViewerModel implements IDisposable {
                     });
                 }
                 if (this._modelConfiguration.animation.autoStart) {
-                    let animation = this.getAnimationByName(this._modelConfiguration.animation.autoStart);
+
+                    let animation = this._modelConfiguration.animation.autoStart === true ?
+                        this._animations[0] : this.getAnimationByName(this._modelConfiguration.animation.autoStart);
                     if (animation) {
                         animation.start();
                     }
