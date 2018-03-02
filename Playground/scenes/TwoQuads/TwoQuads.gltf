@@ -121,6 +121,7 @@
   ],
   "nodes": [
     {
+      "name": "node0",
       "mesh": 0,
       "translation": [
         -0.55,
@@ -129,6 +130,7 @@
       ]
     },
     {
+      "name": "node1",
       "mesh": 0,
       "translation": [
         0.55,
