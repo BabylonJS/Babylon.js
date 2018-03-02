@@ -71,7 +71,7 @@ module BABYLON {
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
-        constructor(scene: Scene, depthTexture: RenderTargetTexture, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
+        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
             super(scene.getEngine(), "depth of field", ()=>{
                 return this._effects;
             }, true);
@@ -126,6 +126,10 @@ module BABYLON {
                 this._effects.push(this._depthOfFieldBlurX[i]);
             }
             this._effects.push(this._depthOfFieldMerge);
+        }
+
+        public set depthTexture(value: RenderTargetTexture){
+            this._circleOfConfusion.depthTexture = value;
         }
 
         /**

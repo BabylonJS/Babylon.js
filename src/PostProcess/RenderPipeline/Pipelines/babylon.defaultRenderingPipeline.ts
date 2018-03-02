@@ -232,10 +232,9 @@
             this._depthOfFieldBlurLevel = value;
             
             // recreate dof and dispose old as this setting is not dynamic
-            var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
             var oldDof = this.depthOfField;
 
-            this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
             this.depthOfField.focalLength = oldDof.focalLength;
             this.depthOfField.focusDistance = oldDof.focusDistance;
             this.depthOfField.fStop = oldDof.fStop;
@@ -355,8 +354,7 @@
             this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
             this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
 
-            var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
-            this.depthOfField = new DepthOfFieldEffect(this._scene, depthTexture, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
 
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
@@ -428,6 +426,8 @@
             }
 
             if (this.depthOfFieldEnabled) {
+                var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
+                this.depthOfField.depthTexture = depthTexture;
                 this.addEffect(this.depthOfField);
                 this._setAutoClearAndTextureSharing(this.depthOfField._depthOfFieldMerge);
             }
