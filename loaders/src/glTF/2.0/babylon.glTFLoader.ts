@@ -54,6 +54,7 @@ module BABYLON.GLTF2 {
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
         public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
         public readonly onMaterialLoadedObservable = new Observable<Material>();
+        public readonly onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
         public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
         public readonly onCompleteObservable = new Observable<IGLTFLoader>();
 
@@ -143,9 +144,13 @@ module BABYLON.GLTF2 {
                     promises.push(this._compileShadowGeneratorsAsync());
                 }
 
-                return Promise.all(promises).then(() => {
+                const resultPromise = Promise.all(promises).then(() => {
                     this._state = GLTFLoaderState.Ready;
                     this._startAnimations();
+                });
+
+                resultPromise.then(() => {
+                    this._rootBabylonMesh.setEnabled(true);
 
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
@@ -161,6 +166,8 @@ module BABYLON.GLTF2 {
                         }
                     });
                 });
+
+                return resultPromise;
             }).catch(error => {
                 Tools.Error("glTF Loader: " + error.message);
                 this._clear();
@@ -245,6 +252,8 @@ module BABYLON.GLTF2 {
 
         private _createRootNode(): ILoaderNode {
             this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
+            this._rootBabylonMesh.setEnabled(false);
+
             const rootNode = { _babylonMesh: this._rootBabylonMesh } as ILoaderNode;
             switch (this.coordinateSystemMode) {
                 case GLTFLoaderCoordinateSystemMode.AUTO: {
@@ -436,7 +445,6 @@ module BABYLON.GLTF2 {
             const promises = new Array<Promise<void>>();
 
             const babylonMesh = new Mesh((mesh.name || node._babylonMesh!.name) + "_" + primitive._index, this._babylonScene, node._babylonMesh);
-            babylonMesh.setEnabled(false);
 
             node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
             node._primitiveBabylonMeshes[primitive._index] = babylonMesh;
@@ -453,14 +461,14 @@ module BABYLON.GLTF2 {
             }
             else {
                 const material = GLTFLoader._GetProperty(context + "/material", this._gltf.materials, primitive.material);
-                promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, babylonMesh));
+                promises.push(this._loadMaterialAsync("#/materials/" + material._index, material, babylonMesh, babylonMaterial => {
+                    babylonMesh.material = babylonMaterial;
+                }));
             }
 
             this.onMeshLoadedObservable.notifyObservers(babylonMesh);
 
-            return Promise.all(promises).then(() => {
-                babylonMesh.setEnabled(true);
-            });
+            return Promise.all(promises).then(() => {});
         }
 
         private _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Promise<VertexData> {
@@ -813,6 +821,8 @@ module BABYLON.GLTF2 {
                 promises.push(this._loadAnimationChannelAsync(context + "/channels/" + channel._index, context, animation, channel, babylonAnimationGroup));
             }
 
+            this.onAnimationGroupLoadedObservable.notifyObservers(babylonAnimationGroup);
+
             return Promise.all(promises).then(() => {
                 babylonAnimationGroup.normalize();
             });
@@ -820,7 +830,7 @@ module BABYLON.GLTF2 {
 
         private _loadAnimationChannelAsync(context: string, animationContext: string, animation: ILoaderAnimation, channel: ILoaderAnimationChannel, babylonAnimationGroup: AnimationGroup): Promise<void> {
             const targetNode = GLTFLoader._GetProperty(context + "/target/node", this._gltf.nodes, channel.target.node);
-            if (!targetNode._babylonMesh) {
+            if (!targetNode._babylonMesh || targetNode.skin != undefined) {
                 return Promise.resolve();
             }
 
@@ -1177,8 +1187,8 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh);
+        public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, assign);
             if (promise) {
                 return promise;
             }
@@ -1186,24 +1196,21 @@ module BABYLON.GLTF2 {
             material._babylonMeshes = material._babylonMeshes || [];
             material._babylonMeshes.push(babylonMesh);
 
-            if (material._loaded) {
-                babylonMesh.material = material._babylonMaterial!;
-                return material._loaded;
+            if (!material._loaded) {
+                const promises = new Array<Promise<void>>();
+
+                const babylonMaterial = this._createMaterial(material);
+                material._babylonMaterial = babylonMaterial;
+
+                promises.push(this._loadMaterialBasePropertiesAsync(context, material));
+                promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material));
+
+                this.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+                material._loaded = Promise.all(promises).then(() => {});
             }
 
-            const promises = new Array<Promise<void>>();
-
-            const babylonMaterial = this._createMaterial(material);
-            material._babylonMaterial = babylonMaterial;
-
-            promises.push(this._loadMaterialBasePropertiesAsync(context, material));
-            promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material));
-
-            this.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-
-            babylonMesh.material = babylonMaterial;
-
-            return (material._loaded = Promise.all(promises).then(() => {}));
+            assign(material._babylonMaterial!);
+            return material._loaded;
         }
 
         public _createMaterial(material: ILoaderMaterial): PBRMaterial {
