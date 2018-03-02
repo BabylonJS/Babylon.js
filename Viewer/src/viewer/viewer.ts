@@ -519,14 +519,6 @@ export abstract class AbstractViewer {
                 }
             }
         });
-
-        // remove the unneeded lights
-        /*lightsAvailable.forEach(name => {
-            let light = this.scene.getLightByName(name);
-            if (light && !Tags.MatchesQuery(light, "fixed")) {
-                light.dispose();
-            }
-        });*/
     }
 
     protected configureModel(modelConfiguration: Partial<IModelConfiguration>, model?: ViewerModel) {
@@ -785,7 +777,7 @@ export abstract class AbstractViewer {
                 this.models.forEach(m => m.dispose());
                 this.models.length = 0;
             }
-            return scene!;
+            return scene;
         }).then(() => {
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
@@ -942,7 +934,6 @@ export abstract class AbstractViewer {
             if (typeof behaviorConfig === "object") {
                 this.extendClassWithConfig(behavior, behaviorConfig);
             }
-            //this.camera.addBehavior(behavior);
         }
 
         // post attach configuration. Some functionalities require the attached camera.
