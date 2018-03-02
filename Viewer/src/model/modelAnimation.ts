@@ -75,11 +75,37 @@ export class GroupModelAnimation implements IModelAnimation {
     }
 
     public get currentFrame(): number {
-        return this._animationGroup['_animatables'][0].getAnimations()[0].currentFrame;
+        // get the first currentFrame found
+        for (let i = 0; i < this._animationGroup['_animatables'].length; ++i) {
+            let animatable: Animatable = this._animationGroup['_animatables'][i];
+            let animations = animatable.getAnimations();
+            if (!animations || !animations.length) {
+                continue;
+            }
+            for (let idx = 0; idx < animations.length; ++idx) {
+                if (animations[idx].currentFrame) {
+                    return animations[idx].currentFrame;
+                }
+            }
+        }
+        return 0;
     }
 
     public get fps(): number {
-        return this._animationGroup['_animatables'][0].getAnimations()[0].animation.framePerSecond;
+        // get the first currentFrame found
+        for (let i = 0; i < this._animationGroup['_animatables'].length; ++i) {
+            let animatable: Animatable = this._animationGroup['_animatables'][i];
+            let animations = animatable.getAnimations();
+            if (!animations || !animations.length) {
+                continue;
+            }
+            for (let idx = 0; idx < animations.length; ++idx) {
+                if (animations[idx].animation && animations[idx].animation.framePerSecond) {
+                    return animations[idx].animation.framePerSecond;
+                }
+            }
+        }
+        return 0;
     }
 
     public get playMode(): AnimationPlayMode {

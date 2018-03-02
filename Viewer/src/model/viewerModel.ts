@@ -91,11 +91,6 @@ export class ViewerModel implements IDisposable {
             this.skeletons = skeletons;
 
             // check if this is a gltf loader and load the animations
-            /*if (this.loader['_loader'] && this.loader['_loader']['_gltf'] && this.loader['_loader']['_gltf'].animations) {
-                this.loader['_loader']['_gltf'].animations.forEach(animation => {
-                    this._animations.push(new GroupModelAnimation(animation._babylonAnimationGroup));
-                });
-            }*/
             if (this.loader.name === 'gltf') {
                 this._scene.animationGroups.forEach(ag => {
                     // add animations that didn't exist before
