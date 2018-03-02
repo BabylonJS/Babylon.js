@@ -68,7 +68,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             // Don't load material LODs if already loading a node LOD.
             if (this._loadingNodeLOD) {
                 return null;
@@ -89,7 +89,11 @@ module BABYLON.GLTF2.Extensions {
                         }
                     }
 
-                    const promise = this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh).then(() => {
+                    const promise = this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh, indexLOD === 0 ? assign : () => {}).then(() => {
+                        if (indexLOD !== 0) {
+                            assign(materialLOD._babylonMaterial!);
+                        }
+
                         if (indexLOD !== materialLODs.length - 1) {
                             const materialIndex = materialLODs[indexLOD + 1]._index;
                             if (this._loadMaterialSignals[materialIndex]) {
