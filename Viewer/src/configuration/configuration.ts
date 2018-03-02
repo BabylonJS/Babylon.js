@@ -85,6 +85,11 @@ export interface IModelConfiguration {
     subtitle?: string;
     thumbnail?: string; // URL or data-url
 
+    animation?: {
+        autoStart?: string;
+        playOnce?: boolean;
+    }
+
     // [propName: string]: any; // further configuration, like title and creator
 }
 
