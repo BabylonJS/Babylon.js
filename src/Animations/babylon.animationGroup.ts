@@ -61,6 +61,7 @@ module BABYLON {
 
         /**
          * returning the list of animatables controlled by this animation group.
+         * @returns an Array of animatables.
          */
         public get animatables(): Array<Animatable> {
             return this._animatables;
@@ -255,8 +256,9 @@ module BABYLON {
          * Goes to a specific frame in this animation group
          * 
          * @param frame the frame number to go to
+         * @returns this animation group, for chaining
          */
-        public goToFrame(frame: number) {
+        public goToFrame(frame: number): AnimationGroup {
             if (!this._isStarted) {
                 return this;
             }
