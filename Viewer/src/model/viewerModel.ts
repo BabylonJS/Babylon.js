@@ -103,8 +103,6 @@ export class ViewerModel implements IDisposable {
                 }
             }
 
-            console.log(this.getAnimationNames());
-
             this.onLoadedObservable.notifyObserversWithPromise(this);
         }, (progressEvent) => {
             this.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
