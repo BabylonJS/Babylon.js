@@ -10,6 +10,7 @@ export class ViewerModel implements IDisposable {
     public meshes: Array<AbstractMesh>;
     public particleSystems: Array<ParticleSystem>;
     public skeletons: Array<Skeleton>;
+    public currentAnimation: IModelAnimation;
 
     public onLoadedObservable: Observable<ViewerModel>;
     public onLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
@@ -35,15 +36,15 @@ export class ViewerModel implements IDisposable {
         }
     }
 
-    public getAnimations() {
-        return this._animations;
-    }
+    //public getAnimations() {
+    //    return this._animations;
+    //}
 
     public getAnimationNames() {
         return this._animations.map(a => a.name);
     }
 
-    public getAnimationByName(name: string): Nullable<IModelAnimation> {
+    protected _getAnimationByName(name: string): Nullable<IModelAnimation> {
         // can't use .find, noe available on IE
         let filtered = this._animations.filter(a => a.name === name);
         // what the next line means - if two animations have the same name, they will not be returned!
@@ -51,6 +52,20 @@ export class ViewerModel implements IDisposable {
             return filtered[0];
         } else {
             return null;
+        }
+    }
+
+    public playAnimation(name: string): IModelAnimation {
+        let animation = this._getAnimationByName(name);
+        if (animation) {
+            if (this.currentAnimation) {
+                this.currentAnimation.stop();
+            }
+            this.currentAnimation = animation;
+            animation.start();
+            return animation;
+        } else {
+            throw new Error("aniamtion not found - " + name);
         }
     }
 
@@ -106,13 +121,10 @@ export class ViewerModel implements IDisposable {
                         a.playMode = AnimationPlayMode.ONCE;
                     });
                 }
-                if (this._modelConfiguration.animation.autoStart) {
-
-                    let animation = this._modelConfiguration.animation.autoStart === true ?
-                        this._animations[0] : this.getAnimationByName(this._modelConfiguration.animation.autoStart);
-                    if (animation) {
-                        animation.start();
-                    }
+                if (this._modelConfiguration.animation.autoStart && this._animations.length) {
+                    let animationName = this._modelConfiguration.animation.autoStart === true ?
+                        this._animations[0].name : this._modelConfiguration.animation.autoStart;
+                    this.playAnimation(animationName);
                 }
             }
 
