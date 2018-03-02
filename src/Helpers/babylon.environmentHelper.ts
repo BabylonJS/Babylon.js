@@ -309,6 +309,10 @@ module BABYLON {
         private readonly _scene: Scene;
         private _options: IEnvironmentHelperOptions;
 
+        /**
+         * This observable will be notified with any error during the creation of the environment, 
+         * mainly texture creation errors.
+         */
         public onErrorObservable: Observable<{ message?: string, exception?: any }>;
 
         /**
