@@ -1571,6 +1571,7 @@ module BABYLON.GLTF1 {
         public onMeshLoadedObservable = new Observable<AbstractMesh>();
         public onTextureLoadedObservable = new Observable<BaseTexture>();
         public onMaterialLoadedObservable = new Observable<Material>();
+        public onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
         public onCompleteObservable = new Observable<IGLTFLoader>();
         public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 

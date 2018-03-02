@@ -196,6 +196,29 @@ module BABYLON {
 
             return newPromise;
         }
+
+        public static race<T>(promises: InternalPromise<T>[]): InternalPromise<T> {
+            let newPromise: Nullable<InternalPromise<T>> = new InternalPromise();
+
+            if (promises.length) {
+                for (const promise of promises) {
+                    promise.then((value?: Nullable<T>) => {
+                        if (newPromise) {
+                            newPromise._resolve(value);
+                            newPromise = null;
+                        }
+                        return null;
+                    }, (reason: any) => {
+                        if (newPromise) {
+                            newPromise._reject(reason);
+                            newPromise = null;
+                        }
+                    });
+                }
+            }
+
+            return newPromise;
+        }
     }
 
     /**
