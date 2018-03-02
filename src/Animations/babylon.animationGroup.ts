@@ -59,6 +59,13 @@ module BABYLON {
             return this._targetedAnimations;
         }
 
+        /**
+         * returning the list of animatables controlled by this animation group.
+         */
+        public get animatables(): Array<Animatable> {
+            return this._animatables;
+        }
+
         public constructor(public name: string, scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
 
@@ -240,6 +247,25 @@ module BABYLON {
             }
 
             this._isStarted = false;
+
+            return this;
+        }
+
+        /**
+         * Goes to a specific frame in this animation group
+         * 
+         * @param frame the frame number to go to
+         * @return the animationGroup
+         */
+        public goToFrame(frame: number): AnimationGroup {
+            if (!this._isStarted) {
+                return this;
+            }
+
+            for (var index = 0; index < this._animatables.length; index++) {
+                let animatable = this._animatables[index];
+                animatable.goToFrame(frame);
+            }
 
             return this;
         }

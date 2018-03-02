@@ -25,7 +25,7 @@ module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else if(typeof define === 'function' && define.amd)
-        define("${varName.module}", ${subModule || extendsRoot ? '["babylonjs"],' : ''} factory);
+        define("${varName.module}", ${subModule || extendsRoot ? '["babylonjs"],' : '[],'} factory);
     else if(typeof exports === 'object')
         exports["${varName.module}"] = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else {

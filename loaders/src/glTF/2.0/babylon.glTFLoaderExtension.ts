@@ -27,7 +27,7 @@ module BABYLON.GLTF2 {
         protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> { return null; }
 
         /** Override this method to modify the default behavior for loading materials. */
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> { return null; }
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
 
         /** Override this method to modify the default behavior for loading uris. */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>> { return null; }
@@ -75,8 +75,8 @@ module BABYLON.GLTF2 {
         }
 
         /** Helper method called by the loader to allow extensions to override loading materials. */
-        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
-            return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, babylonMesh));
+        public static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+            return loader._applyExtensions(extension => extension._loadMaterialAsync(context, material, babylonMesh, assign));
         }
 
         /** Helper method called by the loader to allow extensions to override loading uris. */
