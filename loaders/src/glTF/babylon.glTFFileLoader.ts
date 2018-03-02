@@ -172,7 +172,7 @@ module BABYLON {
         }
 
         /**
-         * Raised when the loader creates an animation group after parsing the glTF properties of the material.
+         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
          */
         public readonly onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
 
@@ -227,7 +227,7 @@ module BABYLON {
         }
 
         /**
-         * Gets a promise that resolves when the asset to be completely loaded.
+         * Gets a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         public whenCompleteAsync(): Promise<void> {
