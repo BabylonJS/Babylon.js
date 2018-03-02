@@ -8,16 +8,15 @@
 	#endif
 	#ifdef SHADOW{X}
 		#if defined(SHADOWCUBE{X})
-			#if defined(SHADOWPCF{X})
-				uniform highp samplerCubeShadow shadowSampler{X};
-			#else
-				uniform samplerCube shadowSampler{X};
-			#endif
+			uniform samplerCube shadowSampler{X};
 		#else
 			varying vec4 vPositionFromLight{X};
 			varying float vDepthMetric{X};
 
-			#if defined(SHADOWPCF{X})
+			#if defined(SHADOWPCSS{X})
+				uniform highp sampler2DShadow shadowSampler{X};
+				uniform highp sampler2D depthSampler{X};
+			#elif defined(SHADOWPCF{X})
 				uniform highp sampler2DShadow shadowSampler{X};
 			#else
 				uniform sampler2D shadowSampler{X};
