@@ -59,6 +59,13 @@ module BABYLON {
             return this._targetedAnimations;
         }
 
+        /**
+         * returning the list of animatables controlled by this animation group.
+         */
+        public get animatables(): Array<Animatable> {
+            return this._animatables;
+        }
+
         public constructor(public name: string, scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
 
