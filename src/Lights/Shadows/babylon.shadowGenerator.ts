@@ -477,20 +477,30 @@
             this.filter = (value ? ShadowGenerator.FILTER_PCSS : ShadowGenerator.FILTER_NONE);
         }
 
-        private _contactHardeningLightSize = 10;
+        private _contactHardeningLightSizeUVRatio = 0.1;
         /**
-         * Gets the Light Size used in PCSS to determine the blocker search area and the penumbra size.
+         * Gets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+         * Using a ratio helps keeping shape stability independently of the map size.
+         *
+         * It does not account for the light projection as it was having too much 
+         * instability during the light setup or during light position changes.
+         * 
          * Only valid if useContactHardeningShadow is true.
          */
-        public get contactHardeningLightSize(): number {
-            return this._contactHardeningLightSize;
+        public get contactHardeningLightSizeUVRatio(): number {
+            return this._contactHardeningLightSizeUVRatio;
         }
         /**
-         * Sets the Light Size used in PCSS to determine the blocker search area and the penumbra size.
+         * Sets the Light Size (in shadow map uv unit) used in PCSS to determine the blocker search area and the penumbra size.
+         * Using a ratio helps keeping shape stability independently of the map size.
+         * 
+         * It does not account for the light projection as it was having too much 
+         * instability during the light setup or during light position changes.
+         * 
          * Only valid if useContactHardeningShadow is true.
          */
-        public set contactHardeningLightSize(contactHardeningLightSize: number) {
-            this._contactHardeningLightSize = contactHardeningLightSize;
+        public set contactHardeningLightSizeUVRatio(contactHardeningLightSizeUVRatio: number) {
+            this._contactHardeningLightSizeUVRatio = contactHardeningLightSizeUVRatio;
         }
 
         private _darkness = 0;
@@ -1160,7 +1170,7 @@
             else if (this._filter === ShadowGenerator.FILTER_PCSS) {
                 effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
                 effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
-                light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / shadowMap.getSize().width, this._contactHardeningLightSize, this.frustumEdgeFalloff, lightIndex);
+                light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / shadowMap.getSize().width, this._contactHardeningLightSizeUVRatio * shadowMap.getSize().width, this.frustumEdgeFalloff, lightIndex);
             }
             else {
                 effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
