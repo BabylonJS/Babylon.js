@@ -377,16 +377,25 @@
         private _prevPostProcess:Nullable<PostProcess> = null;
         private _prevPrevPostProcess:Nullable<PostProcess> = null;
 
-        private _setOutputTexture(postProcess:PostProcess){
-            if(this._prevPrevPostProcess){
-                postProcess.shareOutputWith(this._prevPrevPostProcess);
+        private _setAutoClearAndTextureSharing(postProcess:PostProcess, skipTextureSharing = false){
+            if(this._prevPostProcess && this._prevPostProcess.autoClear){
+                postProcess.autoClear = false;
             }else{
-                postProcess.useOwnOutput();
+                postProcess.autoClear = true;
             }
-            if(this._prevPostProcess){
-                this._prevPrevPostProcess = this._prevPostProcess;
+
+            if(!skipTextureSharing){
+                if(this._prevPrevPostProcess){
+                    postProcess.shareOutputWith(this._prevPrevPostProcess);
+                }else{
+                    postProcess.useOwnOutput();
+                }
+
+                if(this._prevPostProcess){
+                    this._prevPrevPostProcess = this._prevPostProcess;
+                }
+                this._prevPostProcess = postProcess;
             }
-            this._prevPostProcess = postProcess;
         }
 
         private _buildPipeline() {
@@ -409,22 +418,23 @@
             if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
-                this._setOutputTexture(this.fxaa);
+                this._setAutoClearAndTextureSharing(this.fxaa);
                 
             }
 
             if (this.sharpenEnabled) {
                 this.addEffect(this._sharpenEffect);
-                this._setOutputTexture(this.sharpen);
+                this._setAutoClearAndTextureSharing(this.sharpen);
             }
 
             if (this.depthOfFieldEnabled) {
                 this.addEffect(this.depthOfField);
-                this._setOutputTexture(this.depthOfField._depthOfFieldMerge);
+                this._setAutoClearAndTextureSharing(this.depthOfField._depthOfFieldMerge);
             }
 
             if (this.bloomEnabled) {
                 this.pass = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this._setAutoClearAndTextureSharing(this.pass, true);
                 this.addEffect(new PostProcessRenderEffect(engine, this.PassPostProcessId, () => { return this.pass; }, true));
 
                 if (!this._hdr) { // Need to enhance highlights if not using float rendering
@@ -480,7 +490,7 @@
             else {
                 this.finalMerge = new PassPostProcess("finalMerge", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true));
-                this._setOutputTexture(this.finalMerge);
+                this._setAutoClearAndTextureSharing(this.finalMerge);
                 
                 this.finalMerge.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
             }
@@ -501,7 +511,7 @@
 
             if (this.chromaticAberrationEnabled) {
                 this.addEffect(this._chromaticAberrationEffect);
-                this._setOutputTexture(this.chromaticAberration);
+                this._setAutoClearAndTextureSharing(this.chromaticAberration);
             }
 
             if (this._cameras !== null) {
