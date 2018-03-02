@@ -55,7 +55,7 @@
 				shadow = computeShadowWithPCF5(vPositionFromLight{X}, shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
 			#endif
 		#elif defined(SHADOWPCSS{X})
-			shadow = computeShadowWithPCSS(vPositionFromLight{X}, depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+			shadow = computeShadowWithPCSS(vPositionFromLight{X}, vDepthMetric{X}, depthSampler{X}, shadowSampler{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
 		#else
 			#if defined(SHADOWCUBE{X})
 				shadow = computeShadowCube(light{X}.vLightData.xyz, shadowSampler{X}, light{X}.shadowsInfo.x, light{X}.depthValues);

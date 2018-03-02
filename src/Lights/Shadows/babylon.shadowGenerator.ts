@@ -283,10 +283,6 @@
                     this.usePoissonSampling = true;
                     return;
                 }
-                this._useDepthStencilTexture = true;
-            }
-            else {
-                this._useDepthStencilTexture = false;
             }
 
             if (this._filter === value) {
@@ -434,22 +430,6 @@
             this.filter = (value ? ShadowGenerator.FILTER_PCF : ShadowGenerator.FILTER_NONE);
         }
 
-        /**
-         * Gets if the current filter is set to "PCSS" (contact hardening).
-         */
-        public get useContactHardeningShadow(): boolean {
-            return this.filter === ShadowGenerator.FILTER_PCSS;
-        }
-        /**
-         * Sets the current filter to "PCF" (contact hardening).
-         */
-        public set useContactHardeningShadow(value: boolean) {
-            if (!value && this.filter !== ShadowGenerator.FILTER_PCSS) {
-                return;
-            }
-            this.filter = (value ? ShadowGenerator.FILTER_PCSS : ShadowGenerator.FILTER_NONE);
-        }
-
         private _percentageCloserFilteringQuality = ShadowGenerator.PCF_HIGH_QUALITY;
         /**
          * Gets the PCF Quality.
@@ -464,6 +444,38 @@
          */
         public set percentageCloserFilteringQuality(percentageCloserFilteringQuality: number) {
             this._percentageCloserFilteringQuality = percentageCloserFilteringQuality;
+        }
+
+        /**
+         * Gets if the current filter is set to "PCSS" (contact hardening).
+         */
+        public get useContactHardeningShadow(): boolean {
+            return this.filter === ShadowGenerator.FILTER_PCSS;
+        }
+        /**
+         * Sets the current filter to "PCSS" (contact hardening).
+         */
+        public set useContactHardeningShadow(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_PCSS) {
+                return;
+            }
+            this.filter = (value ? ShadowGenerator.FILTER_PCSS : ShadowGenerator.FILTER_NONE);
+        }
+
+        private _contactHardeningLightSize = 10;
+        /**
+         * Gets the Light Size used in PCSS to determine the blocker search area and the penumbra size.
+         * Only valid if useContactHardeningShadow is true.
+         */
+        public get contactHardeningLightSize(): number {
+            return this._contactHardeningLightSize;
+        }
+        /**
+         * Sets the Light Size used in PCSS to determine the blocker search area and the penumbra size.
+         * Only valid if useContactHardeningShadow is true.
+         */
+        public set contactHardeningLightSize(contactHardeningLightSize: number) {
+            this._contactHardeningLightSize = contactHardeningLightSize;
         }
 
         private _darkness = 0;
@@ -615,7 +627,6 @@
         private _currentFaceIndexCache = 0;
         private _textureType: number;
         private _defaultTextureMatrix = Matrix.Identity();
-        private _useDepthStencilTexture = false;
 
         /**
          * Creates a ShadowGenerator object.
@@ -686,8 +697,8 @@
             // Record Face Index before render.
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
-                if (this._useDepthStencilTexture) {
-                    //engine.setColorWrite(false);
+                if (this._filter === ShadowGenerator.FILTER_PCF) {
+                    engine.setColorWrite(false);
                 }
             });
 
@@ -696,7 +707,7 @@
 
             // Blur if required afer render.
             this._shadowMap.onAfterUnbindObservable.add(() => {
-                if (this._useDepthStencilTexture) {
+                if (this._filter === ShadowGenerator.FILTER_PCF) {
                     engine.setColorWrite(true);
                 }
                 if (!this.useBlurExponentialShadowMap && !this.useBlurCloseExponentialShadowMap) {
@@ -714,8 +725,8 @@
 
             // Clear according to the chosen filter.
             this._shadowMap.onClearObservable.add((engine: Engine) => {
-                if (this._useDepthStencilTexture) {
-                    engine.clear(clearOne, true, true, true);
+                if (this._filter === ShadowGenerator.FILTER_PCF) {
+                    engine.clear(clearOne, false, true, false);
                 }
                 else if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                     engine.clear(clearZero, true, true, false);
@@ -1120,18 +1131,18 @@
             }
 
             // Only PCF uses depth stencil texture.
-            if (this._useDepthStencilTexture) {
+            if (this._filter === ShadowGenerator.FILTER_PCF) {
                 effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
                 light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), shadowMap.getSize().width, 1 / shadowMap.getSize().width, this.frustumEdgeFalloff, lightIndex);
+            }
+            else if (this._filter === ShadowGenerator.FILTER_PCSS) {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+                effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
+                light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / shadowMap.getSize().width, this._contactHardeningLightSize, this.frustumEdgeFalloff, lightIndex);
             }
             else {
                 effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
                 light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
-            }
-
-            if (this._filter === ShadowGenerator.FILTER_PCSS) {
-                effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
-                effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
             }
 
             light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);

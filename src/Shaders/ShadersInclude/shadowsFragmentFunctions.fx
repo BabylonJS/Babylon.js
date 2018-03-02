@@ -334,21 +334,26 @@
 			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
 		}
 
-		float computeShadowWithPCSS(vec4 vPositionFromLight, sampler2D depthSampler, sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
+		// PCSS
+		// This helps to achieve a contact hardening effect on the shadow
+		// It uses 16 Taps for search and a 32 PCF taps in a randomly rotating poisson sampling disc.
+		// This is heavily inspired from http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
+		// and http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
+		float computeShadowWithPCSS(vec4 vPositionFromLight, float depthMetric, sampler2D depthSampler, sampler2DShadow shadowSampler, float shadowMapSizeInverse, float lightSizeUV, float darkness, float frustumEdgeFalloff)
 		{
+			if (depthMetric > 1.0 || depthMetric < 0.0) {
+				return 1.0;
+			}
+
 			vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
 			vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
-
-			float softness = 50.;
-
-			float searchSize = softness * clamp(uvDepth.z - .02, 0., 1.) / uvDepth.z;
 
 			float blockerDepth = 0.0;
 			float sumBlockerDepth = 0.0;
 			float numBlocker = 0.0;
 			for (int i = 0; i < 16; i++) {
-                blockerDepth = texture(depthSampler, uvDepth.xy + (searchSize * shadowMapSizeAndInverse.y * PCFSamplers[i].xy)).r;
-                if (blockerDepth < uvDepth.z) {
+                blockerDepth = texture(depthSampler, uvDepth.xy + (lightSizeUV * shadowMapSizeInverse * PCFSamplers[i].xy)).r;
+                if (blockerDepth < depthMetric) {
                     sumBlockerDepth += blockerDepth;
                     numBlocker++;
                 }
@@ -357,23 +362,24 @@
 			if (numBlocker < 1.0) {
 				return 1.0;
 			}
-
 			float avgBlockerDepth = sumBlockerDepth / numBlocker;
-			float penumbra = uvDepth.z - avgBlockerDepth;
-			float filterRadiusUV = penumbra * softness;
+
+			// float penumbraRatio = (depthMetric - avgBlockerDepth) / avgBlockerDepth;
+			// Do not dividing by z despite being physically incorrect looks better due to the limited kernel size.
+			float AAOffset = shadowMapSizeInverse * 10.;
+			float penumbraRatio = ((depthMetric - avgBlockerDepth) + AAOffset);
+			float filterRadius = penumbraRatio * lightSizeUV * shadowMapSizeInverse;
+
+			float random = getRand(gl_FragCoord.xy);
+			float rotationAngle = random * 3.1415926;
+			vec2 rotationVector = vec2(cos(rotationAngle), sin(rotationAngle));
 
 			float shadow = 0.;
-
-			float random = getRand(gl_FragCoord.xy / 1024.);
-			float rotationAngle = random * 3.1415926;
-			vec2 rotationTrig = vec2(cos(rotationAngle), sin(rotationAngle));
-
 			for (int i = 0; i < 32; i++) {
 				vec3 offset = PCFSamplers[i];
-
-				offset = vec3(offset.x * rotationTrig.x - offset.y * rotationTrig.y, offset.y * rotationTrig.x + offset.x * rotationTrig.y, 0.);
-
-				shadow += texture2D(shadowSampler, uvDepth + offset * filterRadiusUV * shadowMapSizeAndInverse.y);
+				// Rotated offset.
+				offset = vec3(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0.);
+				shadow += texture2D(shadowSampler, uvDepth + offset * filterRadius);
 			}
 			shadow /= 32.;
 
