@@ -115,11 +115,7 @@ float r = Rand(position);
 	#endif
 	
 	#ifdef NORMAL
-	#ifdef HIGHLEVEL
-	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)) * aNormal);
-	#else
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));
-	#endif
 	#endif
 	
 //END FUR
