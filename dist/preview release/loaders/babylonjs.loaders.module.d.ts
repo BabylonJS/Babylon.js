@@ -154,6 +154,7 @@ declare module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -209,13 +210,19 @@ declare module BABYLON {
          */
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
         private _onTextureLoadedObserver;
-        onTextureLoaded: (Texture: BaseTexture) => void;
+        onTextureLoaded: (texture: BaseTexture) => void;
         /**
          * Raised when the loader creates a material after parsing the glTF properties of the material.
          */
         readonly onMaterialLoadedObservable: Observable<Material>;
         private _onMaterialLoadedObserver;
-        onMaterialLoaded: (Material: Material) => void;
+        onMaterialLoaded: (material: Material) => void;
+        /**
+         * Raised when the loader creates an animation group after parsing the glTF properties of the material.
+         */
+        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
+        private _onAnimationGroupLoadedObserver;
+        onAnimationGroupLoaded: (animationGroup: AnimationGroup) => void;
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -237,6 +244,11 @@ declare module BABYLON {
         readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         private _onExtensionLoadedObserver;
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
+        /**
+         * Gets a promise that resolves when the asset to be completely loaded.
+         * @returns A promise that resolves when the asset is completely loaded.
+         */
+        whenCompleteAsync(): Promise<void>;
         /**
          * The loader state or null if not active.
          */
@@ -671,6 +683,7 @@ declare module BABYLON.GLTF1 {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
@@ -947,6 +960,7 @@ declare module BABYLON.GLTF2 {
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
         readonly onMaterialLoadedObservable: Observable<Material>;
+        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         readonly onCompleteObservable: Observable<IGLTFLoader>;
         readonly state: Nullable<GLTFLoaderState>;
@@ -994,7 +1008,7 @@ declare module BABYLON.GLTF2 {
         private _buildArrayBuffer<T>(typedArray, data, byteOffset, count, numComponents, byteStride?);
         private _getDefaultMaterial();
         private _loadMaterialMetallicRoughnessPropertiesAsync(context, material);
-        _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Promise<void>;
+        _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Promise<void>;
         _createMaterial(material: ILoaderMaterial): PBRMaterial;
         _loadMaterialBasePropertiesAsync(context: string, material: ILoaderMaterial): Promise<void>;
         _loadMaterialAlphaProperties(context: string, material: ILoaderMaterial): void;
@@ -1030,7 +1044,7 @@ declare module BABYLON.GLTF2 {
         /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
         protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>>;
         /** Override this method to modify the default behavior for loading materials. */
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
         /** Override this method to modify the default behavior for loading uris. */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** Helper method called by a loader extension to load an glTF extension. */
@@ -1042,7 +1056,7 @@ declare module BABYLON.GLTF2 {
         /** Helper method called by the loader to allow extensions to override loading mesh primitive vertex data. */
         static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>>;
         /** Helper method called by the loader to allow extensions to override loading materials. */
-        static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
+        static _LoadMaterialAsync(loader: GLTFLoader, context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
         /** Helper method called by the loader to allow extensions to override loading uris. */
         static _LoadUriAsync(loader: GLTFLoader, context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
     }
@@ -1061,7 +1075,7 @@ declare module BABYLON.GLTF2.Extensions {
         private _loadingMaterialLOD;
         private _loadMaterialSignals;
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>>;
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /**
          * Gets an array of LOD properties from lowest to highest.
@@ -1085,8 +1099,8 @@ declare module BABYLON.GLTF2.Extensions {
 declare module BABYLON.GLTF2.Extensions {
     class KHR_materials_pbrSpecularGlossiness extends GLTFLoaderExtension {
         readonly name: string;
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>>;
-        private _loadSpecularGlossinessPropertiesAsync(loader, context, material, properties);
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
+        private _loadSpecularGlossinessPropertiesAsync(context, material, properties);
     }
 }
 

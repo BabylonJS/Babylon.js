@@ -52,6 +52,7 @@ declare module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -107,13 +108,19 @@ declare module BABYLON {
          */
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
         private _onTextureLoadedObserver;
-        onTextureLoaded: (Texture: BaseTexture) => void;
+        onTextureLoaded: (texture: BaseTexture) => void;
         /**
          * Raised when the loader creates a material after parsing the glTF properties of the material.
          */
         readonly onMaterialLoadedObservable: Observable<Material>;
         private _onMaterialLoadedObserver;
-        onMaterialLoaded: (Material: Material) => void;
+        onMaterialLoaded: (material: Material) => void;
+        /**
+         * Raised when the loader creates an animation group after parsing the glTF properties of the material.
+         */
+        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
+        private _onAnimationGroupLoadedObserver;
+        onAnimationGroupLoaded: (animationGroup: AnimationGroup) => void;
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -135,6 +142,11 @@ declare module BABYLON {
         readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         private _onExtensionLoadedObserver;
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
+        /**
+         * Gets a promise that resolves when the asset to be completely loaded.
+         * @returns A promise that resolves when the asset is completely loaded.
+         */
+        whenCompleteAsync(): Promise<void>;
         /**
          * The loader state or null if not active.
          */
@@ -569,6 +581,7 @@ declare module BABYLON.GLTF1 {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
