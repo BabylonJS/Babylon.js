@@ -1,5 +1,3 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts" />
-
 declare var DracoDecoderModule: any;
 
 module BABYLON {
@@ -19,9 +17,14 @@ module BABYLON {
          * @param numWorkers The number of workers for async operations
          */
         constructor(numWorkers = (navigator.hardwareConcurrency || 4)) {
+            let workerBlobUrl = URL && URL.createObjectURL && URL.createObjectURL(new Blob([`(${DracoCompression._Worker.toString()})()`], { type: "application/javascript" }));
+            if (!workerBlobUrl || !Worker) {
+                Tools.Error("Draco Compression disabled. The current context doesn't support worker creation or URL.createObjectURL");
+                return;
+            }
             const workers = new Array<Worker>(numWorkers);
             for (let i = 0; i < workers.length; i++) {
-                const worker = new Worker(DracoCompression._WorkerBlobUrl);
+                const worker = new Worker(workerBlobUrl);
                 worker.postMessage({ id: "initDecoder", url: DracoCompression.DecoderUrl });
                 workers[i] = worker;
             }
@@ -183,8 +186,6 @@ module BABYLON {
                 }
             };
         }
-
-        private static _WorkerBlobUrl = URL.createObjectURL(new Blob([`(${DracoCompression._Worker.toString()})()`], { type: "application/javascript" }));
 
         private static _GetDefaultDecoderUrl(): Nullable<string> {
             for (let i = 0; i < document.scripts.length; i++) {
