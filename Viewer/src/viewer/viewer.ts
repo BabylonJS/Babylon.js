@@ -782,11 +782,8 @@ export abstract class AbstractViewer {
             if (!scene) return this.initScene();
 
             if (clearScene) {
-                scene.meshes.forEach(mesh => {
-                    if (Tags.MatchesQuery(mesh, "viewerMesh")) {
-                        mesh.dispose();
-                    }
-                });
+                this.models.forEach(m => m.dispose());
+                this.models.length = 0;
             }
             return scene!;
         }).then(() => {
