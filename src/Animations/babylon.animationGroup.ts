@@ -255,6 +255,7 @@ module BABYLON {
          * Goes to a specific frame in this animation group
          * 
          * @param frame the frame number to go to
+         * @return the animationGroup
          */
         public goToFrame(frame: number): AnimationGroup {
             if (!this._isStarted) {
