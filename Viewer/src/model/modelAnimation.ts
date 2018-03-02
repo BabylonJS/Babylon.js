@@ -7,8 +7,10 @@ export enum AnimationPlayMode {
 
 export enum AnimationState {
     INIT,
-    STARTED,
-    STOPPED
+    PLAYING,
+    PAUSED,
+    STOPPED,
+    ENDED
 }
 
 export interface IModelAnimation extends IDisposable {
@@ -33,6 +35,11 @@ export class GroupModelAnimation implements IModelAnimation {
     constructor(private _animationGroup: AnimationGroup) {
         this._state = AnimationState.INIT;
         this._playMode = AnimationPlayMode.LOOP;
+
+        this._animationGroup.onAnimationEndObservable.add(() => {
+            this.stop();
+            this._state = AnimationState.ENDED;
+        })
     }
 
     public get name() {
@@ -76,8 +83,11 @@ export class GroupModelAnimation implements IModelAnimation {
 
         this._playMode = value;
 
-        if (this.state === AnimationState.STARTED) {
-            this.start();
+        if (this.state === AnimationState.PLAYING) {
+            this._animationGroup.play(this._playMode === AnimationPlayMode.LOOP);
+        } else {
+            this._animationGroup.reset();
+            this._state = AnimationState.INIT;
         }
     }
 
@@ -90,18 +100,22 @@ export class GroupModelAnimation implements IModelAnimation {
     }
 
     goToFrame(frameNumber: number) {
-        this._animationGroup.goToFrame(frameNumber);
+        // this._animationGroup.goToFrame(frameNumber);
+        this._animationGroup['_animatables'].forEach(a => {
+            a.goToFrame(frameNumber);
+        })
     }
 
     public start() {
         this._animationGroup.start(this.playMode === AnimationPlayMode.LOOP, this.speedRatio);
         if (this._animationGroup.isStarted) {
-            this._state = AnimationState.STARTED;
+            this._state = AnimationState.PLAYING;
         }
     }
 
     pause() {
         this._animationGroup.pause();
+        this._state = AnimationState.PAUSED;
     }
 
     public stop() {

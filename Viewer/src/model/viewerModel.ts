@@ -64,6 +64,9 @@ export class ViewerModel implements IDisposable {
 
         let plugin = this._modelConfiguration.loader;
 
+        //temp solution for animation group handling
+        let animationsArray = this._scene.animationGroups.slice();
+
         this.loader = SceneLoader.ImportMesh(undefined, base, filename, this._scene, (meshes, particleSystems, skeletons) => {
             meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, "viewerMesh");
@@ -73,10 +76,18 @@ export class ViewerModel implements IDisposable {
             this.skeletons = skeletons;
 
             // check if this is a gltf loader and load the animations
-            if (this.loader['_loader'] && this.loader['_loader']['_gltf'] && this.loader['_loader']['_gltf'].animations) {
+            /*if (this.loader['_loader'] && this.loader['_loader']['_gltf'] && this.loader['_loader']['_gltf'].animations) {
                 this.loader['_loader']['_gltf'].animations.forEach(animation => {
                     this._animations.push(new GroupModelAnimation(animation._babylonAnimationGroup));
                 });
+            }*/
+            if (this.loader.name === 'gltf') {
+                this._scene.animationGroups.forEach(ag => {
+                    // add animations that didn't exist before
+                    if (animationsArray.indexOf(ag) === -1) {
+                        this._animations.push(new GroupModelAnimation(ag));
+                    }
+                })
             } else {
                 skeletons.forEach((skeleton, idx) => {
                     let ag = new BABYLON.AnimationGroup("animation-" + idx, this._scene);
