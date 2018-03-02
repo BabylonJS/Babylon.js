@@ -17,6 +17,8 @@ export interface IModelAnimation extends IDisposable {
     readonly state: AnimationState;
     readonly name: string;
     readonly frames: number;
+    readonly currentFrame: number;
+    readonly fps: number;
     speedRatio: number;
     playMode: AnimationPlayMode;
     start();
@@ -70,6 +72,14 @@ export class GroupModelAnimation implements IModelAnimation {
             return keys[keys.length - 1].frame;
         });
         return Math.max.apply(null, animationFrames);
+    }
+
+    public get currentFrame(): number {
+        return this._animationGroup['_animatables'][0].getAnimations()[0].currentFrame;
+    }
+
+    public get fps(): number {
+        return this._animationGroup['_animatables'][0].getAnimations()[0].animation.framePerSecond;
     }
 
     public get playMode(): AnimationPlayMode {
