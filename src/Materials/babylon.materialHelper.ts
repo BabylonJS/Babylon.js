@@ -239,6 +239,7 @@ module BABYLON {
                     // Shadows
                     defines["SHADOW" + lightIndex] = false;
                     defines["SHADOWPCF" + lightIndex] = false;
+                    defines["SHADOWPCSS" + lightIndex] = false;
                     defines["SHADOWPOISSON" + lightIndex] = false;
                     defines["SHADOWESM" + lightIndex] = false;
                     defines["SHADOWCUBE" + lightIndex] = false;
@@ -348,6 +349,8 @@ module BABYLON {
                 }
 
                 samplersList.push("shadowSampler" + lightIndex);
+                samplersList.push("depthSampler" + lightIndex);
+
                 if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
                     samplersList.push("projectionLightSampler" + lightIndex,);
                     uniformsList.push(

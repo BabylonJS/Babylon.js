@@ -31,8 +31,9 @@ void main(void)
 vec4 worldPos = finalWorld * vec4(position, 1.0);
 gl_Position = viewProjection * worldPos;
 
-#ifdef PCF
+#ifdef DEPTHTEXTURE
 	gl_Position.z += biasAndScale.x;
+	vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y)) + biasAndScale.x;
 #else
 	vDepthMetric = ((gl_Position.z + depthValues.x) / (depthValues.y)) + biasAndScale.x;
 #endif

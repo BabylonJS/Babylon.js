@@ -215,23 +215,39 @@
 	}
 
 	#ifdef WEBGL2
-		const vec3 PCFSamplers[16] = vec3[16](
-			vec3( -0.94201624, -0.39906216, 0.),
-			vec3( 0.94558609, -0.76890725, 0.),
-			vec3( -0.094184101, -0.92938870, 0.),
-			vec3( 0.34495938, 0.29387760, 0.),
-			vec3( -0.91588581, 0.45771432, 0.),
-			vec3( -0.81544232, -0.87912464, 0.),
-			vec3( -0.38277543, 0.27676845, 0.),
-			vec3( 0.97484398, 0.75648379, 0.),
-			vec3( 0.44323325, -0.97511554, 0.),
-			vec3( 0.53742981, -0.47373420, 0.),
-			vec3( -0.26496911, -0.41893023, 0.),
-			vec3( 0.79197514, 0.19090188, 0.),
-			vec3( -0.24188840, 0.99706507, 0.),
-			vec3( -0.81409955, 0.91437590, 0.),
-			vec3( 0.19984126, 0.78641367, 0.),
-			vec3( 0.14383161, -0.14100790, 0.)
+		const vec3 PCFSamplers[32] = vec3[32](
+			vec3(0.06407013, 0.05409927, 0.),
+			vec3(0.7366577, 0.5789394, 0.),
+			vec3(-0.6270542, -0.5320278, 0.),
+			vec3(-0.4096107, 0.8411095, 0.),
+			vec3(0.6849564, -0.4990818, 0.),
+			vec3(-0.874181, -0.04579735, 0.),
+			vec3(0.9989998, 0.0009880066, 0.),
+			vec3(-0.004920578, -0.9151649, 0.),
+			vec3(0.1805763, 0.9747483, 0.),
+			vec3(-0.2138451, 0.2635818, 0.),
+			vec3(0.109845, 0.3884785, 0.),
+			vec3(0.06876755, -0.3581074, 0.),
+			vec3(0.374073, -0.7661266, 0.),
+			vec3(0.3079132, -0.1216763, 0.),
+			vec3(-0.3794335, -0.8271583, 0.),
+			vec3(-0.203878, -0.07715034, 0.),
+			vec3(0.5912697, 0.1469799, 0.),
+			vec3(-0.88069, 0.3031784, 0.),
+			vec3(0.5040108, 0.8283722, 0.),
+			vec3(-0.5844124, 0.5494877, 0.),
+			vec3(0.6017799, -0.1726654, 0.),
+			vec3(-0.5554981, 0.1559997, 0.),
+			vec3(-0.3016369, -0.3900928, 0.),
+			vec3(-0.5550632, -0.1723762, 0.),
+			vec3(0.925029, 0.2995041, 0.),
+			vec3(-0.2473137, 0.5538505, 0.),
+			vec3(0.9183037, -0.2862392, 0.),
+			vec3(0.2469421, 0.6718712, 0.),
+			vec3(0.3916397, -0.4328209, 0.),
+			vec3(-0.03576927, -0.6220032, 0.),
+			vec3(-0.04661255, 0.7995201, 0.),
+			vec3(0.4402924, 0.3640312, 0.)
 		);
 
 		// Shadow PCF kernel size 1 with a single tap (lowest quality)
@@ -316,7 +332,53 @@
 
 			shadow = shadow * (1. - darkness) + darkness;
 			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
-			
+		}
+
+		float computeShadowWithPCSS(vec4 vPositionFromLight, sampler2D depthSampler, sampler2DShadow shadowSampler, vec2 shadowMapSizeAndInverse, float darkness, float frustumEdgeFalloff)
+		{
+			vec3 clipSpace = vPositionFromLight.xyz / vPositionFromLight.w;
+			vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
+
+			float softness = 50.;
+
+			float searchSize = softness * clamp(uvDepth.z - .02, 0., 1.) / uvDepth.z;
+
+			float blockerDepth = 0.0;
+			float sumBlockerDepth = 0.0;
+			float numBlocker = 0.0;
+			for (int i = 0; i < 16; i++) {
+                blockerDepth = texture(depthSampler, uvDepth.xy + (searchSize * shadowMapSizeAndInverse.y * PCFSamplers[i].xy)).r;
+                if (blockerDepth < uvDepth.z) {
+                    sumBlockerDepth += blockerDepth;
+                    numBlocker++;
+                }
+            }
+
+			if (numBlocker < 1.0) {
+				return 1.0;
+			}
+
+			float avgBlockerDepth = sumBlockerDepth / numBlocker;
+			float penumbra = uvDepth.z - avgBlockerDepth;
+			float filterRadiusUV = penumbra * softness;
+
+			float shadow = 0.;
+
+			float random = getRand(gl_FragCoord.xy / 1024.);
+			float rotationAngle = random * 3.1415926;
+			vec2 rotationTrig = vec2(cos(rotationAngle), sin(rotationAngle));
+
+			for (int i = 0; i < 32; i++) {
+				vec3 offset = PCFSamplers[i];
+
+				offset = vec3(offset.x * rotationTrig.x - offset.y * rotationTrig.y, offset.y * rotationTrig.x + offset.x * rotationTrig.y, 0.);
+
+				shadow += texture2D(shadowSampler, uvDepth + offset * filterRadiusUV * shadowMapSizeAndInverse.y);
+			}
+			shadow /= 32.;
+
+			shadow = shadow * (1. - darkness) + darkness;
+			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
 		}
 	#endif
 #endif

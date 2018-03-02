@@ -119,6 +119,8 @@
          */
         public static readonly FILTER_PCF = 6;
 
+        public static readonly FILTER_PCSS = 7;
+
         /**
          * Execute PCF on a 5*5 kernel improving a lot the shadow aliasing artifacts.
          */
@@ -269,14 +271,14 @@
                     return;
                 }
                 // PCF on cubemap would also be expensive
-                else if (value === ShadowGenerator.FILTER_PCF) {
+                else if (value === ShadowGenerator.FILTER_PCF || value === ShadowGenerator.FILTER_PCSS) {
                     this.usePoissonSampling = true;
                     return;
                 }
             }
 
             // Weblg1 fallback for PCF.
-            if (value === ShadowGenerator.FILTER_PCF) {
+            if (value === ShadowGenerator.FILTER_PCF || value === ShadowGenerator.FILTER_PCSS) {
                 if (this._scene.getEngine().webGLVersion === 1) {
                     this.usePoissonSampling = true;
                     return;
@@ -430,6 +432,22 @@
                 return;
             }
             this.filter = (value ? ShadowGenerator.FILTER_PCF : ShadowGenerator.FILTER_NONE);
+        }
+
+        /**
+         * Gets if the current filter is set to "PCSS" (contact hardening).
+         */
+        public get useContactHardeningShadow(): boolean {
+            return this.filter === ShadowGenerator.FILTER_PCSS;
+        }
+        /**
+         * Sets the current filter to "PCF" (contact hardening).
+         */
+        public set useContactHardeningShadow(value: boolean) {
+            if (!value && this.filter !== ShadowGenerator.FILTER_PCSS) {
+                return;
+            }
+            this.filter = (value ? ShadowGenerator.FILTER_PCSS : ShadowGenerator.FILTER_NONE);
         }
 
         private _percentageCloserFilteringQuality = ShadowGenerator.PCF_HIGH_QUALITY;
@@ -669,7 +687,7 @@
             this._shadowMap.onBeforeRenderObservable.add((faceIndex: number) => {
                 this._currentFaceIndex = faceIndex;
                 if (this._useDepthStencilTexture) {
-                    engine.setColorWrite(false);
+                    //engine.setColorWrite(false);
                 }
             });
 
@@ -697,7 +715,7 @@
             // Clear according to the chosen filter.
             this._shadowMap.onClearObservable.add((engine: Engine) => {
                 if (this._useDepthStencilTexture) {
-                    engine.clear(clearOne, false, true, false);
+                    engine.clear(clearOne, true, true, true);
                 }
                 else if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                     engine.clear(clearZero, true, true, false);
@@ -850,7 +868,7 @@
                 return;
             }
 
-            if (this.filter === ShadowGenerator.FILTER_NONE) {
+            if (this.filter === ShadowGenerator.FILTER_NONE || this.filter === ShadowGenerator.FILTER_PCSS) {
                 this._shadowMap.updateSamplingMode(Texture.NEAREST_SAMPLINGMODE);
             } else {
                 this._shadowMap.updateSamplingMode(Texture.BILINEAR_SAMPLINGMODE);
@@ -946,8 +964,8 @@
             if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
                 defines.push("#define ESM");
             }
-            else if (this.usePercentageCloserFiltering) {
-                defines.push("#define PCF");
+            else if (this.usePercentageCloserFiltering || this.useContactHardeningShadow) {
+                defines.push("#define DEPTHTEXTURE");
             }
 
             var attribs = [VertexBuffer.PositionKind];
@@ -1044,6 +1062,9 @@
 
             defines["SHADOW" + lightIndex] = true;
 
+            if (this.useContactHardeningShadow) {
+                defines["SHADOWPCSS" + lightIndex] = true;
+            }
             if (this.usePercentageCloserFiltering) {
                 defines["SHADOWPCF" + lightIndex] = true;
                 if (this._percentageCloserFilteringQuality === ShadowGenerator.PCF_LOW_QUALITY) {
@@ -1106,6 +1127,11 @@
             else {
                 effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
                 light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
+            }
+
+            if (this._filter === ShadowGenerator.FILTER_PCSS) {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+                effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
             }
 
             light._uniformBuffer.updateFloat2("depthValues", this.getLight().getDepthMinZ(camera), this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera), lightIndex);
