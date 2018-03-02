@@ -245,6 +245,24 @@ module BABYLON {
         }
 
         /**
+         * Goes to a specific frame in this animation group
+         * 
+         * @param frame the frame number to go to
+         */
+        public goToFrame(frame: number) {
+            if (!this._isStarted) {
+                return this;
+            }
+
+            for (var index = 0; index < this._animatables.length; index++) {
+                let animatable = this._animatables[index];
+                animatable.goToFrame(frame);
+            }
+
+            return this;
+        }
+
+        /**
          * Dispose all associated resources
          */
         public dispose(): void {
