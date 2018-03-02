@@ -226,7 +226,7 @@
 			vec3 uvDepth = vec3(0.5 * clipSpace.xyz + vec3(0.5));
 
 			float shadow = texture2D(shadowSampler, uvDepth);
-			shadow = shadow * (1. - darkness) + darkness;
+			shadow = mix(darkness, 1., shadow);
 			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
 		}
 
@@ -264,7 +264,7 @@
 			shadow += uvw1.x * uvw1.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[1], v[1]), uvDepth.z));
 			shadow = shadow / 16.;
 
-			shadow = shadow * (1. - darkness) + darkness;
+			shadow = mix(darkness, 1., shadow);
 			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
 		}
 		
@@ -307,7 +307,7 @@
 			shadow += uvw2.x * uvw2.y * texture2D(shadowSampler, vec3(base_uv.xy + vec2(u[2], v[2]), uvDepth.z));
 			shadow = shadow / 144.;
 
-			shadow = shadow * (1. - darkness) + darkness;
+			shadow = mix(darkness, 1., shadow);
 			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
 		}
 
@@ -500,7 +500,7 @@
 			shadow = mix(shadow, 1., depthMetric - avgBlockerDepth);
 
 			// Apply darkness
-			shadow = shadow * (1. - darkness) + darkness;
+			shadow = mix(darkness, 1., shadow);
 
 			// Apply light frustrum fallof
 			return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
