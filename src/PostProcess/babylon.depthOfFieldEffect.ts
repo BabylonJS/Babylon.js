@@ -24,6 +24,9 @@ module BABYLON {
         private _circleOfConfusion: CircleOfConfusionPostProcess;
         private _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
         private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
+        /**
+         * Private, last post process of dof
+         */
         public _depthOfFieldMerge: DepthOfFieldMergePostProcess;
 
         private _effects: Array<PostProcess> = [];
@@ -68,7 +71,7 @@ module BABYLON {
         /**
          * Creates a new instance of @see DepthOfFieldEffect
          * @param scene The scene the effect belongs to.
-         * @param depthTexture The depth texture of the scene to compute the circle of confusion.
+         * @param depthTexture The depth texture of the scene to compute the circle of confusion.This must be set in order for this to function but may be set after initialization if needed.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
          */
         constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
@@ -128,6 +131,9 @@ module BABYLON {
             this._effects.push(this._depthOfFieldMerge);
         }
 
+        /**
+         * Depth texture to be used to compute the circle of confusion. This must be set here or in the constructor in order for the post process to function.
+         */
         public set depthTexture(value: RenderTargetTexture){
             this._circleOfConfusion.depthTexture = value;
         }
