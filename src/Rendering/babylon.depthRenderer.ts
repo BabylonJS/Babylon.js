@@ -133,7 +133,7 @@
             var mesh = subMesh.getMesh();
 
             // Alpha test
-            if (material && material.needAlphaTesting()) {
+            if (material && material.needAlphaTesting() && material.getAlphaTestTexture()) {
                 defines.push("#define ALPHATEST");
                 if (mesh.isVerticesDataPresent(VertexBuffer.UVKind)) {
                     attribs.push(VertexBuffer.UVKind);

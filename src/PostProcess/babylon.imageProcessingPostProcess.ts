@@ -272,6 +272,45 @@
             this.imageProcessingConfiguration.vignetteEnabled = value;
         }
 
+        /**
+         * Gets wether the grain effect is enabled.
+         */
+        public get grainEnabled(): boolean {
+            return this.imageProcessingConfiguration.grainEnabled;
+        }
+        /**
+         * Sets wether the grain effect is enabled.
+         */
+        public set grainEnabled(value: boolean) {
+            this.imageProcessingConfiguration.grainEnabled = value;
+        }
+
+        /**
+         * Gets the grain effect's intensity.
+         */
+        public get grainIntensity(): number {
+            return this.imageProcessingConfiguration.grainIntensity;
+        }
+        /**
+         * Sets the grain effect's intensity.
+         */
+        public set grainIntensity(value: number) {
+            this.imageProcessingConfiguration.grainIntensity = value;
+        }
+
+        /**
+         * Gets wether the grain effect is animated.
+         */
+        public get grainAnimated(): boolean {
+            return this.imageProcessingConfiguration.grainAnimated;
+        }
+        /**
+         * Sets wether the grain effect is animated.
+         */
+        public set grainAnimated(value: boolean) {
+            this.imageProcessingConfiguration.grainAnimated = value;
+        }
+
         @serialize()
         private _fromLinearSpace = true;
         /**
