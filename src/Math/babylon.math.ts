@@ -4380,7 +4380,16 @@
             result._markAsUpdated();
             return result;
         }
-
+        /**
+         * Set the passed matrix "result" as the interpolated values for "gradien" (float) between the ones of the matrices "startValue" and "endValue".
+         */
+        public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result:Matrix): void {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
+            }
+            result._markAsUpdated();
+        }
+        
         /**
          * Returns a new Matrix whose values are computed by : 
          * - decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices,
