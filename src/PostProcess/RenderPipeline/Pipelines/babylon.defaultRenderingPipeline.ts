@@ -490,7 +490,7 @@
             else {
                 this.finalMerge = new PassPostProcess("finalMerge", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true));
-                this._setAutoClearAndTextureSharing(this.finalMerge);
+                this._setAutoClearAndTextureSharing(this.finalMerge, true);
                 
                 this.finalMerge.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
             }
