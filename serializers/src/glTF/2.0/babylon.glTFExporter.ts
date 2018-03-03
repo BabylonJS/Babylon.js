@@ -719,13 +719,13 @@ module BABYLON.GLTF2 {
                             else {
                                 Tools.Warn("Material type " + bufferMesh.material.getClassName() + " for material " + bufferMesh.material.name + " is not yet implemented in glTF serializer.");
                             }
-                            if (materialIndex != null) {
-                                if (uvCoordsPresent || !_GLTFMaterial.HasTexturesPresent(this.materials[materialIndex])) {
+                            if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
+                                if (uvCoordsPresent || !_GLTFMaterial._HasTexturesPresent(this.materials[materialIndex])) {
                                     meshPrimitive.material = materialIndex;
                                 }
                                 else {
                                     // If no texture coordinate information is present, make a copy of the material without the textures to be glTF compliant.
-                                    const newMat = _GLTFMaterial.StripTexturesFromMaterial(this.materials[materialIndex]);
+                                    const newMat = _GLTFMaterial._StripTexturesFromMaterial(this.materials[materialIndex]);
                                     this.materials.push(newMat);
                                     meshPrimitive.material = this.materials.length - 1;
                                 }
@@ -750,7 +750,7 @@ module BABYLON.GLTF2 {
                 const babylonMeshes = babylonScene.meshes;
                 const scene = { nodes: new Array<number>() };
 
-                _GLTFMaterial.ConvertMaterialsToGLTF(babylonScene.materials, ImageMimeType.JPEG, this.images, this.textures, this.materials, this.imageData, true);
+                _GLTFMaterial._ConvertMaterialsToGLTF(babylonScene.materials, ImageMimeType.PNG, this.images, this.textures, this.materials, this.imageData, true);
                 const result = this.createNodeMap(babylonScene, byteOffset);
                 this.nodeMap = result.nodeMap;
                 this.totalByteLength = result.byteOffset;
