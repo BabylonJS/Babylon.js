@@ -2495,6 +2495,10 @@ declare module BABYLON {
          * Gets the targeted animations for this animation group
          */
         readonly targetedAnimations: Array<TargetedAnimation>;
+        /**
+         * returning the list of animatables controlled by this animation group.
+         */
+        readonly animatables: Array<Animatable>;
         constructor(name: string, scene?: Nullable<Scene>);
         /**
          * Add an animation (with its target) in the group
@@ -2538,6 +2542,13 @@ declare module BABYLON {
          * Stop all animations
          */
         stop(): AnimationGroup;
+        /**
+         * Goes to a specific frame in this animation group
+         *
+         * @param frame the frame number to go to
+         * @return the animationGroup
+         */
+        goToFrame(frame: number): AnimationGroup;
         /**
          * Dispose all associated resources
          */
@@ -5283,6 +5294,271 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue(newValue, currentValue, buttonIndex);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad(gamepad);
+        private _startMonitoringGamepads();
+        private _stopMonitoringGamepads();
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects();
+    }
+}
+
+declare module BABYLON {
+    enum Xbox360Button {
+        A = 0,
+        B = 1,
+        X = 2,
+        Y = 3,
+        Start = 4,
+        Back = 5,
+        LB = 6,
+        RB = 7,
+        LeftStick = 8,
+        RightStick = 9,
+    }
+    enum Xbox360Dpad {
+        Up = 0,
+        Down = 1,
+        Left = 2,
+        Right = 3,
+    }
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        onButtonDownObservable: Observable<Xbox360Button>;
+        onButtonUpObservable: Observable<Xbox360Button>;
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        leftTrigger: number;
+        rightTrigger: number;
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue(newValue, currentValue, buttonType);
+        private _setDPadValue(newValue, currentValue, buttonType);
+        buttonA: number;
+        buttonB: number;
+        buttonX: number;
+        buttonY: number;
+        buttonStart: number;
+        buttonBack: number;
+        buttonLB: number;
+        buttonRB: number;
+        buttonLeftStick: number;
+        buttonRightStick: number;
+        dPadUp: number;
+        dPadDown: number;
+        dPadLeft: number;
+        dPadRight: number;
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Nullable<Texture>;
+        alphaMode: number;
+        private _system;
+        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
+        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
     /**
      * Represents the different options available during the creation of
      * a Environment helper.
@@ -5507,6 +5783,14 @@ declare module BABYLON {
         private readonly _scene;
         private _options;
         /**
+         * This observable will be notified with any error during the creation of the environment,
+         * mainly texture creation errors.
+         */
+        onErrorObservable: Observable<{
+            message?: string;
+            exception?: any;
+        }>;
+        /**
          * constructor
          * @param options
          * @param scene The scene to add the material to
@@ -5570,6 +5854,7 @@ declare module BABYLON {
          * Setup the skybox reflection texture according to the specified options.
          */
         private _setupSkyboxReflectionTexture();
+        private _errorHandler;
         /**
          * Dispose all the elements created by the Helper.
          */
@@ -5624,225 +5909,6 @@ declare module BABYLON {
          * Releases all associated resources
          */
         dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
-    }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
-        type: number;
-        private _leftStick;
-        private _rightStick;
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue(newValue, currentValue, buttonIndex);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
-        private _scene;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad(gamepad);
-        private _startMonitoringGamepads();
-        private _stopMonitoringGamepads();
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects();
-    }
-}
-
-declare module BABYLON {
-    enum Xbox360Button {
-        A = 0,
-        B = 1,
-        X = 2,
-        Y = 3,
-        Start = 4,
-        Back = 5,
-        LB = 6,
-        RB = 7,
-        LeftStick = 8,
-        RightStick = 9,
-    }
-    enum Xbox360Dpad {
-        Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
-    }
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        onButtonDownObservable: Observable<Xbox360Button>;
-        onButtonUpObservable: Observable<Xbox360Button>;
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        leftTrigger: number;
-        rightTrigger: number;
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue(newValue, currentValue, buttonType);
-        private _setDPadValue(newValue, currentValue, buttonType);
-        buttonA: number;
-        buttonB: number;
-        buttonX: number;
-        buttonY: number;
-        buttonStart: number;
-        buttonBack: number;
-        buttonLB: number;
-        buttonRB: number;
-        buttonLeftStick: number;
-        buttonRightStick: number;
-        dPadUp: number;
-        dPadDown: number;
-        dPadLeft: number;
-        dPadRight: number;
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -6676,48 +6742,934 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Nullable<Texture>;
-        alphaMode: number;
-        private _system;
-        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
-        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
-        dispose(): void;
+    /**
+     * A directional light is defined by a direction (what a surprise!).
+     * The light is emitted from everywhere in the specified direction, and has an infinite range.
+     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    class DirectionalLight extends ShadowLight {
+        private _shadowFrustumSize;
+        /**
+         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
+         */
+        /**
+         * Specifies a fix frustum size for the shadow generation.
+         */
+        shadowFrustumSize: number;
+        private _shadowOrthoScale;
+        /**
+         * Gets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        /**
+         * Sets the shadow projection scale against the optimal computed one.
+         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
+         * This does not impact in fixed frustum size (shadowFrustumSize being set)
+         */
+        shadowOrthoScale: number;
+        /**
+         * Automatically compute the projection matrix to best fit (including all the casters)
+         * on each frame.
+         */
+        autoUpdateExtends: boolean;
+        private _orthoLeft;
+        private _orthoRight;
+        private _orthoTop;
+        private _orthoBottom;
+        /**
+         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
+         * The directional light is emitted from everywhere in the given direction.
+         * It can cast shawdows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        /**
+         * Returns the string "DirectionalLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 1.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        /**
+         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix): void;
+        /**
+         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
+         * Returns the DirectionalLight Shadow projection matrix.
+         */
+        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The directional light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         *
+         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
+         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
     }
 }
 
 declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
+    /**
+     * The HemisphericLight simulates the ambient environment light,
+     * so the passed direction is the light reflection direction, not the incoming direction.
+     */
+    class HemisphericLight extends Light {
+        /**
+         * The groundColor is the light in the opposite direction to the one specified during creation.
+         * You can think of the diffuse and specular light as coming from the centre of the object in the given direction and the groundColor light in the opposite direction.
+         */
+        groundColor: Color3;
+        /**
+         * The light reflection direction, not the incoming direction.
+         */
+        direction: Vector3;
+        private _worldMatrix;
+        /**
+         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
+         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
+         * The HemisphericLight can't cast shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The friendly name of the light
+         * @param direction The direction of the light reflection
+         * @param scene The scene the light belongs to
+         */
+        constructor(name: string, direction: Vector3, scene: Scene);
+        protected _buildUniformLayout(): void;
+        /**
+         * Returns the string "HemisphericLight".
+         * @return The class name
+         */
+        getClassName(): string;
+        /**
+         * Sets the HemisphericLight direction towards the passed target (Vector3).
+         * Returns the updated direction.
+         * @param target The target the direction should point to
+         * @return The computed direction
+         */
+        setDirectionToTarget(target: Vector3): Vector3;
+        /**
+         * Returns the shadow generator associated to the light.
+         * @returns Always null for hemispheric lights because it does not support shadows.
+         */
+        getShadowGenerator(): Nullable<ShadowGenerator>;
+        /**
+         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The hemispheric light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): HemisphericLight;
+        /**
+         * @ignore internal use only.
+         */
+        _getWorldMatrix(): Matrix;
+        /**
+         * Returns the integer 3.
+         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Base class of all the lights in Babylon. It groups all the generic information about lights.
+     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
+     * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
+     */
+    abstract class Light extends Node {
+        private static _LIGHTMAP_DEFAULT;
+        private static _LIGHTMAP_SPECULAR;
+        private static _LIGHTMAP_SHADOWSONLY;
+        /**
+         * If every light affecting the material is in this lightmapMode,
+         * material.lightmapTexture adds or multiplies
+         * (depends on material.useLightmapAsShadowmap)
+         * after every other light calculations.
+         */
+        static readonly LIGHTMAP_DEFAULT: number;
+        /**
+         * material.lightmapTexture as only diffuse lighting from this light
+         * adds only specular lighting from this light
+         * adds dynamic shadows
+         */
+        static readonly LIGHTMAP_SPECULAR: number;
+        /**
+         * material.lightmapTexture as only lighting
+         * no light calculation from this light
+         * only adds dynamic shadows from this light
+         */
+        static readonly LIGHTMAP_SHADOWSONLY: number;
+        private static _INTENSITYMODE_AUTOMATIC;
+        private static _INTENSITYMODE_LUMINOUSPOWER;
+        private static _INTENSITYMODE_LUMINOUSINTENSITY;
+        private static _INTENSITYMODE_ILLUMINANCE;
+        private static _INTENSITYMODE_LUMINANCE;
+        /**
+         * Each light type uses the default quantity according to its type:
+         *      point/spot lights use luminous intensity
+         *      directional lights use illuminance
+         */
+        static readonly INTENSITYMODE_AUTOMATIC: number;
+        /**
+         * lumen (lm)
+         */
+        static readonly INTENSITYMODE_LUMINOUSPOWER: number;
+        /**
+         * candela (lm/sr)
+         */
+        static readonly INTENSITYMODE_LUMINOUSINTENSITY: number;
+        /**
+         * lux (lm/m^2)
+         */
+        static readonly INTENSITYMODE_ILLUMINANCE: number;
+        /**
+         * nit (cd/m^2)
+         */
+        static readonly INTENSITYMODE_LUMINANCE: number;
+        private static _LIGHTTYPEID_POINTLIGHT;
+        private static _LIGHTTYPEID_DIRECTIONALLIGHT;
+        private static _LIGHTTYPEID_SPOTLIGHT;
+        private static _LIGHTTYPEID_HEMISPHERICLIGHT;
+        /**
+         * Light type const id of the point light.
+         */
+        static readonly LIGHTTYPEID_POINTLIGHT: number;
+        /**
+         * Light type const id of the directional light.
+         */
+        static readonly LIGHTTYPEID_DIRECTIONALLIGHT: number;
+        /**
+         * Light type const id of the spot light.
+         */
+        static readonly LIGHTTYPEID_SPOTLIGHT: number;
+        /**
+         * Light type const id of the hemispheric light.
+         */
+        static readonly LIGHTTYPEID_HEMISPHERICLIGHT: number;
+        /**
+         * Diffuse gives the basic color to an object.
+         */
+        diffuse: Color3;
+        /**
+         * Specular produces a highlight color on an object.
+         * Note: This is note affecting PBR materials.
+         */
+        specular: Color3;
+        /**
+         * Strength of the light.
+         * Note: By default it is define in the framework own unit.
+         * Note: In PBR materials the intensityMode can be use to chose what unit the intensity is defined in.
+         */
+        intensity: number;
+        /**
+         * Defines how far from the source the light is impacting in scene units.
+         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
+         */
+        range: number;
+        /**
+         * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type
+         * of light.
+         */
+        private _photometricScale;
+        private _intensityMode;
+        /**
+         * Gets the photometric scale used to interpret the intensity.
+         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
+         */
+        /**
+         * Sets the photometric scale used to interpret the intensity.
+         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
+         */
+        intensityMode: number;
+        private _radius;
+        /**
+         * Gets the light radius used by PBR Materials to simulate soft area lights.
+         */
+        /**
+         * sets the light radius used by PBR Materials to simulate soft area lights.
+         */
+        radius: number;
+        private _renderPriority;
+        /**
+         * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
+         * exceeding the number allowed of the materials.
+         */
+        renderPriority: number;
+        /**
+         * Defines wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
+         * the current shadow generator.
+         */
+        shadowEnabled: boolean;
+        private _includedOnlyMeshes;
+        /**
+         * Gets the only meshes impacted by this light.
+         */
+        /**
+         * Sets the only meshes impacted by this light.
+         */
+        includedOnlyMeshes: AbstractMesh[];
+        private _excludedMeshes;
+        /**
+         * Gets the meshes not impacted by this light.
+         */
+        /**
+         * Sets the meshes not impacted by this light.
+         */
+        excludedMeshes: AbstractMesh[];
+        private _excludeWithLayerMask;
+        /**
+         * Gets the layer id use to find what meshes are not impacted by the light.
+         * Inactive if 0
+         */
+        /**
+         * Sets the layer id use to find what meshes are not impacted by the light.
+         * Inactive if 0
+         */
+        excludeWithLayerMask: number;
+        private _includeOnlyWithLayerMask;
+        /**
+         * Gets the layer id use to find what meshes are impacted by the light.
+         * Inactive if 0
+         */
+        /**
+         * Sets the layer id use to find what meshes are impacted by the light.
+         * Inactive if 0
+         */
+        includeOnlyWithLayerMask: number;
+        private _lightmapMode;
+        /**
+         * Gets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+         */
+        /**
+         * Sets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
+         */
+        lightmapMode: number;
+        private _parentedWorldMatrix;
+        /**
+         * Shadow generator associted to the light.
+         * Internal use only.
+         */
+        _shadowGenerator: Nullable<IShadowGenerator>;
+        /**
+         * @ignore Internal use only.
+         */
+        _excludedMeshesIds: string[];
+        /**
+         * @ignore Internal use only.
+         */
+        _includedOnlyMeshesIds: string[];
+        /**
+         * The current light unifom buffer.
+         * @ignore Internal use only.
+         */
+        _uniformBuffer: UniformBuffer;
+        /**
+         * Creates a Light object in the scene.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The firendly name of the light
+         * @param scene The scene the light belongs too
+         */
+        constructor(name: string, scene: Scene);
+        protected abstract _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect "effect" with the Light information.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The light
+         */
+        abstract transferToEffect(effect: Effect, lightIndex: string): Light;
+        /**
+         * @ignore internal use only.
+         */
+        abstract _getWorldMatrix(): Matrix;
+        /**
+         * Returns the string "Light".
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Converts the light information to a readable string for debug purpose.
+         * @param fullDetails Supports for multiple levels of logging within scene loading
+         * @returns the human readable light info
+         */
+        toString(fullDetails?: boolean): string;
+        /**
+         * Set the enabled state of this node.
+         * @param value - the new enabled state
+         * @see isEnabled
+         */
+        setEnabled(value: boolean): void;
+        /**
+         * Returns the Light associated shadow generator if any.
+         * @return the associated shadow generator.
+         */
+        getShadowGenerator(): Nullable<IShadowGenerator>;
+        /**
+         * Returns a Vector3, the absolute light position in the World.
+         * @returns the world space position of the light
+         */
+        getAbsolutePosition(): Vector3;
+        /**
+         * Specifies if the light will affect the passed mesh.
+         * @param mesh The mesh to test against the light
+         * @return true the mesh is affected otherwise, false.
+         */
+        canAffectMesh(mesh: AbstractMesh): boolean;
+        /**
+         * Computes and Returns the light World matrix.
+         * @returns the world matrix
+         */
+        getWorldMatrix(): Matrix;
+        /**
+         * Sort function to order lights for rendering.
+         * @param a First Light object to compare to second.
+         * @param b Second Light object to compare first.
+         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
+         */
+        static CompareLightsPriority(a: Light, b: Light): number;
+        /**
+         * Disposes the light.
+         */
         dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        /**
+         * Returns the light type ID (integer).
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Returns the intensity scaled by the Photometric Scale according to the light type and intensity mode.
+         * @returns the scaled intensity in intensity mode unit
+         */
+        getScaledIntensity(): number;
+        /**
+         * Returns a new Light object, named "name", from the current one.
+         * @param name The name of the cloned light
+         * @returns the new created light
+         */
+        clone(name: string): Nullable<Light>;
+        /**
+         * Serializes the current light into a Serialization object.
+         * @returns the serialized object.
+         */
         serialize(): any;
+        /**
+         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.
+         * This new light is named "name" and added to the passed scene.
+         * @param type Type according to the types available in Light.LIGHTTYPEID_x
+         * @param name The friendly name of the light
+         * @param scene The scene the new light will belong to
+         * @returns the constructor function
+         */
+        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light>;
+        /**
+         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
+         * @param parsedLight The JSON representation of the light
+         * @param scene The scene to create the parsed light in
+         * @returns the created light after parsing
+         */
+        static Parse(parsedLight: any, scene: Scene): Nullable<Light>;
+        private _hookArrayForExcluded(array);
+        private _hookArrayForIncludedOnly(array);
+        private _resyncMeshes();
+        /**
+         * Forces the meshes to update their light related information in their rendering used effects
+         * @ignore Internal Use Only
+         */
+        _markMeshesAsLightDirty(): void;
+        /**
+         * Recomputes the cached photometric scale if needed.
+         */
+        private _computePhotometricScale();
+        /**
+         * Returns the Photometric Scale according to the light type and intensity mode.
+         */
+        private _getPhotometricScale();
+        /**
+         * Reorder the light in the scene according to their defined priority.
+         * @ignore Internal Use Only
+         */
+        _reorderLightsInScene(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A point light is a light defined by an unique point in world space.
+     * The light is emitted in every direction from this point.
+     * A good example of a point light is a standard light bulb.
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    class PointLight extends ShadowLight {
+        private _shadowAngle;
+        /**
+         * Getter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         * This specifies what angle the shadow will use to be created.
+         *
+         * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
+         */
+        /**
+         * Setter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         * This specifies what angle the shadow will use to be created.
+         *
+         * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
+         */
+        shadowAngle: number;
+        /**
+         * Gets the direction if it has been set.
+         * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         */
+        /**
+         * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
+         */
+        direction: Vector3;
+        /**
+         * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.
+         * A PointLight emits the light in every direction.
+         * It can cast shadows.
+         * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
+         * ```javascript
+         * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
+         * ```
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The light friendly name
+         * @param position The position of the point light in the scene
+         * @param scene The scene the lights belongs to
+         */
+        constructor(name: string, position: Vector3, scene: Scene);
+        /**
+         * Returns the string "PointLight"
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 0.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Specifies wether or not the shadowmap should be a cube texture.
+         * @returns true if the shadowmap needs to be a cube texture.
+         */
+        needCube(): boolean;
+        /**
+         * Returns a new Vector3 aligned with the PointLight cube system according to the passed cube face index (integer).
+         * @param faceIndex The index of the face we are computed the direction to generate shadow
+         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
+         */
+        getShadowDirection(faceIndex?: number): Vector3;
+        /**
+         * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings :
+         * - fov = PI / 2
+         * - aspect ratio : 1.0
+         * - z-near and far equal to the active camera minZ and maxZ.
+         * Returns the PointLight.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The point light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): PointLight;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface describing all the common properties and methods a shadow light needs to implement.
+     * This helps both the shadow generator and materials to genrate the corresponding shadow maps
+     * as well as binding the different shadow properties to the effects.
+     */
+    interface IShadowLight extends Light {
+        /**
+         * The light id in the scene (used in scene.findLighById for instance)
+         */
+        id: string;
+        /**
+         * The position the shdow will be casted from.
+         */
+        position: Vector3;
+        /**
+         * In 2d mode (needCube being false), the direction used to cast the shadow.
+         */
+        direction: Vector3;
+        /**
+         * The transformed position. Position of the light in world space taking parenting in account.
+         */
+        transformedPosition: Vector3;
+        /**
+         * The transformed direction. Direction of the light in world space taking parenting in account.
+         */
+        transformedDirection: Vector3;
+        /**
+         * The friendly name of the light in the scene.
+         */
+        name: string;
+        /**
+         * Defines the shadow projection clipping minimum z value.
+         */
+        shadowMinZ: number;
+        /**
+         * Defines the shadow projection clipping maximum z value.
+         */
+        shadowMaxZ: number;
+        /**
+         * Computes the transformed information (transformedPosition and transformedDirection in World space) of the current light
+         * @returns true if the information has been computed, false if it does not need to (no parenting)
+         */
+        computeTransformedInformation(): boolean;
+        /**
+         * Gets the scene the light belongs to.
+         * @returns The scene
+         */
+        getScene(): Scene;
+        /**
+         * Callback defining a custom Projection Matrix Builder.
+         * This can be used to override the default projection matrix computation.
+         */
+        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
+        /**
+         * Sets the shadow projection matrix in parameter to the generated projection matrix.
+         * @param matrix The materix to updated with the projection information
+         * @param viewMatrix The transform matrix of the light
+         * @param renderList The list of mesh to render in the map
+         * @returns The current light
+         */
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight;
+        /**
+         * Gets the current depth scale used in ESM.
+         * @returns The scale
+         */
+        getDepthScale(): number;
+        /**
+         * Returns whether or not the shadow generation require a cube texture or a 2d texture.
+         * @returns true if a cube texture needs to be use
+         */
+        needCube(): boolean;
+        /**
+         * Detects if the projection matrix requires to be recomputed this frame.
+         * @returns true if it requires to be recomputed otherwise, false.
+         */
+        needProjectionMatrixCompute(): boolean;
+        /**
+         * Forces the shadow generator to recompute the projection matrix even if position and direction did not changed.
+         */
+        forceProjectionMatrixCompute(): void;
+        /**
+         * Get the direction to use to render the shadow map. In case of cube texture, the face index can be passed.
+         * @param faceIndex The index of the face we are computed the direction to generate shadow
+         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
+         */
+        getShadowDirection(faceIndex?: number): Vector3;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
+    }
+    /**
+     * Base implementation of @see IShadowLight
+     * It groups all the common behaviour in order to reduce dupplication and better follow the DRY pattern.
+     */
+    abstract class ShadowLight extends Light implements IShadowLight {
+        protected abstract _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _position: Vector3;
+        protected _setPosition(value: Vector3): void;
+        /**
+         * Sets the position the shadow will be casted from. Also use as the light position for both
+         * point and spot lights.
+         */
+        /**
+         * Sets the position the shadow will be casted from. Also use as the light position for both
+         * point and spot lights.
+         */
+        position: Vector3;
+        protected _direction: Vector3;
+        protected _setDirection(value: Vector3): void;
+        /**
+         * In 2d mode (needCube being false), gets the direction used to cast the shadow.
+         * Also use as the light direction on spot and directional lights.
+         */
+        /**
+         * In 2d mode (needCube being false), sets the direction used to cast the shadow.
+         * Also use as the light direction on spot and directional lights.
+         */
+        direction: Vector3;
+        private _shadowMinZ;
+        /**
+         * Gets the shadow projection clipping minimum z value.
+         */
+        /**
+         * Sets the shadow projection clipping minimum z value.
+         */
+        shadowMinZ: number;
+        private _shadowMaxZ;
+        /**
+         * Sets the shadow projection clipping maximum z value.
+         */
+        /**
+         * Gets the shadow projection clipping maximum z value.
+         */
+        shadowMaxZ: number;
+        /**
+         * Callback defining a custom Projection Matrix Builder.
+         * This can be used to override the default projection matrix computation.
+         */
+        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
+        /**
+         * The transformed position. Position of the light in world space taking parenting in account.
+         */
+        transformedPosition: Vector3;
+        /**
+         * The transformed direction. Direction of the light in world space taking parenting in account.
+         */
+        transformedDirection: Vector3;
+        private _worldMatrix;
+        private _needProjectionMatrixCompute;
+        /**
+         * Computes the transformed information (transformedPosition and transformedDirection in World space) of the current light
+         * @returns true if the information has been computed, false if it does not need to (no parenting)
+         */
+        computeTransformedInformation(): boolean;
+        /**
+         * Return the depth scale used for the shadow map.
+         * @returns the depth scale.
+         */
+        getDepthScale(): number;
+        /**
+         * Get the direction to use to render the shadow map. In case of cube texture, the face index can be passed.
+         * @param faceIndex The index of the face we are computed the direction to generate shadow
+         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
+         */
+        getShadowDirection(faceIndex?: number): Vector3;
+        /**
+         * Returns the ShadowLight absolute position in the World.
+         * @returns the position vector in world space
+         */
+        getAbsolutePosition(): Vector3;
+        /**
+         * Sets the ShadowLight direction toward the passed target.
+         * @param target The point tot target in local space
+         * @returns the updated ShadowLight direction
+         */
+        setDirectionToTarget(target: Vector3): Vector3;
+        /**
+         * Returns the light rotation in euler definition.
+         * @returns the x y z rotation in local space.
+         */
+        getRotation(): Vector3;
+        /**
+         * Returns whether or not the shadow generation require a cube texture or a 2d texture.
+         * @returns true if a cube texture needs to be use
+         */
+        needCube(): boolean;
+        /**
+         * Detects if the projection matrix requires to be recomputed this frame.
+         * @returns true if it requires to be recomputed otherwise, false.
+         */
+        needProjectionMatrixCompute(): boolean;
+        /**
+         * Forces the shadow generator to recompute the projection matrix even if position and direction did not changed.
+         */
+        forceProjectionMatrixCompute(): void;
+        /**
+         * Get the world matrix of the sahdow lights.
+         * @ignore Internal Use Only
+         */
+        _getWorldMatrix(): Matrix;
+        /**
+         * Gets the minZ used for shadow according to both the scene and the light.
+         * @param activeCamera The camera we are returning the min for
+         * @returns the depth min z
+         */
+        getDepthMinZ(activeCamera: Camera): number;
+        /**
+         * Gets the maxZ used for shadow according to both the scene and the light.
+         * @param activeCamera The camera we are returning the max for
+         * @returns the depth max z
+         */
+        getDepthMaxZ(activeCamera: Camera): number;
+        /**
+         * Sets the shadow projection matrix in parameter to the generated projection matrix.
+         * @param matrix The materix to updated with the projection information
+         * @param viewMatrix The transform matrix of the light
+         * @param renderList The list of mesh to render in the map
+         * @returns The current light
+         */
+        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A spot light is defined by a position, a direction, an angle, and an exponent.
+     * These values define a cone of light starting from the position, emitting toward the direction.
+     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
+     * and the exponent defines the speed of the decay of the light with distance (reach).
+     * Documentation: https://doc.babylonjs.com/babylon101/lights
+     */
+    class SpotLight extends ShadowLight {
+        private _angle;
+        /**
+         * Gets the cone angle of the spot light in Radians.
+         */
+        /**
+         * Sets the cone angle of the spot light in Radians.
+         */
+        angle: number;
+        private _shadowAngleScale;
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        /**
+         * Allows scaling the angle of the light for shadow generation only.
+         */
+        shadowAngleScale: number;
+        /**
+         * The light decay speed with the distance from the emission spot.
+         */
+        exponent: number;
+        private _projectionTextureMatrix;
+        /**
+        * Allows reading the projecton texture
+        */
+        readonly projectionTextureMatrix: Matrix;
+        protected _projectionTextureLightNear: number;
+        /**
+         * Gets the near clip of the Spotlight for texture projection.
+         */
+        /**
+         * Sets the near clip of the Spotlight for texture projection.
+         */
+        projectionTextureLightNear: number;
+        protected _projectionTextureLightFar: number;
+        /**
+         * Gets the far clip of the Spotlight for texture projection.
+         */
+        /**
+         * Sets the far clip of the Spotlight for texture projection.
+         */
+        projectionTextureLightFar: number;
+        protected _projectionTextureUpDirection: Vector3;
+        /**
+         * Gets the Up vector of the Spotlight for texture projection.
+         */
+        /**
+         * Sets the Up vector of the Spotlight for texture projection.
+         */
+        projectionTextureUpDirection: Vector3;
+        private _projectionTexture;
+        /**
+         * Gets the projection texture of the light.
+        */
+        /**
+        * Sets the projection texture of the light.
+        */
+        projectionTexture: Nullable<BaseTexture>;
+        private _projectionTextureViewLightDirty;
+        private _projectionTextureProjectionLightDirty;
+        private _projectionTextureDirty;
+        private _projectionTextureViewTargetVector;
+        private _projectionTextureViewLightMatrix;
+        private _projectionTextureProjectionLightMatrix;
+        private _projectionTextureScalingMatrix;
+        /**
+         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
+         * It can cast shadows.
+         * Documentation : http://doc.babylonjs.com/tutorials/lights
+         * @param name The light friendly name
+         * @param position The position of the spot light in the scene
+         * @param direction The direction of the light in the scene
+         * @param angle The cone angle of the light in Radians
+         * @param exponent The light decay speed with the distance from the emission spot
+         * @param scene The scene the lights belongs to
+         */
+        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
+        /**
+         * Returns the string "SpotLight".
+         * @returns the class name
+         */
+        getClassName(): string;
+        /**
+         * Returns the integer 2.
+         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
+         */
+        getTypeID(): number;
+        /**
+         * Overrides the direction setter to recompute the projection texture view light Matrix.
+         */
+        protected _setDirection(value: Vector3): void;
+        /**
+         * Overrides the position setter to recompute the projection texture view light Matrix.
+         */
+        protected _setPosition(value: Vector3): void;
+        /**
+         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
+         * Returns the SpotLight.
+         */
+        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
+        protected _computeProjectionTextureViewLightMatrix(): void;
+        protected _computeProjectionTextureProjectionLightMatrix(): void;
+        /**
+         * Main function for light texture projection matrix computing.
+         */
+        protected _computeProjectionTextureMatrix(): void;
+        protected _buildUniformLayout(): void;
+        /**
+         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
+         * @param effect The effect to update
+         * @param lightIndex The index of the light in the effect to update
+         * @returns The spot light
+         */
+        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
+        /**
+         * Disposes the light and the associated resources.
+         */
+        dispose(): void;
     }
 }
 
@@ -9706,938 +10658,6 @@ declare module BABYLON {
 
 declare module BABYLON {
     /**
-     * A directional light is defined by a direction (what a surprise!).
-     * The light is emitted from everywhere in the specified direction, and has an infinite range.
-     * An example of a directional light is when a distance planet is lit by the apparently parallel lines of light from its sun. Light in a downward direction will light the top of an object.
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    class DirectionalLight extends ShadowLight {
-        private _shadowFrustumSize;
-        /**
-         * Fix frustum size for the shadow generation. This is disabled if the value is 0.
-         */
-        /**
-         * Specifies a fix frustum size for the shadow generation.
-         */
-        shadowFrustumSize: number;
-        private _shadowOrthoScale;
-        /**
-         * Gets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        /**
-         * Sets the shadow projection scale against the optimal computed one.
-         * 0.1 by default which means that the projection window is increase by 10% from the optimal size.
-         * This does not impact in fixed frustum size (shadowFrustumSize being set)
-         */
-        shadowOrthoScale: number;
-        /**
-         * Automatically compute the projection matrix to best fit (including all the casters)
-         * on each frame.
-         */
-        autoUpdateExtends: boolean;
-        private _orthoLeft;
-        private _orthoRight;
-        private _orthoTop;
-        private _orthoBottom;
-        /**
-         * Creates a DirectionalLight object in the scene, oriented towards the passed direction (Vector3).
-         * The directional light is emitted from everywhere in the given direction.
-         * It can cast shawdows.
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        /**
-         * Returns the string "DirectionalLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 1.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Sets the passed matrix "matrix" as projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        /**
-         * Sets the passed matrix "matrix" as fixed frustum projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultFixedFrustumShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix): void;
-        /**
-         * Sets the passed matrix "matrix" as auto extend projection matrix for the shadows cast by the light according to the passed view matrix.
-         * Returns the DirectionalLight Shadow projection matrix.
-         */
-        protected _setDefaultAutoExtendShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect object with the DirectionalLight transformed position (or position if not parented) and the passed name.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The directional light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): DirectionalLight;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         *
-         * Values are fixed on directional lights as it relies on an ortho projection hence the need to convert being
-         * -1 and 1 to 0 and 1 doing (depth + min) / (min + max) -> (depth + 1) / (1 + 1) -> (depth * 0.5) + 0.5.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The HemisphericLight simulates the ambient environment light,
-     * so the passed direction is the light reflection direction, not the incoming direction.
-     */
-    class HemisphericLight extends Light {
-        /**
-         * The groundColor is the light in the opposite direction to the one specified during creation.
-         * You can think of the diffuse and specular light as coming from the centre of the object in the given direction and the groundColor light in the opposite direction.
-         */
-        groundColor: Color3;
-        /**
-         * The light reflection direction, not the incoming direction.
-         */
-        direction: Vector3;
-        private _worldMatrix;
-        /**
-         * Creates a HemisphericLight object in the scene according to the passed direction (Vector3).
-         * The HemisphericLight simulates the ambient environment light, so the passed direction is the light reflection direction, not the incoming direction.
-         * The HemisphericLight can't cast shadows.
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
-         * @param name The friendly name of the light
-         * @param direction The direction of the light reflection
-         * @param scene The scene the light belongs to
-         */
-        constructor(name: string, direction: Vector3, scene: Scene);
-        protected _buildUniformLayout(): void;
-        /**
-         * Returns the string "HemisphericLight".
-         * @return The class name
-         */
-        getClassName(): string;
-        /**
-         * Sets the HemisphericLight direction towards the passed target (Vector3).
-         * Returns the updated direction.
-         * @param target The target the direction should point to
-         * @return The computed direction
-         */
-        setDirectionToTarget(target: Vector3): Vector3;
-        /**
-         * Returns the shadow generator associated to the light.
-         * @returns Always null for hemispheric lights because it does not support shadows.
-         */
-        getShadowGenerator(): Nullable<ShadowGenerator>;
-        /**
-         * Sets the passed Effect object with the HemisphericLight normalized direction and color and the passed name (string).
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The hemispheric light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): HemisphericLight;
-        /**
-         * @ignore internal use only.
-         */
-        _getWorldMatrix(): Matrix;
-        /**
-         * Returns the integer 3.
-         * @return The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Base class of all the lights in Babylon. It groups all the generic information about lights.
-     * Lights are used, as you would expect, to affect how meshes are seen, in terms of both illumination and colour.
-     * All meshes allow light to pass through them unless shadow generation is activated. The default number of lights allowed is four but this can be increased.
-     */
-    abstract class Light extends Node {
-        private static _LIGHTMAP_DEFAULT;
-        private static _LIGHTMAP_SPECULAR;
-        private static _LIGHTMAP_SHADOWSONLY;
-        /**
-         * If every light affecting the material is in this lightmapMode,
-         * material.lightmapTexture adds or multiplies
-         * (depends on material.useLightmapAsShadowmap)
-         * after every other light calculations.
-         */
-        static readonly LIGHTMAP_DEFAULT: number;
-        /**
-         * material.lightmapTexture as only diffuse lighting from this light
-         * adds only specular lighting from this light
-         * adds dynamic shadows
-         */
-        static readonly LIGHTMAP_SPECULAR: number;
-        /**
-         * material.lightmapTexture as only lighting
-         * no light calculation from this light
-         * only adds dynamic shadows from this light
-         */
-        static readonly LIGHTMAP_SHADOWSONLY: number;
-        private static _INTENSITYMODE_AUTOMATIC;
-        private static _INTENSITYMODE_LUMINOUSPOWER;
-        private static _INTENSITYMODE_LUMINOUSINTENSITY;
-        private static _INTENSITYMODE_ILLUMINANCE;
-        private static _INTENSITYMODE_LUMINANCE;
-        /**
-         * Each light type uses the default quantity according to its type:
-         *      point/spot lights use luminous intensity
-         *      directional lights use illuminance
-         */
-        static readonly INTENSITYMODE_AUTOMATIC: number;
-        /**
-         * lumen (lm)
-         */
-        static readonly INTENSITYMODE_LUMINOUSPOWER: number;
-        /**
-         * candela (lm/sr)
-         */
-        static readonly INTENSITYMODE_LUMINOUSINTENSITY: number;
-        /**
-         * lux (lm/m^2)
-         */
-        static readonly INTENSITYMODE_ILLUMINANCE: number;
-        /**
-         * nit (cd/m^2)
-         */
-        static readonly INTENSITYMODE_LUMINANCE: number;
-        private static _LIGHTTYPEID_POINTLIGHT;
-        private static _LIGHTTYPEID_DIRECTIONALLIGHT;
-        private static _LIGHTTYPEID_SPOTLIGHT;
-        private static _LIGHTTYPEID_HEMISPHERICLIGHT;
-        /**
-         * Light type const id of the point light.
-         */
-        static readonly LIGHTTYPEID_POINTLIGHT: number;
-        /**
-         * Light type const id of the directional light.
-         */
-        static readonly LIGHTTYPEID_DIRECTIONALLIGHT: number;
-        /**
-         * Light type const id of the spot light.
-         */
-        static readonly LIGHTTYPEID_SPOTLIGHT: number;
-        /**
-         * Light type const id of the hemispheric light.
-         */
-        static readonly LIGHTTYPEID_HEMISPHERICLIGHT: number;
-        /**
-         * Diffuse gives the basic color to an object.
-         */
-        diffuse: Color3;
-        /**
-         * Specular produces a highlight color on an object.
-         * Note: This is note affecting PBR materials.
-         */
-        specular: Color3;
-        /**
-         * Strength of the light.
-         * Note: By default it is define in the framework own unit.
-         * Note: In PBR materials the intensityMode can be use to chose what unit the intensity is defined in.
-         */
-        intensity: number;
-        /**
-         * Defines how far from the source the light is impacting in scene units.
-         * Note: Unused in PBR material as the distance light falloff is defined following the inverse squared falloff.
-         */
-        range: number;
-        /**
-         * Cached photometric scale default to 1.0 as the automatic intensity mode defaults to 1.0 for every type
-         * of light.
-         */
-        private _photometricScale;
-        private _intensityMode;
-        /**
-         * Gets the photometric scale used to interpret the intensity.
-         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
-         */
-        /**
-         * Sets the photometric scale used to interpret the intensity.
-         * This is only relevant with PBR Materials where the light intensity can be defined in a physical way.
-         */
-        intensityMode: number;
-        private _radius;
-        /**
-         * Gets the light radius used by PBR Materials to simulate soft area lights.
-         */
-        /**
-         * sets the light radius used by PBR Materials to simulate soft area lights.
-         */
-        radius: number;
-        private _renderPriority;
-        /**
-         * Defines the rendering priority of the lights. It can help in case of fallback or number of lights
-         * exceeding the number allowed of the materials.
-         */
-        renderPriority: number;
-        /**
-         * Defines wether or not the shadows are enabled for this light. This can help turning off/on shadow without detaching
-         * the current shadow generator.
-         */
-        shadowEnabled: boolean;
-        private _includedOnlyMeshes;
-        /**
-         * Gets the only meshes impacted by this light.
-         */
-        /**
-         * Sets the only meshes impacted by this light.
-         */
-        includedOnlyMeshes: AbstractMesh[];
-        private _excludedMeshes;
-        /**
-         * Gets the meshes not impacted by this light.
-         */
-        /**
-         * Sets the meshes not impacted by this light.
-         */
-        excludedMeshes: AbstractMesh[];
-        private _excludeWithLayerMask;
-        /**
-         * Gets the layer id use to find what meshes are not impacted by the light.
-         * Inactive if 0
-         */
-        /**
-         * Sets the layer id use to find what meshes are not impacted by the light.
-         * Inactive if 0
-         */
-        excludeWithLayerMask: number;
-        private _includeOnlyWithLayerMask;
-        /**
-         * Gets the layer id use to find what meshes are impacted by the light.
-         * Inactive if 0
-         */
-        /**
-         * Sets the layer id use to find what meshes are impacted by the light.
-         * Inactive if 0
-         */
-        includeOnlyWithLayerMask: number;
-        private _lightmapMode;
-        /**
-         * Gets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
-         */
-        /**
-         * Sets the lightmap mode of this light (should be one of the constants defined by Light.LIGHTMAP_x)
-         */
-        lightmapMode: number;
-        private _parentedWorldMatrix;
-        /**
-         * Shadow generator associted to the light.
-         * Internal use only.
-         */
-        _shadowGenerator: Nullable<IShadowGenerator>;
-        /**
-         * @ignore Internal use only.
-         */
-        _excludedMeshesIds: string[];
-        /**
-         * @ignore Internal use only.
-         */
-        _includedOnlyMeshesIds: string[];
-        /**
-         * The current light unifom buffer.
-         * @ignore Internal use only.
-         */
-        _uniformBuffer: UniformBuffer;
-        /**
-         * Creates a Light object in the scene.
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
-         * @param name The firendly name of the light
-         * @param scene The scene the light belongs too
-         */
-        constructor(name: string, scene: Scene);
-        protected abstract _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect "effect" with the Light information.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The light
-         */
-        abstract transferToEffect(effect: Effect, lightIndex: string): Light;
-        /**
-         * @ignore internal use only.
-         */
-        abstract _getWorldMatrix(): Matrix;
-        /**
-         * Returns the string "Light".
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Converts the light information to a readable string for debug purpose.
-         * @param fullDetails Supports for multiple levels of logging within scene loading
-         * @returns the human readable light info
-         */
-        toString(fullDetails?: boolean): string;
-        /**
-         * Set the enabled state of this node.
-         * @param value - the new enabled state
-         * @see isEnabled
-         */
-        setEnabled(value: boolean): void;
-        /**
-         * Returns the Light associated shadow generator if any.
-         * @return the associated shadow generator.
-         */
-        getShadowGenerator(): Nullable<IShadowGenerator>;
-        /**
-         * Returns a Vector3, the absolute light position in the World.
-         * @returns the world space position of the light
-         */
-        getAbsolutePosition(): Vector3;
-        /**
-         * Specifies if the light will affect the passed mesh.
-         * @param mesh The mesh to test against the light
-         * @return true the mesh is affected otherwise, false.
-         */
-        canAffectMesh(mesh: AbstractMesh): boolean;
-        /**
-         * Computes and Returns the light World matrix.
-         * @returns the world matrix
-         */
-        getWorldMatrix(): Matrix;
-        /**
-         * Sort function to order lights for rendering.
-         * @param a First Light object to compare to second.
-         * @param b Second Light object to compare first.
-         * @return -1 to reduce's a's index relative to be, 0 for no change, 1 to increase a's index relative to b.
-         */
-        static CompareLightsPriority(a: Light, b: Light): number;
-        /**
-         * Disposes the light.
-         */
-        dispose(): void;
-        /**
-         * Returns the light type ID (integer).
-         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Returns the intensity scaled by the Photometric Scale according to the light type and intensity mode.
-         * @returns the scaled intensity in intensity mode unit
-         */
-        getScaledIntensity(): number;
-        /**
-         * Returns a new Light object, named "name", from the current one.
-         * @param name The name of the cloned light
-         * @returns the new created light
-         */
-        clone(name: string): Nullable<Light>;
-        /**
-         * Serializes the current light into a Serialization object.
-         * @returns the serialized object.
-         */
-        serialize(): any;
-        /**
-         * Creates a new typed light from the passed type (integer) : point light = 0, directional light = 1, spot light = 2, hemispheric light = 3.
-         * This new light is named "name" and added to the passed scene.
-         * @param type Type according to the types available in Light.LIGHTTYPEID_x
-         * @param name The friendly name of the light
-         * @param scene The scene the new light will belong to
-         * @returns the constructor function
-         */
-        static GetConstructorFromName(type: number, name: string, scene: Scene): Nullable<() => Light>;
-        /**
-         * Parses the passed "parsedLight" and returns a new instanced Light from this parsing.
-         * @param parsedLight The JSON representation of the light
-         * @param scene The scene to create the parsed light in
-         * @returns the created light after parsing
-         */
-        static Parse(parsedLight: any, scene: Scene): Nullable<Light>;
-        private _hookArrayForExcluded(array);
-        private _hookArrayForIncludedOnly(array);
-        private _resyncMeshes();
-        /**
-         * Forces the meshes to update their light related information in their rendering used effects
-         * @ignore Internal Use Only
-         */
-        _markMeshesAsLightDirty(): void;
-        /**
-         * Recomputes the cached photometric scale if needed.
-         */
-        private _computePhotometricScale();
-        /**
-         * Returns the Photometric Scale according to the light type and intensity mode.
-         */
-        private _getPhotometricScale();
-        /**
-         * Reorder the light in the scene according to their defined priority.
-         * @ignore Internal Use Only
-         */
-        _reorderLightsInScene(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A point light is a light defined by an unique point in world space.
-     * The light is emitted in every direction from this point.
-     * A good example of a point light is a standard light bulb.
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    class PointLight extends ShadowLight {
-        private _shadowAngle;
-        /**
-         * Getter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
-         * This specifies what angle the shadow will use to be created.
-         *
-         * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
-         */
-        /**
-         * Setter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
-         * This specifies what angle the shadow will use to be created.
-         *
-         * It default to 90 degrees to work nicely with the cube texture generation for point lights shadow maps.
-         */
-        shadowAngle: number;
-        /**
-         * Gets the direction if it has been set.
-         * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
-         */
-        /**
-         * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
-         */
-        direction: Vector3;
-        /**
-         * Creates a PointLight object from the passed name and position (Vector3) and adds it in the scene.
-         * A PointLight emits the light in every direction.
-         * It can cast shadows.
-         * If the scene camera is already defined and you want to set your PointLight at the camera position, just set it :
-         * ```javascript
-         * var pointLight = new BABYLON.PointLight("pl", camera.position, scene);
-         * ```
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
-         * @param name The light friendly name
-         * @param position The position of the point light in the scene
-         * @param scene The scene the lights belongs to
-         */
-        constructor(name: string, position: Vector3, scene: Scene);
-        /**
-         * Returns the string "PointLight"
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 0.
-         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Specifies wether or not the shadowmap should be a cube texture.
-         * @returns true if the shadowmap needs to be a cube texture.
-         */
-        needCube(): boolean;
-        /**
-         * Returns a new Vector3 aligned with the PointLight cube system according to the passed cube face index (integer).
-         * @param faceIndex The index of the face we are computed the direction to generate shadow
-         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
-         */
-        getShadowDirection(faceIndex?: number): Vector3;
-        /**
-         * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings :
-         * - fov = PI / 2
-         * - aspect ratio : 1.0
-         * - z-near and far equal to the active camera minZ and maxZ.
-         * Returns the PointLight.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect "effect" with the PointLight transformed position (or position, if none) and passed name (string).
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The point light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): PointLight;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface describing all the common properties and methods a shadow light needs to implement.
-     * This helps both the shadow generator and materials to genrate the corresponding shadow maps
-     * as well as binding the different shadow properties to the effects.
-     */
-    interface IShadowLight extends Light {
-        /**
-         * The light id in the scene (used in scene.findLighById for instance)
-         */
-        id: string;
-        /**
-         * The position the shdow will be casted from.
-         */
-        position: Vector3;
-        /**
-         * In 2d mode (needCube being false), the direction used to cast the shadow.
-         */
-        direction: Vector3;
-        /**
-         * The transformed position. Position of the light in world space taking parenting in account.
-         */
-        transformedPosition: Vector3;
-        /**
-         * The transformed direction. Direction of the light in world space taking parenting in account.
-         */
-        transformedDirection: Vector3;
-        /**
-         * The friendly name of the light in the scene.
-         */
-        name: string;
-        /**
-         * Defines the shadow projection clipping minimum z value.
-         */
-        shadowMinZ: number;
-        /**
-         * Defines the shadow projection clipping maximum z value.
-         */
-        shadowMaxZ: number;
-        /**
-         * Computes the transformed information (transformedPosition and transformedDirection in World space) of the current light
-         * @returns true if the information has been computed, false if it does not need to (no parenting)
-         */
-        computeTransformedInformation(): boolean;
-        /**
-         * Gets the scene the light belongs to.
-         * @returns The scene
-         */
-        getScene(): Scene;
-        /**
-         * Callback defining a custom Projection Matrix Builder.
-         * This can be used to override the default projection matrix computation.
-         */
-        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
-        /**
-         * Sets the shadow projection matrix in parameter to the generated projection matrix.
-         * @param matrix The materix to updated with the projection information
-         * @param viewMatrix The transform matrix of the light
-         * @param renderList The list of mesh to render in the map
-         * @returns The current light
-         */
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight;
-        /**
-         * Gets the current depth scale used in ESM.
-         * @returns The scale
-         */
-        getDepthScale(): number;
-        /**
-         * Returns whether or not the shadow generation require a cube texture or a 2d texture.
-         * @returns true if a cube texture needs to be use
-         */
-        needCube(): boolean;
-        /**
-         * Detects if the projection matrix requires to be recomputed this frame.
-         * @returns true if it requires to be recomputed otherwise, false.
-         */
-        needProjectionMatrixCompute(): boolean;
-        /**
-         * Forces the shadow generator to recompute the projection matrix even if position and direction did not changed.
-         */
-        forceProjectionMatrixCompute(): void;
-        /**
-         * Get the direction to use to render the shadow map. In case of cube texture, the face index can be passed.
-         * @param faceIndex The index of the face we are computed the direction to generate shadow
-         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
-         */
-        getShadowDirection(faceIndex?: number): Vector3;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-    }
-    /**
-     * Base implementation of @see IShadowLight
-     * It groups all the common behaviour in order to reduce dupplication and better follow the DRY pattern.
-     */
-    abstract class ShadowLight extends Light implements IShadowLight {
-        protected abstract _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _position: Vector3;
-        protected _setPosition(value: Vector3): void;
-        /**
-         * Sets the position the shadow will be casted from. Also use as the light position for both
-         * point and spot lights.
-         */
-        /**
-         * Sets the position the shadow will be casted from. Also use as the light position for both
-         * point and spot lights.
-         */
-        position: Vector3;
-        protected _direction: Vector3;
-        protected _setDirection(value: Vector3): void;
-        /**
-         * In 2d mode (needCube being false), gets the direction used to cast the shadow.
-         * Also use as the light direction on spot and directional lights.
-         */
-        /**
-         * In 2d mode (needCube being false), sets the direction used to cast the shadow.
-         * Also use as the light direction on spot and directional lights.
-         */
-        direction: Vector3;
-        private _shadowMinZ;
-        /**
-         * Gets the shadow projection clipping minimum z value.
-         */
-        /**
-         * Sets the shadow projection clipping minimum z value.
-         */
-        shadowMinZ: number;
-        private _shadowMaxZ;
-        /**
-         * Sets the shadow projection clipping maximum z value.
-         */
-        /**
-         * Gets the shadow projection clipping maximum z value.
-         */
-        shadowMaxZ: number;
-        /**
-         * Callback defining a custom Projection Matrix Builder.
-         * This can be used to override the default projection matrix computation.
-         */
-        customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
-        /**
-         * The transformed position. Position of the light in world space taking parenting in account.
-         */
-        transformedPosition: Vector3;
-        /**
-         * The transformed direction. Direction of the light in world space taking parenting in account.
-         */
-        transformedDirection: Vector3;
-        private _worldMatrix;
-        private _needProjectionMatrixCompute;
-        /**
-         * Computes the transformed information (transformedPosition and transformedDirection in World space) of the current light
-         * @returns true if the information has been computed, false if it does not need to (no parenting)
-         */
-        computeTransformedInformation(): boolean;
-        /**
-         * Return the depth scale used for the shadow map.
-         * @returns the depth scale.
-         */
-        getDepthScale(): number;
-        /**
-         * Get the direction to use to render the shadow map. In case of cube texture, the face index can be passed.
-         * @param faceIndex The index of the face we are computed the direction to generate shadow
-         * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
-         */
-        getShadowDirection(faceIndex?: number): Vector3;
-        /**
-         * Returns the ShadowLight absolute position in the World.
-         * @returns the position vector in world space
-         */
-        getAbsolutePosition(): Vector3;
-        /**
-         * Sets the ShadowLight direction toward the passed target.
-         * @param target The point tot target in local space
-         * @returns the updated ShadowLight direction
-         */
-        setDirectionToTarget(target: Vector3): Vector3;
-        /**
-         * Returns the light rotation in euler definition.
-         * @returns the x y z rotation in local space.
-         */
-        getRotation(): Vector3;
-        /**
-         * Returns whether or not the shadow generation require a cube texture or a 2d texture.
-         * @returns true if a cube texture needs to be use
-         */
-        needCube(): boolean;
-        /**
-         * Detects if the projection matrix requires to be recomputed this frame.
-         * @returns true if it requires to be recomputed otherwise, false.
-         */
-        needProjectionMatrixCompute(): boolean;
-        /**
-         * Forces the shadow generator to recompute the projection matrix even if position and direction did not changed.
-         */
-        forceProjectionMatrixCompute(): void;
-        /**
-         * Get the world matrix of the sahdow lights.
-         * @ignore Internal Use Only
-         */
-        _getWorldMatrix(): Matrix;
-        /**
-         * Gets the minZ used for shadow according to both the scene and the light.
-         * @param activeCamera The camera we are returning the min for
-         * @returns the depth min z
-         */
-        getDepthMinZ(activeCamera: Camera): number;
-        /**
-         * Gets the maxZ used for shadow according to both the scene and the light.
-         * @param activeCamera The camera we are returning the max for
-         * @returns the depth max z
-         */
-        getDepthMaxZ(activeCamera: Camera): number;
-        /**
-         * Sets the shadow projection matrix in parameter to the generated projection matrix.
-         * @param matrix The materix to updated with the projection information
-         * @param viewMatrix The transform matrix of the light
-         * @param renderList The list of mesh to render in the map
-         * @returns The current light
-         */
-        setShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): IShadowLight;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A spot light is defined by a position, a direction, an angle, and an exponent.
-     * These values define a cone of light starting from the position, emitting toward the direction.
-     * The angle, in radians, defines the size (field of illumination) of the spotlight's conical beam,
-     * and the exponent defines the speed of the decay of the light with distance (reach).
-     * Documentation: https://doc.babylonjs.com/babylon101/lights
-     */
-    class SpotLight extends ShadowLight {
-        private _angle;
-        /**
-         * Gets the cone angle of the spot light in Radians.
-         */
-        /**
-         * Sets the cone angle of the spot light in Radians.
-         */
-        angle: number;
-        private _shadowAngleScale;
-        /**
-         * Allows scaling the angle of the light for shadow generation only.
-         */
-        /**
-         * Allows scaling the angle of the light for shadow generation only.
-         */
-        shadowAngleScale: number;
-        /**
-         * The light decay speed with the distance from the emission spot.
-         */
-        exponent: number;
-        private _projectionTextureMatrix;
-        /**
-        * Allows reading the projecton texture
-        */
-        readonly projectionTextureMatrix: Matrix;
-        protected _projectionTextureLightNear: number;
-        /**
-         * Gets the near clip of the Spotlight for texture projection.
-         */
-        /**
-         * Sets the near clip of the Spotlight for texture projection.
-         */
-        projectionTextureLightNear: number;
-        protected _projectionTextureLightFar: number;
-        /**
-         * Gets the far clip of the Spotlight for texture projection.
-         */
-        /**
-         * Sets the far clip of the Spotlight for texture projection.
-         */
-        projectionTextureLightFar: number;
-        protected _projectionTextureUpDirection: Vector3;
-        /**
-         * Gets the Up vector of the Spotlight for texture projection.
-         */
-        /**
-         * Sets the Up vector of the Spotlight for texture projection.
-         */
-        projectionTextureUpDirection: Vector3;
-        private _projectionTexture;
-        /**
-         * Gets the projection texture of the light.
-        */
-        /**
-        * Sets the projection texture of the light.
-        */
-        projectionTexture: Nullable<BaseTexture>;
-        private _projectionTextureViewLightDirty;
-        private _projectionTextureProjectionLightDirty;
-        private _projectionTextureDirty;
-        private _projectionTextureViewTargetVector;
-        private _projectionTextureViewLightMatrix;
-        private _projectionTextureProjectionLightMatrix;
-        private _projectionTextureScalingMatrix;
-        /**
-         * Creates a SpotLight object in the scene. A spot light is a simply light oriented cone.
-         * It can cast shadows.
-         * Documentation : http://doc.babylonjs.com/tutorials/lights
-         * @param name The light friendly name
-         * @param position The position of the spot light in the scene
-         * @param direction The direction of the light in the scene
-         * @param angle The cone angle of the light in Radians
-         * @param exponent The light decay speed with the distance from the emission spot
-         * @param scene The scene the lights belongs to
-         */
-        constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene);
-        /**
-         * Returns the string "SpotLight".
-         * @returns the class name
-         */
-        getClassName(): string;
-        /**
-         * Returns the integer 2.
-         * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
-         */
-        getTypeID(): number;
-        /**
-         * Overrides the direction setter to recompute the projection texture view light Matrix.
-         */
-        protected _setDirection(value: Vector3): void;
-        /**
-         * Overrides the position setter to recompute the projection texture view light Matrix.
-         */
-        protected _setPosition(value: Vector3): void;
-        /**
-         * Sets the passed matrix "matrix" as perspective projection matrix for the shadows and the passed view matrix with the fov equal to the SpotLight angle and and aspect ratio of 1.0.
-         * Returns the SpotLight.
-         */
-        protected _setDefaultShadowProjectionMatrix(matrix: Matrix, viewMatrix: Matrix, renderList: Array<AbstractMesh>): void;
-        protected _computeProjectionTextureViewLightMatrix(): void;
-        protected _computeProjectionTextureProjectionLightMatrix(): void;
-        /**
-         * Main function for light texture projection matrix computing.
-         */
-        protected _computeProjectionTextureMatrix(): void;
-        protected _buildUniformLayout(): void;
-        /**
-         * Sets the passed Effect object with the SpotLight transfomed position (or position if not parented) and normalized direction.
-         * @param effect The effect to update
-         * @param lightIndex The index of the light in the effect to update
-         * @returns The spot light
-         */
-        transferToEffect(effect: Effect, lightIndex: string): SpotLight;
-        /**
-         * Disposes the light and the associated resources.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
      * The color grading curves provide additional color adjustmnent that is applied after any color grading transform (3D LUT).
      * They allow basic adjustment of saturation and small exposure adjustments, along with color filter tinting to provide white balance adjustment or more stylistic effects.
      * These are similar to controls found in many professional imaging or colorist software. The global controls are applied to the entire image. For advanced tuning, extra controls are provided to adjust the shadow, midtone and highlight areas of the image;
@@ -11424,6 +11444,7 @@ declare module BABYLON {
     /**
      * Interface to follow in your material defines to integrate easily the
      * Image proccessing functions.
+     * @ignore
      */
     interface IImageProcessingConfigurationDefines {
         IMAGEPROCESSING: boolean;
@@ -11439,6 +11460,10 @@ declare module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
+        /**
+         * If the grain should be performed in the image processing shader.
+         */
+        GRAIN: boolean;
     }
     /**
      * This groups together the common properties used for image processing either in direct forward pass
@@ -11535,6 +11560,21 @@ declare module BABYLON {
          * Camera field of view used by the Vignette effect.
          */
         vignetteCameraFov: number;
+        private _grainEnabled;
+        /**
+         * If the grain effect should be enabled.
+         */
+        grainEnabled: boolean;
+        private _grainIntensity;
+        /**
+         * Amount of grain to be applied by the grain effect.
+         */
+        grainIntensity: number;
+        private _grainAnimated;
+        /**
+         * If the grain effect should be animated.
+         */
+        grainAnimated: boolean;
         private _vignetteBlendMode;
         /**
          * Gets the vignette blend mode allowing different kind of effect.
@@ -12624,6 +12664,7 @@ declare module BABYLON {
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
         EXPOSURE: boolean;
+        GRAIN: boolean;
         constructor();
         setReflectionMode(modeToEnable: string): void;
     }
@@ -13097,6 +13138,1403 @@ declare module BABYLON {
          * Disposes the uniform buffer.
          */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a GPU particle system in Babylon
+     * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
+     * @see https://www.babylonjs-playground.com/#PU4WYI#4
+     */
+    class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
+        /**
+         * The id of the Particle system.
+         */
+        id: string;
+        /**
+         * The friendly name of the Particle system.
+         */
+        name: string;
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        emitter: Nullable<AbstractMesh | Vector3>;
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
+        renderingGroupId: number;
+        /**
+         * The layer mask we are rendering the particles through.
+         */
+        layerMask: number;
+        private _capacity;
+        private _activeCount;
+        private _currentActiveCount;
+        private _renderEffect;
+        private _updateEffect;
+        private _buffer0;
+        private _buffer1;
+        private _spriteBuffer;
+        private _updateVAO;
+        private _renderVAO;
+        private _targetIndex;
+        private _sourceBuffer;
+        private _targetBuffer;
+        private _scene;
+        private _engine;
+        private _currentRenderId;
+        private _started;
+        private _stopped;
+        private _timeDelta;
+        private _randomTexture;
+        private readonly _attributesStrideSize;
+        private _updateEffectOptions;
+        private _randomTextureSize;
+        private _actualFrame;
+        /**
+         * List of animations used by the particle system.
+         */
+        animations: Animation[];
+        /**
+         * Gets a boolean indicating if the GPU particles can be rendered on current browser
+         */
+        static readonly IsSupported: boolean;
+        /**
+        * An event triggered when the system is disposed.
+        */
+        onDisposeObservable: Observable<GPUParticleSystem>;
+        /**
+         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+         */
+        updateSpeed: number;
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
+        targetStopDuration: number;
+        /**
+         * The texture used to render each particle. (this can be a spritesheet)
+         */
+        particleTexture: Nullable<Texture>;
+        /**
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         */
+        blendMode: number;
+        /**
+         * Minimum life time of emitting particles.
+         */
+        minLifeTime: number;
+        /**
+         * Maximum life time of emitting particles.
+         */
+        maxLifeTime: number;
+        /**
+         * Minimum Size of emitting particles.
+         */
+        minSize: number;
+        /**
+         * Maximum Size of emitting particles.
+         */
+        maxSize: number;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color1: Color4;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color2: Color4;
+        /**
+         * Color the particle will have at the end of its lifetime.
+         */
+        colorDead: Color4;
+        /**
+         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
+         */
+        emitRate: number;
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        gravity: Vector3;
+        /**
+         * Minimum power of emitting particles.
+         */
+        minEmitPower: number;
+        /**
+         * Maximum power of emitting particles.
+         */
+        maxEmitPower: number;
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        particleEmitterType: Nullable<IParticleEmitterType>;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        direction1: Vector3;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        direction2: Vector3;
+        /**
+         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        minEmitBox: Vector3;
+        /**
+         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        maxEmitBox: Vector3;
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
+        getCapacity(): number;
+        /**
+         * Gets or set the number of active particles
+         */
+        activeParticleCount: number;
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Starts the particle system and begins to emit.
+         */
+        start(): void;
+        /**
+         * Stops the particle system.
+         */
+        stop(): void;
+        /**
+         * Remove all active particles
+         */
+        reset(): void;
+        /**
+         * Returns the string "GPUParticleSystem"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Instantiates a GPU particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         */
+        constructor(name: string, options: Partial<{
+            capacity: number;
+            randomTextureSize: number;
+        }>, scene: Scene);
+        private _createUpdateVAO(source);
+        private _createRenderVAO(source, spriteSource);
+        private _initialize(force?);
+        /** @ignore */
+        _recreateUpdateEffect(): void;
+        /** @ignore */
+        _recreateRenderEffect(): void;
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
+        animate(): void;
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        render(): number;
+        /**
+         * Rebuilds the particle system
+         */
+        rebuild(): void;
+        private _releaseBuffers();
+        private _releaseVAOs();
+        /**
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        dispose(disposeTexture?: boolean): void;
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
+        clone(name: string, newEmitter: any): Nullable<GPUParticleSystem>;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object to create a GPU particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the parsed GPU particle system
+         */
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Interface representing a particle system in Babylon.
+     * This groups the common functionalities that needs to be implemented in order to create a particle system.
+     * A particle system represents a way to manage particles (@see Particle) from their emission to their animation and rendering.
+     */
+    interface IParticleSystem {
+        /**
+         * The id of the Particle system.
+         */
+        id: string;
+        /**
+         * The name of the Particle system.
+         */
+        name: string;
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        emitter: Nullable<AbstractMesh | Vector3>;
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
+        renderingGroupId: number;
+        /**
+         * The layer mask we are rendering the particles through.
+         */
+        layerMask: number;
+        /**
+        * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+        */
+        updateSpeed: number;
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
+        targetStopDuration: number;
+        /**
+         * The texture used to render each particle. (this can be a spritesheet)
+         */
+        particleTexture: Nullable<Texture>;
+        /**
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         */
+        blendMode: number;
+        /**
+         * Minimum life time of emitting particles.
+         */
+        minLifeTime: number;
+        /**
+         * Maximum life time of emitting particles.
+         */
+        maxLifeTime: number;
+        /**
+         * Minimum Size of emitting particles.
+         */
+        minSize: number;
+        /**
+         * Maximum Size of emitting particles.
+         */
+        maxSize: number;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color1: Color4;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color2: Color4;
+        /**
+         * Color the particle will have at the end of its lifetime.
+         */
+        colorDead: Color4;
+        /**
+         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
+         */
+        emitRate: number;
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        gravity: Vector3;
+        /**
+         * Minimum power of emitting particles.
+         */
+        minEmitPower: number;
+        /**
+         * Maximum power of emitting particles.
+         */
+        maxEmitPower: number;
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        particleEmitterType: Nullable<IParticleEmitterType>;
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
+        getCapacity(): number;
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Gets if the particle system has been started.
+         * @return true if the system has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Animates the particle system for this frame.
+         */
+        animate(): void;
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        render(): number;
+        /**
+         * Dispose the particle system and frees its associated resources.
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        dispose(disposeTexture?: boolean): void;
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
+        clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Rebuild the particle system
+         */
+        rebuild(): void;
+        /**
+         * Starts the particle system and begins to emit.
+         */
+        start(): void;
+        /**
+         * Stops the particle system.
+         */
+        stop(): void;
+        /**
+         * Remove all active particles
+         */
+        reset(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * A particle represents one of the element emitted by a particle system.
+     * This is mainly define by its coordinates, direction, velocity and age.
+     */
+    class Particle {
+        private particleSystem;
+        /**
+         * The world position of the particle in the scene.
+         */
+        position: Vector3;
+        /**
+         * The world direction of the particle in the scene.
+         */
+        direction: Vector3;
+        /**
+         * The color of the particle.
+         */
+        color: Color4;
+        /**
+         * The color change of the particle per step.
+         */
+        colorStep: Color4;
+        /**
+         * Defines how long will the life of the particle be.
+         */
+        lifeTime: number;
+        /**
+         * The current age of the particle.
+         */
+        age: number;
+        /**
+         * The current size of the particle.
+         */
+        size: number;
+        /**
+         * The current angle of the particle.
+         */
+        angle: number;
+        /**
+         * Defines how fast is the angle changing.
+         */
+        angularSpeed: number;
+        /**
+         * Defines the cell index used by the particle to be rendered from a sprite.
+         */
+        cellIndex: number;
+        private _currentFrameCounter;
+        /**
+         * Creates a new instance of @see Particle
+         * @param particleSystem the particle system the particle belongs to
+         */
+        constructor(particleSystem: ParticleSystem);
+        /**
+         * Defines how the sprite cell index is updated for the particle. This is
+         * defined as a callback.
+         */
+        updateCellIndex: (scaledUpdateSpeed: number) => void;
+        private updateCellIndexWithSpeedCalculated(scaledUpdateSpeed);
+        private updateCellIndexWithCustomSpeed();
+        /**
+         * Copy the properties of particle to another one.
+         * @param other the particle to copy the information to.
+         */
+        copyTo(other: Particle): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This represents a particle system in Babylon.
+     * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+     * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
+     * @example https://doc.babylonjs.com/babylon101/particles
+     */
+    class ParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
+        /**
+         * Source color is added to the destination color without alpha affecting the result.
+         */
+        static BLENDMODE_ONEONE: number;
+        /**
+         * Blend current color and particle color using particle’s alpha.
+         */
+        static BLENDMODE_STANDARD: number;
+        /**
+         * List of animations used by the particle system.
+         */
+        animations: Animation[];
+        /**
+         * The id of the Particle system.
+         */
+        id: string;
+        /**
+         * The friendly name of the Particle system.
+         */
+        name: string;
+        /**
+         * The rendering group used by the Particle system to chose when to render.
+         */
+        renderingGroupId: number;
+        /**
+         * The emitter represents the Mesh or position we are attaching the particle system to.
+         */
+        emitter: Nullable<AbstractMesh | Vector3>;
+        /**
+         * The maximum number of particles to emit per frame
+         */
+        emitRate: number;
+        /**
+         * If you want to launch only a few particles at once, that can be done, as well.
+         */
+        manualEmitCount: number;
+        /**
+         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
+         */
+        updateSpeed: number;
+        /**
+         * The amount of time the particle system is running (depends of the overall update speed).
+         */
+        targetStopDuration: number;
+        /**
+         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
+         */
+        disposeOnStop: boolean;
+        /**
+         * Minimum power of emitting particles.
+         */
+        minEmitPower: number;
+        /**
+         * Maximum power of emitting particles.
+         */
+        maxEmitPower: number;
+        /**
+         * Minimum life time of emitting particles.
+         */
+        minLifeTime: number;
+        /**
+         * Maximum life time of emitting particles.
+         */
+        maxLifeTime: number;
+        /**
+         * Minimum Size of emitting particles.
+         */
+        minSize: number;
+        /**
+         * Maximum Size of emitting particles.
+         */
+        maxSize: number;
+        /**
+         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        minAngularSpeed: number;
+        /**
+         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
+         */
+        maxAngularSpeed: number;
+        /**
+         * The texture used to render each particle. (this can be a spritesheet)
+         */
+        particleTexture: Nullable<Texture>;
+        /**
+         * The layer mask we are rendering the particles through.
+         */
+        layerMask: number;
+        /**
+         * This can help using your own shader to render the particle system.
+         * The according effect will be created
+         */
+        customShader: any;
+        /**
+         * By default particle system starts as soon as they are created. This prevents the
+         * automatic start to happen and let you decide when to start emitting particles.
+         */
+        preventAutoStart: boolean;
+        /**
+         * This function can be defined to provide custom update for active particles.
+         * This function will be called instead of regular update (age, position, color, etc.).
+         * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
+         */
+        updateFunction: (particles: Particle[]) => void;
+        /**
+         * Callback triggered when the particle animation is ending.
+         */
+        onAnimationEnd: Nullable<() => void>;
+        /**
+         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
+         */
+        blendMode: number;
+        /**
+         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+         * to override the particles.
+         */
+        forceDepthWrite: boolean;
+        /**
+         * You can use gravity if you want to give an orientation to your particles.
+         */
+        gravity: Vector3;
+        /**
+          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+          * This only works when particleEmitterTyps is a BoxParticleEmitter
+          */
+        direction1: Vector3;
+        /**
+         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        direction2: Vector3;
+        /**
+         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        minEmitBox: Vector3;
+        /**
+         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
+         * This only works when particleEmitterTyps is a BoxParticleEmitter
+         */
+        maxEmitBox: Vector3;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color1: Color4;
+        /**
+         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
+         */
+        color2: Color4;
+        /**
+         * Color the particle will have at the end of its lifetime.
+         */
+        colorDead: Color4;
+        /**
+         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel.
+         */
+        textureMask: Color4;
+        /**
+         * The particle emitter type defines the emitter used by the particle system.
+         * It can be for example box, sphere, or cone...
+         */
+        particleEmitterType: IParticleEmitterType;
+        /**
+         * This function can be defined to specify initial direction for every new particle.
+         * It by default use the emitterType defined function.
+         */
+        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
+        /**
+         * This function can be defined to specify initial position for every new particle.
+         * It by default use the emitterType defined function.
+         */
+        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not.
+         */
+        spriteCellLoop: boolean;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop.
+         */
+        spriteCellChangeSpeed: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display.
+         */
+        startSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display.
+         */
+        endSpriteCellID: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use.
+         */
+        spriteCellWidth: number;
+        /**
+         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use.
+         */
+        spriteCellHeight: number;
+        /**
+        * An event triggered when the system is disposed.
+        */
+        onDisposeObservable: Observable<ParticleSystem>;
+        private _onDisposeObserver;
+        /**
+         * Sets a callback that will be triggered when the system is disposed.
+         */
+        onDispose: () => void;
+        /**
+         * Gets wether an animation sprite sheet is enabled or not on the particle system.
+         */
+        readonly isAnimationSheetEnabled: Boolean;
+        private _particles;
+        private _epsilon;
+        private _capacity;
+        private _scene;
+        private _stockParticles;
+        private _newPartsExcess;
+        private _vertexData;
+        private _vertexBuffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _customEffect;
+        private _cachedDefines;
+        private _scaledColorStep;
+        private _colorDiff;
+        private _scaledDirection;
+        private _scaledGravity;
+        private _currentRenderId;
+        private _alive;
+        private _started;
+        private _stopped;
+        private _actualFrame;
+        private _scaledUpdateSpeed;
+        private _vertexBufferSize;
+        private _isAnimationSheetEnabled;
+        /**
+         * Gets the current list of active particles
+         */
+        readonly particles: Particle[];
+        /**
+         * Returns the string "ParticleSystem"
+         * @returns a string containing the class name
+         */
+        getClassName(): string;
+        /**
+         * Instantiates a particle system.
+         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
+         * @param name The name of the particle system
+         * @param capacity The max number of particles alive at the same time
+         * @param scene The scene the particle system belongs to
+         * @param customEffect a custom effect used to change the way particles are rendered by default
+         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
+         * @param epsilon Offset used to render the particles
+         */
+        constructor(name: string, capacity: number, scene: Scene, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean, epsilon?: number);
+        private _createIndexBuffer();
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         * @param particle The particle to recycle
+         */
+        recycleParticle(particle: Particle): void;
+        /**
+         * Gets the maximum number of particles active at the same time.
+         * @returns The max number of active particles.
+         */
+        getCapacity(): number;
+        /**
+         * Gets Wether there are still active particles in the system.
+         * @returns True if it is alive, otherwise false.
+         */
+        isAlive(): boolean;
+        /**
+         * Gets Wether the system has been started.
+         * @returns True if it has been started, otherwise false.
+         */
+        isStarted(): boolean;
+        /**
+         * Starts the particle system and begins to emit.
+         */
+        start(): void;
+        /**
+         * Stops the particle system.
+         */
+        stop(): void;
+        /**
+         * Remove all active particles
+         */
+        reset(): void;
+        /**
+         * @ignore (for internal use only)
+         */
+        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        /**
+         * @ignore (for internal use only)
+         */
+        _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number): void;
+        private _update(newParticles);
+        private _getEffect();
+        /**
+         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
+         */
+        animate(): void;
+        private _appendParticleVertexes;
+        private _appenedParticleVertexesWithSheet(offset, particle);
+        private _appenedParticleVertexesNoSheet(offset, particle);
+        /**
+         * Rebuilds the particle system.
+         */
+        rebuild(): void;
+        /**
+         * Renders the particle system in its current state.
+         * @returns the current number of particles
+         */
+        render(): number;
+        /**
+         * Disposes the particle system and free the associated resources
+         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
+         */
+        dispose(disposeTexture?: boolean): void;
+        /**
+         * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
+         * @param radius The radius of the sphere to emit from
+         * @returns the emitter
+         */
+        createSphereEmitter(radius?: number): SphereParticleEmitter;
+        /**
+         * Creates a Directed Sphere Emitter for the particle system. (emits between direction1 and direction2)
+         * @param radius The radius of the sphere to emit from
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+         * @returns the emitter
+         */
+        createDirectedSphereEmitter(radius?: number, direction1?: Vector3, direction2?: Vector3): SphereDirectedParticleEmitter;
+        /**
+         * Creates a Cone Emitter for the particle system. (emits from the cone to the particle position)
+         * @param radius The radius of the cone to emit from
+         * @param angle The base angle of the cone
+         * @returns the emitter
+         */
+        createConeEmitter(radius?: number, angle?: number): ConeParticleEmitter;
+        /**
+         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+         * @returns the emitter
+         */
+        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
+        /**
+         * Clones the particle system.
+         * @param name The name of the cloned object
+         * @param newEmitter The new emitter to use
+         * @returns the cloned particle system
+         */
+        clone(name: string, newEmitter: any): ParticleSystem;
+        /**
+         * Serializes the particle system to a JSON object.
+         * @returns the JSON object
+         */
+        serialize(): any;
+        /**
+         * Parses a JSON object to create a particle system.
+         * @param parsedParticleSystem The JSON object to parse
+         * @param scene The scene to create the particle system in
+         * @param rootUrl The root url to use to load external dependencies like texture
+         * @returns the Parsed particle system
+         */
+        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents one particle of a solid particle system.
+     * @see SolidParticleSystem
+     */
+    class SolidParticle {
+        /**
+         * particle global index
+         */
+        idx: number;
+        /**
+         * The color of the particle
+         */
+        color: Nullable<Color4>;
+        /**
+         * The world space position of the particle.
+         */
+        position: Vector3;
+        /**
+         * The world space rotation of the particle. (Not use if rotationQuaternion is set)
+         */
+        rotation: Vector3;
+        /**
+         * The world space rotation quaternion of the particle.
+         */
+        rotationQuaternion: Nullable<Quaternion>;
+        /**
+         * The scaling of the particle.
+         */
+        scaling: Vector3;
+        /**
+         * The uvs of the particle.
+         */
+        uvs: Vector4;
+        /**
+         * The current speed of the particle.
+         */
+        velocity: Vector3;
+        /**
+         * The pivot point in the particle local space.
+         */
+        pivot: Vector3;
+        /**
+         * Must the particle be translated from its pivot point in its local space ?
+         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
+         * Default : false
+         */
+        translateFromPivot: boolean;
+        /**
+         * Is the particle active or not ?
+         */
+        alive: boolean;
+        /**
+         * Is the particle visible or not ?
+         */
+        isVisible: boolean;
+        /**
+         * Index of this particle in the global "positions" array (Internal use)
+         */
+        _pos: number;
+        /**
+         * Index of this particle in the global "indices" array (Internal use)
+         */
+        _ind: number;
+        /**
+         * ModelShape of this particle (Internal use)
+         */
+        _model: ModelShape;
+        /**
+         * ModelShape id of this particle
+         */
+        shapeId: number;
+        /**
+         * Index of the particle in its shape id (Internal use)
+         */
+        idxInShape: number;
+        /**
+         * Reference to the shape model BoundingInfo object (Internal use)
+         */
+        _modelBoundingInfo: BoundingInfo;
+        /**
+         * Particle BoundingInfo object (Internal use)
+         */
+        _boundingInfo: BoundingInfo;
+        /**
+         * Reference to the SPS what the particle belongs to (Internal use)
+         */
+        _sps: SolidParticleSystem;
+        /**
+         * Still set as invisible in order to skip useless computations (Internal use)
+         */
+        _stillInvisible: boolean;
+        /**
+         * Last computed particle rotation matrix
+         */
+        _rotationMatrix: number[];
+        /**
+         * Parent particle Id, if any.
+         * Default null.
+         */
+        parentId: Nullable<number>;
+        /**
+         * Internal global position in the SPS.
+         */
+        _globalPosition: Vector3;
+        /**
+         * Creates a Solid Particle object.
+         * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
+         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
+         * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
+         * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
+         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
+         * @param shapeId (integer) is the model shape identifier in the SPS.
+         * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
+         * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
+         */
+        constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
+        /**
+         * Legacy support, changed scale to scaling
+         */
+        /**
+         * Legacy support, changed scale to scaling
+         */
+        scale: Vector3;
+        /**
+         * Legacy support, changed quaternion to rotationQuaternion
+         */
+        /**
+         * Legacy support, changed quaternion to rotationQuaternion
+         */
+        quaternion: Nullable<Quaternion>;
+        /**
+         * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
+         * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
+         * @param target is the object (solid particle or mesh) what the intersection is computed against.
+         * @returns true if it intersects
+         */
+        intersectsMesh(target: Mesh | SolidParticle): boolean;
+    }
+    /**
+     * Represents the shape of the model used by one particle of a solid particle system.
+     * SPS internal tool, don't use it manually.
+     * @see SolidParticleSystem
+     */
+    class ModelShape {
+        /**
+         * The shape id.
+         */
+        shapeID: number;
+        /**
+         * flat array of model positions (internal use)
+         */
+        _shape: Vector3[];
+        /**
+         * flat array of model UVs (internal use)
+         */
+        _shapeUV: number[];
+        /**
+         * length of the shape in the model indices array (internal use)
+         */
+        _indicesLength: number;
+        /**
+         * Custom position function (internal use)
+         */
+        _positionFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>;
+        /**
+         * Custom vertex function (internal use)
+         */
+        _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
+        /**
+         * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
+         * SPS internal tool, don't use it manually.
+         * @ignore
+         */
+        constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
+    }
+    /**
+     * Represents a Depth Sorted Particle in the solid particle system.
+     * @see SolidParticleSystem
+     */
+    class DepthSortedParticle {
+        /**
+         * Index of the particle in the "indices" array
+         */
+        ind: number;
+        /**
+         * Length of the particle shape in the "indices" array
+         */
+        indicesLength: number;
+        /**
+         * Squared distance from the particle to the camera
+         */
+        sqDistance: number;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
+     *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
+
+     * The SPS is also a particle system. It provides some methods to manage the particles.
+     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
+     *
+     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
+     */
+    class SolidParticleSystem implements IDisposable {
+        /**
+         *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
+         *  Example : var p = SPS.particles[i];
+         */
+        particles: SolidParticle[];
+        /**
+         * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
+         */
+        nbParticles: number;
+        /**
+         * If the particles must ever face the camera (default false). Useful for planar particles.
+         */
+        billboard: boolean;
+        /**
+         * Recompute normals when adding a shape
+         */
+        recomputeNormals: boolean;
+        /**
+         * This a counter ofr your own usage. It's not set by any SPS functions.
+         */
+        counter: number;
+        /**
+         * The SPS name. This name is also given to the underlying mesh.
+         */
+        name: string;
+        /**
+         * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
+         */
+        mesh: Mesh;
+        /**
+         * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
+         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
+         */
+        vars: any;
+        /**
+         * This array is populated when the SPS is set as 'pickable'.
+         * Each key of this array is a `faceId` value that you can get from a pickResult object.
+         * Each element of this array is an object `{idx: int, faceId: int}`.
+         * `idx` is the picked particle index in the `SPS.particles` array
+         * `faceId` is the picked face index counted within this particle.
+         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
+         */
+        pickedParticles: {
+            idx: number;
+            faceId: number;
+        }[];
+        /**
+         * This array is populated when `enableDepthSort` is set to true.
+         * Each element of this array is an instance of the class DepthSortedParticle.
+         */
+        depthSortedParticles: DepthSortedParticle[];
+        /**
+         * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
+         */
+        _bSphereOnly: boolean;
+        /**
+         * A number to multiply the boundind sphere radius by in order to reduce it for instance. (Internal use only)
+         */
+        _bSphereRadiusFactor: number;
+        private _scene;
+        private _positions;
+        private _indices;
+        private _normals;
+        private _colors;
+        private _uvs;
+        private _indices32;
+        private _positions32;
+        private _normals32;
+        private _fixedNormal32;
+        private _colors32;
+        private _uvs32;
+        private _index;
+        private _updatable;
+        private _pickable;
+        private _isVisibilityBoxLocked;
+        private _alwaysVisible;
+        private _depthSort;
+        private _shapeCounter;
+        private _copy;
+        private _shape;
+        private _shapeUV;
+        private _color;
+        private _computeParticleColor;
+        private _computeParticleTexture;
+        private _computeParticleRotation;
+        private _computeParticleVertex;
+        private _computeBoundingBox;
+        private _depthSortParticles;
+        private _cam_axisZ;
+        private _cam_axisY;
+        private _cam_axisX;
+        private _axisZ;
+        private _camera;
+        private _particle;
+        private _camDir;
+        private _camInvertedPosition;
+        private _rotMatrix;
+        private _invertMatrix;
+        private _rotated;
+        private _quaternion;
+        private _vertex;
+        private _normal;
+        private _yaw;
+        private _pitch;
+        private _roll;
+        private _halfroll;
+        private _halfpitch;
+        private _halfyaw;
+        private _sinRoll;
+        private _cosRoll;
+        private _sinPitch;
+        private _cosPitch;
+        private _sinYaw;
+        private _cosYaw;
+        private _mustUnrotateFixedNormals;
+        private _minimum;
+        private _maximum;
+        private _minBbox;
+        private _maxBbox;
+        private _particlesIntersect;
+        private _depthSortFunction;
+        private _needs32Bits;
+        private _pivotBackTranslation;
+        private _scaledPivot;
+        private _particleHasParent;
+        private _parent;
+        /**
+         * Creates a SPS (Solid Particle System) object.
+         * @param name (String) is the SPS name, this will be the underlying mesh name.
+         * @param scene (Scene) is the scene in which the SPS is added.
+         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
+         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
+         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
+         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
+         * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
+         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
+         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
+         */
+        constructor(name: string, scene: Scene, options?: {
+            updatable?: boolean;
+            isPickable?: boolean;
+            enableDepthSort?: boolean;
+            particleIntersection?: boolean;
+            boundingSphereOnly?: boolean;
+            bSphereRadiusFactor?: number;
+        });
+        /**
+         * Builds the SPS underlying mesh. Returns a standard Mesh.
+         * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
+         * @returns the created mesh
+         */
+        buildMesh(): Mesh;
+        /**
+         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
+         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
+         * Thus the particles generated from `digest()` have their property `position` set yet.
+         * @param mesh ( Mesh ) is the mesh to be digested
+         * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
+         * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
+         * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
+         * @returns the current SPS
+         */
+        digest(mesh: Mesh, options?: {
+            facetNb?: number;
+            number?: number;
+            delta?: number;
+        }): SolidParticleSystem;
+        private _unrotateFixedNormals();
+        private _resetCopy();
+        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options);
+        private _posToShape(positions);
+        private _uvsToShapeUV(uvs);
+        private _addParticle(idx, idxpos, idxind, model, shapeId, idxInShape, bInfo?);
+        /**
+         * Adds some particles to the SPS from the model shape. Returns the shape id.
+         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
+         * @param mesh is any Mesh object that will be used as a model for the solid particles.
+         * @param nb (positive integer) the number of particles to be created from this model
+         * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
+         * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
+         * @returns the number of shapes in the system
+         */
+        addShape(mesh: Mesh, nb: number, options?: {
+            positionFunction?: any;
+            vertexFunction?: any;
+        }): number;
+        private _rebuildParticle(particle);
+        /**
+         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
+         * @returns the SPS.
+         */
+        rebuildMesh(): SolidParticleSystem;
+        /**
+         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
+         *  This method calls `updateParticle()` for each particle of the SPS.
+         *  For an animated SPS, it is usually called within the render loop.
+         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
+         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
+         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
+         * @returns the SPS.
+         */
+        setParticles(start?: number, end?: number, update?: boolean): SolidParticleSystem;
+        private _quaternionRotationYPR();
+        private _quaternionToRotationMatrix();
+        /**
+        * Disposes the SPS.
+        */
+        dispose(): void;
+        /**
+         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         * @returns the SPS.
+         */
+        refreshVisibleSize(): SolidParticleSystem;
+        /**
+         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
+         * @param size the size (float) of the visibility box
+         * note : this doesn't lock the SPS mesh bounding box.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        setVisibilityBox(size: number): void;
+        /**
+         * Gets whether the SPS as always visible or not
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        /**
+         * Sets the SPS as always visible or not
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        isAlwaysVisible: boolean;
+        /**
+         * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        /**
+         * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
+         */
+        isVisibilityBoxLocked: boolean;
+        /**
+         * Gets if `setParticles()` computes the particle rotations or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+         */
+        /**
+         * Tells to `setParticles()` to compute the particle rotations or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
+         */
+        computeParticleRotation: boolean;
+        /**
+         * Gets if `setParticles()` computes the particle colors or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+         */
+        /**
+         * Tells to `setParticles()` to compute the particle colors or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
+         */
+        computeParticleColor: boolean;
+        /**
+         * Gets if `setParticles()` computes the particle textures or not.
+         * Default value : true. The SPS is faster when it's set to false.
+         * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
+         */
+        computeParticleTexture: boolean;
+        /**
+         * Gets if `setParticles()` calls the vertex function for each vertex of each particle, or not.
+         * Default value : false. The SPS is faster when it's set to false.
+         * Note : the particle custom vertex positions aren't stored values.
+         */
+        /**
+         * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
+         * Default value : false. The SPS is faster when it's set to false.
+         * Note : the particle custom vertex positions aren't stored values.
+         */
+        computeParticleVertex: boolean;
+        /**
+         * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
+         */
+        /**
+         * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
+         */
+        computeBoundingBox: boolean;
+        /**
+         * Gets if `setParticles()` sorts or not the distance between each particle and the camera.
+         * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+         * Default : `true`
+         */
+        /**
+         * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
+         * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
+         * Default : `true`
+         */
+        depthSortParticles: boolean;
+        /**
+         * This function does nothing. It may be overwritten to set all the particle first values.
+         * The SPS doesn't call this function, you may have to call it by your own.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         */
+        initParticles(): void;
+        /**
+         * This function does nothing. It may be overwritten to recycle a particle.
+         * The SPS doesn't call this function, you may have to call it by your own.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * @param particle The particle to recycle
+         * @returns the recycled particle
+         */
+        recycleParticle(particle: SolidParticle): SolidParticle;
+        /**
+         * Updates a particle : this function should  be overwritten by the user.
+         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
+         * @example : just set a particle position or velocity and recycle conditions
+         * @param particle The particle to update
+         * @returns the updated particle
+         */
+        updateParticle(particle: SolidParticle): SolidParticle;
+        /**
+         * Updates a vertex of a particle : it can be overwritten by the user.
+         * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
+         * @param particle the current particle
+         * @param vertex the current index of the current particle
+         * @param pt the index of the current vertex in the particle shape
+         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
+         * @example : just set a vertex particle position
+         * @returns the updated vertex
+         */
+        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
+        /**
+         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
+        /**
+         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
+         * This will be passed three parameters.
+         * This does nothing and may be overwritten by the user.
+         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
+         * @param update the boolean update value actually passed to setParticles()
+         */
+        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
     }
 }
 
@@ -17466,6 +18904,36 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ReflectionProbe {
+        name: string;
+        private _scene;
+        private _renderTargetTexture;
+        private _projectionMatrix;
+        private _viewMatrix;
+        private _target;
+        private _add;
+        private _attachedMesh;
+        private _invertYAxis;
+        position: Vector3;
+        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
+        samples: number;
+        refreshRate: number;
+        getScene(): Scene;
+        readonly cubeTexture: RenderTargetTexture;
+        readonly renderList: Nullable<AbstractMesh[]>;
+        attachToMesh(mesh: AbstractMesh): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     interface PhysicsImpostorJoint {
         mainImpostor: PhysicsImpostor;
         connectedImpostor: PhysicsImpostor;
@@ -18100,1773 +19568,71 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    /**
-     * This represents a GPU particle system in Babylon
-     * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
-     * @see https://www.babylonjs-playground.com/#PU4WYI#4
-     */
-    class GPUParticleSystem implements IDisposable, IParticleSystem, IAnimatable {
-        /**
-         * The id of the Particle system.
-         */
-        id: string;
-        /**
-         * The friendly name of the Particle system.
-         */
+    class Sprite {
         name: string;
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        emitter: Nullable<AbstractMesh | Vector3>;
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
-        renderingGroupId: number;
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        layerMask: number;
-        private _capacity;
-        private _activeCount;
-        private _currentActiveCount;
-        private _renderEffect;
-        private _updateEffect;
-        private _buffer0;
-        private _buffer1;
-        private _spriteBuffer;
-        private _updateVAO;
-        private _renderVAO;
-        private _targetIndex;
-        private _sourceBuffer;
-        private _targetBuffer;
-        private _scene;
-        private _engine;
-        private _currentRenderId;
-        private _started;
-        private _stopped;
-        private _timeDelta;
-        private _randomTexture;
-        private readonly _attributesStrideSize;
-        private _updateEffectOptions;
-        private _randomTextureSize;
-        private _actualFrame;
-        /**
-         * List of animations used by the particle system.
-         */
-        animations: Animation[];
-        /**
-         * Gets a boolean indicating if the GPU particles can be rendered on current browser
-         */
-        static readonly IsSupported: boolean;
-        /**
-        * An event triggered when the system is disposed.
-        */
-        onDisposeObservable: Observable<GPUParticleSystem>;
-        /**
-         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-         */
-        updateSpeed: number;
-        /**
-         * The amount of time the particle system is running (depends of the overall update speed).
-         */
-        targetStopDuration: number;
-        /**
-         * The texture used to render each particle. (this can be a spritesheet)
-         */
-        particleTexture: Nullable<Texture>;
-        /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
-         */
-        blendMode: number;
-        /**
-         * Minimum life time of emitting particles.
-         */
-        minLifeTime: number;
-        /**
-         * Maximum life time of emitting particles.
-         */
-        maxLifeTime: number;
-        /**
-         * Minimum Size of emitting particles.
-         */
-        minSize: number;
-        /**
-         * Maximum Size of emitting particles.
-         */
-        maxSize: number;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color1: Color4;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color2: Color4;
-        /**
-         * Color the particle will have at the end of its lifetime.
-         */
-        colorDead: Color4;
-        /**
-         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
-         */
-        emitRate: number;
-        /**
-         * You can use gravity if you want to give an orientation to your particles.
-         */
-        gravity: Vector3;
-        /**
-         * Minimum power of emitting particles.
-         */
-        minEmitPower: number;
-        /**
-         * Maximum power of emitting particles.
-         */
-        maxEmitPower: number;
-        /**
-         * The particle emitter type defines the emitter used by the particle system.
-         * It can be for example box, sphere, or cone...
-         */
-        particleEmitterType: Nullable<IParticleEmitterType>;
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        direction1: Vector3;
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        direction2: Vector3;
-        /**
-         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        minEmitBox: Vector3;
-        /**
-         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        maxEmitBox: Vector3;
-        /**
-         * Gets the maximum number of particles active at the same time.
-         * @returns The max number of active particles.
-         */
-        getCapacity(): number;
-        /**
-         * Gets or set the number of active particles
-         */
-        activeParticleCount: number;
-        /**
-         * Gets Wether the system has been started.
-         * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Starts the particle system and begins to emit.
-         */
-        start(): void;
-        /**
-         * Stops the particle system.
-         */
-        stop(): void;
-        /**
-         * Remove all active particles
-         */
-        reset(): void;
-        /**
-         * Returns the string "GPUParticleSystem"
-         * @returns a string containing the class name
-         */
-        getClassName(): string;
-        /**
-         * Instantiates a GPU particle system.
-         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-         * @param name The name of the particle system
-         * @param capacity The max number of particles alive at the same time
-         * @param scene The scene the particle system belongs to
-         */
-        constructor(name: string, options: Partial<{
-            capacity: number;
-            randomTextureSize: number;
-        }>, scene: Scene);
-        private _createUpdateVAO(source);
-        private _createRenderVAO(source, spriteSource);
-        private _initialize(force?);
-        /** @ignore */
-        _recreateUpdateEffect(): void;
-        /** @ignore */
-        _recreateRenderEffect(): void;
-        /**
-         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
-         */
-        animate(): void;
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        render(): number;
-        /**
-         * Rebuilds the particle system
-         */
-        rebuild(): void;
-        private _releaseBuffers();
-        private _releaseVAOs();
-        /**
-         * Disposes the particle system and free the associated resources
-         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
-         */
-        dispose(disposeTexture?: boolean): void;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): Nullable<GPUParticleSystem>;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /**
-         * Parses a JSON object to create a GPU particle system.
-         * @param parsedParticleSystem The JSON object to parse
-         * @param scene The scene to create the particle system in
-         * @param rootUrl The root url to use to load external dependencies like texture
-         * @returns the parsed GPU particle system
-         */
-        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): GPUParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Interface representing a particle system in Babylon.
-     * This groups the common functionalities that needs to be implemented in order to create a particle system.
-     * A particle system represents a way to manage particles (@see Particle) from their emission to their animation and rendering.
-     */
-    interface IParticleSystem {
-        /**
-         * The id of the Particle system.
-         */
-        id: string;
-        /**
-         * The name of the Particle system.
-         */
-        name: string;
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        emitter: Nullable<AbstractMesh | Vector3>;
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
-        renderingGroupId: number;
-        /**
-         * The layer mask we are rendering the particles through.
-         */
-        layerMask: number;
-        /**
-        * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-        */
-        updateSpeed: number;
-        /**
-         * The amount of time the particle system is running (depends of the overall update speed).
-         */
-        targetStopDuration: number;
-        /**
-         * The texture used to render each particle. (this can be a spritesheet)
-         */
-        particleTexture: Nullable<Texture>;
-        /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
-         */
-        blendMode: number;
-        /**
-         * Minimum life time of emitting particles.
-         */
-        minLifeTime: number;
-        /**
-         * Maximum life time of emitting particles.
-         */
-        maxLifeTime: number;
-        /**
-         * Minimum Size of emitting particles.
-         */
-        minSize: number;
-        /**
-         * Maximum Size of emitting particles.
-         */
-        maxSize: number;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color1: Color4;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color2: Color4;
-        /**
-         * Color the particle will have at the end of its lifetime.
-         */
-        colorDead: Color4;
-        /**
-         * The maximum number of particles to emit per frame until we reach the activeParticleCount value
-         */
-        emitRate: number;
-        /**
-         * You can use gravity if you want to give an orientation to your particles.
-         */
-        gravity: Vector3;
-        /**
-         * Minimum power of emitting particles.
-         */
-        minEmitPower: number;
-        /**
-         * Maximum power of emitting particles.
-         */
-        maxEmitPower: number;
-        /**
-         * The particle emitter type defines the emitter used by the particle system.
-         * It can be for example box, sphere, or cone...
-         */
-        particleEmitterType: Nullable<IParticleEmitterType>;
-        /**
-         * Gets the maximum number of particles active at the same time.
-         * @returns The max number of active particles.
-         */
-        getCapacity(): number;
-        /**
-         * Gets Wether the system has been started.
-         * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Gets if the particle system has been started.
-         * @return true if the system has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Animates the particle system for this frame.
-         */
-        animate(): void;
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        render(): number;
-        /**
-         * Dispose the particle system and frees its associated resources.
-         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
-         */
-        dispose(disposeTexture?: boolean): void;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): Nullable<IParticleSystem>;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /**
-         * Rebuild the particle system
-         */
-        rebuild(): void;
-        /**
-         * Starts the particle system and begins to emit.
-         */
-        start(): void;
-        /**
-         * Stops the particle system.
-         */
-        stop(): void;
-        /**
-         * Remove all active particles
-         */
-        reset(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * A particle represents one of the element emitted by a particle system.
-     * This is mainly define by its coordinates, direction, velocity and age.
-     */
-    class Particle {
-        private particleSystem;
-        /**
-         * The world position of the particle in the scene.
-         */
         position: Vector3;
-        /**
-         * The world direction of the particle in the scene.
-         */
-        direction: Vector3;
-        /**
-         * The color of the particle.
-         */
         color: Color4;
-        /**
-         * The color change of the particle per step.
-         */
-        colorStep: Color4;
-        /**
-         * Defines how long will the life of the particle be.
-         */
-        lifeTime: number;
-        /**
-         * The current age of the particle.
-         */
-        age: number;
-        /**
-         * The current size of the particle.
-         */
-        size: number;
-        /**
-         * The current angle of the particle.
-         */
+        width: number;
+        height: number;
         angle: number;
-        /**
-         * Defines how fast is the angle changing.
-         */
-        angularSpeed: number;
-        /**
-         * Defines the cell index used by the particle to be rendered from a sprite.
-         */
         cellIndex: number;
-        private _currentFrameCounter;
-        /**
-         * Creates a new instance of @see Particle
-         * @param particleSystem the particle system the particle belongs to
-         */
-        constructor(particleSystem: ParticleSystem);
-        /**
-         * Defines how the sprite cell index is updated for the particle. This is
-         * defined as a callback.
-         */
-        updateCellIndex: (scaledUpdateSpeed: number) => void;
-        private updateCellIndexWithSpeedCalculated(scaledUpdateSpeed);
-        private updateCellIndexWithCustomSpeed();
-        /**
-         * Copy the properties of particle to another one.
-         * @param other the particle to copy the information to.
-         */
-        copyTo(other: Particle): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a particle system in Babylon.
-     * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-     * Particles can take different shapes while emitted like box, sphere, cone or you can write your custom function.
-     * @example https://doc.babylonjs.com/babylon101/particles
-     */
-    class ParticleSystem implements IDisposable, IAnimatable, IParticleSystem {
-        /**
-         * Source color is added to the destination color without alpha affecting the result.
-         */
-        static BLENDMODE_ONEONE: number;
-        /**
-         * Blend current color and particle color using particle’s alpha.
-         */
-        static BLENDMODE_STANDARD: number;
-        /**
-         * List of animations used by the particle system.
-         */
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
         animations: Animation[];
-        /**
-         * The id of the Particle system.
-         */
-        id: string;
-        /**
-         * The friendly name of the Particle system.
-         */
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
         name: string;
-        /**
-         * The rendering group used by the Particle system to chose when to render.
-         */
+        sprites: Sprite[];
         renderingGroupId: number;
-        /**
-         * The emitter represents the Mesh or position we are attaching the particle system to.
-         */
-        emitter: Nullable<AbstractMesh | Vector3>;
-        /**
-         * The maximum number of particles to emit per frame
-         */
-        emitRate: number;
-        /**
-         * If you want to launch only a few particles at once, that can be done, as well.
-         */
-        manualEmitCount: number;
-        /**
-         * The overall motion speed (0.01 is default update speed, faster updates = faster animation)
-         */
-        updateSpeed: number;
-        /**
-         * The amount of time the particle system is running (depends of the overall update speed).
-         */
-        targetStopDuration: number;
-        /**
-         * Specifies whether the particle system will be disposed once it reaches the end of the animation.
-         */
-        disposeOnStop: boolean;
-        /**
-         * Minimum power of emitting particles.
-         */
-        minEmitPower: number;
-        /**
-         * Maximum power of emitting particles.
-         */
-        maxEmitPower: number;
-        /**
-         * Minimum life time of emitting particles.
-         */
-        minLifeTime: number;
-        /**
-         * Maximum life time of emitting particles.
-         */
-        maxLifeTime: number;
-        /**
-         * Minimum Size of emitting particles.
-         */
-        minSize: number;
-        /**
-         * Maximum Size of emitting particles.
-         */
-        maxSize: number;
-        /**
-         * Minimum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        minAngularSpeed: number;
-        /**
-         * Maximum angular speed of emitting particles (Z-axis rotation for each particle).
-         */
-        maxAngularSpeed: number;
-        /**
-         * The texture used to render each particle. (this can be a spritesheet)
-         */
-        particleTexture: Nullable<Texture>;
-        /**
-         * The layer mask we are rendering the particles through.
-         */
         layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
         /**
-         * This can help using your own shader to render the particle system.
-         * The according effect will be created
-         */
-        customShader: any;
-        /**
-         * By default particle system starts as soon as they are created. This prevents the
-         * automatic start to happen and let you decide when to start emitting particles.
-         */
-        preventAutoStart: boolean;
-        /**
-         * This function can be defined to provide custom update for active particles.
-         * This function will be called instead of regular update (age, position, color, etc.).
-         * Do not forget that this function will be called on every frame so try to keep it simple and fast :)
-         */
-        updateFunction: (particles: Particle[]) => void;
-        /**
-         * Callback triggered when the particle animation is ending.
-         */
-        onAnimationEnd: Nullable<() => void>;
-        /**
-         * Blend mode use to render the particle, it can be either ParticleSystem.BLENDMODE_ONEONE or ParticleSystem.BLENDMODE_STANDARD.
-         */
-        blendMode: number;
-        /**
-         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
-         * to override the particles.
-         */
-        forceDepthWrite: boolean;
-        /**
-         * You can use gravity if you want to give an orientation to your particles.
-         */
-        gravity: Vector3;
-        /**
-          * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-          * This only works when particleEmitterTyps is a BoxParticleEmitter
-          */
-        direction1: Vector3;
-        /**
-         * Random direction of each particle after it has been emitted, between direction1 and direction2 vectors.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        direction2: Vector3;
-        /**
-         * Minimum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        minEmitBox: Vector3;
-        /**
-         * Maximum box point around our emitter. Our emitter is the center of particles source, but if you want your particles to emit from more than one point, then you can tell it to do so.
-         * This only works when particleEmitterTyps is a BoxParticleEmitter
-         */
-        maxEmitBox: Vector3;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color1: Color4;
-        /**
-         * Random color of each particle after it has been emitted, between color1 and color2 vectors.
-         */
-        color2: Color4;
-        /**
-         * Color the particle will have at the end of its lifetime.
-         */
-        colorDead: Color4;
-        /**
-         * An optional mask to filter some colors out of the texture, or filter a part of the alpha channel.
-         */
-        textureMask: Color4;
-        /**
-         * The particle emitter type defines the emitter used by the particle system.
-         * It can be for example box, sphere, or cone...
-         */
-        particleEmitterType: IParticleEmitterType;
-        /**
-         * This function can be defined to specify initial direction for every new particle.
-         * It by default use the emitterType defined function.
-         */
-        startDirectionFunction: (emitPower: number, worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle) => void;
-        /**
-         * This function can be defined to specify initial position for every new particle.
-         * It by default use the emitterType defined function.
-         */
-        startPositionFunction: (worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle) => void;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines if the sprite animation should loop between startSpriteCellID and endSpriteCellID or not.
-         */
-        spriteCellLoop: boolean;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the speed of the sprite loop.
-         */
-        spriteCellChangeSpeed: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the first sprite cell to display.
-         */
-        startSpriteCellID: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled) and spriteCellLoop defines the last sprite cell to display.
-         */
-        endSpriteCellID: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell width to use.
-         */
-        spriteCellWidth: number;
-        /**
-         * If using a spritesheet (isAnimationSheetEnabled), defines the sprite cell height to use.
-         */
-        spriteCellHeight: number;
-        /**
-        * An event triggered when the system is disposed.
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
         */
-        onDisposeObservable: Observable<ParticleSystem>;
+        onDisposeObservable: Observable<SpriteManager>;
         private _onDisposeObserver;
-        /**
-         * Sets a callback that will be triggered when the system is disposed.
-         */
         onDispose: () => void;
-        /**
-         * Gets wether an animation sprite sheet is enabled or not on the particle system.
-         */
-        readonly isAnimationSheetEnabled: Boolean;
-        private _particles;
-        private _epsilon;
         private _capacity;
-        private _scene;
-        private _stockParticles;
-        private _newPartsExcess;
-        private _vertexData;
-        private _vertexBuffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _customEffect;
-        private _cachedDefines;
-        private _scaledColorStep;
-        private _colorDiff;
-        private _scaledDirection;
-        private _scaledGravity;
-        private _currentRenderId;
-        private _alive;
-        private _started;
-        private _stopped;
-        private _actualFrame;
-        private _scaledUpdateSpeed;
-        private _vertexBufferSize;
-        private _isAnimationSheetEnabled;
-        /**
-         * Gets the current list of active particles
-         */
-        readonly particles: Particle[];
-        /**
-         * Returns the string "ParticleSystem"
-         * @returns a string containing the class name
-         */
-        getClassName(): string;
-        /**
-         * Instantiates a particle system.
-         * Particles are often small sprites used to simulate hard-to-reproduce phenomena like fire, smoke, water, or abstract visual effects like magic glitter and faery dust.
-         * @param name The name of the particle system
-         * @param capacity The max number of particles alive at the same time
-         * @param scene The scene the particle system belongs to
-         * @param customEffect a custom effect used to change the way particles are rendered by default
-         * @param isAnimationSheetEnabled Must be true if using a spritesheet to animate the particles texture
-         * @param epsilon Offset used to render the particles
-         */
-        constructor(name: string, capacity: number, scene: Scene, customEffect?: Nullable<Effect>, isAnimationSheetEnabled?: boolean, epsilon?: number);
-        private _createIndexBuffer();
-        /**
-         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
-         * Its lifetime will start back at 0.
-         * @param particle The particle to recycle
-         */
-        recycleParticle(particle: Particle): void;
-        /**
-         * Gets the maximum number of particles active at the same time.
-         * @returns The max number of active particles.
-         */
-        getCapacity(): number;
-        /**
-         * Gets Wether there are still active particles in the system.
-         * @returns True if it is alive, otherwise false.
-         */
-        isAlive(): boolean;
-        /**
-         * Gets Wether the system has been started.
-         * @returns True if it has been started, otherwise false.
-         */
-        isStarted(): boolean;
-        /**
-         * Starts the particle system and begins to emit.
-         */
-        start(): void;
-        /**
-         * Stops the particle system.
-         */
-        stop(): void;
-        /**
-         * Remove all active particles
-         */
-        reset(): void;
-        /**
-         * @ignore (for internal use only)
-         */
-        _appendParticleVertex(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        /**
-         * @ignore (for internal use only)
-         */
-        _appendParticleVertexWithAnimation(index: number, particle: Particle, offsetX: number, offsetY: number): void;
-        private _update(newParticles);
-        private _getEffect();
-        /**
-         * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
-         */
-        animate(): void;
-        private _appendParticleVertexes;
-        private _appenedParticleVertexesWithSheet(offset, particle);
-        private _appenedParticleVertexesNoSheet(offset, particle);
-        /**
-         * Rebuilds the particle system.
-         */
-        rebuild(): void;
-        /**
-         * Renders the particle system in its current state.
-         * @returns the current number of particles
-         */
-        render(): number;
-        /**
-         * Disposes the particle system and free the associated resources
-         * @param disposeTexture defines if the particule texture must be disposed as well (true by default)
-         */
-        dispose(disposeTexture?: boolean): void;
-        /**
-         * Creates a Sphere Emitter for the particle system. (emits along the sphere radius)
-         * @param radius The radius of the sphere to emit from
-         * @returns the emitter
-         */
-        createSphereEmitter(radius?: number): SphereParticleEmitter;
-        /**
-         * Creates a Directed Sphere Emitter for the particle system. (emits between direction1 and direction2)
-         * @param radius The radius of the sphere to emit from
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
-         * @returns the emitter
-         */
-        createDirectedSphereEmitter(radius?: number, direction1?: Vector3, direction2?: Vector3): SphereDirectedParticleEmitter;
-        /**
-         * Creates a Cone Emitter for the particle system. (emits from the cone to the particle position)
-         * @param radius The radius of the cone to emit from
-         * @param angle The base angle of the cone
-         * @returns the emitter
-         */
-        createConeEmitter(radius?: number, angle?: number): ConeParticleEmitter;
-        /**
-         * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
-         * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
-         * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-         * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
-         * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
-         * @returns the emitter
-         */
-        createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter;
-        /**
-         * Clones the particle system.
-         * @param name The name of the cloned object
-         * @param newEmitter The new emitter to use
-         * @returns the cloned particle system
-         */
-        clone(name: string, newEmitter: any): ParticleSystem;
-        /**
-         * Serializes the particle system to a JSON object.
-         * @returns the JSON object
-         */
-        serialize(): any;
-        /**
-         * Parses a JSON object to create a particle system.
-         * @param parsedParticleSystem The JSON object to parse
-         * @param scene The scene to create the particle system in
-         * @param rootUrl The root url to use to load external dependencies like texture
-         * @returns the Parsed particle system
-         */
-        static Parse(parsedParticleSystem: any, scene: Scene, rootUrl: string): ParticleSystem;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Represents one particle of a solid particle system.
-     * @see SolidParticleSystem
-     */
-    class SolidParticle {
-        /**
-         * particle global index
-         */
-        idx: number;
-        /**
-         * The color of the particle
-         */
-        color: Nullable<Color4>;
-        /**
-         * The world space position of the particle.
-         */
-        position: Vector3;
-        /**
-         * The world space rotation of the particle. (Not use if rotationQuaternion is set)
-         */
-        rotation: Vector3;
-        /**
-         * The world space rotation quaternion of the particle.
-         */
-        rotationQuaternion: Nullable<Quaternion>;
-        /**
-         * The scaling of the particle.
-         */
-        scaling: Vector3;
-        /**
-         * The uvs of the particle.
-         */
-        uvs: Vector4;
-        /**
-         * The current speed of the particle.
-         */
-        velocity: Vector3;
-        /**
-         * The pivot point in the particle local space.
-         */
-        pivot: Vector3;
-        /**
-         * Must the particle be translated from its pivot point in its local space ?
-         * In this case, the pivot point is set at the origin of the particle local space and the particle is translated.
-         * Default : false
-         */
-        translateFromPivot: boolean;
-        /**
-         * Is the particle active or not ?
-         */
-        alive: boolean;
-        /**
-         * Is the particle visible or not ?
-         */
-        isVisible: boolean;
-        /**
-         * Index of this particle in the global "positions" array (Internal use)
-         */
-        _pos: number;
-        /**
-         * Index of this particle in the global "indices" array (Internal use)
-         */
-        _ind: number;
-        /**
-         * ModelShape of this particle (Internal use)
-         */
-        _model: ModelShape;
-        /**
-         * ModelShape id of this particle
-         */
-        shapeId: number;
-        /**
-         * Index of the particle in its shape id (Internal use)
-         */
-        idxInShape: number;
-        /**
-         * Reference to the shape model BoundingInfo object (Internal use)
-         */
-        _modelBoundingInfo: BoundingInfo;
-        /**
-         * Particle BoundingInfo object (Internal use)
-         */
-        _boundingInfo: BoundingInfo;
-        /**
-         * Reference to the SPS what the particle belongs to (Internal use)
-         */
-        _sps: SolidParticleSystem;
-        /**
-         * Still set as invisible in order to skip useless computations (Internal use)
-         */
-        _stillInvisible: boolean;
-        /**
-         * Last computed particle rotation matrix
-         */
-        _rotationMatrix: number[];
-        /**
-         * Parent particle Id, if any.
-         * Default null.
-         */
-        parentId: Nullable<number>;
-        /**
-         * Internal global position in the SPS.
-         */
-        _globalPosition: Vector3;
-        /**
-         * Creates a Solid Particle object.
-         * Don't create particles manually, use instead the Solid Particle System internal tools like _addParticle()
-         * @param particleIndex (integer) is the particle index in the Solid Particle System pool. It's also the particle identifier.
-         * @param positionIndex (integer) is the starting index of the particle vertices in the SPS "positions" array.
-         * @param indiceIndex (integer) is the starting index of the particle indices in the SPS "indices" array.
-         * @param model (ModelShape) is a reference to the model shape on what the particle is designed.
-         * @param shapeId (integer) is the model shape identifier in the SPS.
-         * @param idxInShape (integer) is the index of the particle in the current model (ex: the 10th box of addShape(box, 30))
-         * @param modelBoundingInfo is the reference to the model BoundingInfo used for intersection computations.
-         */
-        constructor(particleIndex: number, positionIndex: number, indiceIndex: number, model: Nullable<ModelShape>, shapeId: number, idxInShape: number, sps: SolidParticleSystem, modelBoundingInfo?: Nullable<BoundingInfo>);
-        /**
-         * Legacy support, changed scale to scaling
-         */
-        /**
-         * Legacy support, changed scale to scaling
-         */
-        scale: Vector3;
-        /**
-         * Legacy support, changed quaternion to rotationQuaternion
-         */
-        /**
-         * Legacy support, changed quaternion to rotationQuaternion
-         */
-        quaternion: Nullable<Quaternion>;
-        /**
-         * Returns a boolean. True if the particle intersects another particle or another mesh, else false.
-         * The intersection is computed on the particle bounding sphere and Axis Aligned Bounding Box (AABB)
-         * @param target is the object (solid particle or mesh) what the intersection is computed against.
-         * @returns true if it intersects
-         */
-        intersectsMesh(target: Mesh | SolidParticle): boolean;
-    }
-    /**
-     * Represents the shape of the model used by one particle of a solid particle system.
-     * SPS internal tool, don't use it manually.
-     * @see SolidParticleSystem
-     */
-    class ModelShape {
-        /**
-         * The shape id.
-         */
-        shapeID: number;
-        /**
-         * flat array of model positions (internal use)
-         */
-        _shape: Vector3[];
-        /**
-         * flat array of model UVs (internal use)
-         */
-        _shapeUV: number[];
-        /**
-         * length of the shape in the model indices array (internal use)
-         */
-        _indicesLength: number;
-        /**
-         * Custom position function (internal use)
-         */
-        _positionFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>;
-        /**
-         * Custom vertex function (internal use)
-         */
-        _vertexFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>;
-        /**
-         * Creates a ModelShape object. This is an internal simplified reference to a mesh used as for a model to replicate particles from by the SPS.
-         * SPS internal tool, don't use it manually.
-         * @ignore
-         */
-        constructor(id: number, shape: Vector3[], indicesLength: number, shapeUV: number[], posFunction: Nullable<(particle: SolidParticle, i: number, s: number) => void>, vtxFunction: Nullable<(particle: SolidParticle, vertex: Vector3, i: number) => void>);
-    }
-    /**
-     * Represents a Depth Sorted Particle in the solid particle system.
-     * @see SolidParticleSystem
-     */
-    class DepthSortedParticle {
-        /**
-         * Index of the particle in the "indices" array
-         */
-        ind: number;
-        /**
-         * Length of the particle shape in the "indices" array
-         */
-        indicesLength: number;
-        /**
-         * Squared distance from the particle to the camera
-         */
-        sqDistance: number;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces fo this big mesh.
-     *As it is just a mesh, the SPS has all the same properties than any other BJS mesh : not more, not less. It can be scaled, rotated, translated, enlighted, textured, moved, etc.
-
-     * The SPS is also a particle system. It provides some methods to manage the particles.
-     * However it is behavior agnostic. This means it has no emitter, no particle physics, no particle recycler. You have to implement your own behavior.
-     *
-     * Full documentation here : http://doc.babylonjs.com/overviews/Solid_Particle_System
-     */
-    class SolidParticleSystem implements IDisposable {
-        /**
-         *  The SPS array of Solid Particle objects. Just access each particle as with any classic array.
-         *  Example : var p = SPS.particles[i];
-         */
-        particles: SolidParticle[];
-        /**
-         * The SPS total number of particles. Read only. Use SPS.counter instead if you need to set your own value.
-         */
-        nbParticles: number;
-        /**
-         * If the particles must ever face the camera (default false). Useful for planar particles.
-         */
-        billboard: boolean;
-        /**
-         * Recompute normals when adding a shape
-         */
-        recomputeNormals: boolean;
-        /**
-         * This a counter ofr your own usage. It's not set by any SPS functions.
-         */
-        counter: number;
-        /**
-         * The SPS name. This name is also given to the underlying mesh.
-         */
-        name: string;
-        /**
-         * The SPS mesh. It's a standard BJS Mesh, so all the methods from the Mesh class are avalaible.
-         */
-        mesh: Mesh;
-        /**
-         * This empty object is intended to store some SPS specific or temporary values in order to lower the Garbage Collector activity.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#garbage-collector-concerns
-         */
-        vars: any;
-        /**
-         * This array is populated when the SPS is set as 'pickable'.
-         * Each key of this array is a `faceId` value that you can get from a pickResult object.
-         * Each element of this array is an object `{idx: int, faceId: int}`.
-         * `idx` is the picked particle index in the `SPS.particles` array
-         * `faceId` is the picked face index counted within this particle.
-         * Please read : http://doc.babylonjs.com/overviews/Solid_Particle_System#pickable-particles
-         */
-        pickedParticles: {
-            idx: number;
-            faceId: number;
-        }[];
-        /**
-         * This array is populated when `enableDepthSort` is set to true.
-         * Each element of this array is an instance of the class DepthSortedParticle.
-         */
-        depthSortedParticles: DepthSortedParticle[];
-        /**
-         * If the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster). (Internal use only)
-         */
-        _bSphereOnly: boolean;
-        /**
-         * A number to multiply the boundind sphere radius by in order to reduce it for instance. (Internal use only)
-         */
-        _bSphereRadiusFactor: number;
-        private _scene;
-        private _positions;
-        private _indices;
-        private _normals;
-        private _colors;
-        private _uvs;
-        private _indices32;
-        private _positions32;
-        private _normals32;
-        private _fixedNormal32;
-        private _colors32;
-        private _uvs32;
-        private _index;
-        private _updatable;
-        private _pickable;
-        private _isVisibilityBoxLocked;
-        private _alwaysVisible;
-        private _depthSort;
-        private _shapeCounter;
-        private _copy;
-        private _shape;
-        private _shapeUV;
-        private _color;
-        private _computeParticleColor;
-        private _computeParticleTexture;
-        private _computeParticleRotation;
-        private _computeParticleVertex;
-        private _computeBoundingBox;
-        private _depthSortParticles;
-        private _cam_axisZ;
-        private _cam_axisY;
-        private _cam_axisX;
-        private _axisZ;
-        private _camera;
-        private _particle;
-        private _camDir;
-        private _camInvertedPosition;
-        private _rotMatrix;
-        private _invertMatrix;
-        private _rotated;
-        private _quaternion;
-        private _vertex;
-        private _normal;
-        private _yaw;
-        private _pitch;
-        private _roll;
-        private _halfroll;
-        private _halfpitch;
-        private _halfyaw;
-        private _sinRoll;
-        private _cosRoll;
-        private _sinPitch;
-        private _cosPitch;
-        private _sinYaw;
-        private _cosYaw;
-        private _mustUnrotateFixedNormals;
-        private _minimum;
-        private _maximum;
-        private _minBbox;
-        private _maxBbox;
-        private _particlesIntersect;
-        private _depthSortFunction;
-        private _needs32Bits;
-        private _pivotBackTranslation;
-        private _scaledPivot;
-        private _particleHasParent;
-        private _parent;
-        /**
-         * Creates a SPS (Solid Particle System) object.
-         * @param name (String) is the SPS name, this will be the underlying mesh name.
-         * @param scene (Scene) is the scene in which the SPS is added.
-         * @param updatable (optional boolean, default true) : if the SPS must be updatable or immutable.
-         * @param isPickable (optional boolean, default false) : if the solid particles must be pickable.
-         * @param enableDepthSort (optional boolean, default false) : if the solid particles must be sorted in the geometry according to their distance to the camera.
-         * @param particleIntersection (optional boolean, default false) : if the solid particle intersections must be computed.
-         * @param boundingSphereOnly (optional boolean, default false) : if the particle intersection must be computed only with the bounding sphere (no bounding box computation, so faster).
-         * @param bSphereRadiusFactor (optional float, default 1.0) : a number to multiply the boundind sphere radius by in order to reduce it for instance.
-         * @example bSphereRadiusFactor = 1.0 / Math.sqrt(3.0) => the bounding sphere exactly matches a spherical mesh.
-         */
-        constructor(name: string, scene: Scene, options?: {
-            updatable?: boolean;
-            isPickable?: boolean;
-            enableDepthSort?: boolean;
-            particleIntersection?: boolean;
-            boundingSphereOnly?: boolean;
-            bSphereRadiusFactor?: number;
-        });
-        /**
-         * Builds the SPS underlying mesh. Returns a standard Mesh.
-         * If no model shape was added to the SPS, the returned mesh is just a single triangular plane.
-         * @returns the created mesh
-         */
-        buildMesh(): Mesh;
-        /**
-         * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
-         * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
-         * Thus the particles generated from `digest()` have their property `position` set yet.
-         * @param mesh ( Mesh ) is the mesh to be digested
-         * @param options {facetNb} (optional integer, default 1) is the number of mesh facets per particle, this parameter is overriden by the parameter `number` if any
-         * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
-         * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
-         * @returns the current SPS
-         */
-        digest(mesh: Mesh, options?: {
-            facetNb?: number;
-            number?: number;
-            delta?: number;
-        }): SolidParticleSystem;
-        private _unrotateFixedNormals();
-        private _resetCopy();
-        private _meshBuilder(p, shape, positions, meshInd, indices, meshUV, uvs, meshCol, colors, meshNor, normals, idx, idxInShape, options);
-        private _posToShape(positions);
-        private _uvsToShapeUV(uvs);
-        private _addParticle(idx, idxpos, idxind, model, shapeId, idxInShape, bInfo?);
-        /**
-         * Adds some particles to the SPS from the model shape. Returns the shape id.
-         * Please read the doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#create-an-immutable-sps
-         * @param mesh is any Mesh object that will be used as a model for the solid particles.
-         * @param nb (positive integer) the number of particles to be created from this model
-         * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
-         * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
-         * @returns the number of shapes in the system
-         */
-        addShape(mesh: Mesh, nb: number, options?: {
-            positionFunction?: any;
-            vertexFunction?: any;
-        }): number;
-        private _rebuildParticle(particle);
-        /**
-         * Rebuilds the whole mesh and updates the VBO : custom positions and vertices are recomputed if needed.
-         * @returns the SPS.
-         */
-        rebuildMesh(): SolidParticleSystem;
-        /**
-         *  Sets all the particles : this method actually really updates the mesh according to the particle positions, rotations, colors, textures, etc.
-         *  This method calls `updateParticle()` for each particle of the SPS.
-         *  For an animated SPS, it is usually called within the render loop.
-         * @param start The particle index in the particle array where to start to compute the particle property values _(default 0)_
-         * @param end The particle index in the particle array where to stop to compute the particle property values _(default nbParticle - 1)_
-         * @param update If the mesh must be finally updated on this call after all the particle computations _(default true)_
-         * @returns the SPS.
-         */
-        setParticles(start?: number, end?: number, update?: boolean): SolidParticleSystem;
-        private _quaternionRotationYPR();
-        private _quaternionToRotationMatrix();
-        /**
-        * Disposes the SPS.
-        */
-        dispose(): void;
-        /**
-         * Visibilty helper : Recomputes the visible size according to the mesh bounding box
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         * @returns the SPS.
-         */
-        refreshVisibleSize(): SolidParticleSystem;
-        /**
-         * Visibility helper : Sets the size of a visibility box, this sets the underlying mesh bounding box.
-         * @param size the size (float) of the visibility box
-         * note : this doesn't lock the SPS mesh bounding box.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         */
-        setVisibilityBox(size: number): void;
-        /**
-         * Gets whether the SPS as always visible or not
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         */
-        /**
-         * Sets the SPS as always visible or not
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         */
-        isAlwaysVisible: boolean;
-        /**
-         * Gets if the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         */
-        /**
-         * Sets the SPS visibility box as locked or not. This enables/disables the underlying mesh bounding box updates.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#sps-visibility
-         */
-        isVisibilityBoxLocked: boolean;
-        /**
-         * Gets if `setParticles()` computes the particle rotations or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
-         */
-        /**
-         * Tells to `setParticles()` to compute the particle rotations or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle rotations aren't stored values, so setting `computeParticleRotation` to false will prevents the particle to rotate.
-         */
-        computeParticleRotation: boolean;
-        /**
-         * Gets if `setParticles()` computes the particle colors or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
-         */
-        /**
-         * Tells to `setParticles()` to compute the particle colors or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle colors are stored values, so setting `computeParticleColor` to false will keep yet the last colors set.
-         */
-        computeParticleColor: boolean;
-        /**
-         * Gets if `setParticles()` computes the particle textures or not.
-         * Default value : true. The SPS is faster when it's set to false.
-         * Note : the particle textures are stored values, so setting `computeParticleTexture` to false will keep yet the last colors set.
-         */
-        computeParticleTexture: boolean;
-        /**
-         * Gets if `setParticles()` calls the vertex function for each vertex of each particle, or not.
-         * Default value : false. The SPS is faster when it's set to false.
-         * Note : the particle custom vertex positions aren't stored values.
-         */
-        /**
-         * Tells to `setParticles()` to call the vertex function for each vertex of each particle, or not.
-         * Default value : false. The SPS is faster when it's set to false.
-         * Note : the particle custom vertex positions aren't stored values.
-         */
-        computeParticleVertex: boolean;
-        /**
-         * Gets if `setParticles()` computes or not the mesh bounding box when computing the particle positions.
-         */
-        /**
-         * Tells to `setParticles()` to compute or not the mesh bounding box when computing the particle positions.
-         */
-        computeBoundingBox: boolean;
-        /**
-         * Gets if `setParticles()` sorts or not the distance between each particle and the camera.
-         * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-         * Default : `true`
-         */
-        /**
-         * Tells to `setParticles()` to sort or not the distance between each particle and the camera.
-         * Skipped when `enableDepthSort` is set to `false` (default) at construction time.
-         * Default : `true`
-         */
-        depthSortParticles: boolean;
-        /**
-         * This function does nothing. It may be overwritten to set all the particle first values.
-         * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-         */
-        initParticles(): void;
-        /**
-         * This function does nothing. It may be overwritten to recycle a particle.
-         * The SPS doesn't call this function, you may have to call it by your own.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-         * @param particle The particle to recycle
-         * @returns the recycled particle
-         */
-        recycleParticle(particle: SolidParticle): SolidParticle;
-        /**
-         * Updates a particle : this function should  be overwritten by the user.
-         * It is called on each particle by `setParticles()`. This is the place to code each particle behavior.
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#particle-management
-         * @example : just set a particle position or velocity and recycle conditions
-         * @param particle The particle to update
-         * @returns the updated particle
-         */
-        updateParticle(particle: SolidParticle): SolidParticle;
-        /**
-         * Updates a vertex of a particle : it can be overwritten by the user.
-         * This will be called on each vertex particle by `setParticles()` if `computeParticleVertex` is set to true only.
-         * @param particle the current particle
-         * @param vertex the current index of the current particle
-         * @param pt the index of the current vertex in the particle shape
-         * doc : http://doc.babylonjs.com/overviews/Solid_Particle_System#update-each-particle-shape
-         * @example : just set a vertex particle position
-         * @returns the updated vertex
-         */
-        updateParticleVertex(particle: SolidParticle, vertex: Vector3, pt: number): Vector3;
-        /**
-         * This will be called before any other treatment by `setParticles()` and will be passed three parameters.
-         * This does nothing and may be overwritten by the user.
-         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param update the boolean update value actually passed to setParticles()
-         */
-        beforeUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-        /**
-         * This will be called  by `setParticles()` after all the other treatments and just before the actual mesh update.
-         * This will be passed three parameters.
-         * This does nothing and may be overwritten by the user.
-         * @param start the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param stop the particle index in the particle array where to stop to iterate, same than the value passed to setParticle()
-         * @param update the boolean update value actually passed to setParticles()
-         */
-        afterUpdateParticles(start?: number, stop?: number, update?: boolean): void;
-    }
-}
-
-declare module BABYLON {
-    class ReflectionProbe {
-        name: string;
-        private _scene;
-        private _renderTargetTexture;
-        private _projectionMatrix;
-        private _viewMatrix;
-        private _target;
-        private _add;
-        private _attachedMesh;
-        private _invertYAxis;
-        position: Vector3;
-        constructor(name: string, size: number, scene: Scene, generateMipMaps?: boolean);
-        samples: number;
-        refreshRate: number;
-        getScene(): Scene;
-        readonly cubeTexture: RenderTargetTexture;
-        readonly renderList: Nullable<AbstractMesh[]>;
-        attachToMesh(mesh: AbstractMesh): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class BoundingBoxRenderer {
-        frontColor: Color3;
-        backColor: Color3;
-        showBackLines: boolean;
-        renderList: SmartArray<BoundingBox>;
-        private _scene;
-        private _colorShader;
-        private _vertexBuffers;
-        private _indexBuffer;
-        constructor(scene: Scene);
-        private _prepareRessources();
-        private _createIndexBuffer();
-        _rebuild(): void;
-        reset(): void;
-        render(): void;
-        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This represents a depth renderer in Babylon.
-     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
-     */
-    class DepthRenderer {
-        private _scene;
-        private _depthMap;
-        private _effect;
-        private _cachedDefines;
-        private _camera;
-        /**
-         * Instantiates a depth renderer
-         * @param scene The scene the renderer belongs to
-         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
-         * @param camera The camera to be used to render the depth map (default: scene's active camera)
-         */
-        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
-        /**
-         * Creates the depth rendering effect and checks if the effect is ready.
-         * @param subMesh The submesh to be used to render the depth map of
-         * @param useInstances If multiple world instances should be used
-         * @returns if the depth renderer is ready to render the depth map
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the texture which the depth map will be written to.
-         * @returns The depth map texture
-         */
-        getDepthMap(): RenderTargetTexture;
-        /**
-         * Disposes of the depth renderer.
-         */
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class EdgesRenderer {
-        edgesWidthScalerForOrthographic: number;
-        edgesWidthScalerForPerspective: number;
-        private _source;
-        private _linesPositions;
-        private _linesNormals;
-        private _linesIndices;
+        private _spriteTexture;
         private _epsilon;
-        private _indicesCount;
-        private _lineShader;
-        private _ib;
-        private _buffers;
-        private _checkVerticesInsteadOfIndices;
-        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
-        private _prepareRessources();
-        _rebuild(): void;
-        dispose(): void;
-        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
-        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
-        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
-        _generateEdgesLines(): void;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
         render(): void;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * This renderer is helpfull to fill one of the render target with a geometry buffer.
-     */
-    class GeometryBufferRenderer {
-        private _scene;
-        private _multiRenderTarget;
-        private _ratio;
-        private _enablePosition;
-        protected _effect: Effect;
-        protected _cachedDefines: string;
-        /**
-         * Set the render list (meshes to be rendered) used in the G buffer.
-         */
-        renderList: Mesh[];
-        /**
-         * Gets wether or not G buffer are supported by the running hardware.
-         * This requires draw buffer supports
-         */
-        readonly isSupported: boolean;
-        /**
-         * Gets wether or not position are enabled for the G buffer.
-         */
-        /**
-         * Sets wether or not position are enabled for the G buffer.
-         */
-        enablePosition: boolean;
-        /**
-         * Gets the scene associated with the buffer.
-         */
-        readonly scene: Scene;
-        /**
-         * Gets the ratio used by the buffer during its creation.
-         * How big is the buffer related to the main canvas.
-         */
-        readonly ratio: number;
-        /**
-         * Creates a new G Buffer for the scene. @see GeometryBufferRenderer
-         * @param scene The scene the buffer belongs to
-         * @param ratio How big is the buffer related to the main canvas.
-         */
-        constructor(scene: Scene, ratio?: number);
-        /**
-         * Checks wether everything is ready to render a submesh to the G buffer.
-         * @param subMesh the submesh to check readiness for
-         * @param useInstances is the mesh drawn using instance or not
-         * @returns true if ready otherwise false
-         */
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-        /**
-         * Gets the current underlying G Buffer.
-         * @returns the buffer
-         */
-        getGBuffer(): MultiRenderTarget;
-        /**
-         * Gets the number of samples used to render the buffer (anti aliasing).
-         */
-        /**
-         * Sets the number of samples used to render the buffer (anti aliasing).
-         */
-        samples: number;
-        /**
-         * Disposes the renderer and frees up associated resources.
-         */
         dispose(): void;
-        protected _createRenderTargets(): void;
-    }
-}
-
-declare module BABYLON {
-    class OutlineRenderer {
-        private _scene;
-        private _effect;
-        private _cachedDefines;
-        zOffset: number;
-        constructor(scene: Scene);
-        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
-        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class RenderingGroup {
-        index: number;
-        private _scene;
-        private _opaqueSubMeshes;
-        private _transparentSubMeshes;
-        private _alphaTestSubMeshes;
-        private _depthOnlySubMeshes;
-        private _particleSystems;
-        private _spriteManagers;
-        private _opaqueSortCompareFn;
-        private _alphaTestSortCompareFn;
-        private _transparentSortCompareFn;
-        private _renderOpaque;
-        private _renderAlphaTest;
-        private _renderTransparent;
-        private _edgesRenderers;
-        onBeforeTransparentRendering: () => void;
-        /**
-         * Set the opaque sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Set the alpha test sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Set the transparent sort comparison function.
-         * If null the sub meshes will be render in the order they were created
-         */
-        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
-        /**
-         * Creates a new rendering group.
-         * @param index The rendering group index
-         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
-         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
-         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
-         */
-        constructor(index: number, scene: Scene, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>);
-        /**
-         * Render all the sub meshes contained in the group.
-         * @param customRenderFunction Used to override the default render behaviour of the group.
-         * @returns true if rendered some submeshes.
-         */
-        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void;
-        /**
-         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderOpaqueSorted(subMeshes);
-        /**
-         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderAlphaTestSorted(subMeshes);
-        /**
-         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
-         * @param subMeshes The submeshes to render
-         */
-        private renderTransparentSorted(subMeshes);
-        /**
-         * Renders the submeshes in a specified order.
-         * @param subMeshes The submeshes to sort before render
-         * @param sortCompareFn The comparison function use to sort
-         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
-         * @param transparent Specifies to activate blending if true
-         */
-        private static renderSorted(subMeshes, sortCompareFn, camera, transparent);
-        /**
-         * Renders the submeshes in the order they were dispatched (no sort applied).
-         * @param subMeshes The submeshes to render
-         */
-        private static renderUnsorted(subMeshes);
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front if in the same alpha index.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered back to front.
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
-         * are rendered front to back (prevent overdraw).
-         *
-         * @param a The first submesh
-         * @param b The second submesh
-         * @returns The result of the comparison
-         */
-        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
-        /**
-         * Resets the different lists of submeshes to prepare a new frame.
-         */
-        prepare(): void;
-        dispose(): void;
-        /**
-         * Inserts the submesh in its correct queue depending on its material.
-         * @param subMesh The submesh to dispatch
-         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
-         */
-        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        private _renderParticles(activeMeshes);
-        private _renderSprites();
-    }
-}
-
-declare module BABYLON {
-    class RenderingManager {
-        /**
-         * The max id used for rendering groups (not included)
-         */
-        static MAX_RENDERINGGROUPS: number;
-        /**
-         * The min id used for rendering groups (included)
-         */
-        static MIN_RENDERINGGROUPS: number;
-        /**
-         * Used to globally prevent autoclearing scenes.
-         */
-        static AUTOCLEAR: boolean;
-        private _scene;
-        private _renderingGroups;
-        private _depthStencilBufferAlreadyCleaned;
-        private _autoClearDepthStencil;
-        private _customOpaqueSortCompareFn;
-        private _customAlphaTestSortCompareFn;
-        private _customTransparentSortCompareFn;
-        private _renderinGroupInfo;
-        constructor(scene: Scene);
-        private _clearDepthStencilBuffer(depth?, stencil?);
-        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
-        reset(): void;
-        dispose(): void;
-        private _prepareRenderingGroup(renderingGroupId);
-        dispatchSprites(spriteManager: SpriteManager): void;
-        dispatchParticles(particleSystem: IParticleSystem): void;
-        /**
-         * @param subMesh The submesh to dispatch
-         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
-         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
-         */
-        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
-        /**
-         * Overrides the default sort function applied in the renderging group to prepare the meshes.
-         * This allowed control for front to back rendering or reversly depending of the special needs.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
-         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
-         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
-         */
-        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>): void;
-        /**
-         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
-         *
-         * @param renderingGroupId The rendering group id corresponding to its index
-         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
-         * @param depth Automatically clears depth between groups if true and autoClear is true.
-         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
-         */
-        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
     }
 }
 
@@ -19946,6 +19712,43 @@ declare module BABYLON {
           * @return GLSL float string.
           */
         protected _glslFloat(x: number, decimalFigures?: number): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * The ChromaticAberrationPostProcess separates the rgb channels in an image to produce chromatic distortion around the edges of the screen
+     */
+    class ChromaticAberrationPostProcess extends PostProcess {
+        /**
+         * The amount of seperation of rgb channels (default: 0)
+         */
+        aberrationAmount: number;
+        /**
+         * The amount the effect will increase for pixels closer to the edge of the screen. (default: 0)
+         */
+        radialIntensity: number;
+        /**
+         * The normilized direction in which the rgb channels should be seperated. If set to 0,0 radial direction will be used. (default: Vector2(0.707,0.707))
+         */
+        direction: Vector2;
+        /**
+         * The center position where the radialIntensity should be around. [0.5,0.5 is center of screen, 1,1 is top right corder] (default: Vector2(0.5 ,0.5))
+         */
+        centerPosition: Vector2;
+        /**
+         * Creates a new instance of @see ChromaticAberrationPostProcess
+         * @param name The name of the effect.
+         * @param screenWidth The width of the screen to apply the effect on.
+         * @param screenHeight The height of the screen to apply the effect on.
+         * @param options The required width/height ratio to downsize to before computing the render pass.
+         * @param camera The camera to apply the render pass to.
+         * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
+         * @param engine The engine which the post process will be applied. (default: current engine)
+         * @param reusable If the post process can be reused on the same frame. (default: false)
+         * @param textureType Type of textures used when performing the post process. (default: 0)
+         */
+        constructor(name: string, screenWidth: number, screenHeight: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType?: number);
     }
 }
 
@@ -20809,71 +20612,346 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
+    class BoundingBoxRenderer {
+        frontColor: Color3;
+        backColor: Color3;
+        showBackLines: boolean;
+        renderList: SmartArray<BoundingBox>;
+        private _scene;
+        private _colorShader;
+        private _vertexBuffers;
+        private _indexBuffer;
+        constructor(scene: Scene);
+        private _prepareRessources();
+        private _createIndexBuffer();
+        _rebuild(): void;
+        reset(): void;
+        render(): void;
+        renderOcclusionBoundingBox(mesh: AbstractMesh): void;
         dispose(): void;
     }
 }
 
 declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
+    /**
+     * This represents a depth renderer in Babylon.
+     * A depth renderer will render to it's depth map every frame which can be displayed or used in post processing
+     */
+    class DepthRenderer {
         private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
+        private _depthMap;
+        private _effect;
+        private _cachedDefines;
+        private _camera;
+        /**
+         * Instantiates a depth renderer
+         * @param scene The scene the renderer belongs to
+         * @param type The texture type of the depth map (default: Engine.TEXTURETYPE_FLOAT)
+         * @param camera The camera to be used to render the depth map (default: scene's active camera)
+         */
+        constructor(scene: Scene, type?: number, camera?: Nullable<Camera>);
+        /**
+         * Creates the depth rendering effect and checks if the effect is ready.
+         * @param subMesh The submesh to be used to render the depth map of
+         * @param useInstances If multiple world instances should be used
+         * @returns if the depth renderer is ready to render the depth map
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the texture which the depth map will be written to.
+         * @returns The depth map texture
+         */
+        getDepthMap(): RenderTargetTexture;
+        /**
+         * Disposes of the depth renderer.
+         */
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class EdgesRenderer {
+        edgesWidthScalerForOrthographic: number;
+        edgesWidthScalerForPerspective: number;
+        private _source;
+        private _linesPositions;
+        private _linesNormals;
+        private _linesIndices;
+        private _epsilon;
+        private _indicesCount;
+        private _lineShader;
+        private _ib;
+        private _buffers;
+        private _checkVerticesInsteadOfIndices;
+        constructor(source: AbstractMesh, epsilon?: number, checkVerticesInsteadOfIndices?: boolean);
+        private _prepareRessources();
+        _rebuild(): void;
+        dispose(): void;
+        private _processEdgeForAdjacencies(pa, pb, p0, p1, p2);
+        private _processEdgeForAdjacenciesWithVertices(pa, pb, p0, p1, p2);
+        private _checkEdge(faceIndex, edge, faceNormals, p0, p1);
+        _generateEdgesLines(): void;
+        render(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * This renderer is helpfull to fill one of the render target with a geometry buffer.
+     */
+    class GeometryBufferRenderer {
+        private _scene;
+        private _multiRenderTarget;
+        private _ratio;
+        private _enablePosition;
+        protected _effect: Effect;
+        protected _cachedDefines: string;
+        /**
+         * Set the render list (meshes to be rendered) used in the G buffer.
+         */
+        renderList: Mesh[];
+        /**
+         * Gets wether or not G buffer are supported by the running hardware.
+         * This requires draw buffer supports
+         */
+        readonly isSupported: boolean;
+        /**
+         * Gets wether or not position are enabled for the G buffer.
+         */
+        /**
+         * Sets wether or not position are enabled for the G buffer.
+         */
+        enablePosition: boolean;
+        /**
+         * Gets the scene associated with the buffer.
+         */
+        readonly scene: Scene;
+        /**
+         * Gets the ratio used by the buffer during its creation.
+         * How big is the buffer related to the main canvas.
+         */
+        readonly ratio: number;
+        /**
+         * Creates a new G Buffer for the scene. @see GeometryBufferRenderer
+         * @param scene The scene the buffer belongs to
+         * @param ratio How big is the buffer related to the main canvas.
+         */
+        constructor(scene: Scene, ratio?: number);
+        /**
+         * Checks wether everything is ready to render a submesh to the G buffer.
+         * @param subMesh the submesh to check readiness for
+         * @param useInstances is the mesh drawn using instance or not
+         * @returns true if ready otherwise false
+         */
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+        /**
+         * Gets the current underlying G Buffer.
+         * @returns the buffer
+         */
+        getGBuffer(): MultiRenderTarget;
+        /**
+         * Gets the number of samples used to render the buffer (anti aliasing).
+         */
+        /**
+         * Sets the number of samples used to render the buffer (anti aliasing).
+         */
+        samples: number;
+        /**
+         * Disposes the renderer and frees up associated resources.
+         */
+        dispose(): void;
+        protected _createRenderTargets(): void;
+    }
+}
+
+declare module BABYLON {
+    class OutlineRenderer {
+        private _scene;
+        private _effect;
+        private _cachedDefines;
+        zOffset: number;
+        constructor(scene: Scene);
+        render(subMesh: SubMesh, batch: _InstancesBatch, useOverlay?: boolean): void;
+        isReady(subMesh: SubMesh, useInstances: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class RenderingGroup {
+        index: number;
+        private _scene;
+        private _opaqueSubMeshes;
+        private _transparentSubMeshes;
+        private _alphaTestSubMeshes;
+        private _depthOnlySubMeshes;
+        private _particleSystems;
+        private _spriteManagers;
+        private _opaqueSortCompareFn;
+        private _alphaTestSortCompareFn;
+        private _transparentSortCompareFn;
+        private _renderOpaque;
+        private _renderAlphaTest;
+        private _renderTransparent;
+        private _edgesRenderers;
+        onBeforeTransparentRendering: () => void;
+        /**
+         * Set the opaque sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        opaqueSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Set the alpha test sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        alphaTestSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Set the transparent sort comparison function.
+         * If null the sub meshes will be render in the order they were created
+         */
+        transparentSortCompareFn: Nullable<(a: SubMesh, b: SubMesh) => number>;
+        /**
+         * Creates a new rendering group.
+         * @param index The rendering group index
+         * @param opaqueSortCompareFn The opaque sort comparison function. If null no order is applied
+         * @param alphaTestSortCompareFn The alpha test sort comparison function. If null no order is applied
+         * @param transparentSortCompareFn The transparent sort comparison function. If null back to front + alpha index sort is applied
+         */
+        constructor(index: number, scene: Scene, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>);
+        /**
+         * Render all the sub meshes contained in the group.
+         * @param customRenderFunction Used to override the default render behaviour of the group.
+         * @returns true if rendered some submeshes.
+         */
+        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, renderSprites: boolean, renderParticles: boolean, activeMeshes: Nullable<AbstractMesh[]>): void;
+        /**
+         * Renders the opaque submeshes in the order from the opaqueSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderOpaqueSorted(subMeshes);
+        /**
+         * Renders the opaque submeshes in the order from the alphatestSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderAlphaTestSorted(subMeshes);
+        /**
+         * Renders the opaque submeshes in the order from the transparentSortCompareFn.
+         * @param subMeshes The submeshes to render
+         */
+        private renderTransparentSorted(subMeshes);
+        /**
+         * Renders the submeshes in a specified order.
+         * @param subMeshes The submeshes to sort before render
+         * @param sortCompareFn The comparison function use to sort
+         * @param cameraPosition The camera position use to preprocess the submeshes to help sorting
+         * @param transparent Specifies to activate blending if true
+         */
+        private static renderSorted(subMeshes, sortCompareFn, camera, transparent);
+        /**
+         * Renders the submeshes in the order they were dispatched (no sort applied).
+         * @param subMeshes The submeshes to render
+         */
+        private static renderUnsorted(subMeshes);
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front if in the same alpha index.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static defaultTransparentSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered back to front.
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static backToFrontSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Build in function which can be applied to ensure meshes of a special queue (opaque, alpha test, transparent)
+         * are rendered front to back (prevent overdraw).
+         *
+         * @param a The first submesh
+         * @param b The second submesh
+         * @returns The result of the comparison
+         */
+        static frontToBackSortCompare(a: SubMesh, b: SubMesh): number;
+        /**
+         * Resets the different lists of submeshes to prepare a new frame.
+         */
+        prepare(): void;
+        dispose(): void;
+        /**
+         * Inserts the submesh in its correct queue depending on its material.
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        private _renderParticles(activeMeshes);
+        private _renderSprites();
+    }
+}
+
+declare module BABYLON {
+    class RenderingManager {
+        /**
+         * The max id used for rendering groups (not included)
+         */
+        static MAX_RENDERINGGROUPS: number;
+        /**
+         * The min id used for rendering groups (included)
+         */
+        static MIN_RENDERINGGROUPS: number;
+        /**
+         * Used to globally prevent autoclearing scenes.
+         */
+        static AUTOCLEAR: boolean;
+        private _scene;
+        private _renderingGroups;
+        private _depthStencilBufferAlreadyCleaned;
+        private _autoClearDepthStencil;
+        private _customOpaqueSortCompareFn;
+        private _customAlphaTestSortCompareFn;
+        private _customTransparentSortCompareFn;
+        private _renderinGroupInfo;
+        constructor(scene: Scene);
+        private _clearDepthStencilBuffer(depth?, stencil?);
+        render(customRenderFunction: Nullable<(opaqueSubMeshes: SmartArray<SubMesh>, transparentSubMeshes: SmartArray<SubMesh>, alphaTestSubMeshes: SmartArray<SubMesh>, depthOnlySubMeshes: SmartArray<SubMesh>) => void>, activeMeshes: Nullable<AbstractMesh[]>, renderParticles: boolean, renderSprites: boolean): void;
+        reset(): void;
+        dispose(): void;
+        private _prepareRenderingGroup(renderingGroupId);
+        dispatchSprites(spriteManager: SpriteManager): void;
+        dispatchParticles(particleSystem: IParticleSystem): void;
+        /**
+         * @param subMesh The submesh to dispatch
+         * @param [mesh] Optional reference to the submeshes's mesh. Provide if you have an exiting reference to improve performance.
+         * @param [material] Optional reference to the submeshes's material. Provide if you have an exiting reference to improve performance.
+         */
+        dispatch(subMesh: SubMesh, mesh?: AbstractMesh, material?: Nullable<Material>): void;
+        /**
+         * Overrides the default sort function applied in the renderging group to prepare the meshes.
+         * This allowed control for front to back rendering or reversly depending of the special needs.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param opaqueSortCompareFn The opaque queue comparison function use to sort.
+         * @param alphaTestSortCompareFn The alpha test queue comparison function use to sort.
+         * @param transparentSortCompareFn The transparent queue comparison function use to sort.
+         */
+        setRenderingOrder(renderingGroupId: number, opaqueSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, alphaTestSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>, transparentSortCompareFn?: Nullable<(a: SubMesh, b: SubMesh) => number>): void;
+        /**
+         * Specifies whether or not the stencil and depth buffer are cleared between two rendering groups.
+         *
+         * @param renderingGroupId The rendering group id corresponding to its index
+         * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
+         * @param depth Automatically clears depth between groups if true and autoClear is true.
+         * @param stencil Automatically clears stencil between groups if true and autoClear is true.
+         */
+        setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean, depth?: boolean, stencil?: boolean): void;
     }
 }
 
@@ -23594,6 +23672,236 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadRotationSensibility: number;
+        gamepadMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _keys;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        keysReset: number[];
+        panningSensibility: number;
+        zoomingSensibility: number;
+        useAltToZoom: boolean;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _wheel;
+        private _observer;
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        buttons: number[];
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        multiTouchPanning: boolean;
+        multiTouchPanAndZoom: boolean;
+        private _isPanClick;
+        pinchInwards: boolean;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        alphaCorrection: number;
+        betaCorrection: number;
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        constructor();
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        checkInputs(): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        constructor();
+        camera: FreeCamera;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        _onLostFocus(e: FocusEvent): void;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        touchEnabled: boolean;
+        camera: FreeCamera;
+        buttons: number[];
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        constructor(touchEnabled?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
     class VRCameraMetrics {
         hResolution: number;
         vResolution: number;
@@ -24017,11 +24325,11 @@ declare module BABYLON {
          */
         customVRButton?: HTMLButtonElement;
         /**
-         * To change the length of the ray for gaze/controllers. (default: 100)
+         * To change the length of the ray for gaze/controllers. Will be scaled by positionScale. (default: 100)
          */
         rayLength?: number;
         /**
-         * To change the default offset from the ground to account for user's height in meters. (default: 1.7)
+         * To change the default offset from the ground to account for user's height in meters. Will be scaled by positionScale. (default: 1.7)
          */
         defaultHeight?: number;
     }
@@ -24201,236 +24509,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadRotationSensibility: number;
-        gamepadMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        keysReset: number[];
-        panningSensibility: number;
-        zoomingSensibility: number;
-        useAltToZoom: boolean;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _wheel;
-        private _observer;
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        buttons: number[];
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        multiTouchPanning: boolean;
-        multiTouchPanAndZoom: boolean;
-        private _isPanClick;
-        pinchInwards: boolean;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        alphaCorrection: number;
-        betaCorrection: number;
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        constructor();
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        checkInputs(): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     */
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        constructor();
-        camera: FreeCamera;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        _onLostFocus(e: FocusEvent): void;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        touchEnabled: boolean;
-        camera: FreeCamera;
-        buttons: number[];
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        constructor(touchEnabled?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
     interface IOctreeContainer<T> {
         blocks: Array<OctreeBlock<T>>;
     }
@@ -24580,6 +24658,14 @@ declare module BABYLON {
         private _poseControlledCamera;
         private _leftHandSystemQuaternion;
         _deviceToWorld: Matrix;
+        /**
+         * Node to be used when casting a ray from the controller
+         */
+        _pointingPoseNode: Nullable<AbstractMesh>;
+        /**
+         * Name of the child mesh that can be used to cast a ray from the controller
+         */
+        static readonly POINTING_POSE: string;
         constructor(browserGamepad: any);
         private _workingMatrix;
         update(): void;
@@ -24688,9 +24774,6 @@ declare module BABYLON {
         getForwardRay(length?: number): Ray;
         dispose(): void;
     }
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -25098,6 +25181,9 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -25685,10 +25771,6 @@ declare module BABYLON {
          */
         protected _forceNormalForward: boolean;
         /**
-         * Force metallic workflow.
-         */
-        protected _forceMetallicWorkflow: boolean;
-        /**
          * Default configuration related to image processing available in the PBR Material.
          */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
@@ -25775,6 +25857,11 @@ declare module BABYLON {
          * @returns - boolean indicating that the submesh is ready or not.
          */
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        /**
+         * Specifies if the material uses metallic roughness workflow.
+         * @returns boolean specifiying if the material uses metallic roughness workflow.
+        */
+        isMetallicWorkflow(): boolean;
         private _prepareEffect(mesh, defines, onCompiled?, onError?, useInstances?, useClipPlane?);
         private _prepareDefines(mesh, defines, useInstances?, useClipPlane?);
         /**
@@ -27359,7 +27446,7 @@ declare module BABYLON {
         protected _format: Nullable<number>;
         private _delayedOnLoad;
         private _delayedOnError;
-        private _onLoadObservable;
+        protected _onLoadObservable: Nullable<Observable<Texture>>;
         protected _isBlocking: boolean;
         isBlocking: boolean;
         readonly samplingMode: number;
@@ -27453,144 +27540,6 @@ declare module BABYLON {
             maxHeight: number;
             deviceId: string;
         }): void;
-    }
-}
-
-declare var DracoDecoderModule: any;
-declare module BABYLON {
-    /**
-     * Draco compression (https://google.github.io/draco/)
-     */
-    class DracoCompression implements IDisposable {
-        private _workerPool;
-        /**
-         * Gets the url to the draco decoder if available.
-         */
-        static DecoderUrl: Nullable<string>;
-        /**
-         * Constructor
-         * @param numWorkers The number of workers for async operations
-         */
-        constructor(numWorkers?: number);
-        /**
-         * Stop all async operations and release resources.
-         */
-        dispose(): void;
-        /**
-         * Decode Draco compressed mesh data to vertex data.
-         * @param data The array buffer view for the Draco compression data
-         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
-         * @returns A promise that resolves with the decoded vertex data
-         */
-        decodeMeshAsync(data: ArrayBufferView, attributes: {
-            [kind: string]: number;
-        }): Promise<VertexData>;
-        /**
-         * The worker function that gets converted to a blob url to pass into a worker.
-         */
-        private static _Worker();
-        private static _WorkerBlobUrl;
-        private static _GetDefaultDecoderUrl();
-    }
-}
-
-declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _useDeltaForWorldStep;
-        world: any;
-        name: string;
-        private _physicsMaterials;
-        private _fixedTimeStep;
-        BJSCANNON: any;
-        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _processChildMeshes(mainImpostor);
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        private _addMaterial(name, friction, restitution);
-        private _checkWithEpsilon(value);
-        private _createShape(impostor);
-        private _createHeightmap(object, pointDepth?);
-        private _minus90X;
-        private _plus90X;
-        private _tmpPosition;
-        private _tmpDeltaPosition;
-        private _tmpUnityRotation;
-        private _updatePhysicsBodyTransformation(impostor);
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        isSupported(): boolean;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-        private _extendNamespace();
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        BJSOIMO: any;
-        constructor(iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        private _tmpImpostorsArray;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _tmpPositionVector;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        private _getLastShape(body);
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
     }
 }
 
@@ -27949,6 +27898,143 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
+    }
+}
+
+declare var DracoDecoderModule: any;
+declare module BABYLON {
+    /**
+     * Draco compression (https://google.github.io/draco/)
+     */
+    class DracoCompression implements IDisposable {
+        private _workerPool;
+        /**
+         * Gets the url to the draco decoder if available.
+         */
+        static DecoderUrl: Nullable<string>;
+        /**
+         * Constructor
+         * @param numWorkers The number of workers for async operations
+         */
+        constructor(numWorkers?: number);
+        /**
+         * Stop all async operations and release resources.
+         */
+        dispose(): void;
+        /**
+         * Decode Draco compressed mesh data to vertex data.
+         * @param data The array buffer view for the Draco compression data
+         * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+         * @returns A promise that resolves with the decoded vertex data
+         */
+        decodeMeshAsync(data: ArrayBufferView, attributes: {
+            [kind: string]: number;
+        }): Promise<VertexData>;
+        /**
+         * The worker function that gets converted to a blob url to pass into a worker.
+         */
+        private static _Worker();
+        private static _GetDefaultDecoderUrl();
+    }
+}
+
+declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        world: any;
+        name: string;
+        private _physicsMaterials;
+        private _fixedTimeStep;
+        BJSCANNON: any;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _processChildMeshes(mainImpostor);
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMaterial(name, friction, restitution);
+        private _checkWithEpsilon(value);
+        private _createShape(impostor);
+        private _createHeightmap(object, pointDepth?);
+        private _minus90X;
+        private _plus90X;
+        private _tmpPosition;
+        private _tmpDeltaPosition;
+        private _tmpUnityRotation;
+        private _updatePhysicsBodyTransformation(impostor);
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        isSupported(): boolean;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+        private _extendNamespace();
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        BJSOIMO: any;
+        constructor(iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        private _tmpImpostorsArray;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _tmpPositionVector;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        private _getLastShape(body);
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
     }
 }
 
@@ -28365,6 +28451,10 @@ declare module BABYLON {
          */
         readonly FinalMergePostProcessId: string;
         /**
+         * ID of the chromatic aberration post process,
+         */
+        readonly ChromaticAberrationPostProcessId: string;
+        /**
          * Sharpen post process which will apply a sharpen convolution to enhance edges
          */
         sharpen: SharpenPostProcess;
@@ -28405,6 +28495,10 @@ declare module BABYLON {
          */
         finalMerge: PassPostProcess;
         /**
+         * Chromatic aberration post process which will shift rgb colors in the image
+         */
+        chromaticAberration: ChromaticAberrationPostProcess;
+        /**
          * Animations which can be used to tweak settings over a period of time
          */
         animations: Animation[];
@@ -28417,6 +28511,7 @@ declare module BABYLON {
         private _imageProcessingEnabled;
         private _defaultPipelineTextureType;
         private _bloomScale;
+        private _chromaticAberrationEnabled;
         private _buildAllowed;
         /**
          * Enable or disable the sharpen process from the pipeline
@@ -28463,6 +28558,10 @@ declare module BABYLON {
          * If image processing is enabled.
          */
         imageProcessingEnabled: boolean;
+        /**
+         * Enable or disable the chromaticAberration process from the pipeline
+         */
+        chromaticAberrationEnabled: boolean;
         /**
          * @constructor
          * @param {string} name - The rendering pipeline name

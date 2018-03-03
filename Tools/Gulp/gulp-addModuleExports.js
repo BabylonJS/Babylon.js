@@ -7,7 +7,6 @@ var through = require('through2');
  */
 module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon, noBabylonInit) {
     return through.obj(function (file, enc, cb) {
-
         if (typeof varName === 'string') {
             varName = {
                 name: varName,
@@ -18,10 +17,6 @@ module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon
             }
         }
 
-        var optionalRequire = ''; /* `var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-var babylonDependency = (globalObject && globalObject.BABYLON) || BABYLON || (typeof require !== 'undefined' && require("babylonjs"));
-var BABYLON = babylonDependency;
-`;*/
         function moduleExportAddition(varName) {
 
             let base = subModule ? 'BABYLON' : varName.name;
@@ -30,17 +25,17 @@ var BABYLON = babylonDependency;
     if(typeof exports === 'object' && typeof module === 'object')
         module.exports = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else if(typeof define === 'function' && define.amd)
-        define("${varName.module}", ${subModule || extendsRoot ? '["babylonjs"],' : ''} factory);
+        define("${varName.module}", ${subModule || extendsRoot ? '["babylonjs"],' : '[],'} factory);
     else if(typeof exports === 'object')
         exports["${varName.module}"] = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
     else {
         root["${base}"]${(subModule && !extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(root["BABYLON"]);
     }
-})(this, function(BABYLON) {
+})(this, function(${varName.name === 'BABYLON' || noBabylonInit ? '' : 'BABYLON'}) {
     ${String(file.contents)}
-    ${varName.name === 'BABYLON' ? `
+    ${varName.name === 'BABYLON' || varName.name === 'INSPECTOR' ? `
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-globalObject["${varName.name}"] = BABYLON` : ''}
+globalObject["${varName.name}"] = ${varName.name}` : ''}
     return ${base}${(subModule && !extendsRoot) ? '.' + varName.name : ''};
 });
 `;
@@ -77,9 +72,7 @@ globalObject["${varName.name}"] = BABYLON` : ''}
             return;
         }
 
-        if (noBabylonInit) {
-            optionalRequire = '';
-        }
+        var optionalRequire = '';
 
         try {
             if (externalUsingBabylon) {
