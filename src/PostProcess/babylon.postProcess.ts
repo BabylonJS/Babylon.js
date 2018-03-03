@@ -296,14 +296,16 @@
             return this;
         }
 
-        public useOwnOutput(): PostProcess {
+        /**
+         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state. 
+         * This should be called if the post process that shares output with this post process is disabled/disposed.
+         */
+        public useOwnOutput() {
             if(this._textures.length == 0){
                 this._textures = new SmartArray<InternalTexture>(2);
             }
 
             this._shareOutputWithPostProcess = null;
-
-            return this;
         }
 
         /**
