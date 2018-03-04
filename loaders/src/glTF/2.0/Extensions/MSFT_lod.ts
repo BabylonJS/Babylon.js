@@ -39,7 +39,7 @@ module BABYLON.GLTF2.Extensions {
                         }
                     }
 
-                    const promise = this._loader._loadNodeAsync("#/nodes/" + nodeLOD._index, nodeLOD).then(() => {
+                    const promise = this._loader._loadNodeAsync(`#/nodes/${nodeLOD._index}`, nodeLOD).then(() => {
                         if (indexLOD !== 0) {
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
                             previousNodeLOD._babylonMesh!.setEnabled(false);
@@ -89,7 +89,7 @@ module BABYLON.GLTF2.Extensions {
                         }
                     }
 
-                    const promise = this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh, indexLOD === 0 ? assign : () => {}).then(() => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, babylonMesh, indexLOD === 0 ? assign : () => {}).then(() => {
                         if (indexLOD !== 0) {
                             assign(materialLOD._babylonMaterial!);
                         }
@@ -145,7 +145,7 @@ module BABYLON.GLTF2.Extensions {
             const properties = new Array<T>();
 
             for (let i = ids.length - 1; i >= 0; i--) {
-                properties.push(GLTFLoader._GetProperty(context + "/ids/" + ids[i], array, ids[i]));
+                properties.push(GLTFLoader._GetProperty(`${context}/ids/${ids[i]}`, array, ids[i]));
                 if (properties.length === this.maxLODsToLoad) {
                     return properties;
                 }

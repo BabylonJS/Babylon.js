@@ -56,13 +56,13 @@ module BABYLON.GLTF2.Extensions {
             babylonMaterial.microSurface = properties.glossinessFactor == undefined ? 1 : properties.glossinessFactor;
 
             if (properties.diffuseTexture) {
-                promises.push(this._loader._loadTextureAsync(context + "/diffuseTexture", properties.diffuseTexture, texture => {
+                promises.push(this._loader._loadTextureAsync(`${context}/diffuseTexture`, properties.diffuseTexture, texture => {
                     babylonMaterial.albedoTexture = texture;
                 }));
             }
 
             if (properties.specularGlossinessTexture) {
-                promises.push(this._loader._loadTextureAsync(context + "/specularGlossinessTexture", properties.specularGlossinessTexture, texture => {
+                promises.push(this._loader._loadTextureAsync(`${context}/specularGlossinessTexture`, properties.specularGlossinessTexture, texture => {
                     babylonMaterial.reflectivityTexture = texture;
                 }));
 
