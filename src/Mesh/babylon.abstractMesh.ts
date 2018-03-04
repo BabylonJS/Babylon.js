@@ -1326,11 +1326,11 @@
         }
 
         /**
-         * Disposes the AbstractMesh.  
-         * By default, all the mesh children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
-         * Returns nothing.  
+         * Releases resources associated with this abstract mesh.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
-        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures: boolean = false): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
             var index: number;
 
             // Action manager
@@ -1448,7 +1448,7 @@
             this.onCollideObservable.clear();
             this.onCollisionPositionChangeObservable.clear();
 
-            super.dispose(doNotRecurse);
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
         /**

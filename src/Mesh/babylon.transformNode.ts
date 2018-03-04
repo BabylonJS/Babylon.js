@@ -58,6 +58,14 @@ module BABYLON {
         }
 
         /**
+         * Gets a string idenfifying the name of the class
+         * @returns "TransformNode" string
+         */
+        public getClassName(): string {
+            return "TransformNode";
+        }
+
+        /**
           * Rotation property : a Vector3 depicting the rotation value in radians around each local axis X, Y, Z. 
           * If rotation quaternion is set, this Vector3 will (almost always) be the Zero vector!
           * Default : (0.0, 0.0, 0.0)
@@ -965,35 +973,20 @@ module BABYLON {
         }
 
         /**
-         * Disposes the TransformNode.  
-         * By default, all the children are also disposed unless the parameter `doNotRecurse` is set to `true`.  
-         * Returns nothing.  
+         * Releases resources associated with this transform node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
             // Animations
             this.getScene().stopAnimation(this);
 
             // Remove from scene
             this.getScene().removeTransformNode(this);
 
-            if (!doNotRecurse) {
-                // Children
-                var objects = this.getDescendants(true);
-                for (var index = 0; index < objects.length; index++) {
-                    objects[index].dispose();
-                }
-            } else {
-                var childMeshes = this.getChildMeshes(true);
-                for (index = 0; index < childMeshes.length; index++) {
-                    var child = childMeshes[index];
-                    child.parent = null;
-                    child.computeWorldMatrix(true);
-                }
-            }
-
             this.onAfterWorldMatrixUpdateObservable.clear();
 
-            super.dispose();
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
     }

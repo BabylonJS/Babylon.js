@@ -282,13 +282,13 @@
          * Disposes the InstancedMesh.  
          * Returns nothing.  
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
 
             // Remove from mesh
             var index = this._sourceMesh.instances.indexOf(this);
             this._sourceMesh.instances.splice(index, 1);
 
-            super.dispose(doNotRecurse);
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
     }
 } 
