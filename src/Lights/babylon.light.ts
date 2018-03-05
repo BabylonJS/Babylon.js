@@ -467,9 +467,11 @@ module BABYLON {
         }
 
         /**
-         * Disposes the light.  
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
-        public dispose(): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
             if (this._shadowGenerator) {
                 this._shadowGenerator.dispose();
                 this._shadowGenerator = null;
@@ -487,7 +489,7 @@ module BABYLON {
 
             // Remove from scene
             this.getScene().removeLight(this);
-            super.dispose();
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
         /**

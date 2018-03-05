@@ -40,19 +40,19 @@ describe('Babylon glTF Serializer', () => {
             const babylonMaterial = new BABYLON.PBRMetallicRoughnessMaterial("metallicroughness", scene);
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
 
-            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('OPAQUE');
 
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
-            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
 
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
-            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('BLEND');
 
             babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
-            alphaMode = BABYLON.GLTF2._GLTFMaterial.GetAlphaMode(babylonMaterial);
+            alphaMode = BABYLON.GLTF2._GLTFMaterial._GetAlphaMode(babylonMaterial);
             alphaMode.should.be.equal('MASK');
         });
 
@@ -64,7 +64,7 @@ describe('Babylon glTF Serializer', () => {
             babylonStandardMaterial.specularPower = 64;
             babylonStandardMaterial.alpha = 1;
 
-            const metalRough = BABYLON.GLTF2._GLTFMaterial.ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
+            const metalRough = BABYLON.GLTF2._GLTFMaterial._ConvertToGLTFPBRMetallicRoughness(babylonStandardMaterial);
 
             metalRough.baseColorFactor.should.deep.equal([0.5, 0.5, 0.5, 1]);
 
@@ -74,8 +74,8 @@ describe('Babylon glTF Serializer', () => {
         });
 
         it('should solve for metallic', () => {
-            BABYLON.GLTF2._GLTFMaterial.SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
-            BABYLON.GLTF2._GLTFMaterial.SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
+            BABYLON.GLTF2._GLTFMaterial._SolveMetallic(1.0, 0.0, 1.0).should.be.equal(0);
+            BABYLON.GLTF2._GLTFMaterial._SolveMetallic(0.0, 1.0, 1.0).should.be.approximately(1, 1e-6);
         });
 
         it('should serialize empty Babylon scene to glTF with only asset property', (done) => {

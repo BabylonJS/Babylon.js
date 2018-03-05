@@ -218,7 +218,7 @@ declare module BABYLON {
         private _onMaterialLoadedObserver;
         onMaterialLoaded: (material: Material) => void;
         /**
-         * Raised when the loader creates an animation group after parsing the glTF properties of the material.
+         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
          */
         readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         private _onAnimationGroupLoadedObserver;
@@ -245,7 +245,7 @@ declare module BABYLON {
         private _onExtensionLoadedObserver;
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
         /**
-         * Gets a promise that resolves when the asset to be completely loaded.
+         * Gets a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
@@ -979,12 +979,13 @@ declare module BABYLON.GLTF2 {
         private _createRootNode();
         private _loadNodesAsync(nodes);
         _loadSceneAsync(context: string, scene: ILoaderScene): Promise<void>;
+        private _forEachNodeMesh(node, callback);
         private _getMeshes();
         private _getSkeletons();
         private _startAnimations();
         _loadNodeAsync(context: string, node: ILoaderNode): Promise<void>;
-        private _loadMeshAsync(context, node, mesh);
-        private _loadPrimitiveAsync(context, node, mesh, primitive);
+        private _loadMeshAsync(context, node, mesh, babylonMesh);
+        private _loadPrimitiveAsync(context, node, mesh, primitive, babylonMesh);
         private _loadVertexDataAsync(context, primitive, babylonMesh);
         private _createMorphTargets(context, node, mesh, primitive, babylonMesh);
         private _loadMorphTargetsAsync(context, primitive, babylonMesh, babylonVertexData);
