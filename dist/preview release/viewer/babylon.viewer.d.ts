@@ -224,6 +224,11 @@ declare module BabylonViewer {
         subtitle?: string;
         thumbnail?: string; // URL or data-url
 
+        animation?: {
+            autoStart?: boolean | string;
+            playOnce?: boolean;
+        }
+
         // [propName: string]: any; // further configuration, like title and creator
     }
 
@@ -426,23 +431,6 @@ declare module BabylonViewer {
         restart(): any;
         goToFrame(frameNumber: number): any;
     }
-    export class GroupModelAnimation implements IModelAnimation {
-        constructor(_animationGroup: BABYLON.AnimationGroup);
-        readonly name: string;
-        readonly state: AnimationState;
-        speedRatio: number;
-        readonly frames: number;
-        readonly currentFrame: number;
-        readonly fps: number;
-        playMode: AnimationPlayMode;
-        reset(): void;
-        restart(): void;
-        goToFrame(frameNumber: number): void;
-        start(): void;
-        pause(): void;
-        stop(): void;
-        dispose(): void;
-    }
 
     class ViewerModel implements BABYLON.IDisposable {
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
@@ -500,7 +488,7 @@ declare module BabylonViewer {
         protected resize: () => void;
         protected render: () => void;
         updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>): void;
-        protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<Scene> | undefined;
+        protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<BABYLON.Scene> | undefined;
         protected configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration): void;
         protected configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
         protected configureObservers(observersConfiguration: IObserversConfiguration): void;
