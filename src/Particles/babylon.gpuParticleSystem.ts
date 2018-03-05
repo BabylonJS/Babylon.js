@@ -636,6 +636,10 @@
         }
 
         private _releaseVAOs() {
+            if (!this._updateVAO) {
+                return;
+            }
+            
             for (var index = 0; index < this._updateVAO.length; index++) {
                 this._engine.releaseVertexArrayObject(this._updateVAO[index]);
             }
