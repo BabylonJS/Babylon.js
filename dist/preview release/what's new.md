@@ -19,6 +19,7 @@
 ## Updates
 
 - Tons of functions and classes received the code comments they deserved (All the community)
+- Added support for 16bits TGA ([deltakosh](https://github.com/deltakosh))
 - New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))
 - New `Texture.UseSerializedUrlIfAny` static property to let textures serialize complete URL instead of using side by side loading ([deltakosh](https://github.com/deltakosh))
 - Added `particleSystem.reset()` to clear a particle system ([deltakosh](https://github.com/deltakosh))
