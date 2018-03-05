@@ -5,6 +5,7 @@ import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
+import { ViewerModel } from '../model/viewerModel';
 
 export class DefaultViewer extends AbstractViewer {
 
@@ -103,8 +104,8 @@ export class DefaultViewer extends AbstractViewer {
         this.containerElement.style.display = 'flex';
     }
 
-    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
-        super.configureModel(modelConfiguration, focusMeshes);
+    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, model: ViewerModel) {
+        super.configureModel(modelConfiguration, model);
 
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
@@ -141,7 +142,7 @@ export class DefaultViewer extends AbstractViewer {
         });
     }
 
-    private onModelLoaded = (meshes: Array<AbstractMesh>) => {
+    private onModelLoaded = (model: ViewerModel) => {
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
         if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
@@ -151,112 +152,8 @@ export class DefaultViewer extends AbstractViewer {
             this.hideLoadingScreen();
         }, hideLoadingDelay);
 
-        meshes[0].rotation.y += Math.PI;
-
-        return; //this.initEnvironment(meshes);
+        return;
     }
-
-    /*protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
-        if (this.configuration.skybox) {
-            // Define a general environment textue
-            let texture;
-            // this is obligatory, but still - making sure it is there.
-            if (this.configuration.skybox.cubeTexture) {
-                if (typeof this.configuration.skybox.cubeTexture.url === 'string') {
-                    texture = CubeTexture.CreateFromPrefilteredData(this.configuration.skybox.cubeTexture.url, this.scene);
-                } else {
-                    texture = CubeTexture.CreateFromImages(this.configuration.skybox.cubeTexture.url, this.scene, this.configuration.skybox.cubeTexture.noMipMap);
-                }
-            }
-            if (texture) {
-                this.extendClassWithConfig(texture, this.configuration.skybox.cubeTexture);
-
-                let scale = this.configuration.skybox.scale || this.scene.activeCamera && (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2 || 1;
-
-                let box = this.scene.createDefaultSkybox(texture, this.configuration.skybox.pbr, scale, this.configuration.skybox.blur);
-
-                // before extending, set the material's imageprocessing configuration object, if needed:
-                if (this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration && box) {
-                    (<StandardMaterial>box.material).imageProcessingConfiguration = new ImageProcessingConfiguration();
-                }
-
-                this.extendClassWithConfig(box, this.configuration.skybox);
-
-                box && focusMeshes.push(box);
-            }
-        }
-
-        if (this.configuration.ground) {
-            let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
-
-            let groundSize = groundConfig.size || (this.configuration.skybox && this.configuration.skybox.scale) || 3000;
-
-            let ground = Mesh.CreatePlane("BackgroundPlane", groundSize, this.scene);
-            let backgroundMaterial = new BackgroundMaterial('groundmat', this.scene);
-            ground.rotation.x = Math.PI / 2; // Face up by default.
-            ground.receiveShadows = groundConfig.receiveShadows || false;
-
-            // position the ground correctly
-            let groundPosition = focusMeshes[0].getHierarchyBoundingVectors().min.y;
-            ground.position.y = groundPosition;
-
-            // default values
-            backgroundMaterial.alpha = 0.9;
-            backgroundMaterial.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
-            backgroundMaterial.shadowLevel = 0.5;
-            backgroundMaterial.primaryLevel = 1;
-            backgroundMaterial.primaryColor = new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3);
-            backgroundMaterial.secondaryLevel = 0;
-            backgroundMaterial.tertiaryLevel = 0;
-            backgroundMaterial.useRGBColor = false;
-            backgroundMaterial.enableNoise = true;
-
-            // if config provided, extend the default values
-            if (groundConfig.material) {
-                this.extendClassWithConfig(ground, ground.material);
-            }
-
-            ground.material = backgroundMaterial;
-            if (this.configuration.ground === true || groundConfig.shadowOnly) {
-                // shadow only:
-                ground.receiveShadows = true;
-                const diffuseTexture = new Texture("https://assets.babylonjs.com/environments/backgroundGround.png", this.scene);
-                diffuseTexture.gammaSpace = false;
-                diffuseTexture.hasAlpha = true;
-                backgroundMaterial.diffuseTexture = diffuseTexture;
-            } else if (groundConfig.mirror) {
-                var mirror = new MirrorTexture("mirror", 512, this.scene);
-                mirror.mirrorPlane = new Plane(0, -1, 0, 0);
-                mirror.renderList = mirror.renderList || [];
-                focusMeshes.length && focusMeshes.forEach(m => {
-                    m && mirror.renderList && mirror.renderList.push(m);
-                });
-
-                backgroundMaterial.reflectionTexture = mirror;
-            } else {
-                if (groundConfig.material) {
-                    if (groundConfig.material.diffuseTexture) {
-                        const diffuseTexture = new Texture(groundConfig.material.diffuseTexture, this.scene);
-                        backgroundMaterial.diffuseTexture = diffuseTexture;
-                    }
-                }
-                // ground.material = new StandardMaterial('groundmat', this.scene);
-            }
-            //default configuration
-            if (this.configuration.ground === true) {
-                ground.receiveShadows = true;
-                if (ground.material)
-                    ground.material.alpha = 0.4;
-            }
-
-
-
-
-            this.extendClassWithConfig(ground, groundConfig);
-        }
-
-        return Promise.resolve(this.scene);
-    }*/
 
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
@@ -345,8 +242,8 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
-    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
-        super.configureLights(lightsConfiguration, focusMeshes);
+    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
+        super.configureLights(lightsConfiguration, model);
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
             let pointerPosition = BABYLON.Vector3.Zero();
