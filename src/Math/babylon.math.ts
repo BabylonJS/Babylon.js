@@ -4375,6 +4375,7 @@
          * @param startValue defines the start value
          * @param endValue defines the end value
          * @param gradient defines the gradient factor
+         * @returns the new matrix
          */
         public static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
             var result = Matrix.Zero();
@@ -4389,13 +4390,11 @@
          * @param gradient defines the gradient factor
          * @param result defines the Matrix object where to store data
          */
-        public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): Matrix {
-            var result = Matrix.Zero();
+        public static LerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix): void {
             for (var index = 0; index < 16; index++) {
                 result.m[index] = startValue.m[index] * (1.0 - gradient) + endValue.m[index] * gradient;
             }
             result._markAsUpdated();
-            return result;
         }        
 
         /**
