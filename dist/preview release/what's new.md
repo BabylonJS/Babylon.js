@@ -85,6 +85,7 @@
 - Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
 - Supports Environment Drag and Drop in Sandbox ([sebavan](https://github.com/sebavan))
 - EnvironmentHelper has no an onError observable to handle errors when loading the textures ([RaananW](https://github.com/RaananW))
+- (Viewer) Viewer supports model animations ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
