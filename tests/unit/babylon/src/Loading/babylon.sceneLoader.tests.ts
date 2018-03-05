@@ -69,7 +69,8 @@ describe('Babylon Scene Loader', function () {
             let textureCounts: { [name: string]: number } = {};
             let ready = false;
 
-            const deferred = new BABYLON.Deferred();
+            const promises = new Array<Promise<void>>();
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
                 loader.onParsed = data => {
                     parsedCount++;
@@ -86,19 +87,13 @@ describe('Babylon Scene Loader', function () {
                     textureCounts[texture.name]++;
                 };
 
-                loader.onComplete = () => {
-                    try {
-                        expect(ready, "ready").to.be.true;
-                        deferred.resolve();
-                    }
-                    catch (e) {
-                        deferred.reject(e);
-                    }
-                };
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(ready, "ready").to.be.true;
+                }));
             }, undefined, undefined, undefined, true);
 
             const scene = new BABYLON.Scene(subject);
-            const promise = BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
                 ready = true;
 
                 expect(parsedCount, "parsedCount").to.equal(1);
@@ -115,70 +110,88 @@ describe('Babylon Scene Loader', function () {
                 for (const textureName in expectedTextureLoadCounts) {
                     expect(textureCounts, "textureCounts").to.have.property(textureName, expectedTextureLoadCounts[textureName]);
                 }
-            });
+            }));
 
-            return Promise.all([promise, deferred.promise]);
+            return Promise.all(promises);
         });
 
         it('Load BoomBox with dispose', () => {
             let ready = false;
             let disposed = false;
 
-            const deferred = new BABYLON.Deferred<void>();
+            const promises = new Array<Promise<void>>();
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
                 loader.onDispose = () => {
                     disposed = true;
                 };
 
-                BABYLON.Tools.DelayAsync(50).then(() => {
+                promises.push(BABYLON.Tools.DelayAsync(50).then(() => {
                     loader.dispose();
                     expect(ready, "ready").to.be.false;
                     expect(disposed, "disposed").to.be.true;
-                    deferred.resolve();
-                }).catch(error => {
-                    deferred.reject(error);
-                });
+                }));
             }, undefined, undefined, undefined, true);
 
             const scene = new BABYLON.Scene(subject);
-            BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox2.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox2.gltf", scene).then(() => {
                 ready = true;
-            }).catch(error => {
-                // Cannot rely on the typical error handling of promises since the AppendAsync is not
-                // supposed to complete because the loader is being disposed.
-                deferred.reject(error);
-            });
+            }));
 
-            return deferred.promise;
+            return Promise.race(promises);
         });
 
         it('Load BoomBox with compileMaterials', () => {
             let createShaderProgramSpy: sinon.SinonSpy;
 
-            const deferred = new BABYLON.Deferred();
+            const promises = new Array<Promise<void>>();
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
                 loader.compileMaterials = true;
 
-                loader.onComplete = () => {
+                promises.push(loader.whenCompleteAsync().then(() => {
                     try {
                         expect(createShaderProgramSpy.called, "createShaderProgramSpy.called").to.be.false;
-                        deferred.resolve();
-                    }
-                    catch (e) {
-                        deferred.reject(e);
                     }
                     finally {
                         createShaderProgramSpy.restore();
                     }
-                };
+                }));
             }, undefined, undefined, undefined, true);
 
             const scene = new BABYLON.Scene(subject);
-            const promise = BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
                 createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
+            }));
+
+            promises.push(scene.whenReadyAsync());
+
+            return Promise.all(promises);
+        });
+
+        it('Load BoomBox with rootMesh.isEnabled check', () => {
+            const scene = new BABYLON.Scene(subject);
+            let rootMesh: BABYLON.AbstractMesh;
+
+            subject.runRenderLoop(() => {
+                if (!rootMesh) {
+                    for (const mesh of scene.meshes) {
+                        if (!mesh.parent) {
+                            rootMesh = mesh;
+                            break;
+                        }
+                    }
+                }
+
+                if (rootMesh) {
+                    expect(rootMesh.isEnabled(), "rootMesh.isEnabled").to.be.false;
+                }
             });
 
-            return Promise.all([promise, deferred.promise, scene.whenReadyAsync()]);
+            return BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(scene => {
+                expect(rootMesh.isEnabled(), "rootMesh.isEnabled").to.be.true;
+                subject.stopRenderLoop();
+            });
         });
 
         it('Load Alien', () => {
@@ -204,31 +217,36 @@ describe('Babylon Scene Loader', function () {
             });
         });
 
-        it('Load TwoQuads', () => {
+        it('Load TwoQuads with LODs', () => {
+            const scene = new BABYLON.Scene(subject);
+            const promises = new Array<Promise<void>>();
             const materials: { [name: string]: BABYLON.Material } = {};
 
-            const deferred = new BABYLON.Deferred();
+            subject.runRenderLoop(() => {
+                for (const mesh of scene.meshes) {
+                    if (mesh.material && mesh.isEnabled()) {
+                        expect(mesh.material.getActiveTextures().every(texture => texture.isReady()), "active mesh material textures are ready").to.be.true;
+                    }
+                }
+            });
+
             BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
                 loader.onMaterialLoaded = material => {
                     expect(materials[material.name], `materials["${material.name}"]`).to.be.undefined;
                     materials[material.name] = material;
                 };
 
-                loader.onComplete = () => {
-                    try {
-                        expect(materials["LOD0"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 0 ready").to.be.true;
-                        expect(materials["LOD1"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 1 ready").to.be.true;
-                        expect(materials["LOD2"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 2 ready").to.be.true;
-                        deferred.resolve();
-                    }
-                    catch (e) {
-                        deferred.reject(e);
-                    }
-                };
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    expect(materials["LOD0"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 0 ready").to.be.true;
+                    expect(materials["LOD1"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 1 ready").to.be.true;
+                    expect(materials["LOD2"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 2 ready").to.be.true;
+
+                    expect(scene.getMeshByName("node0_0").material.name, "node 0 primitive 0 material").to.equal("LOD0");
+                    expect(scene.getMeshByName("node1_0").material.name, "node 1 primitive 0 material").to.equal("LOD0");
+                }));
             }, undefined, undefined, undefined, true);
 
-            const scene = new BABYLON.Scene(subject);
-            const promise = BABYLON.SceneLoader.AppendAsync("/Playground/scenes/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/TwoQuads/", "TwoQuads.gltf", scene).then(() => {
                 expect(Object.keys(materials), "materials").to.have.lengthOf(3);
 
                 expect(materials["LOD0"].getActiveTextures(), "material LOD 0 active textures").to.have.lengthOf(1);
@@ -238,11 +256,15 @@ describe('Babylon Scene Loader', function () {
                 expect(materials["LOD0"].getActiveTextures().some(texture => texture.isReady()), "Some textures of LOD 0 ready").to.be.false;
                 expect(materials["LOD1"].getActiveTextures().some(texture => texture.isReady()), "Some textures of LOD 1 ready").to.be.false;
                 expect(materials["LOD2"].getActiveTextures().every(texture => texture.isReady()), "All textures of LOD 2 ready").to.be.true;
-            });
 
-            return Promise.all([promise, deferred.promise]);
+                expect(scene.getMeshByName("node0_0").material.name, "node 0 primitive 0 material").to.equal("LOD2");
+                expect(scene.getMeshByName("node1_0").material.name, "node 1 primitive 0 material").to.equal("LOD2");
+            }));
+
+            return Promise.all(promises);
         });
 
+        // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name
         // TODO: test KHR_materials_pbrSpecularGlossiness
