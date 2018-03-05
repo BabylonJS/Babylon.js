@@ -641,7 +641,7 @@ module BABYLON.GLTF2 {
                     baseColorBuffer[destinationOffset + 1] /= metallicRoughnessFactors.baseColor.g > this._epsilon ? metallicRoughnessFactors.baseColor.g : 1;
                     baseColorBuffer[destinationOffset + 2] /= metallicRoughnessFactors.baseColor.b > this._epsilon ? metallicRoughnessFactors.baseColor.b : 1;
 
-                    const baseColorPixel = Color3.FromArray([baseColorBuffer[destinationOffset], baseColorBuffer[destinationOffset + 1], baseColorBuffer[destinationOffset + 2]]);
+                    const baseColorPixel = new Color3(baseColorBuffer[destinationOffset], baseColorBuffer[destinationOffset + 1], baseColorBuffer[destinationOffset + 2]);
 
                     if (!this.FuzzyEquals(baseColorPixel, Color3.White(), this._epsilon)) {
                         writeOutBaseColorTexture = true;
@@ -650,7 +650,7 @@ module BABYLON.GLTF2 {
                     metallicRoughnessBuffer[destinationOffset + 1] /= metallicRoughnessFactors.roughness > this._epsilon ? metallicRoughnessFactors.roughness : 1;
                     metallicRoughnessBuffer[destinationOffset + 2] /= metallicRoughnessFactors.metallic > this._epsilon ? metallicRoughnessFactors.metallic : 1;
 
-                    const metallicRoughnessPixel = Color3.FromArray([metallicRoughnessBuffer[destinationOffset], metallicRoughnessBuffer[destinationOffset + 1], metallicRoughnessBuffer[destinationOffset + 2]]);
+                    const metallicRoughnessPixel = new Color3(metallicRoughnessBuffer[destinationOffset], metallicRoughnessBuffer[destinationOffset + 1], metallicRoughnessBuffer[destinationOffset + 2]);
 
                     if (!this.FuzzyEquals(metallicRoughnessPixel, Color3.White(), this._epsilon)) {
                         writeOutMetallicRoughnessTexture = true;
@@ -752,36 +752,44 @@ module BABYLON.GLTF2 {
                     metallicRoughness = this._ConvertSpecularGlossinessToMetallicRoughness(specGloss);
                 }
                 else {
-                    if (metallicRoughness.baseColorTextureBase64) {
-                        const glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughness.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, images, textures, imageData);
-                        if (glTFBaseColorTexture != null) {
-                            glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
+                    if (hasTextureCoords) {
+                        if (metallicRoughness.baseColorTextureBase64) {
+                            const glTFBaseColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughness.baseColorTextureBase64, "bjsBaseColorTexture_" + (textures.length) + ".png", mimeType, images, textures, imageData);
+                            if (glTFBaseColorTexture != null) {
+                                glTFPbrMetallicRoughness.baseColorTexture = glTFBaseColorTexture;
+                            }
                         }
-                    }
-                    if (metallicRoughness.metallicRoughnessTextureBase64) {
-                        const glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughness.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, images, textures, imageData);
-                        if (glTFMRColorTexture != null) {
-                            glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
+                        if (metallicRoughness.metallicRoughnessTextureBase64) {
+                            const glTFMRColorTexture = _GLTFMaterial._GetTextureInfoFromBase64(metallicRoughness.metallicRoughnessTextureBase64, "bjsMetallicRoughnessTexture_" + (textures.length) + ".png", mimeType, images, textures, imageData);
+                            if (glTFMRColorTexture != null) {
+                                glTFPbrMetallicRoughness.metallicRoughnessTexture = glTFMRColorTexture;
+                            }
                         }
                     }
                 }
             }
+            else {
+                metallicRoughness = {
+                    baseColor: babylonPBRMaterial.albedoColor,
+                    metallic: babylonPBRMaterial.metallic,
+                    roughness: babylonPBRMaterial.roughness
+                };
+            }
 
-            if (!(this.FuzzyEquals(babylonPBRMaterial.albedoColor, Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
+            if (!(this.FuzzyEquals(metallicRoughness.baseColor, Color3.White(), this._epsilon) && babylonPBRMaterial.alpha >= this._epsilon)) {
                 glTFPbrMetallicRoughness.baseColorFactor = [
-                    babylonPBRMaterial.albedoColor.r,
-                    babylonPBRMaterial.albedoColor.g,
-                    babylonPBRMaterial.albedoColor.b,
+                    metallicRoughness.baseColor.r,
+                    metallicRoughness.baseColor.g,
+                    metallicRoughness.baseColor.b,
                     babylonPBRMaterial.alpha
                 ];
             }
 
-
-            if (babylonPBRMaterial.metallic != null && babylonPBRMaterial.metallic !== 1) {
-                glTFPbrMetallicRoughness.metallicFactor = babylonPBRMaterial.metallic;
+            if (metallicRoughness.metallic != null && metallicRoughness.metallic !== 1) {
+                glTFPbrMetallicRoughness.metallicFactor = metallicRoughness.metallic;
             }
-            if (babylonPBRMaterial.roughness != null && babylonPBRMaterial.roughness !== 1) {
-                glTFPbrMetallicRoughness.roughnessFactor = babylonPBRMaterial.roughness;
+            if (metallicRoughness.roughness != null && metallicRoughness.roughness !== 1) {
+                glTFPbrMetallicRoughness.roughnessFactor = metallicRoughness.roughness;
             }
 
             if (babylonPBRMaterial.backFaceCulling != null && !babylonPBRMaterial.backFaceCulling) {
