@@ -76,8 +76,8 @@ export class GroupModelAnimation implements IModelAnimation {
 
     public get currentFrame(): number {
         // get the first currentFrame found
-        for (let i = 0; i < this._animationGroup['_animatables'].length; ++i) {
-            let animatable: Animatable = this._animationGroup['_animatables'][i];
+        for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
+            let animatable: Animatable = this._animationGroup.animatables[i];
             let animations = animatable.getAnimations();
             if (!animations || !animations.length) {
                 continue;
@@ -93,8 +93,8 @@ export class GroupModelAnimation implements IModelAnimation {
 
     public get fps(): number {
         // get the first currentFrame found
-        for (let i = 0; i < this._animationGroup['_animatables'].length; ++i) {
-            let animatable: Animatable = this._animationGroup['_animatables'][i];
+        for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
+            let animatable: Animatable = this._animationGroup.animatables[i];
             let animations = animatable.getAnimations();
             if (!animations || !animations.length) {
                 continue;

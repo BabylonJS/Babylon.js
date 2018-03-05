@@ -65,7 +65,7 @@ export class ViewerModel implements IDisposable {
             animation.start();
             return animation;
         } else {
-            throw new Error("aniamtion not found - " + name);
+            throw new Error("animation not found - " + name);
         }
     }
 
