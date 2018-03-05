@@ -77,7 +77,7 @@ var BABYLON;
              */
             this.onMaterialLoadedObservable = new BABYLON.Observable();
             /**
-             * Raised when the loader creates an animation group after parsing the glTF properties of the material.
+             * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
              */
             this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
             /**
@@ -184,7 +184,7 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Gets a promise that resolves when the asset to be completely loaded.
+         * Gets a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         GLTFFileLoader.prototype.whenCompleteAsync = function () {
