@@ -15,6 +15,7 @@ module.exports = function (config) {
             './Tools/DevLoader/BabylonLoader.js',
             './tests/unit/babylon/babylon.example.tests.js',
             './tests/unit/babylon/serializers/babylon.glTFSerializer.tests.js',
+            './tests/unit/babylon/src/babylon.node.tests.js',
             './tests/unit/babylon/src/Loading/babylon.sceneLoader.tests.js',
             './tests/unit/babylon/src/Material/babylon.material.tests.js',
             './tests/unit/babylon/src/Mesh/babylon.mesh.vertexData.tests.js',
