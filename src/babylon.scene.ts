@@ -3706,9 +3706,6 @@
                 this._gamepadManager._checkGamepadsStatus();
             }
 
-            // Before render
-            this.onBeforeRenderObservable.notifyObservers(this);
-
             // Update Cameras
             if (this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
@@ -3730,6 +3727,9 @@
                     }
                 }
             }
+
+            // Before render
+            this.onBeforeRenderObservable.notifyObservers(this);
 
             // Customs render targets
             this.OnBeforeRenderTargetsRenderObservable.notifyObservers(this);
