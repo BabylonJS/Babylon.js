@@ -3170,6 +3170,42 @@
             }
         }
 
+        /**
+         * Clear the processed materials smart array preventing retention point in material dispose.
+         */
+        public resetProcessedMaterials(): void {
+            this._processedMaterials.dispose();
+        }
+
+        /**
+         * Clear the active meshes smart array preventing retention point in mesh dispose.
+         */
+        public resetActiveMeshes(): void {
+            this._activeMeshes.dispose();
+            if (this.activeCamera && this.activeCamera._activeMeshes) {
+                this.activeCamera._activeMeshes.dispose();
+            }
+            if (this.activeCameras) {
+                for (let i = 0; i < this.activeCameras.length; i++) {
+                    let activeCamera = this.activeCameras[i];
+                    if (activeCamera && activeCamera._activeMeshes) {
+                        activeCamera._activeMeshes.dispose();
+                    }
+                }
+            }
+            if (this._renderingManager) {
+                this._renderingManager.freeRenderingGroups();
+            }
+            if (this.textures) {
+                for (let i = 0; i < this.textures.length; i++) {
+                    let texture = this.textures[i];
+                    if (texture && texture.isRenderTarget) {
+                        (<RenderTargetTexture>texture).freeRenderingGroups();
+                    }
+                }
+            }
+        }
+
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }

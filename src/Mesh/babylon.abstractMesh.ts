@@ -1333,6 +1333,9 @@
         public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
             var index: number;
 
+            // Smart Array Retainers.
+            this.getScene().resetActiveMeshes();
+
             // Action manager
             if (this.actionManager !== undefined && this.actionManager !== null) {
                 this.actionManager.dispose();
