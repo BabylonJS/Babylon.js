@@ -328,6 +328,7 @@ module BABYLON {
 
             animatable = Animation.TransitionTo("radius", radius, this._attachedCamera, this._attachedCamera.getScene(),
                 60, this._radiusTransition, this._framingTime, () => {
+                    this.stopAllAnimations();
                     if (onAnimationEnd) {
                         onAnimationEnd();
                     }
