@@ -131,14 +131,20 @@
         }
 
         public dispose(): void {
+            this.freeRenderingGroups();
+            this._renderingGroups.length = 0;
+        }
+
+        /**
+         * Clear the info related to rendering groups preventing retention point in material dispose.
+         */
+        public freeRenderingGroups(): void {
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
                 var renderingGroup = this._renderingGroups[index];
                 if (renderingGroup) {
                     renderingGroup.dispose();
                 }
             }
-
-            this._renderingGroups.length = 0;
         }
 
         private _prepareRenderingGroup(renderingGroupId: number): void {
