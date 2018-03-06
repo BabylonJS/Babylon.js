@@ -3173,14 +3173,14 @@
         /**
          * Clear the processed materials smart array preventing retention point in material dispose.
          */
-        public resetProcessedMaterials(): void {
+        public freeProcessedMaterials(): void {
             this._processedMaterials.dispose();
         }
 
         /**
          * Clear the active meshes smart array preventing retention point in mesh dispose.
          */
-        public resetActiveMeshes(): void {
+        public freeActiveMeshes(): void {
             this._activeMeshes.dispose();
             if (this.activeCamera && this.activeCamera._activeMeshes) {
                 this.activeCamera._activeMeshes.dispose();
@@ -3193,6 +3193,12 @@
                     }
                 }
             }
+        }
+
+        /**
+         * Clear the info related to rendering groups preventing retention points during dispose.
+         */
+        public freeRenderingGroups(): void {
             if (this._renderingManager) {
                 this._renderingManager.freeRenderingGroups();
             }

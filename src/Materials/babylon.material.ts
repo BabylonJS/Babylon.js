@@ -1212,7 +1212,7 @@
         public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
             // Animations
             this.getScene().stopAnimation(this);
-            this.getScene().resetProcessedMaterials();
+            this.getScene().freeProcessedMaterials();
 
             // Remove from scene
             var index = this._scene.materials.indexOf(this);

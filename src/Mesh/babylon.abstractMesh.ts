@@ -1334,7 +1334,8 @@
             var index: number;
 
             // Smart Array Retainers.
-            this.getScene().resetActiveMeshes();
+            this.getScene().freeActiveMeshes();
+            this.getScene().freeRenderingGroups();
 
             // Action manager
             if (this.actionManager !== undefined && this.actionManager !== null) {
