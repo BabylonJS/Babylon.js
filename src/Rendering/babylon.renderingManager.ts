@@ -136,7 +136,7 @@
         }
 
         /**
-         * Clear the info related to rendering groups preventing retention point in material dispose.
+         * Clear the info related to rendering groups preventing retention points during dispose.
          */
         public freeRenderingGroups(): void {
             for (let index = RenderingManager.MIN_RENDERINGGROUPS; index < RenderingManager.MAX_RENDERINGGROUPS; index++) {
