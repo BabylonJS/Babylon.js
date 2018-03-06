@@ -132,13 +132,13 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    public loadModel(model: any = this.configuration.model): Promise<Scene> {
+    public loadModel(model: any = this.configuration.model): Promise<ViewerModel> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
             console.log(error);
             this.hideLoadingScreen();
             this.showOverlayScreen('error');
-            return this.scene;
+            return Promise.reject(error);
         });
     }
 

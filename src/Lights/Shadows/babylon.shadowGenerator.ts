@@ -540,8 +540,8 @@
         private _viewMatrix = Matrix.Zero();
         private _projectionMatrix = Matrix.Zero();
         private _transformMatrix = Matrix.Zero();
-        private _cachedPosition: Vector3;
-        private _cachedDirection: Vector3;
+        private _cachedPosition: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        private _cachedDirection: Vector3 = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         private _cachedDefines: string;
         private _currentRenderID: number;
         private _boxBlurPostprocess: Nullable<PostProcess>;
@@ -633,12 +633,14 @@
             });
 
             // Clear according to the chosen filter.
+            let zero = new Color4(0, 0, 0, 0);
+            let one = new Color4(1.0, 1.0, 1.0, 1.0);
             this._shadowMap.onClearObservable.add((engine: Engine) => {
                 if (this.useExponentialShadowMap || this.useBlurExponentialShadowMap) {
-                    engine.clear(new Color4(0, 0, 0, 0), true, true, true);
+                    engine.clear(zero, true, true, true);
                 }
                 else {
-                    engine.clear(new Color4(1.0, 1.0, 1.0, 1.0), true, true, true);
+                    engine.clear(one, true, true, true);
                 }
             });
         }
@@ -1050,8 +1052,8 @@
 
             if (this._light.needProjectionMatrixCompute() || !this._cachedPosition || !this._cachedDirection || !lightPosition.equals(this._cachedPosition) || !this._lightDirection.equals(this._cachedDirection)) {
 
-                this._cachedPosition = lightPosition.clone();
-                this._cachedDirection = this._lightDirection.clone();
+                this._cachedPosition.copyFrom(lightPosition);
+                this._cachedDirection.copyFrom(this._lightDirection);
 
                 Matrix.LookAtLHToRef(lightPosition, lightPosition.add(this._lightDirection), Vector3.Up(), this._viewMatrix);
 
