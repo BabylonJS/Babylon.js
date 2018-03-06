@@ -157,6 +157,7 @@ module BABYLON {
             makeNotPick(mesh);
             var childMeshes = mesh.getChildMeshes();
 
+            this.webVRController._pointingPoseNode = null;
             for (var i = 0; i < childMeshes.length; i++) {
                 if (childMeshes[i].name && childMeshes[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
                     mesh = childMeshes[i];

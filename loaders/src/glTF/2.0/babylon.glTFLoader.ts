@@ -307,8 +307,20 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        private _getMeshes(): AbstractMesh[] {
-            const meshes = new Array<AbstractMesh>();
+        private _forEachNodeMesh(node: ILoaderNode, callback: (babylonMesh: Mesh) => void): void {
+            if (node._babylonMesh) {
+                callback(node._babylonMesh);
+            }
+
+            if (node._primitiveBabylonMeshes) {
+                for (const babylonMesh of node._primitiveBabylonMeshes) {
+                    callback(babylonMesh);
+                }
+            }
+        }
+
+        private _getMeshes(): Mesh[] {
+            const meshes = new Array<Mesh>();
 
             // Root mesh is always first.
             meshes.push(this._rootBabylonMesh);
@@ -316,15 +328,9 @@ module BABYLON.GLTF2 {
             const nodes = this._gltf.nodes;
             if (nodes) {
                 for (const node of nodes) {
-                    if (node._babylonMesh) {
-                        meshes.push(node._babylonMesh);
-                    }
-
-                    if (node._primitiveBabylonMeshes) {
-                        for (const babylonMesh of node._primitiveBabylonMeshes) {
-                            meshes.push(babylonMesh);
-                        }
-                    }
+                    this._forEachNodeMesh(node, mesh => {
+                        meshes.push(mesh);
+                    });
                 }
             }
 
@@ -397,7 +403,7 @@ module BABYLON.GLTF2 {
 
             if (node.mesh != undefined) {
                 const mesh = GLTFLoader._GetProperty(`${context}/mesh`, this._gltf.meshes, node.mesh);
-                promises.push(this._loadMeshAsync(`#/meshes/${mesh._index}`, node, mesh));
+                promises.push(this._loadMeshAsync(`#/meshes/${mesh._index}`, node, mesh, babylonMesh));
             }
 
             if (node.children) {
@@ -412,7 +418,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        private _loadMeshAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh): Promise<void> {
+        private _loadMeshAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, babylonMesh: Mesh): Promise<void> {
             // TODO: instancing
 
             const promises = new Array<Promise<void>>();
@@ -423,8 +429,18 @@ module BABYLON.GLTF2 {
             }
 
             ArrayItem.Assign(primitives);
-            for (const primitive of primitives) {
-                promises.push(this._loadPrimitiveAsync(context + "/primitives/" + primitive._index, node, mesh, primitive));
+            if (primitives.length === 1) {
+                const primitive = primitives[0];
+                promises.push(this._loadPrimitiveAsync(`${context}/primitives/${primitive._index}`, node, mesh, primitive, babylonMesh));
+            }
+            else {
+                node._primitiveBabylonMeshes = [];
+                for (const primitive of primitives) {
+                    const primitiveBabylonMesh = new Mesh(`${mesh.name || babylonMesh.name}_${primitive._index}`, this._babylonScene, babylonMesh);
+                    node._primitiveBabylonMeshes.push(babylonMesh);
+                    promises.push(this._loadPrimitiveAsync(`${context}/primitives/${primitive._index}`, node, mesh, primitive, primitiveBabylonMesh));
+                    this.onMeshLoadedObservable.notifyObservers(babylonMesh);
+                }
             }
 
             if (node.skin != undefined) {
@@ -433,21 +449,14 @@ module BABYLON.GLTF2 {
             }
 
             return Promise.all(promises).then(() => {
-                if (node._primitiveBabylonMeshes) {
-                    for (const primitiveBabylonMesh of node._primitiveBabylonMeshes) {
-                        primitiveBabylonMesh._refreshBoundingInfo(true);
-                    }
-                }
+                this._forEachNodeMesh(node, babylonMesh => {
+                    babylonMesh._refreshBoundingInfo(true);
+                });
             });
         }
 
-        private _loadPrimitiveAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, primitive: ILoaderMeshPrimitive): Promise<void> {
+        private _loadPrimitiveAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Promise<void> {
             const promises = new Array<Promise<void>>();
-
-            const babylonMesh = new Mesh((mesh.name || node._babylonMesh!.name) + "_" + primitive._index, this._babylonScene, node._babylonMesh);
-
-            node._primitiveBabylonMeshes = node._primitiveBabylonMeshes || [];
-            node._primitiveBabylonMeshes[primitive._index] = babylonMesh;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
 
@@ -465,8 +474,6 @@ module BABYLON.GLTF2 {
                     babylonMesh.material = babylonMaterial;
                 }));
             }
-
-            this.onMeshLoadedObservable.notifyObservers(babylonMesh);
 
             return Promise.all(promises).then(() => {});
         }
@@ -703,9 +710,9 @@ module BABYLON.GLTF2 {
 
         private _loadSkinAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, skin: ILoaderSkin): Promise<void> {
             const assignSkeleton = () => {
-                for (const babylonMesh of node._primitiveBabylonMeshes!) {
+                this._forEachNodeMesh(node, babylonMesh => {
                     babylonMesh.skeleton = skin._babylonSkeleton;
-                }
+                });
 
                 node._babylonMesh!.parent = this._rootBabylonMesh;
                 node._babylonMesh!.position = Vector3.Zero();
@@ -957,10 +964,10 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        for (const babylonMesh of targetNode._primitiveBabylonMeshes!) {
+                        this._forEachNodeMesh(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
                             babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
-                        }
+                        });
                     }
                 }
                 else {

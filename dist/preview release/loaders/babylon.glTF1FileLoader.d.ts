@@ -116,7 +116,7 @@ declare module BABYLON {
         private _onMaterialLoadedObserver;
         onMaterialLoaded: (material: Material) => void;
         /**
-         * Raised when the loader creates an animation group after parsing the glTF properties of the material.
+         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
          */
         readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         private _onAnimationGroupLoadedObserver;
@@ -143,7 +143,7 @@ declare module BABYLON {
         private _onExtensionLoadedObserver;
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
         /**
-         * Gets a promise that resolves when the asset to be completely loaded.
+         * Gets a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;

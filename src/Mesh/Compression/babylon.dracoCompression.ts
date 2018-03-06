@@ -188,6 +188,10 @@ module BABYLON {
         }
 
         private static _GetDefaultDecoderUrl(): Nullable<string> {
+            if (!Tools.IsWindowObjectExist) {
+                return null;
+            }
+
             for (let i = 0; i < document.scripts.length; i++) {
                 if (document.scripts[i].type === "text/x-draco-decoder") {
                     return document.scripts[i].src;
