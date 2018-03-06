@@ -155,12 +155,19 @@ module BABYLON {
             this._depthOfFieldMerge.dispose(camera);
         }
 
+        /**
+         * Internal
+         */
         public _updateEffects(){
             for(var effect in this._effects){
                 this._effects[effect].updateEffect();
             }
         }
 
+        /**
+         * Internal
+         * @returns if all the contained post processes are ready.
+         */
         public _isReady(){
             for(var effect in this._effects){
                 if(!this._effects[effect].isReady()){
