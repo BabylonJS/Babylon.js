@@ -31,6 +31,9 @@ describe('Babylon Scene Loader', function () {
             deterministicLockstep: false,
             lockstepMaxSteps: 1
         });
+
+        // Avoid creating normals in PBR materials.
+        subject.getCaps().standardDerivatives = true;
     });
 
     /**
@@ -141,40 +144,6 @@ describe('Babylon Scene Loader', function () {
             return Promise.race(promises);
         });
 
-        it('Load BoomBox with compileMaterials', () => {
-            let createShaderProgramSpy: sinon.SinonSpy;
-
-            const promises = new Array<Promise<void>>();
-
-            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
-                loader.compileMaterials = true;
-
-                promises.push(loader.whenCompleteAsync().then(() => {
-                    try {
-                        expect(createShaderProgramSpy.called, "createShaderProgramSpy.called").to.be.false;
-                    }
-                    finally {
-                        createShaderProgramSpy.restore();
-                    }
-                }));
-            }, undefined, undefined, undefined, true);
-
-            const scene = new BABYLON.Scene(subject);
-            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/BoomBox/", "BoomBox.gltf", scene).then(() => {
-                for (const mesh of scene.meshes) {
-                    if (mesh.material) {
-                        expect(mesh.material.isReady(mesh)).to.be.true;
-                    }
-                }
-
-                createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
-            }));
-
-            promises.push(scene.whenReadyAsync());
-
-            return Promise.all(promises);
-        });
-
         it('Load BoomBox with rootMesh.isEnabled check', () => {
             const scene = new BABYLON.Scene(subject);
             let rootMesh: BABYLON.AbstractMesh;
@@ -198,6 +167,39 @@ describe('Babylon Scene Loader', function () {
                 expect(rootMesh.isEnabled(), "rootMesh.isEnabled").to.be.true;
                 subject.stopRenderLoop();
             });
+        });
+
+        it('Load CompileMaterialsTest', () => {
+            const scene = new BABYLON.Scene(subject);
+            const promises = new Array<Promise<void>>();
+            let createShaderProgramSpy: sinon.SinonSpy;
+
+            subject.runRenderLoop(() => {
+                for (const mesh of scene.meshes) {
+                    if (mesh.material && mesh.isEnabled()) {
+                        expect(mesh.material.isReady(mesh), "mesh material is ready").to.be.true;
+                    }
+                }
+            });
+
+            BABYLON.SceneLoader.OnPluginActivatedObservable.add((loader: BABYLON.GLTFFileLoader) => {
+                loader.compileMaterials = true;
+
+                promises.push(loader.whenCompleteAsync().then(() => {
+                    try {
+                        expect(createShaderProgramSpy.called, "createShaderProgramSpy.called").to.be.false;
+                    }
+                    finally {
+                        createShaderProgramSpy.restore();
+                    }
+                }));
+            }, undefined, undefined, undefined, true);
+
+            promises.push(BABYLON.SceneLoader.AppendAsync("/Playground/scenes/CompileMaterialsTest/", "Test.gltf", scene).then(() => {
+                createShaderProgramSpy = sinon.spy(subject, "createShaderProgram");
+            }));
+
+            return Promise.all(promises);
         });
 
         it('Load Alien', () => {
