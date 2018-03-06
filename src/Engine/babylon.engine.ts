@@ -5622,7 +5622,6 @@
             this._currentBufferPointers = [];
             this._renderingCanvas = null;
             this._currentProgram = null;
-            this._gl = null;
             this._bindedRenderFunction = null;
 
             this.onResizeObservable.clear();
