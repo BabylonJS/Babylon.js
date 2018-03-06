@@ -241,6 +241,12 @@
         }
 
         /**
+         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+         * to override the particles.
+         */
+        public forceDepthWrite = false;        
+
+        /**
          * Gets or set the number of active particles
          */
         public get activeParticleCount(): number {
@@ -582,6 +588,10 @@
                 this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
             }            
 
+            if (this.forceDepthWrite) {
+                this._engine.setDepthWrite(true);
+            }
+
             // Bind source VAO
             this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
 
@@ -626,6 +636,10 @@
         }
 
         private _releaseVAOs() {
+            if (!this._updateVAO) {
+                return;
+            }
+            
             for (var index = 0; index < this._updateVAO.length; index++) {
                 this._engine.releaseVertexArrayObject(this._updateVAO[index]);
             }

@@ -413,13 +413,6 @@
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
 
-            if (this.fxaaEnabled) {
-                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
-                this._setAutoClearAndTextureSharing(this.fxaa);
-                
-            }
-
             if (this.sharpenEnabled) {
                 this.addEffect(this._sharpenEffect);
                 this._setAutoClearAndTextureSharing(this.sharpen);
@@ -507,6 +500,12 @@
                 } else {
                     this.finalMerge.shareOutputWith(this.pass);
                 }
+            }
+
+            if (this.fxaaEnabled) {
+                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
+                this._setAutoClearAndTextureSharing(this.fxaa);
             }
 
             if (this.chromaticAberrationEnabled) {

@@ -20,10 +20,16 @@
       "bufferView": 1,
       "componentType": 5126,
       "count": 4,
-      "type": "VEC2"
+      "type": "VEC3"
     },
     {
       "bufferView": 2,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
       "componentType": 5125,
       "count": 6,
       "type": "SCALAR"
@@ -35,7 +41,7 @@
   "buffers": [
     {
       "uri": "TwoQuads.bin",
-      "byteLength": 104
+      "byteLength": 152
     }
   ],
   "bufferViews": [
@@ -46,11 +52,16 @@
     {
       "buffer": 0,
       "byteOffset": 48,
+      "byteLength": 48
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 96,
       "byteLength": 32
     },
     {
       "buffer": 0,
-      "byteOffset": 80,
+      "byteOffset": 128,
       "byteLength": 24
     }
   ],
@@ -111,9 +122,10 @@
         {
           "attributes": {
             "POSITION": 0,
-            "TEXCOORD_0": 1
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
           },
-          "indices": 2,
+          "indices": 3,
           "material": 0
         }
       ]

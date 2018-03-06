@@ -42,7 +42,10 @@ module BABYLON.GLTF2.Extensions {
                     const promise = this._loader._loadNodeAsync(`#/nodes/${nodeLOD._index}`, nodeLOD).then(() => {
                         if (indexLOD !== 0) {
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
-                            previousNodeLOD._babylonMesh!.setEnabled(false);
+                            if (previousNodeLOD._babylonMesh) {
+                                previousNodeLOD._babylonMesh.dispose();
+                                delete previousNodeLOD._babylonMesh;
+                            }
                         }
 
                         if (indexLOD !== nodeLODs.length - 1) {
@@ -92,6 +95,12 @@ module BABYLON.GLTF2.Extensions {
                     const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, babylonMesh, indexLOD === 0 ? assign : () => {}).then(() => {
                         if (indexLOD !== 0) {
                             assign(materialLOD._babylonMaterial!);
+
+                            const previousMaterialLOD = materialLODs[indexLOD - 1];
+                            if (previousMaterialLOD._babylonMaterial) {
+                                previousMaterialLOD._babylonMaterial.dispose();
+                                delete previousMaterialLOD._babylonMaterial;
+                            }
                         }
 
                         if (indexLOD !== materialLODs.length - 1) {

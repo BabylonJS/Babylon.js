@@ -30,7 +30,7 @@ void main() {
 
   // Expand position
   vec4 viewPosition = view * vec4(position, 1.0);
-  gl_Position = projection * (viewPosition + vec4(offset * size, 0, 1.0));
+  gl_Position = projection * (viewPosition + vec4(offset * size, 0., 0.));
 
 	// Clip plane
 #ifdef CLIPPLANE
