@@ -502,8 +502,8 @@ declare module BabylonViewer {
         protected onTemplatesLoaded(): Promise<AbstractViewer>;
         protected initEngine(): Promise<BABYLON.Engine>;
         protected initScene(): Promise<BABYLON.Scene>;
-        loadModel(modelConfig?: any, clearScene?: boolean): Promise<BABYLON.Scene>;
-        protected initEnvironment(focusMeshes?: Array<BABYLON.AbstractMesh>): Promise<BABYLON.Scene>;
+        loadModel(modelConfig?: any, clearScene?: boolean): Promise<ViewerModel>;
+        protected initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         protected handleHardwareLimitations(): void;
         protected injectCustomShaders(): void;
         protected extendClassWithConfig(object: any, config: any): void;
@@ -516,8 +516,8 @@ declare module BabylonViewer {
         initScene(): Promise<BABYLON.Scene>;
         protected onTemplatesLoaded(): Promise<AbstractViewer>;
         protected prepareContainerElement(): void;
-        loadModel(model?: any): Promise<BABYLON.Scene>;
-        initEnvironment(focusMeshes?: Array<BABYLON.AbstractMesh>): Promise<BABYLON.Scene>;
+        loadModel(model?: any): Promise<ViewerModel>;
+        initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         showOverlayScreen(subScreen: string): Promise<Template>;
         hideOverlayScreen(): Promise<Template>;
         showLoadingScreen(): Promise<Template>;
