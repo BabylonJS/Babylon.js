@@ -19,7 +19,9 @@
 			v = Math.max(v, 1);
 			this._idealKernel = v;
 			this._kernel = this._nearestBestKernel(v);
-            this._updateParameters();
+			if(!this.blockCompilation){
+				this._updateParameters();
+			}
 		}
 
 		/**
@@ -37,7 +39,9 @@
 				return;
 			}
 			this._packedFloat = v;
-            this._updateParameters();
+            if(!this.blockCompilation){
+				this._updateParameters();
+			}
 		}
 
 		/**
@@ -58,8 +62,9 @@
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
+		 * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, /** The direction in which to blur the image. */ public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, defines = "") {
+        constructor(name: string, /** The direction in which to blur the image. */ public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, defines = "", private blockCompilation = false) {
 			super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["circleOfConfusionSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
 			this._staticDefines = defines;
 			this.onApplyObservable.add((effect: Effect) => {
@@ -69,7 +74,21 @@
             this.kernel = kernel;
         }
 
-        protected _updateParameters(): void {
+		/**
+         * Updates the effect with the current post process compile time values and recompiles the shader.
+         * @param defines Define statements that should be added at the beginning of the shader. (default: null)
+         * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
+         * @param samplers Set of Texture2D variables that will be passed to the shader. (default: null)
+         * @param indexParameters The index parameters to be used for babylons include syntax "#include<kernelBlurVaryingDeclaration>[0..varyingCount]". (default: undefined) See usage in babylon.blurPostProcess.ts and kernelBlur.vertex.fx
+         * @param onCompiled Called when the shader has been compiled.
+         * @param onError Called if there is an error when compiling a shader.
+         */
+        public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
+            onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
+            this._updateParameters(onCompiled, onError);
+        }
+
+        protected _updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void {
             // Generate sampling offsets and weights
 			let N = this._kernel;
 			let centerIndex = (N - 1) / 2;
@@ -155,10 +174,10 @@
 				defines += `#define PACKEDFLOAT 1`;
 			}
 
-            this.updateEffect(defines, null, null, {
+            super.updateEffect(defines, null, null, {
 				varyingCount: varyingCount,
 				depCount: depCount
-			});
+			}, onCompiled, onError);
         }
 
         /**
