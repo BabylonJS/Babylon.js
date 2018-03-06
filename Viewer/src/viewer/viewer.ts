@@ -661,7 +661,7 @@ export abstract class AbstractViewer {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
                 if (autoLoadModel) {
-                    return this.loadModel();
+                    return this.loadModel().then(() => { return this.scene });
                 } else {
                     return this.scene || this.initScene();
                 }
@@ -669,8 +669,6 @@ export abstract class AbstractViewer {
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
-            }).then(() => {
-                return this;
             });
         })
     }
@@ -743,19 +741,19 @@ export abstract class AbstractViewer {
     private isLoading: boolean;
     private nextLoading: Function;
 
-    public loadModel(modelConfig: any = this.configuration.model, clearScene: boolean = true): Promise<Scene> {
+    public loadModel(modelConfig: any = this.configuration.model, clearScene: boolean = true): Promise<ViewerModel> {
         // no model was provided? Do nothing!
         let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
         if (!modelUrl) {
-            return Promise.resolve(this.scene);
+            return Promise.reject("no model configuration found");
         }
         if (this.isLoading) {
             //another model is being model. Wait for it to finish, trigger the load afterwards
-            this.nextLoading = () => {
+            /*this.nextLoading = () => {
                 delete this.nextLoading;
-                this.loadModel(modelConfig, clearScene);
-            }
-            return Promise.resolve(this.scene);
+                return this.loadModel(modelConfig, clearScene);
+            }*/
+            return Promise.reject("sanother model is curently being loaded.");
         }
         this.isLoading = true;
         if ((typeof modelConfig === 'string')) {
@@ -807,18 +805,18 @@ export abstract class AbstractViewer {
                     if (this.configuration.camera) {
                         this.configureCamera(this.configuration.camera, model);
                     }
-                    return this.initEnvironment(model.meshes);
+                    return this.initEnvironment(model);
                 }).then(() => {
                     this.isLoading = false;
-                    if (this.nextLoading) {
+                    /*if (this.nextLoading) {
                         return this.nextLoading();
-                    }
-                    return this.scene;
+                    }*/
+                    return model;
                 });
         });
     }
 
-    protected initEnvironment(focusMeshes: Array<AbstractMesh> = this.scene.meshes): Promise<Scene> {
+    protected initEnvironment(model?: ViewerModel): Promise<Scene> {
         this.configureEnvironment(this.configuration.skybox, this.configuration.ground);
 
         return Promise.resolve(this.scene);
