@@ -73,7 +73,7 @@
                 return false;
             }
 
-            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses);
+            var postProcesses = postProcesses || (<Nullable<PostProcess[]>>camera._postProcesses.filter((pp)=>{return pp != null;}));
 
             if (!postProcesses || postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return false;
@@ -133,14 +133,14 @@
          * @param postProcesses The array of post processes to render.
          * @param forceFullscreenViewport force gl.viewport to be full screen eg. 0,0,textureWidth,textureHeight (default: false)
          */
-        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: PostProcess[], forceFullscreenViewport = false): void {
+        public _finalizeFrame(doNotPresent?: boolean, targetTexture?: InternalTexture, faceIndex?: number, postProcesses?: Array<PostProcess>, forceFullscreenViewport = false): void {
             let camera = this._scene.activeCamera;
 
             if (!camera) {
                 return;
             }
 
-            postProcesses = postProcesses || camera._postProcesses;
+            postProcesses = postProcesses || <Array<PostProcess>>camera._postProcesses.filter((pp)=>{return pp != null;});
             if (postProcesses.length === 0 || !this._scene.postProcessesEnabled) {
                 return;
             }
