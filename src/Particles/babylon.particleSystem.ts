@@ -623,7 +623,8 @@
 
             var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
 
-            var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position.clone());
+            var subSystem = this.subEmitters[templateIndex].clone(this.name + "_sub", particle.position.clone());
+            subSystem._rootParticleSystem = this;
             this.activeSubSystems.push(subSystem);
             subSystem.start();
         }
@@ -989,30 +990,6 @@
             this.maxEmitBox = maxEmitBox;
             this.particleEmitterType = particleEmitter;
             return particleEmitter;
-        }
-
-        private _cloneToSubSystem(root: ParticleSystem, newEmitter: Vector3): ParticleSystem {
-            var custom: Nullable<Effect> = null;
-            var program: any = null;
-            if (this.customShader != null) {
-                program = this.customShader;
-                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
-                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
-            }
-            var result = new ParticleSystem(name, this._capacity, this._scene, custom);
-            result.customShader = program;
-            Tools.DeepCopy(this, result, ["customShader"]);
-            result.name = name + "_Child";
-            result.id = result.name;
-            result.emitter = newEmitter;
-            result.subEmitters = this.subEmitters;
-            result.particleEmitterType = this.particleEmitterType;
-            result._rootParticleSystem = root;
-            if (this.particleTexture) {
-                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
-            }
-
-            return result;
         }
 
         // Clone
