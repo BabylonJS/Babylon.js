@@ -310,6 +310,12 @@ module BABYLON {
         private _options: IEnvironmentHelperOptions;
 
         /**
+         * This observable will be notified with any error during the creation of the environment, 
+         * mainly texture creation errors.
+         */
+        public onErrorObservable: Observable<{ message?: string, exception?: any }>;
+
+        /**
          * constructor
          * @param options 
          * @param scene The scene to add the material to
@@ -320,6 +326,7 @@ module BABYLON {
                 ...options
             }
             this._scene = scene;
+            this.onErrorObservable = new Observable();
 
             this._setupBackground();
             this._setupImageProcessing();
@@ -557,7 +564,7 @@ module BABYLON {
                 return;
             }
 
-            const diffuseTexture = new Texture(this._options.groundTexture, this._scene);
+            const diffuseTexture = new Texture(this._options.groundTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
             diffuseTexture.gammaSpace = false;
             diffuseTexture.hasAlpha = true;
             this._groundMaterial.diffuseTexture = diffuseTexture;
@@ -664,10 +671,14 @@ module BABYLON {
                 return;
             }
 
-            this._skyboxTexture = new CubeTexture(this._options.skyboxTexture, this._scene);
+            this._skyboxTexture = new CubeTexture(this._options.skyboxTexture, this._scene, undefined, undefined, undefined, undefined, this._errorHandler);
             this._skyboxTexture.coordinatesMode = Texture.SKYBOX_MODE;
             this._skyboxTexture.gammaSpace = false;
             this._skyboxMaterial.reflectionTexture = this._skyboxTexture;
+        }
+
+        private _errorHandler = (message?: string, exception?: any) => {
+            this.onErrorObservable.notifyObservers({ message: message, exception: exception });
         }
 
         /**

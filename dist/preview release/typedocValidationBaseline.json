@@ -1,7 +1,7 @@
 {
-  "errors": 7220,
+  "errors": 7189,
   "babylon.typedoc.json": {
-    "errors": 7220,
+    "errors": 7189,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -16456,28 +16456,6 @@
           },
           "Parameter": {
             "source": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "Lerp": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "startValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "endValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "gradient": {
               "Comments": {
                 "MissingText": true
               }
@@ -38819,114 +38797,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "IImageProcessingConfigurationDefines": {
-      "Property": {
-        "COLORCURVES": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "COLORGRADING": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "COLORGRADING3D": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "CONTRAST": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EXPOSURE": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IMAGEPROCESSING": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IMAGEPROCESSINGPOSTPROCESS": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SAMPLER3DBGRMAP": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SAMPLER3DGREENDEPTH": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "TONEMAPPING": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "VIGNETTE": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "VIGNETTEBLENDMODEMULTIPLY": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "VIGNETTEBLENDMODEOPAQUE": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         }
       }

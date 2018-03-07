@@ -77,6 +77,10 @@ var BABYLON;
              */
             this.onMaterialLoadedObservable = new BABYLON.Observable();
             /**
+             * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
+             */
+            this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
+            /**
              * Raised when the asset is completely loaded, immediately before the loader is disposed.
              * For assets with LODs, raised when all of the LODs are complete.
              * For assets without LODs, raised when the model is complete, immediately after onSuccess.
@@ -139,6 +143,16 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(GLTFFileLoader.prototype, "onAnimationGroupLoaded", {
+            set: function (callback) {
+                if (this._onAnimationGroupLoadedObserver) {
+                    this.onAnimationGroupLoadedObservable.remove(this._onAnimationGroupLoadedObserver);
+                }
+                this._onAnimationGroupLoadedObserver = this.onAnimationGroupLoadedObservable.add(callback);
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(GLTFFileLoader.prototype, "onComplete", {
             set: function (callback) {
                 if (this._onCompleteObserver) {
@@ -169,6 +183,18 @@ var BABYLON;
             enumerable: true,
             configurable: true
         });
+        /**
+         * Gets a promise that resolves when the asset is completely loaded.
+         * @returns A promise that resolves when the asset is completely loaded.
+         */
+        GLTFFileLoader.prototype.whenCompleteAsync = function () {
+            var _this = this;
+            return new Promise(function (resolve) {
+                _this.onCompleteObservable.add(function () {
+                    resolve();
+                }, undefined, undefined, undefined, true);
+            });
+        };
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
             /**
              * The loader state or null if not active.
@@ -1837,6 +1863,7 @@ var BABYLON;
                 this.onMeshLoadedObservable = new BABYLON.Observable();
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
+                this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
                 this.onExtensionLoadedObservable = new BABYLON.Observable();
                 this.state = null;
