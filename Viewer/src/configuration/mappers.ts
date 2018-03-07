@@ -26,9 +26,12 @@ class HTMLMapper implements IMapper {
                     } else if (val === "false") {
                         val = false;
                     } else {
-                        let number = parseFloat(val);
-                        if (!isNaN(number)) {
-                            val = number;
+                        var isnum = /^\d+$/.test(val);
+                        if (isnum) {
+                            let number = parseFloat(val);
+                            if (!isNaN(number)) {
+                                val = number;
+                            }
                         }
                     }
                     currentConfig[camelKey] = val;

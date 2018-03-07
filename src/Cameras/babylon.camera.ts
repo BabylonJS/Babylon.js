@@ -161,7 +161,7 @@
         public _projectionMatrix = new Matrix();
         private _doNotComputeProjectionMatrix = false;
         private _worldMatrix: Matrix;
-        public _postProcesses = new Array<PostProcess>();
+        public _postProcesses = new Array<Nullable<PostProcess>>();
         private _transformMatrix = Matrix.Zero();
 
         public _activeMeshes = new SmartArray<AbstractMesh>(256);
@@ -352,10 +352,24 @@
             return this._rigPostProcess;
         }
 
+        /**
+         * Internal, gets the first post proces.
+         * @returns the first post process to be run on this camera.
+         */
+        public _getFirstPostProcess():Nullable<PostProcess>{
+            for(var pp in this._postProcesses){
+                if(this._postProcesses[pp] !== null){
+                    return this._postProcesses[pp];
+                }
+            }
+            return null;
+        }
+
         private _cascadePostProcessesToRigCams(): void {
             // invalidate framebuffer
-            if (this._postProcesses.length > 0) {
-                this._postProcesses[0].markTextureDirty();
+            var firstPostProcess = this._getFirstPostProcess();
+            if (firstPostProcess) {
+                firstPostProcess.markTextureDirty();
             }
 
             // glue the rigPostProcess to the end of the user postprocesses & assign to each sub-camera
@@ -387,7 +401,9 @@
 
             if (insertAt == null || insertAt < 0) {
                 this._postProcesses.push(postProcess);
-            } else {
+            } else if(this._postProcesses[insertAt] === null) {
+                this._postProcesses[insertAt] = postProcess;
+            }else{
                 this._postProcesses.splice(insertAt, 0, postProcess);
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
@@ -397,7 +413,7 @@
         public detachPostProcess(postProcess: PostProcess): void {
             var idx = this._postProcesses.indexOf(postProcess);
             if (idx !== -1) {
-                this._postProcesses.splice(idx, 1);
+                this._postProcesses[idx] = null;
             }
             this._cascadePostProcessesToRigCams(); // also ensures framebuffer invalidated
         }
@@ -589,7 +605,12 @@
             return new Ray(origin, direction, length);
         }
 
-        public dispose(): void {
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
             // Observables
             this.onViewMatrixChangedObservable.clear();
             this.onProjectionMatrixChangedObservable.clear();
@@ -625,7 +646,10 @@
             } else {
                 var i = this._postProcesses.length;
                 while (--i >= 0) {
-                    this._postProcesses[i].dispose(this);
+                    var postProcess = this._postProcesses[i]
+                    if(postProcess){
+                        postProcess.dispose(this);
+                    }
                 }
             }
 
@@ -639,7 +663,7 @@
             // Active Meshes
             this._activeMeshes.dispose();
 
-            super.dispose();
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
 
         // ---- Camera rigs section ----

@@ -2,8 +2,6 @@
  * Describes the test suite.
  */
 describe('Babylon.Promise', function () {
-    var subject: BABYLON.Engine;
-
     this.timeout(10000);
 
     /**
@@ -17,19 +15,6 @@ describe('Babylon.Promise', function () {
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
             });
-    });
-
-    /**
-     * Create a new engine subject before each test.
-     */
-    beforeEach(function () {
-        subject = new BABYLON.NullEngine({
-            renderHeight: 256,
-            renderWidth: 256,
-            textureSize: 256,
-            deterministicLockstep: false,
-            lockstepMaxSteps: 1
-        });
     });
 
     describe('#Composition', () => {

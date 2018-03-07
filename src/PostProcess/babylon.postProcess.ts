@@ -85,7 +85,7 @@
         private _parameters: string[];
         private _scaleRatio = new Vector2(1, 1);
         protected _indexParameters: any;
-        private _shareOutputWithPostProcess: PostProcess;
+        private _shareOutputWithPostProcess: Nullable<PostProcess>;
         private _texelSize = Vector2.Zero();
         private _forcedOutputTexture: InternalTexture;
 
@@ -294,6 +294,18 @@
             this._shareOutputWithPostProcess = postProcess;
 
             return this;
+        }
+
+        /**
+         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state. 
+         * This should be called if the post process that shares output with this post process is disabled/disposed.
+         */
+        public useOwnOutput() {
+            if(this._textures.length == 0){
+                this._textures = new SmartArray<InternalTexture>(2);
+            }
+
+            this._shareOutputWithPostProcess = null;
         }
 
         /**
@@ -561,7 +573,10 @@
 
             var index = camera._postProcesses.indexOf(this);
             if (index === 0 && camera._postProcesses.length > 0) {
-                this._camera._postProcesses[0].markTextureDirty();
+                var firstPostProcess = this._camera._getFirstPostProcess();
+                if(firstPostProcess){
+                    firstPostProcess.markTextureDirty();
+                }
             }
 
             this.onActivateObservable.clear();

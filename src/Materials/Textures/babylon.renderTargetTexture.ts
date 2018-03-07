@@ -781,5 +781,14 @@
                 this._postProcessManager._rebuild();
             }
         }
+
+        /**
+         * Clear the info related to rendering groups preventing retention point in material dispose.
+         */
+        public freeRenderingGroups(): void {
+            if (this._renderingManager) {
+                this._renderingManager.freeRenderingGroups();
+            }
+        }
     }
 }

@@ -225,9 +225,13 @@
             for (y = y_start; y !== y_end; y += y_step) {
                 for (x = x_start; x !== x_end; x += x_step, i += 2) {
                     color = image[i + 0] + (image[i + 1] << 8); // Inversed ?
-                    imageData[(x + width * y) * 4 + 0] = (color & 0x7C00) >> 7;
-                    imageData[(x + width * y) * 4 + 1] = (color & 0x03E0) >> 2;
-                    imageData[(x + width * y) * 4 + 2] = (color & 0x001F) >> 3;
+                    let r = (((color & 0x7C00) >> 10) * 255) / 0x1F | 0;
+                    let g = (((color & 0x03E0) >> 5) * 255) / 0x1F | 0;
+                    let b = ((color & 0x001F) * 255) / 0x1F | 0;
+
+                    imageData[(x + width * y) * 4 + 0] = r;
+                    imageData[(x + width * y) * 4 + 1] = g;
+                    imageData[(x + width * y) * 4 + 2] = b;
                     imageData[(x + width * y) * 4 + 3] = (color & 0x8000) ? 0 : 255;
                 }
             }
