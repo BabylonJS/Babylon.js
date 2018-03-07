@@ -233,7 +233,7 @@
             
             // recreate dof and dispose old as this setting is not dynamic
             var oldDof = this.depthOfField;
-
+            
             this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
             this.depthOfField.focalLength = oldDof.focalLength;
             this.depthOfField.focusDistance = oldDof.focusDistance;
@@ -351,12 +351,14 @@
             scene.postProcessRenderPipelineManager.addPipeline(this);
 
             var engine = this._scene.getEngine();
-            this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            // Create post processes before hand so they can be modified before enabled.
+            // Block compilation flag is set to true to avoid compilation prior to use, these will be updated on first use in build pipeline.
+            this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
 
-            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
-
-            this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
+            
+            this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
             
             this._buildPipeline();
@@ -414,6 +416,9 @@
             this._prevPrevPostProcess = null;
 
             if (this.sharpenEnabled) {
+                if(!this.sharpen.isReady()){
+                    this.sharpen.updateEffect();
+                }
                 this.addEffect(this._sharpenEffect);
                 this._setAutoClearAndTextureSharing(this.sharpen);
             }
@@ -421,6 +426,9 @@
             if (this.depthOfFieldEnabled) {
                 var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
                 this.depthOfField.depthTexture = depthTexture;
+                if(!this.depthOfField._isReady()){
+                    this.depthOfField._updateEffects();
+                }
                 this.addEffect(this.depthOfField);
                 this._setAutoClearAndTextureSharing(this.depthOfField._depthOfFieldMerge);
             }
@@ -509,6 +517,9 @@
             }
 
             if (this.chromaticAberrationEnabled) {
+                if(!this.chromaticAberration.isReady()){
+                    this.chromaticAberration.updateEffect();
+                }
                 this.addEffect(this._chromaticAberrationEffect);
                 this._setAutoClearAndTextureSharing(this.chromaticAberration);
             }
