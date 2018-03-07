@@ -338,6 +338,8 @@
 
         protected _targetBoundingCenter: Nullable<Vector3>;
 
+        private _computationVector: Vector3 = Vector3.Zero();
+
         constructor(name: string, alpha: number, beta: number, radius: number, target: Vector3, scene: Scene) {
             super(name, Vector3.Zero(), scene);
 
@@ -584,22 +586,22 @@
         }
 
         public rebuildAnglesAndRadius() {
-            var radiusv3 = this.position.subtract(this._getTargetPosition());
-            this.radius = radiusv3.length();
+            this.position.subtractToRef(this._getTargetPosition(), this._computationVector);
+            this.radius = this._computationVector.length();
 
             if (this.radius === 0) {
                 this.radius = 0.0001; // Just to avoid division by zero
             }
 
             // Alpha
-            this.alpha = Math.acos(radiusv3.x / Math.sqrt(Math.pow(radiusv3.x, 2) + Math.pow(radiusv3.z, 2)));
+            this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
 
-            if (radiusv3.z < 0) {
+            if (this._computationVector.z < 0) {
                 this.alpha = 2 * Math.PI - this.alpha;
             }
 
             // Beta
-            this.beta = Math.acos(radiusv3.y / this.radius);
+            this.beta = Math.acos(this._computationVector.y / this.radius);
 
             this._checkLimits();
         }
@@ -652,7 +654,8 @@
             }
 
             var target = this._getTargetPosition();
-            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
+            target.addToRef(this._computationVector, this._newPosition);
             if (this.getScene().collisionsEnabled && this.checkCollisions) {
                 if (!this._collider) {
                     this._collider = new Collider();
@@ -709,7 +712,8 @@
             }
 
             var target = this._getTargetPosition();
-            target.addToRef(new Vector3(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb), this._newPosition);
+            this._computationVector.copyFromFloats(this.radius * cosa * sinb, this.radius * cosb, this.radius * sina * sinb);
+            target.addToRef(this._computationVector, this._newPosition);
             this.position.copyFrom(this._newPosition);
 
             var up = this.upVector;

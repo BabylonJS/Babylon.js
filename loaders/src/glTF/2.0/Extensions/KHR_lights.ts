@@ -40,7 +40,7 @@ module BABYLON.GLTF2.Extensions {
 
                 const light = GLTFLoader._GetProperty(context, this._lights, extension.light);
                 if (light.type !== LightType.AMBIENT) {
-                    throw new Error(context + ": Only ambient lights are allowed on a scene");
+                    throw new Error(`${context}: Only ambient lights are allowed on a scene`);
                 }
 
                 this._loader._babylonScene.ambientColor = light.color ? Color3.FromArray(light.color) : Color3.Black();
@@ -59,7 +59,7 @@ module BABYLON.GLTF2.Extensions {
                 const name = node._babylonMesh!.name;
                 switch (light.type) {
                     case LightType.AMBIENT: {
-                        throw new Error(context + ": Ambient lights are not allowed on a node");
+                        throw new Error(`${context}: Ambient lights are not allowed on a node`);
                     }
                     case LightType.DIRECTIONAL: {
                         babylonLight = new DirectionalLight(name, Vector3.Forward(), this._loader._babylonScene);
@@ -78,7 +78,7 @@ module BABYLON.GLTF2.Extensions {
                         break;
                     }
                     default: {
-                        throw new Error(context + ": Invalid light type " + light.type);
+                        throw new Error(`${context}: Invalid light type (${light.type})`);
                     }
                 }
 
@@ -93,7 +93,7 @@ module BABYLON.GLTF2.Extensions {
         private get _lights(): Array<ILight> {
             const extensions = this._loader._gltf.extensions;
             if (!extensions || !extensions[this.name]) {
-                throw new Error("#/extensions: " + this.name + " not found");
+                throw new Error(`#/extensions: '${this.name}' not found`);
             }
 
             const extension = extensions[this.name] as ILights;
