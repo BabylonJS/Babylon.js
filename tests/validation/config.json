@@ -309,6 +309,13 @@
       "referenceImage": "pbrrough.png"
     },
     {
+      "title": "Particles",
+      "renderCount": 100,
+      "scriptToRun": "/Demos/Particles/particles.js",
+      "functionToCall": "CreateParticlesTestScene",
+      "referenceImage": "particles.png"
+    },    
+    {
       "title": "Reflection probes",
       "renderCount": 20,
       "scriptToRun": "/Demos/RefProbe/reflectionProbe.js",
