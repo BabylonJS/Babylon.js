@@ -325,12 +325,29 @@
         private _scaledGravity = Vector3.Zero();
         private _currentRenderId = -1;
         private _alive: boolean;
+
         private _started = false;
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
         private _vertexBufferSize = 11;
         private _isAnimationSheetEnabled: boolean;
+
+        // end of sheet animation
+
+        // Sub-emitters
+        /**
+         * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
+         */
+        public subEmitters: ParticleSystem[];
+        /**
+        * The current active Sub-systems, this property is used by the root particle system only.
+        */
+        public activeSubSystems: Array<ParticleSystem>;
+        
+        private _isEmitting = false;
+        private _rootParticleSystem: ParticleSystem;
+        //end of Sub-emitter
 
         /**
          * Gets the current list of active particles
@@ -403,6 +420,7 @@
                     particle.age += this._scaledUpdateSpeed;
 
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                        this._emitFromParticle(particle);
                         this.recycleParticle(particle);
                         index--;
                         continue;
@@ -447,20 +465,6 @@
         }
 
         /**
-         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
-         * Its lifetime will start back at 0.
-         * @param particle The particle to recycle
-         */
-        public recycleParticle(particle: Particle): void {
-            var lastParticle = <Particle>this._particles.pop();
-
-            if (lastParticle !== particle) {
-                lastParticle.copyTo(particle);
-                this._stockParticles.push(lastParticle);
-            }
-        }
-
-        /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
          */
@@ -491,14 +495,24 @@
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
+            if (this.subEmitters && this.subEmitters.length != 0) {
+                this.activeSubSystems = new Array<ParticleSystem>();
+            }
         }
 
         /**
          * Stops the particle system.
+         * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. the default value is true.
          */
-        public stop(): void {
+        public stop(stopSubEmitters = true): void {
             this._stopped = true;
+
+            if(stopSubEmitters) {
+                this._stopSubEmitters();
+            }
         }
+
+        // animation sheet
 
         /**
          * Remove all active particles
@@ -555,9 +569,85 @@
             this._vertexData[offset + 11] = particle.cellIndex;
         }
 
+        // start of sub system methods
+
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         */
+        public recycleParticle: (particle: Particle) => void = (particle) => {
+            var lastParticle = <Particle>this._particles.pop();
+
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
+            }
+            this._stockParticles.push(lastParticle);
+        };
+
+        private _stopSubEmitters(): void {
+            this.activeSubSystems.forEach(subSystem => {
+                subSystem.stop(true);
+                subSystem._stoppedEmitting();
+            });
+            this.activeSubSystems = new Array<ParticleSystem>();
+        }
+
+        private _createParticle: () => Particle = () => {
+            var particle: Particle;
+            if (this._stockParticles.length !== 0) {
+                particle = <Particle>this._stockParticles.pop();
+                particle.age = 0;
+                particle.cellIndex = this.startSpriteCellID;
+            } else {
+                particle = new Particle(this);
+            }
+            return particle;
+        }
+
+        // to be overriden by subSystems
+        private _stoppedEmitting: () => void = () => {
+            if(!this._rootParticleSystem){
+                return;
+            }
+            
+            if(!this.subEmitters || this.subEmitters.length === 0){
+                this._scene._toBeDisposed.push(this);
+                return;
+            }
+
+            let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
+            if (index > -1) {
+                this._rootParticleSystem.activeSubSystems.splice(index, 1);
+                this._scene._toBeDisposed.push(this);
+            }
+        }
+
+        private _emitFromParticle: (particle: Particle) => void = (particle) => {
+            if (!this.subEmitters || this.subEmitters.length === 0) {
+                return;
+            }
+
+            var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
+
+            var subSystem = this.subEmitters[templateIndex]._cloneToSubSystem(this, particle.position.clone());
+            this.activeSubSystems.push(subSystem);
+            subSystem.start();
+        }
+
+        // end of sub system methods
+
         private _update(newParticles: number): void {
             // Update current
             this._alive = this._particles.length > 0;
+
+            if (this._alive) {
+                this._isEmitting = true;
+            }
+
+            if (!this._alive && this._isEmitting) {
+                this._isEmitting = false;
+                this._stoppedEmitting();
+            }
 
             this.updateFunction(this._particles);
 
@@ -578,13 +668,7 @@
                     break;
                 }
 
-                if (this._stockParticles.length !== 0) {
-                    particle = <Particle>this._stockParticles.pop();
-                    particle.age = 0;
-                    particle.cellIndex = this.startSpriteCellID;
-                } else {
-                    particle = new Particle(this);
-                }
+                particle = this._createParticle();
 
                 this._particles.push(particle);
 
@@ -916,6 +1000,31 @@
             return particleEmitter;
         }
 
+        private _cloneToSubSystem(root: ParticleSystem, newEmitter: Vector3): ParticleSystem {
+            var custom: Nullable<Effect> = null;
+            var program: any = null;
+            if (this.customShader != null) {
+                program = this.customShader;
+                var defines: string = (program.shaderOptions.defines.length > 0) ? program.shaderOptions.defines.join("\n") : "";
+                custom = this._scene.getEngine().createEffectForParticles(program.shaderPath.fragmentElement, program.shaderOptions.uniforms, program.shaderOptions.samplers, defines);
+            }
+            var result = new ParticleSystem(name, this._capacity, this._scene, custom);
+            result.customShader = program;
+            Tools.DeepCopy(this, result, ["customShader"]);
+            result.name = name + "_Child";
+            result.id = result.name;
+            result.emitter = newEmitter;
+            result.subEmitters = this.subEmitters;
+            result.particleEmitterType = this.particleEmitterType;
+            result._rootParticleSystem = root;
+            if (this.particleTexture) {
+                result.particleTexture = new Texture(this.particleTexture.url, this._scene);
+            }
+
+            return result;
+        }
+
+        // Clone
         /**
          * Clones the particle system.
          * @param name The name of the cloned object
