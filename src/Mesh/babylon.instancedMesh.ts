@@ -58,6 +58,11 @@
             return this._sourceMesh.renderingGroupId;
         }
 
+        public set renderingGroupId(value: number) {
+            //no-op with warning
+            Tools.Warn("Note - setting renderingGroupId of an instanced mesh has no effect on the scene");
+        }
+
         /**
          * Returns the total number of vertices (integer).  
          */
