@@ -88,6 +88,7 @@
 - Supports Environment Drag and Drop in Sandbox ([sebavan](https://github.com/sebavan))
 - EnvironmentHelper has no an onError observable to handle errors when loading the textures ([RaananW](https://github.com/RaananW))
 - (Viewer) Viewer supports model animations ([RaananW](https://github.com/RaananW))
+- Tests for sharpen, chromatic aberration and enable/disable post processes ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 

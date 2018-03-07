@@ -573,7 +573,10 @@
 
             var index = camera._postProcesses.indexOf(this);
             if (index === 0 && camera._postProcesses.length > 0) {
-                this._camera._postProcesses[0].markTextureDirty();
+                var firstPostProcess = this._camera._getFirstPostProcess();
+                if(firstPostProcess){
+                    firstPostProcess.markTextureDirty();
+                }
             }
 
             this.onActivateObservable.clear();
