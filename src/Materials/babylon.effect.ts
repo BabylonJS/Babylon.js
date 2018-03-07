@@ -288,6 +288,11 @@
 
             this.uniqueId = Effect._uniqueIdSeed++;
 
+            if (this._getFromCache(baseName)) {
+                this._prepareEffect();
+                return;
+            }
+
             var vertexSource: any;
             var fragmentSource: any;
 
@@ -336,8 +341,56 @@
                     this._vertexSourceCode = finalVertexCode;
                     this._fragmentSourceCode = migratedFragmentCode;
                 }
+
+                this._setInCache(baseName);
                 this._prepareEffect(); 
             });
+        }
+
+        private static _sourceCache: { [baseName: string]: { vertex: string, fragment: string } } = { };
+
+        private _getSourceCacheKey(baseName: string): string {
+            let cacheKey: string = baseName;
+            if (this._indexParameters) {
+                for (let key in this._indexParameters) {
+                    if (this._indexParameters.hasOwnProperty(key)) {
+                        cacheKey += "|";
+                        cacheKey += key
+                        cacheKey += "_";
+                        cacheKey += this._indexParameters[key];
+                    }
+                }
+            }
+
+            return cacheKey;
+        }
+
+        private _getFromCache(baseName: string): boolean {
+            if (typeof baseName !== "string") {
+                return false;
+            }
+
+            let cacheKey = this._getSourceCacheKey(baseName);
+            let sources = Effect._sourceCache[cacheKey];
+            if (!sources) {
+                return false;
+            }
+
+            this._vertexSourceCode = sources.vertex;
+            this._fragmentSourceCode = sources.fragment;
+            return true;
+        }
+
+        private _setInCache(baseName: string): void {
+            if (typeof baseName !== "string") {
+                return;
+            }
+
+            let cacheKey = this._getSourceCacheKey(baseName);
+            Effect._sourceCache[cacheKey] = {
+                vertex: this._vertexSourceCode,
+                fragment: this._fragmentSourceCode
+            };
         }
 
         /**

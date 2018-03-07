@@ -1,7 +1,7 @@
 {
-  "errors": 7193,
+  "errors": 7189,
   "babylon.typedoc.json": {
-    "errors": 7193,
+    "errors": 7189,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -16456,28 +16456,6 @@
           },
           "Parameter": {
             "source": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "Lerp": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "startValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "endValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "gradient": {
               "Comments": {
                 "MissingText": true
               }

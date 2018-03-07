@@ -9,13 +9,12 @@ import { AbstractViewer } from './viewer/viewer';
  * An HTML-Based viewer for 3D models, based on BabylonJS and its extensions.
  */
 
+import { PromisePolyfill } from 'babylonjs';
 
-// load babylon and needed modules.
-import 'babylonjs';
+// load needed modules.
 import 'babylonjs-loaders';
 import '../assets/pep.min';
 
-import { PromisePolyfill } from 'babylonjs';
 
 import { InitTags } from './initializer';
 

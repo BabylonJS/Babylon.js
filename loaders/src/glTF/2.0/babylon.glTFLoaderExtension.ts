@@ -51,7 +51,7 @@ module BABYLON.GLTF2 {
             delete extensions[this.name];
 
             try {
-                return actionAsync(context + "/extensions/" + this.name, extension);
+                return actionAsync(`${context}/extensions/${this.name}`, extension);
             }
             finally {
                 // Restore the extension after executing the action.
