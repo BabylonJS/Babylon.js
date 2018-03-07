@@ -59,6 +59,10 @@
         }
 
         public set renderingGroupId(value: number) {
+            if (!this._sourceMesh || value === this._sourceMesh.renderingGroupId) {
+                return;
+            }
+
             //no-op with warning
             Tools.Warn("Note - setting renderingGroupId of an instanced mesh has no effect on the scene");
         }
