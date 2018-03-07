@@ -267,10 +267,22 @@
       "referenceImage": "enableDisablePostProcess.png"
     },
     {
+      "title": "Sharpen",
+      "playgroundId": "#NAW8EA#1",
+      "renderCount": 20,
+      "referenceImage": "sharpen.png"
+    },
+    {
       "title": "Depth of field",
       "playgroundId": "#IDSQK2#53",
       "renderCount": 20,
       "referenceImage": "depthOfField.png"
+    },
+    {
+      "title": "Chromatic aberration",
+      "playgroundId": "#NAW8EA",
+      "renderCount": 20,
+      "referenceImage": "chromaticAberration.png"
     },
     {
       "title": "Kernel Blur",
