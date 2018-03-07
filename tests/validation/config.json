@@ -285,6 +285,12 @@
       "referenceImage": "chromaticAberration.png"
     },
     {
+      "title": "Default pipeline",
+      "playgroundId": "#NAW8EA#3",
+      "renderCount": 20,
+      "referenceImage": "defaultPipeline.png"
+    },
+    {
       "title": "Kernel Blur",
       "playgroundId": "#Y0WKT0#0",
       "referenceImage": "KernelBlur.png"
