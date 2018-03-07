@@ -118,7 +118,11 @@
          * (https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch11.html)
          */
         public static readonly FILTER_PCF = 6;
-
+        /**
+         * Shadow generator mode PCSS: Percentage Closering Soft Shadow. 
+         * benefits from Webgl 2 shadow samplers. Fallback to Poisson Sampling in Webgl 1
+         * Contact Hardening
+         */
         public static readonly FILTER_PCSS = 7;
 
         /**
