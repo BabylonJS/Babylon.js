@@ -345,7 +345,6 @@
         */
         public activeSubSystems: Array<ParticleSystem>;
         
-        private _isEmitting = false;
         private _rootParticleSystem: ParticleSystem;
         //end of Sub-emitter
 
@@ -507,7 +506,7 @@
         public stop(stopSubEmitters = true): void {
             this._stopped = true;
 
-            if(stopSubEmitters) {
+            if (stopSubEmitters) {
                 this._stopSubEmitters();
             }
         }
@@ -585,9 +584,11 @@
         };
 
         private _stopSubEmitters(): void {
+            if (!this.activeSubSystems) {
+                return;
+            }
             this.activeSubSystems.forEach(subSystem => {
                 subSystem.stop(true);
-                subSystem._stoppedEmitting();
             });
             this.activeSubSystems = new Array<ParticleSystem>();
         }
@@ -604,21 +605,14 @@
             return particle;
         }
 
-        // to be overriden by subSystems
-        private _stoppedEmitting: () => void = () => {
-            if(!this._rootParticleSystem){
+        private _removeFromRoot(): void {
+            if (!this._rootParticleSystem){
                 return;
             }
             
-            if(!this.subEmitters || this.subEmitters.length === 0){
-                this._scene._toBeDisposed.push(this);
-                return;
-            }
-
-            let index = this._rootParticleSystem.activeSubSystems.indexOf(this, 0);
-            if (index > -1) {
+            let index = this._rootParticleSystem.activeSubSystems.indexOf(this);
+            if (index !== -1) {
                 this._rootParticleSystem.activeSubSystems.splice(index, 1);
-                this._scene._toBeDisposed.push(this);
             }
         }
 
@@ -639,15 +633,6 @@
         private _update(newParticles: number): void {
             // Update current
             this._alive = this._particles.length > 0;
-
-            if (this._alive) {
-                this._isEmitting = true;
-            }
-
-            if (!this._alive && this._isEmitting) {
-                this._isEmitting = false;
-                this._stoppedEmitting();
-            }
 
             this.updateFunction(this._particles);
 
@@ -827,6 +812,10 @@
             if (this._vertexBuffer) {
                 this._vertexBuffer.update(this._vertexData);
             }
+
+            if (this.manualEmitCount === 0 && this.disposeOnStop) {
+                this.stop();
+            }
         }
 
         private _appendParticleVertexes: Nullable<(offset: number, particle: Particle) => void> = null;
@@ -933,6 +922,8 @@
                 this.particleTexture.dispose();
                 this.particleTexture = null;
             }
+
+            this._removeFromRoot();
 
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
