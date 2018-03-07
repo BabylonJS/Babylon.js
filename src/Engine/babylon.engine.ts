@@ -5580,7 +5580,7 @@
                 if (this._renderingCanvas) {
                     this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
                     this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-                    this._renderingCanvas.removeEventListener("pointerout", this._onCanvasBlur);
+                    this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
 
                     if (!this._doNotHandleContextLost) {
                         this._renderingCanvas.removeEventListener("webglcontextlost", this._onContextLost);
@@ -5622,6 +5622,7 @@
             this._currentBufferPointers = [];
             this._renderingCanvas = null;
             this._currentProgram = null;
+            this._bindedRenderFunction = null;
 
             this.onResizeObservable.clear();
             this.onCanvasBlurObservable.clear();

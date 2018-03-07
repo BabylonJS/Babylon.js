@@ -525,17 +525,18 @@ module BABYLON.GLTF2 {
                     babylonMesh._delayInfo.push(kind);
                 }
 
+                if (attribute === "COLOR_0") {
+                    // Assume vertex color has alpha on the mesh. The alphaMode of the material controls whether the material should use alpha or not.
+                    babylonMesh.hasVertexAlpha = true;
+                }
+
                 const accessor = GLTFLoader._GetProperty(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
 
                 promises.push(this._loadAccessorAsync(`#/accessors/${accessor._index}`, accessor).then(data => {
                     let attributeData = GLTFLoader._ConvertToFloat32Array(context, accessor, data);
 
-                    if (attribute === "COLOR_0") {
-                        // Assume vertex color has alpha on the mesh. The alphaMode of the material controls whether the material should use alpha or not.
-                        babylonMesh.hasVertexAlpha = true;
-                        if (accessor.type === "VEC3") {
-                            attributeData = GLTFLoader._ConvertVec3ToVec4(context, attributeData);
-                        }
+                    if (attribute === "COLOR_0" && accessor.type === "VEC3") {
+                        attributeData = GLTFLoader._ConvertVec3ToVec4(context, attributeData);
                     }
 
                     babylonVertexData.set(attributeData, kind);
@@ -1535,6 +1536,9 @@ module BABYLON.GLTF2 {
                     const babylonMeshes = material._babylonMeshes;
                     if (babylonMaterial && babylonMeshes) {
                         for (const babylonMesh of babylonMeshes) {
+                            // Ensure nonUniformScaling is set if necessary.
+                            babylonMesh.computeWorldMatrix(true);
+
                             promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
                             if (this.useClipPlane) {
                                 promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));

@@ -73,15 +73,16 @@ module BABYLON {
          * @param scene The scene the effect belongs to.
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.This must be set in order for this to function but may be set after initialization if needed.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0) {
+        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0, blockCompilation = false) {
             super(scene.getEngine(), "depth of field", ()=>{
                 return this._effects;
             }, true);
             // Circle of confusion value for each pixel is used to determine how much to blur that pixel
-            this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthTexture, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._circleOfConfusion = new BABYLON.CircleOfConfusionPostProcess("circleOfConfusion", depthTexture, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             // Capture circle of confusion texture
-            this._depthOfFieldPass = new PassPostProcess("depthOfFieldPass", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._depthOfFieldPass = new PassPostProcess("depthOfFieldPass", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._depthOfFieldPass.autoClear = false;
 
             // Create a pyramid of blurred images (eg. fullSize 1/4 blur, half size 1/2 blur, quarter size 3/4 blur, eith size 4/4 blur)
@@ -110,16 +111,16 @@ module BABYLON {
             }
             var adjustedKernelSize = kernelSize/Math.pow(2, blurCount-1);
             for(var i = 0;i<blurCount;i++){
-                var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, 1.0/Math.pow(2, i), null, this._depthOfFieldPass, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+                var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, 1.0/Math.pow(2, i), null, this._depthOfFieldPass, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
                 blurY.autoClear = false;
-                var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, 1.0/Math.pow(2, i), null,  this._depthOfFieldPass, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+                var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, 1.0/Math.pow(2, i), null,  this._depthOfFieldPass, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
                 blurX.autoClear = false;
                 this._depthOfFieldBlurY.push(blurY);
                 this._depthOfFieldBlurX.push(blurX);
             }
 
             // Merge blurred images with original image based on circleOfConfusion
-            this._depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this._circleOfConfusion, this._depthOfFieldPass, this._depthOfFieldBlurY.slice(1), 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
+            this._depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this._circleOfConfusion, this._depthOfFieldPass, this._depthOfFieldBlurY.slice(1), 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._depthOfFieldMerge.autoClear = false;
             
             // Set all post processes on the effect.
@@ -152,6 +153,28 @@ module BABYLON {
                 element.dispose(camera);
             });
             this._depthOfFieldMerge.dispose(camera);
+        }
+
+        /**
+         * Internal
+         */
+        public _updateEffects(){
+            for(var effect in this._effects){
+                this._effects[effect].updateEffect();
+            }
+        }
+
+        /**
+         * Internal
+         * @returns if all the contained post processes are ready.
+         */
+        public _isReady(){
+            for(var effect in this._effects){
+                if(!this._effects[effect].isReady()){
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
