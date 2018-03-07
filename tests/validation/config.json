@@ -280,13 +280,19 @@
     },
     {
       "title": "Chromatic aberration",
-      "playgroundId": "#NAW8EA",
+      "playgroundId": "#NAW8EA#0",
       "renderCount": 20,
       "referenceImage": "chromaticAberration.png"
     },
     {
+      "title": "Default pipeline",
+      "playgroundId": "#NAW8EA#3",
+      "renderCount": 20,
+      "referenceImage": "defaultPipeline.png"
+    },
+    {
       "title": "Kernel Blur",
-      "playgroundId": "#Y0WKT0",
+      "playgroundId": "#Y0WKT0#0",
       "referenceImage": "KernelBlur.png"
     },
     {
@@ -395,7 +401,7 @@
     },
     {
       "title": "Light Projection Texture",
-      "playgroundId": "#CQNGRK",
+      "playgroundId": "#CQNGRK#0",
       "referenceImage": "LightProjectionTexture.png"
     },
     {
