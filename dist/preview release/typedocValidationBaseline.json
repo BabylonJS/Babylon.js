@@ -1,7 +1,7 @@
 {
-  "errors": 7189,
+  "errors": 7184,
   "babylon.typedoc.json": {
-    "errors": 7189,
+    "errors": 7184,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -25321,35 +25321,6 @@
           }
         },
         "refractionPlane": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "RenderTargetCreationOptions": {
-      "Property": {
-        "generateDepthBuffer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "generateMipMaps": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "generateStencilBuffer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samplingMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "type": {
           "Comments": {
             "MissingText": true
           }

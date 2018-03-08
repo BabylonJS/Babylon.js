@@ -62,7 +62,6 @@ declare module BabylonViewer {
         onAllLoaded: BABYLON.Observable<TemplateManager>;
         onEventTriggered: BABYLON.Observable<EventCallback>;
         eventManager: EventManager;
-        constructor(containerElement: HTMLElement);
         initTemplate(templates: {
             [key: string]: ITemplateConfiguration;
         }): void;
@@ -81,7 +80,6 @@ declare module BabylonViewer {
         isShown: boolean;
         parent: HTMLElement;
         initPromise: Promise<Template>;
-        constructor(name: string, _configuration: ITemplateConfiguration);
         readonly configuration: ITemplateConfiguration;
         getChildElements(): Array<string>;
         appendTo(parent: HTMLElement): void;
@@ -93,7 +91,6 @@ declare module BabylonViewer {
     interface ViewerManager {
         onViewerAdded: (viewer: AbstractViewer) => void;
         onViewerAddedObservable: BABYLON.Observable<AbstractViewer>;
-        constructor();
         addViewer(viewer: AbstractViewer): void;
         getViewerById(id: string): AbstractViewer;
         getViewerByHTMLElement(element: HTMLElement): AbstractViewer | undefined;
@@ -110,7 +107,6 @@ declare module BabylonViewer {
     export function InitTags(selector?: string): void;
 
     interface EventManager {
-        constructor(templateManager: TemplateManager);
         registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
         unregisterCallback(templateName: string, callback?: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
     }
@@ -124,14 +120,12 @@ declare module BabylonViewer {
     }
     interface MapperManager {
         DefaultMapper: string;
-        constructor();
         getMapper(type: string): IMapper;
         registerMapper(type: string, mapper: IMapper): void;
     }
     export let mapperManager: MapperManager;
 
     interface ConfigurationLoader {
-        constructor();
         loadConfiguration(initConfig?: ViewerConfiguration): Promise<ViewerConfiguration>;
         getConfigurationType(type: string): void;
     }
@@ -416,7 +410,7 @@ declare module BabylonViewer {
         STOPPED = 3,
         ENDED = 4,
     }
-    interface IModelAnimation extends BABYLON.IDisposable {
+    export interface IModelAnimation extends BABYLON.IDisposable {
         readonly state: AnimationState;
         readonly name: string;
         readonly frames: number;
@@ -432,7 +426,7 @@ declare module BabylonViewer {
         goToFrame(frameNumber: number): any;
     }
 
-    class ViewerModel implements BABYLON.IDisposable {
+    export interface ViewerModel extends BABYLON.IDisposable {
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
         particleSystems: Array<BABYLON.ParticleSystem>;
@@ -444,10 +438,8 @@ declare module BabylonViewer {
             message: string;
             exception: any;
         }>;
-        constructor(_modelConfiguration: IModelConfiguration, _scene: BABYLON.Scene, disableAutoLoad?: boolean);
         load(): void;
         getAnimationNames(): string[];
-        protected _getAnimationByName(name: string): BABYLON.Nullable<IModelAnimation>;
         playAnimation(name: string): IModelAnimation;
         dispose(): void;
     }
