@@ -1937,6 +1937,13 @@
                 }
             }
 
+            // Particles
+            for (var particleSystem of this.particleSystems) {
+                if (!particleSystem.isReady()) {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -3205,7 +3212,7 @@
             if (this.textures) {
                 for (let i = 0; i < this.textures.length; i++) {
                     let texture = this.textures[i];
-                    if (texture && texture.isRenderTarget) {
+                    if (texture && (<RenderTargetTexture>texture).renderList) {
                         (<RenderTargetTexture>texture).freeRenderingGroups();
                     }
                 }
@@ -3230,6 +3237,14 @@
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
          */
         public freezeActiveMeshes(): Scene {
+            if (!this.activeCamera) {
+                return this;
+            }
+            
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
+
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
             return this;

@@ -209,20 +209,29 @@
      * Define options used to create a render target texture
      */
     export class RenderTargetCreationOptions {
+        /**
+         * Specifies is mipmaps must be generated
+         */
         generateMipMaps?: boolean;
+        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
         generateDepthBuffer?: boolean;
+        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
         generateStencilBuffer?: boolean;
+        /** Defines texture type (int by default) */
         type?: number;
+        /** Defines sampling mode (trilinear by default) */
         samplingMode?: number;
+        /** Defines format (RGBA by default) */
+        format?: number;
     }
 
     /**
      * Define options used to create a depth texture
      */
     export class DepthTextureCreationOptions {
-        /** Specifies wether or not a stencil should be allocated in the texture */
+        /** Specifies whether or not a stencil should be allocated in the texture */
         generateStencil?: boolean;
-        /** Specifies wether or not bilinear filtering is enable on the texture */
+        /** Specifies whether or not bilinear filtering is enable on the texture */
         bilinearFiltering?: boolean;
         /** Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode */
         comparisonFunction?: number;
@@ -955,7 +964,7 @@
                         }
                     }
                 }
-
+                
                 // GL
                 if (!options.disableWebGL2Support) {
                     try {
@@ -1156,7 +1165,7 @@
             // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+            console.log("Babylon.js engine (v" + Engine.Version + ") launched");
 
             this.enableOfflineSupport = (Database !== undefined);
         }
@@ -3433,37 +3442,6 @@
             });
         }
 
-        private _getInternalFormat(format: number): number {
-            var internalFormat = this._gl.RGBA;
-            switch (format) {
-                case Engine.TEXTUREFORMAT_ALPHA:
-                    internalFormat = this._gl.ALPHA;
-                    break;
-                case Engine.TEXTUREFORMAT_LUMINANCE:
-                    internalFormat = this._gl.LUMINANCE;
-                    break;
-                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
-                    internalFormat = this._gl.LUMINANCE_ALPHA;
-                    break;
-                case Engine.TEXTUREFORMAT_RGB:
-                case Engine.TEXTUREFORMAT_RGB32F:
-                    internalFormat = this._gl.RGB;
-                    break;
-                case Engine.TEXTUREFORMAT_RGBA:
-                case Engine.TEXTUREFORMAT_RGBA32F:
-                    internalFormat = this._gl.RGBA;
-                    break;
-                case Engine.TEXTUREFORMAT_R32F:
-                    internalFormat = this._gl.RED;
-                    break;       
-                case Engine.TEXTUREFORMAT_RG32F:
-                    internalFormat = this._gl.RG;
-                    break;                                    
-            }
-
-            return internalFormat;
-        }
-
         public updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string> = null, type = Engine.TEXTURETYPE_UNSIGNED_INT): void {
             if (!texture) {
                 return;
@@ -3883,12 +3861,14 @@
                 fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && options.generateStencilBuffer;
                 fullOptions.type = options.type === undefined ? Engine.TEXTURETYPE_UNSIGNED_INT : options.type;
                 fullOptions.samplingMode = options.samplingMode === undefined ? Texture.TRILINEAR_SAMPLINGMODE : options.samplingMode;
+                fullOptions.format = options.format === undefined ? Engine.TEXTUREFORMAT_RGBA : options.format;
             } else {
                 fullOptions.generateMipMaps = <boolean>options;
                 fullOptions.generateDepthBuffer = true;
                 fullOptions.generateStencilBuffer = false;
                 fullOptions.type = Engine.TEXTURETYPE_UNSIGNED_INT;
                 fullOptions.samplingMode = Texture.TRILINEAR_SAMPLINGMODE;
+                fullOptions.format = Engine.TEXTUREFORMAT_RGBA;
             }
 
             if (fullOptions.type === Engine.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
@@ -3919,7 +3899,7 @@
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), width, height, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), width, height, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
 
             // Create the framebuffer
             var framebuffer = gl.createFramebuffer();
@@ -4302,6 +4282,7 @@
               generateStencilBuffer: false,
               type: Engine.TEXTURETYPE_UNSIGNED_INT,
               samplingMode: Texture.TRILINEAR_SAMPLINGMODE,
+              format: Engine.TEXTUREFORMAT_RGBA,
               ...options
             };
             fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
@@ -4332,7 +4313,7 @@
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
             for (var face = 0; face < 6; face++) {
-                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type), size, size, 0, gl.RGBA, this._getWebGLTextureType(fullOptions.type), null);
+                gl.texImage2D((gl.TEXTURE_CUBE_MAP_POSITIVE_X + face), 0, this._getRGBABufferInternalSizedFormat(fullOptions.type, fullOptions.format), size, size, 0, this._getInternalFormat(fullOptions.format), this._getWebGLTextureType(fullOptions.type), null);
             }
 
             // Create the framebuffer
@@ -5844,9 +5825,46 @@
             return this._gl.UNSIGNED_BYTE;
         };
 
+        private _getInternalFormat(format: number): number {
+            var internalFormat = this._gl.RGBA;
+            switch (format) {
+                case Engine.TEXTUREFORMAT_ALPHA:
+                    internalFormat = this._gl.ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE:
+                    internalFormat = this._gl.LUMINANCE;
+                    break;
+                case Engine.TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    internalFormat = this._gl.LUMINANCE_ALPHA;
+                    break;
+                case Engine.TEXTUREFORMAT_RGB:
+                case Engine.TEXTUREFORMAT_RGB32F:
+                    internalFormat = this._gl.RGB;
+                    break;
+                case Engine.TEXTUREFORMAT_RGBA:
+                case Engine.TEXTUREFORMAT_RGBA32F:
+                    internalFormat = this._gl.RGBA;
+                    break;
+                case Engine.TEXTUREFORMAT_R32F:
+                    internalFormat = this._gl.RED;
+                    break;       
+                case Engine.TEXTUREFORMAT_RG32F:
+                    internalFormat = this._gl.RG;
+                    break;                                    
+            }
+
+            return internalFormat;
+        }        
+
         /** @ignore */
         public _getRGBABufferInternalSizedFormat(type: number, format?: number): number {
             if (this._webGLVersion === 1) {
+                if (format) {
+                    switch(format) {
+                        case Engine.TEXTUREFORMAT_LUMINANCE:
+                            return this._gl.LUMINANCE;
+                    }                    
+                }
                 return this._gl.RGBA;
             }
 
@@ -5867,6 +5885,12 @@
                 return this._gl.RGBA16F;
             }
 
+            if (format) {
+                switch(format) {
+                    case Engine.TEXTUREFORMAT_LUMINANCE:
+                        return this._gl.LUMINANCE;
+                }                    
+            }
             return this._gl.RGBA;
         };
 
