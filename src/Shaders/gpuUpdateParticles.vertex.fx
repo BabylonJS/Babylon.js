@@ -74,7 +74,7 @@ void main() {
       outLife = life;
       outSeed = seed;
       outColor = vec4(0.,0.,0.,0.);
-      outSize = size;
+      outSize = 0.;
       outDirection = direction;
       return;
     }
