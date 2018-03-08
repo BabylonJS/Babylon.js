@@ -954,7 +954,6 @@
                                         break;
                                 }
                             }
-                            break;
                         }
                     }
                 }
@@ -1159,7 +1158,7 @@
             // Detect if we are running on a faulty buggy desktop OS.
             this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-            Tools.Log("Babylon.js engine (v" + Engine.Version + ") launched");
+            console.log("Babylon.js engine (v" + Engine.Version + ") launched");
 
             this.enableOfflineSupport = (Database !== undefined);
         }

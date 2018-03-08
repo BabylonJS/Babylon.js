@@ -258,6 +258,18 @@
         }
 
         /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        public isReady(): boolean {
+            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+                return false;
+            }
+
+            return true;
+        }        
+
+        /**
          * Gets Wether the system has been started.
          * @returns True if it has been started, otherwise false.
          */
@@ -505,7 +517,7 @@
             this._recreateUpdateEffect();
             this._recreateRenderEffect();
 
-            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
+            if (!this.isReady()) {
                 return 0;
             }
 

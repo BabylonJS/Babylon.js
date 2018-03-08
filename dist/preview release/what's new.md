@@ -14,7 +14,7 @@
 - Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
-- Added depth of field, MSAA, sharpening, chromatic aberration and grain effect to the default pipeline ([trevordev](https://github.com/trevordev))
+- Added depth of field, sharpening, MSAA, chromatic aberration and grain effect to the default pipeline ([trevordev](https://github.com/trevordev))
 - Particle System SubEmitters- Spawn new Sub emitter when particles dies. Cone/Sphere shapes emitters ([IbraheemOsama](https://github.com/IbraheemOsama))
 
 ## Updates
@@ -88,7 +88,7 @@
 - Supports Environment Drag and Drop in Sandbox ([sebavan](https://github.com/sebavan))
 - EnvironmentHelper has no an onError observable to handle errors when loading the textures ([RaananW](https://github.com/RaananW))
 - (Viewer) Viewer supports model animations ([RaananW](https://github.com/RaananW))
-- Tests for sharpen, chromatic aberration and enable/disable post processes ([trevordev](https://github.com/trevordev))
+- Tests for sharpen, chromatic aberration, default pipeline and enable/disable post processes ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 

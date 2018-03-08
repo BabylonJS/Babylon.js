@@ -4,9 +4,9 @@ module BABYLON {
      */
     export class ChromaticAberrationPostProcess extends PostProcess {
         /**
-         * The amount of seperation of rgb channels (default: 0)
+         * The amount of seperation of rgb channels (default: 30)
          */
-        aberrationAmount = 0;
+        aberrationAmount = 30;
 
         /**
          * The amount the effect will increase for pixels closer to the edge of the screen. (default: 0)

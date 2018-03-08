@@ -1937,6 +1937,13 @@
                 }
             }
 
+            // Particles
+            for (var particleSystem of this.particleSystems) {
+                if (!particleSystem.isReady()) {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -3205,7 +3212,7 @@
             if (this.textures) {
                 for (let i = 0; i < this.textures.length; i++) {
                     let texture = this.textures[i];
-                    if (texture && texture.isRenderTarget) {
+                    if (texture && texture.renderList) {
                         (<RenderTargetTexture>texture).freeRenderingGroups();
                     }
                 }

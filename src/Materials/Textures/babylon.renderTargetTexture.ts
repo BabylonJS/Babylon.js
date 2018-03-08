@@ -496,8 +496,7 @@
                 var mesh = currentRenderList[meshIndex];
 
                 if (mesh) {
-                    if (!mesh.isReady()) {
-                        // Reset _currentRefreshId
+                    if (!mesh.isReady(this.refreshRate === 0)) {
                         this.resetRefreshCounter();
                         continue;
                     }
