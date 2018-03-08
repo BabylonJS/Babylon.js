@@ -155,16 +155,30 @@
 
         private _bias = 0.00005;
         /**
-         * Gets the bias: offset applied on the depth preventing acnea.
+         * Gets the bias: offset applied on the depth preventing acnea (in light direction).
          */
         public get bias(): number {
             return this._bias;
         }
         /**
-         * Sets the bias: offset applied on the depth preventing acnea.
+         * Sets the bias: offset applied on the depth preventing acnea (in light direction).
          */
         public set bias(bias: number) {
             this._bias = bias;
+        }
+
+        private _normalBias = 0;
+        /**
+         * Gets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+         */
+        public get normalBias(): number {
+            return this._normalBias;
+        }
+        /**
+         * Sets the normalBias: offset applied on the depth preventing acnea (along side the normal direction and proportinal to the light/normal angle).
+         */
+        public set normalBias(normalBias: number) {
+            this._normalBias = normalBias;
         }
 
         private _blurBoxOffset = 1;
@@ -860,10 +874,15 @@
                 engine.enableEffect(this._effect);
                 mesh._bind(subMesh, this._effect, Material.TriangleFillMode);
 
-                this._effect.setFloat2("biasAndScale", this.bias, this.depthScale);
+                this._effect.setFloat3("biasAndScale", this.bias, this.normalBias, this.depthScale);
 
                 this._effect.setMatrix("viewProjection", this.getTransformMatrix());
-                this._effect.setVector3("lightPosition", this.getLight().position);
+                if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                    this._effect.setVector3("lightData", this._cachedDirection);
+                }
+                else {
+                    this._effect.setVector3("lightData", this._cachedPosition);
+                }
 
                 if (scene.activeCamera) {
                     this._effect.setFloat2("depthValues", this.getLight().getDepthMinZ(scene.activeCamera), this.getLight().getDepthMinZ(scene.activeCamera) + this.getLight().getDepthMaxZ(scene.activeCamera));
@@ -1012,6 +1031,18 @@
             var mesh = subMesh.getMesh();
             var material = subMesh.getMaterial();
 
+            // Normal bias.
+            if (this.normalBias && mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                attribs.push(VertexBuffer.NormalKind);
+                defines.push("#define NORMAL");
+                if (mesh.nonUniformScaling) {
+                    defines.push("#define NONUNIFORMSCALING");
+                }
+                if (this.getLight().getTypeID() === Light.LIGHTTYPEID_DIRECTIONALLIGHT) {
+                    defines.push("#define DIRECTIONINLIGHTDATA");
+                }
+            }
+
             // Alpha test
             if (material && material.needAlphaTesting()) {
                 var alphaTexture = material.getAlphaTestTexture();
@@ -1059,7 +1090,7 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightPosition", "depthValues", "biasAndScale"],
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale"],
                     ["diffuseSampler"], join);
             }
 
@@ -1328,6 +1359,14 @@
             serializationObject.useKernelBlur = this.useKernelBlur;
             serializationObject.transparencyShadow = this._transparencyShadow;
 
+            serializationObject.bias = this.bias;
+            serializationObject.normalBias = this.normalBias;
+
+            serializationObject.usePercentageCloserFiltering = this.usePercentageCloserFiltering;
+            serializationObject.useContactHardeningShadow = this.useContactHardeningShadow;
+            serializationObject.filteringQuality = this.filteringQuality;
+            serializationObject.contactHardeningLightSizeUVRatio = this.contactHardeningLightSizeUVRatio;
+
             serializationObject.renderList = [];
             if (shadowMap.renderList) {
                 for (var meshIndex = 0; meshIndex < shadowMap.renderList.length; meshIndex++) {
@@ -1380,6 +1419,20 @@
             else if (parsedShadowGenerator.useBlurCloseExponentialShadowMap) {
                 shadowGenerator.useBlurCloseExponentialShadowMap = true;
             }
+            else if (parsedShadowGenerator.usePercentageCloserFiltering) {
+                shadowGenerator.usePercentageCloserFiltering = true;
+            }
+            else if (parsedShadowGenerator.useContactHardeningShadow) {
+                shadowGenerator.useContactHardeningShadow = true;
+            }
+
+            if (parsedShadowGenerator.filteringQuality) {
+                shadowGenerator.filteringQuality = parsedShadowGenerator.filteringQuality;
+            }
+
+            if (parsedShadowGenerator.contactHardeningLightSizeUVRatio) {
+                shadowGenerator.contactHardeningLightSizeUVRatio = parsedShadowGenerator.contactHardeningLightSizeUVRatio;
+            }
 
             // Backward compat
             else if (parsedShadowGenerator.useVarianceShadowMap) {
@@ -1411,6 +1464,10 @@
 
             if (parsedShadowGenerator.bias !== undefined) {
                 shadowGenerator.bias = parsedShadowGenerator.bias;
+            }
+
+            if (parsedShadowGenerator.normalBias !== undefined) {
+                shadowGenerator.normalBias = parsedShadowGenerator.normalBias;
             }
 
             if (parsedShadowGenerator.darkness) {

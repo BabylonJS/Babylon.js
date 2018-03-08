@@ -18,7 +18,7 @@ varying vec2 vUV;
 uniform sampler2D diffuseSampler;
 #endif
 
-uniform vec2 biasAndScale;
+uniform vec3 biasAndScale;
 uniform vec2 depthValues;
 
 void main(void)
@@ -31,7 +31,7 @@ void main(void)
 	float depth = vDepthMetric;
 
 #ifdef ESM
-	depth = clamp(exp(-min(87., biasAndScale.y * depth)), 0., 1.);
+	depth = clamp(exp(-min(87., biasAndScale.z * depth)), 0., 1.);
 #endif
 
 #ifdef FLOAT
