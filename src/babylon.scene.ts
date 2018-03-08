@@ -3212,7 +3212,7 @@
             if (this.textures) {
                 for (let i = 0; i < this.textures.length; i++) {
                     let texture = this.textures[i];
-                    if (texture && texture.renderList) {
+                    if (texture && (<RenderTargetTexture>texture).renderList) {
                         (<RenderTargetTexture>texture).freeRenderingGroups();
                     }
                 }
