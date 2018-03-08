@@ -3237,6 +3237,14 @@
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
          */
         public freezeActiveMeshes(): Scene {
+            if (!this.activeCamera) {
+                return this;
+            }
+            
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
+
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
             return this;
