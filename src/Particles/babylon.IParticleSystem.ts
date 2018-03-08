@@ -165,5 +165,11 @@ module BABYLON {
          * Remove all active particles
          */
         reset(): void;
+
+        /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        isReady(): boolean;        
     }
 }
