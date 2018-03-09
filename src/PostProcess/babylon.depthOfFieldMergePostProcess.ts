@@ -20,10 +20,10 @@ module BABYLON {
         constructor(name: string, original: PostProcess, circleOfConfusion: PostProcess, private blurSteps: Array<PostProcess>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "originalSampler", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
             this.onApplyObservable.add((effect: Effect) => {
-                effect.setTextureFromPostProcess("circleOfConfusionSampler", circleOfConfusion);
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
                 effect.setTextureFromPostProcess("originalSampler", original);
                 blurSteps.forEach((step,index)=>{
-                    effect.setTextureFromPostProcess("blurStep"+(index+1), step);
+                    effect.setTextureFromPostProcessOutput("blurStep"+(index+1), step);
                 });
             });
 

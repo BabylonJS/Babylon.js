@@ -945,6 +945,10 @@
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
         }
 
+        public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
+            this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
+        }
+
         /** @ignore */
         public _cacheMatrix(uniformName: string, matrix: Matrix): boolean {
             var cache = this._valueCache[uniformName];

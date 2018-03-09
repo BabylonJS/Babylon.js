@@ -14,6 +14,9 @@
         * Height of the texture to apply the post process on
         */
         public height = -1;
+
+        public _outputTexture: Nullable<InternalTexture> = null;
+
         /**
         * Sampling mode used by the shader
         * See https://doc.babylonjs.com/classes/3.1/texture
@@ -351,7 +354,7 @@
          * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
          * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
          */
-        public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): void {
+        public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): InternalTexture {
             camera = camera || this._camera;
 
             var scene = camera.getScene();
@@ -461,6 +464,7 @@
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
+            return target;
         }
 
 
