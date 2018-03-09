@@ -23,7 +23,7 @@
             this.forceProjectionMatrixCompute();
         }
 
-        private _shadowOrthoScale = 0.5;
+        private _shadowOrthoScale = 0.1;
         /**
          * Gets the shadow projection scale against the optimal computed one.
          * 0.1 by default which means that the projection window is increase by 10% from the optimal size.

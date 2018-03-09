@@ -477,10 +477,10 @@
                 return;
             }
 
-            this._isReady = true;
             if (this.onReady) {
                 this.onReady(this);
             }
+            this._isReady = true;
         }
 
         /**
