@@ -798,12 +798,12 @@
 
                 vertexData.applyToMesh(ground, updatable);
 
-                ground._setReady(true);
-
                 //execute ready callback, if set
                 if (onReady) {
                     onReady(ground);
                 }
+
+                ground._setReady(true);
             };
 
             Tools.LoadImage(url, onload, () => { }, scene.database);

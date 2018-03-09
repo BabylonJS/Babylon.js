@@ -477,11 +477,11 @@
         private _onPointerUp: (evt: PointerEvent) => void;
 
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>) => void;
+        public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
@@ -1278,12 +1278,13 @@
             }
 
             if (pickResult) {
+                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+
                 if (this.onPointerMove) {
-                    this.onPointerMove(evt, pickResult);
+                    this.onPointerMove(evt, pickResult, type);
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
@@ -1345,12 +1346,13 @@
             }
 
             if (pickResult) {
+                let type = PointerEventTypes.POINTERDOWN;
+
                 if (this.onPointerDown) {
-                    this.onPointerDown(evt, pickResult);
+                    this.onPointerDown(evt, pickResult, type);
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let type = PointerEventTypes.POINTERDOWN;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
@@ -1406,10 +1408,7 @@
                 this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
             }
 
-            if (this.onPointerUp) {
-                this.onPointerUp(evt, pickResult);
-            }
-
+            let type = PointerEventTypes.POINTERUP;
             if (this.onPointerObservable.hasObservers()) {
                 if (!clickInfo.ignore) {
                     if (!clickInfo.hasSwiped) {
@@ -1426,10 +1425,13 @@
                     }
                 }
                 else {
-                    let type = PointerEventTypes.POINTERUP;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
+            }
+
+            if (this.onPointerUp) {
+                this.onPointerUp(evt, pickResult, type);
             }
 
             return this;
@@ -1934,6 +1936,13 @@
                             return false;
                         }
                     }
+                }
+            }
+
+            // Particles
+            for (var particleSystem of this.particleSystems) {
+                if (!particleSystem.isReady()) {
+                    return false;
                 }
             }
 
@@ -3205,7 +3214,7 @@
             if (this.textures) {
                 for (let i = 0; i < this.textures.length; i++) {
                     let texture = this.textures[i];
-                    if (texture && texture.isRenderTarget) {
+                    if (texture && (<RenderTargetTexture>texture).renderList) {
                         (<RenderTargetTexture>texture).freeRenderingGroups();
                     }
                 }
@@ -3230,6 +3239,14 @@
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
          */
         public freezeActiveMeshes(): Scene {
+            if (!this.activeCamera) {
+                return this;
+            }
+
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
+
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
             return this;

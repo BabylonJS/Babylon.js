@@ -322,13 +322,10 @@ module BABYLON {
                         bilinearFiltering: this.samplingMode !== Texture.BILINEAR_SAMPLINGMODE,
                         comparisonFunction: this._comparisonFunction,
                         generateStencil: this._generateStencilBuffer,
+                        isCube: this.isCube
                     };
 
-                    if (this.isCube) {
-                        proxy = this._engine.createDepthStencilTexture({ width: this.width, height: this.height }, depthTextureOptions);
-                    } else {
-                        proxy = this._engine.createDepthStencilCubeTexture(this.width, depthTextureOptions);
-                    }
+                    proxy = this._engine.createDepthStencilTexture({ width: this.width, height: this.height }, depthTextureOptions);
                     proxy._swapAndDie(this);
 
                     this.isReady = true;

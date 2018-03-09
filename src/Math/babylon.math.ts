@@ -3159,8 +3159,11 @@
             this.w *= length;
             return this;
         }
+
         /**
-         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion.  
+         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion
+         * @param order is a reserved parameter and is ignore for now
+         * @returns the new Vector3
          */
         public toEulerAngles(order = "YZX"): Vector3 {
             var result = Vector3.Zero();
@@ -3169,8 +3172,10 @@
         }
 
         /**
-         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion.  
-         * Returns the current Quaternion.  
+         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion
+         * @param result defines the vector which will be filled with the Euler angles
+         * @param order is a reserved parameter and is ignore for now
+         * @returns the current Quaternion
          */
         public toEulerAnglesToRef(result: Vector3, order = "YZX"): Quaternion {
 

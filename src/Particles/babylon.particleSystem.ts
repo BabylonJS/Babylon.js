@@ -847,6 +847,19 @@
         }
 
         /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        public isReady(): boolean {
+            var effect = this._getEffect();
+            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+                return false;
+            }
+
+            return true;
+        }
+
+        /**
          * Renders the particle system in its current state.
          * @returns the current number of particles
          */
@@ -854,7 +867,7 @@
             var effect = this._getEffect();
 
             // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length) {
+            if (!this.isReady() || !this._particles.length) {
                 return 0;
             }
 
@@ -869,7 +882,7 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            if (this._isAnimationSheetEnabled) {
+            if (this._isAnimationSheetEnabled && this.particleTexture) {
                 var baseSize = this.particleTexture.getBaseSize();
                 effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
