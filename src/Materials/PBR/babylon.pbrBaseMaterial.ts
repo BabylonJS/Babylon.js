@@ -65,6 +65,7 @@
         public LIGHTMAP = false;
         public LIGHTMAPDIRECTUV = 0;
         public USELIGHTMAPASSHADOWMAP = false;
+        public GAMMALIGHTMAP = false;
 
         public REFLECTION = false;
         public REFLECTIONMAP_3D = false;
@@ -1105,6 +1106,7 @@
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
+                        defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
                     } else {
                         defines.LIGHTMAP = false;
                     }
