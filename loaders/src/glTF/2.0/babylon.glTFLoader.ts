@@ -307,16 +307,15 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        private _forEachNodeMesh(node: ILoaderNode, callback: (babylonMesh: Mesh) => void): void {
-            if (node._babylonMesh) {
-                callback(node._babylonMesh);
-            }
-
+        private _forEachPrimitive(node: ILoaderNode, callback: (babylonMesh: Mesh) => void): void {
             if (node._primitiveBabylonMeshes) {
                 for (const babylonMesh of node._primitiveBabylonMeshes) {
                     callback(babylonMesh);
                 }
             }
+            else {
+                callback(node._babylonMesh!);
+        }
         }
 
         private _getMeshes(): Mesh[] {
@@ -328,9 +327,15 @@ module BABYLON.GLTF2 {
             const nodes = this._gltf.nodes;
             if (nodes) {
                 for (const node of nodes) {
-                    this._forEachNodeMesh(node, mesh => {
-                        meshes.push(mesh);
-                    });
+                    if (node._babylonMesh) {
+                        meshes.push(node._babylonMesh);
+                }
+
+                    if (node._primitiveBabylonMeshes) {
+                        for (const babylonMesh of node._primitiveBabylonMeshes) {
+                            meshes.push(babylonMesh);
+            }
+                    }
                 }
             }
 
@@ -437,7 +442,7 @@ module BABYLON.GLTF2 {
                 node._primitiveBabylonMeshes = [];
                 for (const primitive of primitives) {
                     const primitiveBabylonMesh = new Mesh(`${mesh.name || babylonMesh.name}_${primitive._index}`, this._babylonScene, babylonMesh);
-                    node._primitiveBabylonMeshes.push(babylonMesh);
+                    node._primitiveBabylonMeshes.push(primitiveBabylonMesh);
                     promises.push(this._loadPrimitiveAsync(`${context}/primitives/${primitive._index}`, node, mesh, primitive, primitiveBabylonMesh));
                     this.onMeshLoadedObservable.notifyObservers(babylonMesh);
                 }
@@ -449,7 +454,7 @@ module BABYLON.GLTF2 {
             }
 
             return Promise.all(promises).then(() => {
-                this._forEachNodeMesh(node, babylonMesh => {
+                this._forEachPrimitive(node, babylonMesh => {
                     babylonMesh._refreshBoundingInfo(true);
                 });
             });
@@ -711,8 +716,8 @@ module BABYLON.GLTF2 {
 
         private _loadSkinAsync(context: string, node: ILoaderNode, mesh: ILoaderMesh, skin: ILoaderSkin): Promise<void> {
             const assignSkeleton = () => {
-                this._forEachNodeMesh(node, babylonMesh => {
-                    babylonMesh.skeleton = skin._babylonSkeleton;
+                this._forEachPrimitive(node, babylonMesh => {
+                    babylonMesh.skeleton = skin._babylonSkeleton!;
                 });
 
                 node._babylonMesh!.parent = this._rootBabylonMesh;
@@ -965,7 +970,7 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        this._forEachNodeMesh(targetNode, babylonMesh => {
+                        this._forEachPrimitive(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
                             babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
                         });
