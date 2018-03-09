@@ -386,7 +386,7 @@
     },
     {
       "title": "Instances",
-      "renderCount": 2,
+      "renderCount": 50,
       "scriptToRun": "/Demos/Instances/instances.js",
       "functionToCall": "CreateInstancesTestScene",
       "referenceImage": "instances.png",
