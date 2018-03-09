@@ -496,12 +496,13 @@
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          */
         public animate(): void {           
-            if (!this._stopped) {
-                this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
-                this._actualFrame += this._timeDelta;
+            this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
+            this._actualFrame += this._timeDelta;
 
-                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration)
+            if (!this._stopped) {
+                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration) {
                     this.stop();
+                }
             }             
         }        
 

@@ -34,6 +34,16 @@ globalObject["${base}"] = ${base}${(subModule && !extendsRoot) ? '.' + varName :
                 match = matcher.exec(fileContent);
             }
 
+            let enumMatcher = new RegExp(`\\(${base}\\.([A-Za-z0-9].*)= {}\\)`, "g");
+            let enumMatch = enumMatcher.exec(fileContent);
+            while (enumMatch != null) {
+                if (enumMatch[1]) {
+                    listOfExports.push(enumMatch[1]);
+                }
+                enumMatch = enumMatcher.exec(fileContent);
+            }
+
+
             let exportsText = '';
             listOfExports.forEach(cls => {
                 exportsText += `var ${cls} = ${base}.${cls};`;
