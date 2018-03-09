@@ -1,7 +1,7 @@
 {
-  "errors": 7179,
+  "errors": 7175,
   "babylon.typedoc.json": {
-    "errors": 7179,
+    "errors": 7175,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -12129,28 +12129,6 @@
           },
           "Parameter": {
             "operation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setTexture": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "channel": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "texture": {
               "Comments": {
                 "MissingText": true
               }
