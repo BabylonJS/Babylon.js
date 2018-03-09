@@ -239,8 +239,12 @@ module BABYLON {
                     // Shadows
                     defines["SHADOW" + lightIndex] = false;
                     defines["SHADOWPCF" + lightIndex] = false;
+                    defines["SHADOWPCSS" + lightIndex] = false;
+                    defines["SHADOWPOISSON" + lightIndex] = false;
                     defines["SHADOWESM" + lightIndex] = false;
                     defines["SHADOWCUBE" + lightIndex] = false;
+                    defines["SHADOWLOWQUALITY" + lightIndex] = false;
+                    defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
 
                     if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
                         var shadowGenerator = light.getShadowGenerator();
@@ -345,6 +349,8 @@ module BABYLON {
                 }
 
                 samplersList.push("shadowSampler" + lightIndex);
+                samplersList.push("depthSampler" + lightIndex);
+
                 if (defines["PROJECTEDLIGHTTEXTURE" + lightIndex]){
                     samplersList.push("projectionLightSampler" + lightIndex,);
                     uniformsList.push(
@@ -385,6 +391,14 @@ module BABYLON {
 
                     if (defines["SHADOWPCF" + lightIndex]) {
                         fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
+                    }
+
+                    if (defines["SHADOWPCSS" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWPCSS" + lightIndex);
+                    }
+
+                    if (defines["SHADOWPOISSON" + lightIndex]) {
+                        fallbacks.addFallback(rank, "SHADOWPOISSON" + lightIndex);
                     }
 
                     if (defines["SHADOWESM" + lightIndex]) {
