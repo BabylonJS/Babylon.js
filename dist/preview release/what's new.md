@@ -16,6 +16,8 @@
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
 - Added depth of field, sharpening, MSAA, chromatic aberration and grain effect to the default pipeline ([trevordev](https://github.com/trevordev))
 - Particle System SubEmitters- Spawn new Sub emitter when particles dies. Cone/Sphere shapes emitters ([IbraheemOsama](https://github.com/IbraheemOsama))
+- New [Babylon.js](http://doc.babylonjs.com/resources/maya) and [glTF](http://doc.babylonjs.com/resources/maya_to_gltf) exporter for Autodesk Maya ([Noalak](https://github.com/Noalak))
+- New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
 
 ## Updates
 
@@ -89,6 +91,8 @@
 - EnvironmentHelper has no an onError observable to handle errors when loading the textures ([RaananW](https://github.com/RaananW))
 - (Viewer) Viewer supports model animations ([RaananW](https://github.com/RaananW))
 - Tests for sharpen, chromatic aberration, default pipeline and enable/disable post processes ([trevordev](https://github.com/trevordev))
+- onPointer* callbacks have now the event type as a 3rd variable ([RaananW](https://github.com/RaananW))
+- Lightmap texture in PBR material follow the gammaSpace Flag of the texture ([sebavan](https://github.com/sebavan))
 - Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes

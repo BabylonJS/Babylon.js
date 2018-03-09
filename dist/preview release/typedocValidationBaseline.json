@@ -1,7 +1,7 @@
 {
-  "errors": 7189,
+  "errors": 7175,
   "babylon.typedoc.json": {
-    "errors": 7189,
+    "errors": 7175,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -12135,28 +12135,6 @@
             }
           }
         },
-        "setTexture": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "channel": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "texture": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "setTextureArray": {
           "Comments": {
             "MissingText": true
@@ -24108,35 +24086,6 @@
             }
           }
         },
-        "toEulerAngles": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "order": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "toEulerAnglesToRef": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "result": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "order": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "toRotationMatrix": {
           "Comments": {
             "MissingReturn": true
@@ -25321,35 +25270,6 @@
           }
         },
         "refractionPlane": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "RenderTargetCreationOptions": {
-      "Property": {
-        "generateDepthBuffer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "generateMipMaps": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "generateStencilBuffer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samplingMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "type": {
           "Comments": {
             "MissingText": true
           }

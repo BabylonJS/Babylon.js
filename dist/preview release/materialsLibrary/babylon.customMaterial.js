@@ -11,7 +11,6 @@ var __extends = (this && this.__extends) || (function () {
 })();
 var BABYLON;
 (function (BABYLON) {
-    // old version of standard material updated every 3 months
     var CustomShaderStructure = /** @class */ (function () {
         function CustomShaderStructure() {
         }
@@ -37,40 +36,51 @@ var BABYLON;
         CustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
             for (var el in this._newUniformInstances) {
                 var ea = el.toString().split('-');
-                if (ea[0] == 'vec2')
+                if (ea[0] == 'vec2') {
                     effect.setVector2(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'vec3')
+                }
+                else if (ea[0] == 'vec3') {
                     effect.setVector3(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'vec4')
+                }
+                else if (ea[0] == 'vec4') {
                     effect.setVector4(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'mat4')
+                }
+                else if (ea[0] == 'mat4') {
                     effect.setMatrix(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'float')
+                }
+                else if (ea[0] == 'float') {
                     effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
             for (var el in this._newSamplerInstances) {
                 var ea = el.toString().split('-');
-                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
                     effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         };
         CustomMaterial.prototype.ReviewUniform = function (name, arr) {
             if (name == "uniform") {
-                for (var ind in this._newUniforms)
-                    if (this._customUniform[ind].indexOf('sampler') == -1)
+                for (var ind in this._newUniforms) {
+                    if (this._customUniform[ind].indexOf('sampler') == -1) {
                         arr.push(this._newUniforms[ind]);
+                    }
+                }
             }
             if (name == "sampler") {
-                for (var ind in this._newUniforms)
-                    if (this._customUniform[ind].indexOf('sampler') != -1)
+                for (var ind in this._newUniforms) {
+                    if (this._customUniform[ind].indexOf('sampler') != -1) {
                         arr.push(this._newUniforms[ind]);
+                    }
+                }
             }
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
             var _this = this;
-            if (this._isCreatedShader)
+            if (this._isCreatedShader) {
                 return this._createdShaderName;
+            }
             this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
             var name = "custom_" + CustomMaterial.ShaderIndexer;
@@ -86,7 +96,6 @@ var BABYLON;
                     fn_afterBind(m, e);
                 }
                 catch (e) { }
-                ;
             };
             BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.VertexShader
                 .replace('#define CUSTOM_VERTEX_BEGIN', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))

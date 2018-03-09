@@ -2934,15 +2934,15 @@ var BABYLON;
                 promises.push(this._loadAnimationsAsync());
                 return Promise.all(promises).then(function () { });
             };
-            GLTFLoader.prototype._forEachNodeMesh = function (node, callback) {
-                if (node._babylonMesh) {
-                    callback(node._babylonMesh);
-                }
+            GLTFLoader.prototype._forEachPrimitive = function (node, callback) {
                 if (node._primitiveBabylonMeshes) {
                     for (var _i = 0, _a = node._primitiveBabylonMeshes; _i < _a.length; _i++) {
                         var babylonMesh = _a[_i];
                         callback(babylonMesh);
                     }
+                }
+                else {
+                    callback(node._babylonMesh);
                 }
             };
             GLTFLoader.prototype._getMeshes = function () {
@@ -2953,9 +2953,15 @@ var BABYLON;
                 if (nodes) {
                     for (var _i = 0, nodes_2 = nodes; _i < nodes_2.length; _i++) {
                         var node = nodes_2[_i];
-                        this._forEachNodeMesh(node, function (mesh) {
-                            meshes.push(mesh);
-                        });
+                        if (node._babylonMesh) {
+                            meshes.push(node._babylonMesh);
+                        }
+                        if (node._primitiveBabylonMeshes) {
+                            for (var _a = 0, _b = node._primitiveBabylonMeshes; _a < _b.length; _a++) {
+                                var babylonMesh = _b[_a];
+                                meshes.push(babylonMesh);
+                            }
+                        }
                     }
                 }
                 return meshes;
@@ -3047,7 +3053,7 @@ var BABYLON;
                     for (var _i = 0, primitives_1 = primitives; _i < primitives_1.length; _i++) {
                         var primitive = primitives_1[_i];
                         var primitiveBabylonMesh = new BABYLON.Mesh((mesh.name || babylonMesh.name) + "_" + primitive._index, this._babylonScene, babylonMesh);
-                        node._primitiveBabylonMeshes.push(babylonMesh);
+                        node._primitiveBabylonMeshes.push(primitiveBabylonMesh);
                         promises.push(this._loadPrimitiveAsync(context + "/primitives/" + primitive._index, node, mesh, primitive, primitiveBabylonMesh));
                         this.onMeshLoadedObservable.notifyObservers(babylonMesh);
                     }
@@ -3057,7 +3063,7 @@ var BABYLON;
                     promises.push(this._loadSkinAsync("#/skins/" + skin._index, node, mesh, skin));
                 }
                 return Promise.all(promises).then(function () {
-                    _this._forEachNodeMesh(node, function (babylonMesh) {
+                    _this._forEachPrimitive(node, function (babylonMesh) {
                         babylonMesh._refreshBoundingInfo(true);
                     });
                 });
@@ -3281,7 +3287,7 @@ var BABYLON;
             GLTFLoader.prototype._loadSkinAsync = function (context, node, mesh, skin) {
                 var _this = this;
                 var assignSkeleton = function () {
-                    _this._forEachNodeMesh(node, function (babylonMesh) {
+                    _this._forEachPrimitive(node, function (babylonMesh) {
                         babylonMesh.skeleton = skin._babylonSkeleton;
                     });
                     node._babylonMesh.parent = _this._rootBabylonMesh;
@@ -3502,7 +3508,7 @@ var BABYLON;
                                 value: key.value[targetIndex],
                                 outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                             }); }));
-                            _this._forEachNodeMesh(targetNode, function (babylonMesh) {
+                            _this._forEachPrimitive(targetNode, function (babylonMesh) {
                                 var morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
                                 babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
                             });
