@@ -89,6 +89,7 @@
 - EnvironmentHelper has no an onError observable to handle errors when loading the textures ([RaananW](https://github.com/RaananW))
 - (Viewer) Viewer supports model animations ([RaananW](https://github.com/RaananW))
 - Tests for sharpen, chromatic aberration, default pipeline and enable/disable post processes ([trevordev](https://github.com/trevordev))
+- Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 

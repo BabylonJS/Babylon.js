@@ -15,6 +15,9 @@
         */
         public height = -1;
 
+        /**
+        * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
+        */
         public _outputTexture: Nullable<InternalTexture> = null;
 
         /**
@@ -353,6 +356,7 @@
          * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
          * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
          * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
+         * @returns The target texture that was bound to be written to. 
          */
         public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): InternalTexture {
             camera = camera || this._camera;

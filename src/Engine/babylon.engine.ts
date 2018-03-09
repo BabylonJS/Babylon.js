@@ -5222,6 +5222,11 @@
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         }
 
+        /**
+         * Binds the output of the passed in post process to the texture channel specified
+         * @param channel The channel the texture should be bound to
+         * @param postProcess The post process which's output should be bound
+         */
         public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
             this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
         }
