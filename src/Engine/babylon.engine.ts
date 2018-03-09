@@ -5204,6 +5204,10 @@
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
         }
 
+        public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
+            this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
+        }
+
         public unbindAllTextures(): void {
             for (var channel = 0; channel < this._maxSimultaneousTextures; channel++) {
                 this._activeChannel = channel;
