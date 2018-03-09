@@ -1307,7 +1307,7 @@
          * @returns - Parsed material.
          */
         public static Parse(parsedMaterial: any, scene: Scene, rootUrl: string): any {
-            if (!parsedMaterial.customType) {
+            if (!parsedMaterial.customType || parsedMaterial.customType === "BABYLON.StandardMaterial" ) {
                 return StandardMaterial.Parse(parsedMaterial, scene, rootUrl);
             }
 
