@@ -13,7 +13,14 @@
 			varying vec4 vPositionFromLight{X};
 			varying float vDepthMetric{X};
 
-			uniform sampler2D shadowSampler{X};
+			#if defined(SHADOWPCSS{X})
+				uniform highp sampler2DShadow shadowSampler{X};
+				uniform highp sampler2D depthSampler{X};
+			#elif defined(SHADOWPCF{X})
+				uniform highp sampler2DShadow shadowSampler{X};
+			#else
+				uniform sampler2D shadowSampler{X};
+			#endif
 			uniform mat4 lightMatrix{X};
 		#endif
 		uniform vec4 shadowsInfo{X};
