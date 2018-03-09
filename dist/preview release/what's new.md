@@ -16,6 +16,8 @@
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
 - Added depth of field, sharpening, MSAA, chromatic aberration and grain effect to the default pipeline ([trevordev](https://github.com/trevordev))
 - Particle System SubEmitters- Spawn new Sub emitter when particles dies. Cone/Sphere shapes emitters ([IbraheemOsama](https://github.com/IbraheemOsama))
+- New [Babylon.js](http://doc.babylonjs.com/resources/maya) and [glTF](http://doc.babylonjs.com/resources/maya_to_gltf) exporter for Autodesk Maya ([Noalak](https://github.com/Noalak))
+- New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
 
 ## Updates
 
