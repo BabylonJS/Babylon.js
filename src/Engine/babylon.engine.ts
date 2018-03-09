@@ -5042,6 +5042,24 @@
             if (texture._lodTextureLow) {
                 texture._lodTextureLow.dispose();
             }
+
+            // Set output texture of post process to null if the texture has been released/disposed
+            this.scenes.forEach((scene)=>{
+                scene.postProcesses.forEach((postProcess)=>{
+                    if(postProcess._outputTexture == texture){
+                        postProcess._outputTexture = null;
+                    }
+                });
+                scene.cameras.forEach((camera)=>{
+                    camera._postProcesses.forEach((postProcess)=>{
+                        if(postProcess){
+                            if(postProcess._outputTexture == texture){
+                                postProcess._outputTexture = null;
+                            }
+                        }
+                    });
+                });
+            })
         }
 
         private setProgram(program: WebGLProgram): void {
