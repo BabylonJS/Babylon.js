@@ -3163,7 +3163,7 @@
         /**
          * Returns a new Vector3 set with the Euler angles translated from the current Quaternion
          * @param order is a reserved parameter and is ignore for now
-         * @returnsthe new Vector3
+         * @returns the new Vector3
          */
         public toEulerAngles(order = "YZX"): Vector3 {
             var result = Vector3.Zero();
