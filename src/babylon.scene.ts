@@ -170,7 +170,18 @@
             return this._imageProcessingConfiguration;
         }
 
-        public forceWireframe = false;
+        private _forceWireframe = false;
+        public set forceWireframe(value: boolean) {
+            if (this._forceWireframe === value) {
+                return;
+            }
+            this._forceWireframe = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get forceWireframe(): boolean {
+            return this._forceWireframe;
+        }
+
         private _forcePointsCloud = false;
         public set forcePointsCloud(value: boolean) {
             if (this._forcePointsCloud === value) {

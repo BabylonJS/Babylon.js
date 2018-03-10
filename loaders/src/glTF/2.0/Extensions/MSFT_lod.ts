@@ -71,7 +71,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             // Don't load material LODs if already loading a node LOD.
             if (this._loadingNodeLOD) {
                 return null;
@@ -92,14 +92,15 @@ module BABYLON.GLTF2.Extensions {
                         }
                     }
 
-                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, babylonMesh, indexLOD === 0 ? assign : () => {}).then(() => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : () => {}).then(() => {
                         if (indexLOD !== 0) {
-                            assign(materialLOD._babylonMaterial!);
+                            const babylonDataLOD = materialLOD._babylonData!;
+                            assign(babylonDataLOD[babylonDrawMode].material);
 
-                            const previousMaterialLOD = materialLODs[indexLOD - 1];
-                            if (previousMaterialLOD._babylonMaterial) {
-                                previousMaterialLOD._babylonMaterial.dispose();
-                                delete previousMaterialLOD._babylonMaterial;
+                            const previousBabylonDataLOD = materialLODs[indexLOD - 1]._babylonData!;
+                            if (previousBabylonDataLOD[babylonDrawMode]) {
+                                previousBabylonDataLOD[babylonDrawMode].material.dispose();
+                                delete previousBabylonDataLOD[babylonDrawMode];
                             }
                         }
 
