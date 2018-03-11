@@ -15,9 +15,11 @@
 - Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
 - New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
 - Added depth of field, sharpening, MSAA, chromatic aberration and grain effect to the default pipeline ([trevordev](https://github.com/trevordev))
-- Particle System SubEmitters- Spawn new Sub emitter when particles dies. Cone/Sphere shapes emitters ([IbraheemOsama](https://github.com/IbraheemOsama))
+- Added [particle system SubEmitters](http://doc.babylonjs.com/babylon101/particles#sub-emitters) which will spawn new particle systems when particles dies ([IbraheemOsama](https://github.com/IbraheemOsama))
+- New [particle system emitter shapes](http://doc.babylonjs.com/babylon101/particles#particles-shapes): cone and sphere ([IbraheemOsama](https://github.com/IbraheemOsama))
 - New [Babylon.js](http://doc.babylonjs.com/resources/maya) and [glTF](http://doc.babylonjs.com/resources/maya_to_gltf) exporter for Autodesk Maya ([Noalak](https://github.com/Noalak))
 - New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
+- Added support for [animation weights](http://doc.babylonjs.com/babylon101/animations#animation-weights). Demo [here](https://www.babylonjs-playground.com/#IQN716#2). ([deltakosh](https://github.com/deltakosh))
 
 ## Updates
 

@@ -249,10 +249,18 @@
             
             if (enableBlending && this._blendingFactor <= 1.0 || weight !== -1.0) {
                 if (!this._originalValue) {
-                    if (destination[path].clone) {
-                        this._originalValue = destination[path].clone();
+                    let originalValue: any;
+
+                    if (destination.getRestPose) { // For bones
+                        originalValue = destination.getRestPose();
                     } else {
-                        this._originalValue = destination[path];
+                        originalValue = destination[path]
+                    }
+
+                    if (originalValue.clone) {
+                        this._originalValue = originalValue.clone();
+                    } else {
+                        this._originalValue = originalValue;
                     }
                 }
             }
@@ -320,7 +328,7 @@
         private _previousDelay: number;
         private _previousRatio: number;
 
-        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = 1.0): boolean {
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
                 this._stopped = true;

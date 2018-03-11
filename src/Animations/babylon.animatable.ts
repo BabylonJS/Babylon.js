@@ -18,6 +18,12 @@
         }
 
         public set weight(value: number) {
+            if (value === -1) { // -1 is ok and means no weight
+                this._weight = -1;
+                return;
+            }
+
+            // Else weight must be in [0, 1] range
             this._weight = Math.min(Math.max(value, 0), 1.0);
         }
 
@@ -95,7 +101,7 @@
             // Reset to original value
             for (index = 0; index < runtimeAnimations.length; index++) {
                 var animation = runtimeAnimations[index];
-                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio, 1.0);
+                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio);
             }
 
             this._localDelayOffset = null;
