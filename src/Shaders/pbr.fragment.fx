@@ -606,7 +606,7 @@ void main(void) {
 	#ifdef GAMMALIGHTMAP
 		lightmapColor = toLinearSpace(lightmapColor);
 	#endif
-	lightmapColor *= vLightmapInfos.y
+	lightmapColor *= vLightmapInfos.y;
 #endif
 
 	lightingInfo info;
