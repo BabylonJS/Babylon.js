@@ -247,7 +247,7 @@
             let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
             let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             
-            if (enableBlending && this._blendingFactor <= 1.0 || weight != 1.0) {
+            if (enableBlending && this._blendingFactor <= 1.0 || weight !== -1.0) {
                 if (!this._originalValue) {
                     if (destination[path].clone) {
                         this._originalValue = destination[path].clone();
@@ -276,7 +276,7 @@
                 destination[path] = this._currentValue;
             } else {
                 this._currentValue = currentValue;
-                if (weight != 1.0) {
+                if (weight !== -1.0) {
                     this._scene._registerTargetForLateAnimationBinding(this);
                 } else {
                     destination[path] = this._currentValue;

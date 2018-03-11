@@ -6,12 +6,12 @@
         private _paused = false;
         private _scene: Scene;
         private _speedRatio = 1;
-        private _weight = 0.5;
+        private _weight = -1.0;
 
         public animationStarted = false;
 
         /**
-         * Gets or sets the animatable weight (1.0 by default)
+         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
          */
         public get weight(): number {
             return this._weight;
