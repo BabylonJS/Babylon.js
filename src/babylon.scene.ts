@@ -2244,9 +2244,6 @@
 
         /** @ignore */
         public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
-            if (runtimeAnimation.weight === 0) {
-                return;
-            }
             let target = runtimeAnimation.target;
             this._registeredForLateAnimationBindings.pushNoDuplicate(target);
 
