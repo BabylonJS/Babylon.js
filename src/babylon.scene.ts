@@ -2244,6 +2244,9 @@
 
         /** @ignore */
         public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
+            if (runtimeAnimation.weight === 0) {
+                return;
+            }
             let target = runtimeAnimation.target;
             this._registeredForLateAnimationBindings.pushNoDuplicate(target);
 
@@ -2263,6 +2266,9 @@
         }
 
         private _processLateAnimationBindings(): void {
+            if (!this._registeredForLateAnimationBindings.length) {
+                return;
+            }
             for (var index = 0; index < this._registeredForLateAnimationBindings.length; index++) {
                 var target = this._registeredForLateAnimationBindings.data[index];
 
@@ -2287,9 +2293,8 @@
                         normalizer = holder.totalWeight;
                     }
 
-                    for (var index = 0; index < holder.animations.length; index++) {
-                        var runtimeAnimation = holder.animations[index];    
-                        
+                    for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
+                        var runtimeAnimation = holder.animations[animIndex];    
                         if (finalValue) {
                             runtimeAnimation.currentValue.scaleAndAddToRef(runtimeAnimation.weight / normalizer, finalValue);
                         } else {
