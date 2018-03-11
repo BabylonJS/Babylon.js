@@ -6,9 +6,24 @@
         private _paused = false;
         private _scene: Scene;
         private _speedRatio = 1;
+        private _weight = 0.5;
 
         public animationStarted = false;
 
+        /**
+         * Gets or sets the animatable weight (1.0 by default)
+         */
+        public get weight(): number {
+            return this._weight;
+        }
+
+        public set weight(value: number) {
+            this._weight = Math.min(Math.max(value, 0), 1.0);
+        }
+
+        /**
+         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+         */
         public get speedRatio(): number {
             return this._speedRatio;
         }
@@ -21,6 +36,7 @@
             }
             this._speedRatio = value;
         }
+
 
         constructor(scene: Scene, public target: any, public fromFrame: number = 0, public toFrame: number = 100, public loopAnimation: boolean = false, speedRatio: number = 1.0, public onAnimationEnd?: Nullable<() => void>, animations?: any) {
             if (animations) {
@@ -41,7 +57,7 @@
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
 
-                this._runtimeAnimations.push(new RuntimeAnimation(target, animation));
+                this._runtimeAnimations.push(new RuntimeAnimation(target, animation, this._scene));
             }
         }
 
@@ -79,7 +95,7 @@
             // Reset to original value
             for (index = 0; index < runtimeAnimations.length; index++) {
                 var animation = runtimeAnimations[index];
-                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio);
+                animation.animate(0, this.fromFrame, this.toFrame, false, this._speedRatio, 1.0);
             }
 
             this._localDelayOffset = null;
@@ -118,7 +134,7 @@
             }
 
             for (var index = 0; index < runtimeAnimations.length; index++) {
-                runtimeAnimations[index].goToFrame(frame);
+                runtimeAnimations[index].goToFrame(frame, this._weight);
             }
         }
 
@@ -205,7 +221,7 @@
 
             for (index = 0; index < runtimeAnimations.length; index++) {
                 var animation = runtimeAnimations[index];
-                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio);
+                var isRunning = animation.animate(delay - this._localDelayOffset, this.fromFrame, this.toFrame, this.loopAnimation, this._speedRatio, this._weight);
                 running = running || isRunning;
             }
 

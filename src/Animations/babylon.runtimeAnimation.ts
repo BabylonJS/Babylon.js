@@ -5,15 +5,58 @@
         private _animation: Animation;
         private _target: any;
 
-        private _originalBlendValue: any;
+        private _originalValue: any;
         private _offsetsCache: {[key: string]: any} = {};
         private _highLimitsCache: {[key: string]: any} = {};
         private _stopped = false;
         private _blendingFactor = 0;
+        private _scene: Scene;
+
+        private _currentValue: any;
+        private _activeTarget: any;
+        private _targetPath: string;
+        private _weight = 1.0
+
+        /**
+         * Gets the weight of the runtime animation
+         */
+        public get weight(): number {
+            return this._weight;
+        }           
+
+        /**
+         * Gets the original value of the runtime animation
+         */
+        public get originalValue(): any {
+            return this._originalValue;
+        }        
+
+        /**
+         * Gets the current value of the runtime animation
+         */
+        public get currentValue(): any {
+            return this._currentValue;
+        }
+
+        /**
+         * Gets the path where to store the animated value in the target
+         */
+        public get targetPath(): string {
+            return this._targetPath;
+        }
+
+        /**
+         * Gets the actual target of the runtime animation
+         */
+        public get target(): any {
+            return this._activeTarget;
+        }
+
         
-        public constructor(target: any, animation: Animation) {
+        public constructor(target: any, animation: Animation, scene: Scene) {
             this._animation = animation;
             this._target = target;
+            this._scene = scene;
 
             animation._runtimeAnimations.push(this);
         }
@@ -27,7 +70,7 @@
             this._highLimitsCache = {};
             this.currentFrame = 0;
             this._blendingFactor = 0;
-            this._originalBlendValue = null;
+            this._originalValue = null;
         }
 
         public isStopped(): boolean {
@@ -175,7 +218,7 @@
             return this._getKeyValue(keys[keys.length - 1].value);
         }
 
-        public setValue(currentValue: any, blend: boolean = false): void {
+        public setValue(currentValue: any, weight = 1.0): void {
             // Set value
             var path: any;
             var destination: any;
@@ -189,42 +232,55 @@
                     property = property[targetPropertyPath[index]];
                 }
 
-                path = targetPropertyPath[targetPropertyPath.length - 1];
+                path =  [targetPropertyPath.length - 1];
                 destination = property;
             } else {
                 path = targetPropertyPath[0];
                 destination = this._target;
             }
 
+            this._targetPath = path;
+            this._activeTarget = destination;
+            this._weight = weight;
+
             // Blending
             let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
             let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             
-            if (enableBlending && this._blendingFactor <= 1.0) {
-                if (!this._originalBlendValue) {
+            if (enableBlending && this._blendingFactor <= 1.0 || weight != 1.0) {
+                if (!this._originalValue) {
                     if (destination[path].clone) {
-                        this._originalBlendValue = destination[path].clone();
+                        this._originalValue = destination[path].clone();
                     } else {
-                        this._originalBlendValue = destination[path];
+                        this._originalValue = destination[path];
                     }
                 }
+            }
 
-                if (this._originalBlendValue.prototype) { // Complex value
+            if (enableBlending && this._blendingFactor <= 1.0) {
+                if (this._originalValue.prototype) { // Complex value
                     
-                    if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
-                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                    if (this._originalValue.prototype.Lerp) { // Lerp supported
+                        this._currentValue = this._originalValue.construtor.prototype.Lerp(currentValue, this._originalValue, this._blendingFactor);
                     } else { // Blending not supported
-                        destination[path] = currentValue;
+                        this._currentValue = currentValue;
                     }
 
-                } else if (this._originalBlendValue.m) { // Matrix
-                    destination[path] = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                } else if (this._originalValue.m) { // Matrix
+                    this._currentValue = Matrix.Lerp(this._originalValue, currentValue, this._blendingFactor);
                 } else { // Direct value
-                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                    this._currentValue = this._originalValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
                 this._blendingFactor += blendingSpeed;
+                
+                destination[path] = this._currentValue;
             } else {
-                destination[path] = currentValue;
+                this._currentValue = currentValue;
+                if (weight != 1.0) {
+                    this._scene._registerTargetForLateAnimationBinding(this);
+                } else {
+                    destination[path] = this._currentValue;
+                }
             }
 
             if (this._target.markAsDirty) {
@@ -240,7 +296,7 @@
             return this._animation.loopMode;
         }
 
-        public goToFrame(frame: number): void {
+        public goToFrame(frame: number, weight = 1.0): void {
             let keys = this._animation.getKeys();
 
             if (frame < keys[0].frame) {
@@ -251,7 +307,7 @@
 
             var currentValue = this._interpolate(frame, 0, this._getCorrectLoopMode());
 
-            this.setValue(currentValue);
+            this.setValue(currentValue, weight);
         }
 
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
@@ -264,7 +320,7 @@
         private _previousDelay: number;
         private _previousRatio: number;
 
-        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend: boolean = false): boolean {
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = 1.0): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
                 this._stopped = true;
@@ -385,7 +441,8 @@
             var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
             // Set value
-            this.setValue(currentValue);
+            this.setValue(currentValue, weight);
+
             // Check events
             let events = this._animation.getEvents();
             for (var index = 0; index < events.length; index++) {
