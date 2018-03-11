@@ -148,7 +148,7 @@
         /**
          * Multiplies in place each rgb value by scale 
          * @param scale defines the scaling factor
-         * @returns the updated Color3.  
+         * @returns the updated Color3 
          */
         public scale(scale: number): Color3 {
             return new Color3(this.r * scale, this.g * scale, this.b * scale);
@@ -158,7 +158,7 @@
          * Multiplies the rgb values by scale and stores the result into "result"
          * @param scale defines the scaling factor 
          * @param result defines the Color3 object where to store the result
-         * @returns the unmodified current Color3.  
+         * @returns the unmodified current Color3 
          */
         public scaleToRef(scale: number, result: Color3): Color3 {
             result.r = this.r * scale;
@@ -166,6 +166,18 @@
             result.b = this.b * scale;
             return this;
         }
+
+        /**
+         * Scale the current Color3 values by a factor and add the result to a given Color3  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Color3 
+         */
+        public scaleAndAddToRef(scale: number, result: Color3): Color3 {
+            result.r += this.r * scale;
+            result.g += this.g * scale;
+            result.b += this.b * scale;
+            return this;
+        }          
 
         /**
          * Clamps the rgb values by the min and max values and stores the result into "result"
@@ -553,7 +565,7 @@
          * Multiplies the current Color4 values by scale and stores the result in "result"
          * @param scale defines the scaling factor to apply
          * @param result defines the Color4 object where to store the result
-         * @returns the current Color4.  
+         * @returns the current unmodified Color4
          */
         public scaleToRef(scale: number, result: Color4): Color4 {
             result.r = this.r * scale;
@@ -562,6 +574,19 @@
             result.a = this.a * scale;
             return this;
         }
+
+        /**
+         * Scale the current Color4 values by a factor and add the result to a given Color4  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Color4 
+         */
+        public scaleAndAddToRef(scale: number, result: Color4): Color4 {
+            result.r += this.r * scale;
+            result.g += this.g * scale;
+            result.b += this.b * scale;
+            result.a += this.a * scale;
+            return this;
+        }          
 
         /**
          * Clamps the rgb values by the min and max values and stores the result into "result"
@@ -1026,12 +1051,38 @@
             this.y *= scale;
             return this;
         }
+
         /**
          * Returns a new Vector2 scaled by "scale" from the current Vector2.  
          */
         public scale(scale: number): Vector2 {
-            return new Vector2(this.x * scale, this.y * scale);
+            let result = new Vector2(0, 0);
+            this.scaleToRef(scale, result);
+            return result;
         }
+
+        /**
+         * Scale the current Vector2 values by a factor to a given Vector2  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector2 
+         */
+        public scaleToRef(scale: number, result: Vector2): Vector2 {
+            result.x = this.x * scale;
+            result.y = this.y * scale;
+            return this;
+        }         
+
+        /**
+         * Scale the current Vector2 values by a factor and add the result to a given Vector2  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector2 
+         */
+        public scaleAndAddToRef(scale: number, result: Vector2): Vector2 {
+            result.x += this.x * scale;
+            result.y += this.y * scale;
+            return this;
+        } 
+
         /**
          * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.  
          */
@@ -1513,6 +1564,18 @@
             result.z = this.z * scale;
             return this;
         }
+
+        /**
+         * Scale the current Vector3 values by a factor and add the result to a given Vector3  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector3 
+         */
+        public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
+            result.x += this.x * scale;
+            result.y += this.y * scale;
+            result.z += this.z * scale;
+            return this;
+        }         
 
         /**
          * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
@@ -2554,6 +2617,19 @@
         }
 
         /**
+         * Scale the current Vector4 values by a factor and add the result to a given Vector4  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector4 
+         */
+        public scaleAndAddToRef(scale: number, result: Vector4): Vector4 {
+            result.x += this.x * scale;
+            result.y += this.y * scale;
+            result.z += this.z * scale;
+            result.w += this.w * scale;
+            return this;
+        }         
+
+        /**
          * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.  
          */
         public equals(otherVector: Vector4): boolean {
@@ -3088,6 +3164,33 @@
         public scale(value: number): Quaternion {
             return new Quaternion(this.x * value, this.y * value, this.z * value, this.w * value);
         }
+
+        /**
+         * Scale the current VectQuaternionor4 values by a factor to a given Quaternion  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Quaternion 
+         */
+        public scaleToRef(scale: number, result: Quaternion): Quaternion {
+            result.x = this.x * scale;
+            result.y = this.y * scale;
+            result.z = this.z * scale;
+            result.w = this.w * scale;
+            return this;
+        }         
+
+        /**
+         * Scale the current VectQuaternionor4 values by a factor and add the result to a given Quaternion  
+         * @param scale defines the scale factor
+         * @returns the unmodified current Quaternion 
+         */
+        public scaleAndAddToRef(scale: number, result: Quaternion): Quaternion {
+            result.x += this.x * scale;
+            result.y += this.y * scale;
+            result.z += this.z * scale;
+            result.w += this.w * scale;
+            return this;
+        }            
+
         /**
          * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".  
          */
@@ -3899,6 +4002,109 @@
         }
 
         /**
+         * Returns the index-th row of the current matrix as a new Vector4.  
+         */
+        public getRow(index: number): Nullable<Vector4> {
+            if (index < 0 || index > 3) {
+                return null;
+            }
+            var i = index * 4;
+            return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
+        }
+
+        /**
+         * Sets the index-th row of the current matrix with the passed Vector4 values.
+         * Returns the updated Matrix.    
+         */
+        public setRow(index: number, row: Vector4): Matrix {
+            if (index < 0 || index > 3) {
+                return this;
+            }
+            var i = index * 4;
+            this.m[i + 0] = row.x;
+            this.m[i + 1] = row.y;
+            this.m[i + 2] = row.z;
+            this.m[i + 3] = row.w;
+
+            this._markAsUpdated();
+
+            return this;
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns a new Matrix.  
+         */
+        public transpose(): Matrix {
+            return Matrix.Transpose(this);
+        }
+
+        /**
+         * Compute the transpose of the matrix.  
+         * Returns the current matrix.  
+         */
+        public transposeToRef(result: Matrix): Matrix {
+            Matrix.TransposeToRef(this, result);
+
+            return this;
+        }
+
+        /**
+         * Sets the index-th row of the current matrix with the passed 4 x float values.
+         * Returns the updated Matrix.    
+         */
+        public setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix {
+            if (index < 0 || index > 3) {
+                return this;
+            }
+            var i = index * 4;
+            this.m[i + 0] = x;
+            this.m[i + 1] = y;
+            this.m[i + 2] = z;
+            this.m[i + 3] = w;
+
+            this._markAsUpdated();
+            return this;
+        }
+
+        /**
+         * Compute a new Matrix set with the current Matrix values multiplied by scale (float)
+         * @param scale defines the scale factor
+         * @returns a new Matrix
+         */
+        public scale(scale: number): Matrix {
+            var result = new Matrix();
+            this.scaleToRef(scale, result);
+            return result;
+        }
+
+        /**
+         * Scale the current Matrix values by a factor to a given result Matrix  
+         * @param scale defines the scale factor
+         * @returns the current Matrix  
+         */
+        public scaleToRef(scale: number, result: Matrix): Matrix {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] = this.m[index] * scale;
+            }
+            result._markAsUpdated();
+            return this;
+        }          
+        
+        /**
+         * Scale the current Matrix values by a factor and add the result to a given Matrix  
+         * @param scale defines the scale factor
+         * @returns the current Matrix  
+         */
+        public scaleAndAddToRef(scale: number, result: Matrix): Matrix {
+            for (var index = 0; index < 16; index++) {
+                result.m[index] += this.m[index] * scale;
+            }
+            result._markAsUpdated();
+            return this;
+        }          
+
+        /**
          * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).  
          * @param ref matrix to store the result
          */
@@ -4004,71 +4210,7 @@
             result.m[15] = initialM44;
 
             result._markAsUpdated();
-        }
-        /**
-         * Returns the index-th row of the current matrix as a new Vector4.  
-         */
-        public getRow(index: number): Nullable<Vector4> {
-            if (index < 0 || index > 3) {
-                return null;
-            }
-            var i = index * 4;
-            return new Vector4(this.m[i + 0], this.m[i + 1], this.m[i + 2], this.m[i + 3]);
-        }
-        /**
-         * Sets the index-th row of the current matrix with the passed Vector4 values.
-         * Returns the updated Matrix.    
-         */
-        public setRow(index: number, row: Vector4): Matrix {
-            if (index < 0 || index > 3) {
-                return this;
-            }
-            var i = index * 4;
-            this.m[i + 0] = row.x;
-            this.m[i + 1] = row.y;
-            this.m[i + 2] = row.z;
-            this.m[i + 3] = row.w;
-
-            this._markAsUpdated();
-
-            return this;
-        }
-
-        /**
-         * Compute the transpose of the matrix.  
-         * Returns a new Matrix.  
-         */
-        public transpose(): Matrix {
-            return Matrix.Transpose(this);
-        }
-
-        /**
-         * Compute the transpose of the matrix.  
-         * Returns the current matrix.  
-         */
-        public transposeToRef(result: Matrix): Matrix {
-            Matrix.TransposeToRef(this, result);
-
-            return this;
-        }
-
-        /**
-         * Sets the index-th row of the current matrix with the passed 4 x float values.
-         * Returns the updated Matrix.    
-         */
-        public setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix {
-            if (index < 0 || index > 3) {
-                return this;
-            }
-            var i = index * 4;
-            this.m[i + 0] = x;
-            this.m[i + 1] = y;
-            this.m[i + 2] = z;
-            this.m[i + 3] = w;
-
-            this._markAsUpdated();
-            return this;
-        }
+        }    
 
         /**
          * Static identity matrix to be used as readonly matrix
