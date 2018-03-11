@@ -878,6 +878,7 @@ declare module BABYLON {
          */
         onRenderingGroupObservable: Observable<RenderingGroupInfo>;
         animations: Animation[];
+        private _registeredForLateAnimationBindings;
         pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
         pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
         pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
@@ -1270,17 +1271,32 @@ declare module BABYLON {
         _checkIsReady(): void;
         /**
          * Will start the animation sequence of a given target
-         * @param target - the target
-         * @param {number} from - from which frame should animation start
-         * @param {number} to - till which frame should animation run.
-         * @param {boolean} [loop] - should the animation loop
-         * @param {number} [speedRatio] - the speed in which to run the animation
-         * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
-         * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
-         * Returns {BABYLON.Animatable} the animatable object created for this animation
-         * See BABYLON.Animatable
+         * @param target defines the target
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param weight defines the weight to apply to the animation (1.0 by default)
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @returns the animatable object created for this animation
+         * @see BABYLON.Animatable
          */
-        beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable;
+        beginWeightedAnimation(target: any, from: number, to: number, weight?: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable): Animatable;
+        /**
+         * Will start the animation sequence of a given target
+         * @param target defines the target
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @returns the animatable object created for this animation
+         * @see BABYLON.Animatable
+         */
+        beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio?: number, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent?: boolean): Animatable;
         /**
          * Begin a new animation on a given node
          * @param {BABYLON.Node} node defines the root node where the animation will take place
@@ -1320,6 +1336,9 @@ declare module BABYLON {
          */
         stopAllAnimations(): void;
         private _animate();
+        /** @ignore */
+        _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void;
+        private _processLateAnimationBindings();
         _switchToAlternateCameraConfiguration(active: boolean): void;
         getViewMatrix(): Matrix;
         getProjectionMatrix(): Matrix;
@@ -2275,7 +2294,15 @@ declare module BABYLON {
         private _paused;
         private _scene;
         private _speedRatio;
+        private _weight;
         animationStarted: boolean;
+        /**
+         * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
+         */
+        weight: number;
+        /**
+         * Gets or sets the speed ratio to apply to the animatable (1.0 by default)
+         */
         speedRatio: number;
         constructor(scene: Scene, target: any, fromFrame?: number, toFrame?: number, loopAnimation?: boolean, speedRatio?: number, onAnimationEnd?: (() => void) | null | undefined, animations?: any);
         getAnimations(): RuntimeAnimation[];
@@ -2667,35 +2694,51 @@ declare module BABYLON {
         currentFrame: number;
         private _animation;
         private _target;
-        private _originalBlendValue;
+        private _originalValue;
         private _offsetsCache;
         private _highLimitsCache;
         private _stopped;
         private _blendingFactor;
-        constructor(target: any, animation: Animation);
+        private _scene;
+        private _currentValue;
+        private _activeTarget;
+        private _targetPath;
+        private _weight;
+        /**
+         * Gets the weight of the runtime animation
+         */
+        readonly weight: number;
+        /**
+         * Gets the original value of the runtime animation
+         */
+        readonly originalValue: any;
+        /**
+         * Gets the current value of the runtime animation
+         */
+        readonly currentValue: any;
+        /**
+         * Gets the path where to store the animated value in the target
+         */
+        readonly targetPath: string;
+        /**
+         * Gets the actual target of the runtime animation
+         */
+        readonly target: any;
+        constructor(target: any, animation: Animation, scene: Scene);
         readonly animation: Animation;
         reset(): void;
         isStopped(): boolean;
         dispose(): void;
         private _getKeyValue(value);
         private _interpolate(currentFrame, repeatCount, loopMode?, offsetValue?, highLimitValue?);
-        setValue(currentValue: any, blend?: boolean): void;
+        setValue(currentValue: any, weight?: number): void;
         private _getCorrectLoopMode();
-        goToFrame(frame: number): void;
+        goToFrame(frame: number, weight?: number): void;
         _prepareForSpeedRatioChange(newSpeedRatio: number): void;
         private _ratioOffset;
         private _previousDelay;
         private _previousRatio;
-        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend?: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface Behavior<T extends Node> {
-        name: string;
-        init(): void;
-        attach(node: T): void;
-        detach(): void;
+        animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight?: number): boolean;
     }
 }
 
@@ -3464,6 +3507,15 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface Behavior<T extends Node> {
+        name: string;
+        init(): void;
+        attach(node: T): void;
+        detach(): void;
+    }
+}
+
+declare module BABYLON {
     class BoundingBox implements ICullable {
         minimum: Vector3;
         maximum: Vector3;
@@ -3585,1221 +3637,6 @@ declare module BABYLON {
         static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
         static Transform(ray: Ray, matrix: Matrix): Ray;
         static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON {
-    class DebugLayer {
-        private _scene;
-        static InspectorURL: string;
-        private _inspector;
-        private BJSINSPECTOR;
-        constructor(scene: Scene);
-        /** Creates the inspector window. */
-        private _createInspector(config?);
-        isVisible(): boolean;
-        hide(): void;
-        show(config?: {
-            popup?: boolean;
-            initialTab?: number;
-            parentElement?: HTMLElement;
-            newColors?: {
-                backgroundColor?: string;
-                backgroundColorLighter?: string;
-                backgroundColorLighter2?: string;
-                backgroundColorLighter3?: string;
-                color?: string;
-                colorTop?: string;
-                colorBot?: string;
-            };
-        }): void;
-    }
-}
-
-declare module BABYLON {
-    class Debug {
-        static AxesViewer: {
-            new (scene: Scene, scaleLines?: number): {
-                _xline: Vector3[];
-                _yline: Vector3[];
-                _zline: Vector3[];
-                _xmesh: Nullable<LinesMesh>;
-                _ymesh: Nullable<LinesMesh>;
-                _zmesh: Nullable<LinesMesh>;
-                scene: Nullable<Scene>;
-                scaleLines: number;
-                update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
-                dispose(): void;
-            };
-        };
-        static BoneAxesViewer: {
-            new (scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number): {
-                mesh: Nullable<Mesh>;
-                bone: Nullable<Bone>;
-                pos: Vector3;
-                xaxis: Vector3;
-                yaxis: Vector3;
-                zaxis: Vector3;
-                update(): void;
-                dispose(): void;
-                _xline: Vector3[];
-                _yline: Vector3[];
-                _zline: Vector3[];
-                _xmesh: Nullable<LinesMesh>;
-                _ymesh: Nullable<LinesMesh>;
-                _zmesh: Nullable<LinesMesh>;
-                scene: Nullable<Scene>;
-                scaleLines: number;
-            };
-        };
-        static PhysicsViewer: {
-            new (scene: Scene): {
-                _impostors: Nullable<PhysicsImpostor>[];
-                _meshes: Nullable<AbstractMesh>[];
-                _scene: Nullable<Scene>;
-                _numMeshes: number;
-                _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
-                _renderFunction: () => void;
-                _debugBoxMesh: Mesh;
-                _debugSphereMesh: Mesh;
-                _debugMaterial: StandardMaterial;
-                _updateDebugMeshes(): void;
-                showImpostor(impostor: PhysicsImpostor): void;
-                hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
-                _getDebugMaterial(scene: Scene): Material;
-                _getDebugBoxMesh(scene: Scene): AbstractMesh;
-                _getDebugSphereMesh(scene: Scene): AbstractMesh;
-                _getDebugMesh(impostor: PhysicsImpostor, scene: Scene): Nullable<AbstractMesh>;
-                dispose(): void;
-            };
-        };
-        static SkeletonViewer: {
-            new (skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number): {
-                color: Color3;
-                _scene: Scene;
-                _debugLines: Vector3[][];
-                _debugMesh: Nullable<LinesMesh>;
-                _isEnabled: boolean;
-                _renderFunction: () => void;
-                skeleton: Skeleton;
-                mesh: AbstractMesh;
-                autoUpdateBonesMatrices: boolean;
-                renderingGroupId: number;
-                isEnabled: boolean;
-                _getBonePosition(position: Vector3, bone: Bone, meshMat: Matrix, x?: number, y?: number, z?: number): void;
-                _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void;
-                _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void;
-                update(): void;
-                dispose(): void;
-            };
-        };
-    }
-}
-
-declare module BABYLON {
-    class RayHelper {
-        ray: Nullable<Ray>;
-        private _renderPoints;
-        private _renderLine;
-        private _renderFunction;
-        private _scene;
-        private _updateToMeshFunction;
-        private _attachedToMesh;
-        private _meshSpaceDirection;
-        private _meshSpaceOrigin;
-        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
-        constructor(ray: Ray);
-        show(scene: Scene, color: Color3): void;
-        hide(): void;
-        private _render();
-        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
-        detachFromMesh(): void;
-        private _updateToMesh();
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class InstancingAttributeInfo {
-        /**
-         * Index/offset of the attribute in the vertex shader
-         */
-        index: number;
-        /**
-         * size of the attribute, 1, 2, 3 or 4
-         */
-        attributeSize: number;
-        /**
-         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
-         * default is FLOAT
-         */
-        attribyteType: number;
-        /**
-         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
-         */
-        normalized: boolean;
-        /**
-         * Offset of the data in the Vertex Buffer acting as the instancing buffer
-         */
-        offset: number;
-        /**
-         * Name of the GLSL attribute, for debugging purpose only
-         */
-        attributeName: string;
-    }
-    /**
-     * Define options used to create a render target texture
-     */
-    class RenderTargetCreationOptions {
-        /**
-         * Specifies is mipmaps must be generated
-         */
-        generateMipMaps?: boolean;
-        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
-        generateDepthBuffer?: boolean;
-        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
-        generateStencilBuffer?: boolean;
-        /** Defines texture type (int by default) */
-        type?: number;
-        /** Defines sampling mode (trilinear by default) */
-        samplingMode?: number;
-        /** Defines format (RGBA by default) */
-        format?: number;
-    }
-    /**
-     * Define options used to create a depth texture
-     */
-    class DepthTextureCreationOptions {
-        /** Specifies whether or not a stencil should be allocated in the texture */
-        generateStencil?: boolean;
-        /** Specifies whether or not bilinear filtering is enable on the texture */
-        bilinearFiltering?: boolean;
-        /** Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode */
-        comparisonFunction?: number;
-        /** Specifies if the created texture is a cube texture */
-        isCube?: boolean;
-    }
-    /**
-     * Regroup several parameters relative to the browser in use
-     */
-    class EngineCapabilities {
-        /** The maximum textures image */
-        maxTexturesImageUnits: number;
-        maxVertexTextureImageUnits: number;
-        maxCombinedTexturesImageUnits: number;
-        /** The maximum texture size */
-        maxTextureSize: number;
-        maxCubemapTextureSize: number;
-        maxRenderTextureSize: number;
-        maxVertexAttribs: number;
-        maxVaryingVectors: number;
-        maxVertexUniformVectors: number;
-        maxFragmentUniformVectors: number;
-        standardDerivatives: boolean;
-        s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
-        pvrtc: any;
-        etc1: any;
-        etc2: any;
-        astc: any;
-        textureFloat: boolean;
-        vertexArrayObject: boolean;
-        textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
-        maxAnisotropy: number;
-        instancedArrays: boolean;
-        uintIndices: boolean;
-        highPrecisionShaderSupported: boolean;
-        fragmentDepthSupported: boolean;
-        textureFloatLinearFiltering: boolean;
-        textureFloatRender: boolean;
-        textureHalfFloat: boolean;
-        textureHalfFloatLinearFiltering: boolean;
-        textureHalfFloatRender: boolean;
-        textureLOD: boolean;
-        drawBuffersExtension: boolean;
-        depthTextureExtension: boolean;
-        colorBufferFloat: boolean;
-        timerQuery: EXT_disjoint_timer_query;
-        canUseTimestampForTimerQuery: boolean;
-    }
-    interface EngineOptions extends WebGLContextAttributes {
-        limitDeviceRatio?: number;
-        autoEnableWebVR?: boolean;
-        disableWebGL2Support?: boolean;
-        audioEngine?: boolean;
-        deterministicLockstep?: boolean;
-        lockstepMaxSteps?: number;
-        doNotHandleContextLost?: boolean;
-    }
-    interface IDisplayChangedEventArgs {
-        vrDisplay: Nullable<any>;
-        vrSupported: boolean;
-    }
-    /**
-     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
-     */
-    class Engine {
-        /** Use this array to turn off some WebGL2 features on known buggy browsers version */
-        static ExceptionList: ({
-            key: string;
-            capture: string;
-            captureConstraint: number;
-            targets: string[];
-        } | {
-            key: string;
-            capture: null;
-            captureConstraint: null;
-            targets: string[];
-        })[];
-        static Instances: Engine[];
-        static readonly LastCreatedEngine: Nullable<Engine>;
-        static readonly LastCreatedScene: Nullable<Scene>;
-        /**
-         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
-         */
-        static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
-        private static _ALPHA_DISABLE;
-        private static _ALPHA_ADD;
-        private static _ALPHA_COMBINE;
-        private static _ALPHA_SUBTRACT;
-        private static _ALPHA_MULTIPLY;
-        private static _ALPHA_MAXIMIZED;
-        private static _ALPHA_ONEONE;
-        private static _ALPHA_PREMULTIPLIED;
-        private static _ALPHA_PREMULTIPLIED_PORTERDUFF;
-        private static _ALPHA_INTERPOLATE;
-        private static _ALPHA_SCREENMODE;
-        private static _DELAYLOADSTATE_NONE;
-        private static _DELAYLOADSTATE_LOADED;
-        private static _DELAYLOADSTATE_LOADING;
-        private static _DELAYLOADSTATE_NOTLOADED;
-        private static _TEXTUREFORMAT_ALPHA;
-        private static _TEXTUREFORMAT_LUMINANCE;
-        private static _TEXTUREFORMAT_LUMINANCE_ALPHA;
-        private static _TEXTUREFORMAT_RGB;
-        private static _TEXTUREFORMAT_RGBA;
-        private static _TEXTUREFORMAT_R32F;
-        private static _TEXTUREFORMAT_RG32F;
-        private static _TEXTUREFORMAT_RGB32F;
-        private static _TEXTUREFORMAT_RGBA32F;
-        private static _TEXTURETYPE_UNSIGNED_INT;
-        private static _TEXTURETYPE_FLOAT;
-        private static _TEXTURETYPE_HALF_FLOAT;
-        private static _NEVER;
-        private static _ALWAYS;
-        private static _LESS;
-        private static _EQUAL;
-        private static _LEQUAL;
-        private static _GREATER;
-        private static _GEQUAL;
-        private static _NOTEQUAL;
-        static readonly NEVER: number;
-        static readonly ALWAYS: number;
-        static readonly LESS: number;
-        static readonly EQUAL: number;
-        static readonly LEQUAL: number;
-        static readonly GREATER: number;
-        static readonly GEQUAL: number;
-        static readonly NOTEQUAL: number;
-        private static _KEEP;
-        private static _REPLACE;
-        private static _INCR;
-        private static _DECR;
-        private static _INVERT;
-        private static _INCR_WRAP;
-        private static _DECR_WRAP;
-        static readonly KEEP: number;
-        static readonly REPLACE: number;
-        static readonly INCR: number;
-        static readonly DECR: number;
-        static readonly INVERT: number;
-        static readonly INCR_WRAP: number;
-        static readonly DECR_WRAP: number;
-        static readonly ALPHA_DISABLE: number;
-        static readonly ALPHA_ONEONE: number;
-        static readonly ALPHA_ADD: number;
-        static readonly ALPHA_COMBINE: number;
-        static readonly ALPHA_SUBTRACT: number;
-        static readonly ALPHA_MULTIPLY: number;
-        static readonly ALPHA_MAXIMIZED: number;
-        static readonly ALPHA_PREMULTIPLIED: number;
-        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
-        static readonly ALPHA_INTERPOLATE: number;
-        static readonly ALPHA_SCREENMODE: number;
-        static readonly DELAYLOADSTATE_NONE: number;
-        static readonly DELAYLOADSTATE_LOADED: number;
-        static readonly DELAYLOADSTATE_LOADING: number;
-        static readonly DELAYLOADSTATE_NOTLOADED: number;
-        static readonly TEXTUREFORMAT_ALPHA: number;
-        static readonly TEXTUREFORMAT_LUMINANCE: number;
-        /**
-         * R32F
-         */
-        static readonly TEXTUREFORMAT_R32F: number;
-        /**
-         * RG32F
-         */
-        static readonly TEXTUREFORMAT_RG32F: number;
-        /**
-         * RGB32F
-         */
-        static readonly TEXTUREFORMAT_RGB32F: number;
-        /**
-         * RGBA32F
-         */
-        static readonly TEXTUREFORMAT_RGBA32F: number;
-        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
-        static readonly TEXTUREFORMAT_RGB: number;
-        static readonly TEXTUREFORMAT_RGBA: number;
-        static readonly TEXTURETYPE_UNSIGNED_INT: number;
-        static readonly TEXTURETYPE_FLOAT: number;
-        static readonly TEXTURETYPE_HALF_FLOAT: number;
-        private static _SCALEMODE_FLOOR;
-        private static _SCALEMODE_NEAREST;
-        private static _SCALEMODE_CEILING;
-        static readonly SCALEMODE_FLOOR: number;
-        static readonly SCALEMODE_NEAREST: number;
-        static readonly SCALEMODE_CEILING: number;
-        static readonly Version: string;
-        static CollisionsEpsilon: number;
-        static CodeRepository: string;
-        static ShadersRepository: string;
-        forcePOTTextures: boolean;
-        isFullscreen: boolean;
-        isPointerLock: boolean;
-        cullBackFaces: boolean;
-        renderEvenInBackground: boolean;
-        preventCacheWipeBetweenFrames: boolean;
-        enableOfflineSupport: boolean;
-        scenes: Scene[];
-        postProcesses: PostProcess[];
-        /**
-         * Observable event triggered each time the rendering canvas is resized
-         */
-        onResizeObservable: Observable<Engine>;
-        /**
-         * Observable event triggered each time the canvas loses focus
-         */
-        onCanvasBlurObservable: Observable<Engine>;
-        /**
-         * Observable event triggered each time the canvas gains focus
-         */
-        onCanvasFocusObservable: Observable<Engine>;
-        /**
-         * Observable event triggered each time the canvas receives pointerout event
-         */
-        onCanvasPointerOutObservable: Observable<PointerEvent>;
-        /**
-         * Observable event triggered before each texture is initialized
-         */
-        onBeforeTextureInitObservable: Observable<Texture>;
-        private _vrDisplay;
-        private _vrSupported;
-        private _oldSize;
-        private _oldHardwareScaleFactor;
-        private _vrExclusivePointerMode;
-        private _webVRInitPromise;
-        readonly isInVRExclusivePointerMode: boolean;
-        disableUniformBuffers: boolean;
-        _uniformBuffers: UniformBuffer[];
-        readonly supportsUniformBuffers: boolean;
-        /**
-         * Observable raised when the engine begins a new frame
-         */
-        onBeginFrameObservable: Observable<Engine>;
-        /**
-         * Observable raised when the engine ends the current frame
-         */
-        onEndFrameObservable: Observable<Engine>;
-        /**
-         * Observable raised when the engine is about to compile a shader
-         */
-        onBeforeShaderCompilationObservable: Observable<Engine>;
-        /**
-         * Observable raised when the engine has jsut compiled a shader
-         */
-        onAfterShaderCompilationObservable: Observable<Engine>;
-        private _gl;
-        private _renderingCanvas;
-        private _windowIsBackground;
-        private _webGLVersion;
-        readonly needPOTTextures: boolean;
-        private _badOS;
-        readonly badOS: boolean;
-        private _badDesktopOS;
-        readonly badDesktopOS: boolean;
-        /**
-         * Gets or sets a value indicating if we want to disable texture binding optmization.
-         * This could be required on some buggy drivers which wants to have textures bound in a progressive order
-         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is.
-         */
-        disableTextureBindingOptimization: boolean;
-        static audioEngine: AudioEngine;
-        private _onFocus;
-        private _onBlur;
-        private _onCanvasPointerOut;
-        private _onCanvasBlur;
-        private _onCanvasFocus;
-        private _onFullscreenChange;
-        private _onPointerLockChange;
-        private _onVRDisplayPointerRestricted;
-        private _onVRDisplayPointerUnrestricted;
-        private _onVrDisplayConnect;
-        private _onVrDisplayDisconnect;
-        private _onVrDisplayPresentChange;
-        onVRDisplayChangedObservable: Observable<IDisplayChangedEventArgs>;
-        onVRRequestPresentComplete: Observable<boolean>;
-        onVRRequestPresentStart: Observable<Engine>;
-        private _hardwareScalingLevel;
-        protected _caps: EngineCapabilities;
-        private _pointerLockRequested;
-        private _isStencilEnable;
-        private _colorWrite;
-        private _loadingScreen;
-        _drawCalls: PerfCounter;
-        _textureCollisions: PerfCounter;
-        private _glVersion;
-        private _glRenderer;
-        private _glVendor;
-        private _videoTextureSupported;
-        private _renderingQueueLaunched;
-        private _activeRenderLoops;
-        private _deterministicLockstep;
-        private _lockstepMaxSteps;
-        onContextLostObservable: Observable<Engine>;
-        onContextRestoredObservable: Observable<Engine>;
-        private _onContextLost;
-        private _onContextRestored;
-        private _contextWasLost;
-        private _doNotHandleContextLost;
-        private _performanceMonitor;
-        private _fps;
-        private _deltaTime;
-        /**
-         * Turn this value on if you want to pause FPS computation when in background
-         */
-        disablePerformanceMonitorInBackground: boolean;
-        readonly performanceMonitor: PerformanceMonitor;
-        protected _depthCullingState: _DepthCullingState;
-        protected _stencilState: _StencilState;
-        protected _alphaState: _AlphaState;
-        protected _alphaMode: number;
-        private _internalTexturesCache;
-        protected _activeChannel: number;
-        private _currentTextureChannel;
-        protected _boundTexturesCache: {
-            [key: string]: Nullable<InternalTexture>;
-        };
-        protected _currentEffect: Nullable<Effect>;
-        protected _currentProgram: Nullable<WebGLProgram>;
-        private _compiledEffects;
-        private _vertexAttribArraysEnabled;
-        protected _cachedViewport: Nullable<Viewport>;
-        private _cachedVertexArrayObject;
-        protected _cachedVertexBuffers: any;
-        protected _cachedIndexBuffer: Nullable<WebGLBuffer>;
-        protected _cachedEffectForVertexBuffers: Nullable<Effect>;
-        protected _currentRenderTarget: Nullable<InternalTexture>;
-        private _uintIndicesCurrentlySet;
-        private _currentBoundBuffer;
-        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
-        private _currentBufferPointers;
-        private _currentInstanceLocations;
-        private _currentInstanceBuffers;
-        private _textureUnits;
-        private _firstBoundInternalTextureTracker;
-        private _lastBoundInternalTextureTracker;
-        private _workingCanvas;
-        private _workingContext;
-        private _rescalePostProcess;
-        private _dummyFramebuffer;
-        private _externalData;
-        private _bindedRenderFunction;
-        private _vaoRecordInProgress;
-        private _mustWipeVertexAttributes;
-        private _emptyTexture;
-        private _emptyCubeTexture;
-        private _emptyTexture3D;
-        private _frameHandler;
-        private _nextFreeTextureSlots;
-        private _maxSimultaneousTextures;
-        private _activeRequests;
-        private _texturesSupported;
-        private _textureFormatInUse;
-        readonly texturesSupported: Array<string>;
-        readonly textureFormatInUse: Nullable<string>;
-        readonly currentViewport: Nullable<Viewport>;
-        readonly emptyTexture: InternalTexture;
-        readonly emptyTexture3D: InternalTexture;
-        readonly emptyCubeTexture: InternalTexture;
-        /**
-         * @constructor
-         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
-         * @param antialias defines enable antialiasing (default: false)
-         * @param options defines further options to be sent to the getContext() function
-         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
-         */
-        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
-        private _rebuildInternalTextures();
-        private _rebuildEffects();
-        private _rebuildBuffers();
-        private _initGLContext();
-        readonly webGLVersion: number;
-        /**
-         * Returns true if the stencil buffer has been enabled through the creation option of the context.
-         */
-        readonly isStencilEnable: boolean;
-        private _prepareWorkingCanvas();
-        resetTextureCache(): void;
-        isDeterministicLockStep(): boolean;
-        getLockstepMaxSteps(): number;
-        getGlInfo(): {
-            vendor: string;
-            renderer: string;
-            version: string;
-        };
-        getAspectRatio(camera: Camera, useScreen?: boolean): number;
-        getRenderWidth(useScreen?: boolean): number;
-        getRenderHeight(useScreen?: boolean): number;
-        getRenderingCanvas(): Nullable<HTMLCanvasElement>;
-        getRenderingCanvasClientRect(): Nullable<ClientRect>;
-        setHardwareScalingLevel(level: number): void;
-        getHardwareScalingLevel(): number;
-        getLoadedTexturesCache(): InternalTexture[];
-        getCaps(): EngineCapabilities;
-        /** The number of draw calls submitted last frame */
-        readonly drawCalls: number;
-        readonly drawCallsPerfCounter: Nullable<PerfCounter>;
-        getDepthFunction(): Nullable<number>;
-        setDepthFunction(depthFunc: number): void;
-        setDepthFunctionToGreater(): void;
-        setDepthFunctionToGreaterOrEqual(): void;
-        setDepthFunctionToLess(): void;
-        setDepthFunctionToLessOrEqual(): void;
-        getStencilBuffer(): boolean;
-        setStencilBuffer(enable: boolean): void;
-        getStencilMask(): number;
-        setStencilMask(mask: number): void;
-        getStencilFunction(): number;
-        getStencilFunctionReference(): number;
-        getStencilFunctionMask(): number;
-        setStencilFunction(stencilFunc: number): void;
-        setStencilFunctionReference(reference: number): void;
-        setStencilFunctionMask(mask: number): void;
-        getStencilOperationFail(): number;
-        getStencilOperationDepthFail(): number;
-        getStencilOperationPass(): number;
-        setStencilOperationFail(operation: number): void;
-        setStencilOperationDepthFail(operation: number): void;
-        setStencilOperationPass(operation: number): void;
-        setDitheringState(value: boolean): void;
-        setRasterizerState(value: boolean): void;
-        /**
-         * stop executing a render loop function and remove it from the execution array
-         * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
-         */
-        stopRenderLoop(renderFunction?: () => void): void;
-        _renderLoop(): void;
-        /**
-         * Register and execute a render loop. The engine can have more than one render function.
-         * @param {Function} renderFunction - the function to continuously execute starting the next render loop.
-         * @example
-         * engine.runRenderLoop(function () {
-         *      scene.render()
-         * })
-         */
-        runRenderLoop(renderFunction: () => void): void;
-        /**
-         * Toggle full screen mode.
-         * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
-         * @param {any} options - an options object to be sent to the requestFullscreen function
-         */
-        switchFullscreen(requestPointerLock: boolean): void;
-        clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void;
-        /**
-         * Set the WebGL's viewport
-         * @param {BABYLON.Viewport} viewport - the viewport element to be used.
-         * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
-         * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
-         */
-        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
-        /**
-         * Directly set the WebGL Viewport
-         * The x, y, width & height are directly passed to the WebGL call
-         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
-         */
-        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport>;
-        beginFrame(): void;
-        endFrame(): void;
-        /**
-         * resize the view according to the canvas' size.
-         * @example
-         *   window.addEventListener("resize", function () {
-         *      engine.resize();
-         *   });
-         */
-        resize(): void;
-        /**
-         * force a specific size of the canvas
-         * @param {number} width - the new canvas' width
-         * @param {number} height - the new canvas' height
-         */
-        setSize(width: number, height: number): void;
-        isVRDevicePresent(): boolean;
-        getVRDevice(): any;
-        /**
-         * Initializes a webVR display and starts listening to display change events.
-         * The onVRDisplayChangedObservable will be notified upon these changes.
-         * @returns The onVRDisplayChangedObservable.
-         */
-        initWebVR(): Observable<IDisplayChangedEventArgs>;
-        /**
-         * Initializes a webVR display and starts listening to display change events.
-         * The onVRDisplayChangedObservable will be notified upon these changes.
-         * @returns A promise containing a VRDisplay and if vr is supported.
-         */
-        initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
-        enableVR(): void;
-        disableVR(): void;
-        private _onVRFullScreenTriggered;
-        private _getVRDisplaysAsync();
-        /**
-         * Binds the frame buffer to the specified texture.
-         * @param texture The texture to render to or null for the default canvas
-         * @param faceIndex The face of the texture to render to in case of cube texture
-         * @param requiredWidth The width of the target to render to
-         * @param requiredHeight The height of the target to render to
-         * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
-         * @param depthStencilTexture The depth stencil texture to use to render
-         */
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture): void;
-        private bindUnboundFramebuffer(framebuffer);
-        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        generateMipMapsForCubemap(texture: InternalTexture): void;
-        flushFramebuffer(): void;
-        restoreDefaultFramebuffer(): void;
-        createUniformBuffer(elements: FloatArray): WebGLBuffer;
-        createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer;
-        updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: FloatArray, offset?: number, count?: number): void;
-        private _resetVertexBufferBinding();
-        createVertexBuffer(vertices: FloatArray): WebGLBuffer;
-        createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer;
-        updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset?: number): void;
-        updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void;
-        private _resetIndexBufferBinding();
-        createIndexBuffer(indices: IndicesArray, updatable?: boolean): WebGLBuffer;
-        bindArrayBuffer(buffer: Nullable<WebGLBuffer>): void;
-        bindUniformBuffer(buffer: Nullable<WebGLBuffer>): void;
-        bindUniformBufferBase(buffer: WebGLBuffer, location: number): void;
-        bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void;
-        private bindIndexBuffer(buffer);
-        private bindBuffer(buffer, target);
-        updateArrayBuffer(data: Float32Array): void;
-        private vertexAttribPointer(buffer, indx, size, type, normalized, stride, offset);
-        private _bindIndexBufferWithCache(indexBuffer);
-        private _bindVertexBuffersAttributes(vertexBuffers, effect);
-        recordVertexArrayObject(vertexBuffers: {
-            [key: string]: VertexBuffer;
-        }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): WebGLVertexArrayObject;
-        bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void;
-        bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
-        private _unbindVertexArrayObject();
-        bindBuffers(vertexBuffers: {
-            [key: string]: Nullable<VertexBuffer>;
-        }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void;
-        unbindInstanceAttributes(): void;
-        releaseVertexArrayObject(vao: WebGLVertexArrayObject): void;
-        _releaseBuffer(buffer: WebGLBuffer): boolean;
-        createInstancesBuffer(capacity: number): WebGLBuffer;
-        deleteInstancesBuffer(buffer: WebGLBuffer): void;
-        updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
-        applyStates(): void;
-        draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
-        drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void;
-        drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void;
-        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
-        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
-        private _drawMode(fillMode);
-        _releaseEffect(effect: Effect): void;
-        _deleteProgram(program: WebGLProgram): void;
-        /**
-         * @param baseName The base name of the effect (The name of file without .fragment.fx or .vertex.fx)
-         * @param samplers An array of string used to represent textures
-         */
-        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect;
-        createEffectForParticles(fragmentName: string, uniformsNames?: string[], samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
-        createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
-        createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
-        private _createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings?);
-        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
-        getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
-        enableEffect(effect: Nullable<Effect>): void;
-        setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
-        setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
-        setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
-        setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
-        setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
-        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
-        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
-        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
-        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
-        setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void;
-        setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void;
-        setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
-        setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
-        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
-        setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void;
-        setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void;
-        setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void;
-        setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void;
-        setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
-        setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void;
-        setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void;
-        /**
-         * Sets a Color4 on a uniform variable
-         * @param uniform defines the uniform location
-         * @param color4 defines the value to be set
-         */
-        setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
-        setZOffset(value: number): void;
-        getZOffset(): number;
-        setDepthBuffer(enable: boolean): void;
-        getDepthWrite(): boolean;
-        setDepthWrite(enable: boolean): void;
-        setColorWrite(enable: boolean): void;
-        getColorWrite(): boolean;
-        setAlphaConstants(r: number, g: number, b: number, a: number): void;
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        getAlphaMode(): number;
-        wipeCaches(bruteForce?: boolean): void;
-        /**
-         * Set the compressed texture format to use, based on the formats you have, and the formats
-         * supported by the hardware / browser.
-         *
-         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
-         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
-         * to API arguments needed to compressed textures.  This puts the burden on the container
-         * generator to house the arcane code for determining these for current & future formats.
-         *
-         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
-         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
-         *
-         * Note: The result of this call is not taken into account when a texture is base64.
-         *
-         * @param {Array<string>} formatsAvailable- The list of those format families you have created
-         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
-         *
-         * Current families are astc, dxt, pvrtc, etc2, & etc1.
-         * @returns The extension selected.
-         */
-        setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
-        _createTexture(): WebGLTexture;
-        /**
-         * Usually called from BABYLON.Texture.ts.  Passed information to create a WebGLTexture.
-         * @param {string} urlArg- This contains one of the following:
-         *                         1. A conventional http URL, e.g. 'http://...' or 'file://...'
-         *                         2. A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
-         *                         3. An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
-         *
-         * @param {boolean} noMipmap- When true, no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file.
-         * @param {boolean} invertY- When true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file.
-         * @param {Scene} scene- Needed for loading to the correct scene.
-         * @param {number} samplingMode- Mode with should be used sample / access the texture.  Default: TRILINEAR
-         * @param {callback} onLoad- Optional callback to be called upon successful completion.
-         * @param {callback} onError- Optional callback to be called upon failure.
-         * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
-         * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
-         * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
-         *
-         * @returns {WebGLTexture} for assignment back into BABYLON.Texture
-         */
-        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: Nullable<InternalTexture>, format?: Nullable<number>): InternalTexture;
-        private _rescaleTexture(source, destination, scene, internalFormat, onComplete);
-        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
-        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
-        createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
-        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
-        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
-        /**
-         * Updates a depth texture Comparison Mode and Function.
-         * If the comparison Function is equal to 0, the mode will be set to none.
-         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
-         * @param texture The texture to set the comparison function for
-         * @param comparisonFunction The comparison function to set, 0 if no comparison required
-         */
-        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
-        private _setupDepthStencilTexture(internalTexture, size, generateStencil, bilinearFiltering, comparisonFunction);
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @returns The texture
-         */
-        createDepthStencilTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: DepthTextureCreationOptions): InternalTexture;
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @returns The texture
-         */
-        private _createDepthStencilTexture(size, options);
-        /**
-         * Creates a depth stencil cube texture.
-         * This is only available in WebGL 2.
-         * @param size The size of face edge in the cube texture.
-         * @param options The options defining the cube texture.
-         * @returns The cube texture
-         */
-        private _createDepthStencilCubeTexture(size, options);
-        /**
-         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
-         * @param renderTarget The render target to set the frame buffer for
-         */
-        setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
-        createRenderTargetTexture(size: number | {
-            width: number;
-            height: number;
-        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
-        createMultipleRenderTarget(size: any, options: any): InternalTexture[];
-        private _setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height, samples?);
-        updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
-        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
-        _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView): void;
-        _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView): void;
-        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
-        createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number, onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any): InternalTexture;
-        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any): InternalTexture;
-        private setCubeMapTextureParams(gl, loadMipmap);
-        updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>, level?: number): void;
-        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
-        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, samplingMode?: number, invertY?: boolean): InternalTexture;
-        updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>): void;
-        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
-        private _prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
-        private _prepareWebGLTexture(texture, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode?);
-        private _convertRGBtoRGBATextureData(rgbData, width, height, textureType);
-        _releaseFramebufferObjects(texture: InternalTexture): void;
-        _releaseTexture(texture: InternalTexture): void;
-        private setProgram(program);
-        private _boundUniforms;
-        bindSamplers(effect: Effect): void;
-        private _moveBoundTextureOnTop(internalTexture);
-        private _getCorrectTextureChannel(channel, internalTexture);
-        private _linkTrackers(previous, next);
-        private _removeDesignatedSlot(internalTexture);
-        private _activateCurrentTexture();
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean): void;
-        _bindTexture(channel: number, texture: Nullable<InternalTexture>): void;
-        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void;
-        unbindAllTextures(): void;
-        /**
-         * Sets a texture to the according uniform.
-         * @param channel The texture channel
-         * @param uniform The uniform to set
-         * @param texture The texture to apply
-         */
-        setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void;
-        /**
-         * Sets a depth stencil texture from a render target to the according uniform.
-         * @param channel The texture channel
-         * @param uniform The uniform to set
-         * @param texture The render target texture containing the depth stencil texture to apply
-         */
-        setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void;
-        private _bindSamplerUniformToChannel(sourceSlot, destination);
-        private _setTexture(channel, texture, isPartOfTextureArray?, depthStencilTexture?);
-        setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void;
-        _setAnisotropicLevel(key: number, texture: BaseTexture): void;
-        readPixels(x: number, y: number, width: number, height: number): Uint8Array;
-        /**
-         * Add an externaly attached data from its key.
-         * This method call will fail and return false, if such key already exists.
-         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
-         * @param key the unique key that identifies the data
-         * @param data the data object to associate to the key for this Engine instance
-         * @return true if no such key were already present and the data was added successfully, false otherwise
-         */
-        addExternalData<T>(key: string, data: T): boolean;
-        /**
-         * Get an externaly attached data from its key
-         * @param key the unique key that identifies the data
-         * @return the associated data, if present (can be null), or undefined if not present
-         */
-        getExternalData<T>(key: string): T;
-        /**
-         * Get an externaly attached data from its key, create it using a factory if it's not already present
-         * @param key the unique key that identifies the data
-         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
-         * @return the associated data, can be null if the factory returned null.
-         */
-        getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T;
-        /**
-         * Remove an externaly attached data from the Engine instance
-         * @param key the unique key that identifies the data
-         * @return true if the data was successfully removed, false if it doesn't exist
-         */
-        removeExternalData(key: string): boolean;
-        unbindAllAttributes(): void;
-        releaseEffects(): void;
-        dispose(): void;
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingScreen: ILoadingScreen;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void;
-        attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void;
-        getVertexShaderSource(program: WebGLProgram): Nullable<string>;
-        getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
-        getError(): number;
-        getFps(): number;
-        getDeltaTime(): number;
-        private _measureFps();
-        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number): ArrayBufferView;
-        private _canRenderToFloatFramebuffer();
-        private _canRenderToHalfFloatFramebuffer();
-        private _canRenderToFramebuffer(type);
-        _getWebGLTextureType(type: number): number;
-        private _getInternalFormat(format);
-        /** @ignore */
-        _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
-        _getRGBAMultiSampleBufferFormat(type: number): number;
-        createQuery(): WebGLQuery;
-        deleteQuery(query: WebGLQuery): Engine;
-        isQueryResultAvailable(query: WebGLQuery): boolean;
-        getQueryResult(query: WebGLQuery): number;
-        beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine;
-        endOcclusionQuery(algorithmType: number): Engine;
-        private _createTimeQuery();
-        private _deleteTimeQuery(query);
-        private _getTimeQueryResult(query);
-        private _getTimeQueryAvailability(query);
-        private _currentNonTimestampToken;
-        startTimeQuery(): Nullable<_TimeToken>;
-        endTimeQuery(token: _TimeToken): int;
-        private getGlAlgorithmType(algorithmType);
-        createTransformFeedback(): WebGLTransformFeedback;
-        deleteTransformFeedback(value: WebGLTransformFeedback): void;
-        bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void;
-        beginTransformFeedback(usePoints?: boolean): void;
-        endTransformFeedback(): void;
-        setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void;
-        bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
-        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
-        /** @ignore */
-        _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
-        private _partialLoadFile(url, index, loadedFiles, scene, onfinish, onErrorCallBack?);
-        private _cascadeLoadFiles(scene, onfinish, files, onError?);
-        static isSupported(): boolean;
-    }
-}
-
-declare module BABYLON {
-    class NullEngineOptions {
-        renderWidth: number;
-        renderHeight: number;
-        textureSize: number;
-        deterministicLockstep: boolean;
-        lockstepMaxSteps: number;
-    }
-    /**
-     * The null engine class provides support for headless version of babylon.js.
-     * This can be used in server side scenario or for testing purposes
-     */
-    class NullEngine extends Engine {
-        private _options;
-        isDeterministicLockStep(): boolean;
-        getLockstepMaxSteps(): number;
-        getHardwareScalingLevel(): number;
-        constructor(options?: NullEngineOptions);
-        createVertexBuffer(vertices: FloatArray): WebGLBuffer;
-        createIndexBuffer(indices: IndicesArray): WebGLBuffer;
-        clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
-        getRenderWidth(useScreen?: boolean): number;
-        getRenderHeight(useScreen?: boolean): number;
-        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
-        createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
-        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
-        getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
-        bindSamplers(effect: Effect): void;
-        enableEffect(effect: Effect): void;
-        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
-        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
-        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
-        setArray(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
-        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
-        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
-        setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void;
-        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
-        setFloat(uniform: WebGLUniformLocation, value: number): void;
-        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
-        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
-        setBool(uniform: WebGLUniformLocation, bool: number): void;
-        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
-        setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
-        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
-        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-        bindBuffers(vertexBuffers: {
-            [key: string]: VertexBuffer;
-        }, indexBuffer: WebGLBuffer, effect: Effect): void;
-        wipeCaches(bruteForce?: boolean): void;
-        draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
-        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
-        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
-        _createTexture(): WebGLTexture;
-        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
-        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
-        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
-        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
-        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
-        createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer;
-        updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset?: number): void;
-        updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void;
-        protected _bindTextureDirectly(target: number, texture: InternalTexture): void;
-        _bindTexture(channel: number, texture: InternalTexture): void;
-        _releaseBuffer(buffer: WebGLBuffer): boolean;
-    }
-}
-
-interface WebGLRenderingContext {
-    readonly RASTERIZER_DISCARD: number;
-    readonly DEPTH_COMPONENT24: number;
-    readonly TEXTURE_3D: number;
-    readonly TEXTURE_2D_ARRAY: number;
-    readonly TEXTURE_COMPARE_FUNC: number;
-    readonly TEXTURE_COMPARE_MODE: number;
-    readonly COMPARE_REF_TO_TEXTURE: number;
-    readonly TEXTURE_WRAP_R: number;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
-    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
-    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
-    readonly TRANSFORM_FEEDBACK: number;
-    readonly INTERLEAVED_ATTRIBS: number;
-    readonly TRANSFORM_FEEDBACK_BUFFER: number;
-    createTransformFeedback(): WebGLTransformFeedback;
-    deleteTransformFeedback(transformFeedbac: WebGLTransformFeedback): void;
-    bindTransformFeedback(target: number, transformFeedback: WebGLTransformFeedback | null): void;
-    beginTransformFeedback(primitiveMode: number): void;
-    endTransformFeedback(): void;
-    transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
-}
-interface ImageBitmap {
-    readonly width: number;
-    readonly height: number;
-    close(): void;
-}
-interface WebGLQuery extends WebGLObject {
-}
-declare var WebGLQuery: {
-    prototype: WebGLQuery;
-    new (): WebGLQuery;
-};
-interface WebGLSampler extends WebGLObject {
-}
-declare var WebGLSampler: {
-    prototype: WebGLSampler;
-    new (): WebGLSampler;
-};
-interface WebGLSync extends WebGLObject {
-}
-declare var WebGLSync: {
-    prototype: WebGLSync;
-    new (): WebGLSync;
-};
-interface WebGLTransformFeedback extends WebGLObject {
-}
-declare var WebGLTransformFeedback: {
-    prototype: WebGLTransformFeedback;
-    new (): WebGLTransformFeedback;
-};
-interface WebGLVertexArrayObject extends WebGLObject {
-}
-declare var WebGLVertexArrayObject: {
-    prototype: WebGLVertexArrayObject;
-    new (): WebGLVertexArrayObject;
-};
-
-declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
-    }
-}
-
-declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
-    }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
-    }
-    /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
-     */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
-    }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -5414,160 +4251,1219 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class StickValues {
-        x: number;
-        y: number;
-        constructor(x: number, y: number);
-    }
-    interface GamepadButtonChanges {
-        changed: boolean;
-        pressChanged: boolean;
-        touchChanged: boolean;
-        valueChanged: boolean;
-    }
-    class Gamepad {
-        id: string;
-        index: number;
-        browserGamepad: any;
-        type: number;
-        private _leftStick;
-        private _rightStick;
-        _isConnected: boolean;
-        private _leftStickAxisX;
-        private _leftStickAxisY;
-        private _rightStickAxisX;
-        private _rightStickAxisY;
-        private _onleftstickchanged;
-        private _onrightstickchanged;
-        static GAMEPAD: number;
-        static GENERIC: number;
-        static XBOX: number;
-        static POSE_ENABLED: number;
-        protected _invertLeftStickY: boolean;
-        readonly isConnected: boolean;
-        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
-        onleftstickchanged(callback: (values: StickValues) => void): void;
-        onrightstickchanged(callback: (values: StickValues) => void): void;
-        leftStick: StickValues;
-        rightStick: StickValues;
-        update(): void;
-        dispose(): void;
-    }
-    class GenericPad extends Gamepad {
-        private _buttons;
-        private _onbuttondown;
-        private _onbuttonup;
-        onButtonDownObservable: Observable<number>;
-        onButtonUpObservable: Observable<number>;
-        onbuttondown(callback: (buttonPressed: number) => void): void;
-        onbuttonup(callback: (buttonReleased: number) => void): void;
-        constructor(id: string, index: number, browserGamepad: any);
-        private _setButtonValue(newValue, currentValue, buttonIndex);
-        update(): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class GamepadManager {
+    class DebugLayer {
         private _scene;
-        private _babylonGamepads;
-        private _oneGamepadConnected;
-        _isMonitoring: boolean;
-        private _gamepadEventSupported;
-        private _gamepadSupport;
-        onGamepadConnectedObservable: Observable<Gamepad>;
-        onGamepadDisconnectedObservable: Observable<Gamepad>;
-        private _onGamepadConnectedEvent;
-        private _onGamepadDisconnectedEvent;
-        constructor(_scene?: Scene | undefined);
-        readonly gamepads: Gamepad[];
-        getGamepadByType(type?: number): Nullable<Gamepad>;
-        dispose(): void;
-        private _addNewGamepad(gamepad);
-        private _startMonitoringGamepads();
-        private _stopMonitoringGamepads();
-        _checkGamepadsStatus(): void;
-        private _updateGamepadObjects();
+        static InspectorURL: string;
+        private _inspector;
+        private BJSINSPECTOR;
+        constructor(scene: Scene);
+        /** Creates the inspector window. */
+        private _createInspector(config?);
+        isVisible(): boolean;
+        hide(): void;
+        show(config?: {
+            popup?: boolean;
+            initialTab?: number;
+            parentElement?: HTMLElement;
+            newColors?: {
+                backgroundColor?: string;
+                backgroundColorLighter?: string;
+                backgroundColorLighter2?: string;
+                backgroundColorLighter3?: string;
+                color?: string;
+                colorTop?: string;
+                colorBot?: string;
+            };
+        }): void;
     }
 }
 
 declare module BABYLON {
-    enum Xbox360Button {
-        A = 0,
-        B = 1,
-        X = 2,
-        Y = 3,
-        Start = 4,
-        Back = 5,
-        LB = 6,
-        RB = 7,
-        LeftStick = 8,
-        RightStick = 9,
+    class Debug {
+        static AxesViewer: {
+            new (scene: Scene, scaleLines?: number): {
+                _xline: Vector3[];
+                _yline: Vector3[];
+                _zline: Vector3[];
+                _xmesh: Nullable<LinesMesh>;
+                _ymesh: Nullable<LinesMesh>;
+                _zmesh: Nullable<LinesMesh>;
+                scene: Nullable<Scene>;
+                scaleLines: number;
+                update(position: Vector3, xaxis: Vector3, yaxis: Vector3, zaxis: Vector3): void;
+                dispose(): void;
+            };
+        };
+        static BoneAxesViewer: {
+            new (scene: Scene, bone: Bone, mesh: Mesh, scaleLines?: number): {
+                mesh: Nullable<Mesh>;
+                bone: Nullable<Bone>;
+                pos: Vector3;
+                xaxis: Vector3;
+                yaxis: Vector3;
+                zaxis: Vector3;
+                update(): void;
+                dispose(): void;
+                _xline: Vector3[];
+                _yline: Vector3[];
+                _zline: Vector3[];
+                _xmesh: Nullable<LinesMesh>;
+                _ymesh: Nullable<LinesMesh>;
+                _zmesh: Nullable<LinesMesh>;
+                scene: Nullable<Scene>;
+                scaleLines: number;
+            };
+        };
+        static PhysicsViewer: {
+            new (scene: Scene): {
+                _impostors: Nullable<PhysicsImpostor>[];
+                _meshes: Nullable<AbstractMesh>[];
+                _scene: Nullable<Scene>;
+                _numMeshes: number;
+                _physicsEnginePlugin: Nullable<IPhysicsEnginePlugin>;
+                _renderFunction: () => void;
+                _debugBoxMesh: Mesh;
+                _debugSphereMesh: Mesh;
+                _debugMaterial: StandardMaterial;
+                _updateDebugMeshes(): void;
+                showImpostor(impostor: PhysicsImpostor): void;
+                hideImpostor(impostor: Nullable<PhysicsImpostor>): void;
+                _getDebugMaterial(scene: Scene): Material;
+                _getDebugBoxMesh(scene: Scene): AbstractMesh;
+                _getDebugSphereMesh(scene: Scene): AbstractMesh;
+                _getDebugMesh(impostor: PhysicsImpostor, scene: Scene): Nullable<AbstractMesh>;
+                dispose(): void;
+            };
+        };
+        static SkeletonViewer: {
+            new (skeleton: Skeleton, mesh: AbstractMesh, scene: Scene, autoUpdateBonesMatrices?: boolean, renderingGroupId?: number): {
+                color: Color3;
+                _scene: Scene;
+                _debugLines: Vector3[][];
+                _debugMesh: Nullable<LinesMesh>;
+                _isEnabled: boolean;
+                _renderFunction: () => void;
+                skeleton: Skeleton;
+                mesh: AbstractMesh;
+                autoUpdateBonesMatrices: boolean;
+                renderingGroupId: number;
+                isEnabled: boolean;
+                _getBonePosition(position: Vector3, bone: Bone, meshMat: Matrix, x?: number, y?: number, z?: number): void;
+                _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void;
+                _getLinesForBonesNoLength(bones: Bone[], meshMat: Matrix): void;
+                update(): void;
+                dispose(): void;
+            };
+        };
     }
-    enum Xbox360Dpad {
-        Up = 0,
-        Down = 1,
-        Left = 2,
-        Right = 3,
-    }
-    class Xbox360Pad extends Gamepad {
-        private _leftTrigger;
-        private _rightTrigger;
-        private _onlefttriggerchanged;
-        private _onrighttriggerchanged;
-        private _onbuttondown;
-        private _onbuttonup;
-        private _ondpaddown;
-        private _ondpadup;
-        onButtonDownObservable: Observable<Xbox360Button>;
-        onButtonUpObservable: Observable<Xbox360Button>;
-        onPadDownObservable: Observable<Xbox360Dpad>;
-        onPadUpObservable: Observable<Xbox360Dpad>;
-        private _buttonA;
-        private _buttonB;
-        private _buttonX;
-        private _buttonY;
-        private _buttonBack;
-        private _buttonStart;
-        private _buttonLB;
-        private _buttonRB;
-        private _buttonLeftStick;
-        private _buttonRightStick;
-        private _dPadUp;
-        private _dPadDown;
-        private _dPadLeft;
-        private _dPadRight;
-        private _isXboxOnePad;
-        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
-        onlefttriggerchanged(callback: (value: number) => void): void;
-        onrighttriggerchanged(callback: (value: number) => void): void;
-        leftTrigger: number;
-        rightTrigger: number;
-        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
-        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
-        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
-        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
-        private _setButtonValue(newValue, currentValue, buttonType);
-        private _setDPadValue(newValue, currentValue, buttonType);
-        buttonA: number;
-        buttonB: number;
-        buttonX: number;
-        buttonY: number;
-        buttonStart: number;
-        buttonBack: number;
-        buttonLB: number;
-        buttonRB: number;
-        buttonLeftStick: number;
-        buttonRightStick: number;
-        dPadUp: number;
-        dPadDown: number;
-        dPadLeft: number;
-        dPadRight: number;
-        update(): void;
+}
+
+declare module BABYLON {
+    class RayHelper {
+        ray: Nullable<Ray>;
+        private _renderPoints;
+        private _renderLine;
+        private _renderFunction;
+        private _scene;
+        private _updateToMeshFunction;
+        private _attachedToMesh;
+        private _meshSpaceDirection;
+        private _meshSpaceOrigin;
+        static CreateAndShow(ray: Ray, scene: Scene, color: Color3): RayHelper;
+        constructor(ray: Ray);
+        show(scene: Scene, color: Color3): void;
+        hide(): void;
+        private _render();
+        attachToMesh(mesh: AbstractMesh, meshSpaceDirection?: Vector3, meshSpaceOrigin?: Vector3, length?: number): void;
+        detachFromMesh(): void;
+        private _updateToMesh();
         dispose(): void;
     }
 }
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
+    /**
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
+     */
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    }
+}
+
+declare module BABYLON {
+    class InstancingAttributeInfo {
+        /**
+         * Index/offset of the attribute in the vertex shader
+         */
+        index: number;
+        /**
+         * size of the attribute, 1, 2, 3 or 4
+         */
+        attributeSize: number;
+        /**
+         * type of the attribute, gl.BYTE, gl.UNSIGNED_BYTE, gl.SHORT, gl.UNSIGNED_SHORT, gl.FIXED, gl.FLOAT.
+         * default is FLOAT
+         */
+        attribyteType: number;
+        /**
+         * normalization of fixed-point data. behavior unclear, use FALSE, default is FALSE
+         */
+        normalized: boolean;
+        /**
+         * Offset of the data in the Vertex Buffer acting as the instancing buffer
+         */
+        offset: number;
+        /**
+         * Name of the GLSL attribute, for debugging purpose only
+         */
+        attributeName: string;
+    }
+    /**
+     * Define options used to create a render target texture
+     */
+    class RenderTargetCreationOptions {
+        /**
+         * Specifies is mipmaps must be generated
+         */
+        generateMipMaps?: boolean;
+        /** Specifies whether or not a depth should be allocated in the texture (true by default) */
+        generateDepthBuffer?: boolean;
+        /** Specifies whether or not a stencil should be allocated in the texture (false by default)*/
+        generateStencilBuffer?: boolean;
+        /** Defines texture type (int by default) */
+        type?: number;
+        /** Defines sampling mode (trilinear by default) */
+        samplingMode?: number;
+        /** Defines format (RGBA by default) */
+        format?: number;
+    }
+    /**
+     * Define options used to create a depth texture
+     */
+    class DepthTextureCreationOptions {
+        /** Specifies whether or not a stencil should be allocated in the texture */
+        generateStencil?: boolean;
+        /** Specifies whether or not bilinear filtering is enable on the texture */
+        bilinearFiltering?: boolean;
+        /** Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode */
+        comparisonFunction?: number;
+        /** Specifies if the created texture is a cube texture */
+        isCube?: boolean;
+    }
+    /**
+     * Regroup several parameters relative to the browser in use
+     */
+    class EngineCapabilities {
+        /** The maximum textures image */
+        maxTexturesImageUnits: number;
+        maxVertexTextureImageUnits: number;
+        maxCombinedTexturesImageUnits: number;
+        /** The maximum texture size */
+        maxTextureSize: number;
+        maxCubemapTextureSize: number;
+        maxRenderTextureSize: number;
+        maxVertexAttribs: number;
+        maxVaryingVectors: number;
+        maxVertexUniformVectors: number;
+        maxFragmentUniformVectors: number;
+        standardDerivatives: boolean;
+        s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
+        pvrtc: any;
+        etc1: any;
+        etc2: any;
+        astc: any;
+        textureFloat: boolean;
+        vertexArrayObject: boolean;
+        textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
+        maxAnisotropy: number;
+        instancedArrays: boolean;
+        uintIndices: boolean;
+        highPrecisionShaderSupported: boolean;
+        fragmentDepthSupported: boolean;
+        textureFloatLinearFiltering: boolean;
+        textureFloatRender: boolean;
+        textureHalfFloat: boolean;
+        textureHalfFloatLinearFiltering: boolean;
+        textureHalfFloatRender: boolean;
+        textureLOD: boolean;
+        drawBuffersExtension: boolean;
+        depthTextureExtension: boolean;
+        colorBufferFloat: boolean;
+        timerQuery: EXT_disjoint_timer_query;
+        canUseTimestampForTimerQuery: boolean;
+    }
+    interface EngineOptions extends WebGLContextAttributes {
+        limitDeviceRatio?: number;
+        autoEnableWebVR?: boolean;
+        disableWebGL2Support?: boolean;
+        audioEngine?: boolean;
+        deterministicLockstep?: boolean;
+        lockstepMaxSteps?: number;
+        doNotHandleContextLost?: boolean;
+    }
+    interface IDisplayChangedEventArgs {
+        vrDisplay: Nullable<any>;
+        vrSupported: boolean;
+    }
+    /**
+     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
+     */
+    class Engine {
+        /** Use this array to turn off some WebGL2 features on known buggy browsers version */
+        static ExceptionList: ({
+            key: string;
+            capture: string;
+            captureConstraint: number;
+            targets: string[];
+        } | {
+            key: string;
+            capture: null;
+            captureConstraint: null;
+            targets: string[];
+        })[];
+        static Instances: Engine[];
+        static readonly LastCreatedEngine: Nullable<Engine>;
+        static readonly LastCreatedScene: Nullable<Scene>;
+        /**
+         * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+         */
+        static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void;
+        private static _ALPHA_DISABLE;
+        private static _ALPHA_ADD;
+        private static _ALPHA_COMBINE;
+        private static _ALPHA_SUBTRACT;
+        private static _ALPHA_MULTIPLY;
+        private static _ALPHA_MAXIMIZED;
+        private static _ALPHA_ONEONE;
+        private static _ALPHA_PREMULTIPLIED;
+        private static _ALPHA_PREMULTIPLIED_PORTERDUFF;
+        private static _ALPHA_INTERPOLATE;
+        private static _ALPHA_SCREENMODE;
+        private static _DELAYLOADSTATE_NONE;
+        private static _DELAYLOADSTATE_LOADED;
+        private static _DELAYLOADSTATE_LOADING;
+        private static _DELAYLOADSTATE_NOTLOADED;
+        private static _TEXTUREFORMAT_ALPHA;
+        private static _TEXTUREFORMAT_LUMINANCE;
+        private static _TEXTUREFORMAT_LUMINANCE_ALPHA;
+        private static _TEXTUREFORMAT_RGB;
+        private static _TEXTUREFORMAT_RGBA;
+        private static _TEXTUREFORMAT_R32F;
+        private static _TEXTUREFORMAT_RG32F;
+        private static _TEXTUREFORMAT_RGB32F;
+        private static _TEXTUREFORMAT_RGBA32F;
+        private static _TEXTURETYPE_UNSIGNED_INT;
+        private static _TEXTURETYPE_FLOAT;
+        private static _TEXTURETYPE_HALF_FLOAT;
+        private static _NEVER;
+        private static _ALWAYS;
+        private static _LESS;
+        private static _EQUAL;
+        private static _LEQUAL;
+        private static _GREATER;
+        private static _GEQUAL;
+        private static _NOTEQUAL;
+        static readonly NEVER: number;
+        static readonly ALWAYS: number;
+        static readonly LESS: number;
+        static readonly EQUAL: number;
+        static readonly LEQUAL: number;
+        static readonly GREATER: number;
+        static readonly GEQUAL: number;
+        static readonly NOTEQUAL: number;
+        private static _KEEP;
+        private static _REPLACE;
+        private static _INCR;
+        private static _DECR;
+        private static _INVERT;
+        private static _INCR_WRAP;
+        private static _DECR_WRAP;
+        static readonly KEEP: number;
+        static readonly REPLACE: number;
+        static readonly INCR: number;
+        static readonly DECR: number;
+        static readonly INVERT: number;
+        static readonly INCR_WRAP: number;
+        static readonly DECR_WRAP: number;
+        static readonly ALPHA_DISABLE: number;
+        static readonly ALPHA_ONEONE: number;
+        static readonly ALPHA_ADD: number;
+        static readonly ALPHA_COMBINE: number;
+        static readonly ALPHA_SUBTRACT: number;
+        static readonly ALPHA_MULTIPLY: number;
+        static readonly ALPHA_MAXIMIZED: number;
+        static readonly ALPHA_PREMULTIPLIED: number;
+        static readonly ALPHA_PREMULTIPLIED_PORTERDUFF: number;
+        static readonly ALPHA_INTERPOLATE: number;
+        static readonly ALPHA_SCREENMODE: number;
+        static readonly DELAYLOADSTATE_NONE: number;
+        static readonly DELAYLOADSTATE_LOADED: number;
+        static readonly DELAYLOADSTATE_LOADING: number;
+        static readonly DELAYLOADSTATE_NOTLOADED: number;
+        static readonly TEXTUREFORMAT_ALPHA: number;
+        static readonly TEXTUREFORMAT_LUMINANCE: number;
+        /**
+         * R32F
+         */
+        static readonly TEXTUREFORMAT_R32F: number;
+        /**
+         * RG32F
+         */
+        static readonly TEXTUREFORMAT_RG32F: number;
+        /**
+         * RGB32F
+         */
+        static readonly TEXTUREFORMAT_RGB32F: number;
+        /**
+         * RGBA32F
+         */
+        static readonly TEXTUREFORMAT_RGBA32F: number;
+        static readonly TEXTUREFORMAT_LUMINANCE_ALPHA: number;
+        static readonly TEXTUREFORMAT_RGB: number;
+        static readonly TEXTUREFORMAT_RGBA: number;
+        static readonly TEXTURETYPE_UNSIGNED_INT: number;
+        static readonly TEXTURETYPE_FLOAT: number;
+        static readonly TEXTURETYPE_HALF_FLOAT: number;
+        private static _SCALEMODE_FLOOR;
+        private static _SCALEMODE_NEAREST;
+        private static _SCALEMODE_CEILING;
+        static readonly SCALEMODE_FLOOR: number;
+        static readonly SCALEMODE_NEAREST: number;
+        static readonly SCALEMODE_CEILING: number;
+        static readonly Version: string;
+        static CollisionsEpsilon: number;
+        static CodeRepository: string;
+        static ShadersRepository: string;
+        forcePOTTextures: boolean;
+        isFullscreen: boolean;
+        isPointerLock: boolean;
+        cullBackFaces: boolean;
+        renderEvenInBackground: boolean;
+        preventCacheWipeBetweenFrames: boolean;
+        enableOfflineSupport: boolean;
+        scenes: Scene[];
+        postProcesses: PostProcess[];
+        /**
+         * Observable event triggered each time the rendering canvas is resized
+         */
+        onResizeObservable: Observable<Engine>;
+        /**
+         * Observable event triggered each time the canvas loses focus
+         */
+        onCanvasBlurObservable: Observable<Engine>;
+        /**
+         * Observable event triggered each time the canvas gains focus
+         */
+        onCanvasFocusObservable: Observable<Engine>;
+        /**
+         * Observable event triggered each time the canvas receives pointerout event
+         */
+        onCanvasPointerOutObservable: Observable<PointerEvent>;
+        /**
+         * Observable event triggered before each texture is initialized
+         */
+        onBeforeTextureInitObservable: Observable<Texture>;
+        private _vrDisplay;
+        private _vrSupported;
+        private _oldSize;
+        private _oldHardwareScaleFactor;
+        private _vrExclusivePointerMode;
+        private _webVRInitPromise;
+        readonly isInVRExclusivePointerMode: boolean;
+        disableUniformBuffers: boolean;
+        _uniformBuffers: UniformBuffer[];
+        readonly supportsUniformBuffers: boolean;
+        /**
+         * Observable raised when the engine begins a new frame
+         */
+        onBeginFrameObservable: Observable<Engine>;
+        /**
+         * Observable raised when the engine ends the current frame
+         */
+        onEndFrameObservable: Observable<Engine>;
+        /**
+         * Observable raised when the engine is about to compile a shader
+         */
+        onBeforeShaderCompilationObservable: Observable<Engine>;
+        /**
+         * Observable raised when the engine has jsut compiled a shader
+         */
+        onAfterShaderCompilationObservable: Observable<Engine>;
+        private _gl;
+        private _renderingCanvas;
+        private _windowIsBackground;
+        private _webGLVersion;
+        readonly needPOTTextures: boolean;
+        private _badOS;
+        readonly badOS: boolean;
+        private _badDesktopOS;
+        readonly badDesktopOS: boolean;
+        /**
+         * Gets or sets a value indicating if we want to disable texture binding optmization.
+         * This could be required on some buggy drivers which wants to have textures bound in a progressive order
+         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is.
+         */
+        disableTextureBindingOptimization: boolean;
+        static audioEngine: AudioEngine;
+        private _onFocus;
+        private _onBlur;
+        private _onCanvasPointerOut;
+        private _onCanvasBlur;
+        private _onCanvasFocus;
+        private _onFullscreenChange;
+        private _onPointerLockChange;
+        private _onVRDisplayPointerRestricted;
+        private _onVRDisplayPointerUnrestricted;
+        private _onVrDisplayConnect;
+        private _onVrDisplayDisconnect;
+        private _onVrDisplayPresentChange;
+        onVRDisplayChangedObservable: Observable<IDisplayChangedEventArgs>;
+        onVRRequestPresentComplete: Observable<boolean>;
+        onVRRequestPresentStart: Observable<Engine>;
+        private _hardwareScalingLevel;
+        protected _caps: EngineCapabilities;
+        private _pointerLockRequested;
+        private _isStencilEnable;
+        private _colorWrite;
+        private _loadingScreen;
+        _drawCalls: PerfCounter;
+        _textureCollisions: PerfCounter;
+        private _glVersion;
+        private _glRenderer;
+        private _glVendor;
+        private _videoTextureSupported;
+        private _renderingQueueLaunched;
+        private _activeRenderLoops;
+        private _deterministicLockstep;
+        private _lockstepMaxSteps;
+        onContextLostObservable: Observable<Engine>;
+        onContextRestoredObservable: Observable<Engine>;
+        private _onContextLost;
+        private _onContextRestored;
+        private _contextWasLost;
+        private _doNotHandleContextLost;
+        private _performanceMonitor;
+        private _fps;
+        private _deltaTime;
+        /**
+         * Turn this value on if you want to pause FPS computation when in background
+         */
+        disablePerformanceMonitorInBackground: boolean;
+        readonly performanceMonitor: PerformanceMonitor;
+        protected _depthCullingState: _DepthCullingState;
+        protected _stencilState: _StencilState;
+        protected _alphaState: _AlphaState;
+        protected _alphaMode: number;
+        private _internalTexturesCache;
+        protected _activeChannel: number;
+        private _currentTextureChannel;
+        protected _boundTexturesCache: {
+            [key: string]: Nullable<InternalTexture>;
+        };
+        protected _currentEffect: Nullable<Effect>;
+        protected _currentProgram: Nullable<WebGLProgram>;
+        private _compiledEffects;
+        private _vertexAttribArraysEnabled;
+        protected _cachedViewport: Nullable<Viewport>;
+        private _cachedVertexArrayObject;
+        protected _cachedVertexBuffers: any;
+        protected _cachedIndexBuffer: Nullable<WebGLBuffer>;
+        protected _cachedEffectForVertexBuffers: Nullable<Effect>;
+        protected _currentRenderTarget: Nullable<InternalTexture>;
+        private _uintIndicesCurrentlySet;
+        private _currentBoundBuffer;
+        protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
+        private _currentBufferPointers;
+        private _currentInstanceLocations;
+        private _currentInstanceBuffers;
+        private _textureUnits;
+        private _firstBoundInternalTextureTracker;
+        private _lastBoundInternalTextureTracker;
+        private _workingCanvas;
+        private _workingContext;
+        private _rescalePostProcess;
+        private _dummyFramebuffer;
+        private _externalData;
+        private _bindedRenderFunction;
+        private _vaoRecordInProgress;
+        private _mustWipeVertexAttributes;
+        private _emptyTexture;
+        private _emptyCubeTexture;
+        private _emptyTexture3D;
+        private _frameHandler;
+        private _nextFreeTextureSlots;
+        private _maxSimultaneousTextures;
+        private _activeRequests;
+        private _texturesSupported;
+        private _textureFormatInUse;
+        readonly texturesSupported: Array<string>;
+        readonly textureFormatInUse: Nullable<string>;
+        readonly currentViewport: Nullable<Viewport>;
+        readonly emptyTexture: InternalTexture;
+        readonly emptyTexture3D: InternalTexture;
+        readonly emptyCubeTexture: InternalTexture;
+        /**
+         * @constructor
+         * @param canvasOrContext defines the canvas or WebGL context to use for rendering
+         * @param antialias defines enable antialiasing (default: false)
+         * @param options defines further options to be sent to the getContext() function
+         * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
+         */
+        constructor(canvasOrContext: Nullable<HTMLCanvasElement | WebGLRenderingContext>, antialias?: boolean, options?: EngineOptions, adaptToDeviceRatio?: boolean);
+        private _rebuildInternalTextures();
+        private _rebuildEffects();
+        private _rebuildBuffers();
+        private _initGLContext();
+        readonly webGLVersion: number;
+        /**
+         * Returns true if the stencil buffer has been enabled through the creation option of the context.
+         */
+        readonly isStencilEnable: boolean;
+        private _prepareWorkingCanvas();
+        resetTextureCache(): void;
+        isDeterministicLockStep(): boolean;
+        getLockstepMaxSteps(): number;
+        getGlInfo(): {
+            vendor: string;
+            renderer: string;
+            version: string;
+        };
+        getAspectRatio(camera: Camera, useScreen?: boolean): number;
+        getRenderWidth(useScreen?: boolean): number;
+        getRenderHeight(useScreen?: boolean): number;
+        getRenderingCanvas(): Nullable<HTMLCanvasElement>;
+        getRenderingCanvasClientRect(): Nullable<ClientRect>;
+        setHardwareScalingLevel(level: number): void;
+        getHardwareScalingLevel(): number;
+        getLoadedTexturesCache(): InternalTexture[];
+        getCaps(): EngineCapabilities;
+        /** The number of draw calls submitted last frame */
+        readonly drawCalls: number;
+        readonly drawCallsPerfCounter: Nullable<PerfCounter>;
+        getDepthFunction(): Nullable<number>;
+        setDepthFunction(depthFunc: number): void;
+        setDepthFunctionToGreater(): void;
+        setDepthFunctionToGreaterOrEqual(): void;
+        setDepthFunctionToLess(): void;
+        setDepthFunctionToLessOrEqual(): void;
+        getStencilBuffer(): boolean;
+        setStencilBuffer(enable: boolean): void;
+        getStencilMask(): number;
+        setStencilMask(mask: number): void;
+        getStencilFunction(): number;
+        getStencilFunctionReference(): number;
+        getStencilFunctionMask(): number;
+        setStencilFunction(stencilFunc: number): void;
+        setStencilFunctionReference(reference: number): void;
+        setStencilFunctionMask(mask: number): void;
+        getStencilOperationFail(): number;
+        getStencilOperationDepthFail(): number;
+        getStencilOperationPass(): number;
+        setStencilOperationFail(operation: number): void;
+        setStencilOperationDepthFail(operation: number): void;
+        setStencilOperationPass(operation: number): void;
+        setDitheringState(value: boolean): void;
+        setRasterizerState(value: boolean): void;
+        /**
+         * stop executing a render loop function and remove it from the execution array
+         * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
+         */
+        stopRenderLoop(renderFunction?: () => void): void;
+        _renderLoop(): void;
+        /**
+         * Register and execute a render loop. The engine can have more than one render function.
+         * @param {Function} renderFunction - the function to continuously execute starting the next render loop.
+         * @example
+         * engine.runRenderLoop(function () {
+         *      scene.render()
+         * })
+         */
+        runRenderLoop(renderFunction: () => void): void;
+        /**
+         * Toggle full screen mode.
+         * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
+         * @param {any} options - an options object to be sent to the requestFullscreen function
+         */
+        switchFullscreen(requestPointerLock: boolean): void;
+        clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void;
+        /**
+         * Set the WebGL's viewport
+         * @param {BABYLON.Viewport} viewport - the viewport element to be used.
+         * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
+         * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
+         */
+        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
+        /**
+         * Directly set the WebGL Viewport
+         * The x, y, width & height are directly passed to the WebGL call
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
+         */
+        setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport>;
+        beginFrame(): void;
+        endFrame(): void;
+        /**
+         * resize the view according to the canvas' size.
+         * @example
+         *   window.addEventListener("resize", function () {
+         *      engine.resize();
+         *   });
+         */
+        resize(): void;
+        /**
+         * force a specific size of the canvas
+         * @param {number} width - the new canvas' width
+         * @param {number} height - the new canvas' height
+         */
+        setSize(width: number, height: number): void;
+        isVRDevicePresent(): boolean;
+        getVRDevice(): any;
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns The onVRDisplayChangedObservable.
+         */
+        initWebVR(): Observable<IDisplayChangedEventArgs>;
+        /**
+         * Initializes a webVR display and starts listening to display change events.
+         * The onVRDisplayChangedObservable will be notified upon these changes.
+         * @returns A promise containing a VRDisplay and if vr is supported.
+         */
+        initWebVRAsync(): Promise<IDisplayChangedEventArgs>;
+        enableVR(): void;
+        disableVR(): void;
+        private _onVRFullScreenTriggered;
+        private _getVRDisplaysAsync();
+        /**
+         * Binds the frame buffer to the specified texture.
+         * @param texture The texture to render to or null for the default canvas
+         * @param faceIndex The face of the texture to render to in case of cube texture
+         * @param requiredWidth The width of the target to render to
+         * @param requiredHeight The height of the target to render to
+         * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
+         * @param depthStencilTexture The depth stencil texture to use to render
+         */
+        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean, depthStencilTexture?: InternalTexture): void;
+        private bindUnboundFramebuffer(framebuffer);
+        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        generateMipMapsForCubemap(texture: InternalTexture): void;
+        flushFramebuffer(): void;
+        restoreDefaultFramebuffer(): void;
+        createUniformBuffer(elements: FloatArray): WebGLBuffer;
+        createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer;
+        updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: FloatArray, offset?: number, count?: number): void;
+        private _resetVertexBufferBinding();
+        createVertexBuffer(vertices: FloatArray): WebGLBuffer;
+        createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer;
+        updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset?: number): void;
+        updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void;
+        private _resetIndexBufferBinding();
+        createIndexBuffer(indices: IndicesArray, updatable?: boolean): WebGLBuffer;
+        bindArrayBuffer(buffer: Nullable<WebGLBuffer>): void;
+        bindUniformBuffer(buffer: Nullable<WebGLBuffer>): void;
+        bindUniformBufferBase(buffer: WebGLBuffer, location: number): void;
+        bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void;
+        private bindIndexBuffer(buffer);
+        private bindBuffer(buffer, target);
+        updateArrayBuffer(data: Float32Array): void;
+        private vertexAttribPointer(buffer, indx, size, type, normalized, stride, offset);
+        private _bindIndexBufferWithCache(indexBuffer);
+        private _bindVertexBuffersAttributes(vertexBuffers, effect);
+        recordVertexArrayObject(vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): WebGLVertexArrayObject;
+        bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void;
+        bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void;
+        private _unbindVertexArrayObject();
+        bindBuffers(vertexBuffers: {
+            [key: string]: Nullable<VertexBuffer>;
+        }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void;
+        unbindInstanceAttributes(): void;
+        releaseVertexArrayObject(vao: WebGLVertexArrayObject): void;
+        _releaseBuffer(buffer: WebGLBuffer): boolean;
+        createInstancesBuffer(capacity: number): WebGLBuffer;
+        deleteInstancesBuffer(buffer: WebGLBuffer): void;
+        updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void;
+        applyStates(): void;
+        draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
+        drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
+        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        private DrawMode(fillMode);
+        _releaseEffect(effect: Effect): void;
+        _deleteProgram(program: WebGLProgram): void;
+        /**
+         * @param baseName The base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+         * @param samplers An array of string used to represent textures
+         */
+        createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect;
+        createEffectForParticles(fragmentName: string, uniformsNames?: string[], samplers?: string[], defines?: string, fallbacks?: EffectFallbacks, onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect;
+        createRawShaderProgram(vertexCode: string, fragmentCode: string, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        createShaderProgram(vertexCode: string, fragmentCode: string, defines: Nullable<string>, context?: WebGLRenderingContext, transformFeedbackVaryings?: Nullable<string[]>): WebGLProgram;
+        private _createShaderProgram(vertexShader, fragmentShader, context, transformFeedbackVaryings?);
+        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): Nullable<WebGLUniformLocation>[];
+        getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
+        enableEffect(effect: Nullable<Effect>): void;
+        setIntArray(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray2(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray3(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setIntArray4(uniform: Nullable<WebGLUniformLocation>, array: Int32Array): void;
+        setFloatArray(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
+        setFloatArray2(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
+        setFloatArray3(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
+        setFloatArray4(uniform: Nullable<WebGLUniformLocation>, array: Float32Array): void;
+        setArray(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[]): void;
+        setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): void;
+        setMatrix(uniform: Nullable<WebGLUniformLocation>, matrix: Matrix): void;
+        setMatrix3x3(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
+        setMatrix2x2(uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): void;
+        setInt(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        setFloat(uniform: Nullable<WebGLUniformLocation>, value: number): void;
+        setFloat2(uniform: Nullable<WebGLUniformLocation>, x: number, y: number): void;
+        setFloat3(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): void;
+        setBool(uniform: Nullable<WebGLUniformLocation>, bool: number): void;
+        setFloat4(uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): void;
+        setColor3(uniform: Nullable<WebGLUniformLocation>, color3: Color3): void;
+        setColor4(uniform: Nullable<WebGLUniformLocation>, color3: Color3, alpha: number): void;
+        /**
+         * Sets a Color4 on a uniform variable
+         * @param uniform defines the uniform location
+         * @param color4 defines the value to be set
+         */
+        setDirectColor4(uniform: Nullable<WebGLUniformLocation>, color4: Color4): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setZOffset(value: number): void;
+        getZOffset(): number;
+        setDepthBuffer(enable: boolean): void;
+        getDepthWrite(): boolean;
+        setDepthWrite(enable: boolean): void;
+        setColorWrite(enable: boolean): void;
+        getColorWrite(): boolean;
+        setAlphaConstants(r: number, g: number, b: number, a: number): void;
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+        getAlphaMode(): number;
+        wipeCaches(bruteForce?: boolean): void;
+        /**
+         * Set the compressed texture format to use, based on the formats you have, and the formats
+         * supported by the hardware / browser.
+         *
+         * Khronos Texture Container (.ktx) files are used to support this.  This format has the
+         * advantage of being specifically designed for OpenGL.  Header elements directly correspond
+         * to API arguments needed to compressed textures.  This puts the burden on the container
+         * generator to house the arcane code for determining these for current & future formats.
+         *
+         * for description see https://www.khronos.org/opengles/sdk/tools/KTX/
+         * for file layout see https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/
+         *
+         * Note: The result of this call is not taken into account when a texture is base64.
+         *
+         * @param {Array<string>} formatsAvailable- The list of those format families you have created
+         * on your server.  Syntax: '-' + format family + '.ktx'.  (Case and order do not matter.)
+         *
+         * Current families are astc, dxt, pvrtc, etc2, & etc1.
+         * @returns The extension selected.
+         */
+        setTextureFormatToUse(formatsAvailable: Array<string>): Nullable<string>;
+        _createTexture(): WebGLTexture;
+        /**
+         * Usually called from BABYLON.Texture.ts.  Passed information to create a WebGLTexture.
+         * @param {string} urlArg- This contains one of the following:
+         *                         1. A conventional http URL, e.g. 'http://...' or 'file://...'
+         *                         2. A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+         *                         3. An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+         *
+         * @param {boolean} noMipmap- When true, no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file.
+         * @param {boolean} invertY- When true, image is flipped when loaded.  You probably want true. Ignored for compressed textures.  Must be flipped in the file.
+         * @param {Scene} scene- Needed for loading to the correct scene.
+         * @param {number} samplingMode- Mode with should be used sample / access the texture.  Default: TRILINEAR
+         * @param {callback} onLoad- Optional callback to be called upon successful completion.
+         * @param {callback} onError- Optional callback to be called upon failure.
+         * @param {ArrayBuffer | HTMLImageElement} buffer- A source of a file previously fetched as either an ArrayBuffer (compressed or image format) or HTMLImageElement (image format)
+         * @param {WebGLTexture} fallback- An internal argument in case the function must be called again, due to etc1 not having alpha capabilities.
+         * @param {number} format-  Internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures.
+         *
+         * @returns {WebGLTexture} for assignment back into BABYLON.Texture
+         */
+        createTexture(urlArg: Nullable<string>, noMipmap: boolean, invertY: boolean, scene: Nullable<Scene>, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: Nullable<InternalTexture>, format?: Nullable<number>): InternalTexture;
+        private _rescaleTexture(source, destination, scene, internalFormat, onComplete);
+        updateRawTexture(texture: Nullable<InternalTexture>, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>, type?: number): void;
+        createRawTexture(data: Nullable<ArrayBufferView>, width: number, height: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>, type?: number): InternalTexture;
+        createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha?: boolean, format?: number): void;
+        updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement, invertY: boolean): void;
+        /**
+         * Updates a depth texture Comparison Mode and Function.
+         * If the comparison Function is equal to 0, the mode will be set to none.
+         * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+         * @param texture The texture to set the comparison function for
+         * @param comparisonFunction The comparison function to set, 0 if no comparison required
+         */
+        updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void;
+        private _setupDepthStencilTexture(internalTexture, size, generateStencil, bilinearFiltering, comparisonFunction);
+        /**
+         * Creates a depth stencil texture.
+         * This is only available in WebGL 2 or with the depth texture extension available.
+         * @param size The size of face edge in the texture.
+         * @param options The options defining the texture.
+         * @returns The texture
+         */
+        createDepthStencilTexture(size: number | {
+            width: number;
+            height: number;
+        }, options: DepthTextureCreationOptions): InternalTexture;
+        /**
+         * Creates a depth stencil texture.
+         * This is only available in WebGL 2 or with the depth texture extension available.
+         * @param size The size of face edge in the texture.
+         * @param options The options defining the texture.
+         * @returns The texture
+         */
+        private _createDepthStencilTexture(size, options);
+        /**
+         * Creates a depth stencil cube texture.
+         * This is only available in WebGL 2.
+         * @param size The size of face edge in the cube texture.
+         * @param options The options defining the cube texture.
+         * @returns The cube texture
+         */
+        private _createDepthStencilCubeTexture(size, options);
+        /**
+         * Sets the frame buffer Depth / Stencil attachement of the render target to the defined depth stencil texture.
+         * @param renderTarget The render target to set the frame buffer for
+         */
+        setFrameBufferDepthStencilTexture(renderTarget: RenderTargetTexture): void;
+        createRenderTargetTexture(size: number | {
+            width: number;
+            height: number;
+        }, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        createMultipleRenderTarget(size: any, options: any): InternalTexture[];
+        private _setupFramebufferDepthAttachments(generateStencilBuffer, generateDepthBuffer, width, height, samples?);
+        updateRenderTargetTextureSampleCount(texture: Nullable<InternalTexture>, samples: number): number;
+        updateMultipleRenderTargetTextureSampleCount(textures: Nullable<InternalTexture[]>, samples: number): number;
+        _uploadDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, format: number, type: number, data: ArrayBufferView): void;
+        _uploadCompressedDataToTexture(target: number, lod: number, internalFormat: number, width: number, height: number, data: ArrayBufferView): void;
+        createRenderTargetCubeTexture(size: number, options?: Partial<RenderTargetCreationOptions>): InternalTexture;
+        createPrefilteredCubeTexture(rootUrl: string, scene: Nullable<Scene>, scale: number, offset: number, onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any): InternalTexture;
+        createCubeTexture(rootUrl: string, scene: Nullable<Scene>, files: Nullable<string[]>, noMipmap?: boolean, onLoad?: Nullable<(data?: any) => void>, onError?: Nullable<(message?: string, exception?: any) => void>, format?: number, forcedExtension?: any): InternalTexture;
+        private setCubeMapTextureParams(gl, loadMipmap);
+        updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression?: Nullable<string>, level?: number): void;
+        createRawCubeTexture(data: Nullable<ArrayBufferView[]>, size: number, format: number, type: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
+        createRawCubeTextureFromUrl(url: string, scene: Scene, size: number, format: number, type: number, noMipmap: boolean, callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>, mipmmapGenerator: Nullable<((faces: ArrayBufferView[]) => ArrayBufferView[][])>, onLoad?: Nullable<() => void>, onError?: Nullable<(message?: string, exception?: any) => void>, samplingMode?: number, invertY?: boolean): InternalTexture;
+        updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression?: Nullable<string>): void;
+        createRawTexture3D(data: Nullable<ArrayBufferView>, width: number, height: number, depth: number, format: number, generateMipMaps: boolean, invertY: boolean, samplingMode: number, compression?: Nullable<string>): InternalTexture;
+        private _prepareWebGLTextureContinuation(texture, scene, noMipmap, isCompressed, samplingMode);
+        private _prepareWebGLTexture(texture, scene, width, height, invertY, noMipmap, isCompressed, processFunction, samplingMode?);
+        private _convertRGBtoRGBATextureData(rgbData, width, height, textureType);
+        _releaseFramebufferObjects(texture: InternalTexture): void;
+        _releaseTexture(texture: InternalTexture): void;
+        private setProgram(program);
+        private _boundUniforms;
+        bindSamplers(effect: Effect): void;
+        private _moveBoundTextureOnTop(internalTexture);
+        private _getCorrectTextureChannel(channel, internalTexture);
+        private _linkTrackers(previous, next);
+        private _removeDesignatedSlot(internalTexture);
+        private _activateCurrentTexture();
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean): void;
+        _bindTexture(channel: number, texture: Nullable<InternalTexture>): void;
+        setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void;
+        unbindAllTextures(): void;
+        /**
+         * Sets a texture to the according uniform.
+         * @param channel The texture channel
+         * @param uniform The uniform to set
+         * @param texture The texture to apply
+         */
+        setTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<BaseTexture>): void;
+        /**
+         * Sets a depth stencil texture from a render target to the according uniform.
+         * @param channel The texture channel
+         * @param uniform The uniform to set
+         * @param texture The render target texture containing the depth stencil texture to apply
+         */
+        setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void;
+        private _bindSamplerUniformToChannel(sourceSlot, destination);
+        private _setTexture(channel, texture, isPartOfTextureArray?, depthStencilTexture?);
+        setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void;
+        _setAnisotropicLevel(key: number, texture: BaseTexture): void;
+        readPixels(x: number, y: number, width: number, height: number): Uint8Array;
+        /**
+         * Add an externaly attached data from its key.
+         * This method call will fail and return false, if such key already exists.
+         * If you don't care and just want to get the data no matter what, use the more convenient getOrAddExternalDataWithFactory() method.
+         * @param key the unique key that identifies the data
+         * @param data the data object to associate to the key for this Engine instance
+         * @return true if no such key were already present and the data was added successfully, false otherwise
+         */
+        addExternalData<T>(key: string, data: T): boolean;
+        /**
+         * Get an externaly attached data from its key
+         * @param key the unique key that identifies the data
+         * @return the associated data, if present (can be null), or undefined if not present
+         */
+        getExternalData<T>(key: string): T;
+        /**
+         * Get an externaly attached data from its key, create it using a factory if it's not already present
+         * @param key the unique key that identifies the data
+         * @param factory the factory that will be called to create the instance if and only if it doesn't exists
+         * @return the associated data, can be null if the factory returned null.
+         */
+        getOrAddExternalDataWithFactory<T>(key: string, factory: (k: string) => T): T;
+        /**
+         * Remove an externaly attached data from the Engine instance
+         * @param key the unique key that identifies the data
+         * @return true if the data was successfully removed, false if it doesn't exist
+         */
+        removeExternalData(key: string): boolean;
+        unbindAllAttributes(): void;
+        releaseEffects(): void;
+        dispose(): void;
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingScreen: ILoadingScreen;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        attachContextLostEvent(callback: ((event: WebGLContextEvent) => void)): void;
+        attachContextRestoredEvent(callback: ((event: WebGLContextEvent) => void)): void;
+        getVertexShaderSource(program: WebGLProgram): Nullable<string>;
+        getFragmentShaderSource(program: WebGLProgram): Nullable<string>;
+        getError(): number;
+        getFps(): number;
+        getDeltaTime(): number;
+        private _measureFps();
+        _readTexturePixels(texture: InternalTexture, width: number, height: number, faceIndex?: number): ArrayBufferView;
+        private _canRenderToFloatFramebuffer();
+        private _canRenderToHalfFloatFramebuffer();
+        private _canRenderToFramebuffer(type);
+        _getWebGLTextureType(type: number): number;
+        private _getInternalFormat(format);
+        /** @ignore */
+        _getRGBABufferInternalSizedFormat(type: number, format?: number): number;
+        _getRGBAMultiSampleBufferFormat(type: number): number;
+        createQuery(): WebGLQuery;
+        deleteQuery(query: WebGLQuery): Engine;
+        isQueryResultAvailable(query: WebGLQuery): boolean;
+        getQueryResult(query: WebGLQuery): number;
+        beginOcclusionQuery(algorithmType: number, query: WebGLQuery): Engine;
+        endOcclusionQuery(algorithmType: number): Engine;
+        private _createTimeQuery();
+        private _deleteTimeQuery(query);
+        private _getTimeQueryResult(query);
+        private _getTimeQueryAvailability(query);
+        private _currentNonTimestampToken;
+        startTimeQuery(): Nullable<_TimeToken>;
+        endTimeQuery(token: _TimeToken): int;
+        private getGlAlgorithmType(algorithmType);
+        createTransformFeedback(): WebGLTransformFeedback;
+        deleteTransformFeedback(value: WebGLTransformFeedback): void;
+        bindTransformFeedback(value: Nullable<WebGLTransformFeedback>): void;
+        beginTransformFeedback(usePoints?: boolean): void;
+        endTransformFeedback(): void;
+        setTranformFeedbackVaryings(program: WebGLProgram, value: string[]): void;
+        bindTransformFeedbackBuffer(value: Nullable<WebGLBuffer>): void;
+        _loadFile(url: string, onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void, onProgress?: (data: any) => void, database?: Database, useArrayBuffer?: boolean, onError?: (request?: XMLHttpRequest, exception?: any) => void): IFileRequest;
+        /** @ignore */
+        _loadFileAsync(url: string, database?: Database, useArrayBuffer?: boolean): Promise<string | ArrayBuffer>;
+        private _partialLoadFile(url, index, loadedFiles, scene, onfinish, onErrorCallBack?);
+        private _cascadeLoadFiles(scene, onfinish, files, onError?);
+        static isSupported(): boolean;
+    }
+}
+
+declare module BABYLON {
+    class NullEngineOptions {
+        renderWidth: number;
+        renderHeight: number;
+        textureSize: number;
+        deterministicLockstep: boolean;
+        lockstepMaxSteps: number;
+    }
+    /**
+     * The null engine class provides support for headless version of babylon.js.
+     * This can be used in server side scenario or for testing purposes
+     */
+    class NullEngine extends Engine {
+        private _options;
+        isDeterministicLockStep(): boolean;
+        getLockstepMaxSteps(): number;
+        getHardwareScalingLevel(): number;
+        constructor(options?: NullEngineOptions);
+        createVertexBuffer(vertices: FloatArray): WebGLBuffer;
+        createIndexBuffer(indices: IndicesArray): WebGLBuffer;
+        clear(color: Color4, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+        getRenderWidth(useScreen?: boolean): number;
+        getRenderHeight(useScreen?: boolean): number;
+        setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void;
+        createShaderProgram(vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram;
+        getUniforms(shaderProgram: WebGLProgram, uniformsNames: string[]): WebGLUniformLocation[];
+        getAttributes(shaderProgram: WebGLProgram, attributesNames: string[]): number[];
+        bindSamplers(effect: Effect): void;
+        enableEffect(effect: Effect): void;
+        setState(culling: boolean, zOffset?: number, force?: boolean, reverseSide?: boolean): void;
+        setIntArray(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): void;
+        setFloatArray(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray2(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray3(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setFloatArray4(uniform: WebGLUniformLocation, array: Float32Array): void;
+        setArray(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray2(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray3(uniform: WebGLUniformLocation, array: number[]): void;
+        setArray4(uniform: WebGLUniformLocation, array: number[]): void;
+        setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): void;
+        setMatrix(uniform: WebGLUniformLocation, matrix: Matrix): void;
+        setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): void;
+        setFloat(uniform: WebGLUniformLocation, value: number): void;
+        setFloat2(uniform: WebGLUniformLocation, x: number, y: number): void;
+        setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): void;
+        setBool(uniform: WebGLUniformLocation, bool: number): void;
+        setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): void;
+        setColor3(uniform: WebGLUniformLocation, color3: Color3): void;
+        setColor4(uniform: WebGLUniformLocation, color3: Color3, alpha: number): void;
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+        bindBuffers(vertexBuffers: {
+            [key: string]: VertexBuffer;
+        }, indexBuffer: WebGLBuffer, effect: Effect): void;
+        wipeCaches(bruteForce?: boolean): void;
+        draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void;
+        drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
+        drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+        _createTexture(): WebGLTexture;
+        createTexture(urlArg: string, noMipmap: boolean, invertY: boolean, scene: Scene, samplingMode?: number, onLoad?: Nullable<() => void>, onError?: Nullable<(message: string, exception: any) => void>, buffer?: Nullable<ArrayBuffer | HTMLImageElement>, fallBack?: InternalTexture, format?: number): InternalTexture;
+        createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): InternalTexture;
+        updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void;
+        bindFramebuffer(texture: InternalTexture, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void;
+        unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+        createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer;
+        updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset?: number): void;
+        updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void;
+        protected _bindTextureDirectly(target: number, texture: InternalTexture): void;
+        _bindTexture(channel: number, texture: InternalTexture): void;
+        _releaseBuffer(buffer: WebGLBuffer): boolean;
+    }
+}
+
+interface WebGLRenderingContext {
+    readonly RASTERIZER_DISCARD: number;
+    readonly DEPTH_COMPONENT24: number;
+    readonly TEXTURE_3D: number;
+    readonly TEXTURE_2D_ARRAY: number;
+    readonly TEXTURE_COMPARE_FUNC: number;
+    readonly TEXTURE_COMPARE_MODE: number;
+    readonly COMPARE_REF_TO_TEXTURE: number;
+    readonly TEXTURE_WRAP_R: number;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView | null): void;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ArrayBufferView, offset: number): void;
+    texImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, format: number, type: number, pixels: ImageBitmap | ImageData | HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): void;
+    compressedTexImage3D(target: number, level: number, internalformat: number, width: number, height: number, depth: number, border: number, data: ArrayBufferView, offset?: number, length?: number): void;
+    readonly TRANSFORM_FEEDBACK: number;
+    readonly INTERLEAVED_ATTRIBS: number;
+    readonly TRANSFORM_FEEDBACK_BUFFER: number;
+    createTransformFeedback(): WebGLTransformFeedback;
+    deleteTransformFeedback(transformFeedbac: WebGLTransformFeedback): void;
+    bindTransformFeedback(target: number, transformFeedback: WebGLTransformFeedback | null): void;
+    beginTransformFeedback(primitiveMode: number): void;
+    endTransformFeedback(): void;
+    transformFeedbackVaryings(program: WebGLProgram, varyings: string[], bufferMode: number): void;
+}
+interface ImageBitmap {
+    readonly width: number;
+    readonly height: number;
+    close(): void;
+}
+interface WebGLQuery extends WebGLObject {
+}
+declare var WebGLQuery: {
+    prototype: WebGLQuery;
+    new (): WebGLQuery;
+};
+interface WebGLSampler extends WebGLObject {
+}
+declare var WebGLSampler: {
+    prototype: WebGLSampler;
+    new (): WebGLSampler;
+};
+interface WebGLSync extends WebGLObject {
+}
+declare var WebGLSync: {
+    prototype: WebGLSync;
+    new (): WebGLSync;
+};
+interface WebGLTransformFeedback extends WebGLObject {
+}
+declare var WebGLTransformFeedback: {
+    prototype: WebGLTransformFeedback;
+    new (): WebGLTransformFeedback;
+};
+interface WebGLVertexArrayObject extends WebGLObject {
+}
+declare var WebGLVertexArrayObject: {
+    prototype: WebGLVertexArrayObject;
+    new (): WebGLVertexArrayObject;
+};
 
 declare module BABYLON {
     /**
@@ -5926,6 +5822,162 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class StickValues {
+        x: number;
+        y: number;
+        constructor(x: number, y: number);
+    }
+    interface GamepadButtonChanges {
+        changed: boolean;
+        pressChanged: boolean;
+        touchChanged: boolean;
+        valueChanged: boolean;
+    }
+    class Gamepad {
+        id: string;
+        index: number;
+        browserGamepad: any;
+        type: number;
+        private _leftStick;
+        private _rightStick;
+        _isConnected: boolean;
+        private _leftStickAxisX;
+        private _leftStickAxisY;
+        private _rightStickAxisX;
+        private _rightStickAxisY;
+        private _onleftstickchanged;
+        private _onrightstickchanged;
+        static GAMEPAD: number;
+        static GENERIC: number;
+        static XBOX: number;
+        static POSE_ENABLED: number;
+        protected _invertLeftStickY: boolean;
+        readonly isConnected: boolean;
+        constructor(id: string, index: number, browserGamepad: any, leftStickX?: number, leftStickY?: number, rightStickX?: number, rightStickY?: number);
+        onleftstickchanged(callback: (values: StickValues) => void): void;
+        onrightstickchanged(callback: (values: StickValues) => void): void;
+        leftStick: StickValues;
+        rightStick: StickValues;
+        update(): void;
+        dispose(): void;
+    }
+    class GenericPad extends Gamepad {
+        private _buttons;
+        private _onbuttondown;
+        private _onbuttonup;
+        onButtonDownObservable: Observable<number>;
+        onButtonUpObservable: Observable<number>;
+        onbuttondown(callback: (buttonPressed: number) => void): void;
+        onbuttonup(callback: (buttonReleased: number) => void): void;
+        constructor(id: string, index: number, browserGamepad: any);
+        private _setButtonValue(newValue, currentValue, buttonIndex);
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class GamepadManager {
+        private _scene;
+        private _babylonGamepads;
+        private _oneGamepadConnected;
+        _isMonitoring: boolean;
+        private _gamepadEventSupported;
+        private _gamepadSupport;
+        onGamepadConnectedObservable: Observable<Gamepad>;
+        onGamepadDisconnectedObservable: Observable<Gamepad>;
+        private _onGamepadConnectedEvent;
+        private _onGamepadDisconnectedEvent;
+        constructor(_scene?: Scene | undefined);
+        readonly gamepads: Gamepad[];
+        getGamepadByType(type?: number): Nullable<Gamepad>;
+        dispose(): void;
+        private _addNewGamepad(gamepad);
+        private _startMonitoringGamepads();
+        private _stopMonitoringGamepads();
+        _checkGamepadsStatus(): void;
+        private _updateGamepadObjects();
+    }
+}
+
+declare module BABYLON {
+    enum Xbox360Button {
+        A = 0,
+        B = 1,
+        X = 2,
+        Y = 3,
+        Start = 4,
+        Back = 5,
+        LB = 6,
+        RB = 7,
+        LeftStick = 8,
+        RightStick = 9,
+    }
+    enum Xbox360Dpad {
+        Up = 0,
+        Down = 1,
+        Left = 2,
+        Right = 3,
+    }
+    class Xbox360Pad extends Gamepad {
+        private _leftTrigger;
+        private _rightTrigger;
+        private _onlefttriggerchanged;
+        private _onrighttriggerchanged;
+        private _onbuttondown;
+        private _onbuttonup;
+        private _ondpaddown;
+        private _ondpadup;
+        onButtonDownObservable: Observable<Xbox360Button>;
+        onButtonUpObservable: Observable<Xbox360Button>;
+        onPadDownObservable: Observable<Xbox360Dpad>;
+        onPadUpObservable: Observable<Xbox360Dpad>;
+        private _buttonA;
+        private _buttonB;
+        private _buttonX;
+        private _buttonY;
+        private _buttonBack;
+        private _buttonStart;
+        private _buttonLB;
+        private _buttonRB;
+        private _buttonLeftStick;
+        private _buttonRightStick;
+        private _dPadUp;
+        private _dPadDown;
+        private _dPadLeft;
+        private _dPadRight;
+        private _isXboxOnePad;
+        constructor(id: string, index: number, gamepad: any, xboxOne?: boolean);
+        onlefttriggerchanged(callback: (value: number) => void): void;
+        onrighttriggerchanged(callback: (value: number) => void): void;
+        leftTrigger: number;
+        rightTrigger: number;
+        onbuttondown(callback: (buttonPressed: Xbox360Button) => void): void;
+        onbuttonup(callback: (buttonReleased: Xbox360Button) => void): void;
+        ondpaddown(callback: (dPadPressed: Xbox360Dpad) => void): void;
+        ondpadup(callback: (dPadReleased: Xbox360Dpad) => void): void;
+        private _setButtonValue(newValue, currentValue, buttonType);
+        private _setDPadValue(newValue, currentValue, buttonType);
+        buttonA: number;
+        buttonB: number;
+        buttonX: number;
+        buttonY: number;
+        buttonStart: number;
+        buttonBack: number;
+        buttonLB: number;
+        buttonRB: number;
+        buttonLeftStick: number;
+        buttonRightStick: number;
+        dPadUp: number;
+        dPadDown: number;
+        dPadLeft: number;
+        dPadRight: number;
+        update(): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
     /**
      * This class can be used to get instrumentation data from a Babylon engine
      */
@@ -6124,52 +6176,6 @@ declare module BABYLON {
         _endTimeQuery: Nullable<WebGLQuery>;
         _timeElapsedQuery: Nullable<WebGLQuery>;
         _timeElapsedQueryEnded: boolean;
-    }
-}
-
-declare module BABYLON {
-    class LensFlare {
-        size: number;
-        position: number;
-        color: Color3;
-        texture: Nullable<Texture>;
-        alphaMode: number;
-        private _system;
-        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
-        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class LensFlareSystem {
-        name: string;
-        lensFlares: LensFlare[];
-        borderLimit: number;
-        viewportBorder: number;
-        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
-        layerMask: number;
-        id: string;
-        private _scene;
-        private _emitter;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effect;
-        private _positionX;
-        private _positionY;
-        private _isEnabled;
-        constructor(name: string, emitter: any, scene: Scene);
-        isEnabled: boolean;
-        getScene(): Scene;
-        getEmitter(): any;
-        setEmitter(newEmitter: any): void;
-        getEmitterPosition(): Vector3;
-        computeEffectivePosition(globalViewport: Viewport): boolean;
-        _isVisible(): boolean;
-        render(): boolean;
-        dispose(): void;
-        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
-        serialize(): any;
     }
 }
 
@@ -6797,6 +6803,312 @@ declare module BABYLON {
         _rebuild(): void;
         render(): void;
         dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlare {
+        size: number;
+        position: number;
+        color: Color3;
+        texture: Nullable<Texture>;
+        alphaMode: number;
+        private _system;
+        static AddFlare(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem): LensFlare;
+        constructor(size: number, position: number, color: Color3, imgUrl: string, system: LensFlareSystem);
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class LensFlareSystem {
+        name: string;
+        lensFlares: LensFlare[];
+        borderLimit: number;
+        viewportBorder: number;
+        meshesSelectionPredicate: (mesh: AbstractMesh) => boolean;
+        layerMask: number;
+        id: string;
+        private _scene;
+        private _emitter;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effect;
+        private _positionX;
+        private _positionY;
+        private _isEnabled;
+        constructor(name: string, emitter: any, scene: Scene);
+        isEnabled: boolean;
+        getScene(): Scene;
+        getEmitter(): any;
+        setEmitter(newEmitter: any): void;
+        getEmitterPosition(): Vector3;
+        computeEffectivePosition(globalViewport: Viewport): boolean;
+        _isVisible(): boolean;
+        render(): boolean;
+        dispose(): void;
+        static Parse(parsedLensFlareSystem: any, scene: Scene, rootUrl: string): LensFlareSystem;
+        serialize(): any;
+    }
+}
+
+declare module BABYLON {
+    interface ILoadingScreen {
+        displayLoadingUI: () => void;
+        hideLoadingUI: () => void;
+        loadingUIBackgroundColor: string;
+        loadingUIText: string;
+    }
+    class DefaultLoadingScreen implements ILoadingScreen {
+        private _renderingCanvas;
+        private _loadingText;
+        private _loadingDivBackgroundColor;
+        private _loadingDiv;
+        private _loadingTextDiv;
+        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
+        displayLoadingUI(): void;
+        hideLoadingUI(): void;
+        loadingUIText: string;
+        loadingUIBackgroundColor: string;
+        private _resizeLoadingUI;
+    }
+}
+
+declare module BABYLON {
+    class SceneLoaderProgressEvent {
+        readonly lengthComputable: boolean;
+        readonly loaded: number;
+        readonly total: number;
+        constructor(lengthComputable: boolean, loaded: number, total: number);
+        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
+    }
+    interface ISceneLoaderPluginExtensions {
+        [extension: string]: {
+            isBinary: boolean;
+        };
+    }
+    interface ISceneLoaderPluginFactory {
+        name: string;
+        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+        canDirectLoad?: (data: string) => boolean;
+    }
+    interface ISceneLoaderPlugin {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param meshes The meshes array to import into
+         * @param particleSystems The particle systems array to import into
+         * @param skeletons The skeletons array to import into
+         * @param onError The callback when import fails
+         * @returns True if successful or false otherwise
+         */
+        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns true if successful or false otherwise
+         */
+        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onError The callback when import fails
+         * @returns The loaded asset container
+         */
+        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    }
+    interface ISceneLoaderPluginAsync {
+        /**
+         * The friendly name of this plugin.
+         */
+        name: string;
+        /**
+         * The file extensions supported by this plugin.
+         */
+        extensions: string | ISceneLoaderPluginExtensions;
+        /**
+         * Import meshes into a scene.
+         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param scene The scene to import into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded meshes, particle systems, and skeletons
+         */
+        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+        }>;
+        /**
+         * Load into a scene.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns Nothing
+         */
+        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        /**
+         * The callback that returns true if the data can be directly loaded.
+         */
+        canDirectLoad?: (data: string) => boolean;
+        /**
+         * The callback that allows custom handling of the root url based on the response url.
+         */
+        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
+        /**
+         * Load into an asset container.
+         * @param scene The scene to load into
+         * @param data The data to import
+         * @param rootUrl The root url for scene and resources
+         * @param onProgress The callback when the load progresses
+         * @returns The loaded asset container
+         */
+        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
+    }
+    class SceneLoader {
+        private static _ForceFullSceneLoadingForIncremental;
+        private static _ShowLoadingScreen;
+        private static _CleanBoneMatrixWeights;
+        static readonly NO_LOGGING: number;
+        static readonly MINIMAL_LOGGING: number;
+        static readonly SUMMARY_LOGGING: number;
+        static readonly DETAILED_LOGGING: number;
+        private static _loggingLevel;
+        static ForceFullSceneLoadingForIncremental: boolean;
+        static ShowLoadingScreen: boolean;
+        static loggingLevel: number;
+        static CleanBoneMatrixWeights: boolean;
+        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        private static _registeredPlugins;
+        private static _getDefaultPlugin();
+        private static _getPluginForExtension(extension);
+        private static _getPluginForDirectLoad(data);
+        private static _getPluginForFilename(sceneFilename);
+        private static _getDirectLoad(sceneFilename);
+        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
+        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
+        static IsPluginForExtensionAvailable(extension: string): boolean;
+        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
+        /**
+         * Import meshes into a scene
+         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+         * @param rootUrl a string that defines the root url for scene and resources
+         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+         * @param scene the instance of BABYLON.Scene to append to
+         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
+         * @param onProgress a callback with a progress event for each file being loaded
+         * @param onError a callback with the scene, a message, and possibly an exception when import fails
+         * @param pluginExtension the extension used to determine the plugin
+         * @returns The loaded plugin
+         */
+        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Import meshes into a scene
+        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded list of imported meshes, particleSystems, and skeletons
+        */
+        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
+            meshes: AbstractMesh[];
+            particleSystems: ParticleSystem[];
+            skeletons: Skeleton[];
+        }>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param engine is the instance of BABYLON.Engine to use to create the scene
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded scene
+        */
+        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Append a scene
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The given scene
+        */
+        static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onSuccess a callback with the scene when import succeeds
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param onError a callback with the scene, a message, and possibly an exception when import fails
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded plugin
+        */
+        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+        /**
+        * Load a scene into an asset container
+        * @param rootUrl a string that defines the root url for scene and resources
+        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
+        * @param scene is the instance of BABYLON.Scene to append to
+        * @param onProgress a callback with a progress event for each file being loaded
+        * @param pluginExtension the extension used to determine the plugin
+        * @returns The loaded asset container
+        */
+        static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
     }
 }
 
@@ -7735,266 +8047,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface ILoadingScreen {
-        displayLoadingUI: () => void;
-        hideLoadingUI: () => void;
-        loadingUIBackgroundColor: string;
-        loadingUIText: string;
-    }
-    class DefaultLoadingScreen implements ILoadingScreen {
-        private _renderingCanvas;
-        private _loadingText;
-        private _loadingDivBackgroundColor;
-        private _loadingDiv;
-        private _loadingTextDiv;
-        constructor(_renderingCanvas: HTMLCanvasElement, _loadingText?: string, _loadingDivBackgroundColor?: string);
-        displayLoadingUI(): void;
-        hideLoadingUI(): void;
-        loadingUIText: string;
-        loadingUIBackgroundColor: string;
-        private _resizeLoadingUI;
-    }
-}
-
-declare module BABYLON {
-    class SceneLoaderProgressEvent {
-        readonly lengthComputable: boolean;
-        readonly loaded: number;
-        readonly total: number;
-        constructor(lengthComputable: boolean, loaded: number, total: number);
-        static FromProgressEvent(event: ProgressEvent): SceneLoaderProgressEvent;
-    }
-    interface ISceneLoaderPluginExtensions {
-        [extension: string]: {
-            isBinary: boolean;
-        };
-    }
-    interface ISceneLoaderPluginFactory {
-        name: string;
-        createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
-        canDirectLoad?: (data: string) => boolean;
-    }
-    interface ISceneLoaderPlugin {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param meshes The meshes array to import into
-         * @param particleSystems The particle systems array to import into
-         * @param skeletons The skeletons array to import into
-         * @param onError The callback when import fails
-         * @returns True if successful or false otherwise
-         */
-        importMesh(meshesNames: any, scene: Scene, data: any, rootUrl: string, meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns true if successful or false otherwise
-         */
-        load(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onError The callback when import fails
-         * @returns The loaded asset container
-         */
-        loadAssetContainer(scene: Scene, data: string, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
-    }
-    interface ISceneLoaderPluginAsync {
-        /**
-         * The friendly name of this plugin.
-         */
-        name: string;
-        /**
-         * The file extensions supported by this plugin.
-         */
-        extensions: string | ISceneLoaderPluginExtensions;
-        /**
-         * Import meshes into a scene.
-         * @param meshesNames An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param scene The scene to import into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded meshes, particle systems, and skeletons
-         */
-        importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-        }>;
-        /**
-         * Load into a scene.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns Nothing
-         */
-        loadAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
-        /**
-         * The callback that returns true if the data can be directly loaded.
-         */
-        canDirectLoad?: (data: string) => boolean;
-        /**
-         * The callback that allows custom handling of the root url based on the response url.
-         */
-        rewriteRootURL?: (rootUrl: string, responseURL?: string) => string;
-        /**
-         * Load into an asset container.
-         * @param scene The scene to load into
-         * @param data The data to import
-         * @param rootUrl The root url for scene and resources
-         * @param onProgress The callback when the load progresses
-         * @returns The loaded asset container
-         */
-        loadAssetContainerAsync(scene: Scene, data: string, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
-    }
-    class SceneLoader {
-        private static _ForceFullSceneLoadingForIncremental;
-        private static _ShowLoadingScreen;
-        private static _CleanBoneMatrixWeights;
-        static readonly NO_LOGGING: number;
-        static readonly MINIMAL_LOGGING: number;
-        static readonly SUMMARY_LOGGING: number;
-        static readonly DETAILED_LOGGING: number;
-        private static _loggingLevel;
-        static ForceFullSceneLoadingForIncremental: boolean;
-        static ShowLoadingScreen: boolean;
-        static loggingLevel: number;
-        static CleanBoneMatrixWeights: boolean;
-        static OnPluginActivatedObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        private static _registeredPlugins;
-        private static _getDefaultPlugin();
-        private static _getPluginForExtension(extension);
-        private static _getPluginForDirectLoad(data);
-        private static _getPluginForFilename(sceneFilename);
-        private static _getDirectLoad(sceneFilename);
-        private static _loadData(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, onDispose, pluginExtension);
-        static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory;
-        static IsPluginForExtensionAvailable(extension: string): boolean;
-        static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void;
-        /**
-         * Import meshes into a scene
-         * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-         * @param rootUrl a string that defines the root url for scene and resources
-         * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-         * @param scene the instance of BABYLON.Scene to append to
-         * @param onSuccess a callback with a list of imported meshes, particleSystems, and skeletons when import succeeds
-         * @param onProgress a callback with a progress event for each file being loaded
-         * @param onError a callback with the scene, a message, and possibly an exception when import fails
-         * @param pluginExtension the extension used to determine the plugin
-         * @returns The loaded plugin
-         */
-        static ImportMesh(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onSuccess?: Nullable<(meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Import meshes into a scene
-        * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded list of imported meshes, particleSystems, and skeletons
-        */
-        static ImportMeshAsync(meshNames: any, rootUrl: string, sceneFilename: string, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<{
-            meshes: AbstractMesh[];
-            particleSystems: ParticleSystem[];
-            skeletons: Skeleton[];
-        }>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Load(rootUrl: string, sceneFilename: any, engine: Engine, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param engine is the instance of BABYLON.Engine to use to create the scene
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded scene
-        */
-        static LoadAsync(rootUrl: string, sceneFilename: any, engine: Engine, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static Append(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(scene: Scene) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Append a scene
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The given scene
-        */
-        static AppendAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<Scene>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onSuccess a callback with the scene when import succeeds
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param onError a callback with the scene, a message, and possibly an exception when import fails
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded plugin
-        */
-        static LoadAssetContainer(rootUrl: string, sceneFilename: any, scene: Scene, onSuccess?: Nullable<(assets: AssetContainer) => void>, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>, pluginExtension?: Nullable<string>): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
-        /**
-        * Load a scene into an asset container
-        * @param rootUrl a string that defines the root url for scene and resources
-        * @param sceneFilename a string that defines the name of the scene file. can start with "data:" following by the stringified version of the scene
-        * @param scene is the instance of BABYLON.Scene to append to
-        * @param onProgress a callback with a progress event for each file being loaded
-        * @param pluginExtension the extension used to determine the plugin
-        * @returns The loaded asset container
-        */
-        static LoadAssetContainerAsync(rootUrl: string, sceneFilename: any, scene: Scene, onProgress?: Nullable<(event: SceneLoaderProgressEvent) => void>, pluginExtension?: Nullable<string>): Promise<AssetContainer>;
-    }
-}
-
-declare module BABYLON {
     class Scalar {
         /**
          * Two pi constants convenient for computation.
@@ -8221,16 +8273,22 @@ declare module BABYLON {
         /**
          * Multiplies in place each rgb value by scale
          * @param scale defines the scaling factor
-         * @returns the updated Color3.
+         * @returns the updated Color3
          */
         scale(scale: number): Color3;
         /**
          * Multiplies the rgb values by scale and stores the result into "result"
          * @param scale defines the scaling factor
          * @param result defines the Color3 object where to store the result
-         * @returns the unmodified current Color3.
+         * @returns the unmodified current Color3
          */
         scaleToRef(scale: number, result: Color3): Color3;
+        /**
+         * Scale the current Color3 values by a factor and add the result to a given Color3
+         * @param scale defines the scale factor
+         * @returns the unmodified current Color3
+         */
+        scaleAndAddToRef(scale: number, result: Color3): Color3;
         /**
          * Clamps the rgb values by the min and max values and stores the result into "result"
          * @param min defines minimum clamping value (default is 0)
@@ -8495,9 +8553,15 @@ declare module BABYLON {
          * Multiplies the current Color4 values by scale and stores the result in "result"
          * @param scale defines the scaling factor to apply
          * @param result defines the Color4 object where to store the result
-         * @returns the current Color4.
+         * @returns the current unmodified Color4
          */
         scaleToRef(scale: number, result: Color4): Color4;
+        /**
+         * Scale the current Color4 values by a factor and add the result to a given Color4
+         * @param scale defines the scale factor
+         * @returns the unmodified current Color4
+         */
+        scaleAndAddToRef(scale: number, result: Color4): Color4;
         /**
          * Clamps the rgb values by the min and max values and stores the result into "result"
          * @param min defines minimum clamping value (default is 0)
@@ -8758,6 +8822,18 @@ declare module BABYLON {
          */
         scale(scale: number): Vector2;
         /**
+         * Scale the current Vector2 values by a factor to a given Vector2
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector2
+         */
+        scaleToRef(scale: number, result: Vector2): Vector2;
+        /**
+         * Scale the current Vector2 values by a factor and add the result to a given Vector2
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector2
+         */
+        scaleAndAddToRef(scale: number, result: Vector2): Vector2;
+        /**
          * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.
          */
         equals(otherVector: Vector2): boolean;
@@ -9010,6 +9086,12 @@ declare module BABYLON {
          * @returns the current Vector3
          */
         scaleToRef(scale: number, result: Vector3): Vector3;
+        /**
+         * Scale the current Vector3 values by a factor and add the result to a given Vector3
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector3
+         */
+        scaleAndAddToRef(scale: number, result: Vector3): Vector3;
         /**
          * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
          * @param otherVector defines the second operand
@@ -9561,6 +9643,12 @@ declare module BABYLON {
          */
         scaleToRef(scale: number, result: Vector4): Vector4;
         /**
+         * Scale the current Vector4 values by a factor and add the result to a given Vector4
+         * @param scale defines the scale factor
+         * @returns the unmodified current Vector4
+         */
+        scaleAndAddToRef(scale: number, result: Vector4): Vector4;
+        /**
          * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.
          */
         equals(otherVector: Vector4): boolean;
@@ -9843,6 +9931,18 @@ declare module BABYLON {
          */
         scale(value: number): Quaternion;
         /**
+         * Scale the current VectQuaternionor4 values by a factor to a given Quaternion
+         * @param scale defines the scale factor
+         * @returns the unmodified current Quaternion
+         */
+        scaleToRef(scale: number, result: Quaternion): Quaternion;
+        /**
+         * Scale the current VectQuaternionor4 values by a factor and add the result to a given Quaternion
+         * @param scale defines the scale factor
+         * @returns the unmodified current Quaternion
+         */
+        scaleAndAddToRef(scale: number, result: Quaternion): Quaternion;
+        /**
          * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".
          */
         multiply(q1: Quaternion): Quaternion;
@@ -10098,6 +10198,48 @@ declare module BABYLON {
          */
         decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean;
         /**
+         * Returns the index-th row of the current matrix as a new Vector4.
+         */
+        getRow(index: number): Nullable<Vector4>;
+        /**
+         * Sets the index-th row of the current matrix with the passed Vector4 values.
+         * Returns the updated Matrix.
+         */
+        setRow(index: number, row: Vector4): Matrix;
+        /**
+         * Compute the transpose of the matrix.
+         * Returns a new Matrix.
+         */
+        transpose(): Matrix;
+        /**
+         * Compute the transpose of the matrix.
+         * Returns the current matrix.
+         */
+        transposeToRef(result: Matrix): Matrix;
+        /**
+         * Sets the index-th row of the current matrix with the passed 4 x float values.
+         * Returns the updated Matrix.
+         */
+        setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix;
+        /**
+         * Compute a new Matrix set with the current Matrix values multiplied by scale (float)
+         * @param scale defines the scale factor
+         * @returns a new Matrix
+         */
+        scale(scale: number): Matrix;
+        /**
+         * Scale the current Matrix values by a factor to a given result Matrix
+         * @param scale defines the scale factor
+         * @returns the current Matrix
+         */
+        scaleToRef(scale: number, result: Matrix): Matrix;
+        /**
+         * Scale the current Matrix values by a factor and add the result to a given Matrix
+         * @param scale defines the scale factor
+         * @returns the current Matrix
+         */
+        scaleAndAddToRef(scale: number, result: Matrix): Matrix;
+        /**
          * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).
          * @param ref matrix to store the result
          */
@@ -10127,30 +10269,6 @@ declare module BABYLON {
          * Sets the passed matrix "result" with the 16 passed floats.
          */
         static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number, initialM21: number, initialM22: number, initialM23: number, initialM24: number, initialM31: number, initialM32: number, initialM33: number, initialM34: number, initialM41: number, initialM42: number, initialM43: number, initialM44: number, result: Matrix): void;
-        /**
-         * Returns the index-th row of the current matrix as a new Vector4.
-         */
-        getRow(index: number): Nullable<Vector4>;
-        /**
-         * Sets the index-th row of the current matrix with the passed Vector4 values.
-         * Returns the updated Matrix.
-         */
-        setRow(index: number, row: Vector4): Matrix;
-        /**
-         * Compute the transpose of the matrix.
-         * Returns a new Matrix.
-         */
-        transpose(): Matrix;
-        /**
-         * Compute the transpose of the matrix.
-         * Returns the current matrix.
-         */
-        transposeToRef(result: Matrix): Matrix;
-        /**
-         * Sets the index-th row of the current matrix with the passed 4 x float values.
-         * Returns the updated Matrix.
-         */
-        setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix;
         /**
          * Static identity matrix to be used as readonly matrix
          * Must not be updated.
@@ -17599,640 +17717,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface PhysicsImpostorJoint {
-        mainImpostor: PhysicsImpostor;
-        connectedImpostor: PhysicsImpostor;
-        joint: PhysicsJoint;
-    }
-    class PhysicsEngine {
-        private _physicsPlugin;
-        gravity: Vector3;
-        constructor(gravity: Nullable<Vector3>, _physicsPlugin?: IPhysicsEnginePlugin);
-        setGravity(gravity: Vector3): void;
-        /**
-         * Set the time step of the physics engine.
-         * default is 1/60.
-         * To slow it down, enter 1/600 for example.
-         * To speed it up, 1/30
-         * @param {number} newTimeStep the new timestep to apply to this world.
-         */
-        setTimeStep(newTimeStep?: number): void;
-        /**
-         * Get the time step of the physics engine.
-         */
-        getTimeStep(): number;
-        dispose(): void;
-        getPhysicsPluginName(): string;
-        static Epsilon: number;
-        private _impostors;
-        private _joints;
-        /**
-         * Adding a new impostor for the impostor tracking.
-         * This will be done by the impostor itself.
-         * @param {PhysicsImpostor} impostor the impostor to add
-         */
-        addImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Remove an impostor from the engine.
-         * This impostor and its mesh will not longer be updated by the physics engine.
-         * @param {PhysicsImpostor} impostor the impostor to remove
-         */
-        removeImpostor(impostor: PhysicsImpostor): void;
-        /**
-         * Add a joint to the physics engine
-         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
-         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
-         * @param {PhysicsJoint} the joint that will connect both impostors.
-         */
-        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
-        /**
-         * Called by the scene. no need to call it.
-         */
-        _step(delta: number): void;
-        getPhysicsPlugin(): IPhysicsEnginePlugin;
-        getImpostors(): Array<PhysicsImpostor>;
-        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-        getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
-    }
-    interface IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(joint: PhysicsImpostorJoint): void;
-        removeJoint(joint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class PhysicsHelper {
-        private _scene;
-        private _physicsEngine;
-        constructor(scene: Scene);
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
-        /**
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
-         */
-        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
-        /**
-         * @param {Vector3} origin the origin of the updraft
-         * @param {number} radius the radius of the updraft
-         * @param {number} strength the strength of the updraft
-         * @param {number} height the height of the updraft
-         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
-         */
-        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
-        /**
-         * @param {Vector3} origin the of the vortex
-         * @param {number} radius the radius of the vortex
-         * @param {number} strength the strength of the vortex
-         * @param {number} height   the height of the vortex
-         */
-        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
-    }
-    /***** Radial explosion *****/
-    class PhysicsRadialExplosionEvent {
-        private _scene;
-        private _sphere;
-        private _sphereOptions;
-        private _rays;
-        private _dataFetched;
-        constructor(scene: Scene);
-        /**
-         * Returns the data related to the radial explosion event (sphere & rays).
-         * @returns {PhysicsRadialExplosionEventData}
-         */
-        getData(): PhysicsRadialExplosionEventData;
-        /**
-         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
-         * @param impostor
-         * @param {Vector3} origin the origin of the explosion
-         * @param {number} radius the explosion radius
-         * @param {number} strength the explosion strength
-         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
-         * @returns {Nullable<PhysicsForceAndContactPoint>}
-         */
-        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        /*** Helpers ***/
-        private _prepareSphere();
-        private _intersectsWithSphere(impostor, origin, radius);
-    }
-    /***** Gravitational Field *****/
-    class PhysicsGravitationalFieldEvent {
-        private _physicsHelper;
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _falloff;
-        private _tickCallback;
-        private _sphere;
-        private _dataFetched;
-        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
-        /**
-         * Returns the data related to the gravitational field event (sphere).
-         * @returns {PhysicsGravitationalFieldEventData}
-         */
-        getData(): PhysicsGravitationalFieldEventData;
-        /**
-         * Enables the gravitational field.
-         */
-        enable(): void;
-        /**
-         * Disables the gravitational field.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private _tick();
-    }
-    /***** Updraft *****/
-    class PhysicsUpdraftEvent {
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _updraftMode;
-        private _physicsEngine;
-        private _originTop;
-        private _originDirection;
-        private _tickCallback;
-        private _cylinder;
-        private _cylinderPosition;
-        private _dataFetched;
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
-        /**
-         * Returns the data related to the updraft event (cylinder).
-         * @returns {PhysicsUpdraftEventData}
-         */
-        getData(): PhysicsUpdraftEventData;
-        /**
-         * Enables the updraft.
-         */
-        enable(): void;
-        /**
-         * Disables the cortex.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint(impostor);
-        private _tick();
-        /*** Helpers ***/
-        private _prepareCylinder();
-        private _intersectsWithCylinder(impostor);
-    }
-    /***** Vortex *****/
-    class PhysicsVortexEvent {
-        private _scene;
-        private _origin;
-        private _radius;
-        private _strength;
-        private _height;
-        private _physicsEngine;
-        private _originTop;
-        private _centripetalForceThreshold;
-        private _updraftMultiplier;
-        private _tickCallback;
-        private _cylinder;
-        private _cylinderPosition;
-        private _dataFetched;
-        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
-        /**
-         * Returns the data related to the vortex event (cylinder).
-         * @returns {PhysicsVortexEventData}
-         */
-        getData(): PhysicsVortexEventData;
-        /**
-         * Enables the vortex.
-         */
-        enable(): void;
-        /**
-         * Disables the cortex.
-         */
-        disable(): void;
-        /**
-         * Disposes the sphere.
-         * @param {bolean} force
-         */
-        dispose(force?: boolean): void;
-        private getImpostorForceAndContactPoint(impostor);
-        private _tick();
-        /*** Helpers ***/
-        private _prepareCylinder();
-        private _intersectsWithCylinder(impostor);
-    }
-    /***** Enums *****/
-    /**
-    * The strenght of the force in correspondence to the distance of the affected object
-    */
-    enum PhysicsRadialImpulseFalloff {
-        Constant = 0,
-        Linear = 1,
-    }
-    /**
-     * The strenght of the force in correspondence to the distance of the affected object
-     */
-    enum PhysicsUpdraftMode {
-        Center = 0,
-        Perpendicular = 1,
-    }
-    /***** Data interfaces *****/
-    interface PhysicsForceAndContactPoint {
-        force: Vector3;
-        contactPoint: Vector3;
-    }
-    interface PhysicsRadialExplosionEventData {
-        sphere: Mesh;
-        rays: Array<Ray>;
-    }
-    interface PhysicsGravitationalFieldEventData {
-        sphere: Mesh;
-    }
-    interface PhysicsUpdraftEventData {
-        cylinder: Mesh;
-    }
-    interface PhysicsVortexEventData {
-        cylinder: Mesh;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsImpostorParameters {
-        mass: number;
-        friction?: number;
-        restitution?: number;
-        nativeOptions?: any;
-        ignoreParent?: boolean;
-        disableBidirectionalTransformation?: boolean;
-    }
-    interface IPhysicsEnabledObject {
-        position: Vector3;
-        rotationQuaternion: Nullable<Quaternion>;
-        scaling: Vector3;
-        rotation?: Vector3;
-        parent?: any;
-        getBoundingInfo(): BoundingInfo;
-        computeWorldMatrix(force: boolean): Matrix;
-        getWorldMatrix?(): Matrix;
-        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
-        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
-        getIndices?(): Nullable<IndicesArray>;
-        getScene?(): Scene;
-        getAbsolutePosition(): Vector3;
-        getAbsolutePivotPoint(): Vector3;
-        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
-        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
-        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
-        getClassName(): string;
-    }
-    class PhysicsImpostor {
-        object: IPhysicsEnabledObject;
-        type: number;
-        private _options;
-        private _scene;
-        static DEFAULT_OBJECT_SIZE: Vector3;
-        static IDENTITY_QUATERNION: Quaternion;
-        private _physicsEngine;
-        private _physicsBody;
-        private _bodyUpdateRequired;
-        private _onBeforePhysicsStepCallbacks;
-        private _onAfterPhysicsStepCallbacks;
-        private _onPhysicsCollideCallbacks;
-        private _deltaPosition;
-        private _deltaRotation;
-        private _deltaRotationConjugated;
-        private _parent;
-        private _isDisposed;
-        private static _tmpVecs;
-        private static _tmpQuat;
-        readonly isDisposed: boolean;
-        mass: number;
-        friction: number;
-        restitution: number;
-        uniqueId: number;
-        private _joints;
-        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene | undefined);
-        /**
-         * This function will completly initialize this impostor.
-         * It will create a new body - but only if this mesh has no parent.
-         * If it has, this impostor will not be used other than to define the impostor
-         * of the child mesh.
-         */
-        _init(): void;
-        private _getPhysicsParent();
-        /**
-         * Should a new body be generated.
-         */
-        isBodyInitRequired(): boolean;
-        setScalingUpdated(updated: boolean): void;
-        /**
-         * Force a regeneration of this or the parent's impostor's body.
-         * Use under cautious - This will remove all joints already implemented.
-         */
-        forceUpdate(): void;
-        /**
-         * Gets the body that holds this impostor. Either its own, or its parent.
-         */
-        /**
-         * Set the physics body. Used mainly by the physics engine/plugin
-         */
-        physicsBody: any;
-        parent: Nullable<PhysicsImpostor>;
-        resetUpdateFlags(): void;
-        getObjectExtendSize(): Vector3;
-        getObjectCenter(): Vector3;
-        /**
-         * Get a specific parametes from the options parameter.
-         */
-        getParam(paramName: string): any;
-        /**
-         * Sets a specific parameter in the options given to the physics plugin
-         */
-        setParam(paramName: string, value: number): void;
-        /**
-         * Specifically change the body's mass option. Won't recreate the physics body object
-         */
-        setMass(mass: number): void;
-        getLinearVelocity(): Nullable<Vector3>;
-        setLinearVelocity(velocity: Nullable<Vector3>): void;
-        getAngularVelocity(): Nullable<Vector3>;
-        setAngularVelocity(velocity: Nullable<Vector3>): void;
-        /**
-         * Execute a function with the physics plugin native code.
-         * Provide a function the will have two variables - the world object and the physics body object.
-         */
-        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
-        /**
-         * Register a function that will be executed before the physics world is stepping forward.
-         */
-        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * Register a function that will be executed after the physics step
-         */
-        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
-        /**
-         * register a function that will be executed when this impostor collides against a different body.
-         */
-        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
-        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
-        private _tmpQuat;
-        private _tmpQuat2;
-        getParentsRotation(): Quaternion;
-        /**
-         * this function is executed by the physics engine.
-         */
-        beforeStep: () => void;
-        /**
-         * this function is executed by the physics engine.
-         */
-        afterStep: () => void;
-        /**
-         * Legacy collision detection event support
-         */
-        onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void>;
-        onCollide: (e: {
-            body: any;
-        }) => void;
-        /**
-         * Apply a force
-         */
-        applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
-        /**
-         * Apply an impulse
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
-        /**
-         * A help function to create a joint.
-         */
-        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor;
-        /**
-         * Add a joint to this impostor with a different impostor.
-         */
-        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
-        /**
-         * Will keep this body still, in a sleep mode.
-         */
-        sleep(): PhysicsImpostor;
-        /**
-         * Wake the body up.
-         */
-        wakeUp(): PhysicsImpostor;
-        clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
-        dispose(): void;
-        setDeltaPosition(position: Vector3): void;
-        setDeltaRotation(rotation: Quaternion): void;
-        getBoxSizeToRef(result: Vector3): PhysicsImpostor;
-        getRadius(): number;
-        /**
-         * Sync a bone with this impostor
-         * @param bone The bone to sync to the impostor.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         */
-        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
-        /**
-         * Sync impostor to a bone
-         * @param bone The bone that the impostor will be synced to.
-         * @param boneMesh The mesh that the bone is influencing.
-         * @param jointPivot The pivot of the joint / bone in local space.
-         * @param distToJoint Optional distance from the impostor to the joint.
-         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
-         * @param boneAxis Optional vector3 axis the bone is aligned with
-         */
-        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
-        static NoImpostor: number;
-        static SphereImpostor: number;
-        static BoxImpostor: number;
-        static PlaneImpostor: number;
-        static MeshImpostor: number;
-        static CylinderImpostor: number;
-        static ParticleImpostor: number;
-        static HeightmapImpostor: number;
-    }
-}
-
-declare module BABYLON {
-    interface PhysicsJointData {
-        mainPivot?: Vector3;
-        connectedPivot?: Vector3;
-        mainAxis?: Vector3;
-        connectedAxis?: Vector3;
-        collision?: boolean;
-        nativeParams?: any;
-    }
-    /**
-     * This is a holder class for the physics joint created by the physics plugin.
-     * It holds a set of functions to control the underlying joint.
-     */
-    class PhysicsJoint {
-        type: number;
-        jointData: PhysicsJointData;
-        private _physicsJoint;
-        protected _physicsPlugin: IPhysicsEnginePlugin;
-        constructor(type: number, jointData: PhysicsJointData);
-        physicsJoint: any;
-        physicsPlugin: IPhysicsEnginePlugin;
-        /**
-         * Execute a function that is physics-plugin specific.
-         * @param {Function} func the function that will be executed.
-         *                        It accepts two parameters: the physics world and the physics joint.
-         */
-        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
-        static DistanceJoint: number;
-        static HingeJoint: number;
-        static BallAndSocketJoint: number;
-        static WheelJoint: number;
-        static SliderJoint: number;
-        static PrismaticJoint: number;
-        static UniversalJoint: number;
-        static Hinge2Joint: number;
-        static PointToPointJoint: number;
-        static SpringJoint: number;
-        static LockJoint: number;
-    }
-    /**
-     * A class representing a physics distance joint.
-     */
-    class DistanceJoint extends PhysicsJoint {
-        constructor(jointData: DistanceJointData);
-        /**
-         * Update the predefined distance.
-         */
-        updateDistance(maxDistance: number, minDistance?: number): void;
-    }
-    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
-        constructor(type: number, jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a single hinge physics joint
-     */
-    class HingeJoint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         */
-        setMotor(force?: number, maxForce?: number): void;
-        /**
-         * Set the motor's limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number): void;
-    }
-    /**
-     * This class represents a dual hinge physics joint (same as wheel joint)
-     */
-    class Hinge2Joint extends MotorEnabledJoint {
-        constructor(jointData: PhysicsJointData);
-        /**
-         * Set the motor values.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} force the force to apply
-         * @param {number} maxForce max force for this motor.
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        /**
-         * Set the motor limits.
-         * Attention, this function is plugin specific. Engines won't react 100% the same.
-         * @param {number} upperLimit the upper limit
-         * @param {number} lowerLimit lower limit
-         * @param {motorIndex} the motor's index, 0 or 1.
-         */
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface IMotorEnabledJoint {
-        physicsJoint: any;
-        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-    }
-    interface DistanceJointData extends PhysicsJointData {
-        maxDistance: number;
-    }
-    interface SpringJointData extends PhysicsJointData {
-        length: number;
-        stiffness: number;
-        damping: number;
-    }
-}
-
-declare module BABYLON {
     /**
      * This represents a GPU particle system in Babylon
      * This is the fastest particle system in Babylon as it uses the GPU to update the individual particle data
@@ -19671,6 +19155,640 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    interface PhysicsImpostorJoint {
+        mainImpostor: PhysicsImpostor;
+        connectedImpostor: PhysicsImpostor;
+        joint: PhysicsJoint;
+    }
+    class PhysicsEngine {
+        private _physicsPlugin;
+        gravity: Vector3;
+        constructor(gravity: Nullable<Vector3>, _physicsPlugin?: IPhysicsEnginePlugin);
+        setGravity(gravity: Vector3): void;
+        /**
+         * Set the time step of the physics engine.
+         * default is 1/60.
+         * To slow it down, enter 1/600 for example.
+         * To speed it up, 1/30
+         * @param {number} newTimeStep the new timestep to apply to this world.
+         */
+        setTimeStep(newTimeStep?: number): void;
+        /**
+         * Get the time step of the physics engine.
+         */
+        getTimeStep(): number;
+        dispose(): void;
+        getPhysicsPluginName(): string;
+        static Epsilon: number;
+        private _impostors;
+        private _joints;
+        /**
+         * Adding a new impostor for the impostor tracking.
+         * This will be done by the impostor itself.
+         * @param {PhysicsImpostor} impostor the impostor to add
+         */
+        addImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Remove an impostor from the engine.
+         * This impostor and its mesh will not longer be updated by the physics engine.
+         * @param {PhysicsImpostor} impostor the impostor to remove
+         */
+        removeImpostor(impostor: PhysicsImpostor): void;
+        /**
+         * Add a joint to the physics engine
+         * @param {PhysicsImpostor} mainImpostor the main impostor to which the joint is added.
+         * @param {PhysicsImpostor} connectedImpostor the impostor that is connected to the main impostor using this joint
+         * @param {PhysicsJoint} the joint that will connect both impostors.
+         */
+        addJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        removeJoint(mainImpostor: PhysicsImpostor, connectedImpostor: PhysicsImpostor, joint: PhysicsJoint): void;
+        /**
+         * Called by the scene. no need to call it.
+         */
+        _step(delta: number): void;
+        getPhysicsPlugin(): IPhysicsEnginePlugin;
+        getImpostors(): Array<PhysicsImpostor>;
+        getImpostorForPhysicsObject(object: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
+        getImpostorWithPhysicsBody(body: any): Nullable<PhysicsImpostor>;
+    }
+    interface IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(joint: PhysicsImpostorJoint): void;
+        removeJoint(joint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Nullable<Vector3>): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class PhysicsHelper {
+        private _scene;
+        private _physicsEngine;
+        constructor(scene: Scene);
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionImpulse(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        applyRadialExplosionForce(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsRadialExplosionEvent>;
+        /**
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear. Defaults to Constant
+         */
+        gravitationalField(origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff): Nullable<PhysicsGravitationalFieldEvent>;
+        /**
+         * @param {Vector3} origin the origin of the updraft
+         * @param {number} radius the radius of the updraft
+         * @param {number} strength the strength of the updraft
+         * @param {number} height the height of the updraft
+         * @param {PhysicsUpdraftMode} updraftMode possible options: Center & Perpendicular. Defaults to Center
+         */
+        updraft(origin: Vector3, radius: number, strength: number, height: number, updraftMode?: PhysicsUpdraftMode): Nullable<PhysicsUpdraftEvent>;
+        /**
+         * @param {Vector3} origin the of the vortex
+         * @param {number} radius the radius of the vortex
+         * @param {number} strength the strength of the vortex
+         * @param {number} height   the height of the vortex
+         */
+        vortex(origin: Vector3, radius: number, strength: number, height: number): Nullable<PhysicsVortexEvent>;
+    }
+    /***** Radial explosion *****/
+    class PhysicsRadialExplosionEvent {
+        private _scene;
+        private _sphere;
+        private _sphereOptions;
+        private _rays;
+        private _dataFetched;
+        constructor(scene: Scene);
+        /**
+         * Returns the data related to the radial explosion event (sphere & rays).
+         * @returns {PhysicsRadialExplosionEventData}
+         */
+        getData(): PhysicsRadialExplosionEventData;
+        /**
+         * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
+         * @param impostor
+         * @param {Vector3} origin the origin of the explosion
+         * @param {number} radius the explosion radius
+         * @param {number} strength the explosion strength
+         * @param {PhysicsRadialImpulseFalloff} falloff possible options: Constant & Linear
+         * @returns {Nullable<PhysicsForceAndContactPoint>}
+         */
+        getImpostorForceAndContactPoint(impostor: PhysicsImpostor, origin: Vector3, radius: number, strength: number, falloff: PhysicsRadialImpulseFalloff): Nullable<PhysicsForceAndContactPoint>;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        /*** Helpers ***/
+        private _prepareSphere();
+        private _intersectsWithSphere(impostor, origin, radius);
+    }
+    /***** Gravitational Field *****/
+    class PhysicsGravitationalFieldEvent {
+        private _physicsHelper;
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _falloff;
+        private _tickCallback;
+        private _sphere;
+        private _dataFetched;
+        constructor(physicsHelper: PhysicsHelper, scene: Scene, origin: Vector3, radius: number, strength: number, falloff?: PhysicsRadialImpulseFalloff);
+        /**
+         * Returns the data related to the gravitational field event (sphere).
+         * @returns {PhysicsGravitationalFieldEventData}
+         */
+        getData(): PhysicsGravitationalFieldEventData;
+        /**
+         * Enables the gravitational field.
+         */
+        enable(): void;
+        /**
+         * Disables the gravitational field.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private _tick();
+    }
+    /***** Updraft *****/
+    class PhysicsUpdraftEvent {
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _height;
+        private _updraftMode;
+        private _physicsEngine;
+        private _originTop;
+        private _originDirection;
+        private _tickCallback;
+        private _cylinder;
+        private _cylinderPosition;
+        private _dataFetched;
+        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number, _updraftMode: PhysicsUpdraftMode);
+        /**
+         * Returns the data related to the updraft event (cylinder).
+         * @returns {PhysicsUpdraftEventData}
+         */
+        getData(): PhysicsUpdraftEventData;
+        /**
+         * Enables the updraft.
+         */
+        enable(): void;
+        /**
+         * Disables the cortex.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private getImpostorForceAndContactPoint(impostor);
+        private _tick();
+        /*** Helpers ***/
+        private _prepareCylinder();
+        private _intersectsWithCylinder(impostor);
+    }
+    /***** Vortex *****/
+    class PhysicsVortexEvent {
+        private _scene;
+        private _origin;
+        private _radius;
+        private _strength;
+        private _height;
+        private _physicsEngine;
+        private _originTop;
+        private _centripetalForceThreshold;
+        private _updraftMultiplier;
+        private _tickCallback;
+        private _cylinder;
+        private _cylinderPosition;
+        private _dataFetched;
+        constructor(_scene: Scene, _origin: Vector3, _radius: number, _strength: number, _height: number);
+        /**
+         * Returns the data related to the vortex event (cylinder).
+         * @returns {PhysicsVortexEventData}
+         */
+        getData(): PhysicsVortexEventData;
+        /**
+         * Enables the vortex.
+         */
+        enable(): void;
+        /**
+         * Disables the cortex.
+         */
+        disable(): void;
+        /**
+         * Disposes the sphere.
+         * @param {bolean} force
+         */
+        dispose(force?: boolean): void;
+        private getImpostorForceAndContactPoint(impostor);
+        private _tick();
+        /*** Helpers ***/
+        private _prepareCylinder();
+        private _intersectsWithCylinder(impostor);
+    }
+    /***** Enums *****/
+    /**
+    * The strenght of the force in correspondence to the distance of the affected object
+    */
+    enum PhysicsRadialImpulseFalloff {
+        Constant = 0,
+        Linear = 1,
+    }
+    /**
+     * The strenght of the force in correspondence to the distance of the affected object
+     */
+    enum PhysicsUpdraftMode {
+        Center = 0,
+        Perpendicular = 1,
+    }
+    /***** Data interfaces *****/
+    interface PhysicsForceAndContactPoint {
+        force: Vector3;
+        contactPoint: Vector3;
+    }
+    interface PhysicsRadialExplosionEventData {
+        sphere: Mesh;
+        rays: Array<Ray>;
+    }
+    interface PhysicsGravitationalFieldEventData {
+        sphere: Mesh;
+    }
+    interface PhysicsUpdraftEventData {
+        cylinder: Mesh;
+    }
+    interface PhysicsVortexEventData {
+        cylinder: Mesh;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsImpostorParameters {
+        mass: number;
+        friction?: number;
+        restitution?: number;
+        nativeOptions?: any;
+        ignoreParent?: boolean;
+        disableBidirectionalTransformation?: boolean;
+    }
+    interface IPhysicsEnabledObject {
+        position: Vector3;
+        rotationQuaternion: Nullable<Quaternion>;
+        scaling: Vector3;
+        rotation?: Vector3;
+        parent?: any;
+        getBoundingInfo(): BoundingInfo;
+        computeWorldMatrix(force: boolean): Matrix;
+        getWorldMatrix?(): Matrix;
+        getChildMeshes?(directDescendantsOnly?: boolean): Array<AbstractMesh>;
+        getVerticesData(kind: string): Nullable<Array<number> | Float32Array>;
+        getIndices?(): Nullable<IndicesArray>;
+        getScene?(): Scene;
+        getAbsolutePosition(): Vector3;
+        getAbsolutePivotPoint(): Vector3;
+        rotate(axis: Vector3, amount: number, space?: Space): TransformNode;
+        translate(axis: Vector3, distance: number, space?: Space): TransformNode;
+        setAbsolutePosition(absolutePosition: Vector3): TransformNode;
+        getClassName(): string;
+    }
+    class PhysicsImpostor {
+        object: IPhysicsEnabledObject;
+        type: number;
+        private _options;
+        private _scene;
+        static DEFAULT_OBJECT_SIZE: Vector3;
+        static IDENTITY_QUATERNION: Quaternion;
+        private _physicsEngine;
+        private _physicsBody;
+        private _bodyUpdateRequired;
+        private _onBeforePhysicsStepCallbacks;
+        private _onAfterPhysicsStepCallbacks;
+        private _onPhysicsCollideCallbacks;
+        private _deltaPosition;
+        private _deltaRotation;
+        private _deltaRotationConjugated;
+        private _parent;
+        private _isDisposed;
+        private static _tmpVecs;
+        private static _tmpQuat;
+        readonly isDisposed: boolean;
+        mass: number;
+        friction: number;
+        restitution: number;
+        uniqueId: number;
+        private _joints;
+        constructor(object: IPhysicsEnabledObject, type: number, _options?: PhysicsImpostorParameters, _scene?: Scene | undefined);
+        /**
+         * This function will completly initialize this impostor.
+         * It will create a new body - but only if this mesh has no parent.
+         * If it has, this impostor will not be used other than to define the impostor
+         * of the child mesh.
+         */
+        _init(): void;
+        private _getPhysicsParent();
+        /**
+         * Should a new body be generated.
+         */
+        isBodyInitRequired(): boolean;
+        setScalingUpdated(updated: boolean): void;
+        /**
+         * Force a regeneration of this or the parent's impostor's body.
+         * Use under cautious - This will remove all joints already implemented.
+         */
+        forceUpdate(): void;
+        /**
+         * Gets the body that holds this impostor. Either its own, or its parent.
+         */
+        /**
+         * Set the physics body. Used mainly by the physics engine/plugin
+         */
+        physicsBody: any;
+        parent: Nullable<PhysicsImpostor>;
+        resetUpdateFlags(): void;
+        getObjectExtendSize(): Vector3;
+        getObjectCenter(): Vector3;
+        /**
+         * Get a specific parametes from the options parameter.
+         */
+        getParam(paramName: string): any;
+        /**
+         * Sets a specific parameter in the options given to the physics plugin
+         */
+        setParam(paramName: string, value: number): void;
+        /**
+         * Specifically change the body's mass option. Won't recreate the physics body object
+         */
+        setMass(mass: number): void;
+        getLinearVelocity(): Nullable<Vector3>;
+        setLinearVelocity(velocity: Nullable<Vector3>): void;
+        getAngularVelocity(): Nullable<Vector3>;
+        setAngularVelocity(velocity: Nullable<Vector3>): void;
+        /**
+         * Execute a function with the physics plugin native code.
+         * Provide a function the will have two variables - the world object and the physics body object.
+         */
+        executeNativeFunction(func: (world: any, physicsBody: any) => void): void;
+        /**
+         * Register a function that will be executed before the physics world is stepping forward.
+         */
+        registerBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterBeforePhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * Register a function that will be executed after the physics step
+         */
+        registerAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        unregisterAfterPhysicsStep(func: (impostor: PhysicsImpostor) => void): void;
+        /**
+         * register a function that will be executed when this impostor collides against a different body.
+         */
+        registerOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor) => void): void;
+        unregisterOnPhysicsCollide(collideAgainst: PhysicsImpostor | Array<PhysicsImpostor>, func: (collider: PhysicsImpostor, collidedAgainst: PhysicsImpostor | Array<PhysicsImpostor>) => void): void;
+        private _tmpQuat;
+        private _tmpQuat2;
+        getParentsRotation(): Quaternion;
+        /**
+         * this function is executed by the physics engine.
+         */
+        beforeStep: () => void;
+        /**
+         * this function is executed by the physics engine.
+         */
+        afterStep: () => void;
+        /**
+         * Legacy collision detection event support
+         */
+        onCollideEvent: Nullable<(collider: PhysicsImpostor, collidedWith: PhysicsImpostor) => void>;
+        onCollide: (e: {
+            body: any;
+        }) => void;
+        /**
+         * Apply a force
+         */
+        applyForce(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
+        /**
+         * Apply an impulse
+         */
+        applyImpulse(force: Vector3, contactPoint: Vector3): PhysicsImpostor;
+        /**
+         * A help function to create a joint.
+         */
+        createJoint(otherImpostor: PhysicsImpostor, jointType: number, jointData: PhysicsJointData): PhysicsImpostor;
+        /**
+         * Add a joint to this impostor with a different impostor.
+         */
+        addJoint(otherImpostor: PhysicsImpostor, joint: PhysicsJoint): PhysicsImpostor;
+        /**
+         * Will keep this body still, in a sleep mode.
+         */
+        sleep(): PhysicsImpostor;
+        /**
+         * Wake the body up.
+         */
+        wakeUp(): PhysicsImpostor;
+        clone(newObject: IPhysicsEnabledObject): Nullable<PhysicsImpostor>;
+        dispose(): void;
+        setDeltaPosition(position: Vector3): void;
+        setDeltaRotation(rotation: Quaternion): void;
+        getBoxSizeToRef(result: Vector3): PhysicsImpostor;
+        getRadius(): number;
+        /**
+         * Sync a bone with this impostor
+         * @param bone The bone to sync to the impostor.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         */
+        syncBoneWithImpostor(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion): void;
+        /**
+         * Sync impostor to a bone
+         * @param bone The bone that the impostor will be synced to.
+         * @param boneMesh The mesh that the bone is influencing.
+         * @param jointPivot The pivot of the joint / bone in local space.
+         * @param distToJoint Optional distance from the impostor to the joint.
+         * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
+         * @param boneAxis Optional vector3 axis the bone is aligned with
+         */
+        syncImpostorWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3): void;
+        static NoImpostor: number;
+        static SphereImpostor: number;
+        static BoxImpostor: number;
+        static PlaneImpostor: number;
+        static MeshImpostor: number;
+        static CylinderImpostor: number;
+        static ParticleImpostor: number;
+        static HeightmapImpostor: number;
+    }
+}
+
+declare module BABYLON {
+    interface PhysicsJointData {
+        mainPivot?: Vector3;
+        connectedPivot?: Vector3;
+        mainAxis?: Vector3;
+        connectedAxis?: Vector3;
+        collision?: boolean;
+        nativeParams?: any;
+    }
+    /**
+     * This is a holder class for the physics joint created by the physics plugin.
+     * It holds a set of functions to control the underlying joint.
+     */
+    class PhysicsJoint {
+        type: number;
+        jointData: PhysicsJointData;
+        private _physicsJoint;
+        protected _physicsPlugin: IPhysicsEnginePlugin;
+        constructor(type: number, jointData: PhysicsJointData);
+        physicsJoint: any;
+        physicsPlugin: IPhysicsEnginePlugin;
+        /**
+         * Execute a function that is physics-plugin specific.
+         * @param {Function} func the function that will be executed.
+         *                        It accepts two parameters: the physics world and the physics joint.
+         */
+        executeNativeFunction(func: (world: any, physicsJoint: any) => void): void;
+        static DistanceJoint: number;
+        static HingeJoint: number;
+        static BallAndSocketJoint: number;
+        static WheelJoint: number;
+        static SliderJoint: number;
+        static PrismaticJoint: number;
+        static UniversalJoint: number;
+        static Hinge2Joint: number;
+        static PointToPointJoint: number;
+        static SpringJoint: number;
+        static LockJoint: number;
+    }
+    /**
+     * A class representing a physics distance joint.
+     */
+    class DistanceJoint extends PhysicsJoint {
+        constructor(jointData: DistanceJointData);
+        /**
+         * Update the predefined distance.
+         */
+        updateDistance(maxDistance: number, minDistance?: number): void;
+    }
+    class MotorEnabledJoint extends PhysicsJoint implements IMotorEnabledJoint {
+        constructor(type: number, jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a single hinge physics joint
+     */
+    class HingeJoint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         */
+        setMotor(force?: number, maxForce?: number): void;
+        /**
+         * Set the motor's limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number): void;
+    }
+    /**
+     * This class represents a dual hinge physics joint (same as wheel joint)
+     */
+    class Hinge2Joint extends MotorEnabledJoint {
+        constructor(jointData: PhysicsJointData);
+        /**
+         * Set the motor values.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} force the force to apply
+         * @param {number} maxForce max force for this motor.
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        /**
+         * Set the motor limits.
+         * Attention, this function is plugin specific. Engines won't react 100% the same.
+         * @param {number} upperLimit the upper limit
+         * @param {number} lowerLimit lower limit
+         * @param {motorIndex} the motor's index, 0 or 1.
+         */
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface IMotorEnabledJoint {
+        physicsJoint: any;
+        setMotor(force?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+    }
+    interface DistanceJointData extends PhysicsJointData {
+        maxDistance: number;
+    }
+    interface SpringJointData extends PhysicsJointData {
+        length: number;
+        stiffness: number;
+        damping: number;
+    }
+}
+
+declare module BABYLON {
     class ReflectionProbe {
         name: string;
         private _scene;
@@ -19696,75 +19814,6 @@ declare module BABYLON {
          * @param autoClearDepthStencil Automatically clears depth and stencil between groups if true.
          */
         setRenderingAutoClearDepthStencil(renderingGroupId: number, autoClearDepthStencil: boolean): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class Sprite {
-        name: string;
-        position: Vector3;
-        color: Color4;
-        width: number;
-        height: number;
-        angle: number;
-        cellIndex: number;
-        invertU: number;
-        invertV: number;
-        disposeWhenFinishedAnimating: boolean;
-        animations: Animation[];
-        isPickable: boolean;
-        actionManager: ActionManager;
-        private _animationStarted;
-        private _loopAnimation;
-        private _fromIndex;
-        private _toIndex;
-        private _delay;
-        private _direction;
-        private _manager;
-        private _time;
-        private _onAnimationEnd;
-        size: number;
-        constructor(name: string, manager: SpriteManager);
-        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
-        stopAnimation(): void;
-        _animate(deltaTime: number): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
-    class SpriteManager {
-        name: string;
-        sprites: Sprite[];
-        renderingGroupId: number;
-        layerMask: number;
-        fogEnabled: boolean;
-        isPickable: boolean;
-        cellWidth: number;
-        cellHeight: number;
-        /**
-        * An event triggered when the manager is disposed.
-        * @type {BABYLON.Observable}
-        */
-        onDisposeObservable: Observable<SpriteManager>;
-        private _onDisposeObserver;
-        onDispose: () => void;
-        private _capacity;
-        private _spriteTexture;
-        private _epsilon;
-        private _scene;
-        private _vertexData;
-        private _buffer;
-        private _vertexBuffers;
-        private _indexBuffer;
-        private _effectBase;
-        private _effectFog;
-        texture: Texture;
-        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
-        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
-        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
-        render(): void;
         dispose(): void;
     }
 }
@@ -21166,6 +21215,75 @@ declare module BABYLON {
         private _scaleFactor;
         private _lensCenter;
         constructor(name: string, camera: Camera, isRightEye: boolean, vrMetrics: VRCameraMetrics);
+    }
+}
+
+declare module BABYLON {
+    class Sprite {
+        name: string;
+        position: Vector3;
+        color: Color4;
+        width: number;
+        height: number;
+        angle: number;
+        cellIndex: number;
+        invertU: number;
+        invertV: number;
+        disposeWhenFinishedAnimating: boolean;
+        animations: Animation[];
+        isPickable: boolean;
+        actionManager: ActionManager;
+        private _animationStarted;
+        private _loopAnimation;
+        private _fromIndex;
+        private _toIndex;
+        private _delay;
+        private _direction;
+        private _manager;
+        private _time;
+        private _onAnimationEnd;
+        size: number;
+        constructor(name: string, manager: SpriteManager);
+        playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: () => void): void;
+        stopAnimation(): void;
+        _animate(deltaTime: number): void;
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    class SpriteManager {
+        name: string;
+        sprites: Sprite[];
+        renderingGroupId: number;
+        layerMask: number;
+        fogEnabled: boolean;
+        isPickable: boolean;
+        cellWidth: number;
+        cellHeight: number;
+        /**
+        * An event triggered when the manager is disposed.
+        * @type {BABYLON.Observable}
+        */
+        onDisposeObservable: Observable<SpriteManager>;
+        private _onDisposeObserver;
+        onDispose: () => void;
+        private _capacity;
+        private _spriteTexture;
+        private _epsilon;
+        private _scene;
+        private _vertexData;
+        private _buffer;
+        private _vertexBuffers;
+        private _indexBuffer;
+        private _effectBase;
+        private _effectFog;
+        texture: Texture;
+        constructor(name: string, imgUrl: string, capacity: number, cellSize: any, scene: Scene, epsilon?: number, samplingMode?: number);
+        private _appendSpriteVertex(index, sprite, offsetX, offsetY, rowSize);
+        intersects(ray: Ray, camera: Camera, predicate?: (sprite: Sprite) => boolean, fastCheck?: boolean): Nullable<PickingInfo>;
+        render(): void;
+        dispose(): void;
     }
 }
 
@@ -23933,6 +24051,236 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
+    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadRotationSensibility: number;
+        gamepadMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _keys;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        keysReset: number[];
+        panningSensibility: number;
+        zoomingSensibility: number;
+        useAltToZoom: boolean;
+        private _ctrlPressed;
+        private _altPressed;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        private _wheel;
+        private _observer;
+        wheelPrecision: number;
+        /**
+         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when wheel is used.
+         */
+        wheelDeltaPercentage: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        buttons: number[];
+        angularSensibilityX: number;
+        angularSensibilityY: number;
+        pinchPrecision: number;
+        /**
+         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
+         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+         */
+        pinchDeltaPercentage: number;
+        panningSensibility: number;
+        multiTouchPanning: boolean;
+        multiTouchPanAndZoom: boolean;
+        private _isPanClick;
+        pinchInwards: boolean;
+        private _pointerInput;
+        private _observer;
+        private _onMouseMove;
+        private _onGestureStart;
+        private _onGesture;
+        private _MSGestureHandler;
+        private _onLostFocus;
+        private _onContextMenu;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
+        camera: ArcRotateCamera;
+        alphaCorrection: number;
+        betaCorrection: number;
+        gammaCorrection: number;
+        private _alpha;
+        private _gamma;
+        private _dirty;
+        private _deviceOrientationHandler;
+        constructor();
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        _onOrientationEvent(evt: DeviceOrientationEvent): void;
+        checkInputs(): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
+     * Screen rotation is taken into account.
+     */
+    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
+        private _camera;
+        private _screenOrientationAngle;
+        private _constantTranform;
+        private _screenQuaternion;
+        private _alpha;
+        private _beta;
+        private _gamma;
+        constructor();
+        camera: FreeCamera;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        private _orientationChanged;
+        private _deviceOrientation;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        gamepad: Nullable<Gamepad>;
+        private _onGamepadConnectedObserver;
+        private _onGamepadDisconnectedObserver;
+        gamepadAngularSensibility: number;
+        gamepadMoveSensibility: number;
+        private _cameraTransform;
+        private _deltaTransform;
+        private _vector3;
+        private _vector2;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _keys;
+        private _onCanvasBlurObserver;
+        private _onKeyboardObserver;
+        private _engine;
+        private _scene;
+        keysUp: number[];
+        keysDown: number[];
+        keysLeft: number[];
+        keysRight: number[];
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        _onLostFocus(e: FocusEvent): void;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
+        touchEnabled: boolean;
+        camera: FreeCamera;
+        buttons: number[];
+        angularSensibility: number;
+        private _pointerInput;
+        private _onMouseMove;
+        private _observer;
+        private previousPosition;
+        constructor(touchEnabled?: boolean);
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _offsetX;
+        private _offsetY;
+        private _pointerPressed;
+        private _pointerInput;
+        private _observer;
+        private _onLostFocus;
+        touchAngularSensibility: number;
+        touchMoveSensibility: number;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        checkInputs(): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
+        camera: FreeCamera;
+        private _leftjoystick;
+        private _rightjoystick;
+        getLeftJoystick(): VirtualJoystick;
+        getRightJoystick(): VirtualJoystick;
+        checkInputs(): void;
+        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
+        detachControl(element: Nullable<HTMLElement>): void;
+        getClassName(): string;
+        getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
     class VRCameraMetrics {
         hResolution: number;
         vResolution: number;
@@ -24540,236 +24888,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadRotationSensibility: number;
-        gamepadMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _keys;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        keysReset: number[];
-        panningSensibility: number;
-        zoomingSensibility: number;
-        useAltToZoom: boolean;
-        private _ctrlPressed;
-        private _altPressed;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        private _wheel;
-        private _observer;
-        wheelPrecision: number;
-        /**
-         * wheelDeltaPercentage will be used instead of wheelPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when wheel is used.
-         */
-        wheelDeltaPercentage: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraPointersInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        buttons: number[];
-        angularSensibilityX: number;
-        angularSensibilityY: number;
-        pinchPrecision: number;
-        /**
-         * pinchDeltaPercentage will be used instead of pinchPrecision if different from 0.
-         * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
-         */
-        pinchDeltaPercentage: number;
-        panningSensibility: number;
-        multiTouchPanning: boolean;
-        multiTouchPanAndZoom: boolean;
-        private _isPanClick;
-        pinchInwards: boolean;
-        private _pointerInput;
-        private _observer;
-        private _onMouseMove;
-        private _onGestureStart;
-        private _onGesture;
-        private _MSGestureHandler;
-        private _onLostFocus;
-        private _onContextMenu;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<ArcRotateCamera> {
-        camera: ArcRotateCamera;
-        alphaCorrection: number;
-        betaCorrection: number;
-        gammaCorrection: number;
-        private _alpha;
-        private _gamma;
-        private _dirty;
-        private _deviceOrientationHandler;
-        constructor();
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        _onOrientationEvent(evt: DeviceOrientationEvent): void;
-        checkInputs(): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    /**
-     * Takes information about the orientation of the device as reported by the deviceorientation event to orient the camera.
-     * Screen rotation is taken into account.
-     */
-    class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera> {
-        private _camera;
-        private _screenOrientationAngle;
-        private _constantTranform;
-        private _screenQuaternion;
-        private _alpha;
-        private _beta;
-        private _gamma;
-        constructor();
-        camera: FreeCamera;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        private _orientationChanged;
-        private _deviceOrientation;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        gamepad: Nullable<Gamepad>;
-        private _onGamepadConnectedObserver;
-        private _onGamepadDisconnectedObserver;
-        gamepadAngularSensibility: number;
-        gamepadMoveSensibility: number;
-        private _cameraTransform;
-        private _deltaTransform;
-        private _vector3;
-        private _vector2;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _keys;
-        private _onCanvasBlurObserver;
-        private _onKeyboardObserver;
-        private _engine;
-        private _scene;
-        keysUp: number[];
-        keysDown: number[];
-        keysLeft: number[];
-        keysRight: number[];
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        _onLostFocus(e: FocusEvent): void;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
-        touchEnabled: boolean;
-        camera: FreeCamera;
-        buttons: number[];
-        angularSensibility: number;
-        private _pointerInput;
-        private _onMouseMove;
-        private _observer;
-        private previousPosition;
-        constructor(touchEnabled?: boolean);
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _offsetX;
-        private _offsetY;
-        private _pointerPressed;
-        private _pointerInput;
-        private _observer;
-        private _onLostFocus;
-        touchAngularSensibility: number;
-        touchMoveSensibility: number;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        checkInputs(): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
-    class FreeCameraVirtualJoystickInput implements ICameraInput<FreeCamera> {
-        camera: FreeCamera;
-        private _leftjoystick;
-        private _rightjoystick;
-        getLeftJoystick(): VirtualJoystick;
-        getRightJoystick(): VirtualJoystick;
-        checkInputs(): void;
-        attachControl(element: HTMLElement, noPreventDefault?: boolean): void;
-        detachControl(element: Nullable<HTMLElement>): void;
-        getClassName(): string;
-        getSimpleName(): string;
-    }
-}
-
-declare module BABYLON {
     /**
      * Google Daydream controller
      */
@@ -24988,6 +25106,9 @@ declare module BABYLON {
         getForwardRay(length?: number): Ray;
         dispose(): void;
     }
+}
+
+declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -25480,9 +25601,6 @@ declare module BABYLON {
          */
         static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator;
     }
-}
-
-declare module BABYLON {
 }
 
 declare module BABYLON {
@@ -27892,106 +28010,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    class CannonJSPlugin implements IPhysicsEnginePlugin {
-        private _useDeltaForWorldStep;
-        world: any;
-        name: string;
-        private _physicsMaterials;
-        private _fixedTimeStep;
-        BJSCANNON: any;
-        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _processChildMeshes(mainImpostor);
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        private _addMaterial(name, friction, restitution);
-        private _checkWithEpsilon(value);
-        private _createShape(impostor);
-        private _createHeightmap(object, pointDepth?);
-        private _minus90X;
-        private _plus90X;
-        private _tmpPosition;
-        private _tmpDeltaPosition;
-        private _tmpUnityRotation;
-        private _updatePhysicsBodyTransformation(impostor);
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        isSupported(): boolean;
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-        private _extendNamespace();
-    }
-}
-
-declare module BABYLON {
-    class OimoJSPlugin implements IPhysicsEnginePlugin {
-        world: any;
-        name: string;
-        BJSOIMO: any;
-        constructor(iterations?: number);
-        setGravity(gravity: Vector3): void;
-        setTimeStep(timeStep: number): void;
-        getTimeStep(): number;
-        private _tmpImpostorsArray;
-        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
-        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
-        generatePhysicsBody(impostor: PhysicsImpostor): void;
-        private _tmpPositionVector;
-        removePhysicsBody(impostor: PhysicsImpostor): void;
-        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
-        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
-        isSupported(): boolean;
-        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
-        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
-        private _getLastShape(body);
-        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
-        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
-        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
-        getBodyMass(impostor: PhysicsImpostor): number;
-        getBodyFriction(impostor: PhysicsImpostor): number;
-        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
-        getBodyRestitution(impostor: PhysicsImpostor): number;
-        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
-        sleepBody(impostor: PhysicsImpostor): void;
-        wakeUpBody(impostor: PhysicsImpostor): void;
-        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
-        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
-        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
-        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
-        getRadius(impostor: PhysicsImpostor): number;
-        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
-        dispose(): void;
-    }
-}
-
-declare module BABYLON {
     /**
      * Particle emitter emitting particles from the inside of a box.
      * It emits the particles randomly between 2 given directions.
@@ -28346,6 +28364,106 @@ declare module BABYLON {
          * @param serializationObject defines the JSON object
          */
         parse(serializationObject: any): void;
+    }
+}
+
+declare module BABYLON {
+    class CannonJSPlugin implements IPhysicsEnginePlugin {
+        private _useDeltaForWorldStep;
+        world: any;
+        name: string;
+        private _physicsMaterials;
+        private _fixedTimeStep;
+        BJSCANNON: any;
+        constructor(_useDeltaForWorldStep?: boolean, iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _processChildMeshes(mainImpostor);
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        private _addMaterial(name, friction, restitution);
+        private _checkWithEpsilon(value);
+        private _createShape(impostor);
+        private _createHeightmap(object, pointDepth?);
+        private _minus90X;
+        private _plus90X;
+        private _tmpPosition;
+        private _tmpDeltaPosition;
+        private _tmpUnityRotation;
+        private _updatePhysicsBodyTransformation(impostor);
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        isSupported(): boolean;
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed?: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
+        private _extendNamespace();
+    }
+}
+
+declare module BABYLON {
+    class OimoJSPlugin implements IPhysicsEnginePlugin {
+        world: any;
+        name: string;
+        BJSOIMO: any;
+        constructor(iterations?: number);
+        setGravity(gravity: Vector3): void;
+        setTimeStep(timeStep: number): void;
+        getTimeStep(): number;
+        private _tmpImpostorsArray;
+        executeStep(delta: number, impostors: Array<PhysicsImpostor>): void;
+        applyImpulse(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        applyForce(impostor: PhysicsImpostor, force: Vector3, contactPoint: Vector3): void;
+        generatePhysicsBody(impostor: PhysicsImpostor): void;
+        private _tmpPositionVector;
+        removePhysicsBody(impostor: PhysicsImpostor): void;
+        generateJoint(impostorJoint: PhysicsImpostorJoint): void;
+        removeJoint(impostorJoint: PhysicsImpostorJoint): void;
+        isSupported(): boolean;
+        setTransformationFromPhysicsBody(impostor: PhysicsImpostor): void;
+        setPhysicsBodyTransformation(impostor: PhysicsImpostor, newPosition: Vector3, newRotation: Quaternion): void;
+        private _getLastShape(body);
+        setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        setAngularVelocity(impostor: PhysicsImpostor, velocity: Vector3): void;
+        getLinearVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        getAngularVelocity(impostor: PhysicsImpostor): Nullable<Vector3>;
+        setBodyMass(impostor: PhysicsImpostor, mass: number): void;
+        getBodyMass(impostor: PhysicsImpostor): number;
+        getBodyFriction(impostor: PhysicsImpostor): number;
+        setBodyFriction(impostor: PhysicsImpostor, friction: number): void;
+        getBodyRestitution(impostor: PhysicsImpostor): number;
+        setBodyRestitution(impostor: PhysicsImpostor, restitution: number): void;
+        sleepBody(impostor: PhysicsImpostor): void;
+        wakeUpBody(impostor: PhysicsImpostor): void;
+        updateDistanceJoint(joint: PhysicsJoint, maxDistance: number, minDistance?: number): void;
+        setMotor(joint: IMotorEnabledJoint, speed: number, maxForce?: number, motorIndex?: number): void;
+        setLimit(joint: IMotorEnabledJoint, upperLimit: number, lowerLimit?: number, motorIndex?: number): void;
+        syncMeshWithImpostor(mesh: AbstractMesh, impostor: PhysicsImpostor): void;
+        getRadius(impostor: PhysicsImpostor): number;
+        getBoxSizeToRef(impostor: PhysicsImpostor, result: Vector3): void;
+        dispose(): void;
     }
 }
 
