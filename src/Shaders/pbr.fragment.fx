@@ -602,7 +602,7 @@ void main(void) {
 #endif
 
 #ifdef LIGHTMAP
-	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb);
+	vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb;
 	#ifdef GAMMALIGHTMAP
 		lightmapColor = toLinearSpace(lightmapColor);
 	#endif
