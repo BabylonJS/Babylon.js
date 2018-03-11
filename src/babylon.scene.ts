@@ -467,7 +467,7 @@
 
         // Animations
         public animations: Animation[] = [];
-        private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<IAnimatable>();
+        private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
         // Pointers
         public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
@@ -2082,10 +2082,10 @@
          * @see BABYLON.Animatable
          */
         public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
-            let animatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
-            animatable.weight = weight;
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
+            returnedAnimatable.weight = weight;
 
-            return animatable;
+            return returnedAnimatable;
         }
 
         /**
