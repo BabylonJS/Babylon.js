@@ -11,26 +11,6 @@
 		 */
         readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
         /**
-		 * ID of the pass post process used for bloom,
-		 */
-        readonly PassPostProcessId: string = "PassPostProcessEffect";
-        /**
-		 * ID of the highlight post process used for bloom,
-		 */
-        readonly HighLightsPostProcessId: string = "HighLightsPostProcessEffect";
-        /**
-		 * ID of the blurX post process used for bloom,
-		 */
-        readonly BlurXPostProcessId: string = "BlurXPostProcessEffect";
-        /**
-		 * ID of the blurY post process used for bloom,
-		 */
-        readonly BlurYPostProcessId: string = "BlurYPostProcessEffect";
-        /**
-		 * ID of the copy back post process used for bloom,
-		 */
-        readonly CopyBackPostProcessId: string = "CopyBackPostProcessEffect";
-        /**
 		 * ID of the image processing post process;
 		 */
         readonly ImageProcessingPostProcessId: string = "ImageProcessingPostProcessEffect";
@@ -38,10 +18,6 @@
 		 * ID of the Fast Approximate Anti-Aliasing post process;
 		 */
         readonly FxaaPostProcessId: string = "FxaaPostProcessEffect";
-        /**
-		 * ID of the final merge post process;
-		 */
-        readonly FinalMergePostProcessId: string = "FinalMergePostProcessEffect";
         /**
 		 * ID of the chromatic aberration post process,
 		 */
@@ -53,26 +29,7 @@
 		 */
         public sharpen: SharpenPostProcess;
         private _sharpenEffect: PostProcessRenderEffect;
-        /**
-		 * First pass of bloom to capture the original image texture for later use.
-		 */
-        public pass: PassPostProcess;
-        /**
-		 * Second pass of bloom used to brighten bright portions of the image.
-		 */
-        public highlights: HighlightsPostProcess;
-        /**
-		 * BlurX post process used in coordination with blurY to guassian blur the highlighted image.
-		 */
-        public blurX: BlurPostProcess;
-        /**
-		 * BlurY post process used in coordination with blurX to guassian blur the highlighted image.
-		 */
-        public blurY: BlurPostProcess;
-        /**
-		 * Final pass run for bloom to copy the resulting bloom texture back to screen.
-		 */
-        public copyBack: PassPostProcess;
+        private bloom: BloomEffect;
         /**
          * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
          */
@@ -85,10 +42,6 @@
          * Image post processing pass used to perform operations such as tone mapping or color grading.
          */
         public imageProcessing: ImageProcessingPostProcess;
-        /**
-         * Final post process to merge results of all previous passes
-         */
-        public finalMerge: PassPostProcess;
         /**
 		 * Chromatic aberration post process which will shift rgb colors in the image
 		 */
@@ -154,11 +107,11 @@
             if (this._bloomWeight === value) {
                 return;
             }
-            this._bloomWeight = value;
-
-            if (this._hdr && this.copyBack) {
-                this.copyBack.alphaConstants = new Color4(value, value, value, value);
+            if(this.bloom._merge._mergeOptions.bloom){
+                this.bloom._merge._mergeOptions.bloom.weight = value;
             }
+            
+            this._bloomWeight = value;
         }
 
         @serialize()
@@ -434,80 +387,8 @@
             }
 
             if (this.bloomEnabled) {
-                this.pass = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this._setAutoClearAndTextureSharing(this.pass, true);
-                this.addEffect(new PostProcessRenderEffect(engine, this.PassPostProcessId, () => { return this.pass; }, true));
-
-                if (!this._hdr) { // Need to enhance highlights if not using float rendering
-                    this.highlights = new HighlightsPostProcess("highlights", this.bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                    this.addEffect(new PostProcessRenderEffect(engine, this.HighLightsPostProcessId, () => { return this.highlights; }, true));
-                    this.highlights.autoClear = false;
-                    this.highlights.alwaysForcePOT = true;
-                }
-
-                this.blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, this.bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.BlurXPostProcessId, () => { return this.blurX; }, true));
-                this.blurX.alwaysForcePOT = true;
-                this.blurX.autoClear = false;
-                this.blurX.onActivateObservable.add(() => {
-                    let dw = this.blurX.width / engine.getRenderWidth(true);
-                    this.blurX.kernel = this.bloomKernel * dw;
-                });
-
-                this.blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, this.bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.BlurYPostProcessId, () => { return this.blurY; }, true));
-                this.blurY.alwaysForcePOT = true;
-                this.blurY.autoClear = false;
-                this.blurY.onActivateObservable.add(() => {
-                    let dh = this.blurY.height / engine.getRenderHeight(true);
-                    this.blurY.kernel = this.bloomKernel * dh;
-                });
-
-                this.copyBack = new PassPostProcess("bloomBlendBlit", this.bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.CopyBackPostProcessId, () => { return this.copyBack; }, true));
-                this.copyBack.alwaysForcePOT = true;
-                if (this._hdr) {
-                    this.copyBack.alphaMode = Engine.ALPHA_INTERPOLATE;
-                    let w = this.bloomWeight;
-                    this.copyBack.alphaConstants = new Color4(w, w, w, w);
-                } else {
-                    this.copyBack.alphaMode = Engine.ALPHA_SCREENMODE;
-                }
-                this.copyBack.autoClear = false;
-            }
-
-            if (this._imageProcessingEnabled) {
-                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                if (this._hdr) {
-                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
-                } else {
-                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;
-                }
-            }
-
-            if (this._hdr && this.imageProcessing) {
-                this.finalMerge = this.imageProcessing;
-            }
-            else {
-                this.finalMerge = new PassPostProcess("finalMerge", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.FinalMergePostProcessId, () => { return this.finalMerge; }, true));
-                this._setAutoClearAndTextureSharing(this.finalMerge, true);
-                
-                this.finalMerge.autoClear = !this.bloomEnabled && (!this._hdr || !this.imageProcessing);
-            }
-
-            if (this.bloomEnabled) {
-                if (this._hdr) { // Share render targets to save memory
-                    this.copyBack.shareOutputWith(this.blurX);
-                    if (this.imageProcessing) {
-                        this.imageProcessing.shareOutputWith(this.pass);
-                        this.imageProcessing.autoClear = false;
-                    } else {
-                        this.finalMerge.shareOutputWith(this.pass);
-                    }
-                } else {
-                    this.finalMerge.shareOutputWith(this.pass);
-                }
+                this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel);
+                this.addEffect(this.bloom);
             }
 
             if (this.fxaaEnabled) {
@@ -539,36 +420,12 @@
             for (var i = 0; i < this._cameras.length; i++) {
                 var camera = this._cameras[i];
 
-                if (this.pass) {
-                    this.pass.dispose(camera);
-                }
-
-                if (this.highlights) {
-                    this.highlights.dispose(camera);
-                }
-
-                if (this.blurX) {
-                    this.blurX.dispose(camera);
-                }
-
-                if (this.blurY) {
-                    this.blurY.dispose(camera);
-                }
-
-                if (this.copyBack) {
-                    this.copyBack.dispose(camera);
-                }
-
                 if (this.imageProcessing) {
                     this.imageProcessing.dispose(camera);
                 }
 
                 if (this.fxaa) {
                     this.fxaa.dispose(camera);
-                }
-
-                if (this.finalMerge) {
-                    this.finalMerge.dispose(camera);
                 }
 
                 // These are created in the constructor and should not be disposed on every pipeline change
@@ -586,15 +443,9 @@
                     }
                 }
             }
-
-            (<any>this.pass) = null;
-            (<any>this.highlights) = null;
-            (<any>this.blurX) = null;
-            (<any>this.blurY) = null;
-            (<any>this.copyBack) = null;
+            
             (<any>this.imageProcessing) = null;
             (<any>this.fxaa) = null;
-            (<any>this.finalMerge) = null;
 
             if(disposeNonRecreated){
                 (<any>this.sharpen) = null;

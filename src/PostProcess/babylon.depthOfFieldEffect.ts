@@ -116,7 +116,7 @@ module BABYLON {
             }
 
             // Merge blurred images with original image based on circleOfConfusion
-            this._depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", {originalFromInput: this._circleOfConfusion, depthOfField: {circleOfConfusion: this._circleOfConfusion, blurSteps: this._depthOfFieldBlurX}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._depthOfFieldMerge.autoClear = false;
             
             // Set all post processes on the effect.
