@@ -10,7 +10,7 @@ module BABYLON {
 
 
         constructor(iterations?: number) {
-            this.BJSOIMO = typeof OIMO !== 'undefined' ? OIMO : (typeof require !== 'undefined' ? require('oimo') : undefined);
+            this.BJSOIMO = typeof OIMO !== 'undefined' ? OIMO : (typeof require !== 'undefined' ? require('./Oimo') : undefined);
             this.world = new this.BJSOIMO.World({
                 iterations: iterations
             });
