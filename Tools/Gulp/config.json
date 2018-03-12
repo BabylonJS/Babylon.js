@@ -61,7 +61,7 @@
             "additionalPostProcess_depthOfFieldBlur",
             "additionalPostProcess_fxaa",
             "additionalPostProcess_circleOfConfusion",
-            "additionalPostProcess_depthOfFieldMerge",
+            "additionalPostProcess_defaultPipelineMerge",
             "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
@@ -792,15 +792,15 @@
                 "chromaticAberration.fragment"
             ]
         },
-        "additionalPostProcess_depthOfFieldMerge": {
+        "additionalPostProcess_defaultPipelineMerge": {
             "files": [
-                "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
+                "../../src/PostProcess/babylon.defaultPipelineMergePostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses"
             ],
             "shaders": [
-                "depthOfFieldMerge.fragment"
+                "defaultPipelineMerge.fragment"
             ]
         },
         "additionalPostProcess_depthOfFieldEffect": {
@@ -809,7 +809,7 @@
             ],
             "dependUpon": [
                 "additionalPostProcess_depthOfFieldBlur",
-                "additionalPostProcess_depthOfFieldMerge",
+                "additionalPostProcess_defaultPipelineMerge",
                 "additionalPostProcess_circleOfConfusion"
             ]
         },
@@ -819,7 +819,7 @@
             ],
             "dependUpon": [
                 "additionalPostProcess_blur",
-                "additionalPostProcess_depthOfFieldMerge"
+                "additionalPostProcess_defaultPipelineMerge"
             ]
         },
         "additionalPostProcess_fxaa": {
