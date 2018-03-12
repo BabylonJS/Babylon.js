@@ -456,6 +456,30 @@ declare module BABYLON.GLTF2 {
          */
         private static _GetMaxComponent(color);
         /**
+         * Convert a PBRMaterial (Metallic/Roughness) to Metallic Roughness factors.
+         * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
+         * @param mimeType - mime type to use for the textures.
+         * @param images - array of glTF image interfaces.
+         * @param textures - array of glTF texture interfaces.
+         * @param glTFPbrMetallicRoughness - glTF PBR Metallic Roughness interface.
+         * @param imageData - map of image file name to data.
+         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         * @returns - glTF PBR Metallic Roughness factors.
+         */
+        private static _ConvertMetalRoughFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+        /**
+         * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors.
+         * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
+         * @param mimeType - mime type to use for the textures.
+         * @param images - array of glTF image interfaces.
+         * @param textures - array of glTF texture interfaces.
+         * @param glTFPbrMetallicRoughness - glTF PBR Metallic Roughness interface.
+         * @param imageData - map of image file name to data.
+         * @param hasTextureCoords - specifies if texture coordinates are present on the submesh to determine if textures should be applied.
+         * @returns - glTF PBR Metallic Roughness factors.
+         */
+        private static _ConvertSpecGlossFactorsToMetallicRoughness(babylonPBRMaterial, mimeType, images, textures, glTFPbrMetallicRoughness, imageData, hasTextureCoords);
+        /**
          * Converts a Babylon PBR Metallic Roughness Material to a glTF Material.
          * @param babylonPBRMaterial - BJS PBR Metallic Roughness Material.
          * @param mimeType - mime type to use for the textures.

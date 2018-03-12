@@ -321,7 +321,7 @@ declare module BABYLON.GLTF2 {
         private _createRootNode();
         private _loadNodesAsync(nodes);
         _loadSceneAsync(context: string, scene: ILoaderScene): Promise<void>;
-        private _forEachNodeMesh(node, callback);
+        private _forEachPrimitive(node, callback);
         private _getMeshes();
         private _getSkeletons();
         private _startAnimations();
