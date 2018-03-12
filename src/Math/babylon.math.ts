@@ -170,6 +170,7 @@
         /**
          * Scale the current Color3 values by a factor and add the result to a given Color3  
          * @param scale defines the scale factor
+         * @param result defines color to store the result into
          * @returns the unmodified current Color3 
          */
         public scaleAndAddToRef(scale: number, result: Color3): Color3 {
@@ -578,6 +579,7 @@
         /**
          * Scale the current Color4 values by a factor and add the result to a given Color4  
          * @param scale defines the scale factor
+         * @param result defines the Color4 object where to store the result
          * @returns the unmodified current Color4 
          */
         public scaleAndAddToRef(scale: number, result: Color4): Color4 {
@@ -1064,6 +1066,7 @@
         /**
          * Scale the current Vector2 values by a factor to a given Vector2  
          * @param scale defines the scale factor
+         * @param result defines the Vector2 object where to store the result
          * @returns the unmodified current Vector2 
          */
         public scaleToRef(scale: number, result: Vector2): Vector2 {
@@ -1075,6 +1078,7 @@
         /**
          * Scale the current Vector2 values by a factor and add the result to a given Vector2  
          * @param scale defines the scale factor
+         * @param result defines the Vector2 object where to store the result
          * @returns the unmodified current Vector2 
          */
         public scaleAndAddToRef(scale: number, result: Vector2): Vector2 {
@@ -1568,6 +1572,7 @@
         /**
          * Scale the current Vector3 values by a factor and add the result to a given Vector3  
          * @param scale defines the scale factor
+         * @param result defines the Vector3 object where to store the result
          * @returns the unmodified current Vector3 
          */
         public scaleAndAddToRef(scale: number, result: Vector3): Vector3 {
@@ -2619,6 +2624,7 @@
         /**
          * Scale the current Vector4 values by a factor and add the result to a given Vector4  
          * @param scale defines the scale factor
+         * @param result defines the Vector4 object where to store the result
          * @returns the unmodified current Vector4 
          */
         public scaleAndAddToRef(scale: number, result: Vector4): Vector4 {
@@ -3166,8 +3172,9 @@
         }
 
         /**
-         * Scale the current VectQuaternionor4 values by a factor to a given Quaternion  
+         * Scale the current Quaternion values by a factor to a given Quaternion  
          * @param scale defines the scale factor
+         * @param result defines the Quaternion object where to store the result
          * @returns the unmodified current Quaternion 
          */
         public scaleToRef(scale: number, result: Quaternion): Quaternion {
@@ -3179,8 +3186,9 @@
         }         
 
         /**
-         * Scale the current VectQuaternionor4 values by a factor and add the result to a given Quaternion  
+         * Scale the current Quaternion values by a factor and add the result to a given Quaternion  
          * @param scale defines the scale factor
+         * @param result defines the Quaternion object where to store the result
          * @returns the unmodified current Quaternion 
          */
         public scaleAndAddToRef(scale: number, result: Quaternion): Quaternion {
@@ -4081,6 +4089,7 @@
         /**
          * Scale the current Matrix values by a factor to a given result Matrix  
          * @param scale defines the scale factor
+         * @param result defines the Matrix to store the result
          * @returns the current Matrix  
          */
         public scaleToRef(scale: number, result: Matrix): Matrix {
@@ -4094,6 +4103,7 @@
         /**
          * Scale the current Matrix values by a factor and add the result to a given Matrix  
          * @param scale defines the scale factor
+         * @param result defines the Matrix to store the result
          * @returns the current Matrix  
          */
         public scaleAndAddToRef(scale: number, result: Matrix): Matrix {

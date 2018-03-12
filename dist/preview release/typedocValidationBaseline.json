@@ -1,7 +1,7 @@
 {
-  "errors": 7179,
+  "errors": 7154,
   "babylon.typedoc.json": {
-    "errors": 7179,
+    "errors": 7154,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -2201,11 +2201,6 @@
           }
         },
         "onAnimationEnd": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "speedRatio": {
           "Comments": {
             "MissingText": true
           }
@@ -12129,28 +12124,6 @@
           },
           "Parameter": {
             "operation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setTexture": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "channel": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "texture": {
               "Comments": {
                 "MissingText": true
               }
@@ -25753,25 +25726,6 @@
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new RuntimeAnimation": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Property": {
         "animation": {
           "Comments": {
@@ -25797,58 +25751,9 @@
             }
           }
         },
-        "animate": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "delay": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "from": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "to": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loop": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "blend": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "dispose": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "goToFrame": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frame": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "isStopped": {
@@ -25859,23 +25764,6 @@
         "reset": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "setValue": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "currentValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "blend": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -27177,33 +27065,6 @@
           },
           "Parameter": {
             "newTransformNode": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "beginAnimation": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "loop": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onAnimationEnd": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animatable": {
               "Comments": {
                 "MissingText": true
               }
