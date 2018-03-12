@@ -10,7 +10,7 @@ module BABYLON {
         /**
          * Internal
          */
-        public _merge:DepthOfFieldMergePostProcess;
+        public _merge:DefaultPipelineMergeMergePostProcess;
 
         /**
          * Creates a new instance of @see BloomEffect
@@ -40,7 +40,7 @@ module BABYLON {
                 this.blurY.kernel = bloomKernel * dh;
             });
             
-            this._merge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", {originalFromInput: this.blurX, bloom: {blurred: this.blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this.blurX, bloom: {blurred: this.blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._merge.autoClear = false;
 
             this._effects = [this.blurX, this.blurY, this._merge]

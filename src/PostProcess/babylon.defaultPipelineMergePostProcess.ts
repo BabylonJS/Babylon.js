@@ -2,7 +2,7 @@ module BABYLON {
     /**
      * Options to be set when merging outputs from the default pipeline.
      */
-	export class DepthOfFieldMergePostProcessOptions {
+	export class DefaultPipelineMergePostProcessOptions {
         /**
          * The original image to merge on top of
          */
@@ -24,16 +24,16 @@ module BABYLON {
     }
 
     /**
-     * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
+     * The DefaultPipelineMergeMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
      */
-    export class DepthOfFieldMergePostProcess extends PostProcess {
+    export class DefaultPipelineMergeMergePostProcess extends PostProcess {
         /**
          * Internal, optins for the merge post process
          */
-        public _mergeOptions:DepthOfFieldMergePostProcessOptions;
+        public _mergeOptions:DefaultPipelineMergePostProcessOptions;
 
         /**
-         * Creates a new instance of @see CircleOfConfusionPostProcess
+         * Creates a new instance of @see DefaultPipelineMergeMergePostProcess
          * @param name The name of the effect.
          * @param mergeOptions Options to be set when merging outputs from the default pipeline.
          * @param options The required width/height ratio to downsize to before computing the render pass.
@@ -44,8 +44,8 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, mergeOptions: DepthOfFieldMergePostProcessOptions, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-            super(name, "depthOfFieldMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
+        constructor(name: string, mergeOptions: DefaultPipelineMergePostProcessOptions, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+            super(name, "defaultPipelineMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
             this._mergeOptions = mergeOptions;
             this.onApplyObservable.add((effect: Effect) => {
                 if(mergeOptions.originalFromInput){

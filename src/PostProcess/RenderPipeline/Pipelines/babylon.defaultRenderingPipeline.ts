@@ -392,7 +392,7 @@
                     this.depthOfField._updateEffects();
                 }
                 this.addEffect(this.depthOfField);
-                this._setAutoClearAndTextureSharing(this.depthOfField._depthOfFieldMerge);
+                this._setAutoClearAndTextureSharing(this.depthOfField._defaultPipelineMerge);
             }
 
             if (this.bloomEnabled) {
