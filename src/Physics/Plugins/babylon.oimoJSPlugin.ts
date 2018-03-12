@@ -343,13 +343,13 @@ module BABYLON {
             body.awake();
         }
 
-        private _getLastShape(body: any): any {
+        /*private _getLastShape(body: any): any {
             var lastShape = body.shapes;
             while (lastShape.next) {
                 lastShape = lastShape.next;
             }
             return lastShape;
-        }
+        }*/
 
         public setLinearVelocity(impostor: PhysicsImpostor, velocity: Vector3) {
             impostor.physicsBody.linearVelocity.init(velocity.x, velocity.y, velocity.z);
