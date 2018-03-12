@@ -408,6 +408,15 @@
                 this._setAutoClearAndTextureSharing(this.fxaa);
             }
 
+            if (this._imageProcessingEnabled) {	
+                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);	
+                if (this._hdr) {	
+                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));	
+                } else {	
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;	
+                }	
+            }
+
             if (this.chromaticAberrationEnabled) {
                 if(!this.chromaticAberration.isReady()){
                     this.chromaticAberration.updateEffect();
