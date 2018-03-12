@@ -259,7 +259,6 @@
                 case Material.LineStripDrawMode:
                 case Material.TriangleFanDrawMode:
                 case Material.TriangleStripDrawMode:
-                    // REVIEW: support draw modes?
                     return null;
             }
 
