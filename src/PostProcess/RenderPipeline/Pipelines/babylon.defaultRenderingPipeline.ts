@@ -128,6 +128,13 @@
             }
             this._bloomScale = value;
 
+            // recreate bloom and dispose old as this setting is not dynamic
+            var oldBloom = this.bloom;
+            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType);
+            for (var i = 0; i < this._cameras.length; i++) {
+                oldBloom.disposeEffects(this._cameras[i]);
+            }
+
             this._buildPipeline();
         }
 
@@ -311,6 +318,8 @@
 
             this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
             
+            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, true);
+
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
             
@@ -387,7 +396,9 @@
             }
 
             if (this.bloomEnabled) {
-                this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel);
+                if(!this.bloom._isReady()){
+                    this.bloom._updateEffects();
+                }
                 this.addEffect(this.bloom);
             }
 
@@ -437,6 +448,10 @@
                     if(this.depthOfField){
                         this.depthOfField.disposeEffects(camera);
                     }
+
+                    if(this.bloom){
+                        this.bloom.disposeEffects(camera);
+                    }
     
                     if(this.chromaticAberration){
                         this.chromaticAberration.dispose(camera);
@@ -450,6 +465,7 @@
             if(disposeNonRecreated){
                 (<any>this.sharpen) = null;
                 (<any>this.depthOfField) = null;
+                (<any>this.bloom) = null;
                 (<any>this.chromaticAberration) = null;
             } 
         }
