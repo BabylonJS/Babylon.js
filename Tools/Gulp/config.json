@@ -63,6 +63,7 @@
             "additionalPostProcess_circleOfConfusion",
             "additionalPostProcess_depthOfFieldMerge",
             "additionalPostProcess_depthOfFieldEffect",
+            "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
             "bones",
             "hdr",
@@ -812,6 +813,15 @@
                 "additionalPostProcess_circleOfConfusion"
             ]
         },
+        "additionalPostProcess_bloomEffect": {
+            "files": [
+                "../../src/PostProcess/babylon.bloomEffect.js"
+            ],
+            "dependUpon": [
+                "additionalPostProcess_blur",
+                "additionalPostProcess_depthOfFieldMerge"
+            ]
+        },
         "additionalPostProcess_fxaa": {
             "files": [
                 "../../src/PostProcess/babylon.fxaaPostProcess.js"
@@ -922,7 +932,8 @@
                 "additionalPostProcess_fxaa",
                 "additionalPostProcess_chromaticAberration",
                 "additionalPostProcess_sharpen",
-                "additionalPostProcess_depthOfFieldEffect"
+                "additionalPostProcess_depthOfFieldEffect",
+                "additionalPostProcess_bloomEffect"
             ]
         },
         "bones": {
