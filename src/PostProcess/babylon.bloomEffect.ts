@@ -6,6 +6,10 @@ module BABYLON {
         private _effects: Array<PostProcess> = [];
         private blurX:BlurPostProcess;
         private blurY:BlurPostProcess;
+        
+        /**
+         * Internal
+         */
         public _merge:DepthOfFieldMergePostProcess;
 
         /**
