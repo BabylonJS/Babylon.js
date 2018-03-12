@@ -946,19 +946,9 @@ module BABYLON.GLTF2 {
                     }
                 }
 
-                let keys: Array<IAnimationKey>;
-                if (data.input.length === 1) {
-                    let key = getNextKey!(0);
-                    keys = [
-                        { frame: key.frame, value: key.value },
-                        { frame: key.frame + 1, value: key.value }
-                    ];
-                }
-                else {
-                    keys = new Array(data.input.length);
-                    for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
-                        keys[frameIndex] = getNextKey!(frameIndex);
-                    }
+                const keys = new Array(data.input.length);
+                for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
+                    keys[frameIndex] = getNextKey!(frameIndex);
                 }
 
                 if (targetPath === "influence") {
