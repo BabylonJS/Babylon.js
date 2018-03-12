@@ -4,6 +4,8 @@ module BABYLON {
      */
     export class BloomEffect extends PostProcessRenderEffect{
         private _effects: Array<PostProcess> = [];
+        private blurX:BlurPostProcess;
+        private blurY:BlurPostProcess;
         public _merge:DepthOfFieldMergePostProcess;
 
         /**
@@ -19,25 +21,57 @@ module BABYLON {
                 return this._effects;
             }, true);
             
-            var blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
-            blurX.alwaysForcePOT = true;
-            blurX.onActivateObservable.add(() => {
-                let dw = blurX.width / scene.getEngine().getRenderWidth(true);
-                blurX.kernel = bloomKernel * dw;
+            this.blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
+            this.blurX.alwaysForcePOT = true;
+            this.blurX.onActivateObservable.add(() => {
+                let dw = this.blurX.width / scene.getEngine().getRenderWidth(true);
+                this.blurX.kernel = bloomKernel * dw;
             });
 
-            var blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType);
-            blurY.alwaysForcePOT = true;
-            blurY.autoClear = false;
-            blurY.onActivateObservable.add(() => {
-                let dh = blurY.height / scene.getEngine().getRenderHeight(true);
-                blurY.kernel = bloomKernel * dh;
+            this.blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
+            this.blurY.alwaysForcePOT = true;
+            this.blurY.autoClear = false;
+            this.blurY.onActivateObservable.add(() => {
+                let dh = this.blurY.height / scene.getEngine().getRenderHeight(true);
+                this.blurY.kernel = bloomKernel * dh;
             });
             
-            this._merge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", {originalFromInput: blurX, bloom: {blurred: blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._merge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", {originalFromInput: this.blurX, bloom: {blurred: this.blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._merge.autoClear = false;
 
-            this._effects = [blurX, blurY, this._merge]
+            this._effects = [this.blurX, this.blurY, this._merge]
+        }
+
+        /**
+         * Disposes each of the internal effects for a given camera.
+         * @param camera The camera to dispose the effect on.
+         */
+        public disposeEffects(camera:Camera){
+            this.blurX.dispose(camera);
+            this.blurY.dispose(camera);
+            this._merge.dispose(camera);
+        }
+        
+        /**
+         * Internal
+         */
+        public _updateEffects(){
+            for(var effect in this._effects){
+                this._effects[effect].updateEffect();
+            }
+        }
+
+        /**
+         * Internal
+         * @returns if all the contained post processes are ready.
+         */
+        public _isReady(){
+            for(var effect in this._effects){
+                if(!this._effects[effect].isReady()){
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

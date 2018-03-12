@@ -174,6 +174,7 @@
 				defines += `#define PACKEDFLOAT 1`;
 			}
 
+			this.blockCompilation = false;
             super.updateEffect(defines, null, null, {
 				varyingCount: varyingCount,
 				depCount: depCount
