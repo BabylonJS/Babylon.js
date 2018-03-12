@@ -170,7 +170,18 @@
             return this._imageProcessingConfiguration;
         }
 
-        public forceWireframe = false;
+        private _forceWireframe = false;
+        public set forceWireframe(value: boolean) {
+            if (this._forceWireframe === value) {
+                return;
+            }
+            this._forceWireframe = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get forceWireframe(): boolean {
+            return this._forceWireframe;
+        }
+
         private _forcePointsCloud = false;
         public set forcePointsCloud(value: boolean) {
             if (this._forcePointsCloud === value) {
@@ -467,6 +478,7 @@
 
         // Animations
         public animations: Animation[] = [];
+        private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
         // Pointers
         public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
@@ -2066,25 +2078,49 @@
         }
 
         // Animations
+
         /**
          * Will start the animation sequence of a given target
-         * @param target - the target
-         * @param {number} from - from which frame should animation start
-         * @param {number} to - till which frame should animation run.
-         * @param {boolean} [loop] - should the animation loop
-         * @param {number} [speedRatio] - the speed in which to run the animation
-         * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
-         * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
-         * Returns {BABYLON.Animatable} the animatable object created for this animation
-         * See BABYLON.Animatable
+         * @param target defines the target
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param weight defines the weight to apply to the animation (1.0 by default)
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @returns the animatable object created for this animation
+         * @see BABYLON.Animatable
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
+        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
+            returnedAnimatable.weight = weight;
+
+            return returnedAnimatable;
+        }
+
+        /**
+         * Will start the animation sequence of a given target
+         * @param target defines the target
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @returns the animatable object created for this animation
+         * @see BABYLON.Animatable
+         */
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true): Animatable {
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
-            this.stopAnimation(target);
+            if (stopCurrent) {
+                this.stopAnimation(target);
+            }
 
             if (!animatable) {
                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
@@ -2099,11 +2135,13 @@
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent);
                 }
             }
 
-            animatable.reset();
+            if (stopCurrent) {
+                animatable.reset();
+            }
 
             return animatable;
         }
@@ -2195,7 +2233,7 @@
             if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
-
+           
             // Getting time
             var now = Tools.Now;
             if (!this._animationTimeLast) {
@@ -2210,6 +2248,74 @@
             for (var index = 0; index < this._activeAnimatables.length; index++) {
                 this._activeAnimatables[index]._animate(this._animationTime);
             }
+
+            // Late animation bindings
+            this._processLateAnimationBindings();
+        }
+
+        /** @ignore */
+        public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
+            let target = runtimeAnimation.target;
+            this._registeredForLateAnimationBindings.pushNoDuplicate(target);
+
+            if (!target._lateAnimationHolders) {
+                target._lateAnimationHolders = {};               
+            }
+
+            if (!target._lateAnimationHolders[runtimeAnimation.targetPath]) {
+                target._lateAnimationHolders[runtimeAnimation.targetPath] = {
+                    totalWeight: 0,
+                    animations: []
+                }
+            }
+
+            target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
+            target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
+        }
+
+        private _processLateAnimationBindings(): void {
+            if (!this._registeredForLateAnimationBindings.length) {
+                return;
+            }
+            for (var index = 0; index < this._registeredForLateAnimationBindings.length; index++) {
+                var target = this._registeredForLateAnimationBindings.data[index];
+
+                for (var path in target._lateAnimationHolders) {
+                    var holder = target._lateAnimationHolders[path];       
+                    
+                    // Sanity check
+                    if (!holder.animations[0].originalValue.scaleAndAddToRef) {
+                        continue;
+                    }
+
+                    let normalizer = 1.0;
+                    let finalValue: any;
+
+                    if (holder.totalWeight < 1.0) {
+                        // We need to mix the original value in
+                        let originalValue = holder.animations[0].originalValue;                       
+
+                        finalValue = originalValue.scale(1.0 - holder.totalWeight)
+                    } else {
+                        // We need to normalize the weights
+                        normalizer = holder.totalWeight;
+                    }
+
+                    for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
+                        var runtimeAnimation = holder.animations[animIndex];    
+                        if (finalValue) {
+                            runtimeAnimation.currentValue.scaleAndAddToRef(runtimeAnimation.weight / normalizer, finalValue);
+                        } else {
+                            finalValue = runtimeAnimation.currentValue.scale(runtimeAnimation.weight / normalizer);
+                        }
+                    }
+
+                    runtimeAnimation.target[path] = finalValue;
+                }
+
+                target._lateAnimationHolders = {};
+            }
+            this._registeredForLateAnimationBindings.reset();
         }
 
         // Matrix
@@ -4149,6 +4255,7 @@
             this._activeSkeletons.dispose();
             this._softwareSkinnedMeshes.dispose();
             this._renderTargets.dispose();
+            this._registeredForLateAnimationBindings.dispose();
 
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.dispose();

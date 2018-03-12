@@ -814,6 +814,12 @@
                 if (doNotCopyList && doNotCopyList.indexOf(prop) !== -1) {
                     continue;
                 }
+
+                let descriptor = Object.getOwnPropertyDescriptor(source, prop);
+                //descriptor should exist, should be writable, and should not be a getter.
+                if (!descriptor || !descriptor.writable || descriptor.get) {
+                    continue;
+                }
                 var sourceValue = source[prop];
                 var typeOfSourceValue = typeof sourceValue;
 
