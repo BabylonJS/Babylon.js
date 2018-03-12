@@ -140,7 +140,7 @@
             }
 
             for (var index = 0; index < runtimeAnimations.length; index++) {
-                runtimeAnimations[index].goToFrame(frame, this._weight);
+                runtimeAnimations[index].goToFrame(frame);
             }
         }
 

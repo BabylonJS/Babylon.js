@@ -52,7 +52,12 @@
             return this._activeTarget;
         }
 
-        
+        /**
+         * Create a new RuntimeAnimation object
+         * @param target defines the target of the animation
+         * @param animation defines the source {BABYLON.Animation} object
+         * @param scene defines the hosting scene
+         */
         public constructor(target: any, animation: Animation, scene: Scene) {
             this._animation = animation;
             this._target = target;
@@ -218,6 +223,11 @@
             return this._getKeyValue(keys[keys.length - 1].value);
         }
 
+        /**
+         * Affect the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value
+         */
         public setValue(currentValue: any, weight = 1.0): void {
             // Set value
             var path: any;
@@ -304,7 +314,11 @@
             return this._animation.loopMode;
         }
 
-        public goToFrame(frame: number, weight = 1.0): void {
+        /**
+         * Move the current animation to a given frame
+         * @param frame defines the frame to move to
+         */
+        public goToFrame(frame: number): void {
             let keys = this._animation.getKeys();
 
             if (frame < keys[0].frame) {
@@ -315,7 +329,7 @@
 
             var currentValue = this._interpolate(frame, 0, this._getCorrectLoopMode());
 
-            this.setValue(currentValue, weight);
+            this.setValue(currentValue, -1);
         }
 
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
@@ -328,6 +342,16 @@
         private _previousDelay: number;
         private _previousRatio: number;
 
+        /**
+         * Execute the current animation
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @returns a boolean indicating if the animation has ended
+         */
         public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
