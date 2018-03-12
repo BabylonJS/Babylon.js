@@ -147,8 +147,10 @@
             var engine = this._scene.getEngine();
 
             for (var index = 0, len = postProcesses.length; index < len; index++) {
+                var pp = postProcesses[index];
+
                 if (index < len - 1) {
-                    postProcesses[index + 1].activate(camera, targetTexture);
+                    pp._outputTexture = postProcesses[index + 1].activate(camera, targetTexture);
                 } else {
                     if (targetTexture) {
                         engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
@@ -160,8 +162,7 @@
                 if (doNotPresent) {
                     break;
                 }
-
-                var pp = postProcesses[index];
+                
                 var effect = pp.apply();
 
                 if (effect) {

@@ -947,12 +947,22 @@
         }
 
         /**
-         * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
+         * (Warning! setTextureFromPostProcessOutput may be desired instead)
+         * Sets the input texture of the passed in post process to be input of this effect. (To use the output of the passed in post process use setTextureFromPostProcessOutput)
          * @param channel Name of the sampler variable.
          * @param postProcess Post process to get the input texture from.
          */
         public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
+        }
+
+        /**
+         * Sets the output texture of the passed in post process to be input of this effect.
+         * @param channel Name of the sampler variable.
+         * @param postProcess Post process to get the output texture from.
+         */
+        public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
+            this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
         }
 
         /** @ignore */

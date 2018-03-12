@@ -5042,6 +5042,24 @@
             if (texture._lodTextureLow) {
                 texture._lodTextureLow.dispose();
             }
+
+            // Set output texture of post process to null if the texture has been released/disposed
+            this.scenes.forEach((scene)=>{
+                scene.postProcesses.forEach((postProcess)=>{
+                    if(postProcess._outputTexture == texture){
+                        postProcess._outputTexture = null;
+                    }
+                });
+                scene.cameras.forEach((camera)=>{
+                    camera._postProcesses.forEach((postProcess)=>{
+                        if(postProcess){
+                            if(postProcess._outputTexture == texture){
+                                postProcess._outputTexture = null;
+                            }
+                        }
+                    });
+                });
+            })
         }
 
         private setProgram(program: WebGLProgram): void {
@@ -5202,6 +5220,15 @@
 
         public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>): void {
             this._bindTexture(channel, postProcess ? postProcess._textures.data[postProcess._currentRenderTextureInd] : null);
+        }
+
+        /**
+         * Binds the output of the passed in post process to the texture channel specified
+         * @param channel The channel the texture should be bound to
+         * @param postProcess The post process which's output should be bound
+         */
+        public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>): void {
+            this._bindTexture(channel, postProcess ? postProcess._outputTexture : null);
         }
 
         public unbindAllTextures(): void {
