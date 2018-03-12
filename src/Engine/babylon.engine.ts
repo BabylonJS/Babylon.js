@@ -2634,7 +2634,7 @@
             this._drawCalls.addCount(1, false);
             // Render
 
-            const drawMode = this.DrawMode(fillMode);
+            const drawMode = this._drawMode(fillMode);
             var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
             var mult = this._uintIndicesCurrentlySet ? 4 : 2;
             if (instancesCount) {
@@ -2649,7 +2649,7 @@
             this.applyStates();
             this._drawCalls.addCount(1, false);
 
-            const drawMode = this.DrawMode(fillMode);
+            const drawMode = this._drawMode(fillMode);
             if (instancesCount) {
                 this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
             } else {
@@ -2657,7 +2657,7 @@
             }
         }
 
-        private DrawMode(fillMode: number): number {
+        private _drawMode(fillMode: number): number {
             switch (fillMode) {
                 // Triangle views
                 case Material.TriangleFillMode:
