@@ -21,14 +21,17 @@ module BABYLON {
      */
     export class DepthOfFieldEffect extends PostProcessRenderEffect{
         private _circleOfConfusion: CircleOfConfusionPostProcess;
-        private _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
-        private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
         /**
-         * Private, last post process of dof
+         * Internal, blurs from high to low
          */
-        public _defaultPipelineMerge: DefaultPipelineMergeMergePostProcess;
+        public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
+        private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
+        private _defaultPipelineMerge: Nullable<DefaultPipelineMergeMergePostProcess>;
 
-        private _effects: Array<PostProcess> = [];
+        /**
+         * Internal post processes in depth of field effect
+         */
+        public _effects: Array<PostProcess> = [];
 
         /**
          * The focal the length of the camera used in the effect
@@ -72,9 +75,10 @@ module BABYLON {
          * @param scene The scene the effect belongs to.
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.This must be set in order for this to function but may be set after initialization if needed.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
+         * @param performMerge If the finalization merge should be performed by this effect.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0, blockCompilation = false) {
+        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0, performMerge = true, blockCompilation = false) {
             super(scene.getEngine(), "depth of field", ()=>{
                 return this._effects;
             }, true);
@@ -114,10 +118,6 @@ module BABYLON {
                 this._depthOfFieldBlurY.push(blurY);
                 this._depthOfFieldBlurX.push(blurX);
             }
-
-            // Merge blurred images with original image based on circleOfConfusion
-            this._defaultPipelineMerge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._circleOfConfusion, depthOfField: {circleOfConfusion: this._circleOfConfusion, blurSteps: this._depthOfFieldBlurX}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
-            this._defaultPipelineMerge.autoClear = false;
             
             // Set all post processes on the effect.
             this._effects= [this._circleOfConfusion];
@@ -125,7 +125,13 @@ module BABYLON {
                 this._effects.push(this._depthOfFieldBlurY[i]);
                 this._effects.push(this._depthOfFieldBlurX[i]);
             }
-            this._effects.push(this._defaultPipelineMerge);
+
+            if(performMerge){
+                // Merge blurred images with original image based on circleOfConfusion
+                this._defaultPipelineMerge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._circleOfConfusion, depthOfField: {circleOfConfusion: this._circleOfConfusion, blurSteps: this._depthOfFieldBlurX}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+                this._defaultPipelineMerge.autoClear = false;
+                this._effects.push(this._defaultPipelineMerge);
+            }
         }
 
         /**
@@ -140,14 +146,9 @@ module BABYLON {
          * @param camera The camera to dispose the effect on.
          */
         public disposeEffects(camera:Camera){
-            this._circleOfConfusion.dispose(camera);
-            this._depthOfFieldBlurX.forEach(element => {
-                element.dispose(camera);
-            });
-            this._depthOfFieldBlurY.forEach(element => {
-                element.dispose(camera);
-            });
-            this._defaultPipelineMerge.dispose(camera);
+            for(var effect in this._effects){
+                this._effects[effect].dispose(camera);
+            }            
         }
 
         /**
