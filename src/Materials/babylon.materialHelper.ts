@@ -71,7 +71,7 @@ module BABYLON {
         public static PrepareDefinesForMisc(mesh: AbstractMesh, scene: Scene, useLogarithmicDepth: boolean, pointsCloud: boolean, fogEnabled: boolean, alphaTest: boolean, defines: any): void {
             if (defines._areMiscDirty) {
                 defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
-                defines["POINTSIZE"] = (pointsCloud || scene.forcePointsCloud);
+                defines["POINTSIZE"] = pointsCloud;
                 defines["FOG"] = (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && fogEnabled);
                 defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
                 defines["ALPHATEST"] = alphaTest;

@@ -638,14 +638,22 @@
          */
         @serialize()
         public get wireframe(): boolean {
-            return this._fillMode === Material.WireFrameFillMode;
+            switch (this._fillMode) {
+                case Material.WireFrameFillMode:
+                case Material.LineListDrawMode:
+                case Material.LineLoopDrawMode:
+                case Material.LineStripDrawMode:
+                    return true;
+            }
+
+            return this._scene.forceWireframe;
         }
 
         /**
          * Sets the state of wireframe mode.
          */
         public set wireframe(value: boolean) {
-            this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
+            this.fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
         }
 
         /**
@@ -653,14 +661,20 @@
          */
         @serialize()
         public get pointsCloud(): boolean {
-            return this._fillMode === Material.PointFillMode;
+            switch (this._fillMode) {
+                case Material.PointFillMode:
+                case Material.PointListDrawMode:
+                    return true;
+            }
+
+            return this._scene.forcePointsCloud;
         }
 
         /**
          * Sets the state of point cloud mode.
          */
         public set pointsCloud(value: boolean) {
-            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+            this.fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
         }
 
         /**
@@ -1202,7 +1216,7 @@
                 defines.markAsTexturesDirty();
                 defines.markAsMiscDirty();
             });
-        }        
+        }
 
         /**
          * Disposes the material.

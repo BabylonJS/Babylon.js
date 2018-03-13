@@ -814,6 +814,7 @@
                 if (doNotCopyList && doNotCopyList.indexOf(prop) !== -1) {
                     continue;
                 }
+
                 var sourceValue = source[prop];
                 var typeOfSourceValue = typeof sourceValue;
 
@@ -821,28 +822,34 @@
                     continue;
                 }
 
-                if (typeOfSourceValue === "object") {
-                    if (sourceValue instanceof Array) {
-                        destination[prop] = [];
+                try
+                {
+                    if (typeOfSourceValue === "object") {
+                        if (sourceValue instanceof Array) {
+                            destination[prop] = [];
 
-                        if (sourceValue.length > 0) {
-                            if (typeof sourceValue[0] == "object") {
-                                for (var index = 0; index < sourceValue.length; index++) {
-                                    var clonedValue = cloneValue(sourceValue[index], destination);
+                            if (sourceValue.length > 0) {
+                                if (typeof sourceValue[0] == "object") {
+                                    for (var index = 0; index < sourceValue.length; index++) {
+                                        var clonedValue = cloneValue(sourceValue[index], destination);
 
-                                    if (destination[prop].indexOf(clonedValue) === -1) { // Test if auto inject was not done
-                                        destination[prop].push(clonedValue);
+                                        if (destination[prop].indexOf(clonedValue) === -1) { // Test if auto inject was not done
+                                            destination[prop].push(clonedValue);
+                                        }
                                     }
+                                } else {
+                                    destination[prop] = sourceValue.slice(0);
                                 }
-                            } else {
-                                destination[prop] = sourceValue.slice(0);
                             }
+                        } else {
+                            destination[prop] = cloneValue(sourceValue, destination);
                         }
                     } else {
-                        destination[prop] = cloneValue(sourceValue, destination);
+                        destination[prop] = sourceValue;
                     }
-                } else {
-                    destination[prop] = sourceValue;
+                }
+                catch (e) {
+                    // Just ignore error (it could be because of a read-only property)
                 }
             }
         }
