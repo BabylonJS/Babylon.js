@@ -27,7 +27,8 @@ var __extends = (this && this.__extends) || (function () {
         root["BABYLON"] = factory(root["BABYLON"]);
     }
 })(this, function(BABYLON) {
-    
+    "use strict";
+
 var BABYLON;
 (function (BABYLON) {
     var OBJExport = /** @class */ (function () {
@@ -152,6 +153,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.objSerializer.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -204,6 +206,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
+"use strict";
 
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
@@ -882,6 +885,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFExporter.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -941,6 +945,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFData.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {

@@ -1,3 +1,4 @@
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -475,6 +476,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFFileLoader.js.map
 
+"use strict";
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -498,11 +500,13 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderUtilities.js.map
 
+"use strict";
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 
 //# sourceMappingURL=babylon.glTFLoaderInterfaces.js.map
 
+"use strict";
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1586,15 +1590,6 @@ var BABYLON;
                     case "MASK" /* MASK */: {
                         babylonMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHATEST;
                         babylonMaterial.alphaCutOff = (material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff);
-                        if (babylonMaterial.alpha) {
-                            if (babylonMaterial.alpha === 0) {
-                                babylonMaterial.alphaCutOff = 1;
-                            }
-                            else {
-                                babylonMaterial.alphaCutOff /= babylonMaterial.alpha;
-                            }
-                            babylonMaterial.alpha = 1;
-                        }
                         if (babylonMaterial.albedoTexture) {
                             babylonMaterial.albedoTexture.hasAlpha = true;
                         }
@@ -1899,6 +1894,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoader.js.map
 
+"use strict";
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1972,6 +1968,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderExtension.js.map
 
+"use strict";
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2142,6 +2139,7 @@ var BABYLON;
 
 //# sourceMappingURL=MSFT_lod.js.map
 
+"use strict";
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2236,6 +2234,7 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_draco_mesh_compression.js.map
 
+"use strict";
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -2322,6 +2321,7 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_materials_pbrSpecularGlossiness.js.map
 
+"use strict";
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||

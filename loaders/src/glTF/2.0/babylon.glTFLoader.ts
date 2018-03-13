@@ -1279,20 +1279,7 @@ module BABYLON.GLTF2 {
                 }
                 case MaterialAlphaMode.MASK: {
                     babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
-
                     babylonMaterial.alphaCutOff = (material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff);
-
-                    if (babylonMaterial.alpha) {
-                        if (babylonMaterial.alpha === 0) {
-                            babylonMaterial.alphaCutOff = 1;
-                        }
-                        else {
-                            babylonMaterial.alphaCutOff /= babylonMaterial.alpha;
-                        }
-
-                        babylonMaterial.alpha = 1;
-                    }
-
                     if (babylonMaterial.albedoTexture) {
                         babylonMaterial.albedoTexture.hasAlpha = true;
                     }
@@ -1300,7 +1287,6 @@ module BABYLON.GLTF2 {
                 }
                 case MaterialAlphaMode.BLEND: {
                     babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
-
                     if (babylonMaterial.albedoTexture) {
                         babylonMaterial.albedoTexture.hasAlpha = true;
                         babylonMaterial.useAlphaFromAlbedoTexture = true;

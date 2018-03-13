@@ -1,3 +1,4 @@
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
