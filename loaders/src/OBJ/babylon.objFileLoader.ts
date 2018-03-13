@@ -20,7 +20,11 @@ module BABYLON {
          * @param data
          * @param rootUrl
          */
-        public parseMTL(scene: BABYLON.Scene, data: string, rootUrl: string) {
+        public parseMTL(scene: BABYLON.Scene, data: string | ArrayBuffer, rootUrl: string) {
+            if (data instanceof ArrayBuffer) {
+                return;
+            }
+            
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char
@@ -234,7 +238,7 @@ module BABYLON {
          * @param onSuccess Callback function to be called when the MTL file is loaded
          * @private
          */
-        private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string) => any) {
+        private _loadMTL(url: string, rootUrl: string, onSuccess: (response: string | ArrayBuffer, responseUrl?: string) => any) {
             //The complete path to the mtl file
             var pathOfFile = BABYLON.Tools.BaseUrl + rootUrl + url;
 

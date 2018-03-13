@@ -229,6 +229,28 @@
 
         }
 
+        /**
+         * Creates a depth stencil texture.
+         * This is only available in WebGL 2 or with the depth texture extension available.
+         * @param comparisonFunction Specifies the comparison function to set on the texture. If 0 or undefined, the texture is not in comparison mode
+         * @param bilinearFiltering Specifies whether or not bilinear filtering is enable on the texture
+         * @param generateStencil Specifies whether or not a stencil should be allocated in the texture
+         */
+        public createDepthStencilTexture(comparisonFunction: number = 0, bilinearFiltering: boolean = true, generateStencil: boolean = false) : void {
+            if (!this.getScene()) {
+                return;
+            }
+
+            var engine = this.getScene()!.getEngine();
+            this.depthStencilTexture = engine.createDepthStencilTexture(this._size, {
+                bilinearFiltering,
+                comparisonFunction,
+                generateStencil,
+                isCube: this.isCube
+            });
+            engine.setFrameBufferDepthStencilTexture(this);
+        }
+
         private _processSizeParameter(size: number | {width: number, height: number} | {ratio: number}): void {
             if ((<{ratio: number}>size).ratio) {
                 this._sizeRatio = (<{ratio: number}>size).ratio;
@@ -474,8 +496,7 @@
                 var mesh = currentRenderList[meshIndex];
 
                 if (mesh) {
-                    if (!mesh.isReady()) {
-                        // Reset _currentRefreshId
+                    if (!mesh.isReady(this.refreshRate === 0)) {
                         this.resetRefreshCounter();
                         continue;
                     }

@@ -1,18 +1,13 @@
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON {
-
-    // old version of standard material updated every 3 months
     
-
     export class CustomShaderStructure {
 
         public FragmentStore: string;
         public VertexStore: string;
 
-        constructor() {
-
-        }
+        constructor() { }
     }
 
     export class ShaderSpecialParts {
@@ -41,7 +36,6 @@ module BABYLON {
         // normalUpdated
         public Vertex_Before_NormalUpdated: string;
     }
- 
 
     export class CustomMaterial extends StandardMaterial {
         public static ShaderIndexer = 1;
@@ -59,38 +53,53 @@ module BABYLON {
         public AttachAfterBind(mesh: Mesh, effect: Effect) {
             for (var el in this._newUniformInstances) {
                 var ea = el.toString().split('-');
-                if (ea[0] == 'vec2') effect.setVector2(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'vec3') effect.setVector3(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'vec4') effect.setVector4(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'mat4') effect.setMatrix(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'float') effect.setFloat(ea[1], this._newUniformInstances[el]);
+                if (ea[0] == 'vec2') {
+                    effect.setVector2(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec3') {
+                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'vec4') {
+                    effect.setVector4(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'mat4') {
+                    effect.setMatrix(ea[1], this._newUniformInstances[el]);
+                }
+                else if (ea[0] == 'float') {
+                    effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
-
             for (var el in this._newSamplerInstances) {
                 var ea = el.toString().split('-');
-                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
                     effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         }
 
         public ReviewUniform(name: string, arr: string[]): string[] {
             if (name == "uniform") {
-                for (var ind in this._newUniforms)
-                    if (this._customUniform[ind].indexOf('sampler') == -1)
+                for (var ind in this._newUniforms) {
+                    if (this._customUniform[ind].indexOf('sampler') == -1) {
                         arr.push(this._newUniforms[ind]);
+                    }
+                }
             }
-
             if (name == "sampler") {
-                for (var ind in this._newUniforms)
-                    if (this._customUniform[ind].indexOf('sampler') != -1)
+                for (var ind in this._newUniforms) {
+                    if (this._customUniform[ind].indexOf('sampler') != -1) {
                         arr.push(this._newUniforms[ind]);
+                    }
+                }
             }
-
             return arr;
         }
+        
         public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: StandardMaterialDefines): string {
 
-            if (this._isCreatedShader) return this._createdShaderName;
+            if (this._isCreatedShader) {
+                return this._createdShaderName;
+            }
             this._isCreatedShader = false;
 
             CustomMaterial.ShaderIndexer++;
@@ -99,14 +108,14 @@ module BABYLON {
             this.ReviewUniform("uniform", uniforms);
             this.ReviewUniform("sampler", samplers);
 
-
             var fn_afterBind = this._afterBind.bind(this);
             this._afterBind = (m, e) => {
                 if (!e) {
                     return;
                 }
                 this.AttachAfterBind(m, e);
-                try { fn_afterBind(m, e); } catch (e) { };
+                try { fn_afterBind(m, e); }
+                catch (e) { }
             };
 
             BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.VertexShader
@@ -132,14 +141,9 @@ module BABYLON {
 
             this._isCreatedShader = true;
             this._createdShaderName = name;
-
             
             return name;
-        }
-
-
-
-        
+        }        
 
         constructor(name: string, scene: Scene) {
             super(name, scene);
@@ -147,10 +151,9 @@ module BABYLON {
             this.customShaderNameResolve = this.Builder;
 
             this.FragmentShader = BABYLON.Effect.ShadersStore["defaultPixelShader"];
-            this.VertexShader = BABYLON.Effect.ShadersStore["defaultVertexShader"];
-
-             
+            this.VertexShader = BABYLON.Effect.ShadersStore["defaultVertexShader"];             
         }
+        
         public AddUniform(name: string, kind: string, param: any): CustomMaterial {
             if (!this._customUniform) {
                 this._customUniform = new Array();
@@ -166,12 +169,12 @@ module BABYLON {
                     (<any>this._newUniformInstances)[kind + "-" + name] = param;
                 }
             }
-
             this._customUniform.push("uniform " + kind + " " + name + ";");
             this._newUniforms.push(name);
 
             return this;
         }
+        
         public Fragment_Begin(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Begin = shaderPart;
             return this;
@@ -186,30 +189,37 @@ module BABYLON {
             this.CustomParts.Fragment_MainBegin = shaderPart;
             return this;
         }
+        
         public Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
             return this;
         }
+        
         public Fragment_Custom_Alpha(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
             return this;
         }
+        
         public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
             this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
             return this;
         }
+        
         public Vertex_Begin(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Begin = shaderPart;
             return this;
         }
+        
         public Vertex_Definitions(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Definitions = shaderPart;
             return this;
         }
+        
         public Vertex_MainBegin(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_MainBegin = shaderPart;
             return this;
         }
+        
         public Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
             return this;
@@ -218,8 +228,7 @@ module BABYLON {
         public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
             this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
             return this;
-        }
-            
+        }            
     }
 }
 
