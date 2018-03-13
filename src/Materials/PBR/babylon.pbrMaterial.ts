@@ -475,6 +475,13 @@
         public useRadianceOcclusion = true;
 
         /**
+         * If set to true, no lighting calculations will be applied.
+         */
+        @serialize()
+        @expandToProperty("_markAllSubMeshesAsLightsDirty")
+        public unlit = false;
+
+        /**
          * Gets the image processing configuration used either in this material.
          */
         public get imageProcessingConfiguration(): ImageProcessingConfiguration {

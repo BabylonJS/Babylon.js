@@ -622,7 +622,8 @@ gulp.task("deployLocalDev", function () {
 gulp.task("webserver", function () {
     var options = {
         port: 1338,
-        livereload: false
+        livereload: false,
+        
     };
 
     if (commandLineOptions.public) {
