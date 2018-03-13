@@ -1,11 +1,12 @@
 ﻿module BABYLON {
 
     export class RuntimeAnimation {
-        public currentFrame: number;
+        public currentFrame: number = 0;
         private _animation: Animation;
         private _target: any;
 
         private _originalValue: any;
+        private _originalBlendValue: any;
         private _offsetsCache: {[key: string]: any} = {};
         private _highLimitsCache: {[key: string]: any} = {};
         private _stopped = false;
@@ -14,7 +15,7 @@
 
         private _currentValue: any;
         private _activeTarget: any;
-        private _targetPath: string;
+        private _targetPath: string = "";
         private _weight = 1.0
 
         /**
@@ -242,7 +243,7 @@
                     property = property[targetPropertyPath[index]];
                 }
 
-                path =  [targetPropertyPath.length - 1];
+                path =  targetPropertyPath[targetPropertyPath.length - 1];
                 destination = property;
             } else {
                 path = targetPropertyPath[0];
@@ -257,14 +258,26 @@
             let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
             let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             
-            if (enableBlending && this._blendingFactor <= 1.0 || weight !== -1.0) {
+            if (enableBlending && this._blendingFactor <= 1.0) {
+                if (!this._originalBlendValue) {
+                    let originalValue = destination[path];
+
+                    if (originalValue.clone) {
+                        this._originalBlendValue = originalValue.clone();
+                    } else {
+                        this._originalBlendValue = originalValue;
+                    }
+                }
+            }
+
+            if (weight !== -1.0) {
                 if (!this._originalValue) {
                     let originalValue: any;
 
                     if (destination.getRestPose) { // For bones
                         originalValue = destination.getRestPose();
                     } else {
-                        originalValue = destination[path]
+                        originalValue = destination[path];
                     }
 
                     if (originalValue.clone) {
@@ -276,29 +289,28 @@
             }
 
             if (enableBlending && this._blendingFactor <= 1.0) {
-                if (this._originalValue.prototype) { // Complex value
+                if (this._originalBlendValue.prototype) { // Complex value
                     
-                    if (this._originalValue.prototype.Lerp) { // Lerp supported
-                        this._currentValue = this._originalValue.construtor.prototype.Lerp(currentValue, this._originalValue, this._blendingFactor);
+                    if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
+                        this._currentValue = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
                     } else { // Blending not supported
                         this._currentValue = currentValue;
                     }
 
-                } else if (this._originalValue.m) { // Matrix
-                    this._currentValue = Matrix.Lerp(this._originalValue, currentValue, this._blendingFactor);
+                } else if (this._originalBlendValue.m) { // Matrix
+                    this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 } else { // Direct value
-                    this._currentValue = this._originalValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                    this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
                 this._blendingFactor += blendingSpeed;
-                
-                destination[path] = this._currentValue;
             } else {
                 this._currentValue = currentValue;
-                if (weight !== -1.0) {
-                    this._scene._registerTargetForLateAnimationBinding(this);
-                } else {
-                    destination[path] = this._currentValue;
-                }
+            }
+
+            if (weight !== -1.0) {
+                this._scene._registerTargetForLateAnimationBinding(this);
+            } else {
+                destination[path] = this._currentValue;
             }
 
             if (this._target.markAsDirty) {
@@ -339,8 +351,8 @@
         }
 
         private _ratioOffset = 0;
-        private _previousDelay: number;
-        private _previousRatio: number;
+        private _previousDelay: number = 0;
+        private _previousRatio: number = 0;
 
         /**
          * Execute the current animation

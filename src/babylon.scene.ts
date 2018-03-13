@@ -222,7 +222,7 @@
         */
         public onDisposeObservable = new Observable<Scene>();
 
-        private _onDisposeObserver: Nullable<Observer<Scene>>;
+        private _onDisposeObserver: Nullable<Observer<Scene>> = null;
         /** A function to be executed when this scene is disposed. */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
@@ -237,7 +237,7 @@
         */
         public onBeforeRenderObservable = new Observable<Scene>();
 
-        private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+        private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
         /** A function to be executed before rendering this scene */
         public set beforeRender(callback: Nullable<() => void>) {
             if (this._onBeforeRenderObserver) {
@@ -254,7 +254,7 @@
         */
         public onAfterRenderObservable = new Observable<Scene>();
 
-        private _onAfterRenderObserver: Nullable<Observer<Scene>>;
+        private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
         /** A function to be executed after rendering this scene */
         public set afterRender(callback: Nullable<() => void>) {
             if (this._onAfterRenderObserver) {
@@ -314,7 +314,7 @@
         */
         public onBeforeCameraRenderObservable = new Observable<Camera>();
 
-        private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>>;
+        private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
         public set beforeCameraRender(callback: () => void) {
             if (this._onBeforeCameraRenderObserver) {
                 this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
@@ -329,7 +329,7 @@
         */
         public onAfterCameraRenderObservable = new Observable<Camera>();
 
-        private _onAfterCameraRenderObserver: Nullable<Observer<Camera>>;
+        private _onAfterCameraRenderObserver: Nullable<Observer<Camera>> = null;
         public set afterCameraRender(callback: () => void) {
             if (this._onAfterCameraRenderObserver) {
                 this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
@@ -2139,9 +2139,7 @@
                 }
             }
 
-            if (stopCurrent) {
-                animatable.reset();
-            }
+            animatable.reset();
 
             return animatable;
         }
@@ -2199,6 +2197,22 @@
             return null;
         }
 
+        /**
+         * Gets all animatables associated with a given target
+         * @param target defines the target to look animatables for
+         * @returns an array of Animatables
+         */
+        public getAllAnimatablesByTarget(target: any): Array<Animatable> {
+            let result = [];
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    result.push(this._activeAnimatables[index]);
+                }
+            }
+
+            return result;
+        }        
+
         public get animatables(): Animatable[] {
             return this._activeAnimatables;
         }
@@ -2206,13 +2220,13 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target
-         * @param animationName - the name of the animation to stop (all animations will be stopped is empty)
+         * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
          * @see beginAnimation
          */
         public stopAnimation(target: any, animationName?: string): void {
-            var animatable = this.getAnimatableByTarget(target);
+            var animatables = this.getAllAnimatablesByTarget(target);
 
-            if (animatable) {
+            for (var animatable of animatables) {
                 animatable.stop(animationName);
             }
         }
