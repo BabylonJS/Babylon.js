@@ -345,6 +345,7 @@
     {
       "title": "Default rendering pipeline",
       "playgroundId": "#5XB8YT#2",
+      "renderCount": 20,
       "referenceImage": "DefaultRenderingPipeline.png"
     },
     {
