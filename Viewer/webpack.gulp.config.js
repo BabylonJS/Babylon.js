@@ -10,8 +10,10 @@ module.exports = {
         umdNamedDefine: true
     },
     externals: {
-        cannon: true,
-        vertx: true
+        cannon: 'CANNON',
+        oimo: 'OIMO',
+        vertx: true,
+        "./Oimo": "OIMO"
     },
     resolve: {
         extensions: ['.ts', '.js'],
