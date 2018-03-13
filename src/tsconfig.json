@@ -8,6 +8,7 @@
     "isolatedModules": false,
     "sourceMap": true,
     "types": [],
+    "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,

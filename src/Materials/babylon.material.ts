@@ -170,12 +170,18 @@
         public reset(): void {
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
+                var type = typeof (<any>this)[prop];
 
-                if (typeof ((<any>this)[prop]) === "number") {
-                    (<any>this)[prop] = 0;
-
-                } else {
-                    (<any>this)[prop] = false;
+                switch (type) {
+                    case "number":
+                        (<any>this)[prop] = 0;
+                        break;
+                    case "string":
+                        (<any>this)[prop] = "";
+                        break;
+                    default:
+                        (<any>this)[prop] = false;
+                        break;
                 }
             }
         }
@@ -189,12 +195,18 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 var value = (<any>this)[prop];
+                var type = typeof value;
 
-                if (typeof (value) === "number") {
-                    result += "#define " + prop + " " + (<any>this)[prop] + "\n";
-
-                } else if (value) {
-                    result += "#define " + prop + "\n";
+                switch (type) {
+                    case "number":
+                    case "string":
+                        result += "#define " + prop + " " + value + "\n";
+                        break;
+                    default:
+                        if (value) {
+                            result += "#define " + prop + "\n";
+                        }
+                        break;
                 }
             }
 
