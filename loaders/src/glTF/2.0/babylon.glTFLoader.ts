@@ -16,6 +16,11 @@ module BABYLON.GLTF2 {
         readonly BYTES_PER_ELEMENT: number;
     }
 
+    export interface MaterialConstructor<T extends Material> {
+        readonly prototype: T;
+        new(name: string, scene: Scene): T;
+    }
+
     export class GLTFLoader implements IGLTFLoader {
         public _gltf: ILoaderGLTF;
         public _babylonScene: Scene;
@@ -27,6 +32,7 @@ module BABYLON.GLTF2 {
         private _rootUrl: string;
         private _rootBabylonMesh: Mesh;
         private _defaultSampler = {} as ILoaderSampler;
+        private _defaultBabylonMaterials: { [drawMode: number]: PBRMaterial } = {};
         private _progressCallback?: (event: SceneLoaderProgressEvent) => void;
         private _requests = new Array<IFileRequestInfo>();
 
@@ -315,7 +321,7 @@ module BABYLON.GLTF2 {
             }
             else {
                 callback(node._babylonMesh!);
-        }
+            }
         }
 
         private _getMeshes(): Mesh[] {
@@ -329,12 +335,12 @@ module BABYLON.GLTF2 {
                 for (const node of nodes) {
                     if (node._babylonMesh) {
                         meshes.push(node._babylonMesh);
-                }
+                    }
 
                     if (node._primitiveBabylonMeshes) {
                         for (const babylonMesh of node._primitiveBabylonMeshes) {
                             meshes.push(babylonMesh);
-            }
+                        }
                     }
                 }
             }
@@ -470,12 +476,13 @@ module BABYLON.GLTF2 {
                 return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonVertexData);
             }));
 
+            const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
             if (primitive.material == undefined) {
-                babylonMesh.material = this._getDefaultMaterial();
+                babylonMesh.material = this._getDefaultMaterial(babylonDrawMode);
             }
             else {
                 const material = GLTFLoader._GetProperty(`${context}/material}`, this._gltf.materials, primitive.material);
-                promises.push(this._loadMaterialAsync(`#/materials/${material._index}`, material, babylonMesh, babylonMaterial => {
+                promises.push(this._loadMaterialAsync(`#/materials/${material._index}`, material, babylonMesh, babylonDrawMode, babylonMaterial => {
                     babylonMesh.material = babylonMaterial;
                 }));
             }
@@ -492,11 +499,6 @@ module BABYLON.GLTF2 {
             const attributes = primitive.attributes;
             if (!attributes) {
                 throw new Error(`${context}: Attributes are missing`);
-            }
-
-            if (primitive.mode != undefined && primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
-                // TODO: handle other primitive modes
-                throw new Error(`${context}: Mode (${primitive.mode}) is not currently supported`);
             }
 
             const promises = new Array<Promise<void>>();
@@ -944,19 +946,9 @@ module BABYLON.GLTF2 {
                     }
                 }
 
-                let keys: Array<IAnimationKey>;
-                if (data.input.length === 1) {
-                    let key = getNextKey!(0);
-                    keys = [
-                        { frame: key.frame, value: key.value },
-                        { frame: key.frame + 1, value: key.value }
-                    ];
-                }
-                else {
-                    keys = new Array(data.input.length);
-                    for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
-                        keys[frameIndex] = getNextKey!(frameIndex);
-                    }
+                const keys = new Array(data.input.length);
+                for (let frameIndex = 0; frameIndex < data.input.length; frameIndex++) {
+                    keys[frameIndex] = getNextKey!(frameIndex);
                 }
 
                 if (targetPath === "influence") {
@@ -1141,13 +1133,11 @@ module BABYLON.GLTF2 {
             return targetBuffer;
         }
 
-        private _getDefaultMaterial(): Material {
-            const id = "__gltf_default";
-            let babylonMaterial = <PBRMaterial>this._babylonScene.getMaterialByName(id);
+        private _getDefaultMaterial(drawMode: number): Material {
+            let babylonMaterial = this._defaultBabylonMaterials[drawMode];
             if (!babylonMaterial) {
-                babylonMaterial = new PBRMaterial(id, this._babylonScene);
+                babylonMaterial = this._createMaterial(PBRMaterial, "__gltf_default", drawMode);
                 babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
-                babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
                 babylonMaterial.metallic = 1;
                 babylonMaterial.roughness = 1;
                 this.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
@@ -1156,10 +1146,8 @@ module BABYLON.GLTF2 {
             return babylonMaterial;
         }
 
-        private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, material: ILoaderMaterial): Promise<void> {
+        private _loadMaterialMetallicRoughnessPropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
-
-            const babylonMaterial = material._babylonMaterial as PBRMaterial;
 
             // Ensure metallic workflow
             babylonMaterial.metallic = 1;
@@ -1195,47 +1183,54 @@ module BABYLON.GLTF2 {
                 }
             }
 
-            this._loadMaterialAlphaProperties(context, material);
+            this._loadMaterialAlphaProperties(context, material, babylonMaterial);
 
             return Promise.all(promises).then(() => {});
         }
 
-        public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, assign: (babylonMaterial: Material) => void): Promise<void> {
-            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, assign);
+        public _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Promise<void> {
+            const promise = GLTFLoaderExtension._LoadMaterialAsync(this, context, material, babylonMesh, babylonDrawMode, assign);
             if (promise) {
                 return promise;
             }
 
-            material._babylonMeshes = material._babylonMeshes || [];
-            material._babylonMeshes.push(babylonMesh);
-
-            if (!material._loaded) {
+            material._babylonData = material._babylonData || {};
+            let babylonData = material._babylonData[babylonDrawMode];
+            if (!babylonData) {
                 const promises = new Array<Promise<void>>();
 
-                const babylonMaterial = this._createMaterial(material);
-                material._babylonMaterial = babylonMaterial;
+                const name = material.name || `materialSG_${material._index}`;
+                const babylonMaterial = this._createMaterial(PBRMaterial, name, babylonDrawMode);
 
-                promises.push(this._loadMaterialBasePropertiesAsync(context, material));
-                promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material));
+                promises.push(this._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
+                promises.push(this._loadMaterialMetallicRoughnessPropertiesAsync(context, material, babylonMaterial));
 
                 this.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
-                material._loaded = Promise.all(promises).then(() => {});
+
+                babylonData = {
+                    material: babylonMaterial,
+                    meshes: [],
+                    loaded: Promise.all(promises).then(() => {})
+                };
+
+                material._babylonData[babylonDrawMode] = babylonData;
             }
 
-            assign(material._babylonMaterial!);
-            return material._loaded;
+            babylonData.meshes.push(babylonMesh);
+
+            assign(babylonData.material);
+            return babylonData.loaded;
         }
 
-        public _createMaterial(material: ILoaderMaterial): PBRMaterial {
-            const babylonMaterial = new PBRMaterial(material.name || `material${material._index}`, this._babylonScene);
+        public _createMaterial<T extends Material>(type: MaterialConstructor<T>, name: string, drawMode: number): T {
+            const babylonMaterial = new type(name, this._babylonScene);
             babylonMaterial.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+            babylonMaterial.fillMode = drawMode;
             return babylonMaterial;
         }
 
-        public _loadMaterialBasePropertiesAsync(context: string, material: ILoaderMaterial): Promise<void> {
+        public _loadMaterialBasePropertiesAsync(context: string, material: ILoaderMaterial, babylonMaterial: PBRMaterial): Promise<void> {
             const promises = new Array<Promise<void>>();
-
-            const babylonMaterial = material._babylonMaterial as PBRMaterial;
 
             babylonMaterial.emissiveColor = material.emissiveFactor ? Color3.FromArray(material.emissiveFactor) : new Color3(0, 0, 0);
             if (material.doubleSided) {
@@ -1275,9 +1270,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        public _loadMaterialAlphaProperties(context: string, material: ILoaderMaterial): void {
-            const babylonMaterial = material._babylonMaterial as PBRMaterial;
-
+        public _loadMaterialAlphaProperties(context: string, material: ILoaderMaterial, babylonMaterial: PBRMaterial): void {
             const alphaMode = material.alphaMode || MaterialAlphaMode.OPAQUE;
             switch (alphaMode) {
                 case MaterialAlphaMode.OPAQUE: {
@@ -1286,20 +1279,7 @@ module BABYLON.GLTF2 {
                 }
                 case MaterialAlphaMode.MASK: {
                     babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHATEST;
-
                     babylonMaterial.alphaCutOff = (material.alphaCutoff == undefined ? 0.5 : material.alphaCutoff);
-
-                    if (babylonMaterial.alpha) {
-                        if (babylonMaterial.alpha === 0) {
-                            babylonMaterial.alphaCutOff = 1;
-                        }
-                        else {
-                            babylonMaterial.alphaCutOff /= babylonMaterial.alpha;
-                        }
-
-                        babylonMaterial.alpha = 1;
-                    }
-
                     if (babylonMaterial.albedoTexture) {
                         babylonMaterial.albedoTexture.hasAlpha = true;
                     }
@@ -1307,7 +1287,6 @@ module BABYLON.GLTF2 {
                 }
                 case MaterialAlphaMode.BLEND: {
                     babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
-
                     if (babylonMaterial.albedoTexture) {
                         babylonMaterial.albedoTexture.hasAlpha = true;
                         babylonMaterial.useAlphaFromAlbedoTexture = true;
@@ -1532,21 +1511,39 @@ module BABYLON.GLTF2 {
             return (Tools.IsBase64(uri) || uri.indexOf("..") === -1);
         }
 
+        private static _GetDrawMode(context: string, mode: number | undefined): number {
+            mode = mode || MeshPrimitiveMode.TRIANGLES;
+
+            switch (mode) {
+                case MeshPrimitiveMode.POINTS: return Material.PointListDrawMode;
+                case MeshPrimitiveMode.LINES: return Material.LineListDrawMode;
+                case MeshPrimitiveMode.LINE_LOOP: return Material.LineLoopDrawMode;
+                case MeshPrimitiveMode.LINE_STRIP: return Material.LineStripDrawMode;
+                case MeshPrimitiveMode.TRIANGLES: return Material.TriangleFillMode;
+                case MeshPrimitiveMode.TRIANGLE_STRIP: return Material.TriangleStripDrawMode;
+                case MeshPrimitiveMode.TRIANGLE_FAN: return Material.TriangleFanDrawMode;
+            }
+
+            throw new Error(`${context}: Invalid mesh primitive mode (${mode})`);
+        }
+
         private _compileMaterialsAsync(): Promise<void> {
             const promises = new Array<Promise<void>>();
 
             if (this._gltf.materials) {
                 for (const material of this._gltf.materials) {
-                    const babylonMaterial = material._babylonMaterial;
-                    const babylonMeshes = material._babylonMeshes;
-                    if (babylonMaterial && babylonMeshes) {
-                        for (const babylonMesh of babylonMeshes) {
-                            // Ensure nonUniformScaling is set if necessary.
-                            babylonMesh.computeWorldMatrix(true);
+                    if (material._babylonData) {
+                        for (const babylonDrawMode in material._babylonData) {
+                            const babylonData = material._babylonData[babylonDrawMode];
+                            for (const babylonMesh of babylonData.meshes) {
+                                // Ensure nonUniformScaling is set if necessary.
+                                babylonMesh.computeWorldMatrix(true);
 
-                            promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
-                            if (this.useClipPlane) {
-                                promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));
+                                const babylonMaterial = babylonData.material;
+                                promises.push(babylonMaterial.forceCompilationAsync(babylonMesh));
+                                if (this.useClipPlane) {
+                                    promises.push(babylonMaterial.forceCompilationAsync(babylonMesh, { clipPlane: true }));
+                                }
                             }
                         }
                     }

@@ -262,7 +262,8 @@
          * @return true if the system is ready
          */
         public isReady(): boolean {
-            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+            if (!this.emitter || !this._updateEffect || !this._renderEffect || 
+                !this._updateEffect.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
                 return false;
             }
 

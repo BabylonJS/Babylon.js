@@ -60,6 +60,7 @@ var tsConfig = {
     noUnusedLocals: true,
     strictNullChecks: true,
     strictFunctionTypes: true,
+    strict: true,
     types: [],
     lib: [
         "dom",
@@ -81,6 +82,7 @@ var externalTsConfig = {
     noImplicitThis: true,
     noUnusedLocals: true,
     strictNullChecks: true,
+    strict: true,
     types: [],
     lib: [
         "dom",
@@ -622,7 +624,8 @@ gulp.task("deployLocalDev", function () {
 gulp.task("webserver", function () {
     var options = {
         port: 1338,
-        livereload: false
+        livereload: false,
+        
     };
 
     if (commandLineOptions.public) {

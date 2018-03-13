@@ -3,7 +3,7 @@ module INSPECTOR {
     export class PickTool extends AbstractTool {
         
         private _isActive : boolean = false;
-        private _pickHandler: (evt: PointerEvent) => void;
+        private _pickHandler: (evt: Event) => void;
 
         constructor(parent:HTMLElement, inspector:Inspector) {
             super('fa-mouse-pointer', parent, inspector, 'Select a mesh in the scene');

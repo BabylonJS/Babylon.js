@@ -170,12 +170,18 @@
         public reset(): void {
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
+                var type = typeof (<any>this)[prop];
 
-                if (typeof ((<any>this)[prop]) === "number") {
-                    (<any>this)[prop] = 0;
-
-                } else {
-                    (<any>this)[prop] = false;
+                switch (type) {
+                    case "number":
+                        (<any>this)[prop] = 0;
+                        break;
+                    case "string":
+                        (<any>this)[prop] = "";
+                        break;
+                    default:
+                        (<any>this)[prop] = false;
+                        break;
                 }
             }
         }
@@ -189,12 +195,18 @@
             for (var index = 0; index < this._keys.length; index++) {
                 var prop = this._keys[index];
                 var value = (<any>this)[prop];
+                var type = typeof value;
 
-                if (typeof (value) === "number") {
-                    result += "#define " + prop + " " + (<any>this)[prop] + "\n";
-
-                } else if (value) {
-                    result += "#define " + prop + "\n";
+                switch (type) {
+                    case "number":
+                    case "string":
+                        result += "#define " + prop + " " + value + "\n";
+                        break;
+                    default:
+                        if (value) {
+                            result += "#define " + prop + "\n";
+                        }
+                        break;
                 }
             }
 
@@ -638,14 +650,22 @@
          */
         @serialize()
         public get wireframe(): boolean {
-            return this._fillMode === Material.WireFrameFillMode;
+            switch (this._fillMode) {
+                case Material.WireFrameFillMode:
+                case Material.LineListDrawMode:
+                case Material.LineLoopDrawMode:
+                case Material.LineStripDrawMode:
+                    return true;
+            }
+
+            return this._scene.forceWireframe;
         }
 
         /**
          * Sets the state of wireframe mode.
          */
         public set wireframe(value: boolean) {
-            this._fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
+            this.fillMode = (value ? Material.WireFrameFillMode : Material.TriangleFillMode);
         }
 
         /**
@@ -653,14 +673,20 @@
          */
         @serialize()
         public get pointsCloud(): boolean {
-            return this._fillMode === Material.PointFillMode;
+            switch (this._fillMode) {
+                case Material.PointFillMode:
+                case Material.PointListDrawMode:
+                    return true;
+            }
+
+            return this._scene.forcePointsCloud;
         }
 
         /**
          * Sets the state of point cloud mode.
          */
         public set pointsCloud(value: boolean) {
-            this._fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
+            this.fillMode = (value ? Material.PointFillMode : Material.TriangleFillMode);
         }
 
         /**
@@ -1202,7 +1228,7 @@
                 defines.markAsTexturesDirty();
                 defines.markAsMiscDirty();
             });
-        }        
+        }
 
         /**
          * Disposes the material.
