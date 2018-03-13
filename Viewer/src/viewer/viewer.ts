@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import configurationLoader from './../configuration/loader';
-import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior } from 'babylonjs';
+import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
@@ -656,12 +656,12 @@ export abstract class AbstractViewer {
      */
     private _onTemplateLoaded(): Promise<AbstractViewer> {
         return this.onTemplatesLoaded().then(() => {
-            let autoLoadModel = !!this.configuration.model;
+            let autoLoadModel = this.configuration.model;
             return this.initEngine().then((engine) => {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
                 if (autoLoadModel) {
-                    return this.loadModel().then(() => { return this.scene });
+                    return this.loadModel().catch(e => { }).then(() => { return this.scene });
                 } else {
                     return this.scene || this.initScene();
                 }
@@ -669,6 +669,9 @@ export abstract class AbstractViewer {
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
+            }).catch(e => {
+                Tools.Warn(e.toString());
+                return this;
             });
         })
     }
