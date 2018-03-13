@@ -258,6 +258,19 @@
         }
 
         /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        public isReady(): boolean {
+            if (!this.emitter || !this._updateEffect || !this._renderEffect || 
+                !this._updateEffect.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+                return false;
+            }
+
+            return true;
+        }        
+
+        /**
          * Gets Wether the system has been started.
          * @returns True if it has been started, otherwise false.
          */
@@ -484,12 +497,13 @@
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          */
         public animate(): void {           
-            if (!this._stopped) {
-                this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
-                this._actualFrame += this._timeDelta;
+            this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
+            this._actualFrame += this._timeDelta;
 
-                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration)
+            if (!this._stopped) {
+                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration) {
                     this.stop();
+                }
             }             
         }        
 
@@ -505,7 +519,7 @@
             this._recreateUpdateEffect();
             this._recreateRenderEffect();
 
-            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
+            if (!this.isReady()) {
                 return 0;
             }
 

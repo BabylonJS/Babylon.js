@@ -26,7 +26,7 @@
         public DEPTHPREPASS = false;
         public ALPHABLEND = false;
         public ALPHAFROMALBEDO = false;
-        public ALPHATESTVALUE = 0.5;
+        public ALPHATESTVALUE = "0.5";
         public SPECULAROVERALPHA = false;
         public RADIANCEOVERALPHA = false;
         public ALPHAFRESNEL = false;
@@ -65,13 +65,14 @@
         public LIGHTMAP = false;
         public LIGHTMAPDIRECTUV = 0;
         public USELIGHTMAPASSHADOWMAP = false;
+        public GAMMALIGHTMAP = false;
 
         public REFLECTION = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
         public REFLECTIONMAP_CUBIC = false;
-        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;        
+        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
@@ -131,6 +132,8 @@
 
         public FORCENORMALFORWARD = false;
 
+        public UNLIT = false;
+
         /**
          * Initializes the PBR Material defines.
          */
@@ -144,7 +147,7 @@
          */
         public reset(): void {
             super.reset();
-            this.ALPHATESTVALUE = 0.5;
+            this.ALPHATESTVALUE = "0.5";
             this.PBR = true;
         }
     }
@@ -532,6 +535,11 @@
         private _useLogarithmicDepth: boolean;
 
         /**
+         * If set to true, no lighting calculations will be applied.
+         */
+        private _unlit = false;
+
+        /**
          * Instantiates a new PBRMaterial instance.
          * 
          * @param name The material name
@@ -786,20 +794,10 @@
                 }
             }
 
-            if (!engine.getCaps().standardDerivatives) {
-                let bufferMesh = null;
-                if (mesh.getClassName() === "InstancedMesh") {
-                    bufferMesh = (mesh as InstancedMesh).sourceMesh;
+            if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                mesh.createNormals(true);
+                Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
                 }
-                else if (mesh.getClassName() === "Mesh") {
-                    bufferMesh = mesh as Mesh;
-                }
-
-                if (bufferMesh && bufferMesh.geometry && bufferMesh.geometry.isReady() && !bufferMesh.geometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    bufferMesh.createNormals(true);
-                    Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + bufferMesh.name);
-                }
-            }
 
             const effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
             if (effect) {
@@ -998,7 +996,7 @@
 
             // Textures
             defines.METALLICWORKFLOW = this.isMetallicWorkflow();
-            if (defines._areTexturesDirty) {     
+            if (defines._areTexturesDirty) {
                 defines._needUVs = false;
                 if (scene.texturesEnabled) {
                     if (scene.getEngine().getCaps().textureLOD) {
@@ -1105,6 +1103,7 @@
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
+                        defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
                     } else {
                         defines.LIGHTMAP = false;
                     }
@@ -1197,7 +1196,7 @@
                     defines.TWOSIDEDLIGHTING = false;
                 }
 
-                defines.ALPHATESTVALUE = this._alphaCutOff;
+                defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
@@ -1215,7 +1214,10 @@
             defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
+            if (defines._areMiscDirty) {
+                MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
+                defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+            }
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);

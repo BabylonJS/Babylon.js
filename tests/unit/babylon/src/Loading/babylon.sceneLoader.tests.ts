@@ -286,6 +286,42 @@ describe('Babylon Scene Loader', function () {
             return Promise.all(promises);
         });
 
+        it('Load MultiPrimitive', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/MultiPrimitive/", "MultiPrimitive.gltf", scene).then(result => {
+                expect(result.meshes, "meshes").to.have.lengthOf(4);
+
+                const node = scene.getMeshByName("node");
+                expect(node, "node").to.exist;
+                expect(node, "node").to.be.an.instanceof(BABYLON.Mesh);
+
+                const mesh = node as BABYLON.Mesh;
+                expect(mesh.geometry).to.not.exist;
+                expect(mesh.material).to.not.exist;
+
+                expect(mesh.getChildren(), "mesh children").to.have.lengthOf(2);
+                for (const childNode of mesh.getChildren()) {
+                    expect(childNode, "child node").to.be.an.instanceof(BABYLON.Mesh);
+                    const childMesh = childNode as BABYLON.Mesh;
+                    expect(childMesh.geometry).to.exist;
+                    expect(childMesh.material).to.exist;
+                }
+            });
+        });
+
+        it('Load BrainStem', () => {
+            const scene = new BABYLON.Scene(subject);
+            return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/BrainStem/", "BrainStem.gltf", scene).then(result => {
+                expect(result.skeletons, "skeletons").to.have.lengthOf(1);
+
+                const node1 = scene.getMeshByName("node1");
+                for (const childMesh of node1.getChildMeshes()) {
+                    expect(childMesh.skeleton, "mesh skeleton").to.exist;
+                    expect(childMesh.skeleton.name, "mesh skeleton name").to.equal(result.skeletons[0].name);
+                }
+            });
+        });
+
         // TODO: test animation group callback
         // TODO: test material instancing
         // TODO: test ImportMesh with specific node name

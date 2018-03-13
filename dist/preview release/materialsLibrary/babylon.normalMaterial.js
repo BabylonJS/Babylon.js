@@ -1,3 +1,4 @@
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -56,10 +57,18 @@ var BABYLON;
             _this.SHADOWESM1 = false;
             _this.SHADOWESM2 = false;
             _this.SHADOWESM3 = false;
+            _this.SHADOWPOISSON0 = false;
+            _this.SHADOWPOISSON1 = false;
+            _this.SHADOWPOISSON2 = false;
+            _this.SHADOWPOISSON3 = false;
             _this.SHADOWPCF0 = false;
             _this.SHADOWPCF1 = false;
             _this.SHADOWPCF2 = false;
             _this.SHADOWPCF3 = false;
+            _this.SHADOWPCSS0 = false;
+            _this.SHADOWPCSS1 = false;
+            _this.SHADOWPCSS2 = false;
+            _this.SHADOWPCSS3 = false;
             _this.NORMAL = false;
             _this.UV1 = false;
             _this.UV2 = false;
