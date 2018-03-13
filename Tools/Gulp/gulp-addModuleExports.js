@@ -57,13 +57,13 @@ module.exports = function (varName, config) {
             return `\n\n(function universalModuleDefinition(root, factory) {
     ${dependenciesDefinition}
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory(${config.subModule || config.extendsRoot ? 'require("babylonjs")' : ''});
+        module.exports = factory(${functionVariables});
     else if(typeof define === 'function' && define.amd)
-        define("${varName.module}", ${config.subModule || config.extendsRoot ? 'amdDependencies,' : '[],'} factory);
+        define("${varName.module}", amdDependencies, factory);
     else if(typeof exports === 'object')
-        exports["${varName.module}"] = factory(${config.subModule || config.extendsRoot ? 'require("babylonjs")' : ''});
+        exports["${varName.module}"] = factory(${functionVariables});
     else {
-        root["${base}"]${(config.subModule && !config.extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(root["BABYLON"]);
+        root["${base}"]${(config.subModule && !config.extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(${functionVariables});
     }
 })(this, function(${functionVariables}) {
     ${String(file.contents)}
