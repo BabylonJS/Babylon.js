@@ -10,7 +10,8 @@ module.exports = {
         umdNamedDefine: true
     },
     externals: {
-        cannon: true,
+        cannon: 'CANNON',
+        oimo: 'OIMO',
         vertx: true
     },
     resolve: {
