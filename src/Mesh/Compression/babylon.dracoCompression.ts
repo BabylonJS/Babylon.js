@@ -188,7 +188,7 @@ module BABYLON {
         }
 
         private static _GetDefaultDecoderUrl(): Nullable<string> {
-            if (!Tools.IsWindowObjectExist) {
+            if (!Tools.IsWindowObjectExist()) {
                 return null;
             }
 
