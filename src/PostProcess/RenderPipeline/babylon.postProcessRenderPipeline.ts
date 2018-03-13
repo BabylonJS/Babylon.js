@@ -1,4 +1,8 @@
 module BABYLON {
+    class PipelineChain{
+        effects: Array<PostProcessRenderEffect> = []
+        next: Array<PipelineChain> = []
+    }
     export class PostProcessRenderPipeline {
 
         private _renderEffects: {[key: string]: PostProcessRenderEffect};

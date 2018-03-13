@@ -3,14 +3,18 @@ module BABYLON {
      * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
      */
     export class BloomEffect extends PostProcessRenderEffect{
-        private _effects: Array<PostProcess> = [];
-        private blurX:BlurPostProcess;
-        private blurY:BlurPostProcess;
-        
         /**
          * Internal
          */
-        public _merge:DefaultPipelineMergeMergePostProcess;
+        public _effects: Array<PostProcess> = [];
+
+        /**
+         * Internal
+         */
+        private _downscale:PassPostProcess;
+        private _blurX:BlurPostProcess;
+        private _blurY:BlurPostProcess;
+        private _merge:Nullable<DefaultPipelineMergeMergePostProcess>;
 
         /**
          * Creates a new instance of @see BloomEffect
@@ -18,32 +22,37 @@ module BABYLON {
          * @param bloomScale The ratio of the blur texture to the input texture that should be used to compute the bloom.
          * @param bloomKernel The size of the kernel to be used when applying the blur.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
+         * @param performMerge If the finalization merge should be performed by this effect.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, bloomScale:number, bloomKernel:number, pipelineTextureType = 0, blockCompilation = false) {
-            super(scene.getEngine(), "depth of field", ()=>{
+        constructor(scene: Scene, bloomScale:number, bloomKernel:number, pipelineTextureType = 0, performMerge = true, blockCompilation = false) {
+            super(scene.getEngine(), "bloom", ()=>{
                 return this._effects;
             }, true);
-            
-            this.blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
-            this.blurX.alwaysForcePOT = true;
-            this.blurX.onActivateObservable.add(() => {
-                let dw = this.blurX.width / scene.getEngine().getRenderWidth(true);
-                this.blurX.kernel = bloomKernel * dw;
+            this._downscale = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+
+            this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
+            this._blurX.alwaysForcePOT = true;
+            this._blurX.onActivateObservable.add(() => {
+                let dw = this._blurX.width / scene.getEngine().getRenderWidth(true);
+                this._blurX.kernel = bloomKernel * dw;
             });
 
-            this.blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
-            this.blurY.alwaysForcePOT = true;
-            this.blurY.autoClear = false;
-            this.blurY.onActivateObservable.add(() => {
-                let dh = this.blurY.height / scene.getEngine().getRenderHeight(true);
-                this.blurY.kernel = bloomKernel * dh;
+            this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
+            this._blurY.alwaysForcePOT = true;
+            this._blurY.autoClear = false;
+            this._blurY.onActivateObservable.add(() => {
+                let dh = this._blurY.height / scene.getEngine().getRenderHeight(true);
+                this._blurY.kernel = bloomKernel * dh;
             });
-            
-            this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this.blurX, bloom: {blurred: this.blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
-            this._merge.autoClear = false;
 
-            this._effects = [this.blurX, this.blurY, this._merge]
+            this._effects = [this._downscale, this._blurX, this._blurY];
+
+            if(performMerge){
+                this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._blurX, bloom: {blurred: this._blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+                this._merge.autoClear = false;
+                this._effects.push(this._merge);
+            }
         }
 
         /**
@@ -51,9 +60,9 @@ module BABYLON {
          * @param camera The camera to dispose the effect on.
          */
         public disposeEffects(camera:Camera){
-            this.blurX.dispose(camera);
-            this.blurY.dispose(camera);
-            this._merge.dispose(camera);
+            for(var effect in this._effects){
+                this._effects[effect].dispose(camera);
+            }
         }
         
         /**

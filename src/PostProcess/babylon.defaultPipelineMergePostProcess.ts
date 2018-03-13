@@ -48,18 +48,18 @@ module BABYLON {
             super(name, "defaultPipelineMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
             this._mergeOptions = mergeOptions;
             this.onApplyObservable.add((effect: Effect) => {
-                if(mergeOptions.originalFromInput){
-                    effect.setTextureFromPostProcess("textureSampler", mergeOptions.originalFromInput);
+                if(this._mergeOptions.originalFromInput){
+                    effect.setTextureFromPostProcess("textureSampler", this._mergeOptions.originalFromInput);
                 }
-                if(mergeOptions.depthOfField){
-                    effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", mergeOptions.depthOfField.circleOfConfusion);
-                    mergeOptions.depthOfField.blurSteps.forEach((step,index)=>{
-                        effect.setTextureFromPostProcessOutput("blurStep"+(mergeOptions.depthOfField!.blurSteps.length-index-1), step);
+                if(this._mergeOptions.depthOfField){
+                    effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", this._mergeOptions.depthOfField.circleOfConfusion);
+                    this._mergeOptions.depthOfField.blurSteps.forEach((step,index)=>{
+                        effect.setTextureFromPostProcessOutput("blurStep"+(this._mergeOptions.depthOfField!.blurSteps.length-index-1), step);
                     });
                 }
-                if(mergeOptions.bloom){
-                    effect.setTextureFromPostProcessOutput("bloomBlur", mergeOptions.bloom.blurred);
-                    effect.setFloat("bloomWeight", mergeOptions.bloom.weight);
+                if(this._mergeOptions.bloom){
+                    effect.setTextureFromPostProcessOutput("bloomBlur", this._mergeOptions.bloom.blurred);
+                    effect.setFloat("bloomWeight", this._mergeOptions.bloom.weight);
                 }        
             });
 

@@ -30,6 +30,8 @@
         public sharpen: SharpenPostProcess;
         private _sharpenEffect: PostProcessRenderEffect;
         private bloom: BloomEffect;
+        private _defaultPipelineMerge:DefaultPipelineMergeMergePostProcess;
+        private _defaultPipelineMergeEffect: PostProcessRenderEffect;
         /**
          * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
          */
@@ -107,8 +109,8 @@
             if (this._bloomWeight === value) {
                 return;
             }
-            if(this.bloom._merge._mergeOptions.bloom){
-                this.bloom._merge._mergeOptions.bloom.weight = value;
+            if(this._defaultPipelineMerge._mergeOptions && this._defaultPipelineMerge._mergeOptions.bloom){
+                this._defaultPipelineMerge._mergeOptions.bloom.weight = value;
             }
             
             this._bloomWeight = value;
@@ -130,7 +132,7 @@
 
             // recreate bloom and dispose old as this setting is not dynamic
             var oldBloom = this.bloom;
-            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType);
+            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false);
             for (var i = 0; i < this._cameras.length; i++) {
                 oldBloom.disposeEffects(this._cameras[i]);
             }
@@ -194,7 +196,7 @@
             // recreate dof and dispose old as this setting is not dynamic
             var oldDof = this.depthOfField;
             
-            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType);
+            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false);
             this.depthOfField.focalLength = oldDof.focalLength;
             this.depthOfField.focusDistance = oldDof.focusDistance;
             this.depthOfField.fStop = oldDof.fStop;
@@ -316,9 +318,12 @@
             this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
 
-            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
+            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false, true);
             
-            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, true);
+            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false, true);
+
+            this._defaultPipelineMerge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._defaultPipelineTextureType, true);
+            this._defaultPipelineMergeEffect = new PostProcessRenderEffect(engine, "defaultPipelineMerge", () => { return this._defaultPipelineMerge; }, true);
 
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
@@ -364,7 +369,7 @@
             if (!this._buildAllowed) {
                 return;
             }
-
+            
             var engine = this._scene.getEngine();
 
             this._disposePostProcesses();
@@ -376,6 +381,8 @@
             this._reset();
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
+
+            var mergeOptions = new DefaultPipelineMergePostProcessOptions();
 
             if (this.sharpenEnabled) {
                 if(!this.sharpen.isReady()){
@@ -391,15 +398,29 @@
                 if(!this.depthOfField._isReady()){
                     this.depthOfField._updateEffects();
                 }
+                mergeOptions.depthOfField = {circleOfConfusion: this.depthOfField._effects[0], blurSteps: this.depthOfField._depthOfFieldBlurX};
+                if(!mergeOptions.originalFromInput){
+                    mergeOptions.originalFromInput=this.depthOfField._effects[0];
+                }
                 this.addEffect(this.depthOfField);
-                this._setAutoClearAndTextureSharing(this.depthOfField._defaultPipelineMerge);
+                this._setAutoClearAndTextureSharing(this.depthOfField._effects[this.depthOfField._effects.length-1]);
             }
-
+            
             if (this.bloomEnabled) {
                 if(!this.bloom._isReady()){
                     this.bloom._updateEffects();
                 }
+                mergeOptions.bloom = {blurred: this.bloom._effects[this.bloom._effects.length-1], weight: this.bloomWeight}
+                if(!mergeOptions.originalFromInput){
+                    mergeOptions.originalFromInput=this.bloom._effects[0];
+                }
                 this.addEffect(this.bloom);
+            }
+            
+            if(mergeOptions.originalFromInput){
+                this._defaultPipelineMerge._mergeOptions = mergeOptions;
+                this._defaultPipelineMerge.updateEffect();
+                this.addEffect(this._defaultPipelineMergeEffect);
             }
 
             if (this.fxaaEnabled) {
@@ -408,10 +429,10 @@
                 this._setAutoClearAndTextureSharing(this.fxaa);
             }
 
-            if (this._imageProcessingEnabled) {	
-                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);	
-                if (this._hdr) {	
-                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));	
+            if (this._imageProcessingEnabled) {
+                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                if (this._hdr) {
+                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
                 } else {	
                     this._scene.imageProcessingConfiguration.applyByPostProcess = false;	
                 }	
