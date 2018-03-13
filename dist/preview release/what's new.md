@@ -95,6 +95,7 @@
 - Tests for sharpen, chromatic aberration, default pipeline and enable/disable post processes ([trevordev](https://github.com/trevordev))
 - onPointer* callbacks have now the event type as a 3rd variable ([RaananW](https://github.com/RaananW))
 - Lightmap texture in PBR material follow the gammaSpace Flag of the texture ([sebavan](https://github.com/sebavan))
+- Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
 - Added support for primitive modes to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes

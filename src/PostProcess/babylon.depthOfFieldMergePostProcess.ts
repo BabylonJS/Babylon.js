@@ -18,12 +18,12 @@ module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, original: PostProcess, circleOfConfusion: PostProcess, private blurSteps: Array<PostProcess>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-            super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "originalSampler", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
+            super(name, "depthOfFieldMerge", [], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
             this.onApplyObservable.add((effect: Effect) => {
-                effect.setTextureFromPostProcess("circleOfConfusionSampler", circleOfConfusion);
-                effect.setTextureFromPostProcess("originalSampler", original);
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
+                effect.setTextureFromPostProcess("textureSampler", original);
                 blurSteps.forEach((step,index)=>{
-                    effect.setTextureFromPostProcess("blurStep"+(index+1), step);
+                    effect.setTextureFromPostProcessOutput("blurStep"+(blurSteps.length-index-1), step);
                 });
             });
 
@@ -43,7 +43,7 @@ module BABYLON {
          */
         public updateEffect(defines: Nullable<string> = null, uniforms: Nullable<string[]> = null, samplers: Nullable<string[]> = null, indexParameters?: any,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
-            super.updateEffect(defines ? defines : "#define BLUR_LEVEL "+this.blurSteps.length+"\n", uniforms, samplers, indexParameters, onCompiled, onError);
+            super.updateEffect(defines ? defines : "#define BLUR_LEVEL "+(this.blurSteps.length-1)+"\n", uniforms, samplers, indexParameters, onCompiled, onError);
         }
     }
 }
