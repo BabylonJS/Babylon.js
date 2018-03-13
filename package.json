@@ -33,9 +33,6 @@
         "webgl"
     ],
     "license": "Apache-2.0",
-    "dependencies": {
-        "cannon": "0.6.2"
-    },
     "engines": {
         "node": "*"
     },
