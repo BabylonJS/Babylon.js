@@ -1,3 +1,4 @@
+"use strict";
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -50,6 +51,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFSerializer.js.map
 
+"use strict";
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 /**
  * Module for the Babylon glTF 2.0 exporter.  Should ONLY be used internally.
@@ -728,6 +730,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFExporter.js.map
 
+"use strict";
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -787,6 +790,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFData.js.map
 
+"use strict";
 /// <reference path="../../../../dist/babylon.glTF2Interface.d.ts"/>
 var BABYLON;
 (function (BABYLON) {

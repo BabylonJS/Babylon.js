@@ -27,7 +27,8 @@ var __extends = (this && this.__extends) || (function () {
         root["BABYLON"]["GUI"] = factory(root["BABYLON"]);
     }
 })(this, function(BABYLON) {
-    /// <reference path="../../dist/preview release/babylon.d.ts"/>
+    "use strict";
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
 (function (BABYLON) {
@@ -544,6 +545,7 @@ var BABYLON;
 
 //# sourceMappingURL=advancedDynamicTexture.js.map
 
+"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -588,6 +590,7 @@ var BABYLON;
 
 //# sourceMappingURL=measure.js.map
 
+"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -721,6 +724,7 @@ var BABYLON;
 
 //# sourceMappingURL=math2D.js.map
 
+"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -850,6 +854,7 @@ var BABYLON;
 
 //# sourceMappingURL=valueAndUnit.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -1975,6 +1980,7 @@ var BABYLON;
 
 //# sourceMappingURL=control.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2170,6 +2176,7 @@ var BABYLON;
 
 //# sourceMappingURL=container.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2312,6 +2319,7 @@ var BABYLON;
 
 //# sourceMappingURL=stackPanel.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2439,6 +2447,7 @@ var BABYLON;
 
 //# sourceMappingURL=rectangle.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2516,6 +2525,7 @@ var BABYLON;
 
 //# sourceMappingURL=ellipse.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -2759,6 +2769,7 @@ var BABYLON;
 
 //# sourceMappingURL=line.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3047,6 +3058,7 @@ var BABYLON;
 
 //# sourceMappingURL=slider.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3174,6 +3186,7 @@ var BABYLON;
 
 //# sourceMappingURL=checkbox.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3322,6 +3335,7 @@ var BABYLON;
 
 //# sourceMappingURL=radioButton.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -3671,6 +3685,7 @@ var BABYLON;
 
 //# sourceMappingURL=textBlock.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var DOMImage = Image;
@@ -3982,6 +3997,7 @@ var BABYLON;
 
 //# sourceMappingURL=image.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4111,6 +4127,7 @@ var BABYLON;
 
 //# sourceMappingURL=button.js.map
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4469,6 +4486,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;
@@ -4912,6 +4930,7 @@ var BABYLON;
     })(GUI = BABYLON.GUI || (BABYLON.GUI = {}));
 })(BABYLON || (BABYLON = {}));
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 
 var BABYLON;

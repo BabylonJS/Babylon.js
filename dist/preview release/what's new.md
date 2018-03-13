@@ -95,6 +95,8 @@
 - Tests for sharpen, chromatic aberration, default pipeline and enable/disable post processes ([trevordev](https://github.com/trevordev))
 - onPointer* callbacks have now the event type as a 3rd variable ([RaananW](https://github.com/RaananW))
 - Lightmap texture in PBR material follow the gammaSpace Flag of the texture ([sebavan](https://github.com/sebavan))
+- Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
+- Added support for primitive modes to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
 
@@ -113,6 +115,7 @@
 - Fixed WebCam Texture on Firefox and Edge - [#3825](https://github.com/BabylonJS/Babylon.js/issues/3825) ([sebavan](https://github.com/sebavan))
 - Add onLoadObservable on VideoTexture - [#3845](https://github.com/BabylonJS/Babylon.js/issues/3845) ([sebavan](https://github.com/sebavan))
 - beforeRender is now triggered after the camera updated its state - [#3873](https://github.com/BabylonJS/Babylon.js/issues/3873) ([RaananW](https://github.com/RaananW))
+- Tools.DeepCopy no longer copying getter-only elements - [#3929](https://github.com/BabylonJS/Babylon.js/issues/3929) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 

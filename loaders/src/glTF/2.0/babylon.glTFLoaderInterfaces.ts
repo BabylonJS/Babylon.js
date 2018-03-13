@@ -7,7 +7,6 @@ module BABYLON.GLTF2 {
     }
 
     export interface ILoaderAnimationChannel extends IAnimationChannel, IArrayItem {
-        _babylonAnimationGroup: AnimationGroup;
     }
 
     export interface ILoaderAnimationSamplerData {
@@ -24,7 +23,7 @@ module BABYLON.GLTF2 {
         channels: ILoaderAnimationChannel[];
         samplers: ILoaderAnimationSampler[];
 
-        _babylonAnimationGroup: Nullable<AnimationGroup>;
+        _babylonAnimationGroup?: AnimationGroup;
     }
 
     export interface ILoaderBuffer extends IBuffer, IArrayItem {
@@ -43,9 +42,13 @@ module BABYLON.GLTF2 {
     }
 
     export interface ILoaderMaterial extends IMaterial, IArrayItem {
-        _babylonMaterial?: Material;
-        _babylonMeshes?: AbstractMesh[];
-        _loaded?: Promise<void>;
+        _babylonData?: {
+            [drawMode: number]: {
+                material: Material;
+                meshes: AbstractMesh[];
+                loaded: Promise<void>;
+            }
+        };
     }
 
     export interface ILoaderMesh extends IMesh, IArrayItem {
@@ -78,7 +81,7 @@ module BABYLON.GLTF2 {
     }
 
     export interface ILoaderSkin extends ISkin, IArrayItem {
-        _babylonSkeleton: Nullable<Skeleton>;
+        _babylonSkeleton?: Skeleton;
         _loaded?: Promise<void>;
     }
 

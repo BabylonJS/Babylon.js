@@ -29,7 +29,7 @@ module BABYLON {
                 if(imageToBlur != null){
                     effect.setTextureFromPostProcess("textureSampler", imageToBlur);
                 }
-                effect.setTextureFromPostProcess("circleOfConfusionSampler", circleOfConfusion);
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
                 if(scene.activeCamera){
                     effect.setFloat2('cameraMinMaxZ', scene.activeCamera.minZ, scene.activeCamera.maxZ);
                 }

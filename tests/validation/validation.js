@@ -217,6 +217,12 @@ function runTest(index, done) {
             });
     }
     else if (test.playgroundId) {
+        if (test.playgroundId[0] !== "#" || test.playgroundId.indexOf("#", 1) === -1) {
+            console.error("Invalid playground id");
+            done(false);
+            return;
+        }
+
         var snippetUrl = "//babylonjs-api2.azurewebsites.net/snippets";
         var pgRoot = "/Playground"
         var xmlHttp = new XMLHttpRequest();
