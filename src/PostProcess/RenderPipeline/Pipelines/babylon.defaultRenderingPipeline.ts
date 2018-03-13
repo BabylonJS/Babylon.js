@@ -341,14 +341,17 @@
             this._buildAllowed = previousState;
         }
 
+        private _hasCleared = false;
         private _prevPostProcess:Nullable<PostProcess> = null;
         private _prevPrevPostProcess:Nullable<PostProcess> = null;
 
         private _setAutoClearAndTextureSharing(postProcess:PostProcess, skipTextureSharing = false){
-            if(this._prevPostProcess && this._prevPostProcess.autoClear){
+            if(this._hasCleared){
                 postProcess.autoClear = false;
             }else{
                 postProcess.autoClear = true;
+                this._scene.autoClear = false;
+                this._hasCleared = true;
             }
 
             if(!skipTextureSharing){
@@ -369,6 +372,7 @@
             if (!this._buildAllowed) {
                 return;
             }
+            this._scene.autoClear = true;
             
             var engine = this._scene.getEngine();
 
@@ -381,6 +385,7 @@
             this._reset();
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
+            this._hasCleared = false;
 
             var mergeOptions = new DefaultPipelineMergePostProcessOptions();
 
@@ -403,7 +408,7 @@
                     mergeOptions.originalFromInput=this.depthOfField._effects[0];
                 }
                 this.addEffect(this.depthOfField);
-                this._setAutoClearAndTextureSharing(this.depthOfField._effects[this.depthOfField._effects.length-1]);
+                this._setAutoClearAndTextureSharing(this.depthOfField._effects[0], true);
             }
             
             if (this.bloomEnabled) {
@@ -415,12 +420,14 @@
                     mergeOptions.originalFromInput=this.bloom._effects[0];
                 }
                 this.addEffect(this.bloom);
+                this._setAutoClearAndTextureSharing(this.bloom._effects[0], true);
             }
             
             if(mergeOptions.originalFromInput){
                 this._defaultPipelineMerge._mergeOptions = mergeOptions;
                 this._defaultPipelineMerge.updateEffect();
                 this.addEffect(this._defaultPipelineMergeEffect);
+                this._setAutoClearAndTextureSharing(this._defaultPipelineMerge, true);
             }
 
             if (this.fxaaEnabled) {
@@ -433,6 +440,7 @@
                 this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 if (this._hdr) {
                     this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
+                    this._setAutoClearAndTextureSharing(this.imageProcessing);
                 } else {	
                     this._scene.imageProcessingConfiguration.applyByPostProcess = false;	
                 }	
@@ -508,6 +516,7 @@
 
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
 
+            this._scene.autoClear = true;
             super.dispose();
         }
 
