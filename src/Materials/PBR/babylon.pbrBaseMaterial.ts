@@ -26,7 +26,7 @@
         public DEPTHPREPASS = false;
         public ALPHABLEND = false;
         public ALPHAFROMALBEDO = false;
-        public ALPHATESTVALUE = 0.5;
+        public ALPHATESTVALUE = "0.5";
         public SPECULAROVERALPHA = false;
         public RADIANCEOVERALPHA = false;
         public ALPHAFRESNEL = false;
@@ -72,7 +72,7 @@
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
         public REFLECTIONMAP_CUBIC = false;
-        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;        
+        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
@@ -147,7 +147,7 @@
          */
         public reset(): void {
             super.reset();
-            this.ALPHATESTVALUE = 0.5;
+            this.ALPHATESTVALUE = "0.5";
             this.PBR = true;
         }
     }
@@ -1196,7 +1196,7 @@
                     defines.TWOSIDEDLIGHTING = false;
                 }
 
-                defines.ALPHATESTVALUE = this._alphaCutOff;
+                defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
