@@ -220,6 +220,10 @@
                 this._pausedDelay = null;
             }
 
+            if (this._weight === 0) { // We consider that an animation with a weight === 0 is "actively" paused
+                return true;
+            }
+
             // Animating
             var running = false;
             var runtimeAnimations = this._runtimeAnimations;

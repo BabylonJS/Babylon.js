@@ -7390,31 +7390,31 @@ OIMO.BoxBoxCollisionDetector.prototype.constructor = OIMO.BoxBoxCollisionDetecto
 
 OIMO.BoxBoxCollisionDetector.prototype.detectCollision = function (shape1, shape2, manifold) {
     // What you are doing 
-    // · I to prepare a separate axis of the fifteen 
+    // Â· I to prepare a separate axis of the fifteen 
     //-Six in each of three normal vectors of the xyz direction of the box both 
-    // · Remaining nine 3x3 a vector perpendicular to the side of the box 2 and the side of the box 1 
-    // · Calculate the depth to the separation axis 
+    // Â· Remaining nine 3x3 a vector perpendicular to the side of the box 2 and the side of the box 1 
+    // Â· Calculate the depth to the separation axis 
 
     // Calculates the distance using the inner product and put the amount of embedment 
-    // · However a vertical separation axis and side to weight a little to avoid vibration 
+    // Â· However a vertical separation axis and side to weight a little to avoid vibration 
     // And end when there is a separate axis that is remote even one 
-    // · I look for separation axis with little to dent most 
+    // Â· I look for separation axis with little to dent most 
     // Men and if separation axis of the first six - end collision 
     // Heng If it separate axis of nine other - side collision 
     // Heng - case of a side collision 
-    // · Find points of two sides on which you made ​​the separation axis 
+    // Â· Find points of two sides on which you made â€‹â€‹the separation axis 
 
     // Calculates the point of closest approach of a straight line consisting of separate axis points obtained, and the collision point 
     //-Surface - the case of the plane crash 
-    //-Box A, box B and the other a box of better made ​​a separate axis 
-    // • The surface A and the plane that made the separation axis of the box A, and B to the surface the face of the box B close in the opposite direction to the most isolated axis 
+    //-Box A, box B and the other a box of better made â€‹â€‹a separate axis 
+    // â€¢ The surface A and the plane that made the separation axis of the box A, and B to the surface the face of the box B close in the opposite direction to the most isolated axis 
 
     // When viewed from the front surface A, and the cut part exceeding the area of the surface A is a surface B 
     //-Plane B becomes the 3-8 triangle, I a candidate for the collision point the vertex of surface B 
-    // • If more than one candidate 5 exists, scraping up to four 
+    // â€¢ If more than one candidate 5 exists, scraping up to four 
 
     // For potential collision points of all, to examine the distance between the surface A 
-    // • If you were on the inside surface of A, and the collision point
+    // â€¢ If you were on the inside surface of A, and the collision point
 
     var b1;
     var b2;
