@@ -1344,7 +1344,7 @@
             }
 
             // Skeleton
-            this.skeleton = null;
+            this._skeleton = null;
 
             // Physics
             if (this.physicsImpostor) {
