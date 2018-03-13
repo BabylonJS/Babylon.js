@@ -27,7 +27,8 @@ var __extends = (this && this.__extends) || (function () {
         root["BABYLON"] = factory(root["BABYLON"]);
     }
 })(this, function(BABYLON) {
-    
+    "use strict";
+
 var BABYLON;
 (function (BABYLON) {
     var STLFileLoader = /** @class */ (function () {
@@ -198,6 +199,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.stlFileLoader.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -220,6 +222,9 @@ var BABYLON;
          * @param rootUrl
          */
         MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+            if (data instanceof ArrayBuffer) {
+                return;
+            }
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char
@@ -994,6 +999,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.objFileLoader.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1471,6 +1477,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFFileLoader.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1568,6 +1575,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderInterfaces.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -1586,6 +1594,9 @@ var BABYLON;
         var Tokenizer = /** @class */ (function () {
             function Tokenizer(toParse) {
                 this._pos = 0;
+                this.currentToken = ETokenType.UNKNOWN;
+                this.currentIdentifier = "";
+                this.currentString = "";
                 this.isLetterOrDigitPattern = /^[a-zA-Z0-9]+$/;
                 this._toParse = toParse;
                 this._maxPos = toParse.length;
@@ -2698,11 +2709,13 @@ var BABYLON;
                 var shader = gltfRuntime.shaders[id];
                 if (BABYLON.Tools.IsBase64(shader.uri)) {
                     var shaderString = atob(shader.uri.split(",")[1]);
-                    onSuccess(shaderString);
+                    if (onSuccess) {
+                        onSuccess(shaderString);
+                    }
                 }
                 else {
                     BABYLON.Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, function (request) {
-                        if (request) {
+                        if (request && onError) {
                             onError(request.status + " " + request.statusText);
                         }
                     });
@@ -2976,6 +2989,9 @@ var BABYLON;
                 var hasShaders = false;
                 var processShader = function (sha, shader) {
                     GLTF1.GLTFLoaderExtension.LoadShaderStringAsync(gltfRuntime, sha, function (shaderString) {
+                        if (shaderString instanceof ArrayBuffer) {
+                            return;
+                        }
                         gltfRuntime.loadedShaderCount++;
                         if (shaderString) {
                             BABYLON.Effect.ShadersStore[sha + (shader.type === GLTF1.EShaderType.VERTEX ? "VertexShader" : "PixelShader")] = shaderString;
@@ -3063,6 +3079,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoader.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -3298,6 +3315,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderUtils.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -3371,6 +3389,9 @@ var BABYLON;
                     return loaderExtension.loadRuntimeAsync(scene, data, rootUrl, onSuccess, onError);
                 }, function () {
                     setTimeout(function () {
+                        if (!onSuccess) {
+                            return;
+                        }
                         onSuccess(GLTF1.GLTFLoaderBase.CreateRuntime(data.json, scene, rootUrl));
                     });
                 });
@@ -3392,7 +3413,11 @@ var BABYLON;
                 });
             };
             GLTFLoaderExtension.LoadTextureAsync = function (gltfRuntime, id, onSuccess, onError) {
-                GLTFLoaderExtension.LoadTextureBufferAsync(gltfRuntime, id, function (buffer) { return GLTFLoaderExtension.CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError); }, onError);
+                GLTFLoaderExtension.LoadTextureBufferAsync(gltfRuntime, id, function (buffer) {
+                    if (buffer) {
+                        GLTFLoaderExtension.CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);
+                    }
+                }, onError);
             };
             GLTFLoaderExtension.LoadShaderStringAsync = function (gltfRuntime, id, onSuccess, onError) {
                 GLTFLoaderExtension.ApplyExtensions(function (loaderExtension) {
@@ -3439,6 +3464,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderExtension.js.map
 
+"use strict";
 
 
 var BABYLON;
@@ -3507,6 +3533,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFBinaryExtension.js.map
 
+"use strict";
 
 
 var BABYLON;
@@ -3630,6 +3657,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFMaterialsCommonExtension.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -3653,11 +3681,13 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderUtilities.js.map
 
+"use strict";
 
 
 
 //# sourceMappingURL=babylon.glTFLoaderInterfaces.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -5054,6 +5084,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoader.js.map
 
+"use strict";
 
 var BABYLON;
 (function (BABYLON) {
@@ -5127,6 +5158,7 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.glTFLoaderExtension.js.map
 
+"use strict";
 
 
 var BABYLON;
@@ -5288,6 +5320,7 @@ var BABYLON;
 
 //# sourceMappingURL=MSFT_lod.js.map
 
+"use strict";
 
 
 var BABYLON;
@@ -5373,6 +5406,7 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_draco_mesh_compression.js.map
 
+"use strict";
 
 
 var BABYLON;
@@ -5450,6 +5484,7 @@ var BABYLON;
 
 //# sourceMappingURL=KHR_materials_pbrSpecularGlossiness.js.map
 
+"use strict";
 
 
 var BABYLON;
