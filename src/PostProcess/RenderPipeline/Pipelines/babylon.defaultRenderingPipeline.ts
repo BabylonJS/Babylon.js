@@ -141,9 +141,14 @@
             if (this._bloomThreshold === value) {
                 return;
             }
-            this.bloom.threshold = value;
-            
-            this._bloomThreshold = value;
+            if((this.bloom.threshold > 0 && value == 0) || (this.bloom.threshold == 0 && value > 0)){
+                this.bloom.threshold = value;
+                this._bloomThreshold = value;
+                this._buildPipeline();
+            }else{
+                this.bloom.threshold = value;
+                this._bloomThreshold = value;
+            }
         }
 
         @serialize()
@@ -451,7 +456,7 @@
                 if(!this.bloom._isReady()){
                     this.bloom._updateEffects();
                 }
-                mergeOptions.bloom = {blurred: this.bloom._effects[this.bloom._effects.length-1], weight: this.bloomWeight}
+                mergeOptions.bloom = {blurred: this.bloom._effects[this.bloom._effects.length-1], weight: this.bloomWeight, mix: this._bloomThreshold == 0}
                 if(!mergeOptions.originalFromInput){
                     mergeOptions.originalFromInput=this.bloom._effects[0];
                 }
