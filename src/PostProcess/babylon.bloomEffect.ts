@@ -8,14 +8,23 @@ module BABYLON {
          */
         public _effects: Array<PostProcess> = [];
 
-        /**
-         * Internal
-         */
-        private _downscale:PassPostProcess;
+
+        private _downscale:ExtractHighlightsPostProcess;
         private _blurX:BlurPostProcess;
         private _blurY:BlurPostProcess;
+        private _upscale:PassPostProcess;
         private _merge:Nullable<DefaultPipelineMergeMergePostProcess>;
 
+        /**
+         * The luminance threshold to find bright areas of the image to bloom. 
+         */
+        public get threshold():number{
+            return this._downscale.threshold;
+        }
+        public set threshold(value: number){
+            this._downscale.threshold = value;
+        }
+        
         /**
          * Creates a new instance of @see BloomEffect
          * @param scene The scene the effect belongs to.
@@ -29,10 +38,11 @@ module BABYLON {
             super(scene.getEngine(), "bloom", ()=>{
                 return this._effects;
             }, true);
-            this._downscale = new PassPostProcess("sceneRenderTarget", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._downscale = new ExtractHighlightsPostProcess("highlights", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
 
             this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
             this._blurX.alwaysForcePOT = true;
+            this._blurX.autoClear = false;
             this._blurX.onActivateObservable.add(() => {
                 let dw = this._blurX.width / scene.getEngine().getRenderWidth(true);
                 this._blurX.kernel = bloomKernel * dw;
@@ -46,7 +56,9 @@ module BABYLON {
                 this._blurY.kernel = bloomKernel * dh;
             });
 
-            this._effects = [this._downscale, this._blurX, this._blurY];
+            this._upscale = new PassPostProcess("sceneRenderTarget", bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._upscale.autoClear = false;
+            this._effects = [this._downscale, this._blurY, this._blurX, this._upscale];
 
             if(performMerge){
                 this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._blurX, bloom: {blurred: this._blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);

@@ -52,6 +52,6 @@ void main(void)
 #endif
 #ifdef BLOOM
     vec3 blurred = texture2D(bloomBlur, vUV).rgb;
-    gl_FragColor.rgb = mix(gl_FragColor.rgb, blurred, bloomWeight);
+    gl_FragColor.rgb = gl_FragColor.rgb + (blurred.rgb * bloomWeight);
 #endif
 }

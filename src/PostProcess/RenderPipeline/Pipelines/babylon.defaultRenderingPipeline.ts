@@ -87,17 +87,30 @@
         }
 
 
+        private _bloomKernel: number = 64;
         /**
 		 * Specifies the size of the bloom blur kernel, relative to the final output size
 		 */
         @serialize()
-        public bloomKernel: number = 64;
+        public get bloomKernel(): number{
+            return this._bloomKernel;
+        }
+        public set bloomKernel(value: number){
+            this._bloomKernel = value;
+            this._rebuildBloom();
+            this._buildPipeline();
+        }
 
         /**
 		 * Specifies the weight of the bloom in the final rendering
 		 */
         @serialize()
         private _bloomWeight: number = 0.15;
+        /**
+		 * Specifies the luma threshold for the area that will be blurred by the bloom
+		 */
+        @serialize()
+        private _bloomThreshold: number = 0.9;
 
         @serialize()
         private _hdr: boolean;
@@ -122,6 +135,23 @@
         }
 
         /**
+         * The strength of the bloom.
+         */
+        public set bloomThreshold(value: number) {
+            if (this._bloomThreshold === value) {
+                return;
+            }
+            this.bloom.threshold = value;
+            
+            this._bloomThreshold = value;
+        }
+
+        @serialize()
+        public get bloomThreshold(): number {
+            return this._bloomThreshold;
+        }
+
+        /**
          * The scale of the bloom, lower value will provide better performance.
          */
         public set bloomScale(value: number) {
@@ -131,11 +161,7 @@
             this._bloomScale = value;
 
             // recreate bloom and dispose old as this setting is not dynamic
-            var oldBloom = this.bloom;
-            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false);
-            for (var i = 0; i < this._cameras.length; i++) {
-                oldBloom.disposeEffects(this._cameras[i]);
-            }
+            this._rebuildBloom();
 
             this._buildPipeline();
         }
@@ -160,6 +186,16 @@
         @serialize()
         public get bloomEnabled(): boolean {
             return this._bloomEnabled;
+        }
+
+        private _rebuildBloom(){
+            // recreate bloom and dispose old as this setting is not dynamic
+            var oldBloom = this.bloom;
+            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false);
+            this.bloom.threshold = oldBloom.threshold;
+            for (var i = 0; i < this._cameras.length; i++) {
+                oldBloom.disposeEffects(this._cameras[i]);
+            }
         }
 
         /**
