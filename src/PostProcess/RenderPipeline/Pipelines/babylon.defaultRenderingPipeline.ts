@@ -535,6 +535,10 @@
                     if(this.chromaticAberration){
                         this.chromaticAberration.dispose(camera);
                     }
+
+                    if(this._defaultPipelineMerge){
+                        this._defaultPipelineMerge.dispose(camera);
+                    }
                 }
             }
             
@@ -543,9 +547,11 @@
 
             if(disposeNonRecreated){
                 (<any>this.sharpen) = null;
+                (<any>this._sharpenEffect) = null;
                 (<any>this.depthOfField) = null;
                 (<any>this.bloom) = null;
                 (<any>this.chromaticAberration) = null;
+                (<any>this._chromaticAberrationEffect) = null;
             } 
         }
 
@@ -554,9 +560,7 @@
          */
         public dispose(): void {
             this._disposePostProcesses(true);
-
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
-
             this._scene.autoClear = true;
             super.dispose();
         }
