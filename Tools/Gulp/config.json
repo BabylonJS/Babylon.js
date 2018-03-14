@@ -61,8 +61,9 @@
             "additionalPostProcess_depthOfFieldBlur",
             "additionalPostProcess_fxaa",
             "additionalPostProcess_circleOfConfusion",
-            "additionalPostProcess_depthOfFieldMerge",
+            "additionalPostProcess_defaultPipelineMerge",
             "additionalPostProcess_depthOfFieldEffect",
+            "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
             "bones",
             "hdr",
@@ -791,15 +792,15 @@
                 "chromaticAberration.fragment"
             ]
         },
-        "additionalPostProcess_depthOfFieldMerge": {
+        "additionalPostProcess_defaultPipelineMerge": {
             "files": [
-                "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
+                "../../src/PostProcess/babylon.defaultPipelineMergePostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses"
             ],
             "shaders": [
-                "depthOfFieldMerge.fragment"
+                "defaultPipelineMerge.fragment"
             ]
         },
         "additionalPostProcess_depthOfFieldEffect": {
@@ -808,8 +809,17 @@
             ],
             "dependUpon": [
                 "additionalPostProcess_depthOfFieldBlur",
-                "additionalPostProcess_depthOfFieldMerge",
+                "additionalPostProcess_defaultPipelineMerge",
                 "additionalPostProcess_circleOfConfusion"
+            ]
+        },
+        "additionalPostProcess_bloomEffect": {
+            "files": [
+                "../../src/PostProcess/babylon.bloomEffect.js"
+            ],
+            "dependUpon": [
+                "additionalPostProcess_blur",
+                "additionalPostProcess_defaultPipelineMerge"
             ]
         },
         "additionalPostProcess_fxaa": {
@@ -922,7 +932,8 @@
                 "additionalPostProcess_fxaa",
                 "additionalPostProcess_chromaticAberration",
                 "additionalPostProcess_sharpen",
-                "additionalPostProcess_depthOfFieldEffect"
+                "additionalPostProcess_depthOfFieldEffect",
+                "additionalPostProcess_bloomEffect"
             ]
         },
         "bones": {
