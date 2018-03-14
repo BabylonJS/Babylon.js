@@ -94,7 +94,6 @@ module BABYLON {
         private _resolve(value?: Nullable<T>): Nullable<InternalPromise<T>> | T {
             try {
                 this._state = PromiseStates.Fulfilled;
-                this._result = value;
                 let returnedValue: Nullable<InternalPromise<T>> | T = null;
 
                 if (this._onFulfilled) {
@@ -111,6 +110,8 @@ module BABYLON {
                         value = <T>returnedValue;
                     }
                 }
+
+                this._result = value;
 
                 for (var child of this._children) {
                     child._resolve(value);
