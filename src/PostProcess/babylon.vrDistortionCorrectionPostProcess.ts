@@ -1,7 +1,5 @@
 ﻿module BABYLON {
     export class VRDistortionCorrectionPostProcess extends PostProcess {
-        public aspectRatio: number;
-
         private _isRightEye: boolean;
         private _distortionFactors: number[];
         private _postProcessScaleFactor: number;
@@ -25,7 +23,6 @@
             this.adaptScaleToCurrentViewport = true;
 
             this.onSizeChangedObservable.add(() => {
-                this.aspectRatio = this.width * .5 / this.height;
                 this._scaleIn = new Vector2(2, 2 / this.aspectRatio);
                 this._scaleFactor = new Vector2(.5 * (1 / this._postProcessScaleFactor), .5 * (1 / this._postProcessScaleFactor) * this.aspectRatio);
                 this._lensCenter = new Vector2(this._isRightEye ? 0.5 - this._lensCenterOffset * 0.5 : 0.5 + this._lensCenterOffset * 0.5, 0.5);
