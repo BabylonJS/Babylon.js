@@ -819,7 +819,8 @@
             ],
             "dependUpon": [
                 "additionalPostProcess_blur",
-                "additionalPostProcess_defaultPipelineMerge"
+                "additionalPostProcess_defaultPipelineMerge",
+                "additionalPostProcess_extractHighlights"
             ]
         },
         "additionalPostProcess_fxaa": {
@@ -843,6 +844,17 @@
             ],
             "shaders": [
                 "highlights.fragment"
+            ]
+        },
+        "additionalPostProcess_extractHighlights": {
+            "files": [
+                "../../src/PostProcess/babylon.extractHighlightsPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "extractHighlights.fragment"
             ]
         },
         "additionalPostProcess_imageProcessing": {
@@ -871,6 +883,7 @@
                 "../../src/PostProcess/babylon.tonemapPostProcess.js",
                 "../../src/PostProcess/babylon.displayPassPostProcess.js",
                 "../../src/PostProcess/babylon.highlightsPostProcess.js",
+                "../../src/PostProcess/babylon.extractHighlightsPostProcess.js",
                 "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
             ],
             "dependUpon": [
