@@ -902,6 +902,9 @@
                     this._effect.setMatrices("mBones", (<Skeleton>mesh.skeleton).getTransformMatrices((mesh)));
                 }
 
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(mesh, this._effect);
+
                 if (this.forceBackFacesOnly) {
                     engine.setState(true, 0, false, true);
                 }
@@ -1075,6 +1078,18 @@
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
+            // Morph targets         
+            var manager = (<Mesh>mesh).morphTargetManager;
+            let morphInfluencers = 0;
+            if (manager) {
+                if (manager.numInfluencers > 0) {
+                    defines.push("#define MORPHTARGETS");
+                    morphInfluencers = manager.numInfluencers;
+                    defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                    MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, {"NUM_MORPH_INFLUENCERS": morphInfluencers });
+                }
+            }
+
             // Instances
             if (useInstances) {
                 defines.push("#define INSTANCES");
@@ -1090,8 +1105,9 @@
                 this._cachedDefines = join;
                 this._effect = this._scene.getEngine().createEffect("shadowMap",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale"],
-                    ["diffuseSampler"], join);
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences"],
+                    ["diffuseSampler"], join,
+                undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
             }
 
             if (!this._effect.isReady()) {
