@@ -20,6 +20,7 @@ module BABYLON {
         public bloom?: {
             blurred: PostProcess;
             weight: number;
+            mix?: boolean
         };
     }
 
@@ -87,6 +88,9 @@ module BABYLON {
                 }
                 if(this._mergeOptions.bloom){
                     defines += "#define BLOOM 1\n";
+                    if(this._mergeOptions.bloom.mix){
+                        defines += "#define MIX 1\n";
+                    }
                 }
             }
             super.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError);
