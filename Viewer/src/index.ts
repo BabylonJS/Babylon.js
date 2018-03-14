@@ -23,7 +23,6 @@ PromisePolyfill.Apply();
 
 export let disableInit: boolean = false;
 document.addEventListener("DOMContentLoaded", init);
-
 function init(event) {
     document.removeEventListener("DOMContentLoaded", init);
     if (disableInit) return;
