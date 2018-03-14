@@ -33,6 +33,8 @@ export abstract class AbstractViewer {
     protected maxShadows: number;
     private _hdrSupport: boolean;
 
+    private _isDisposed: boolean;
+
     public get isHdrSupported() {
         return this._hdrSupport;
     }
@@ -619,20 +621,50 @@ export abstract class AbstractViewer {
     }
 
     public dispose() {
+        if (this._isDisposed) {
+            return;
+        }
         window.removeEventListener('resize', this.resize);
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();
             this.sceneOptimizer.dispose();
         }
 
+        if (this.environmentHelper) {
+            this.environmentHelper.dispose();
+        }
+
+        //observers
+        this.onEngineInitObservable.clear();
+        delete this.onEngineInitObservable;
+        this.onInitDoneObservable.clear();
+        delete this.onInitDoneObservable;
+        this.onLoaderInitObservable.clear();
+        delete this.onLoaderInitObservable;
+        this.onModelLoadedObservable.clear();
+        delete this.onModelLoadedObservable;
+        this.onModelLoadErrorObservable.clear();
+        delete this.onModelLoadErrorObservable;
+        this.onModelLoadProgressObservable.clear();
+        delete this.onModelLoadProgressObservable;
+        this.onSceneInitObservable.clear();
+        delete this.onSceneInitObservable;
+
         if (this.scene.activeCamera) {
             this.scene.activeCamera.detachControl(this.canvas);
         }
+
+        this.models.forEach(model => {
+            model.dispose();
+        });
+
+        this.models.length = 0;
 
         this.scene.dispose();
         this.engine.dispose();
 
         this.templateManager.dispose();
+        this._isDisposed = true;
     }
 
     protected abstract prepareContainerElement();

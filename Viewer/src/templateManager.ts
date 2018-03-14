@@ -163,6 +163,7 @@ export class TemplateManager {
         Object.keys(this.templates).forEach(template => {
             this.templates[template].dispose();
         });
+        this.templates = {};
 
         this.onInit.clear();
         this.onAllLoaded.clear();
@@ -355,11 +356,17 @@ export class Template {
         this.onStateChange.clear();
         this.isLoaded = false;
         // remove from parent
-        this.parent.removeChild(this.fragment);
+        try {
+            this.parent.removeChild(this.fragment);
+        } catch (e) {
+            //noop
+        }
 
         this.loadRequests.forEach(request => {
             request.abort();
         });
+
+        delete this.fragment;
     }
 
     private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
