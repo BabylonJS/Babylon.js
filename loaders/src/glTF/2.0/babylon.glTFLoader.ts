@@ -1512,7 +1512,9 @@ module BABYLON.GLTF2 {
         }
 
         private static _GetDrawMode(context: string, mode: number | undefined): number {
-            mode = mode || MeshPrimitiveMode.TRIANGLES;
+            if (mode == undefined) {
+                mode = MeshPrimitiveMode.TRIANGLES;
+            }
 
             switch (mode) {
                 case MeshPrimitiveMode.POINTS: return Material.PointListDrawMode;
