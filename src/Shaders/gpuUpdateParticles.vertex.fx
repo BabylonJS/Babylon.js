@@ -133,7 +133,7 @@ void main() {
     // Better distribution in a cone at normal angles.
     h = 1. - h * h;
     float lRadius = radius * randoms2.z;
-    lRadius = lRadius * h / height;
+    lRadius = lRadius * h;
 
     float randX = lRadius * sin(s);
     float randZ = lRadius * cos(s);

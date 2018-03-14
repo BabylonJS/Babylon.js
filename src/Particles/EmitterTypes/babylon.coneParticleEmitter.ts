@@ -84,7 +84,7 @@ module BABYLON {
             // Better distribution in a cone at normal angles.
             h = 1 - h * h;
             var radius = Scalar.RandomRange(0, this._radius);
-            radius = radius * h / this._height;
+            radius = radius * h;
 
             var randX = radius * Math.sin(s);
             var randZ = radius * Math.cos(s);
