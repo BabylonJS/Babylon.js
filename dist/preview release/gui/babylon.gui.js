@@ -1994,8 +1994,44 @@ var BABYLON;
                 _this.name = name;
                 _this._children = new Array();
                 _this._measureForChildren = GUI.Measure.Empty();
+                _this._adaptWidthToChildren = false;
+                _this._adaptHeightToChildren = false;
                 return _this;
             }
+            Object.defineProperty(Container.prototype, "adaptHeightToChildren", {
+                get: function () {
+                    return this._adaptHeightToChildren;
+                },
+                set: function (value) {
+                    if (this._adaptHeightToChildren === value) {
+                        return;
+                    }
+                    this._adaptHeightToChildren = value;
+                    if (value) {
+                        this.height = "100%";
+                    }
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Container.prototype, "adaptWidthToChildren", {
+                get: function () {
+                    return this._adaptWidthToChildren;
+                },
+                set: function (value) {
+                    if (this._adaptWidthToChildren === value) {
+                        return;
+                    }
+                    this._adaptWidthToChildren = value;
+                    if (value) {
+                        this.width = "100%";
+                    }
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Container.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -2119,6 +2155,8 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     this._localDraw(context);
                     this._clipForChildren(context);
+                    var computedWidth = -1;
+                    var computedHeight = -1;
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var child = _a[_i];
                         if (child.isVisible && !child.notRenderable) {
@@ -2127,7 +2165,19 @@ var BABYLON;
                             if (child.onAfterDrawObservable.hasObservers()) {
                                 child.onAfterDrawObservable.notifyObservers(child);
                             }
+                            if (this.adaptWidthToChildren && child._width.isPixel) {
+                                computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            }
+                            if (this.adaptHeightToChildren && child._height.isPixel) {
+                                computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            }
                         }
+                    }
+                    if (this.adaptWidthToChildren && computedWidth >= 0) {
+                        this.width = computedWidth + "px";
+                    }
+                    if (this.adaptHeightToChildren && computedHeight >= 0) {
+                        this.height = computedHeight + "px";
                     }
                 }
                 context.restore();
