@@ -1107,7 +1107,7 @@
                     attribs,
                     ["world", "mBones", "viewProjection", "diffuseMatrix", "lightData", "depthValues", "biasAndScale", "morphTargetInfluences"],
                     ["diffuseSampler"], join,
-                undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
+                    undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
             }
 
             if (!this._effect.isReady()) {
