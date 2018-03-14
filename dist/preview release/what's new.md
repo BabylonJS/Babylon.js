@@ -98,6 +98,7 @@
 - Lightmap texture in PBR material follow the gammaSpace Flag of the texture ([sebavan](https://github.com/sebavan))
 - Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
 - Added support for primitive modes to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Updated bloom effect to only bloom areas of the image above a luminance threshold ([trevordev](https://github.com/trevordev))
 
 ## Bug fixes
 
