@@ -1,4 +1,4 @@
-import { AnimationGroup, Animatable, Skeleton, IDisposable } from "babylonjs";
+import { AnimationGroup, Animatable, Skeleton } from "babylonjs";
 
 export enum AnimationPlayMode {
     ONCE,
@@ -13,7 +13,7 @@ export enum AnimationState {
     ENDED
 }
 
-export interface IModelAnimation extends IDisposable {
+export interface IModelAnimation {
     readonly state: AnimationState;
     readonly name: string;
     readonly frames: number;
@@ -27,6 +27,7 @@ export interface IModelAnimation extends IDisposable {
     reset();
     restart();
     goToFrame(frameNumber: number);
+    dispose();
 }
 
 export class GroupModelAnimation implements IModelAnimation {
