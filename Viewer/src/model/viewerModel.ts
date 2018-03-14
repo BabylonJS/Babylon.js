@@ -100,7 +100,7 @@ export class ViewerModel implements IDisposable {
                 })
             } else {
                 skeletons.forEach((skeleton, idx) => {
-                    let ag = new BABYLON.AnimationGroup("animation-" + idx, this._scene);
+                    let ag = new AnimationGroup("animation-" + idx, this._scene);
                     skeleton.getAnimatables().forEach(a => {
                         if (a.animations[0]) {
                             ag.addTargetedAnimation(a.animations[0], a);
