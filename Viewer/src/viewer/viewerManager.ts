@@ -12,6 +12,7 @@ export class ViewerManager {
     constructor() {
         this.viewers = {};
         this.onViewerAddedObservable = new Observable();
+        this.onViewerRemovedObservable = new Observable();
     }
 
     public addViewer(viewer: AbstractViewer) {
