@@ -1,5 +1,3 @@
-/// <reference path="../../../dist/preview release/babylon.d.ts"/>
-
 import { Observable } from 'babylonjs';
 import { AbstractViewer } from './viewer';
 
@@ -9,6 +7,7 @@ export class ViewerManager {
 
     public onViewerAdded: (viewer: AbstractViewer) => void;
     public onViewerAddedObservable: Observable<AbstractViewer>;
+    public onViewerRemovedObservable: Observable<string>;
 
     constructor() {
         this.viewers = {};
@@ -18,6 +17,12 @@ export class ViewerManager {
     public addViewer(viewer: AbstractViewer) {
         this.viewers[viewer.getBaseId()] = viewer;
         this._onViewerAdded(viewer);
+    }
+
+    public removeViewer(viewer: AbstractViewer) {
+        let id = viewer.getBaseId();
+        delete this.viewers[id];
+        this.onViewerRemovedObservable.notifyObservers(id);
     }
 
     public getViewerById(id: string): AbstractViewer {

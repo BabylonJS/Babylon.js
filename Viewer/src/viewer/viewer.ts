@@ -33,7 +33,7 @@ export abstract class AbstractViewer {
     protected maxShadows: number;
     private _hdrSupport: boolean;
 
-    private _isDisposed: boolean;
+    protected _isDisposed: boolean = false;
 
     public get isHdrSupported() {
         return this._hdrSupport;
@@ -664,6 +664,7 @@ export abstract class AbstractViewer {
         this.engine.dispose();
 
         this.templateManager.dispose();
+        viewerManager.removeViewer(this);
         this._isDisposed = true;
     }
 
