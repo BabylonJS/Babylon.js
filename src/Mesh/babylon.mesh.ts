@@ -187,7 +187,7 @@
 
                 // Deep copy
                 Tools.DeepCopy(source, this, ["name", "material", "skeleton", "instances", "parent", "uniqueId", 
-                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked"], 
+                                              "source", "metadata", "hasLODLevels", "geometry", "isBlocked", "areNormalsFrozen"], 
                                               ["_poseMatrix", "_source"]);
 
                 // Metadata

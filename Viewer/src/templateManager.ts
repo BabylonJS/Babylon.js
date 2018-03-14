@@ -366,6 +366,12 @@ export class Template {
             request.abort();
         });
 
+        if (this.registeredEvents) {
+            this.registeredEvents.forEach(evt => {
+                evt.htmlElement.removeEventListener(evt.eventName, evt.function);
+            });
+        }
+
         delete this.fragment;
     }
 
@@ -417,7 +423,13 @@ export class Template {
 
                     // if boolean, set the parent as the event listener
                     if (typeof this._configuration.events[eventName] === 'boolean') {
+                        let binding = functionToFire.bind(this, '#' + this.parent.id);
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
+                        this.registeredEvents.push({
+                            htmlElement: this.parent,
+                            eventName: eventName,
+                            function: binding
+                        });
                     } else if (typeof this._configuration.events[eventName] === 'object') {
                         let selectorsArray: Array<string> = Object.keys(this._configuration.events[eventName] || {});
                         // strict null checl is working incorrectly, must override:
