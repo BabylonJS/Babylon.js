@@ -322,4 +322,12 @@ function init() {
     engine.setDitheringState(false);
 }
 
+function dispose() {
+    engine.dispose();
+    currentScene = null;
+    engine = null;
+    document.body.removeChild(canvas);
+    canvas = null;
+}
+
 init();

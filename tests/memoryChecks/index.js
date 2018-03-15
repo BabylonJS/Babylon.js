@@ -27,7 +27,7 @@ BABYLONDEVTOOLS.Loader.require('../validation/validation.js')
                 }
 
                 runTest(index, function() {
-                    BABYLON.Engine.LastCreatedEngine.dispose();
+                    dispose();
                     needInit = true;
                 });
             }
