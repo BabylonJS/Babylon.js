@@ -1,12 +1,13 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
 import { ConfigurationLoader } from './../configuration/loader';
-import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
+import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 import { CameraBehavior } from 'src/interfaces';
 import { ViewerModel } from '../model/viewerModel';
+import { GroupModelAnimation } from '../model/modelAnimation';
 
 export abstract class AbstractViewer {
 
@@ -821,7 +822,7 @@ export abstract class AbstractViewer {
         }).then(() => {
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
-                let model = new ViewerModel(<IModelConfiguration>this.configuration.model, this.scene);
+                let model = new ViewerModel(this.scene, <IModelConfiguration>this.configuration.model);
                 this.models.push(model);
                 this.lastUsedLoader = model.loader;
                 model.onLoadedObservable.add((model) => {
@@ -856,6 +857,19 @@ export abstract class AbstractViewer {
                     return model;
                 });
         });
+    }
+
+    public addModel(meshes: Array<AbstractMesh>, skeletons: Array<Skeleton>, particleSystems: Array<ParticleSystem>, animationGroups: Array<AnimationGroup>): ViewerModel {
+        let model = new ViewerModel(this.scene);
+        model.meshes = meshes;
+        model.skeletons = skeletons;
+        model.particleSystems = particleSystems;
+        let animations = model.getAnimations();
+        animationGroups.forEach(ag => {
+            animations.push(new GroupModelAnimation(ag));
+        });
+
+        return model;
     }
 
     protected initEnvironment(model?: ViewerModel): Promise<Scene> {

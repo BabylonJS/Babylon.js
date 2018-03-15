@@ -443,6 +443,7 @@ declare module BabylonViewer {
             exception: any;
         }>;
         load(): void;
+        getAnimations(): Array<IModelAnimation>;
         getAnimationNames(): string[];
         playAnimation(name: string): IModelAnimation;
         dispose(): void;
@@ -500,6 +501,7 @@ declare module BabylonViewer {
         protected initEngine(): Promise<BABYLON.Engine>;
         protected initScene(): Promise<BABYLON.Scene>;
         loadModel(modelConfig?: any, clearScene?: boolean): Promise<ViewerModel>;
+        public addModel(meshes: Array<AbstractMesh>, skeletons: Array<Skeleton>, particleSystems: Array<ParticleSystem>, animationGroups: Array<AnimationGroup>): ViewerModel;
         protected initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         protected handleHardwareLimitations(): void;
         protected injectCustomShaders(): void;
