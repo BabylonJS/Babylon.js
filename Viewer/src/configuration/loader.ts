@@ -100,7 +100,3 @@ export class ConfigurationLoader {
     }
 
 }
-
-export let configurationLoader = new ConfigurationLoader();
-
-export default configurationLoader;
