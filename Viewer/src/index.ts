@@ -35,4 +35,4 @@ function disposeAll() {
 }
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll };
