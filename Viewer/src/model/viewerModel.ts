@@ -16,7 +16,7 @@ export class ViewerModel implements IDisposable {
     public onLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
     public onLoadErrorObservable: Observable<{ message: string; exception: any }>;
 
-    constructor(private _modelConfiguration: IModelConfiguration, private _scene: Scene, disableAutoLoad = false) {
+    constructor(private _scene: Scene, private _modelConfiguration?: IModelConfiguration, disableAutoLoad = false) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();
@@ -36,9 +36,9 @@ export class ViewerModel implements IDisposable {
         }
     }
 
-    //public getAnimations() {
-    //    return this._animations;
-    //}
+    public getAnimations() {
+        return this._animations;
+    }
 
     public getAnimationNames() {
         return this._animations.map(a => a.name);
@@ -109,6 +109,8 @@ export class ViewerModel implements IDisposable {
                     this._animations.push(new GroupModelAnimation(ag));
                 });
             }
+
+            if (!this._modelConfiguration) return;
 
             if (this._modelConfiguration.animation) {
                 if (this._modelConfiguration.animation.playOnce) {
