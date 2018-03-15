@@ -17,6 +17,7 @@ import '../assets/pep.min';
 
 
 import { InitTags } from './initializer';
+import { configurationLoader } from './configuration/loader';
 
 // promise polyfill, if needed!
 PromisePolyfill.Apply();
@@ -27,6 +28,12 @@ function init(event) {
     document.removeEventListener("DOMContentLoaded", init);
     if (disableInit) return;
     InitTags();
+}
+
+function disposeAll() {
+    viewerManager.dispose();
+    mapperManager.dispose();
+    configurationLoader.dispose();
 }
 
 // public API for initialization

@@ -164,6 +164,7 @@ export class TemplateManager {
             this.templates[template].dispose();
         });
         this.templates = {};
+        this.eventManager.dispose();
 
         this.onInit.clear();
         this.onAllLoaded.clear();
