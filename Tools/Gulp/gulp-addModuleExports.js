@@ -39,14 +39,19 @@ module.exports = function (varName, config) {
                     if (functionVariables) functionVariables += ',';
                     functionVariables += dep.name;
                     dependenciesDefinition += `
-    var ${dep.name};
+    var ${dep.name} = root. ${dep.name};
     if(!${dep.name}) {
         if(typeof exports === 'object') {
             ${dep.optional ? ' try { ' : ''} ${dep.name} = require("${dep.module}"); ${dep.optional ? ' } catch(e) {} ' : ''}
         } else if(typeof define === 'function' && define.amd) {
-            ${dep.optional ? ' if(require.defined && require.defined("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
-        } else {
-            ${dep.name} = root.${dep.name}
+            ${dep.optional ? ' if(require.specified && require.specified("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
+        }
+    } else {
+        if(typeof define === 'function' && define.amd) {
+            if(!(require.specified && require.specified("' + dep.module + '"))) {
+                try { define("${dep.module}", [], function () { return ${dep.name}; }); } catch(e) { }
+            }
+            amdDependencies.push("${dep.module}");
         }
     }
 `
