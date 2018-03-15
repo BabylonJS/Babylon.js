@@ -5,6 +5,44 @@ module BABYLON.GUI {
         protected _children = new Array<Control>();
         protected _measureForChildren = Measure.Empty();  
         protected _background: string;   
+        protected _adaptWidthToChildren = false;
+        protected _adaptHeightToChildren = false;
+
+        public get adaptHeightToChildren(): boolean {
+            return this._adaptHeightToChildren;
+        }
+
+        public set adaptHeightToChildren(value: boolean) {
+            if (this._adaptHeightToChildren === value) {
+                return;
+            }
+
+            this._adaptHeightToChildren = value;
+
+            if (value) {
+                this.height = "100%";
+            }
+
+            this._markAsDirty();
+        }       
+        
+        public get adaptWidthToChildren(): boolean {
+            return this._adaptWidthToChildren;
+        }
+
+        public set adaptWidthToChildren(value: boolean) {
+            if (this._adaptWidthToChildren === value) {
+                return;
+            }
+
+            this._adaptWidthToChildren = value;
+
+            if (value) {
+                this.width = "100%";
+            }
+
+            this._markAsDirty();
+        }           
 
         public get background(): string {
             return this._background;
@@ -159,6 +197,10 @@ module BABYLON.GUI {
                 this._localDraw(context);
 
                 this._clipForChildren(context);
+
+                let computedWidth = -1;
+                let computedHeight = -1;
+
                 for (var child of this._children) {
                     if (child.isVisible && !child.notRenderable) {
                         child._tempParentMeasure.copyFrom(this._measureForChildren);
@@ -167,8 +209,22 @@ module BABYLON.GUI {
                         if (child.onAfterDrawObservable.hasObservers()) {
                             child.onAfterDrawObservable.notifyObservers(child);
                         }
+
+                        if (this.adaptWidthToChildren && child._width.isPixel) {
+                            computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                        }
+                        if (this.adaptHeightToChildren && child._height.isPixel) {
+                            computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                        }                        
                     }
                 }
+
+                if (this.adaptWidthToChildren && computedWidth >= 0) {
+                    this.width = computedWidth + "px";
+                }
+                if (this.adaptHeightToChildren && computedHeight >= 0) {
+                    this.height = computedHeight + "px";
+                }                
             }
             context.restore();
 

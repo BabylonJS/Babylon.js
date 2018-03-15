@@ -1,6 +1,6 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define("oimo", ['exports'], factory) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(factory((global.OIMO = global.OIMO || {})));
 }(this, (function (exports) { 'use strict';
 

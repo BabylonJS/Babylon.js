@@ -1,30 +1,33 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __extends = (this && this.__extends) || (function () {
-            var extendStatics = Object.setPrototypeOf ||
-                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-            return function (d, b) {
-                extendStatics(d, b);
-                function __() { this.constructor = d; }
-                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-            };
-        })();
-        
+var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
+var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
+
 
 (function universalModuleDefinition(root, factory) {
+    var amdDependencies = [];
+    var BABYLON = root. BABYLON;
+    if(!BABYLON) {
+        if(typeof exports === 'object') {
+             BABYLON = require("babylonjs"); 
+        } else if(typeof define === 'function' && define.amd) {
+             amdDependencies.push("babylonjs");
+        }
+    } else {
+        if(typeof define === 'function' && define.amd) {
+            if(!(require.specified && require.specified("' + dep.module + '"))) {
+                try { define("babylonjs", [], function () { return BABYLON; }); } catch(e) { }
+            }
+            amdDependencies.push("babylonjs");
+        }
+    }
+
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory(require("babylonjs"));
+        module.exports = factory(BABYLON);
     else if(typeof define === 'function' && define.amd)
-        define("babylonjs-gui", ["babylonjs"], factory);
+        define("babylonjs-gui", amdDependencies, factory);
     else if(typeof exports === 'object')
-        exports["babylonjs-gui"] = factory(require("babylonjs"));
+        exports["babylonjs-gui"] = factory(BABYLON);
     else {
-        root["BABYLON"]["GUI"] = factory(root["BABYLON"]);
+        root["BABYLON"]["GUI"] = factory(BABYLON);
     }
 })(this, function(BABYLON) {
     "use strict";
@@ -1994,8 +1997,44 @@ var BABYLON;
                 _this.name = name;
                 _this._children = new Array();
                 _this._measureForChildren = GUI.Measure.Empty();
+                _this._adaptWidthToChildren = false;
+                _this._adaptHeightToChildren = false;
                 return _this;
             }
+            Object.defineProperty(Container.prototype, "adaptHeightToChildren", {
+                get: function () {
+                    return this._adaptHeightToChildren;
+                },
+                set: function (value) {
+                    if (this._adaptHeightToChildren === value) {
+                        return;
+                    }
+                    this._adaptHeightToChildren = value;
+                    if (value) {
+                        this.height = "100%";
+                    }
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(Container.prototype, "adaptWidthToChildren", {
+                get: function () {
+                    return this._adaptWidthToChildren;
+                },
+                set: function (value) {
+                    if (this._adaptWidthToChildren === value) {
+                        return;
+                    }
+                    this._adaptWidthToChildren = value;
+                    if (value) {
+                        this.width = "100%";
+                    }
+                    this._markAsDirty();
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Container.prototype, "background", {
                 get: function () {
                     return this._background;
@@ -2119,6 +2158,8 @@ var BABYLON;
                 if (this._processMeasures(parentMeasure, context)) {
                     this._localDraw(context);
                     this._clipForChildren(context);
+                    var computedWidth = -1;
+                    var computedHeight = -1;
                     for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
                         var child = _a[_i];
                         if (child.isVisible && !child.notRenderable) {
@@ -2127,7 +2168,19 @@ var BABYLON;
                             if (child.onAfterDrawObservable.hasObservers()) {
                                 child.onAfterDrawObservable.notifyObservers(child);
                             }
+                            if (this.adaptWidthToChildren && child._width.isPixel) {
+                                computedWidth = Math.max(computedWidth, child._currentMeasure.width);
+                            }
+                            if (this.adaptHeightToChildren && child._height.isPixel) {
+                                computedHeight = Math.max(computedHeight, child._currentMeasure.height);
+                            }
                         }
+                    }
+                    if (this.adaptWidthToChildren && computedWidth >= 0) {
+                        this.width = computedWidth + "px";
+                    }
+                    if (this.adaptHeightToChildren && computedHeight >= 0) {
+                        this.height = computedHeight + "px";
                     }
                 }
                 context.restore();

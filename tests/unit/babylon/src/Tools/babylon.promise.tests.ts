@@ -122,6 +122,64 @@ describe('Babylon.Promise', function () {
 
             tempString += " second";
         });
+
+        it('should chain promises correctly #5', (done) => {
+            var tempString = "";
+            var promise = new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve(44);
+                }, 100);
+            });
+        
+            promise = promise.then(function () {
+                return 55;
+            });
+        
+            promise.then(function (value) {
+                tempString += "1: " + value;
+                setTimeout(function () {
+                    promise.then(function (value) {
+                        tempString += " 2: " + value;
+                        try {
+                            expect(tempString).to.eq("1: 55 2: 55");
+                            done();
+                        }
+                        catch(error) {
+                            done(error);
+                        }                        
+                    });
+                }, 0);
+            });
+        });
+
+        it('should chain promises correctly #6', (done) => {
+            var tempString = "";
+            var promise = new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve(44);
+                }, 100);
+            });
+        
+            promise = promise.then(function () {
+                return Promise.resolve(55);
+            });
+        
+            promise.then(function (value) {
+                tempString += "1: " + value;
+                setTimeout(function () {
+                    promise.then(function (value) {
+                        tempString += " 2: " + value;
+                        try {
+                            expect(tempString).to.eq("1: 55 2: 55");
+                            done();
+                        }
+                        catch(error) {
+                            done(error);
+                        }                        
+                    });
+                }, 0);
+            });
+        });
     });
 
     describe('#Promise.all', () => {
