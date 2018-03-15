@@ -73,6 +73,7 @@ export class ConfigurationLoader {
         this.loadRequests.forEach(request => {
             request.abort();
         });
+        this.loadRequests.length = 0;
     }
 
     private loadFile(url: string): Promise<any> {
