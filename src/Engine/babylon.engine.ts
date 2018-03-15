@@ -5621,6 +5621,7 @@
 
             // Unbind
             this.unbindAllAttributes();
+            this._boundUniforms = [];
 
             if (this._dummyFramebuffer) {
                 this._gl.deleteFramebuffer(this._dummyFramebuffer);

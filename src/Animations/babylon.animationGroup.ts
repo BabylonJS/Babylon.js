@@ -145,7 +145,7 @@ module BABYLON {
          * @param loop defines if animations must loop
          * @param speedRatio defines the ratio to apply to animation speed (1 by default)
          * @param from defines the from key (optional)
-         * @param from defines the to key (optional)
+         * @param to defines the to key (optional)
          * @returns the current animation group
          */
         public start(loop = false, speedRatio = 1, from?: number, to?: number): AnimationGroup {
