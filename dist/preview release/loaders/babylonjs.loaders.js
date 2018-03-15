@@ -4973,7 +4973,9 @@ var BABYLON;
                 return (BABYLON.Tools.IsBase64(uri) || uri.indexOf("..") === -1);
             };
             GLTFLoader._GetDrawMode = function (context, mode) {
-                mode = mode || 4 /* TRIANGLES */;
+                if (mode == undefined) {
+                    mode = 4 /* TRIANGLES */;
+                }
                 switch (mode) {
                     case 0 /* POINTS */: return BABYLON.Material.PointListDrawMode;
                     case 1 /* LINES */: return BABYLON.Material.LineListDrawMode;
@@ -5192,7 +5194,7 @@ var BABYLON;
                                 if (indexLOD !== 0) {
                                     var previousNodeLOD = nodeLODs[indexLOD - 1];
                                     if (previousNodeLOD._babylonMesh) {
-                                        previousNodeLOD._babylonMesh.dispose();
+                                        previousNodeLOD._babylonMesh.dispose(false, true);
                                         delete previousNodeLOD._babylonMesh;
                                     }
                                 }

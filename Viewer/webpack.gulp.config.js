@@ -12,7 +12,8 @@ module.exports = {
     externals: {
         cannon: 'CANNON',
         oimo: 'OIMO',
-        vertx: true
+        vertx: true,
+        "./Oimo": "OIMO"
     },
     resolve: {
         extensions: ['.ts', '.js'],

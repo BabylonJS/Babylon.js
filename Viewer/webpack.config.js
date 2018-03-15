@@ -24,7 +24,9 @@ module.exports = {
     },
     externals: {
         // until physics will be integrated in the viewer, ignore cannon
-        cannon: 'CANNON'
+        cannon: 'CANNON',
+        oimo: 'OIMO',
+        './Oimo': 'OIMO'
     },
     devtool: 'source-map',
     plugins: [

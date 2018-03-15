@@ -1,7 +1,7 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
-import configurationLoader from './../configuration/loader';
-import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior } from 'babylonjs';
+import { ConfigurationLoader } from './../configuration/loader';
+import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
@@ -33,6 +33,8 @@ export abstract class AbstractViewer {
     protected maxShadows: number;
     private _hdrSupport: boolean;
 
+    protected _isDisposed: boolean = false;
+
     public get isHdrSupported() {
         return this._hdrSupport;
     }
@@ -50,6 +52,7 @@ export abstract class AbstractViewer {
     public canvas: HTMLCanvasElement;
 
     protected registeredOnBeforerenderFunctions: Array<() => void>;
+    protected _configurationLoader: ConfigurationLoader;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
@@ -79,7 +82,8 @@ export abstract class AbstractViewer {
         this.prepareContainerElement();
 
         // extend the configuration
-        configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
+        this._configurationLoader = new ConfigurationLoader();
+        this._configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
             this.configuration = deepmerge(this.configuration || {}, configuration);
             if (this.configuration.observers) {
                 this.configureObservers(this.configuration.observers);
@@ -619,20 +623,55 @@ export abstract class AbstractViewer {
     }
 
     public dispose() {
+        if (this._isDisposed) {
+            return;
+        }
         window.removeEventListener('resize', this.resize);
         if (this.sceneOptimizer) {
             this.sceneOptimizer.stop();
             this.sceneOptimizer.dispose();
         }
 
+        if (this.environmentHelper) {
+            this.environmentHelper.dispose();
+        }
+
+        if (this._configurationLoader) {
+            this._configurationLoader.dispose();
+        }
+
+        //observers
+        this.onEngineInitObservable.clear();
+        delete this.onEngineInitObservable;
+        this.onInitDoneObservable.clear();
+        delete this.onInitDoneObservable;
+        this.onLoaderInitObservable.clear();
+        delete this.onLoaderInitObservable;
+        this.onModelLoadedObservable.clear();
+        delete this.onModelLoadedObservable;
+        this.onModelLoadErrorObservable.clear();
+        delete this.onModelLoadErrorObservable;
+        this.onModelLoadProgressObservable.clear();
+        delete this.onModelLoadProgressObservable;
+        this.onSceneInitObservable.clear();
+        delete this.onSceneInitObservable;
+
         if (this.scene.activeCamera) {
             this.scene.activeCamera.detachControl(this.canvas);
         }
+
+        this.models.forEach(model => {
+            model.dispose();
+        });
+
+        this.models.length = 0;
 
         this.scene.dispose();
         this.engine.dispose();
 
         this.templateManager.dispose();
+        viewerManager.removeViewer(this);
+        this._isDisposed = true;
     }
 
     protected abstract prepareContainerElement();
@@ -656,12 +695,12 @@ export abstract class AbstractViewer {
      */
     private _onTemplateLoaded(): Promise<AbstractViewer> {
         return this.onTemplatesLoaded().then(() => {
-            let autoLoadModel = !!this.configuration.model;
+            let autoLoadModel = this.configuration.model;
             return this.initEngine().then((engine) => {
                 return this.onEngineInitObservable.notifyObserversWithPromise(engine);
             }).then(() => {
                 if (autoLoadModel) {
-                    return this.loadModel().then(() => { return this.scene });
+                    return this.loadModel().catch(e => { }).then(() => { return this.scene });
                 } else {
                     return this.scene || this.initScene();
                 }
@@ -669,6 +708,9 @@ export abstract class AbstractViewer {
                 return this.onSceneInitObservable.notifyObserversWithPromise(scene);
             }).then(() => {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
+            }).catch(e => {
+                Tools.Warn(e.toString());
+                return this;
             });
         })
     }

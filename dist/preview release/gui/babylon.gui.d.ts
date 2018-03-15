@@ -357,6 +357,10 @@ declare module BABYLON.GUI {
         protected _children: Control[];
         protected _measureForChildren: Measure;
         protected _background: string;
+        protected _adaptWidthToChildren: boolean;
+        protected _adaptHeightToChildren: boolean;
+        adaptHeightToChildren: boolean;
+        adaptWidthToChildren: boolean;
         background: string;
         readonly children: Control[];
         constructor(name?: string | undefined);
