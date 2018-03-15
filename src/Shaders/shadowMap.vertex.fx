@@ -8,6 +8,9 @@ attribute vec3 position;
 
 #include<bonesDeclaration>
 
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
 // Uniforms
 #include<instancesDeclaration>
 #include<helperFunctions>
@@ -31,10 +34,14 @@ attribute vec2 uv2;
 
 void main(void)
 {
+vec3 positionUpdated = position;
+
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
 #include<instancesVertex>
 #include<bonesVertex>
 
-vec4 worldPos = finalWorld * vec4(position, 1.0);
+vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 
 // Normal inset Bias.
 #ifdef NORMAL

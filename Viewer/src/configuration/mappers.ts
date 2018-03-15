@@ -118,6 +118,10 @@ export class MapperManager {
         this.mappers[type] = mapper;
     }
 
+    public dispose() {
+        this.mappers = {};
+    }
+
 }
 
 export let mapperManager = new MapperManager();
