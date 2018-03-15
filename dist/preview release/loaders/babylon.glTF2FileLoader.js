@@ -2022,7 +2022,7 @@ var BABYLON;
                                 if (indexLOD !== 0) {
                                     var previousNodeLOD = nodeLODs[indexLOD - 1];
                                     if (previousNodeLOD._babylonMesh) {
-                                        previousNodeLOD._babylonMesh.dispose();
+                                        previousNodeLOD._babylonMesh.dispose(false, true);
                                         delete previousNodeLOD._babylonMesh;
                                     }
                                 }

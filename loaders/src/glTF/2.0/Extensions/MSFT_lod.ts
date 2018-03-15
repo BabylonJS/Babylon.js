@@ -43,7 +43,7 @@ module BABYLON.GLTF2.Extensions {
                         if (indexLOD !== 0) {
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
                             if (previousNodeLOD._babylonMesh) {
-                                previousNodeLOD._babylonMesh.dispose();
+                                previousNodeLOD._babylonMesh.dispose(false, true);
                                 delete previousNodeLOD._babylonMesh;
                             }
                         }
