@@ -91,88 +91,103 @@ module BABYLON {
                 }
                 this._scene.mainSoundTrack.AddSound(this);
                 var validParameter = true;
+
                 // if no parameter is passed, you need to call setAudioBuffer yourself to prepare the sound
                 if (urlOrArrayBuffer) {
-                    if (typeof (urlOrArrayBuffer) === "string") this._urlType = "String";
-                    if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
-                    if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
+                    try {
+                        if (typeof (urlOrArrayBuffer) === "string") this._urlType = "String";
+                        if (Array.isArray(urlOrArrayBuffer)) this._urlType = "Array";
+                        if (urlOrArrayBuffer instanceof ArrayBuffer) this._urlType = "ArrayBuffer";
 
-                    var urls: string[] = [];
-                    var codecSupportedFound = false;
+                        var urls: string[] = [];
+                        var codecSupportedFound = false;
 
-                    switch (this._urlType) {
-                        case "ArrayBuffer":
-                            if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
-                                codecSupportedFound = true;
-                                this._soundLoaded(urlOrArrayBuffer);
-                            }
-                            break;
-                        case "String":
-                            urls.push(urlOrArrayBuffer);
-                        case "Array":
-                            if (urls.length === 0) urls = urlOrArrayBuffer;
-                            // If we found a supported format, we load it immediately and stop the loop
-                            for (var i = 0; i < urls.length; i++) {
-                                var url = urls[i];
-                                if (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) {
+                        switch (this._urlType) {
+                            case "ArrayBuffer":
+                                if ((<ArrayBuffer>urlOrArrayBuffer).byteLength > 0) {
                                     codecSupportedFound = true;
+                                    this._soundLoaded(urlOrArrayBuffer);
                                 }
-                                if (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf(".wav", url.length - 4) !== -1) {
-                                    codecSupportedFound = true;
-                                }
-                                if (url.indexOf("blob:") !== -1) {
-                                    codecSupportedFound = true;
-                                }
-                                if (codecSupportedFound) {
-                                    // Loading sound using XHR2
-                                    if (!this._streaming) {
-                                        this._scene._loadFile(url, (data) => { this._soundLoaded(data as ArrayBuffer); }, undefined, true, true);
+                                break;
+                            case "String":
+                                urls.push(urlOrArrayBuffer);
+                            case "Array":
+                                if (urls.length === 0) urls = urlOrArrayBuffer;
+                                // If we found a supported format, we load it immediately and stop the loop
+                                for (var i = 0; i < urls.length; i++) {
+                                    var url = urls[i];
+                                    if (url.indexOf(".mp3", url.length - 4) !== -1 && Engine.audioEngine.isMP3supported) {
+                                        codecSupportedFound = true;
                                     }
-                                    // Streaming sound using HTML5 Audio tag
-                                    else {
-                                        this._htmlAudioElement = new Audio(url);
-                                        this._htmlAudioElement.controls = false;
-                                        this._htmlAudioElement.loop = this.loop;
-                                        Tools.SetCorsBehavior(url, this._htmlAudioElement);
-                                        this._htmlAudioElement.preload = "auto";
-                                        this._htmlAudioElement.addEventListener("canplaythrough", () => {
-                                            this._isReadyToPlay = true;
-                                            if (this.autoplay) {
-                                                this.play();
-                                            }
-                                            if (this._readyToPlayCallback) {
-                                                this._readyToPlayCallback();
-                                            }
-                                        });
-                                        document.body.appendChild(this._htmlAudioElement);
+                                    if (url.indexOf(".ogg", url.length - 4) !== -1 && Engine.audioEngine.isOGGsupported) {
+                                        codecSupportedFound = true;
                                     }
-                                    break;
+                                    if (url.indexOf(".wav", url.length - 4) !== -1) {
+                                        codecSupportedFound = true;
+                                    }
+                                    if (url.indexOf("blob:") !== -1) {
+                                        codecSupportedFound = true;
+                                    }
+                                    if (codecSupportedFound) {
+                                        // Loading sound using XHR2
+                                        if (!this._streaming) {
+                                            this._scene._loadFile(url, (data) => { 
+                                                this._soundLoaded(data as ArrayBuffer); 
+                                            }, undefined, true, true, (exception) => {
+                                                if (exception) {
+                                                    Tools.Error("XHR " + exception.status + " error on: " + url + ".");
+                                                }
+                                                Tools.Error("Sound creation aborted.");
+                                                this._scene.mainSoundTrack.RemoveSound(this);
+                                            });
+                                        }
+                                        // Streaming sound using HTML5 Audio tag
+                                        else {
+                                            this._htmlAudioElement = new Audio(url);
+                                            this._htmlAudioElement.controls = false;
+                                            this._htmlAudioElement.loop = this.loop;
+                                            Tools.SetCorsBehavior(url, this._htmlAudioElement);
+                                            this._htmlAudioElement.preload = "auto";
+                                            this._htmlAudioElement.addEventListener("canplaythrough", () => {
+                                                this._isReadyToPlay = true;
+                                                if (this.autoplay) {
+                                                    this.play();
+                                                }
+                                                if (this._readyToPlayCallback) {
+                                                    this._readyToPlayCallback();
+                                                }
+                                            });
+                                            document.body.appendChild(this._htmlAudioElement);
+                                        }
+                                        break;
+                                    }
                                 }
-                            }
-                            break;
-                        default:
-                            validParameter = false;
-                            break;
-                    }
+                                break;
+                            default:
+                                validParameter = false;
+                                break;
+                        }
 
-                    if (!validParameter) {
-                        Tools.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
-                    }
-                    else {
-                        if (!codecSupportedFound) {
-                            this._isReadyToPlay = true;
-                            // Simulating a ready to play event to avoid breaking code path
-                            if (this._readyToPlayCallback) {
-                                window.setTimeout(() => {
-                                    if (this._readyToPlayCallback) {
-                                        this._readyToPlayCallback();
-                                    }
-                                }, 1000);
+                        if (!validParameter) {
+                            Tools.Error("Parameter must be a URL to the sound, an Array of URLs (.mp3 & .ogg) or an ArrayBuffer of the sound.");
+                        }
+                        else {
+                            if (!codecSupportedFound) {
+                                this._isReadyToPlay = true;
+                                // Simulating a ready to play event to avoid breaking code path
+                                if (this._readyToPlayCallback) {
+                                    window.setTimeout(() => {
+                                        if (this._readyToPlayCallback) {
+                                            this._readyToPlayCallback();
+                                        }
+                                    }, 1000);
+                                }
                             }
                         }
+                    }
+                    catch (ex) {
+                        Tools.Error("Unexpected error. Sound creation aborted.");
+                        this._scene.mainSoundTrack.RemoveSound(this);
                     }
                 }
             }
@@ -195,7 +210,7 @@ module BABYLON {
         }
 
         public dispose() {
-            if (Engine.audioEngine.canUseWebAudio && this._isReadyToPlay) {
+            if (Engine.audioEngine.canUseWebAudio) { 
                 if (this.isPlaying) {
                     this.stop();
                 }
