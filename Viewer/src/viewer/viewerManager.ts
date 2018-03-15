@@ -58,6 +58,12 @@ export class ViewerManager {
         this.onViewerAdded && this.onViewerAdded(viewer);
         this.onViewerAddedObservable.notifyObservers(viewer);
     }
+
+    public dispose() {
+        for (let id in this.viewers) {
+            this.viewers[id].dispose();
+        }
+    }
 }
 
 export let viewerManager = new ViewerManager();

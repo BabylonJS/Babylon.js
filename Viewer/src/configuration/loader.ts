@@ -11,7 +11,7 @@ export class ConfigurationLoader {
 
     private loadRequests: Array<IFileRequest>;
 
-    constructor() {
+    constructor(private _enableCache: boolean = false) {
         this.configurationCache = {};
         this.loadRequests = [];
     }
@@ -78,12 +78,21 @@ export class ConfigurationLoader {
 
     private loadFile(url: string): Promise<any> {
         let cacheReference = this.configurationCache;
-        if (cacheReference[url]) {
+        if (this._enableCache && cacheReference[url]) {
             return Promise.resolve(cacheReference[url]);
         }
 
         return new Promise((resolve, reject) => {
-            let fileRequest = Tools.LoadFile(url, resolve, undefined, undefined, false, (request, error: any) => {
+            let fileRequest = Tools.LoadFile(url, (result) => {
+                let idx = this.loadRequests.indexOf(fileRequest);
+                if (idx !== -1)
+                    this.loadRequests.splice(idx, 1);
+                if (this._enableCache) cacheReference[url] = result;
+                resolve(result);
+            }, undefined, undefined, false, (request, error: any) => {
+                let idx = this.loadRequests.indexOf(fileRequest);
+                if (idx !== -1)
+                    this.loadRequests.splice(idx, 1);
                 reject(error);
             });
             this.loadRequests.push(fileRequest);
@@ -91,7 +100,3 @@ export class ConfigurationLoader {
     }
 
 }
-
-export let configurationLoader = new ConfigurationLoader();
-
-export default configurationLoader;

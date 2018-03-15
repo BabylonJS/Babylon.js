@@ -2,6 +2,8 @@ declare module BabylonViewer {
 
     export let disableInit: boolean;
 
+    export function disposeAll();
+
     export interface ITemplateConfiguration {
         location?: string;
         html?: string;
