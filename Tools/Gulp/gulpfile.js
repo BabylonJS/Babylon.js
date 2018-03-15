@@ -217,7 +217,9 @@ gulp.task("buildWorker", ["workers", "shaders"], function () {
         .pipe(cleants())
         .pipe(replace(extendsSearchRegex, ""))
         .pipe(replace(decorateSearchRegex, ""))
-        .pipe(addModuleExports("BABYLON"))
+        .pipe(addModuleExports("BABYLON", {
+            dependencies: config.build.dependencies
+        }))
         .pipe(uglify())
         .pipe(optimisejs())
         .pipe(gulp.dest(config.build.outputDirectory));
@@ -239,7 +241,9 @@ gulp.task("build", ["shaders"], function () {
             .pipe(cleants())
             .pipe(replace(extendsSearchRegex, ""))
             .pipe(replace(decorateSearchRegex, ""))
-            .pipe(addModuleExports("BABYLON"))
+            .pipe(addModuleExports("BABYLON", {
+                dependencies: config.build.dependencies
+            }))
             .pipe(gulp.dest(config.build.outputDirectory))
             .pipe(rename(config.build.minFilename))
             .pipe(uglify())
@@ -316,7 +320,7 @@ var buildExternalLibraries = function (settings) {
                 .pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
-                .pipe(addModuleExports(settings.build.moduleDeclaration, true, settings.build.extendsRoot))
+                .pipe(addModuleExports(settings.build.moduleDeclaration, { subModule: true, extendsRoot: settings.build.extendsRoot }))
                 .pipe(gulp.dest(outputDirectory))
                 .pipe(cleants())
                 .pipe(rename({ extname: ".min.js" }))
@@ -395,7 +399,7 @@ var buildExternalLibrary = function (library, settings, watch) {
         if (library.buildAsModule) {
             code = code.pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
-                .pipe(addModuleExports(library.moduleDeclaration, true, library.extendsRoot))
+                .pipe(addModuleExports(library.moduleDeclaration, { subModule: true, extendsRoot: library.extendsRoot }))
         }
 
         code = code.pipe(gulp.dest(outputDirectory))
@@ -433,7 +437,7 @@ var buildExternalLibrary = function (library, settings, watch) {
             let wpBuild = webpack(require(library.webpack));
             if (settings.build.outputs) {
                 let build = wpBuild
-                    .pipe(addModuleExports(library.moduleDeclaration, false, false, true, library.babylonIncluded));
+                    .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: library.babylonIncluded }));
 
                 let unminifiedOutpus = [];
                 let minifiedOutputs = [];
@@ -482,7 +486,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                 sequence.push(
                     wpBuild
                         .pipe(rename(library.output.replace(".js", library.noBundleInName ? '.js' : ".bundle.js")))
-                        .pipe(addModuleExports(library.moduleDeclaration, false, library.extendsRoot, true))
+                        .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: library.extendsRoot, externalUsingBabylon: true }))
                         .pipe(uglify())
                         .pipe(optimisejs())
                         .pipe(gulp.dest(outputDirectory))
@@ -625,7 +629,7 @@ gulp.task("webserver", function () {
     var options = {
         port: 1338,
         livereload: false,
-        
+
     };
 
     if (commandLineOptions.public) {

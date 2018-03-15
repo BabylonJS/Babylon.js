@@ -5,8 +5,10 @@ var through = require('through2');
  * The parameters for this function has grown during development.
  * Eventually, this function will need to be reorganized. 
  */
-module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon, noBabylonInit) {
+//  subModule, extendsRoot, externalUsingBabylon, noBabylonInit
+module.exports = function (varName, config) {
     return through.obj(function (file, enc, cb) {
+        config = config || {};
         if (typeof varName === 'string') {
             varName = {
                 name: varName,
@@ -16,51 +18,76 @@ module.exports = function (varName, subModule, extendsRoot, externalUsingBabylon
                 varName.module = 'babylonjs';
             }
         }
+        if (!config.dependencies) {
+            if (config.subModule || config.extendsRoot) {
+                config.dependencies = [
+                    {
+                        name: "BABYLON",
+                        module: "babylonjs",
+                        optional: false
+                    }
+                ]
+            }
+        }
 
         function moduleExportAddition(varName) {
 
-            let base = subModule ? 'BABYLON' : varName.name;
+            let dependenciesDefinition = `var amdDependencies = [];`;
+            let functionVariables = '';
+            if (config.dependencies) {
+                config.dependencies.forEach(dep => {
+                    if (functionVariables) functionVariables += ',';
+                    functionVariables += dep.name;
+                    dependenciesDefinition += `
+    var ${dep.name} = root. ${dep.name};
+    if(!${dep.name}) {
+        if(typeof exports === 'object') {
+            ${dep.optional ? ' try { ' : ''} ${dep.name} = require("${dep.module}"); ${dep.optional ? ' } catch(e) {} ' : ''}
+        } else if(typeof define === 'function' && define.amd) {
+            ${dep.optional ? ' if(require.specified && require.specified("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
+        }
+    } else {
+        if(typeof define === 'function' && define.amd) {
+            if(!(require.specified && require.specified("' + dep.module + '"))) {
+                try { define("${dep.module}", [], function () { return ${dep.name}; }); } catch(e) { }
+            }
+            amdDependencies.push("${dep.module}");
+        }
+    }
+`
+                });
+
+            }
+
+            let base = config.subModule ? 'BABYLON' : varName.name;
 
             return `\n\n(function universalModuleDefinition(root, factory) {
+    ${dependenciesDefinition}
     if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
+        module.exports = factory(${functionVariables});
     else if(typeof define === 'function' && define.amd)
-        define("${varName.module}", ${subModule || extendsRoot ? '["babylonjs"],' : '[],'} factory);
+        define("${varName.module}", amdDependencies, factory);
     else if(typeof exports === 'object')
-        exports["${varName.module}"] = factory(${subModule || extendsRoot ? 'require("babylonjs")' : ''});
+        exports["${varName.module}"] = factory(${functionVariables});
     else {
-        root["${base}"]${(subModule && !extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(root["BABYLON"]);
+        root["${base}"]${(config.subModule && !config.extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(${functionVariables});
     }
-})(this, function(${varName.name === 'BABYLON' || noBabylonInit ? '' : 'BABYLON'}) {
+})(this, function(${functionVariables}) {
     ${String(file.contents)}
     ${varName.name === 'BABYLON' || varName.name === 'INSPECTOR' ? `
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
 globalObject["${varName.name}"] = ${varName.name}` : ''}
-    return ${base}${(subModule && !extendsRoot) ? '.' + varName.name : ''};
+    return ${base}${(config.subModule && !config.extendsRoot) ? '.' + varName.name : ''};
 });
 `;
         }
 
         var extendsAddition =
-            `var __extends = (this && this.__extends) || (function () {
-            var extendStatics = Object.setPrototypeOf ||
-                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-            return function (d, b) {
-                extendStatics(d, b);
-                function __() { this.constructor = d; }
-                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-            };
-        })();
-        `;
+            `var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
+`;
 
-        var decorateAddition =
-            'var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n' +
-            'var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n' +
-            'if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);\n' +
-            'else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n' +
-            'return c > 3 && r && Object.defineProperty(target, key, r), r;\n' +
-            '};\n';
+        var decorateAddition = `var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
+`;
 
         if (file.isNull()) {
             cb(null, file);
@@ -72,14 +99,12 @@ globalObject["${varName.name}"] = ${varName.name}` : ''}
             return;
         }
 
-        var optionalRequire = '';
-
         try {
-            if (externalUsingBabylon) {
-                file.contents = new Buffer(optionalRequire.concat(new Buffer(String('').concat(moduleExportAddition(varName)))));
+            if (config.externalUsingBabylon) {
+                file.contents = new Buffer(String('').concat(moduleExportAddition(varName)));
             } else {
-                let pretext = subModule ? optionalRequire : '';
-                file.contents = new Buffer(pretext.concat(decorateAddition).concat(new Buffer(extendsAddition.concat(String('')).concat(moduleExportAddition(varName)))));
+                let pretext = '';
+                file.contents = new Buffer(decorateAddition.concat(new Buffer(extendsAddition.concat(String('')).concat(moduleExportAddition(varName)))));
             }
             this.push(file);
         } catch (err) {
