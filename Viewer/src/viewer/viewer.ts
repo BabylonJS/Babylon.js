@@ -1,6 +1,6 @@
 import { viewerManager } from './viewerManager';
 import { TemplateManager } from './../templateManager';
-import configurationLoader from './../configuration/loader';
+import { ConfigurationLoader } from './../configuration/loader';
 import { CubeTexture, Color3, IEnvironmentHelperOptions, EnvironmentHelper, Effect, SceneOptimizer, SceneOptimizerOptions, Observable, Engine, Scene, ArcRotateCamera, Vector3, SceneLoader, AbstractMesh, Mesh, HemisphericLight, Database, SceneLoaderProgressEvent, ISceneLoaderPlugin, ISceneLoaderPluginAsync, Quaternion, Light, ShadowLight, ShadowGenerator, Tags, AutoRotationBehavior, BouncingBehavior, FramingBehavior, Behavior, Tools } from 'babylonjs';
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
@@ -52,6 +52,7 @@ export abstract class AbstractViewer {
     public canvas: HTMLCanvasElement;
 
     protected registeredOnBeforerenderFunctions: Array<() => void>;
+    protected _configurationLoader: ConfigurationLoader;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
         // if exists, use the container id. otherwise, generate a random string.
@@ -81,7 +82,8 @@ export abstract class AbstractViewer {
         this.prepareContainerElement();
 
         // extend the configuration
-        configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
+        this._configurationLoader = new ConfigurationLoader();
+        this._configurationLoader.loadConfiguration(initialConfiguration, (configuration) => {
             this.configuration = deepmerge(this.configuration || {}, configuration);
             if (this.configuration.observers) {
                 this.configureObservers(this.configuration.observers);
@@ -632,6 +634,10 @@ export abstract class AbstractViewer {
 
         if (this.environmentHelper) {
             this.environmentHelper.dispose();
+        }
+
+        if (this._configurationLoader) {
+            this._configurationLoader.dispose();
         }
 
         //observers
