@@ -29,5 +29,10 @@ function init(event) {
     InitTags();
 }
 
+function disposeAll() {
+    viewerManager.dispose();
+    mapperManager.dispose();
+}
+
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll };
