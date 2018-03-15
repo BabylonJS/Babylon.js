@@ -269,8 +269,11 @@ if (BABYLON.Engine.isSupported()) {
             }
             else {
                 footer.style.display = "none";
-                currentScene.debugLayer.hide();
-                enableDebugLayer = false;
+                errorZone.style.display = "none";
+                if (enableDebugLayer) {
+                    currentScene.debugLayer.hide();
+                    enableDebugLayer = false;
+                }
             }
         }
     });
