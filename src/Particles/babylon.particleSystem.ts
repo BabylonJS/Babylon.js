@@ -997,11 +997,11 @@
          */
         public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
             var particleEmitter = new BoxParticleEmitter();
+            this.particleEmitterType = particleEmitter;
             this.direction1 = direction1;
             this.direction2 = direction2;
             this.minEmitBox = minEmitBox;
             this.maxEmitBox = maxEmitBox;
-            this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
 
