@@ -696,6 +696,43 @@ export abstract class AbstractViewer {
     private isLoading: boolean;
     private nextLoading: Function;
 
+    public initModel(modelConfig: any = this.configuration.model, clearScene: boolean = true): ViewerModel {
+        let model = this.modelLoader.load(modelConfig);
+
+        if (clearScene) {
+            this.models.forEach(m => m.dispose());
+            this.models.length = 0;
+        }
+
+        this.models.push(model);
+        this.lastUsedLoader = model.loader;
+        model.onLoadErrorObservable.add((errorObject) => {
+            this.onModelLoadErrorObservable.notifyObserversWithPromise(errorObject);
+        });
+        model.onLoadProgressObservable.add((progressEvent) => {
+            return this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
+        });
+        this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
+
+        model.onLoadedObservable.add(() => {
+            this.onModelLoadedObservable.notifyObserversWithPromise(model)
+                .then(() => {
+                    this.configureLights(this.configuration.lights);
+
+                    if (this.configuration.camera) {
+                        this.configureCamera(this.configuration.camera, model);
+                    }
+                    return this.initEnvironment(model);
+                }).then(() => {
+                    this.isLoading = false;
+                    return model;
+                });
+        });
+
+
+        return model;
+    }
+
     public loadModel(modelConfig: any = this.configuration.model, clearScene: boolean = true): Promise<ViewerModel> {
         // no model was provided? Do nothing!
         let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
@@ -721,45 +758,13 @@ export abstract class AbstractViewer {
 
         return Promise.resolve(this.scene).then((scene) => {
             if (!scene) return this.initScene();
-
-            if (clearScene) {
-                this.models.forEach(m => m.dispose());
-                this.models.length = 0;
-            }
             return scene;
         }).then(() => {
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
-                let model = this.modelLoader.load(<IModelConfiguration>this.configuration.model);
-                this.models.push(model);
-                this.lastUsedLoader = model.loader;
-                model.onLoadedObservable.add((model) => {
-                    resolve(model);
-                });
-                model.onLoadErrorObservable.add((errorObject) => {
-                    this.onModelLoadErrorObservable.notifyObserversWithPromise(errorObject).then(() => {
-                        reject(errorObject.exception);
-                    });
-                });
-                model.onLoadProgressObservable.add((progressEvent) => {
-                    return this.onModelLoadProgressObservable.notifyObserversWithPromise(progressEvent);
-                });
-                this.onLoaderInitObservable.notifyObserversWithPromise(this.lastUsedLoader);
+                return this.initModel(modelConfig, clearScene);
             });
-        }).then((model: ViewerModel) => {
-            return this.onModelLoadedObservable.notifyObserversWithPromise(model)
-                .then(() => {
-                    this.configureLights(this.configuration.lights);
-
-                    if (this.configuration.camera) {
-                        this.configureCamera(this.configuration.camera, model);
-                    }
-                    return this.initEnvironment(model);
-                }).then(() => {
-                    this.isLoading = false;
-                    return model;
-                });
-        });
+        })
     }
 
     protected initEnvironment(model?: ViewerModel): Promise<Scene> {

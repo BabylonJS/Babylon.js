@@ -68,7 +68,7 @@ export class ViewerModel implements IDisposable {
     }
 
     public get configuration(): IModelConfiguration {
-        return this.configuration;
+        return this._modelConfiguration;
     }
 
     public set configuration(newConfiguration: IModelConfiguration) {
