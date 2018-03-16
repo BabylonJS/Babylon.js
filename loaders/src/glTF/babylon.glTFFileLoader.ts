@@ -373,6 +373,7 @@ module BABYLON {
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
             loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
+            loader.onAnimationGroupLoadedObservable.add(animationGroup => this.onAnimationGroupLoadedObservable.notifyObservers(animationGroup));
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();
