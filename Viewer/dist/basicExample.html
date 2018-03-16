@@ -28,22 +28,7 @@
             // a simple way of disabling auto init 
             BabylonViewer.disableInit = true;
             // Initializing the viewer on specific HTML tags.
-            //BabylonViewer.InitTags('babylon');
-            var state = 0;
-            window.onclick = function () {
-                if (state === 0) {
-                    console.log("loading");
-                    BabylonViewer.InitTags('babylon');
-                    state++;
-                } else if (state === 1) {
-                    /*BabylonViewer.viewerManager.getViewerPromiseById('babylon-viewer').then(function (viewer) {
-                        viewer.dispose();
-                        console.log("disposed");
-                    });*/
-                    BabylonViewer.disposeAll();
-                }
-
-            }
+            BabylonViewer.InitTags('babylon');
         </script>
     </body>
 
