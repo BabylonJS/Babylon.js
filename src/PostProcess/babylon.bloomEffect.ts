@@ -24,6 +24,17 @@ module BABYLON {
         public set threshold(value: number){
             this._downscale.threshold = value;
         }
+
+        /**
+         * Specifies the size of the bloom blur kernel, relative to the final output size
+         */
+        public get kernel():number{
+            return this._blurX.kernel / this.bloomScale;
+        }
+        public set kernel(value: number){
+            this._blurX.kernel = value * this.bloomScale;
+            this._blurY.kernel = value * this.bloomScale;
+        }
         
         /**
          * Creates a new instance of @see BloomEffect
@@ -34,7 +45,7 @@ module BABYLON {
          * @param performMerge If the finalization merge should be performed by this effect.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, bloomScale:number, bloomKernel:number, pipelineTextureType = 0, performMerge = true, blockCompilation = false) {
+        constructor(scene: Scene, private bloomScale:number, bloomKernel:number, pipelineTextureType = 0, performMerge = true, blockCompilation = false) {
             super(scene.getEngine(), "bloom", ()=>{
                 return this._effects;
             }, true);
@@ -43,18 +54,12 @@ module BABYLON {
             this._blurX = new BlurPostProcess("horizontal blur", new Vector2(1.0, 0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
             this._blurX.alwaysForcePOT = true;
             this._blurX.autoClear = false;
-            this._blurX.onActivateObservable.add(() => {
-                let dw = this._blurX.width / scene.getEngine().getRenderWidth(true);
-                this._blurX.kernel = bloomKernel * dw;
-            });
 
             this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
             this._blurY.alwaysForcePOT = true;
             this._blurY.autoClear = false;
-            this._blurY.onActivateObservable.add(() => {
-                let dh = this._blurY.height / scene.getEngine().getRenderHeight(true);
-                this._blurY.kernel = bloomKernel * dh;
-            });
+
+            this.kernel = bloomKernel;
 
             this._upscale = new PassPostProcess("sceneRenderTarget", bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._upscale.autoClear = false;
