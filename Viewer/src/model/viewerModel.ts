@@ -81,6 +81,41 @@ export class ViewerModel implements IDisposable {
         this._configureModel();
     }
 
+    public initAnimations() {
+        this._animations.forEach(a => {
+            a.dispose();
+        });
+        this._animations.length = 0;
+
+        // check if this is not a gltf loader and init the animations
+        if (this.loader.name !== 'gltf') {
+            this.skeletons.forEach((skeleton, idx) => {
+                let ag = new AnimationGroup("animation-" + idx, this._scene);
+                skeleton.getAnimatables().forEach(a => {
+                    if (a.animations[0]) {
+                        ag.addTargetedAnimation(a.animations[0], a);
+                    }
+                });
+                this._animations.push(new GroupModelAnimation(ag));
+            });
+        }
+
+        if (!this._modelConfiguration) return;
+
+        if (this._modelConfiguration.animation) {
+            if (this._modelConfiguration.animation.playOnce) {
+                this._animations.forEach(a => {
+                    a.playMode = AnimationPlayMode.ONCE;
+                });
+            }
+            if (this._modelConfiguration.animation.autoStart && this._animations.length) {
+                let animationName = this._modelConfiguration.animation.autoStart === true ?
+                    this._animations[0].name : this._modelConfiguration.animation.autoStart;
+                this.playAnimation(animationName);
+            }
+        }
+    }
+
     public getAnimations() {
         return this._animations;
     }
@@ -224,8 +259,6 @@ export class ViewerModel implements IDisposable {
         let plugin = this._modelConfiguration.loader;
         this._loadedUrl = this._modelConfiguration.url;
 
-        //temp solution for animation group handling
-        let animationsArray = this._scene.animationGroups.slice();
 
         this.loader = SceneLoader.ImportMesh(undefined, base, filename, this._scene, (meshes, particleSystems, skeletons) => {
             meshes.forEach(mesh => {
@@ -235,40 +268,7 @@ export class ViewerModel implements IDisposable {
             this.particleSystems = particleSystems;
             this.skeletons = skeletons;
 
-            // check if this is a gltf loader and load the animations
-            if (this.loader.name === 'gltf') {
-                this._scene.animationGroups.forEach(ag => {
-                    // add animations that didn't exist before
-                    if (animationsArray.indexOf(ag) === -1) {
-                        this._animations.push(new GroupModelAnimation(ag));
-                    }
-                })
-            } else {
-                skeletons.forEach((skeleton, idx) => {
-                    let ag = new AnimationGroup("animation-" + idx, this._scene);
-                    skeleton.getAnimatables().forEach(a => {
-                        if (a.animations[0]) {
-                            ag.addTargetedAnimation(a.animations[0], a);
-                        }
-                    });
-                    this._animations.push(new GroupModelAnimation(ag));
-                });
-            }
-
-            if (!this._modelConfiguration) return;
-
-            if (this._modelConfiguration.animation) {
-                if (this._modelConfiguration.animation.playOnce) {
-                    this._animations.forEach(a => {
-                        a.playMode = AnimationPlayMode.ONCE;
-                    });
-                }
-                if (this._modelConfiguration.animation.autoStart && this._animations.length) {
-                    let animationName = this._modelConfiguration.animation.autoStart === true ?
-                        this._animations[0].name : this._modelConfiguration.animation.autoStart;
-                    this.playAnimation(animationName);
-                }
-            }
+            this.initAnimations();
             this.onLoadedObservable.notifyObserversWithPromise(this);
         }, (progressEvent) => {
             this.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
@@ -283,6 +283,9 @@ export class ViewerModel implements IDisposable {
             gltfLoader.animationStartMode = 0;
             gltfLoader.onDispose = () => {
                 this._loaderDisposed = true;
+            }
+            gltfLoader.onAnimationGroupLoaded = ag => {
+                this._animations.push(new GroupModelAnimation(ag));
             }
         }
 
