@@ -96,11 +96,11 @@ class DOMMapper implements IMapper {
 
 export class MapperManager {
 
-    private mappers: { [key: string]: IMapper };
+    private _mappers: { [key: string]: IMapper };
     public static DefaultMapper = 'json';
 
     constructor() {
-        this.mappers = {
+        this._mappers = {
             "html": new HTMLMapper(),
             "json": new JSONMapper(),
             "dom": new DOMMapper()
@@ -108,18 +108,18 @@ export class MapperManager {
     }
 
     public getMapper(type: string) {
-        if (!this.mappers[type]) {
+        if (!this._mappers[type]) {
             Tools.Error("No mapper defined for " + type);
         }
-        return this.mappers[type] || this.mappers[MapperManager.DefaultMapper];
+        return this._mappers[type] || this._mappers[MapperManager.DefaultMapper];
     }
 
     public registerMapper(type: string, mapper: IMapper) {
-        this.mappers[type] = mapper;
+        this._mappers[type] = mapper;
     }
 
     public dispose() {
-        this.mappers = {};
+        this._mappers = {};
     }
 
 }
