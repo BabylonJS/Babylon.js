@@ -34,26 +34,20 @@ module.exports = function (varName, config) {
 
             let dependenciesDefinition = `var amdDependencies = [];`;
             let functionVariables = '';
+            let requireText = '';
+            let amdText = '';
+            let afterInitText = '';
             if (config.dependencies) {
                 config.dependencies.forEach(dep => {
                     if (functionVariables) functionVariables += ',';
                     functionVariables += dep.name;
+                    requireText += `        ${dep.optional ? ' try { ' : ''} ${dep.name} = ${dep.name} || require("${dep.module}"); ${dep.optional ? ' } catch(e) {} ' : ''}
+`;
+                    amdText += `        ${dep.optional ? ' if(require.specified && require.specified("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
+`;
                     dependenciesDefinition += `
-    var ${dep.name} = root. ${dep.name};
-    if(!${dep.name}) {
-        if(typeof exports === 'object') {
-            ${dep.optional ? ' try { ' : ''} ${dep.name} = require("${dep.module}"); ${dep.optional ? ' } catch(e) {} ' : ''}
-        } else if(typeof define === 'function' && define.amd) {
-            ${dep.optional ? ' if(require.specified && require.specified("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
-        }
-    } else {
-        if(typeof define === 'function' && define.amd) {
-            if(!(require.specified && require.specified("' + dep.module + '"))) {
-                try { define("${dep.module}", [], function () { return ${dep.name}; }); } catch(e) { }
-            }
-            amdDependencies.push("${dep.module}");
-        }
-    }
+    var ${dep.name} = root.${dep.name};`;
+                    afterInitText += `  ${dep.name} = ${dep.name} || this.${dep.name};
 `
                 });
 
@@ -63,17 +57,21 @@ module.exports = function (varName, config) {
 
             return `\n\n(function universalModuleDefinition(root, factory) {
     ${dependenciesDefinition}
-    if(typeof exports === 'object' && typeof module === 'object')
+    if(typeof exports === 'object' && typeof module === 'object') {
+${requireText}
         module.exports = factory(${functionVariables});
-    else if(typeof define === 'function' && define.amd)
+    } else if(typeof define === 'function' && define.amd) {
+${amdText}
         define("${varName.module}", amdDependencies, factory);
-    else if(typeof exports === 'object')
+    } else if(typeof exports === 'object') {
+${requireText}
         exports["${varName.module}"] = factory(${functionVariables});
-    else {
+    } else {
         root["${base}"]${(config.subModule && !config.extendsRoot) ? '["' + varName.name + '"]' : ''} = factory(${functionVariables});
     }
 })(this, function(${functionVariables}) {
-    ${String(file.contents)}
+${afterInitText}
+${String(file.contents)}
     ${varName.name === 'BABYLON' || varName.name === 'INSPECTOR' ? `
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
 globalObject["${varName.name}"] = ${varName.name}` : ''}
