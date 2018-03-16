@@ -448,7 +448,7 @@ declare module BabylonViewer {
         constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration, disableAutoLoad: boolean);
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
-        ootMesh: BABYLON.AbstractMesh;
+        rootMesh: BABYLON.AbstractMesh;
         particleSystems: Array<BABYLON.ParticleSystem>;
         skeletons: Array<BABYLON.Skeleton>;
         currentAnimation: IModelAnimation;
