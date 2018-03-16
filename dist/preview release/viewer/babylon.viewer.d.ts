@@ -205,6 +205,7 @@ declare module BabylonViewer {
 
     export interface IModelConfiguration {
         url?: string;
+        root?: string;
         loader?: string; // obj, gltf?
         position?: { x: number, y: number, z: number };
         rotation?: { x: number, y: number, z: number, w?: number };
@@ -430,9 +431,24 @@ declare module BabylonViewer {
         goToFrame(frameNumber: number): any;
     }
 
-    export interface ViewerModel extends BABYLON.IDisposable {
+    export enum ModelState {
+        INIT,
+        LOADING,
+        LOADED,
+        ERROR
+    }
+
+    export class ModelLoader {
+        constructor(viewer: AbstractViewer);
+        load(modelConfiguration: IModelConfiguration): ViewerModel;
+        dispose(): void;
+    }
+
+    export class ViewerModel {
+        constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration, disableAutoLoad: boolean);
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
+        rootMesh: BABYLON.AbstractMesh;
         particleSystems: Array<BABYLON.ParticleSystem>;
         skeletons: Array<BABYLON.Skeleton>;
         currentAnimation: IModelAnimation;
@@ -442,7 +458,13 @@ declare module BabylonViewer {
             message: string;
             exception: any;
         }>;
+        onAfterConfigure: BABYLON.Observable<ViewerModel>;
+        state: ModelState;
+        loadId: number;
         load(): void;
+        initAnimations(): void;
+        addAnimationGroup(animationGroup: BABYLON.AnimationGroup): void;
+        getAnimations(): Array<IModelAnimation>;
         getAnimationNames(): string[];
         playAnimation(name: string): IModelAnimation;
         dispose(): void;
@@ -458,6 +480,7 @@ declare module BabylonViewer {
         sceneOptimizer: BABYLON.SceneOptimizer;
         baseId: string;
         models: Array<ViewerModel>;
+        modelLoader: ModelLoader;
         lastUsedLoader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         protected configuration: ViewerConfiguration;
         environmentHelper: BABYLON.EnvironmentHelper;
@@ -499,6 +522,7 @@ declare module BabylonViewer {
         protected onTemplatesLoaded(): Promise<AbstractViewer>;
         protected initEngine(): Promise<BABYLON.Engine>;
         protected initScene(): Promise<BABYLON.Scene>;
+        initModel(modelConfig?: any, clearScene?: boolean): ViewerModel
         loadModel(modelConfig?: any, clearScene?: boolean): Promise<ViewerModel>;
         protected initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         protected handleHardwareLimitations(): void;
