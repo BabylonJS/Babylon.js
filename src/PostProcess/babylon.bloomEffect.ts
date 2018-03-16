@@ -8,8 +8,10 @@ module BABYLON {
          */
         public _effects: Array<PostProcess> = [];
 
-
-        private _downscale:ExtractHighlightsPostProcess;
+        /**
+         * Internal
+         */
+        public _downscale:ExtractHighlightsPostProcess;
         private _blurX:BlurPostProcess;
         private _blurY:BlurPostProcess;
         private _upscale:PassPostProcess;
