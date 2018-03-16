@@ -289,6 +289,10 @@ export class ViewerModel implements IDisposable {
     }
 
     public dispose() {
+        this.onAfterConfigure.clear();
+        this.onLoadedObservable.clear();
+        this.onLoadErrorObservable.clear();
+        this.onLoadProgressObservable.clear();
         if (this.loader && this.loader.name === "gltf") {
             (<GLTFFileLoader>this.loader).dispose();
         }
