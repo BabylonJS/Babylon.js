@@ -384,6 +384,7 @@
         private _hasCleared = false;
         private _prevPostProcess:Nullable<PostProcess> = null;
         private _prevPrevPostProcess:Nullable<PostProcess> = null;
+        private _firstPostProcess:Nullable<PostProcess> = null;
 
         private _setAutoClearAndTextureSharing(postProcess:PostProcess, skipTextureSharing = false){
             if(this._hasCleared){
@@ -392,6 +393,11 @@
                 postProcess.autoClear = true;
                 this._scene.autoClear = false;
                 this._hasCleared = true;
+            }
+
+            if(!this._firstPostProcess){
+                this._firstPostProcess = postProcess;
+                skipTextureSharing = true;
             }
 
             if(!skipTextureSharing){
@@ -426,8 +432,15 @@
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
             this._hasCleared = false;
+            this._firstPostProcess = null;
 
             var mergeOptions = new DefaultPipelineMergePostProcessOptions();
+
+            if (this.fxaaEnabled) {
+                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
+                this._setAutoClearAndTextureSharing(this.fxaa);
+            }
 
             if (this.sharpenEnabled) {
                 if(!this.sharpen.isReady()){
@@ -459,6 +472,7 @@
                 if(!mergeOptions.originalFromInput){
                     mergeOptions.originalFromInput=this.bloom._effects[0];
                 }
+                this.bloom._downscale._inputPostProcess = this._firstPostProcess;
                 this.addEffect(this.bloom);
                 this._setAutoClearAndTextureSharing(this.bloom._effects[0], true);
             }
@@ -468,12 +482,6 @@
                 this._defaultPipelineMerge.updateEffect();
                 this.addEffect(this._defaultPipelineMergeEffect);
                 this._setAutoClearAndTextureSharing(this._defaultPipelineMerge, true);
-            }
-
-            if (this.fxaaEnabled) {
-                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
-                this._setAutoClearAndTextureSharing(this.fxaa);
             }
 
             if (this._imageProcessingEnabled) {
