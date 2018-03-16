@@ -463,7 +463,7 @@ declare module BabylonViewer {
         loadId: number;
         load(): void;
         initAnimations(): void;
-        addAnimationGroup(animationGroup: BABYLON.AnimationGroup);
+        addAnimationGroup(animationGroup: BABYLON.AnimationGroup): void;
         getAnimations(): Array<IModelAnimation>;
         getAnimationNames(): string[];
         playAnimation(name: string): IModelAnimation;
