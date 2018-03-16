@@ -4,33 +4,26 @@ var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__p
 
 (function universalModuleDefinition(root, factory) {
     var amdDependencies = [];
-    var BABYLON = root. BABYLON;
-    if(!BABYLON) {
-        if(typeof exports === 'object') {
-             BABYLON = require("babylonjs"); 
-        } else if(typeof define === 'function' && define.amd) {
-             amdDependencies.push("babylonjs");
-        }
-    } else {
-        if(typeof define === 'function' && define.amd) {
-            if(!(require.specified && require.specified("' + dep.module + '"))) {
-                try { define("babylonjs", [], function () { return BABYLON; }); } catch(e) { }
-            }
-            amdDependencies.push("babylonjs");
-        }
-    }
+    var BABYLON = root.BABYLON;
+    if(typeof exports === 'object' && typeof module === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
 
-    if(typeof exports === 'object' && typeof module === 'object')
         module.exports = factory(BABYLON);
-    else if(typeof define === 'function' && define.amd)
+    } else if(typeof define === 'function' && define.amd) {
+         amdDependencies.push("babylonjs");
+
         define("babylonjs-post-process", amdDependencies, factory);
-    else if(typeof exports === 'object')
+    } else if(typeof exports === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
         exports["babylonjs-post-process"] = factory(BABYLON);
-    else {
+    } else {
         root["BABYLON"] = factory(BABYLON);
     }
 })(this, function(BABYLON) {
-    "use strict";
+  BABYLON = BABYLON || this.BABYLON;
+
+"use strict";
 
 
 

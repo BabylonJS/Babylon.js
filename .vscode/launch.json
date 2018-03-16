@@ -158,6 +158,19 @@
             "reAttach": true,
             "webRoot": "${workspaceRoot}/",
             "url": "http://localhost:1338/tests/validation/index.html"
-        }
+        },
+        {
+            "name": "Launch memory checks (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:1338/tests/memoryChecks/index.html",
+            "webRoot": "${workspaceRoot}/",
+            "sourceMaps": true,
+            "preLaunchTask": "run",
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "runtimeArgs": [
+                "--enable-unsafe-es3-apis"
+            ]
+        },        
     ]
 }
