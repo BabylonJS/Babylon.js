@@ -97,8 +97,7 @@
         }
         public set bloomKernel(value: number){
             this._bloomKernel = value;
-            this._rebuildBloom();
-            this._buildPipeline();
+            this.bloom.kernel = value;
         }
 
         /**
