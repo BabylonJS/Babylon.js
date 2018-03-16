@@ -96,7 +96,7 @@ export class ViewerModel implements IDisposable {
                         ag.addTargetedAnimation(a.animations[0], a);
                     }
                 });
-                this._animations.push(new GroupModelAnimation(ag));
+                this.addAnimationGroup(ag);
             });
         }
 
@@ -114,6 +114,10 @@ export class ViewerModel implements IDisposable {
                 this.playAnimation(animationName);
             }
         }
+    }
+
+    public addAnimationGroup(animationGroup: AnimationGroup) {
+        this._animations.push(new GroupModelAnimation(animationGroup));
     }
 
     public getAnimations() {
@@ -285,7 +289,7 @@ export class ViewerModel implements IDisposable {
                 this._loaderDisposed = true;
             }
             gltfLoader.onAnimationGroupLoaded = ag => {
-                this._animations.push(new GroupModelAnimation(ag));
+                this.addAnimationGroup(ag);
             }
         }
 
