@@ -462,6 +462,7 @@ declare module BabylonViewer {
         state: ModelState;
         loadId: number;
         load(): void;
+        initAnimations(): void;
         getAnimations(): Array<IModelAnimation>;
         getAnimationNames(): string[];
         playAnimation(name: string): IModelAnimation;
