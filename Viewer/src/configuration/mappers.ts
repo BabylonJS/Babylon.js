@@ -3,12 +3,36 @@ import { ViewerConfiguration } from './configuration';
 
 import { kebabToCamel } from '../helper';
 
+/**
+ * This is the mapper's interface. Implement this function to create your own mapper and register it at the mapper manager
+ */
 export interface IMapper {
     map(rawSource: any): ViewerConfiguration;
 }
 
+/**
+ * This is a simple HTML mapper. 
+ * This mapper parses a single HTML element and returns the configuration from its attributes.
+ * it parses numbers and boolean values to the corresponding variable types.
+ * The following HTML element: 
+ *  <div test="1" random-flag="true" a.string.object="test"> will result in the following configuration:
+ * 
+ *  {
+ *      test: 1, //a number!
+ *      randomFlag: boolean, //camelCase and boolean
+ *      a: {
+ *          string: {
+ *              object: "test" //dot-separated object levels
+ *          }
+ *      }
+ *  }
+ */
 class HTMLMapper implements IMapper {
 
+    /**
+     * Map a specific element and get configuration from it
+     * @param element the HTML element to analyze. 
+     */
     map(element: HTMLElement): ViewerConfiguration {
 
         let config = {};
