@@ -2,6 +2,8 @@ declare module BabylonViewer {
 
     export let disableInit: boolean;
 
+    export function disposeAll(): void;
+
     export interface ITemplateConfiguration {
         location?: string;
         html?: string;
@@ -91,7 +93,9 @@ declare module BabylonViewer {
     interface ViewerManager {
         onViewerAdded: (viewer: AbstractViewer) => void;
         onViewerAddedObservable: BABYLON.Observable<AbstractViewer>;
+        onViewerRemovedObservable: BABYLON.Observable<string>;
         addViewer(viewer: AbstractViewer): void;
+        removeViewer(viewer: AbstractViewer): void;
         getViewerById(id: string): AbstractViewer;
         getViewerByHTMLElement(element: HTMLElement): AbstractViewer | undefined;
         getViewerPromiseById(id: string): Promise<AbstractViewer>;
@@ -462,6 +466,7 @@ declare module BabylonViewer {
         protected defaultPipelineTextureType: number;
         protected maxShadows: number;
         readonly isHdrSupported: boolean;
+        protected _isDisposed: boolean;
         onSceneInitObservable: BABYLON.Observable<BABYLON.Scene>;
         onEngineInitObservable: BABYLON.Observable<BABYLON.Engine>;
         onModelLoadedObservable: BABYLON.Observable<ViewerModel>;
