@@ -288,56 +288,38 @@
 
             this.uniqueId = Effect._uniqueIdSeed++;
 
-            var vertexSource: any;
-            var fragmentSource: any;
+            var vertexInfo = this._loadVertexInfo(baseName);
+            var fragmentInfo = this._loadFragmentInfo(baseName);
 
-            if (baseName.vertexElement) {
-                vertexSource = document.getElementById(baseName.vertexElement);
+            if (!vertexInfo.remote && !fragmentInfo.remote) {
+                let vertexCodeWithIncludes = this._processIncludesSync(vertexInfo.data);
+                let vertexCodeMigrated = this._processShaderConversion(vertexCodeWithIncludes, false);
+                let fragmentCodeWithIncludes = this._processIncludesSync(vertexInfo.data);
+                let fragmentCodeMigrated = this._processShaderConversion(fragmentCodeWithIncludes, true);
+                this._injectShaderName(baseName, vertexCodeMigrated, fragmentCodeMigrated);
 
-                if (!vertexSource) {
-                    vertexSource = baseName.vertexElement;
-                }
-            } else {
-                vertexSource = baseName.vertex || baseName;
+                this._prepareEffect();
             }
+            else {
+                let vertexCodeMigrated: string;
+                this._loadRemoteShaderCodeAsync(vertexInfo.data)
+                .then((vertexCode) => {
+                    return this._processIncludesAsync(vertexCode);
+                })
+                .then((vertexCodeWithIncludes) => {
+                    vertexCodeMigrated = this._processShaderConversion(vertexCodeWithIncludes, false);
+                    return this._loadRemoteShaderCodeAsync(fragmentInfo.data);
+                })
+                .then((fragmentCode) => {
+                    return this._processIncludesAsync(fragmentCode);
+                })
+                .then((fragmentCodeWithIncludes) => {
+                    let fragmentCodeMigrated = this._processShaderConversion(fragmentCodeWithIncludes, true);
+                    this._injectShaderName(baseName, vertexCodeMigrated, fragmentCodeMigrated);
 
-            if (baseName.fragmentElement) {
-                fragmentSource = document.getElementById(baseName.fragmentElement);
-
-                if (!fragmentSource) {
-                    fragmentSource = baseName.fragmentElement;
-                }
-            } else {
-                fragmentSource = baseName.fragment || baseName;
+                    this._prepareEffect(); 
+                });
             }
-
-            let finalVertexCode: string;
-
-            this._loadVertexShaderAsync(vertexSource)
-            .then((vertexCode) => {
-                return this._processIncludesAsync(vertexCode);
-            })
-            .then((vertexCodeWithIncludes) => {
-                finalVertexCode = this._processShaderConversion(vertexCodeWithIncludes, false);
-                return this._loadFragmentShaderAsync(fragmentSource);
-            })
-            .then((fragmentCode) => {
-                return this._processIncludesAsync(fragmentCode);
-            })
-            .then((fragmentCodeWithIncludes) => {
-                let migratedFragmentCode = this._processShaderConversion(fragmentCodeWithIncludes, true);
-                if (baseName) {
-                    var vertex = baseName.vertexElement || baseName.vertex || baseName;
-                    var fragment = baseName.fragmentElement || baseName.fragment || baseName;
-
-                    this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + finalVertexCode;
-                    this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
-                } else {
-                    this._vertexSourceCode = finalVertexCode;
-                    this._fragmentSourceCode = migratedFragmentCode;
-                }
-                this._prepareEffect(); 
-            });
         }
 
         /**
@@ -456,78 +438,115 @@
         }
 
         /** @ignore */
-        public _loadVertexShaderAsync(vertex: any): Promise<any> {
-            if (Tools.IsWindowObjectExist()) {
-                // DOM element ?
-                if (vertex instanceof HTMLElement) {
-                    var vertexCode = Tools.GetDOMTextContent(vertex);
-                    return Promise.resolve(vertexCode);
-                }
-            }
+        private _injectShaderName(baseName: any, finalVertexCode: string, finalFragmentCode: string): void {
+            if (baseName) {
+                var vertex = baseName.vertexElement || baseName.vertex || baseName;
+                var fragment = baseName.fragmentElement || baseName.fragment || baseName;
 
-            // Base64 encoded ?
-            if (vertex.substr(0, 7) === "base64:") {
-                var vertexBinary = window.atob(vertex.substr(7));
-                return Promise.resolve(vertexBinary);
-            }
-
-            // Is in local store ?
-            if (Effect.ShadersStore[vertex + "VertexShader"]) {
-                return Promise.resolve(Effect.ShadersStore[vertex + "VertexShader"]);
-            }
-
-            var vertexShaderUrl;
-
-            if (vertex[0] === "." || vertex[0] === "/" || vertex.indexOf("http") > -1) {
-                vertexShaderUrl = vertex;
+                this._vertexSourceCode = "#define SHADER_NAME vertex:" + vertex + "\n" + finalVertexCode;
+                this._fragmentSourceCode = "#define SHADER_NAME fragment:" + fragment + "\n" + finalFragmentCode;                
             } else {
-                vertexShaderUrl = Engine.ShadersRepository + vertex;
+                this._vertexSourceCode = finalVertexCode;
+                this._fragmentSourceCode = finalFragmentCode;
             }
-
-            // Vertex shader
-            return this._engine._loadFileAsync(vertexShaderUrl + ".vertex.fx");
         }
 
         /** @ignore */
-        public _loadFragmentShaderAsync(fragment: any): Promise<any>  {
+        private _loadShaderInfo(shader: any, fragment: boolean): { data: string, remote: boolean } {
             if (Tools.IsWindowObjectExist()) {
                 // DOM element ?
-                if (fragment instanceof HTMLElement) {
-                    var fragmentCode = Tools.GetDOMTextContent(fragment);
-                    return Promise.resolve(fragmentCode);
+                if (shader instanceof HTMLElement) {
+                    let code = Tools.GetDOMTextContent(shader);
+                    return {
+                        data: code,
+                        remote: false
+                    };
                 }
             }
 
             // Base64 encoded ?
-            if (fragment.substr(0, 7) === "base64:") {
-                var fragmentBinary = window.atob(fragment.substr(7));
-                return Promise.resolve(fragmentBinary);
+            if (shader.substr(0, 7) === "base64:") {
+                let code = window.atob(shader.substr(7));
+                return {
+                    data: code,
+                    remote: false
+                }
             }
 
-            // Is in local store ?
-            if (Effect.ShadersStore[fragment + "PixelShader"]) {
-                return Promise.resolve(Effect.ShadersStore[fragment + "PixelShader"]);
+            if (fragment) {
+                // Is in local store ?
+                if (Effect.ShadersStore[shader + "PixelShader"]) {
+                    return {
+                        data: Effect.ShadersStore[shader + "PixelShader"],
+                        remote: false
+                    }
+                }
+
+                if (Effect.ShadersStore[shader + "FragmentShader"]) {
+                    return {
+                        data: Effect.ShadersStore[shader + "FragmentShader"],
+                        remote: false
+                    }
+                }
+            }
+            else {
+                if (Effect.ShadersStore[shader + "VertexShader"]) {
+                    return {
+                        data: Effect.ShadersStore[shader + "VertexShader"],
+                        remote: false
+                    }
+                }
             }
 
-            if (Effect.ShadersStore[fragment + "FragmentShader"]) {
-                return Promise.resolve(Effect.ShadersStore[fragment + "FragmentShader"]);
-            }
-
-            var fragmentShaderUrl;
-
-            if (fragment[0] === "." || fragment[0] === "/" || fragment.indexOf("http") > -1) {
-                fragmentShaderUrl = fragment;
+            var shaderUrl;
+            if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
+                shaderUrl = shader;
             } else {
-                fragmentShaderUrl = Engine.ShadersRepository + fragment;
+                shaderUrl = Engine.ShadersRepository + shader;
             }
 
-            // Fragment shader
-            return this._engine._loadFileAsync(fragmentShaderUrl + ".fragment.fx");
+            return {
+                data: shaderUrl + fragment ? ".fragment.fx" : ".vertex.fx",
+                remote: true
+            }
+        }
+
+        private _loadVertexInfo(baseName: any): { data: string, remote: boolean } {
+            let vertexSource: any;
+            if (baseName.vertexElement) {
+                vertexSource = document.getElementById(baseName.vertexElement);
+
+                if (!vertexSource) {
+                    vertexSource = baseName.vertexElement;
+                }
+            } else {
+                vertexSource = baseName.vertex || baseName;
+            }
+            return this._loadShaderInfo(vertexSource, false);
+        }
+
+        private _loadFragmentInfo(baseName: any): { data: string, remote: boolean } {
+            let fragmentSource: any;
+            if (baseName.fragmentElement) {
+                fragmentSource = document.getElementById(baseName.fragmentElement);
+
+                if (!fragmentSource) {
+                    fragmentSource = baseName.fragmentElement;
+                }
+            } else {
+                fragmentSource = baseName.fragment || baseName;
+            }
+
+            return this._loadShaderInfo(fragmentSource, true);
+        }
+
+        private _loadRemoteShaderCodeAsync(shaderUrl: string): Promise<any> {
+            return this._engine._loadFileAsync(shaderUrl);
         }
 
         private _dumpShadersSource(vertexCode: string, fragmentCode: string, defines: string): void {
             // Rebuild shaders source code
-            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n" : "";
+            var shaderVersion = (this._engine.webGLVersion > 1) ? "#version 300 es\n#define WEBGL2 \n" : "";
             var prefix = shaderVersion + (defines ? defines + "\n" : "");
             vertexCode = prefix + vertexCode;
             fragmentCode = prefix + fragmentCode;
@@ -595,94 +614,108 @@
             return result;
         }
 
-        private _processIncludesAsync(sourceCode: string): Promise<any> {
-            return new Promise((resolve, reject) => {
-                var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-                var match = regex.exec(sourceCode);
+        private _processIncludesInternal(sourceCode: string): string | Promise<any> {
+            var regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+            var match = regex.exec(sourceCode);
 
-                var returnValue = sourceCode;
+            var returnValue = sourceCode;
 
-                while (match != null) {
-                    var includeFile = match[1];
+            while (match != null) {
+                var includeFile = match[1];
 
-                    // Uniform declaration
-                    if (includeFile.indexOf("__decl__") !== -1) {
-                        includeFile = includeFile.replace(/__decl__/, "");
-                        if (this._engine.supportsUniformBuffers) {
-                            includeFile = includeFile.replace(/Vertex/, "Ubo");
-                            includeFile = includeFile.replace(/Fragment/, "Ubo");
+                // Uniform declaration
+                if (includeFile.indexOf("__decl__") !== -1) {
+                    includeFile = includeFile.replace(/__decl__/, "");
+                    if (this._engine.supportsUniformBuffers) {
+                        includeFile = includeFile.replace(/Vertex/, "Ubo");
+                        includeFile = includeFile.replace(/Fragment/, "Ubo");
+                    }
+                    includeFile = includeFile + "Declaration";
+                }
+
+                if (Effect.IncludesShadersStore[includeFile]) {
+                    // Substitution
+                    var includeContent = Effect.IncludesShadersStore[includeFile];
+                    if (match[2]) {
+                        var splits = match[3].split(",");
+
+                        for (var index = 0; index < splits.length; index += 2) {
+                            var source = new RegExp(splits[index], "g");
+                            var dest = splits[index + 1];
+
+                            includeContent = includeContent.replace(source, dest);
                         }
-                        includeFile = includeFile + "Declaration";
                     }
 
-                    if (Effect.IncludesShadersStore[includeFile]) {
-                        // Substitution
-                        var includeContent = Effect.IncludesShadersStore[includeFile];
-                        if (match[2]) {
-                            var splits = match[3].split(",");
+                    if (match[4]) {
+                        var indexString = match[5];
 
-                            for (var index = 0; index < splits.length; index += 2) {
-                                var source = new RegExp(splits[index], "g");
-                                var dest = splits[index + 1];
+                        if (indexString.indexOf("..") !== -1) {
+                            var indexSplits = indexString.split("..");
+                            var minIndex = parseInt(indexSplits[0]);
+                            var maxIndex = parseInt(indexSplits[1]);
+                            var sourceIncludeContent = includeContent.slice(0);
+                            includeContent = "";
 
-                                includeContent = includeContent.replace(source, dest);
+                            if (isNaN(maxIndex)) {
+                                maxIndex = this._indexParameters[indexSplits[1]];
                             }
-                        }
 
-                        if (match[4]) {
-                            var indexString = match[5];
-
-                            if (indexString.indexOf("..") !== -1) {
-                                var indexSplits = indexString.split("..");
-                                var minIndex = parseInt(indexSplits[0]);
-                                var maxIndex = parseInt(indexSplits[1]);
-                                var sourceIncludeContent = includeContent.slice(0);
-                                includeContent = "";
-
-                                if (isNaN(maxIndex)) {
-                                    maxIndex = this._indexParameters[indexSplits[1]];
-                                }
-
-                                for (var i = minIndex; i < maxIndex; i++) {
-                                    if (!this._engine.supportsUniformBuffers) {
-                                        // Ubo replacement
-                                        sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
-                                            return p1 + "{X}";
-                                        });
-                                    }
-                                    includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
-                                }
-                            } else {
+                            for (var i = minIndex; i < maxIndex; i++) {
                                 if (!this._engine.supportsUniformBuffers) {
                                     // Ubo replacement
-                                    includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                    sourceIncludeContent = sourceIncludeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
                                         return p1 + "{X}";
                                     });
                                 }
-                                includeContent = includeContent.replace(/\{X\}/g, indexString);
+                                includeContent += sourceIncludeContent.replace(/\{X\}/g, i.toString()) + "\n";
                             }
+                        } else {
+                            if (!this._engine.supportsUniformBuffers) {
+                                // Ubo replacement
+                                includeContent = includeContent.replace(/light\{X\}.(\w*)/g, (str: string, p1: string) => {
+                                    return p1 + "{X}";
+                                });
+                            }
+                            includeContent = includeContent.replace(/\{X\}/g, indexString);
                         }
-
-                        // Replace
-                        returnValue = returnValue.replace(match[0], includeContent);
-                    } else {
-                        var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
-
-                        this._engine._loadFileAsync(includeShaderUrl)
-                            .then((fileContent) => {
-                                Effect.IncludesShadersStore[includeFile] = fileContent as string;
-                                return this._processIncludesAsync(returnValue);
-                            })
-                            .then((returnValue) => {
-                                resolve(returnValue);
-                            });
-                        return;
                     }
 
-                    match = regex.exec(sourceCode);
+                    // Replace
+                    returnValue = returnValue.replace(match[0], includeContent);
+                } else {
+                    var includeShaderUrl = Engine.ShadersRepository + "ShadersInclude/" + includeFile + ".fx";
+
+                    return this._engine._loadFileAsync(includeShaderUrl)
+                        .then((fileContent) => {
+                            Effect.IncludesShadersStore[includeFile] = fileContent as string;
+                            return this._processIncludesAsync(returnValue);
+                        });
                 }
-                resolve(returnValue);
-            });            
+
+                match = regex.exec(sourceCode);
+            }
+
+            return returnValue;
+        }
+
+        private _processIncludesSync(sourceCode: string): string {
+            return this._processIncludesInternal(sourceCode) as string;
+        }
+
+        private _processIncludesAsync(sourceCode: string): Promise<any> {
+            return new Promise((resolve, reject) => {
+                var returnValue = this._processIncludesInternal(sourceCode);
+                if (typeof returnValue === "string") {
+                    resolve(returnValue);
+                }
+                else {
+                    returnValue.then((code) => {
+                        resolve(code);
+                    })
+                }
+                return;
+            });
         }
 
         private _processPrecision(source: string): string {
@@ -867,6 +900,16 @@
         public setTexture(channel: string, texture: Nullable<BaseTexture>): void {
             this._engine.setTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
         }
+
+        /**
+         * Sets a depth stencil texture from a render target on the engine to be used in the shader.
+         * @param channel Name of the sampler variable.
+         * @param texture Texture to set.
+         */
+        public setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void {
+            this._engine.setDepthStencilTexture(this._samplers.indexOf(channel), this.getUniform(channel), texture);
+        }
+
         /**
          * Sets an array of textures on the engine to be used in the shader.
          * @param channel Name of the variable.
@@ -884,12 +927,22 @@
         }
 
         /**
-         * Sets a texture to be the input of the specified post process. (To use the output, pass in the next post process in the pipeline)
+         * (Warning! setTextureFromPostProcessOutput may be desired instead)
+         * Sets the input texture of the passed in post process to be input of this effect. (To use the output of the passed in post process use setTextureFromPostProcessOutput)
          * @param channel Name of the sampler variable.
          * @param postProcess Post process to get the input texture from.
          */
         public setTextureFromPostProcess(channel: string, postProcess: Nullable<PostProcess>): void {
             this._engine.setTextureFromPostProcess(this._samplers.indexOf(channel), postProcess);
+        }
+
+        /**
+         * Sets the output texture of the passed in post process to be input of this effect.
+         * @param channel Name of the sampler variable.
+         * @param postProcess Post process to get the output texture from.
+         */
+        public setTextureFromPostProcessOutput(channel: string, postProcess: Nullable<PostProcess>): void {
+            this._engine.setTextureFromPostProcessOutput(this._samplers.indexOf(channel), postProcess);
         }
 
         /** @ignore */
