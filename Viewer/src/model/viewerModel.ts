@@ -17,10 +17,10 @@ export class ViewerModel implements IDisposable {
     public loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     private _animations: Array<IModelAnimation>;
-    public meshes: Array<AbstractMesh>;
+    public meshes: Array<AbstractMesh> = [];
     public rootMesh: AbstractMesh;
-    public particleSystems: Array<ParticleSystem>;
-    public skeletons: Array<Skeleton>;
+    public particleSystems: Array<ParticleSystem> = [];
+    public skeletons: Array<Skeleton> = [];
     public currentAnimation: IModelAnimation;
 
     public onLoadedObservable: Observable<ViewerModel>;
@@ -297,8 +297,12 @@ export class ViewerModel implements IDisposable {
             (<GLTFFileLoader>this.loader).dispose();
         }
         this.particleSystems.forEach(ps => ps.dispose());
+        this.particleSystems.length = 0;
         this.skeletons.forEach(s => s.dispose());
+        this.skeletons.length = 0;
         this._animations.forEach(ag => ag.dispose());
+        this._animations.length = 0;
         this.meshes.forEach(m => m.dispose());
+        this.meshes.length = 0;
     }
 }
