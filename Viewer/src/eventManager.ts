@@ -37,4 +37,8 @@ export class EventManager {
             callbackDef.callback(data);
         });
     }
+
+    public dispose() {
+        this.callbacksContainer = {};
+    }
 }

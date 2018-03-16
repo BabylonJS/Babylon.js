@@ -22,10 +22,17 @@ import { InitTags } from './initializer';
 PromisePolyfill.Apply();
 
 export let disableInit: boolean = false;
-document.addEventListener("DOMContentLoaded", function (event) {
+document.addEventListener("DOMContentLoaded", init);
+function init(event) {
+    document.removeEventListener("DOMContentLoaded", init);
     if (disableInit) return;
     InitTags();
-});
+}
+
+function disposeAll() {
+    viewerManager.dispose();
+    mapperManager.dispose();
+}
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll };
