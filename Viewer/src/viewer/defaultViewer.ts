@@ -11,22 +11,22 @@ export class DefaultViewer extends AbstractViewer {
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
-        this.onModelLoadedObservable.add(this.onModelLoaded);
+        this.onModelLoadedObservable.add(this._onModelLoaded);
     }
 
-    public initScene(): Promise<Scene> {
-        return super.initScene().then(() => {
-            this.extendClassWithConfig(this.scene, this.configuration.scene);
+    public _initScene(): Promise<Scene> {
+        return super._initScene().then(() => {
+            this._extendClassWithConfig(this.scene, this._configuration.scene);
             return this.scene;
         })
     }
 
-    protected onTemplatesLoaded() {
+    protected _onTemplatesLoaded() {
 
         this.showLoadingScreen();
 
         // navbar
-        this.initNavbar();
+        this._initNavbar();
 
         // close overlay button
         let closeButton = document.getElementById('close-button');
@@ -36,10 +36,10 @@ export class DefaultViewer extends AbstractViewer {
             })
         }
 
-        return super.onTemplatesLoaded();
+        return super._onTemplatesLoaded();
     }
 
-    private initNavbar() {
+    private _initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
         if (navbar) {
             let navbarHeight = navbar.parent.clientHeight + 'px';
@@ -99,12 +99,12 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    protected prepareContainerElement() {
+    protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
         this.containerElement.style.display = 'flex';
     }
 
-    protected configureTemplate(model: ViewerModel) {
+    protected _configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
@@ -132,7 +132,7 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    public loadModel(model: any = this.configuration.model): Promise<ViewerModel> {
+    public loadModel(model: any = this._configuration.model): Promise<ViewerModel> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
             console.log(error);
@@ -142,12 +142,12 @@ export class DefaultViewer extends AbstractViewer {
         });
     }
 
-    private onModelLoaded = (model: ViewerModel) => {
-        this.configureTemplate(model);
+    private _onModelLoaded = (model: ViewerModel) => {
+        this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
-        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
-            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
             this.hideLoadingScreen();
@@ -243,31 +243,31 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
-    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
-        super.configureLights(lightsConfiguration, model);
+    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
+        super._configureLights(lightsConfiguration, model);
         // labs feature - flashlight
-        if (this.configuration.lab && this.configuration.lab.flashlight) {
+        if (this._configuration.lab && this._configuration.lab.flashlight) {
             let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
-            if (typeof this.configuration.lab.flashlight === "object") {
-                exponent = this.configuration.lab.flashlight.exponent || exponent;
-                angle = this.configuration.lab.flashlight.angle || angle;
+            if (typeof this._configuration.lab.flashlight === "object") {
+                exponent = this._configuration.lab.flashlight.exponent || exponent;
+                angle = this._configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
                 Vector3.Zero(), exponent, angle, this.scene);
-            if (typeof this.configuration.lab.flashlight === "object") {
-                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
-                if (this.configuration.lab.flashlight.diffuse) {
-                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
-                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
-                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
+            if (typeof this._configuration.lab.flashlight === "object") {
+                flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this._configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this._configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this._configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this._configuration.lab.flashlight.diffuse.b;
                 }
-                if (this.configuration.lab.flashlight.specular) {
-                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
-                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
-                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
+                if (this._configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this._configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this._configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this._configuration.lab.flashlight.specular.b;
                 }
 
             }
@@ -288,7 +288,7 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
             this.scene.registerBeforeRender(updateFlashlightFunction);
-            this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
+            this._registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
         }
     }
 }

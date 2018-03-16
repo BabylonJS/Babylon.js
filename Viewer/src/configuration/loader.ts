@@ -7,13 +7,13 @@ import { Tools, IFileRequest } from 'babylonjs';
 
 export class ConfigurationLoader {
 
-    private configurationCache: { [url: string]: any };
+    private _configurationCache: { [url: string]: any };
 
-    private loadRequests: Array<IFileRequest>;
+    private _loadRequests: Array<IFileRequest>;
 
     constructor(private _enableCache: boolean = false) {
-        this.configurationCache = {};
-        this.loadRequests = [];
+        this._configurationCache = {};
+        this._loadRequests = [];
     }
 
     public loadConfiguration(initConfig: ViewerConfiguration = {}, callback?: (config: ViewerConfiguration) => void): Promise<ViewerConfiguration> {
@@ -47,7 +47,7 @@ export class ConfigurationLoader {
                         }
                         mapperType = type || mapperType;
                     }
-                    return this.loadFile(url);
+                    return this._loadFile(url);
                 } else {
                     if (typeof loadedConfig.configuration === "object") {
                         mapperType = loadedConfig.configuration.mapper || mapperType;
@@ -70,32 +70,32 @@ export class ConfigurationLoader {
     }
 
     public dispose() {
-        this.loadRequests.forEach(request => {
+        this._loadRequests.forEach(request => {
             request.abort();
         });
-        this.loadRequests.length = 0;
+        this._loadRequests.length = 0;
     }
 
-    private loadFile(url: string): Promise<any> {
-        let cacheReference = this.configurationCache;
+    private _loadFile(url: string): Promise<any> {
+        let cacheReference = this._configurationCache;
         if (this._enableCache && cacheReference[url]) {
             return Promise.resolve(cacheReference[url]);
         }
 
         return new Promise((resolve, reject) => {
             let fileRequest = Tools.LoadFile(url, (result) => {
-                let idx = this.loadRequests.indexOf(fileRequest);
+                let idx = this._loadRequests.indexOf(fileRequest);
                 if (idx !== -1)
-                    this.loadRequests.splice(idx, 1);
+                    this._loadRequests.splice(idx, 1);
                 if (this._enableCache) cacheReference[url] = result;
                 resolve(result);
             }, undefined, undefined, false, (request, error: any) => {
-                let idx = this.loadRequests.indexOf(fileRequest);
+                let idx = this._loadRequests.indexOf(fileRequest);
                 if (idx !== -1)
-                    this.loadRequests.splice(idx, 1);
+                    this._loadRequests.splice(idx, 1);
                 reject(error);
             });
-            this.loadRequests.push(fileRequest);
+            this._loadRequests.push(fileRequest);
         });
     }
 
