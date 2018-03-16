@@ -573,6 +573,8 @@ export abstract class AbstractViewer {
             this.scene.activeCamera.detachControl(this.canvas);
         }
 
+        this.modelLoader.dispose();
+
         this.models.forEach(model => {
             model.dispose();
         });
