@@ -1,7 +1,13 @@
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../dist/preview release/loaders/babylon.glTFFileLoader.d.ts"/>
+
 import { mapperManager } from './configuration/mappers';
 import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
+import { ModelLoader } from './model/modelLoader';
+import { ViewerModel } from './model/viewerModel';
 
 /**
  * BabylonJS Viewer
@@ -35,4 +41,4 @@ function disposeAll() {
 }
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel };
