@@ -445,7 +445,7 @@ declare module BabylonViewer {
     }
 
     export class ViewerModel {
-        constructor(scene: Scene, modelConfiguration: IModelConfiguration, disableAutoLoad: boolean);
+        constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration, disableAutoLoad: boolean);
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
         ootMesh: BABYLON.AbstractMesh;
@@ -523,7 +523,6 @@ declare module BabylonViewer {
         protected initScene(): Promise<BABYLON.Scene>;
         initModel(modelConfig?: any, clearScene?: boolean): ViewerModel
         loadModel(modelConfig?: any, clearScene?: boolean): Promise<ViewerModel>;
-        public addModel(meshes: Array<AbstractMesh>, skeletons: Array<Skeleton>, particleSystems: Array<ParticleSystem>, animationGroups: Array<AnimationGroup>): ViewerModel;
         protected initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         protected handleHardwareLimitations(): void;
         protected injectCustomShaders(): void;
