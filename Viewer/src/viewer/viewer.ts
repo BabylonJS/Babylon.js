@@ -8,6 +8,7 @@ import * as deepmerge from '../../assets/deepmerge.min.js';
 import { CameraBehavior } from 'src/interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
+import { ModelLoader } from '../model/modelLoader';
 
 export abstract class AbstractViewer {
 
@@ -24,6 +25,7 @@ export abstract class AbstractViewer {
      * The last loader used to load a model. 
      */
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    public modelLoader: ModelLoader;
 
     protected configuration: ViewerConfiguration;
     public environmentHelper: EnvironmentHelper;
@@ -73,6 +75,7 @@ export abstract class AbstractViewer {
 
         this.registeredOnBeforerenderFunctions = [];
         this.models = [];
+        this.modelLoader = new ModelLoader(this);
 
         // add this viewer to the viewer manager
         viewerManager.addViewer(this);
@@ -527,100 +530,9 @@ export abstract class AbstractViewer {
     }
 
     protected configureModel(modelConfiguration: Partial<IModelConfiguration>, model?: ViewerModel) {
-        let focusMeshes = model ? model.meshes : this.scene.meshes;
-        let meshesWithNoParent: Array<AbstractMesh> = focusMeshes.filter(m => !m.parent);
-        let updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
-            meshesWithNoParent.forEach(mesh => {
-                if (param) {
-                    mesh[variable][param] = value;
-                } else {
-                    mesh[variable] = value;
-                }
-            });
-        }
-        let updateXYZ = (variable: string, configValues: { x: number, y: number, z: number, w?: number }) => {
-            if (configValues.x !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.x, 'x');
-            }
-            if (configValues.y !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.y, 'y');
-            }
-            if (configValues.z !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.z, 'z');
-            }
-            if (configValues.w !== undefined) {
-                updateMeshesWithNoParent(variable, configValues.w, 'w');
-            }
-        }
-        // position?
-        if (modelConfiguration.position) {
-            updateXYZ('position', modelConfiguration.position);
-        }
-        if (modelConfiguration.rotation) {
-            if (modelConfiguration.rotation.w) {
-                meshesWithNoParent.forEach(mesh => {
-                    if (!mesh.rotationQuaternion) {
-                        mesh.rotationQuaternion = new Quaternion();
-                    }
-                })
-                updateXYZ('rotationQuaternion', modelConfiguration.rotation);
-            } else {
-                updateXYZ('rotation', modelConfiguration.rotation);
-            }
-        }
-        if (modelConfiguration.scaling) {
-            updateXYZ('scaling', modelConfiguration.scaling);
-        }
-
-        if (modelConfiguration.castShadow) {
-            focusMeshes.forEach(mesh => {
-                Tags.AddTagsTo(mesh, 'castShadow');
-            });
-        }
-
-        if (modelConfiguration.normalize) {
-            let center = false;
-            let unitSize = false;
-            let parentIndex;
-            if (modelConfiguration.normalize === true) {
-                center = true;
-                unitSize = true;
-                parentIndex = 0;
-            } else {
-                center = !!modelConfiguration.normalize.center;
-                unitSize = !!modelConfiguration.normalize.unitSize;
-                parentIndex = modelConfiguration.normalize.parentIndex;
-            }
-
-            let meshesToNormalize: Array<AbstractMesh> = [];
-            if (parentIndex !== undefined) {
-                meshesToNormalize.push(focusMeshes[parentIndex]);
-            } else {
-                meshesToNormalize = meshesWithNoParent;
-            }
-
-            if (unitSize) {
-                meshesToNormalize.forEach(mesh => {
-                    mesh.normalizeToUnitCube(true);
-                    mesh.computeWorldMatrix(true);
-                });
-            }
-            if (center) {
-                meshesToNormalize.forEach(mesh => {
-                    const boundingInfo = mesh.getHierarchyBoundingVectors(true);
-                    const sizeVec = boundingInfo.max.subtract(boundingInfo.min);
-                    const halfSizeVec = sizeVec.scale(0.5);
-                    const center = boundingInfo.min.add(halfSizeVec);
-                    mesh.position = center.scale(-1);
-
-                    // Set on ground.
-                    mesh.position.y += halfSizeVec.y;
-
-                    // Recompute Info.
-                    mesh.computeWorldMatrix(true);
-                });
-            }
-        }
+        this.models.forEach(model => {
+            model.configuration = modelConfiguration;
+        })
     }
 
     public dispose() {
@@ -791,12 +703,8 @@ export abstract class AbstractViewer {
             return Promise.reject("no model configuration found");
         }
         if (this.isLoading) {
-            //another model is being model. Wait for it to finish, trigger the load afterwards
-            /*this.nextLoading = () => {
-                delete this.nextLoading;
-                return this.loadModel(modelConfig, clearScene);
-            }*/
-            return Promise.reject("sanother model is curently being loaded.");
+            // We can decide here whether or not to cancel the lst load, but the developer can do that.
+            return Promise.reject("another model is curently being loaded.");
         }
         this.isLoading = true;
         if ((typeof modelConfig === 'string')) {
@@ -822,7 +730,7 @@ export abstract class AbstractViewer {
         }).then(() => {
             return new Promise<ViewerModel>((resolve, reject) => {
                 // at this point, configuration.model is an object, not a string
-                let model = new ViewerModel(this.scene, <IModelConfiguration>this.configuration.model);
+                let model = this.modelLoader.load(<IModelConfiguration>this.configuration.model);
                 this.models.push(model);
                 this.lastUsedLoader = model.loader;
                 model.onLoadedObservable.add((model) => {
@@ -841,8 +749,6 @@ export abstract class AbstractViewer {
         }).then((model: ViewerModel) => {
             return this.onModelLoadedObservable.notifyObserversWithPromise(model)
                 .then(() => {
-                    // update the models' configuration
-                    this.configureModel(this.configuration.model || modelConfig, model);
                     this.configureLights(this.configuration.lights);
 
                     if (this.configuration.camera) {
@@ -851,25 +757,9 @@ export abstract class AbstractViewer {
                     return this.initEnvironment(model);
                 }).then(() => {
                     this.isLoading = false;
-                    /*if (this.nextLoading) {
-                        return this.nextLoading();
-                    }*/
                     return model;
                 });
         });
-    }
-
-    public addModel(meshes: Array<AbstractMesh>, skeletons: Array<Skeleton>, particleSystems: Array<ParticleSystem>, animationGroups: Array<AnimationGroup>): ViewerModel {
-        let model = new ViewerModel(this.scene);
-        model.meshes = meshes;
-        model.skeletons = skeletons;
-        model.particleSystems = particleSystems;
-        let animations = model.getAnimations();
-        animationGroups.forEach(ag => {
-            animations.push(new GroupModelAnimation(ag));
-        });
-
-        return model;
     }
 
     protected initEnvironment(model?: ViewerModel): Promise<Scene> {

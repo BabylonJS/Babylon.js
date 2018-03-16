@@ -17,7 +17,7 @@
     </head>
 
     <body>
-        <babylon configuration="config.json" model.title="Damaged Helmet" model.subtitle="BabylonJS" model.thumbnail="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png"
+        <babylon id="babylon-viewer" configuration="config.json" model.title="Damaged Helmet" model.subtitle="BabylonJS" model.thumbnail="https://www.babylonjs.com/img/favicon/apple-icon-144x144.png"
             model.url="https://www.babylonjs.com/Assets/DamagedHelmet/glTF/DamagedHelmet.gltf" camera.behaviors.auto-rotate="0"
             templates.nav-bar.params.disable-on-fullscreen="true"></babylon>
         <script src="viewer.js"></script>
@@ -28,7 +28,22 @@
             // a simple way of disabling auto init 
             BabylonViewer.disableInit = true;
             // Initializing the viewer on specific HTML tags.
-            BabylonViewer.InitTags('babylon');
+            //BabylonViewer.InitTags('babylon');
+            var state = 0;
+            window.onclick = function () {
+                if (state === 0) {
+                    console.log("loading");
+                    BabylonViewer.InitTags('babylon');
+                    state++;
+                } else if (state === 1) {
+                    /*BabylonViewer.viewerManager.getViewerPromiseById('babylon-viewer').then(function (viewer) {
+                        viewer.dispose();
+                        console.log("disposed");
+                    });*/
+                    BabylonViewer.disposeAll();
+                }
+
+            }
         </script>
     </body>
 

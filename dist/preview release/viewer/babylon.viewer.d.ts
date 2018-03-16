@@ -205,6 +205,7 @@ declare module BabylonViewer {
 
     export interface IModelConfiguration {
         url?: string;
+        root?: string;
         loader?: string; // obj, gltf?
         position?: { x: number, y: number, z: number };
         rotation?: { x: number, y: number, z: number, w?: number };
@@ -430,9 +431,24 @@ declare module BabylonViewer {
         goToFrame(frameNumber: number): any;
     }
 
-    export interface ViewerModel extends BABYLON.IDisposable {
+    export enum ModelState {
+        INIT,
+        LOADING,
+        LOADED,
+        ERROR
+    }
+
+    export class ModelLoader {
+        constructor(viewer: AbstractViewer);
+        load(modelConfiguration: IModelConfiguration): ViewerModel;
+        dispose(): void;
+    }
+
+    export class ViewerModel {
+        constructor(scene: Scene, modelConfiguration: IModelConfiguration, disableAutoLoad: boolean);
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
+        ootMesh: BABYLON.AbstractMesh;
         particleSystems: Array<BABYLON.ParticleSystem>;
         skeletons: Array<BABYLON.Skeleton>;
         currentAnimation: IModelAnimation;
@@ -442,6 +458,9 @@ declare module BabylonViewer {
             message: string;
             exception: any;
         }>;
+        onAfterConfigure: BABYLON.Observable<ViewerModel>;
+        state: ModelState;
+        loadId: number;
         load(): void;
         getAnimations(): Array<IModelAnimation>;
         getAnimationNames(): string[];
@@ -459,6 +478,7 @@ declare module BabylonViewer {
         sceneOptimizer: BABYLON.SceneOptimizer;
         baseId: string;
         models: Array<ViewerModel>;
+        modelLoader: ModelLoader;
         lastUsedLoader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         protected configuration: ViewerConfiguration;
         environmentHelper: BABYLON.EnvironmentHelper;
