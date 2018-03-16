@@ -9,7 +9,5 @@ void main(void)
 	gl_FragColor = texture2D(textureSampler, vUV);
 	vec3 c = gl_FragColor.rgb;
 	float luma = dot(c.rgb, RGBLuminanceCoefficients);
-	if(luma<threshold){
-        gl_FragColor.rgb = vec3(0.,0.,0.);
-    }
+	gl_FragColor.rgb = step(threshold, luma) * gl_FragColor.rgb;
 }
