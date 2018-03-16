@@ -68,6 +68,7 @@ export interface ViewerConfiguration {
 
 export interface IModelConfiguration {
     url?: string;
+    root?: string; //optional
     loader?: string; // obj, gltf?
     position?: { x: number, y: number, z: number };
     rotation?: { x: number, y: number, z: number, w?: number };
