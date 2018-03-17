@@ -104,11 +104,11 @@ export class DefaultViewer extends AbstractViewer {
         this.containerElement.style.display = 'flex';
     }
 
-    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, model: ViewerModel) {
-        super.configureModel(modelConfiguration, model);
-
+    protected configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
+
+        let modelConfiguration = model.configuration;
 
         let metadataContainer = navbar.parent.querySelector('#model-metadata');
         if (metadataContainer) {
@@ -143,6 +143,7 @@ export class DefaultViewer extends AbstractViewer {
     }
 
     private onModelLoaded = (model: ViewerModel) => {
+        this.configureTemplate(model);
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
         if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
@@ -246,7 +247,7 @@ export class DefaultViewer extends AbstractViewer {
         super.configureLights(lightsConfiguration, model);
         // labs feature - flashlight
         if (this.configuration.lab && this.configuration.lab.flashlight) {
-            let pointerPosition = BABYLON.Vector3.Zero();
+            let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;

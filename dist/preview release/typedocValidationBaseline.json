@@ -1,7 +1,7 @@
 {
-  "errors": 7154,
+  "errors": 7152,
   "babylon.typedoc.json": {
-    "errors": 7154,
+    "errors": 7152,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -3139,11 +3139,6 @@
           }
         },
         "restart": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "start": {
           "Comments": {
             "MissingReturn": true
           }
@@ -25728,11 +25723,6 @@
       },
       "Property": {
         "animation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "currentFrame": {
           "Comments": {
             "MissingText": true
           }

@@ -1,7 +1,13 @@
+/// <reference path="../../dist/preview release/babylon.d.ts"/>
+/// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
+/// <reference path="../../dist/preview release/loaders/babylon.glTFFileLoader.d.ts"/>
+
 import { mapperManager } from './configuration/mappers';
 import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
+import { ModelLoader } from './model/modelLoader';
+import { ViewerModel } from './model/viewerModel';
 
 /**
  * BabylonJS Viewer
@@ -22,10 +28,17 @@ import { InitTags } from './initializer';
 PromisePolyfill.Apply();
 
 export let disableInit: boolean = false;
-document.addEventListener("DOMContentLoaded", function (event) {
+document.addEventListener("DOMContentLoaded", init);
+function init(event) {
+    document.removeEventListener("DOMContentLoaded", init);
     if (disableInit) return;
     InitTags();
-});
+}
+
+function disposeAll() {
+    viewerManager.dispose();
+    mapperManager.dispose();
+}
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel };

@@ -1,5 +1,4 @@
 module BABYLON {
-    declare var require: any;
     declare var OIMO: any;
 
     export class OimoJSPlugin implements IPhysicsEnginePlugin {
@@ -10,7 +9,7 @@ module BABYLON {
 
 
         constructor(iterations?: number) {
-            this.BJSOIMO = typeof OIMO !== 'undefined' ? OIMO : (typeof require !== 'undefined' ? require('./Oimo') : undefined);
+            this.BJSOIMO = OIMO;
             this.world = new this.BJSOIMO.World({
                 iterations: iterations
             });

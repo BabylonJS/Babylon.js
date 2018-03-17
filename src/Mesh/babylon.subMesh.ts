@@ -153,7 +153,7 @@
         }
 
         public _checkCollision(collider: Collider): boolean {
-            let boundingInfo = this._renderingMesh.getBoundingInfo();
+            let boundingInfo = this.getBoundingInfo();
 
             return boundingInfo._checkCollision(collider);
         }

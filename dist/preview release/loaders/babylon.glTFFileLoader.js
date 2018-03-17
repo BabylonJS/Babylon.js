@@ -307,6 +307,7 @@ var BABYLON;
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
             loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
+            loader.onAnimationGroupLoadedObservable.add(function (animationGroup) { return _this.onAnimationGroupLoadedObservable.notifyObservers(animationGroup); });
             loader.onCompleteObservable.add(function () {
                 _this.onMeshLoadedObservable.clear();
                 _this.onTextureLoadedObservable.clear();
@@ -3990,7 +3991,9 @@ var BABYLON;
                 return (BABYLON.Tools.IsBase64(uri) || uri.indexOf("..") === -1);
             };
             GLTFLoader._GetDrawMode = function (context, mode) {
-                mode = mode || 4 /* TRIANGLES */;
+                if (mode == undefined) {
+                    mode = 4 /* TRIANGLES */;
+                }
                 switch (mode) {
                     case 0 /* POINTS */: return BABYLON.Material.PointListDrawMode;
                     case 1 /* LINES */: return BABYLON.Material.LineListDrawMode;
@@ -4218,7 +4221,7 @@ var BABYLON;
                                 if (indexLOD !== 0) {
                                     var previousNodeLOD = nodeLODs[indexLOD - 1];
                                     if (previousNodeLOD._babylonMesh) {
-                                        previousNodeLOD._babylonMesh.dispose();
+                                        previousNodeLOD._babylonMesh.dispose(false, true);
                                         delete previousNodeLOD._babylonMesh;
                                     }
                                 }

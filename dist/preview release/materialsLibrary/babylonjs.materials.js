@@ -1,33 +1,29 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __extends = (this && this.__extends) || (function () {
-            var extendStatics = Object.setPrototypeOf ||
-                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-            return function (d, b) {
-                extendStatics(d, b);
-                function __() { this.constructor = d; }
-                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-            };
-        })();
-        
+var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
+var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
+
 
 (function universalModuleDefinition(root, factory) {
-    if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory(require("babylonjs"));
-    else if(typeof define === 'function' && define.amd)
-        define("babylonjs-materials", ["babylonjs"], factory);
-    else if(typeof exports === 'object')
-        exports["babylonjs-materials"] = factory(require("babylonjs"));
-    else {
-        root["BABYLON"] = factory(root["BABYLON"]);
+    var amdDependencies = [];
+    var BABYLON = root.BABYLON;
+    if(typeof exports === 'object' && typeof module === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
+        module.exports = factory(BABYLON);
+    } else if(typeof define === 'function' && define.amd) {
+         amdDependencies.push("babylonjs");
+
+        define("babylonjs-materials", amdDependencies, factory);
+    } else if(typeof exports === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
+        exports["babylonjs-materials"] = factory(BABYLON);
+    } else {
+        root["BABYLON"] = factory(BABYLON);
     }
 })(this, function(BABYLON) {
-    "use strict";
+  BABYLON = BABYLON || this.BABYLON;
+
+"use strict";
 
 
 var BABYLON;
