@@ -7,6 +7,9 @@ module BABYLON {
          * The luminance threshold, pixels below this value will be set to black.
          */
         public threshold = 0.9;
+        /**
+         * Post process which has the input texture to be used when performing highlight extraction
+         */
         public _inputPostProcess:Nullable<PostProcess> = null;
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
             super(name, "extractHighlights", ["threshold"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
