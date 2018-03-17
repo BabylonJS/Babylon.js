@@ -143,13 +143,13 @@ module BABYLON {
             this._renderEffectsForIsolatedPass = new Array<PostProcessRenderEffect>();
         }
 
-        protected _enableMSAAOnFirstPostProcess():boolean{
+        protected _enableMSAAOnFirstPostProcess(sampleCount: number):boolean{
             // Set samples of the very first post process to 4 to enable native anti-aliasing in browsers that support webGL 2.0 (See: https://github.com/BabylonJS/Babylon.js/issues/3754)
             var effectKeys = Object.keys(this._renderEffects);
             if(this.engine.webGLVersion >= 2 && effectKeys.length > 0){
                 var postProcesses = this._renderEffects[effectKeys[0]].getPostProcesses();
                 if(postProcesses){
-                    postProcesses[0].samples = 4;
+                    postProcesses[0].samples = sampleCount;
                     return true;
                 }
             }

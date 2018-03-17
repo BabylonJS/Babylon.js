@@ -61,7 +61,6 @@
         private _depthOfFieldEnabled: boolean = false;
         private _depthOfFieldBlurLevel = DepthOfFieldEffectBlurLevel.Low;
         private _fxaaEnabled: boolean = false;
-        private _msaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.6;
@@ -266,21 +265,22 @@
             return this._fxaaEnabled;
         }
 
+        private _samples = 1;
         /**
-         * If the multisample anti-aliasing is enabled.
+         * MSAA sample count, setting this to 4 will provide 4x anti aliasing. (default: 1)
          */
-        public set msaaEnabled(enabled: boolean) {
-            if (this._msaaEnabled === enabled) {
+        public set samples(sampleCount: number) {
+            if (this._samples === sampleCount) {
                 return;
             }
-            this._msaaEnabled = enabled;
+            this._samples = sampleCount;
 
             this._buildPipeline();
         }
 
         @serialize()
-        public get msaaEnabled(): boolean {
-            return this._msaaEnabled;
+        public get samples(): number {
+            return this._samples;
         }
 
         /**
@@ -506,10 +506,9 @@
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
 
-            if(this.msaaEnabled){
-                if(!this._enableMSAAOnFirstPostProcess()){
-                    BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
-                }
+
+            if(!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1){
+                BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
         }
 
