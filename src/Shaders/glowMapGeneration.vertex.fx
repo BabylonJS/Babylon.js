@@ -3,6 +3,9 @@ attribute vec3 position;
 
 #include<bonesDeclaration>
 
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
 // Uniforms
 #include<instancesDeclaration>
 
@@ -30,14 +33,17 @@ attribute vec2 uv2;
 
 void main(void)
 {
+	vec3 positionUpdated = position;
+
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
 #include<bonesVertex>
 
 #ifdef CUBEMAP
-	vPosition = finalWorld * vec4(position, 1.0);
+	vPosition = finalWorld * vec4(positionUpdated, 1.0);
 	gl_Position = viewProjection * finalWorld * vec4(position, 1.0);
 #else
-	vPosition = viewProjection * finalWorld * vec4(position, 1.0);
+	vPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
 	gl_Position = vPosition;
 #endif
 

@@ -163,6 +163,8 @@ export class TemplateManager {
         Object.keys(this.templates).forEach(template => {
             this.templates[template].dispose();
         });
+        this.templates = {};
+        this.eventManager.dispose();
 
         this.onInit.clear();
         this.onAllLoaded.clear();
@@ -355,11 +357,23 @@ export class Template {
         this.onStateChange.clear();
         this.isLoaded = false;
         // remove from parent
-        this.parent.removeChild(this.fragment);
+        try {
+            this.parent.removeChild(this.fragment);
+        } catch (e) {
+            //noop
+        }
 
         this.loadRequests.forEach(request => {
             request.abort();
         });
+
+        if (this.registeredEvents) {
+            this.registeredEvents.forEach(evt => {
+                evt.htmlElement.removeEventListener(evt.eventName, evt.function);
+            });
+        }
+
+        delete this.fragment;
     }
 
     private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
@@ -410,7 +424,13 @@ export class Template {
 
                     // if boolean, set the parent as the event listener
                     if (typeof this._configuration.events[eventName] === 'boolean') {
+                        let binding = functionToFire.bind(this, '#' + this.parent.id);
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
+                        this.registeredEvents.push({
+                            htmlElement: this.parent,
+                            eventName: eventName,
+                            function: binding
+                        });
                     } else if (typeof this._configuration.events[eventName] === 'object') {
                         let selectorsArray: Array<string> = Object.keys(this._configuration.events[eventName] || {});
                         // strict null checl is working incorrectly, must override:

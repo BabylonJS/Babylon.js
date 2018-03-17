@@ -124,6 +124,7 @@ function evaluate(test, resultCanvas, result, renderImage, index, waitRing, done
     renderImage.src = renderB64;
 
     currentScene.dispose();
+    currentScene = null;
     engine.setHardwareScalingLevel(1);
 
     done(testRes, renderB64);
@@ -308,13 +309,25 @@ function runTest(index, done) {
     }
 }
 
-BABYLON.SceneLoader.ShowLoadingScreen = false;
-BABYLON.Database.IDBStorageEnabled = false;
-BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
-BABYLON.DracoCompression.DecoderUrl = BABYLON.Tools.GetFolderPath(document.location.href) + "../../dist/preview%20release/draco_decoder.js";
+function init() {
+    BABYLON.SceneLoader.ShowLoadingScreen = false;
+    BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
+    BABYLON.DracoCompression.DecoderUrl = BABYLON.Tools.GetFolderPath(document.location.href) + "../../dist/preview%20release/draco_decoder.js";
 
-canvas = document.createElement("canvas");
-canvas.className = "renderCanvas";
-document.body.appendChild(canvas);
-engine = new BABYLON.Engine(canvas, false);
-engine.setDitheringState(false);
+    canvas = document.createElement("canvas");
+    canvas.className = "renderCanvas";
+    document.body.appendChild(canvas);
+    engine = new BABYLON.Engine(canvas, false);
+    engine.enableOfflineSupport = false;
+    engine.setDitheringState(false);
+}
+
+function dispose() {
+    engine.dispose();
+    currentScene = null;
+    engine = null;
+    document.body.removeChild(canvas);
+    canvas = null;
+}
+
+init();

@@ -372,6 +372,18 @@
                 defines.push("#define NUM_BONE_INFLUENCERS 0");
             }
 
+            // Morph targets         
+            var manager = (<Mesh>mesh).morphTargetManager;
+            let morphInfluencers = 0;
+            if (manager) {
+                if (manager.numInfluencers > 0) {
+                    defines.push("#define MORPHTARGETS");
+                    morphInfluencers = manager.numInfluencers;
+                    defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
+                    MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, {"NUM_MORPH_INFLUENCERS": morphInfluencers });
+                }
+            }            
+
             // Instances
             if (useInstances) {
                 defines.push("#define INSTANCES");
@@ -387,8 +399,9 @@
                 this._cachedDefines = join;
                 this._effectLayerMapGenerationEffect = this._scene.getEngine().createEffect("glowMapGeneration",
                     attribs,
-                    ["world", "mBones", "viewProjection", "diffuseMatrix", "color", "emissiveMatrix"],
-                    ["diffuseSampler", "emissiveSampler"], join);
+                    ["world", "mBones", "viewProjection", "diffuseMatrix", "color", "emissiveMatrix", "morphTargetInfluences"],
+                    ["diffuseSampler", "emissiveSampler"], join,
+                    undefined, undefined, undefined, { maxSimultaneousMorphTargets: morphInfluencers });
             }
 
             return this._effectLayerMapGenerationEffect.isReady();
@@ -557,6 +570,9 @@
                 if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
                     this._effectLayerMapGenerationEffect.setMatrices("mBones", mesh.skeleton.getTransformMatrices(mesh));
                 }
+
+                // Morph targets
+                MaterialHelper.BindMorphTargetParameters(mesh, this._effectLayerMapGenerationEffect);
 
                 // Draw
                 mesh._processRendering(subMesh, this._effectLayerMapGenerationEffect, Material.TriangleFillMode, batch, hardwareInstancedRendering,
