@@ -5,10 +5,10 @@ import { Skeleton, AnimationGroup, ParticleSystem, CubeTexture, Color3, IEnviron
 import { ViewerConfiguration, ISceneConfiguration, ISceneOptimizerConfiguration, IObserversConfiguration, IModelConfiguration, ISkyboxConfiguration, IGroundConfiguration, ILightConfiguration, ICameraConfiguration } from '../configuration/configuration';
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
-import { CameraBehavior } from 'src/interfaces';
 import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
 import { ModelLoader } from '../model/modelLoader';
+import { CameraBehavior } from '../interfaces';
 
 /**
  * The AbstractViewr is the center of Babylon's viewer.
