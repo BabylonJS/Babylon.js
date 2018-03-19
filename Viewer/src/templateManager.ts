@@ -73,7 +73,7 @@ export class TemplateManager {
             let addToParent = () => {
                 let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
                 template.appendTo(containingElement);
-                this.checkLoadedState();
+                this._checkLoadedState();
             }
 
             if (parentTemplate && !parentTemplate.parent) {
@@ -89,11 +89,11 @@ export class TemplateManager {
         }
 
         //build the html tree
-        return this.buildHTMLTree(templates).then(htmlTree => {
+        return this._buildHTMLTree(templates).then(htmlTree => {
             if (this.templates['main']) {
                 internalInit(htmlTree, 'main');
             } else {
-                this.checkLoadedState();
+                this._checkLoadedState();
             }
             return;
         });
@@ -105,11 +105,9 @@ export class TemplateManager {
      * It will compile each template, check if its children exist in the configuration and will add them if they do.
      * It is expected that the main template will be called main!
      * 
-     * @private
-     * @param {{ [key: string]: ITemplateConfiguration }} templates 
-     * @memberof TemplateManager
+     * @param templates
      */
-    private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
+    private _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
         let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(name => {
             // if the template was overridden
             if (!templates[name]) return Promise.resolve(false);
@@ -148,7 +146,7 @@ export class TemplateManager {
         return this.templates[name];
     }
 
-    private checkLoadedState() {
+    private _checkLoadedState() {
         let done = Object.keys(this.templates).length === 0 || Object.keys(this.templates).every((key) => {
             return (this.templates[key].isLoaded && !!this.templates[key].parent) || !this.templates[key].isInHtmlTree;
         });
@@ -214,8 +212,8 @@ export class Template {
 
     public initPromise: Promise<Template>;
 
-    private fragment: DocumentFragment;
-    private htmlTemplate: string;
+    private _fragment: DocumentFragment;
+    private _htmlTemplate: string;
 
     private loadRequests: Array<IFileRequest>;
 
@@ -238,15 +236,15 @@ export class Template {
         */
         this.onInit.notifyObservers(this);
 
-        let htmlContentPromise = this.getTemplateAsHtml(_configuration);
+        let htmlContentPromise = this._getTemplateAsHtml(_configuration);
 
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
-                this.htmlTemplate = htmlTemplate;
+                this._htmlTemplate = htmlTemplate;
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
                 let config = this._configuration.params || {};
                 let rawHtml = compiledTemplate(config);
-                this.fragment = document.createRange().createContextualFragment(rawHtml);
+                this._fragment = document.createRange().createContextualFragment(rawHtml);
                 this.isLoaded = true;
                 this.isShown = true;
                 this.onLoaded.notifyObservers(this);
@@ -261,10 +259,10 @@ export class Template {
         if (this.isLoaded) {
             this.dispose();
         }
-        let compiledTemplate = Handlebars.compile(this.htmlTemplate);
+        let compiledTemplate = Handlebars.compile(this._htmlTemplate);
         let config = this._configuration.params || {};
         let rawHtml = compiledTemplate(config);
-        this.fragment = document.createRange().createContextualFragment(rawHtml);
+        this._fragment = document.createRange().createContextualFragment(rawHtml);
         if (this.parent) {
             this.appendTo(this.parent, true);
         }
@@ -277,10 +275,10 @@ export class Template {
     public getChildElements(): Array<string> {
         let childrenArray: string[] = [];
         //Edge and IE don't support frage,ent.children
-        let children = this.fragment.children;
+        let children = this._fragment.children;
         if (!children) {
             // casting to HTMLCollection, as both NodeListOf and HTMLCollection have 'item()' and 'length'.
-            children = <HTMLCollection>this.fragment.querySelectorAll('*');
+            children = <HTMLCollection>this._fragment.querySelectorAll('*');
         }
         for (let i = 0; i < children.length; ++i) {
             childrenArray.push(kebabToCamel(children.item(i).nodeName.toLowerCase()));
@@ -291,7 +289,7 @@ export class Template {
     public appendTo(parent: HTMLElement, forceRemove?: boolean) {
         if (this.parent) {
             if (forceRemove) {
-                this.parent.removeChild(this.fragment);
+                this.parent.removeChild(this._fragment);
             } else {
                 return;
             }
@@ -301,20 +299,20 @@ export class Template {
         if (this._configuration.id) {
             this.parent.id = this._configuration.id;
         }
-        this.fragment = this.parent.appendChild(this.fragment);
+        this._fragment = this.parent.appendChild(this._fragment);
         // appended only one frame after.
         setTimeout(() => {
-            this.registerEvents();
+            this._registerEvents();
             this.onAppended.notifyObservers(this);
         });
     }
 
-    private isShowing: boolean;
-    private isHiding: boolean;
+    private _isShowing: boolean;
+    private _isHiding: boolean;
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (this.isHiding) return Promise.resolve(this);
+        if (this._isHiding) return Promise.resolve(this);
         return Promise.resolve().then(() => {
-            this.isShowing = true;
+            this._isShowing = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -324,16 +322,16 @@ export class Template {
             }
         }).then(() => {
             this.isShown = true;
-            this.isShowing = false;
+            this._isShowing = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
     }
 
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (this.isShowing) return Promise.resolve(this);
+        if (this._isShowing) return Promise.resolve(this);
         return Promise.resolve().then(() => {
-            this.isHiding = true;
+            this._isHiding = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -343,7 +341,7 @@ export class Template {
             }
         }).then(() => {
             this.isShown = false;
-            this.isHiding = false;
+            this._isHiding = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
@@ -358,7 +356,7 @@ export class Template {
         this.isLoaded = false;
         // remove from parent
         try {
-            this.parent.removeChild(this.fragment);
+            this.parent.removeChild(this._fragment);
         } catch (e) {
             //noop
         }
@@ -367,16 +365,16 @@ export class Template {
             request.abort();
         });
 
-        if (this.registeredEvents) {
-            this.registeredEvents.forEach(evt => {
+        if (this._registeredEvents) {
+            this._registeredEvents.forEach(evt => {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
 
-        delete this.fragment;
+        delete this._fragment;
     }
 
-    private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
+    private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject('No templateConfig provided');
         } else if (templateConfig.html !== undefined) {
@@ -404,14 +402,13 @@ export class Template {
         }
     }
 
-    private registeredEvents: Array<{ htmlElement: HTMLElement, eventName: string, function: EventListenerOrEventListenerObject }>;
+    private _registeredEvents: Array<{ htmlElement: HTMLElement, eventName: string, function: EventListenerOrEventListenerObject }>;
 
-    // TODO - Should events be removed as well? when are templates disposed?
-    private registerEvents() {
-        this.registeredEvents = this.registeredEvents || [];
-        if (this.registeredEvents.length) {
+    private _registerEvents() {
+        this._registeredEvents = this._registeredEvents || [];
+        if (this._registeredEvents.length) {
             // first remove the registered events
-            this.registeredEvents.forEach(evt => {
+            this._registeredEvents.forEach(evt => {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
@@ -426,7 +423,7 @@ export class Template {
                     if (typeof this._configuration.events[eventName] === 'boolean') {
                         let binding = functionToFire.bind(this, '#' + this.parent.id);
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
-                        this.registeredEvents.push({
+                        this._registeredEvents.push({
                             htmlElement: this.parent,
                             eventName: eventName,
                             function: binding
@@ -443,7 +440,7 @@ export class Template {
                             if (htmlElement) {
                                 let binding = functionToFire.bind(this, selector);
                                 htmlElement.addEventListener(eventName, binding, false);
-                                this.registeredEvents.push({
+                                this._registeredEvents.push({
                                     htmlElement: htmlElement,
                                     eventName: eventName,
                                     function: binding
