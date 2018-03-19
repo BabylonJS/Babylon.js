@@ -483,12 +483,12 @@ declare module BabylonViewer {
         models: Array<ViewerModel>;
         modelLoader: ModelLoader;
         lastUsedLoader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
-        protected configuration: ViewerConfiguration;
+        protected _configuration: ViewerConfiguration;
         environmentHelper: BABYLON.EnvironmentHelper;
-        protected defaultHighpTextureType: number;
-        protected shadowGeneratorBias: number;
-        protected defaultPipelineTextureType: number;
-        protected maxShadows: number;
+        protected _defaultHighpTextureType: number;
+        protected _shadowGeneratorBias: number;
+        protected _defaultPipelineTextureType: number;
+        protected _maxShadows: number;
         readonly isHdrSupported: boolean;
         protected _isDisposed: boolean;
         onSceneInitObservable: BABYLON.Observable<BABYLON.Scene>;
@@ -502,33 +502,33 @@ declare module BabylonViewer {
         onLoaderInitObservable: BABYLON.Observable<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>;
         onInitDoneObservable: BABYLON.Observable<AbstractViewer>;
         canvas: HTMLCanvasElement;
-        protected registeredOnBeforerenderFunctions: Array<() => void>;
+        protected _registeredOnBeforerenderFunctions: Array<() => void>;
         constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
         getBaseId(): string;
         isCanvasInDOM(): boolean;
-        protected resize: () => void;
-        protected render: () => void;
+        protected _resize: () => void;
+        protected _render: () => void;
         updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>): void;
-        protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<BABYLON.Scene> | undefined;
-        protected configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration): void;
-        protected configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
-        protected configureObservers(observersConfiguration: IObserversConfiguration): void;
-        protected configureCamera(cameraConfig: ICameraConfiguration, model?: ViewerModel): void;
-        protected configureLights(lightsConfiguration?: {
+        protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<BABYLON.Scene> | undefined;
+        protected _configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration): void;
+        protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
+        protected _configureObservers(observersConfiguration: IObserversConfiguration): void;
+        protected _configureCamera(cameraConfig: ICameraConfiguration, model?: ViewerModel): void;
+        protected _configureLights(lightsConfiguration?: {
             [name: string]: ILightConfiguration | boolean;
         }, model?: ViewerModel): void;
-        protected configureModel(modelConfiguration: Partial<IModelConfiguration>, model?: ViewerModel): void;
+        protected _configureModel(modelConfiguration: Partial<IModelConfiguration>, model?: ViewerModel): void;
         dispose(): void;
         protected abstract prepareContainerElement(): any;
-        protected onTemplatesLoaded(): Promise<AbstractViewer>;
-        protected initEngine(): Promise<BABYLON.Engine>;
-        protected initScene(): Promise<BABYLON.Scene>;
-        initModel(modelConfig?: any, clearScene?: boolean): ViewerModel
+        protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+        protected _initEngine(): Promise<BABYLON.Engine>;
+        protected _initScene(): Promise<BABYLON.Scene>;
+        initModel(modelConfig: IModelConfiguration, clearScene?: boolean): ViewerModel
         loadModel(modelConfig?: any, clearScene?: boolean): Promise<ViewerModel>;
-        protected initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
-        protected handleHardwareLimitations(): void;
-        protected injectCustomShaders(): void;
-        protected extendClassWithConfig(object: any, config: any): void;
+        protected _initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
+        protected _handleHardwareLimitations(): void;
+        protected _injectCustomShaders(): void;
+        protected _extendClassWithConfig(object: any, config: any): void;
     }
 
     export class DefaultViewer extends AbstractViewer {
@@ -536,8 +536,8 @@ declare module BabylonViewer {
         camera: BABYLON.ArcRotateCamera;
         constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
         initScene(): Promise<BABYLON.Scene>;
-        protected onTemplatesLoaded(): Promise<AbstractViewer>;
-        protected prepareContainerElement(): void;
+        protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+        protected _prepareContainerElement(): void;
         loadModel(model?: any): Promise<ViewerModel>;
         initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         showOverlayScreen(subScreen: string): Promise<Template>;
