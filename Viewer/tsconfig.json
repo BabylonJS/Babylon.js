@@ -19,18 +19,23 @@
         "types": [
             "node"
         ],
-        "baseUrl": ".",
+        "baseUrl": "./src/",
         "paths": {
             "babylonjs": [
-                "../dist/preview release/babylon.max.js",
-                "../dist/preview release/babylon.d.ts"
+                "../../dist/preview release/babylon.d.ts"
             ],
             "babylonjs-loaders": [
-                "../dist/preview release/loaders/babylonjs.loaders.js",
-                "../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
+                "../../dist/preview release/loaders/babylonjs.loaders.module.d.ts"
+            ],
+            "babylonjs-gltf2interface": [
+                "../../dist/babylon.glTF2Interface.d.ts"
             ]
-        }
+        },
+        //"outDir": "./dist/build"
     },
+    "files": [
+        "./src/index.ts"
+    ],
     "exclude": [
         "node_modules",
         "dist"
