@@ -435,17 +435,19 @@ declare module BabylonViewer {
         INIT,
         LOADING,
         LOADED,
+        CANCELED,
         ERROR
     }
 
     export class ModelLoader {
         constructor(viewer: AbstractViewer);
         load(modelConfiguration: IModelConfiguration): ViewerModel;
+        cancelLoad(model: ViewerModel): void;
         dispose(): void;
     }
 
     export class ViewerModel {
-        constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration, disableAutoLoad: boolean);
+        constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration);
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
         rootMesh: BABYLON.AbstractMesh;
@@ -461,7 +463,6 @@ declare module BabylonViewer {
         onAfterConfigure: BABYLON.Observable<ViewerModel>;
         state: ModelState;
         loadId: number;
-        load(): void;
         initAnimations(): void;
         addAnimationGroup(animationGroup: BABYLON.AnimationGroup): void;
         getAnimations(): Array<IModelAnimation>;

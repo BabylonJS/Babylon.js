@@ -70,15 +70,27 @@ class HTMLMapper implements IMapper {
     }
 }
 
+/**
+ * A simple string-to-JSON mapper.
+ * This is the main mapper, used to analyze downloaded JSON-Configuration or JSON payload
+ */
 class JSONMapper implements IMapper {
-    map(rawSource: any) {
+    map(rawSource: string) {
         return JSON.parse(rawSource);
     }
 }
 
-// TODO - Dom configuration mapper.
+/**
+ * The DOM Mapper will traverse an entire DOM Tree and will load the configuration from the
+ * DOM elements and attributes.
+ */
 class DOMMapper implements IMapper {
 
+    /**
+     * The mapping function that will convert HTML data to a viewer configuration object
+     * @param baseElement the baseElement from which to start traversing
+     * @returns a ViewerCOnfiguration object from the provided HTML Element
+     */
     map(baseElement: HTMLElement): ViewerConfiguration {
         let htmlMapper = new HTMLMapper();
         let config = htmlMapper.map(baseElement);
@@ -88,6 +100,7 @@ class DOMMapper implements IMapper {
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {
                     let item = <HTMLElement>children.item(i);
+                    // use the HTML Mapper to read configuration from a single element
                     let configMapped = htmlMapper.map(item);
                     let key = kebabToCamel(item.nodeName.toLowerCase());
                     if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array').nodeValue === 'true') {
@@ -96,7 +109,7 @@ class DOMMapper implements IMapper {
                         if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array').nodeValue === 'true') {
                             partConfig.push(configMapped)
                         } else if (partConfig[key]) {
-                            //exists already! problem... probably an array
+                            //exists already! probably an array
                             element.setAttribute('array', 'true');
                             let oldItem = partConfig[key];
                             partConfig = [oldItem, configMapped]
@@ -118,9 +131,16 @@ class DOMMapper implements IMapper {
 
 }
 
+/**
+ * The MapperManager manages the different implemented mappers.
+ * It allows the user to register new mappers as well and use them to parse their own configuration data
+ */
 export class MapperManager {
 
     private _mappers: { [key: string]: IMapper };
+    /**
+     * The default mapper is the JSON mapper.
+     */
     public static DefaultMapper = 'json';
 
     constructor() {
@@ -131,6 +151,11 @@ export class MapperManager {
         }
     }
 
+    /**
+     * Get a specific configuration mapper.
+     * 
+     * @param type the name of the mapper to load
+     */
     public getMapper(type: string) {
         if (!this._mappers[type]) {
             Tools.Error("No mapper defined for " + type);
@@ -138,14 +163,28 @@ export class MapperManager {
         return this._mappers[type] || this._mappers[MapperManager.DefaultMapper];
     }
 
+    /**
+     * Use this functio to register your own configuration mapper.
+     * After a mapper is registered, it can be used to parse the specific type fo configuration to the standard ViewerConfiguration.
+     * @param type the name of the mapper. This will be used to define the configuration type and/or to get the mapper
+     * @param mapper The implemented mapper 
+     */
     public registerMapper(type: string, mapper: IMapper) {
         this._mappers[type] = mapper;
     }
 
+    /**
+     * Dispose the mapper manager and all of its mappers.
+     */
     public dispose() {
         this._mappers = {};
     }
 
 }
 
+/**
+ * mapperManager is a singleton of the type MapperManager.
+ * The mapperManager can be disposed directly with calling mapperManager.dispose()
+ * or indirectly with using BabylonViewer.disposeAll()
+ */
 export let mapperManager = new MapperManager();
