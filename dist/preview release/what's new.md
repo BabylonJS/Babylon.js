@@ -20,6 +20,7 @@
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
 - New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
 - Physics - Latest production version of Oimo.js is being used - 1.0.9 ([RaananW](https://github.com/RaananW))
+- Shadows - Introduces [PCF](https://doc.babylonjs.com/babylon101/shadows#percentage-closer-filtering-webgl2-only) and [PCSS](https://doc.babylonjs.com/babylon101/shadows#contact-hardening-shadow-webgl2-only) support in Webgl 2 ([sebavan](https://github.com/sebavan)))
 
 ## Updates
 
@@ -99,6 +100,7 @@
 - Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
 - Added support for primitive modes to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 - Cannon and Oimo are optional dependencies ([RaananW](https://github.com/RaananW))
+- Shadows - Introduces [Normal Bias](https://doc.babylonjs.com/babylon101/shadows#normal-bias-since-32) ([sebavan](https://github.com/sebavan)))
 
 ## Bug fixes
 
