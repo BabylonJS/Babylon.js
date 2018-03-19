@@ -4,6 +4,7 @@ import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./model
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
 
+
 export enum ModelState {
     INIT,
     LOADING,
@@ -12,30 +13,72 @@ export enum ModelState {
     ERROR
 }
 
+/**
+ * The viewer model is a container for all assets representing a sngle loaded model.
+ */
 export class ViewerModel implements IDisposable {
 
+    /**
+     * The loader used to load this model.
+     */
     public loader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     private _animations: Array<IModelAnimation>;
+
+    /**
+     * the list of meshes that are a part of this model
+     */
     public meshes: Array<AbstractMesh> = [];
+    /**
+     * This model's root mesh (the parent of all other meshes).
+     * This mesh also exist in the meshes array.
+     */
     public rootMesh: AbstractMesh;
+    /**
+     * ParticleSystems connected to this model
+     */
     public particleSystems: Array<ParticleSystem> = [];
+    /**
+     * Skeletons defined in this model
+     */
     public skeletons: Array<Skeleton> = [];
+    /**
+     * The current model animation.
+     * On init, this will be undefined.
+     */
     public currentAnimation: IModelAnimation;
 
+    /**
+     * Observers registered here will be executed when the model is done loading
+     */
     public onLoadedObservable: Observable<ViewerModel>;
+    /**
+     * Observers registered here will be executed when the loader notified of a progress event
+     */
     public onLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    /**
+     * Observers registered here will be executed when the loader notified of an error.
+     */
     public onLoadErrorObservable: Observable<{ message: string; exception: any }>;
 
+    /**
+     * Observers registered here will be executed every time the model is being configured.
+     * This can be used to extend the model's configuration without extending the class itself
+     */
     public onAfterConfigure: Observable<ViewerModel>;
 
+    /**
+     * The current model state (loaded, error, etc)
+     */
     public state: ModelState;
+    /**
+     * A loadID provided by the modelLoader, unique to ths (Abstract)Viewer instance.
+     */
     public loadId: number;
-
-    private _loaderDisposed: boolean = false;
     private _loadedUrl: string;
+    private _modelConfiguration: IModelConfiguration;
 
-    constructor(private _scene: Scene, private _modelConfiguration: IModelConfiguration, disableAutoLoad = false) {
+    constructor(private _scene: Scene, modelConfiguration: IModelConfiguration) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();
@@ -44,42 +87,37 @@ export class ViewerModel implements IDisposable {
         this.state = ModelState.INIT;
 
         this._animations = [];
-
-        if (!disableAutoLoad) {
-            this._initLoad();
-        }
+        //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
+        this._modelConfiguration = deepmerge({}, modelConfiguration);
     }
 
-    public load() {
-        if (this.loader) {
-            Tools.Error("Model was already loaded or in the process of loading.");
-        } else {
-            this._initLoad();
-        }
-    }
-
-    public cancelLoad() {
-        // ATM only available in the GLTF Loader
-        if (this.loader && this.loader.name === "gltf") {
-            let gltfLoader = (<GLTFFileLoader>this.loader);
-            gltfLoader.dispose();
-            this.state = ModelState.CANCELED;
-        }
-    }
-
+    /**
+     * Get the model's configuration
+     */
     public get configuration(): IModelConfiguration {
         return this._modelConfiguration;
     }
 
+    /**
+     * (Re-)set the model's entire configuration
+     * @param newConfiguration the new configuration to replace the new one
+     */
     public set configuration(newConfiguration: IModelConfiguration) {
         this._modelConfiguration = newConfiguration;
         this._configureModel();
     }
 
+    /**
+     * Update the current configuration with new values.
+     * Configuration will not be overwritten, but merged with the new configuration.
+     * Priority is to the new configuration
+     * @param newConfiguration the configuration to be merged into the current configuration;
+     */
     public updateConfiguration(newConfiguration: Partial<IModelConfiguration>) {
         this._modelConfiguration = deepmerge(this._modelConfiguration, newConfiguration);
         this._configureModel();
     }
+
 
     public initAnimations() {
         this._animations.forEach(a => {
@@ -116,18 +154,32 @@ export class ViewerModel implements IDisposable {
         }
     }
 
+    /**
+     * Add a new animation group to this model.
+     * @param animationGroup the new animation group to be added
+     */
     public addAnimationGroup(animationGroup: AnimationGroup) {
         this._animations.push(new GroupModelAnimation(animationGroup));
     }
 
-    public getAnimations() {
+    /**
+     * Get the ModelAnimation array
+     */
+    public getAnimations(): Array<IModelAnimation> {
         return this._animations;
     }
 
-    public getAnimationNames() {
+    /**
+     * Get the animations' names. Using the names you can play a specific animation.
+     */
+    public getAnimationNames(): Array<string> {
         return this._animations.map(a => a.name);
     }
 
+    /**
+     * Get an animation by the provided name. Used mainly when playing n animation.
+     * @param name the name of the animation to find
+     */
     protected _getAnimationByName(name: string): Nullable<IModelAnimation> {
         // can't use .find, noe available on IE
         let filtered = this._animations.filter(a => a.name === name);
@@ -139,6 +191,11 @@ export class ViewerModel implements IDisposable {
         }
     }
 
+    /**
+     * Choose an initialized animation using its name and start playing it
+     * @param name the name of the animation to play
+     * @returns The model aniamtion to be played.
+     */
     public playAnimation(name: string): IModelAnimation {
         let animation = this._getAnimationByName(name);
         if (animation) {
@@ -251,50 +308,9 @@ export class ViewerModel implements IDisposable {
         this.onAfterConfigure.notifyObservers(this);
     }
 
-    private _initLoad() {
-        if (!this._modelConfiguration.url) {
-            this.state = ModelState.ERROR;
-            Tools.Error("No URL provided");
-            return;
-        }
-
-        let filename = Tools.GetFilename(this._modelConfiguration.url) || this._modelConfiguration.url;
-        let base = this._modelConfiguration.root || Tools.GetFolderPath(this._modelConfiguration.url);
-        let plugin = this._modelConfiguration.loader;
-        this._loadedUrl = this._modelConfiguration.url;
-
-
-        this.loader = SceneLoader.ImportMesh(undefined, base, filename, this._scene, (meshes, particleSystems, skeletons) => {
-            meshes.forEach(mesh => {
-                Tags.AddTagsTo(mesh, "viewerMesh");
-            });
-            this.meshes = meshes;
-            this.particleSystems = particleSystems;
-            this.skeletons = skeletons;
-
-            this.initAnimations();
-            this.onLoadedObservable.notifyObserversWithPromise(this);
-        }, (progressEvent) => {
-            this.onLoadProgressObservable.notifyObserversWithPromise(progressEvent);
-        }, (e, m, exception) => {
-            this.state = ModelState.ERROR;
-            Tools.Error("Load Error: There was an error loading the model. " + m);
-            this.onLoadErrorObservable.notifyObserversWithPromise({ message: m, exception: exception });
-        }, plugin)!;
-
-        if (this.loader.name === "gltf") {
-            let gltfLoader = (<GLTFFileLoader>this.loader);
-            gltfLoader.animationStartMode = 0;
-            gltfLoader.onDispose = () => {
-                this._loaderDisposed = true;
-            }
-            gltfLoader.onAnimationGroupLoaded = ag => {
-                this.addAnimationGroup(ag);
-            }
-        }
-
-    }
-
+    /**
+     * Dispose this model, including all of its associated assets.
+     */
     public dispose() {
         this.onAfterConfigure.clear();
         this.onLoadedObservable.clear();
