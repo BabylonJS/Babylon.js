@@ -1,9 +1,10 @@
 ﻿module BABYLON {
 
     export class RuntimeAnimation {
-        public currentFrame: number = 0;
+        private _currentFrame: number = 0;
         private _animation: Animation;
         private _target: any;
+        private _host: Animatable;
 
         private _originalValue: any;
         private _originalBlendValue: any;
@@ -16,7 +17,14 @@
         private _currentValue: any;
         private _activeTarget: any;
         private _targetPath: string = "";
-        private _weight = 1.0
+        private _weight = 1.0;
+
+        /**
+         * Gets the current frame
+         */
+        public get currentFrame(): number {
+            return this._currentFrame;
+        }
 
         /**
          * Gets the weight of the runtime animation
@@ -58,11 +66,13 @@
          * @param target defines the target of the animation
          * @param animation defines the source {BABYLON.Animation} object
          * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
          */
-        public constructor(target: any, animation: Animation, scene: Scene) {
+        public constructor(target: any, animation: Animation, scene: Scene, host: Animatable) {
             this._animation = animation;
             this._target = target;
             this._scene = scene;
+            this._host = host;
 
             animation._runtimeAnimations.push(this);
         }
@@ -74,7 +84,7 @@
         public reset(): void {
             this._offsetsCache = {};
             this._highLimitsCache = {};
-            this.currentFrame = 0;
+            this._currentFrame = 0;
             this._blendingFactor = 0;
             this._originalValue = null;
         }
@@ -104,7 +114,7 @@
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }
 
-            this.currentFrame = currentFrame;
+            this._currentFrame = currentFrame;
 
             let keys = this._animation.getKeys();
 
@@ -482,6 +492,14 @@
             // Compute value
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
+
+            // Need to normalize?
+            if (this._host && this._host.syncRoot) {
+                let syncRoot = this._host.syncRoot;
+                let hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
+                currentFrame = from + (to - from) * hostNormalizedFrame;
+            }
+
             var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
             // Set value

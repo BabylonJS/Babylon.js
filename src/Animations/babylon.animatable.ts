@@ -7,8 +7,28 @@
         private _scene: Scene;
         private _speedRatio = 1;
         private _weight = -1.0;
+        private _syncRoot: Animatable;
 
         public animationStarted = false;
+
+        /**
+         * Gets the root Animatable used to synchronize and normalize animations
+         */
+        public get syncRoot(): Animatable {
+            return this._syncRoot;
+        }
+
+        /**
+         * Gets the current frame of the first RuntimeAnimation
+         * Used to synchronize Animatables
+         */
+        public get masterFrame(): number {
+            if (this._runtimeAnimations.length === 0) {
+                return 0;
+            }
+
+            return this._runtimeAnimations[0].currentFrame;
+        }
 
         /**
          * Gets or sets the animatable weight (-1.0 by default meaning not weighted)
@@ -55,6 +75,27 @@
         }
 
         // Methods
+        /**
+         * Synchronize and normalize current Animatable with a source Animatable.
+         * This is useful when using animation weights and when animations are not of the same length
+         * @param root defines the root Animatable to synchronize with
+         * @returns the current Animatable
+         */
+        public syncWith(root: Animatable): Animatable {
+            this._syncRoot = root;
+
+            if (root) {
+                // Make sure this animatable will animate after the root
+                let index = this._scene._activeAnimatables.indexOf(this);
+                if (index > -1) {
+                    this._scene._activeAnimatables.splice(index, 1);
+                    this._scene._activeAnimatables.push(this);
+                }
+            }
+
+            return this;
+        }
+
         public getAnimations(): RuntimeAnimation[] {
             return this._runtimeAnimations;
         }
@@ -63,7 +104,7 @@
             for (var index = 0; index < animations.length; index++) {
                 var animation = animations[index];
 
-                this._runtimeAnimations.push(new RuntimeAnimation(target, animation, this._scene));
+                this._runtimeAnimations.push(new RuntimeAnimation(target, animation, this._scene, this));
             }
         }
 
