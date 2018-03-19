@@ -7,22 +7,36 @@ import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMa
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 
+/**
+ * The Default viewer is the default implementation of the AbstractViewer.
+ * It uses the templating system to render a new canvas and controls.
+ */
 export class DefaultViewer extends AbstractViewer {
 
+    /**
+     * Create a new default viewer
+     * @param containerElement the element in which the templates will be rendered
+     * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
+     */
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
         this.onModelLoadedObservable.add(this._onModelLoaded);
     }
 
-    public _initScene(): Promise<Scene> {
+    /**
+     * Overriding the AbstractViewer's _initScene fcuntion
+     */
+    protected _initScene(): Promise<Scene> {
         return super._initScene().then(() => {
             this._extendClassWithConfig(this.scene, this._configuration.scene);
             return this.scene;
         })
     }
 
+    /**
+     * This will be executed when the templates initialize.
+     */
     protected _onTemplatesLoaded() {
-
         this.showLoadingScreen();
 
         // navbar
@@ -99,11 +113,19 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
+    /**
+     * Preparing the container element to present the viewer
+     */
     protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
         this.containerElement.style.display = 'flex';
     }
 
+    /**
+     * This function will configure the templates and update them after a model was loaded
+     * It is mainly responsible to changing the title and subtitle etc'.
+     * @param model the model to be used to configure the templates by
+     */
     protected _configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
@@ -132,6 +154,12 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
+    /**
+     * This will load a new model to the default viewer
+     * overriding the AbstractViewer's loadModel.
+     * The scene will automatically be cleared of the old models, if exist.
+     * @param model the configuration object (or URL) to load.
+     */
     public loadModel(model: any = this._configuration.model): Promise<ViewerModel> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
@@ -156,6 +184,11 @@ export class DefaultViewer extends AbstractViewer {
         return;
     }
 
+    /**
+     * Show the overlay and the defined sub-screen.
+     * Mainly used for help and errors
+     * @param subScreen the name of the subScreen. Those can be defined in the configuration object
+     */
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
         if (!template) return Promise.resolve('Overlay template not found');
@@ -181,6 +214,9 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * Hide the overlay screen.
+     */
     public hideOverlayScreen() {
         let template = this.templateManager.getTemplate('overlay');
         if (!template) return Promise.resolve('Overlay template not found');
@@ -200,15 +236,14 @@ export class DefaultViewer extends AbstractViewer {
                     htmlElement.style.display = 'none';
                 }
             }
-
-            /*return this.templateManager.getTemplate(subScreen).show((template => {
-                template.parent.style.display = 'none';
-                return Promise.resolve(template);
-            }));*/
             return Promise.resolve(template);
         }));
     }
 
+    /**
+     * Show the loading screen.
+     * The loading screen can be configured using the configuration object
+     */
     public showLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
         if (!template) return Promise.resolve('Loading Screen template not found');
@@ -228,6 +263,9 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * Hide the loading screen
+     */
     public hideLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
         if (!template) return Promise.resolve('Loading Screen template not found');
@@ -243,6 +281,11 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * An extension of the light configuration of the abstract viewer.
+     * @param lightsConfiguration the light configuration to use
+     * @param model the model that will be used to configure the lights (if the lights are model-dependant)
+     */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
         super._configureLights(lightsConfiguration, model);
         // labs feature - flashlight
