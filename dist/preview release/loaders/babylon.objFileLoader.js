@@ -1,3 +1,4 @@
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var BABYLON;
 (function (BABYLON) {
@@ -20,6 +21,9 @@ var BABYLON;
          * @param rootUrl
          */
         MTLFileLoader.prototype.parseMTL = function (scene, data, rootUrl) {
+            if (data instanceof ArrayBuffer) {
+                return;
+            }
             //Split the lines from the file
             var lines = data.split('\n');
             //Space char

@@ -36,6 +36,7 @@ module BABYLON.GUI {
         private _transformMatrix = Matrix2D.Identity();
         protected _invertTransformMatrix = Matrix2D.Identity();
         protected _transformedPosition = Vector2.Zero();
+        private _onlyMeasureMode = false;
         private _isMatrixDirty = true;
         private _cachedOffsetX: number;
         private _cachedOffsetY: number;
@@ -551,7 +552,9 @@ module BABYLON.GUI {
 
         public linkWithMesh(mesh: Nullable<AbstractMesh>): void {
             if (!this._host || this._root && this._root !== this._host._rootContainer) {
-                Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                if (mesh) {
+                    Tools.Error("Cannot link a control to a mesh if the control is not at root level");
+                }
                 return;
             }
 
@@ -562,17 +565,36 @@ module BABYLON.GUI {
                     this._host._linkedControls.splice(index, 1);
                 }
                 return;
+            } else if (!mesh) {
+                return;
             }
 
             this.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
             this.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_TOP;
             this._linkedMesh = mesh;
+            this._onlyMeasureMode = true;
             this._host._linkedControls.push(this);
         }
 
         public _moveToProjectedPosition(projectedPosition: Vector3): void {
-            this.left = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2) + "px";
-            this.top = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2) + "px";
+            let oldLeft = this._left.getValue(this._host);
+            let oldTop = this._top.getValue(this._host);
+            
+            var newLeft = ((projectedPosition.x + this._linkOffsetX.getValue(this._host)) - this._currentMeasure.width / 2);
+            var newTop = ((projectedPosition.y + this._linkOffsetY.getValue(this._host)) - this._currentMeasure.height / 2);
+
+            if (this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling) {
+                if (Math.abs(newLeft - oldLeft) < 0.5) {
+                    newLeft = oldLeft;
+                }
+
+                if (Math.abs(newTop - oldTop) < 0.5) {
+                    newTop = oldTop;
+                }                
+            }
+
+            this.left = newLeft + "px";
+            this.top = newTop + "px";
 
             this._left.ignoreAdaptiveScaling = true;
             this._top.ignoreAdaptiveScaling = true;
@@ -700,6 +722,11 @@ module BABYLON.GUI {
 
             // Transform
             this._transform(context);
+
+            if (this._onlyMeasureMode) {
+                this._onlyMeasureMode = false;
+                return false; // We do not want rendering for this frame as they are measure dependant information that need to be gathered
+            }
 
             // Clip
             this._clip(context);

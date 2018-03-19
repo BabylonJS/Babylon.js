@@ -14,6 +14,12 @@
         * Height of the texture to apply the post process on
         */
         public height = -1;
+
+        /**
+        * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
+        */
+        public _outputTexture: Nullable<InternalTexture> = null;
+
         /**
         * Sampling mode used by the shader
         * See https://doc.babylonjs.com/classes/3.1/texture
@@ -85,7 +91,7 @@
         private _parameters: string[];
         private _scaleRatio = new Vector2(1, 1);
         protected _indexParameters: any;
-        private _shareOutputWithPostProcess: PostProcess;
+        private _shareOutputWithPostProcess: Nullable<PostProcess>;
         private _texelSize = Vector2.Zero();
         private _forcedOutputTexture: InternalTexture;
 
@@ -297,6 +303,18 @@
         }
 
         /**
+         * Reverses the effect of calling shareOutputWith and returns the post process back to its original state. 
+         * This should be called if the post process that shares output with this post process is disabled/disposed.
+         */
+        public useOwnOutput() {
+            if(this._textures.length == 0){
+                this._textures = new SmartArray<InternalTexture>(2);
+            }
+
+            this._shareOutputWithPostProcess = null;
+        }
+
+        /**
          * Updates the effect with the current post process compile time values and recompiles the shader.
          * @param defines Define statements that should be added at the beginning of the shader. (default: null)
          * @param uniforms Set of uniform variables that will be passed to the shader. (default: null)
@@ -338,8 +356,9 @@
          * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
          * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
          * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
+         * @returns The target texture that was bound to be written to. 
          */
-        public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): void {
+        public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): InternalTexture {
             camera = camera || this._camera;
 
             var scene = camera.getScene();
@@ -449,6 +468,7 @@
             if (this._reusable) {
                 this._currentRenderTextureInd = (this._currentRenderTextureInd + 1) % 2;
             }
+            return target;
         }
 
 
@@ -561,7 +581,10 @@
 
             var index = camera._postProcesses.indexOf(this);
             if (index === 0 && camera._postProcesses.length > 0) {
-                this._camera._postProcesses[0].markTextureDirty();
+                var firstPostProcess = this._camera._getFirstPostProcess();
+                if(firstPostProcess){
+                    firstPostProcess.markTextureDirty();
+                }
             }
 
             this.onActivateObservable.clear();

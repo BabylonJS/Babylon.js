@@ -1,19 +1,78 @@
 ﻿module BABYLON {
 
     export class RuntimeAnimation {
-        public currentFrame: number;
+        private _currentFrame: number = 0;
         private _animation: Animation;
         private _target: any;
+        private _host: Animatable;
 
+        private _originalValue: any;
         private _originalBlendValue: any;
         private _offsetsCache: {[key: string]: any} = {};
         private _highLimitsCache: {[key: string]: any} = {};
         private _stopped = false;
         private _blendingFactor = 0;
-        
-        public constructor(target: any, animation: Animation) {
+        private _scene: Scene;
+
+        private _currentValue: any;
+        private _activeTarget: any;
+        private _targetPath: string = "";
+        private _weight = 1.0;
+
+        /**
+         * Gets the current frame
+         */
+        public get currentFrame(): number {
+            return this._currentFrame;
+        }
+
+        /**
+         * Gets the weight of the runtime animation
+         */
+        public get weight(): number {
+            return this._weight;
+        }           
+
+        /**
+         * Gets the original value of the runtime animation
+         */
+        public get originalValue(): any {
+            return this._originalValue;
+        }        
+
+        /**
+         * Gets the current value of the runtime animation
+         */
+        public get currentValue(): any {
+            return this._currentValue;
+        }
+
+        /**
+         * Gets the path where to store the animated value in the target
+         */
+        public get targetPath(): string {
+            return this._targetPath;
+        }
+
+        /**
+         * Gets the actual target of the runtime animation
+         */
+        public get target(): any {
+            return this._activeTarget;
+        }
+
+        /**
+         * Create a new RuntimeAnimation object
+         * @param target defines the target of the animation
+         * @param animation defines the source {BABYLON.Animation} object
+         * @param scene defines the hosting scene
+         * @param host defines the initiating Animatable
+         */
+        public constructor(target: any, animation: Animation, scene: Scene, host: Animatable) {
             this._animation = animation;
             this._target = target;
+            this._scene = scene;
+            this._host = host;
 
             animation._runtimeAnimations.push(this);
         }
@@ -25,9 +84,9 @@
         public reset(): void {
             this._offsetsCache = {};
             this._highLimitsCache = {};
-            this.currentFrame = 0;
+            this._currentFrame = 0;
             this._blendingFactor = 0;
-            this._originalBlendValue = null;
+            this._originalValue = null;
         }
 
         public isStopped(): boolean {
@@ -55,7 +114,7 @@
                 return highLimitValue.clone ? highLimitValue.clone() : highLimitValue;
             }
 
-            this.currentFrame = currentFrame;
+            this._currentFrame = currentFrame;
 
             let keys = this._animation.getKeys();
 
@@ -175,7 +234,12 @@
             return this._getKeyValue(keys[keys.length - 1].value);
         }
 
-        public setValue(currentValue: any, blend: boolean = false): void {
+        /**
+         * Affect the interpolated value to the target
+         * @param currentValue defines the value computed by the animation
+         * @param weight defines the weight to apply to this value
+         */
+        public setValue(currentValue: any, weight = 1.0): void {
             // Set value
             var path: any;
             var destination: any;
@@ -189,39 +253,74 @@
                     property = property[targetPropertyPath[index]];
                 }
 
-                path = targetPropertyPath[targetPropertyPath.length - 1];
+                path =  targetPropertyPath[targetPropertyPath.length - 1];
                 destination = property;
             } else {
                 path = targetPropertyPath[0];
                 destination = this._target;
             }
 
+            this._targetPath = path;
+            this._activeTarget = destination;
+            this._weight = weight;
+
             // Blending
-            if (this._animation.enableBlending && this._blendingFactor <= 1.0) {
+            let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
+            let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+            
+            if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
-                    if (destination[path].clone) {
-                        this._originalBlendValue = destination[path].clone();
+                    let originalValue = destination[path];
+
+                    if (originalValue.clone) {
+                        this._originalBlendValue = originalValue.clone();
                     } else {
-                        this._originalBlendValue = destination[path];
+                        this._originalBlendValue = originalValue;
                     }
                 }
+            }
 
+            if (weight !== -1.0) {
+                if (!this._originalValue) {
+                    let originalValue: any;
+
+                    if (destination.getRestPose) { // For bones
+                        originalValue = destination.getRestPose();
+                    } else {
+                        originalValue = destination[path];
+                    }
+
+                    if (originalValue.clone) {
+                        this._originalValue = originalValue.clone();
+                    } else {
+                        this._originalValue = originalValue;
+                    }
+                }
+            }
+
+            if (enableBlending && this._blendingFactor <= 1.0) {
                 if (this._originalBlendValue.prototype) { // Complex value
                     
                     if (this._originalBlendValue.prototype.Lerp) { // Lerp supported
-                        destination[path] = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
+                        this._currentValue = this._originalBlendValue.construtor.prototype.Lerp(currentValue, this._originalBlendValue, this._blendingFactor);
                     } else { // Blending not supported
-                        destination[path] = currentValue;
+                        this._currentValue = currentValue;
                     }
 
                 } else if (this._originalBlendValue.m) { // Matrix
-                    destination[path] = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                    this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
                 } else { // Direct value
-                    destination[path] = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
+                    this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
-                this._blendingFactor += this._animation.blendingSpeed;
+                this._blendingFactor += blendingSpeed;
             } else {
-                destination[path] = currentValue;
+                this._currentValue = currentValue;
+            }
+
+            if (weight !== -1.0) {
+                this._scene._registerTargetForLateAnimationBinding(this);
+            } else {
+                destination[path] = this._currentValue;
             }
 
             if (this._target.markAsDirty) {
@@ -229,6 +328,18 @@
             }
         }
 
+        private _getCorrectLoopMode(): number | undefined {
+            if ( this._target && this._target.animationPropertiesOverride) {
+                return this._target.animationPropertiesOverride.loopMode;
+            }
+
+            return this._animation.loopMode;
+        }
+
+        /**
+         * Move the current animation to a given frame
+         * @param frame defines the frame to move to
+         */
         public goToFrame(frame: number): void {
             let keys = this._animation.getKeys();
 
@@ -238,9 +349,9 @@
                 frame = keys[keys.length - 1].frame;
             }
 
-            var currentValue = this._interpolate(frame, 0, this._animation.loopMode);
+            var currentValue = this._interpolate(frame, 0, this._getCorrectLoopMode());
 
-            this.setValue(currentValue);
+            this.setValue(currentValue, -1);
         }
 
         public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
@@ -250,10 +361,20 @@
         }
 
         private _ratioOffset = 0;
-        private _previousDelay: number;
-        private _previousRatio: number;
+        private _previousDelay: number = 0;
+        private _previousRatio: number = 0;
 
-        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, blend: boolean = false): boolean {
+        /**
+         * Execute the current animation
+         * @param delay defines the delay to add to the current frame
+         * @param from defines the lower bound of the animation range
+         * @param to defines the upper bound of the animation range
+         * @param loop defines if the current animation must loop
+         * @param speedRatio defines the current speed ratio
+         * @param weight defines the weight of the animation (default is -1 so no weight)
+         * @returns a boolean indicating if the animation has ended
+         */
+        public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
             let targetPropertyPath = this._animation.targetPropertyPath
             if (!targetPropertyPath || targetPropertyPath.length < 1) {
                 this._stopped = true;
@@ -301,7 +422,7 @@
             } else {
                 // Get max value if required
 
-                if (this._animation.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
+                if (this._getCorrectLoopMode() !== Animation.ANIMATIONLOOPMODE_CYCLE) {
 
                     var keyOffset = to.toString() + from.toString();
                     if (!this._offsetsCache[keyOffset]) {
@@ -371,10 +492,19 @@
             // Compute value
             var repeatCount = (ratio / range) >> 0;
             var currentFrame = returnValue ? from + ratio % range : to;
-            var currentValue = this._interpolate(currentFrame, repeatCount, this._animation.loopMode, offsetValue, highLimitValue);
+
+            // Need to normalize?
+            if (this._host && this._host.syncRoot) {
+                let syncRoot = this._host.syncRoot;
+                let hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
+                currentFrame = from + (to - from) * hostNormalizedFrame;
+            }
+
+            var currentValue = this._interpolate(currentFrame, repeatCount, this._getCorrectLoopMode(), offsetValue, highLimitValue);
 
             // Set value
-            this.setValue(currentValue);
+            this.setValue(currentValue, weight);
+
             // Check events
             let events = this._animation.getEvents();
             for (var index = 0; index < events.length; index++) {

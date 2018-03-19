@@ -1,15 +1,15 @@
 ﻿module BABYLON {
-    declare var require: any;
+    //declare var require: any;
     declare var CANNON: any;
 
     export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
-        public world: any; //this.BJSCANNON.World
+        public world: any;
         public name: string = "CannonJSPlugin";
         private _physicsMaterials = new Array();
         private _fixedTimeStep: number = 1 / 60;
         //See https://github.com/schteppe/CANNON.js/blob/gh-pages/demos/collisionFilter.html
-        public BJSCANNON = typeof CANNON !== 'undefined' ? CANNON : (typeof require !== 'undefined' ? require('cannon') : undefined);
+        public BJSCANNON = CANNON;
 
 
 

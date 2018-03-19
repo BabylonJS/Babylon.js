@@ -2,6 +2,8 @@ declare module BabylonViewer {
 
     export let disableInit: boolean;
 
+    export function disposeAll(): void;
+
     export interface ITemplateConfiguration {
         location?: string;
         html?: string;
@@ -62,7 +64,6 @@ declare module BabylonViewer {
         onAllLoaded: BABYLON.Observable<TemplateManager>;
         onEventTriggered: BABYLON.Observable<EventCallback>;
         eventManager: EventManager;
-        constructor(containerElement: HTMLElement);
         initTemplate(templates: {
             [key: string]: ITemplateConfiguration;
         }): void;
@@ -81,7 +82,6 @@ declare module BabylonViewer {
         isShown: boolean;
         parent: HTMLElement;
         initPromise: Promise<Template>;
-        constructor(name: string, _configuration: ITemplateConfiguration);
         readonly configuration: ITemplateConfiguration;
         getChildElements(): Array<string>;
         appendTo(parent: HTMLElement): void;
@@ -93,8 +93,9 @@ declare module BabylonViewer {
     interface ViewerManager {
         onViewerAdded: (viewer: AbstractViewer) => void;
         onViewerAddedObservable: BABYLON.Observable<AbstractViewer>;
-        constructor();
+        onViewerRemovedObservable: BABYLON.Observable<string>;
         addViewer(viewer: AbstractViewer): void;
+        removeViewer(viewer: AbstractViewer): void;
         getViewerById(id: string): AbstractViewer;
         getViewerByHTMLElement(element: HTMLElement): AbstractViewer | undefined;
         getViewerPromiseById(id: string): Promise<AbstractViewer>;
@@ -110,7 +111,6 @@ declare module BabylonViewer {
     export function InitTags(selector?: string): void;
 
     interface EventManager {
-        constructor(templateManager: TemplateManager);
         registerCallback(templateName: string, callback: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
         unregisterCallback(templateName: string, callback?: (eventData: EventCallback) => void, eventType?: string, selector?: string): void;
     }
@@ -124,14 +124,12 @@ declare module BabylonViewer {
     }
     interface MapperManager {
         DefaultMapper: string;
-        constructor();
         getMapper(type: string): IMapper;
         registerMapper(type: string, mapper: IMapper): void;
     }
     export let mapperManager: MapperManager;
 
     interface ConfigurationLoader {
-        constructor();
         loadConfiguration(initConfig?: ViewerConfiguration): Promise<ViewerConfiguration>;
         getConfigurationType(type: string): void;
     }
@@ -207,6 +205,7 @@ declare module BabylonViewer {
 
     export interface IModelConfiguration {
         url?: string;
+        root?: string;
         loader?: string; // obj, gltf?
         position?: { x: number, y: number, z: number };
         rotation?: { x: number, y: number, z: number, w?: number };
@@ -223,6 +222,11 @@ declare module BabylonViewer {
         title?: string;
         subtitle?: string;
         thumbnail?: string; // URL or data-url
+
+        animation?: {
+            autoStart?: boolean | string;
+            playOnce?: boolean;
+        }
 
         // [propName: string]: any; // further configuration, like title and creator
     }
@@ -400,57 +404,131 @@ declare module BabylonViewer {
     }
     /////>configuration
 
+    export enum AnimationPlayMode {
+        ONCE = 0,
+        LOOP = 1,
+    }
+    export enum AnimationState {
+        INIT = 0,
+        PLAYING = 1,
+        PAUSED = 2,
+        STOPPED = 3,
+        ENDED = 4,
+    }
+    export interface IModelAnimation extends BABYLON.IDisposable {
+        readonly state: AnimationState;
+        readonly name: string;
+        readonly frames: number;
+        readonly currentFrame: number;
+        readonly fps: number;
+        speedRatio: number;
+        playMode: AnimationPlayMode;
+        start(): any;
+        stop(): any;
+        pause(): any;
+        reset(): any;
+        restart(): any;
+        goToFrame(frameNumber: number): any;
+    }
+
+    export enum ModelState {
+        INIT,
+        LOADING,
+        LOADED,
+        CANCELED,
+        ERROR
+    }
+
+    export class ModelLoader {
+        constructor(viewer: AbstractViewer);
+        load(modelConfiguration: IModelConfiguration): ViewerModel;
+        cancelLoad(model: ViewerModel): void;
+        dispose(): void;
+    }
+
+    export class ViewerModel {
+        constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration);
+        loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
+        meshes: Array<BABYLON.AbstractMesh>;
+        rootMesh: BABYLON.AbstractMesh;
+        particleSystems: Array<BABYLON.ParticleSystem>;
+        skeletons: Array<BABYLON.Skeleton>;
+        currentAnimation: IModelAnimation;
+        onLoadedObservable: BABYLON.Observable<ViewerModel>;
+        onLoadProgressObservable: BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
+        onLoadErrorObservable: BABYLON.Observable<{
+            message: string;
+            exception: any;
+        }>;
+        onAfterConfigure: BABYLON.Observable<ViewerModel>;
+        state: ModelState;
+        loadId: number;
+        initAnimations(): void;
+        addAnimationGroup(animationGroup: BABYLON.AnimationGroup): void;
+        getAnimations(): Array<IModelAnimation>;
+        getAnimationNames(): string[];
+        playAnimation(name: string): IModelAnimation;
+        dispose(): void;
+    }
+
     /////<viewer
     export abstract class AbstractViewer {
         containerElement: HTMLElement;
         templateManager: TemplateManager;
-        camera: BABYLON.ArcRotateCamera;
         engine: BABYLON.Engine;
         scene: BABYLON.Scene;
+        camera: BABYLON.ArcRotateCamera;
+        sceneOptimizer: BABYLON.SceneOptimizer;
         baseId: string;
-        canvas: HTMLCanvasElement;
-        protected configuration: ViewerConfiguration;
+        models: Array<ViewerModel>;
+        modelLoader: ModelLoader;
+        lastUsedLoader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
+        protected _configuration: ViewerConfiguration;
         environmentHelper: BABYLON.EnvironmentHelper;
-        protected defaultHighpTextureType: number;
-        protected shadowGeneratorBias: number;
-        protected defaultPipelineTextureType: number;
-        protected maxShadows: number;
+        protected _defaultHighpTextureType: number;
+        protected _shadowGeneratorBias: number;
+        protected _defaultPipelineTextureType: number;
+        protected _maxShadows: number;
+        readonly isHdrSupported: boolean;
+        protected _isDisposed: boolean;
         onSceneInitObservable: BABYLON.Observable<BABYLON.Scene>;
         onEngineInitObservable: BABYLON.Observable<BABYLON.Engine>;
-        onModelLoadedObservable: BABYLON.Observable<BABYLON.AbstractMesh[]>;
+        onModelLoadedObservable: BABYLON.Observable<ViewerModel>;
         onModelLoadProgressObservable: BABYLON.Observable<BABYLON.SceneLoaderProgressEvent>;
-        onModelLoadErrorObservable: BABYLON.Observable<{ message: string; exception: any }>;
+        onModelLoadErrorObservable: BABYLON.Observable<{
+            message: string;
+            exception: any;
+        }>;
         onLoaderInitObservable: BABYLON.Observable<BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync>;
         onInitDoneObservable: BABYLON.Observable<AbstractViewer>;
+        canvas: HTMLCanvasElement;
+        protected _registeredOnBeforerenderFunctions: Array<() => void>;
         constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
         getBaseId(): string;
-        protected abstract prepareContainerElement(): any;
-        protected onTemplatesLoaded(): Promise<AbstractViewer>;
-        protected initEngine(): Promise<BABYLON.Engine>;
-        protected initScene(): Promise<BABYLON.Scene>;
-        dispose(): void;
-        loadModel(model?: any, clearScene?: boolean): Promise<BABYLON.Scene>;
-        lastUsedLoader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
-        sceneOptimizer: BABYLON.SceneOptimizer;
-        protected registeredOnBeforerenderFunctions: Array<() => void>;
         isCanvasInDOM(): boolean;
-        protected resize: () => void;
-        protected render: () => void;
-        updateConfiguration(newConfiguration: Partial<ViewerConfiguration>): void;
-        protected configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): void;
-        protected configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration): void;
-        protected configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
-        protected configureObservers(observersConfiguration: IObserversConfiguration): void;
-        protected configureCamera(cameraConfig: ICameraConfiguration, focusMeshes: Array<BABYLON.AbstractMesh>): void;
-        protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean }, focusMeshes: Array<BABYLON.AbstractMesh>): void;
-        protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<BABYLON.AbstractMesh>): void;
+        protected _resize: () => void;
+        protected _render: () => void;
+        updateConfiguration(newConfiguration?: Partial<ViewerConfiguration>): void;
+        protected _configureEnvironment(skyboxConifguration?: ISkyboxConfiguration | boolean, groundConfiguration?: IGroundConfiguration | boolean): Promise<BABYLON.Scene> | undefined;
+        protected _configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration): void;
+        protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean): void;
+        protected _configureObservers(observersConfiguration: IObserversConfiguration): void;
+        protected _configureCamera(cameraConfig: ICameraConfiguration, model?: ViewerModel): void;
+        protected _configureLights(lightsConfiguration?: {
+            [name: string]: ILightConfiguration | boolean;
+        }, model?: ViewerModel): void;
+        protected _configureModel(modelConfiguration: Partial<IModelConfiguration>, model?: ViewerModel): void;
         dispose(): void;
-        protected initEnvironment(focusMeshes: Array<BABYLON.AbstractMesh>): Promise<BABYLON.Scene>;
-        protected injectCustomShaders(): void;
-        protected extendClassWithConfig(object: any, config: any): void;
-        protected handleHardwareLimitations(): void;
-
-
+        protected abstract prepareContainerElement(): any;
+        protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+        protected _initEngine(): Promise<BABYLON.Engine>;
+        protected _initScene(): Promise<BABYLON.Scene>;
+        initModel(modelConfig: IModelConfiguration, clearScene?: boolean): ViewerModel
+        loadModel(modelConfig?: any, clearScene?: boolean): Promise<ViewerModel>;
+        protected _initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
+        protected _handleHardwareLimitations(): void;
+        protected _injectCustomShaders(): void;
+        protected _extendClassWithConfig(object: any, config: any): void;
     }
 
     export class DefaultViewer extends AbstractViewer {
@@ -458,10 +536,10 @@ declare module BabylonViewer {
         camera: BABYLON.ArcRotateCamera;
         constructor(containerElement: HTMLElement, initialConfiguration?: ViewerConfiguration);
         initScene(): Promise<BABYLON.Scene>;
-        protected onTemplatesLoaded(): Promise<AbstractViewer>;
-        protected prepareContainerElement(): void;
-        loadModel(model?: any): Promise<BABYLON.Scene>;
-        initEnvironment(focusMeshes?: Array<BABYLON.AbstractMesh>): Promise<BABYLON.Scene>;
+        protected _onTemplatesLoaded(): Promise<AbstractViewer>;
+        protected _prepareContainerElement(): void;
+        loadModel(model?: any): Promise<ViewerModel>;
+        initEnvironment(viewerModel?: ViewerModel): Promise<BABYLON.Scene>;
         showOverlayScreen(subScreen: string): Promise<Template>;
         hideOverlayScreen(): Promise<Template>;
         showLoadingScreen(): Promise<Template>;

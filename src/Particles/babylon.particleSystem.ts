@@ -325,12 +325,28 @@
         private _scaledGravity = Vector3.Zero();
         private _currentRenderId = -1;
         private _alive: boolean;
+
         private _started = false;
         private _stopped = false;
         private _actualFrame = 0;
         private _scaledUpdateSpeed: number;
         private _vertexBufferSize = 11;
         private _isAnimationSheetEnabled: boolean;
+
+        // end of sheet animation
+
+        // Sub-emitters
+        /**
+         * this is the Sub-emitters templates that will be used to generate particle system when the particle dies, this property is used by the root particle system only.
+         */
+        public subEmitters: ParticleSystem[];
+        /**
+        * The current active Sub-systems, this property is used by the root particle system only.
+        */
+        public activeSubSystems: Array<ParticleSystem>;
+        
+        private _rootParticleSystem: ParticleSystem;
+        //end of Sub-emitter
 
         /**
          * Gets the current list of active particles
@@ -403,6 +419,7 @@
                     particle.age += this._scaledUpdateSpeed;
 
                     if (particle.age >= particle.lifeTime) { // Recycle by swapping with last particle
+                        this._emitFromParticle(particle);
                         this.recycleParticle(particle);
                         index--;
                         continue;
@@ -447,20 +464,6 @@
         }
 
         /**
-         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
-         * Its lifetime will start back at 0.
-         * @param particle The particle to recycle
-         */
-        public recycleParticle(particle: Particle): void {
-            var lastParticle = <Particle>this._particles.pop();
-
-            if (lastParticle !== particle) {
-                lastParticle.copyTo(particle);
-                this._stockParticles.push(lastParticle);
-            }
-        }
-
-        /**
          * Gets the maximum number of particles active at the same time.
          * @returns The max number of active particles.
          */
@@ -491,14 +494,24 @@
             this._started = true;
             this._stopped = false;
             this._actualFrame = 0;
+            if (this.subEmitters && this.subEmitters.length != 0) {
+                this.activeSubSystems = new Array<ParticleSystem>();
+            }
         }
 
         /**
          * Stops the particle system.
+         * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. the default value is true.
          */
-        public stop(): void {
+        public stop(stopSubEmitters = true): void {
             this._stopped = true;
+
+            if (stopSubEmitters) {
+                this._stopSubEmitters();
+            }
         }
+
+        // animation sheet
 
         /**
          * Remove all active particles
@@ -555,6 +568,69 @@
             this._vertexData[offset + 11] = particle.cellIndex;
         }
 
+        // start of sub system methods
+
+        /**
+         * "Recycles" one of the particle by copying it back to the "stock" of particles and removing it from the active list.
+         * Its lifetime will start back at 0.
+         */
+        public recycleParticle: (particle: Particle) => void = (particle) => {
+            var lastParticle = <Particle>this._particles.pop();
+
+            if (lastParticle !== particle) {
+                lastParticle.copyTo(particle);
+            }
+            this._stockParticles.push(lastParticle);
+        };
+
+        private _stopSubEmitters(): void {
+            if (!this.activeSubSystems) {
+                return;
+            }
+            this.activeSubSystems.forEach(subSystem => {
+                subSystem.stop(true);
+            });
+            this.activeSubSystems = new Array<ParticleSystem>();
+        }
+
+        private _createParticle: () => Particle = () => {
+            var particle: Particle;
+            if (this._stockParticles.length !== 0) {
+                particle = <Particle>this._stockParticles.pop();
+                particle.age = 0;
+                particle.cellIndex = this.startSpriteCellID;
+            } else {
+                particle = new Particle(this);
+            }
+            return particle;
+        }
+
+        private _removeFromRoot(): void {
+            if (!this._rootParticleSystem){
+                return;
+            }
+            
+            let index = this._rootParticleSystem.activeSubSystems.indexOf(this);
+            if (index !== -1) {
+                this._rootParticleSystem.activeSubSystems.splice(index, 1);
+            }
+        }
+
+        private _emitFromParticle: (particle: Particle) => void = (particle) => {
+            if (!this.subEmitters || this.subEmitters.length === 0) {
+                return;
+            }
+
+            var templateIndex = Math.floor(Math.random() * this.subEmitters.length);
+
+            var subSystem = this.subEmitters[templateIndex].clone(this.name + "_sub", particle.position.clone());
+            subSystem._rootParticleSystem = this;
+            this.activeSubSystems.push(subSystem);
+            subSystem.start();
+        }
+
+        // end of sub system methods
+
         private _update(newParticles: number): void {
             // Update current
             this._alive = this._particles.length > 0;
@@ -578,13 +654,7 @@
                     break;
                 }
 
-                if (this._stockParticles.length !== 0) {
-                    particle = <Particle>this._stockParticles.pop();
-                    particle.age = 0;
-                    particle.cellIndex = this.startSpriteCellID;
-                } else {
-                    particle = new Particle(this);
-                }
+                particle = this._createParticle();
 
                 this._particles.push(particle);
 
@@ -743,6 +813,10 @@
             if (this._vertexBuffer) {
                 this._vertexBuffer.update(this._vertexData);
             }
+
+            if (this.manualEmitCount === 0 && this.disposeOnStop) {
+                this.stop();
+            }
         }
 
         private _appendParticleVertexes: Nullable<(offset: number, particle: Particle) => void> = null;
@@ -773,6 +847,19 @@
         }
 
         /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        public isReady(): boolean {
+            var effect = this._getEffect();
+            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+                return false;
+            }
+
+            return true;
+        }
+
+        /**
          * Renders the particle system in its current state.
          * @returns the current number of particles
          */
@@ -780,7 +867,7 @@
             var effect = this._getEffect();
 
             // Check
-            if (!this.emitter || !effect.isReady() || !this.particleTexture || !this.particleTexture.isReady() || !this._particles.length) {
+            if (!this.isReady() || !this._particles.length) {
                 return 0;
             }
 
@@ -795,7 +882,7 @@
             effect.setMatrix("view", viewMatrix);
             effect.setMatrix("projection", this._scene.getProjectionMatrix());
 
-            if (this._isAnimationSheetEnabled) {
+            if (this._isAnimationSheetEnabled && this.particleTexture) {
                 var baseSize = this.particleTexture.getBaseSize();
                 effect.setFloat3("particlesInfos", this.spriteCellWidth / baseSize.width, this.spriteCellHeight / baseSize.height, baseSize.width / this.spriteCellWidth);
             }
@@ -849,6 +936,8 @@
                 this.particleTexture.dispose();
                 this.particleTexture = null;
             }
+
+            this._removeFromRoot();
 
             // Remove from scene
             var index = this._scene.particleSystems.indexOf(this);
@@ -908,14 +997,15 @@
          */
         public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
             var particleEmitter = new BoxParticleEmitter();
+            this.particleEmitterType = particleEmitter;
             this.direction1 = direction1;
             this.direction2 = direction2;
             this.minEmitBox = minEmitBox;
             this.maxEmitBox = maxEmitBox;
-            this.particleEmitterType = particleEmitter;
             return particleEmitter;
         }
 
+        // Clone
         /**
          * Clones the particle system.
          * @param name The name of the cloned object

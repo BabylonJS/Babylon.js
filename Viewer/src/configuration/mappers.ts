@@ -3,12 +3,36 @@ import { ViewerConfiguration } from './configuration';
 
 import { kebabToCamel } from '../helper';
 
+/**
+ * This is the mapper's interface. Implement this function to create your own mapper and register it at the mapper manager
+ */
 export interface IMapper {
     map(rawSource: any): ViewerConfiguration;
 }
 
+/**
+ * This is a simple HTML mapper. 
+ * This mapper parses a single HTML element and returns the configuration from its attributes.
+ * it parses numbers and boolean values to the corresponding variable types.
+ * The following HTML element: 
+ *  <div test="1" random-flag="true" a.string.object="test"> will result in the following configuration:
+ * 
+ *  {
+ *      test: 1, //a number!
+ *      randomFlag: boolean, //camelCase and boolean
+ *      a: {
+ *          string: {
+ *              object: "test" //dot-separated object levels
+ *          }
+ *      }
+ *  }
+ */
 class HTMLMapper implements IMapper {
 
+    /**
+     * Map a specific element and get configuration from it
+     * @param element the HTML element to analyze. 
+     */
     map(element: HTMLElement): ViewerConfiguration {
 
         let config = {};
@@ -26,9 +50,12 @@ class HTMLMapper implements IMapper {
                     } else if (val === "false") {
                         val = false;
                     } else {
-                        let number = parseFloat(val);
-                        if (!isNaN(number)) {
-                            val = number;
+                        var isnum = /^\d+$/.test(val);
+                        if (isnum) {
+                            let number = parseFloat(val);
+                            if (!isNaN(number)) {
+                                val = number;
+                            }
                         }
                     }
                     currentConfig[camelKey] = val;
@@ -43,15 +70,27 @@ class HTMLMapper implements IMapper {
     }
 }
 
+/**
+ * A simple string-to-JSON mapper.
+ * This is the main mapper, used to analyze downloaded JSON-Configuration or JSON payload
+ */
 class JSONMapper implements IMapper {
-    map(rawSource: any) {
+    map(rawSource: string) {
         return JSON.parse(rawSource);
     }
 }
 
-// TODO - Dom configuration mapper.
+/**
+ * The DOM Mapper will traverse an entire DOM Tree and will load the configuration from the
+ * DOM elements and attributes.
+ */
 class DOMMapper implements IMapper {
 
+    /**
+     * The mapping function that will convert HTML data to a viewer configuration object
+     * @param baseElement the baseElement from which to start traversing
+     * @returns a ViewerCOnfiguration object from the provided HTML Element
+     */
     map(baseElement: HTMLElement): ViewerConfiguration {
         let htmlMapper = new HTMLMapper();
         let config = htmlMapper.map(baseElement);
@@ -61,6 +100,7 @@ class DOMMapper implements IMapper {
             if (children.length) {
                 for (let i = 0; i < children.length; ++i) {
                     let item = <HTMLElement>children.item(i);
+                    // use the HTML Mapper to read configuration from a single element
                     let configMapped = htmlMapper.map(item);
                     let key = kebabToCamel(item.nodeName.toLowerCase());
                     if (item.attributes.getNamedItem('array') && item.attributes.getNamedItem('array').nodeValue === 'true') {
@@ -69,7 +109,7 @@ class DOMMapper implements IMapper {
                         if (element.attributes.getNamedItem('array') && element.attributes.getNamedItem('array').nodeValue === 'true') {
                             partConfig.push(configMapped)
                         } else if (partConfig[key]) {
-                            //exists already! problem... probably an array
+                            //exists already! probably an array
                             element.setAttribute('array', 'true');
                             let oldItem = partConfig[key];
                             partConfig = [oldItem, configMapped]
@@ -91,30 +131,60 @@ class DOMMapper implements IMapper {
 
 }
 
+/**
+ * The MapperManager manages the different implemented mappers.
+ * It allows the user to register new mappers as well and use them to parse their own configuration data
+ */
 export class MapperManager {
 
-    private mappers: { [key: string]: IMapper };
+    private _mappers: { [key: string]: IMapper };
+    /**
+     * The default mapper is the JSON mapper.
+     */
     public static DefaultMapper = 'json';
 
     constructor() {
-        this.mappers = {
+        this._mappers = {
             "html": new HTMLMapper(),
             "json": new JSONMapper(),
             "dom": new DOMMapper()
         }
     }
 
+    /**
+     * Get a specific configuration mapper.
+     * 
+     * @param type the name of the mapper to load
+     */
     public getMapper(type: string) {
-        if (!this.mappers[type]) {
+        if (!this._mappers[type]) {
             Tools.Error("No mapper defined for " + type);
         }
-        return this.mappers[type] || this.mappers[MapperManager.DefaultMapper];
+        return this._mappers[type] || this._mappers[MapperManager.DefaultMapper];
     }
 
+    /**
+     * Use this functio to register your own configuration mapper.
+     * After a mapper is registered, it can be used to parse the specific type fo configuration to the standard ViewerConfiguration.
+     * @param type the name of the mapper. This will be used to define the configuration type and/or to get the mapper
+     * @param mapper The implemented mapper 
+     */
     public registerMapper(type: string, mapper: IMapper) {
-        this.mappers[type] = mapper;
+        this._mappers[type] = mapper;
+    }
+
+    /**
+     * Dispose the mapper manager and all of its mappers.
+     */
+    public dispose() {
+        this._mappers = {};
     }
 
 }
 
+/**
+ * mapperManager is a singleton of the type MapperManager.
+ * The mapperManager can be disposed directly with calling mapperManager.dispose()
+ * or indirectly with using BabylonViewer.disposeAll()
+ */
 export let mapperManager = new MapperManager();

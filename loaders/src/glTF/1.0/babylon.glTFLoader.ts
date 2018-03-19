@@ -17,9 +17,9 @@ module BABYLON.GLTF1 {
         private _pos: number = 0;
         private _maxPos: number;
 
-        public currentToken: ETokenType;
-        public currentIdentifier: string;
-        public currentString: string;
+        public currentToken: ETokenType = ETokenType.UNKNOWN;
+        public currentIdentifier: string = "";
+        public currentString: string = "";
         public isLetterOrDigitPattern: RegExp = /^[a-zA-Z0-9]+$/;
 
         constructor(toParse: string) {
@@ -1013,7 +1013,7 @@ module BABYLON.GLTF1 {
     /**
     * onBind shaderrs callback to set uniforms and matrices
     */
-    var onBindShaderMaterial = (mesh: Mesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
+    var onBindShaderMaterial = (mesh: AbstractMesh, gltfRuntime: IGLTFRuntime, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }, shaderMaterial: ShaderMaterial, technique: IGLTFTechnique, material: IGLTFMaterial, onSuccess: (shaderMaterial: ShaderMaterial) => void) => {
         var materialValues = material.values || technique.parameters;
 
         for (var unif in unTreatedUniforms) {
@@ -1126,7 +1126,7 @@ module BABYLON.GLTF1 {
         return (_: Effect) => {
             prepareShaderMaterialUniforms(gltfRuntime, shaderMaterial, technique, material, unTreatedUniforms);
 
-            shaderMaterial.onBind = (mesh: Mesh) => {
+            shaderMaterial.onBind = (mesh: AbstractMesh) => {
                 onBindShaderMaterial(mesh, gltfRuntime, unTreatedUniforms, shaderMaterial, technique, material, onSuccess);
             };
         };
@@ -1368,16 +1368,18 @@ module BABYLON.GLTF1 {
             onSuccess(newTexture);
         }
 
-        public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): void {
+        public static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string | ArrayBuffer) => void, onError?: (message: string) => void): void {
             var shader: IGLTFShader = gltfRuntime.shaders[id];
 
             if (Tools.IsBase64(shader.uri)) {
                 var shaderString = atob(shader.uri.split(",")[1]);
-                onSuccess(shaderString);
+                if (onSuccess) {
+                    onSuccess(shaderString);
+                }
             }
             else {
                 Tools.LoadFile(gltfRuntime.rootUrl + shader.uri, onSuccess, undefined, undefined, false, request => {
-                    if (request) {
+                    if (request && onError) {
                         onError(request.status + " " + request.statusText);
                     }
                 });
@@ -1571,6 +1573,7 @@ module BABYLON.GLTF1 {
         public onMeshLoadedObservable = new Observable<AbstractMesh>();
         public onTextureLoadedObservable = new Observable<BaseTexture>();
         public onMaterialLoadedObservable = new Observable<Material>();
+        public onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
         public onCompleteObservable = new Observable<IGLTFLoader>();
         public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
@@ -1579,7 +1582,7 @@ module BABYLON.GLTF1 {
         public dispose(): void {}
         // #endregion
 
-        private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): boolean {
+        private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1642,7 +1645,7 @@ module BABYLON.GLTF1 {
             return true;
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
             return new Promise((resolve, reject) => {
                 this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
                     resolve({
@@ -1656,7 +1659,7 @@ module BABYLON.GLTF1 {
             });
         }
 
-        private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress: (event: SceneLoaderProgressEvent) => void, onError: (message: string) => void): void {
+        private _loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: () => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): void {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1684,7 +1687,7 @@ module BABYLON.GLTF1 {
             }, onError);
         }
 
-        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<void> {
+        public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void> {
             return new Promise((resolve, reject) => {
                 this._loadAsync(scene, data, rootUrl, () => {
                     resolve();
@@ -1699,6 +1702,10 @@ module BABYLON.GLTF1 {
 
             var processShader = (sha: string, shader: IGLTFShader) => {
                 GLTFLoaderExtension.LoadShaderStringAsync(gltfRuntime, sha, shaderString => {
+                    if (shaderString instanceof ArrayBuffer) {
+                        return;
+                    }
+
                     gltfRuntime.loadedShaderCount++;
 
                     if (shaderString) {

@@ -153,7 +153,7 @@
         }
 
         public _checkCollision(collider: Collider): boolean {
-            let boundingInfo = this._renderingMesh.getBoundingInfo();
+            let boundingInfo = this.getBoundingInfo();
 
             return boundingInfo._checkCollision(collider);
         }
@@ -246,6 +246,21 @@
          */
         public intersects(ray: Ray, positions: Vector3[], indices: IndicesArray, fastCheck?: boolean): Nullable<IntersectionInfo> {
             var intersectInfo: Nullable<IntersectionInfo> = null;
+
+            const material = this.getMaterial();
+            if (!material) {
+                return null;
+            }
+
+            switch (material.fillMode) {
+                case Material.PointListDrawMode:
+                case Material.LineListDrawMode:
+                case Material.LineLoopDrawMode:
+                case Material.LineStripDrawMode:
+                case Material.TriangleFanDrawMode:
+                case Material.TriangleStripDrawMode:
+                    return null;
+            }
 
             // LineMesh first as it's also a Mesh...
             if (LinesMesh && this._mesh instanceof LinesMesh) {

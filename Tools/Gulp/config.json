@@ -16,7 +16,19 @@
         "srcOutputDirectory": "../../src/",
         "currentConfig": "all",
         "typedocJSON": "../../.temp/babylon.typedoc.json",
-        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json"
+        "typedocValidationBaseline": "../../dist/preview release/typedocValidationBaseline.json",
+        "dependencies": [
+            {
+                "name": "CANNON",
+                "module": "cannon",
+                "optional": true
+            },
+            {
+                "name": "OIMO",
+                "module": "oimo",
+                "optional": true
+            }
+        ]
     },
     "buildConfigurations": {
         "all": [
@@ -385,6 +397,7 @@
         },
         "animations": {
             "files": [
+                "../../src/Animations/babylon.animationPropertiesOverride.js",
                 "../../src/Animations/babylon.animation.js",
                 "../../src/Animations/babylon.animationGroup.js",
                 "../../src/Animations/babylon.runtimeAnimation.js",
@@ -743,7 +756,8 @@
                 "../../src/PostProcess/babylon.depthOfFieldBlurPostProcess.js"
             ],
             "dependUpon": [
-                "postProcesses"
+                "postProcesses",
+                "additionalPostProcess_blur"
             ],
             "shaders": [
                 "kernelBlur.vertex",
@@ -767,6 +781,28 @@
                 "circleOfConfusion.fragment"
             ]
         },
+        "additionalPostProcess_sharpen": {
+            "files": [
+                "../../src/PostProcess/babylon.sharpenPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "sharpen.fragment"
+            ]
+        },
+        "additionalPostProcess_chromaticAberration": {
+            "files": [
+                "../../src/PostProcess/babylon.chromaticAberrationPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "chromaticAberration.fragment"
+            ]
+        },
         "additionalPostProcess_depthOfFieldMerge": {
             "files": [
                 "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
@@ -781,6 +817,11 @@
         "additionalPostProcess_depthOfFieldEffect": {
             "files": [
                 "../../src/PostProcess/babylon.depthOfFieldEffect.js"
+            ],
+            "dependUpon": [
+                "additionalPostProcess_depthOfFieldBlur",
+                "additionalPostProcess_depthOfFieldMerge",
+                "additionalPostProcess_circleOfConfusion"
             ]
         },
         "additionalPostProcess_fxaa": {
@@ -824,6 +865,7 @@
                 "../../src/PostProcess/babylon.blackAndWhitePostProcess.js",
                 "../../src/PostProcess/babylon.convolutionPostProcess.js",
                 "../../src/PostProcess/babylon.sharpenPostProcess.js",
+                "../../src/PostProcess/babylon.chromaticAberrationPostProcess.js",
                 "../../src/PostProcess/babylon.filterPostProcess.js",
                 "../../src/PostProcess/babylon.fxaaPostProcess.js",
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
@@ -890,8 +932,8 @@
             "dependUpon": [
                 "renderingPipeline",
                 "additionalPostProcess_fxaa",
-                "additionalPostProcess_circleOfConfusion",
-                "additionalPostProcess_depthOfFieldMerge",
+                "additionalPostProcess_chromaticAberration",
+                "additionalPostProcess_sharpen",
                 "additionalPostProcess_depthOfFieldEffect"
             ]
         },
@@ -1689,7 +1731,8 @@
                 "moduleDeclaration": {
                     "name": "INSPECTOR",
                     "module": "babylonjs-inspector"
-                }
+                },
+                "extendsRoot": true
             }
         ],
         "build": {

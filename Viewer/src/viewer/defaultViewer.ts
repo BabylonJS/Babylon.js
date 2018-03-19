@@ -5,27 +5,42 @@ import { Template, EventCallback } from './../templateManager';
 import { AbstractViewer } from './viewer';
 import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMaterial, Observable, ShadowLight, CubeTexture, BouncingBehavior, FramingBehavior, Behavior, Light, Engine, Scene, AutoRotationBehavior, AbstractMesh, Quaternion, StandardMaterial, ArcRotateCamera, ImageProcessingConfiguration, Color3, Vector3, SceneLoader, Mesh, HemisphericLight } from 'babylonjs';
 import { CameraBehavior } from '../interfaces';
+import { ViewerModel } from '../model/viewerModel';
 
+/**
+ * The Default viewer is the default implementation of the AbstractViewer.
+ * It uses the templating system to render a new canvas and controls.
+ */
 export class DefaultViewer extends AbstractViewer {
 
+    /**
+     * Create a new default viewer
+     * @param containerElement the element in which the templates will be rendered
+     * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
+     */
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
-        this.onModelLoadedObservable.add(this.onModelLoaded);
+        this.onModelLoadedObservable.add(this._onModelLoaded);
     }
 
-    public initScene(): Promise<Scene> {
-        return super.initScene().then(() => {
-            this.extendClassWithConfig(this.scene, this.configuration.scene);
+    /**
+     * Overriding the AbstractViewer's _initScene fcuntion
+     */
+    protected _initScene(): Promise<Scene> {
+        return super._initScene().then(() => {
+            this._extendClassWithConfig(this.scene, this._configuration.scene);
             return this.scene;
         })
     }
 
-    protected onTemplatesLoaded() {
-
+    /**
+     * This will be executed when the templates initialize.
+     */
+    protected _onTemplatesLoaded() {
         this.showLoadingScreen();
 
         // navbar
-        this.initNavbar();
+        this._initNavbar();
 
         // close overlay button
         let closeButton = document.getElementById('close-button');
@@ -35,10 +50,10 @@ export class DefaultViewer extends AbstractViewer {
             })
         }
 
-        return super.onTemplatesLoaded();
+        return super._onTemplatesLoaded();
     }
 
-    private initNavbar() {
+    private _initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
         if (navbar) {
             let navbarHeight = navbar.parent.clientHeight + 'px';
@@ -98,16 +113,24 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    protected prepareContainerElement() {
+    /**
+     * Preparing the container element to present the viewer
+     */
+    protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
         this.containerElement.style.display = 'flex';
     }
 
-    protected configureModel(modelConfiguration: Partial<IModelConfiguration>, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
-        super.configureModel(modelConfiguration, focusMeshes);
-
+    /**
+     * This function will configure the templates and update them after a model was loaded
+     * It is mainly responsible to changing the title and subtitle etc'.
+     * @param model the model to be used to configure the templates by
+     */
+    protected _configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
+
+        let modelConfiguration = model.configuration;
 
         let metadataContainer = navbar.parent.querySelector('#model-metadata');
         if (metadataContainer) {
@@ -131,133 +154,41 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    public loadModel(model: any = this.configuration.model): Promise<Scene> {
+    /**
+     * This will load a new model to the default viewer
+     * overriding the AbstractViewer's loadModel.
+     * The scene will automatically be cleared of the old models, if exist.
+     * @param model the configuration object (or URL) to load.
+     */
+    public loadModel(model: any = this._configuration.model): Promise<ViewerModel> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
             console.log(error);
             this.hideLoadingScreen();
             this.showOverlayScreen('error');
-            return this.scene;
+            return Promise.reject(error);
         });
     }
 
-    private onModelLoaded = (meshes: Array<AbstractMesh>) => {
+    private _onModelLoaded = (model: ViewerModel) => {
+        this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
-        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
-            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
             this.hideLoadingScreen();
         }, hideLoadingDelay);
 
-        meshes[0].rotation.y += Math.PI;
-
-        return; //this.initEnvironment(meshes);
+        return;
     }
 
-    /*protected initEnvironment(focusMeshes: Array<AbstractMesh> = []): Promise<Scene> {
-        if (this.configuration.skybox) {
-            // Define a general environment textue
-            let texture;
-            // this is obligatory, but still - making sure it is there.
-            if (this.configuration.skybox.cubeTexture) {
-                if (typeof this.configuration.skybox.cubeTexture.url === 'string') {
-                    texture = CubeTexture.CreateFromPrefilteredData(this.configuration.skybox.cubeTexture.url, this.scene);
-                } else {
-                    texture = CubeTexture.CreateFromImages(this.configuration.skybox.cubeTexture.url, this.scene, this.configuration.skybox.cubeTexture.noMipMap);
-                }
-            }
-            if (texture) {
-                this.extendClassWithConfig(texture, this.configuration.skybox.cubeTexture);
-
-                let scale = this.configuration.skybox.scale || this.scene.activeCamera && (this.scene.activeCamera.maxZ - this.scene.activeCamera.minZ) / 2 || 1;
-
-                let box = this.scene.createDefaultSkybox(texture, this.configuration.skybox.pbr, scale, this.configuration.skybox.blur);
-
-                // before extending, set the material's imageprocessing configuration object, if needed:
-                if (this.configuration.skybox.material && this.configuration.skybox.material.imageProcessingConfiguration && box) {
-                    (<StandardMaterial>box.material).imageProcessingConfiguration = new ImageProcessingConfiguration();
-                }
-
-                this.extendClassWithConfig(box, this.configuration.skybox);
-
-                box && focusMeshes.push(box);
-            }
-        }
-
-        if (this.configuration.ground) {
-            let groundConfig = (typeof this.configuration.ground === 'boolean') ? {} : this.configuration.ground;
-
-            let groundSize = groundConfig.size || (this.configuration.skybox && this.configuration.skybox.scale) || 3000;
-
-            let ground = Mesh.CreatePlane("BackgroundPlane", groundSize, this.scene);
-            let backgroundMaterial = new BackgroundMaterial('groundmat', this.scene);
-            ground.rotation.x = Math.PI / 2; // Face up by default.
-            ground.receiveShadows = groundConfig.receiveShadows || false;
-
-            // position the ground correctly
-            let groundPosition = focusMeshes[0].getHierarchyBoundingVectors().min.y;
-            ground.position.y = groundPosition;
-
-            // default values
-            backgroundMaterial.alpha = 0.9;
-            backgroundMaterial.alphaMode = Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
-            backgroundMaterial.shadowLevel = 0.5;
-            backgroundMaterial.primaryLevel = 1;
-            backgroundMaterial.primaryColor = new Color3(0.2, 0.2, 0.3).toLinearSpace().scale(3);
-            backgroundMaterial.secondaryLevel = 0;
-            backgroundMaterial.tertiaryLevel = 0;
-            backgroundMaterial.useRGBColor = false;
-            backgroundMaterial.enableNoise = true;
-
-            // if config provided, extend the default values
-            if (groundConfig.material) {
-                this.extendClassWithConfig(ground, ground.material);
-            }
-
-            ground.material = backgroundMaterial;
-            if (this.configuration.ground === true || groundConfig.shadowOnly) {
-                // shadow only:
-                ground.receiveShadows = true;
-                const diffuseTexture = new Texture("https://assets.babylonjs.com/environments/backgroundGround.png", this.scene);
-                diffuseTexture.gammaSpace = false;
-                diffuseTexture.hasAlpha = true;
-                backgroundMaterial.diffuseTexture = diffuseTexture;
-            } else if (groundConfig.mirror) {
-                var mirror = new MirrorTexture("mirror", 512, this.scene);
-                mirror.mirrorPlane = new Plane(0, -1, 0, 0);
-                mirror.renderList = mirror.renderList || [];
-                focusMeshes.length && focusMeshes.forEach(m => {
-                    m && mirror.renderList && mirror.renderList.push(m);
-                });
-
-                backgroundMaterial.reflectionTexture = mirror;
-            } else {
-                if (groundConfig.material) {
-                    if (groundConfig.material.diffuseTexture) {
-                        const diffuseTexture = new Texture(groundConfig.material.diffuseTexture, this.scene);
-                        backgroundMaterial.diffuseTexture = diffuseTexture;
-                    }
-                }
-                // ground.material = new StandardMaterial('groundmat', this.scene);
-            }
-            //default configuration
-            if (this.configuration.ground === true) {
-                ground.receiveShadows = true;
-                if (ground.material)
-                    ground.material.alpha = 0.4;
-            }
-
-
-
-
-            this.extendClassWithConfig(ground, groundConfig);
-        }
-
-        return Promise.resolve(this.scene);
-    }*/
-
+    /**
+     * Show the overlay and the defined sub-screen.
+     * Mainly used for help and errors
+     * @param subScreen the name of the subScreen. Those can be defined in the configuration object
+     */
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
         if (!template) return Promise.resolve('Overlay template not found');
@@ -283,6 +214,9 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * Hide the overlay screen.
+     */
     public hideOverlayScreen() {
         let template = this.templateManager.getTemplate('overlay');
         if (!template) return Promise.resolve('Overlay template not found');
@@ -302,15 +236,14 @@ export class DefaultViewer extends AbstractViewer {
                     htmlElement.style.display = 'none';
                 }
             }
-
-            /*return this.templateManager.getTemplate(subScreen).show((template => {
-                template.parent.style.display = 'none';
-                return Promise.resolve(template);
-            }));*/
             return Promise.resolve(template);
         }));
     }
 
+    /**
+     * Show the loading screen.
+     * The loading screen can be configured using the configuration object
+     */
     public showLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
         if (!template) return Promise.resolve('Loading Screen template not found');
@@ -330,6 +263,9 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * Hide the loading screen
+     */
     public hideLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
         if (!template) return Promise.resolve('Loading Screen template not found');
@@ -345,31 +281,36 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
-    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, focusMeshes: Array<AbstractMesh> = this.scene.meshes) {
-        super.configureLights(lightsConfiguration, focusMeshes);
+    /**
+     * An extension of the light configuration of the abstract viewer.
+     * @param lightsConfiguration the light configuration to use
+     * @param model the model that will be used to configure the lights (if the lights are model-dependant)
+     */
+    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
+        super._configureLights(lightsConfiguration, model);
         // labs feature - flashlight
-        if (this.configuration.lab && this.configuration.lab.flashlight) {
-            let pointerPosition = BABYLON.Vector3.Zero();
+        if (this._configuration.lab && this._configuration.lab.flashlight) {
+            let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
-            if (typeof this.configuration.lab.flashlight === "object") {
-                exponent = this.configuration.lab.flashlight.exponent || exponent;
-                angle = this.configuration.lab.flashlight.angle || angle;
+            if (typeof this._configuration.lab.flashlight === "object") {
+                exponent = this._configuration.lab.flashlight.exponent || exponent;
+                angle = this._configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
                 Vector3.Zero(), exponent, angle, this.scene);
-            if (typeof this.configuration.lab.flashlight === "object") {
-                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
-                if (this.configuration.lab.flashlight.diffuse) {
-                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
-                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
-                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
+            if (typeof this._configuration.lab.flashlight === "object") {
+                flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this._configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this._configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this._configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this._configuration.lab.flashlight.diffuse.b;
                 }
-                if (this.configuration.lab.flashlight.specular) {
-                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
-                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
-                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
+                if (this._configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this._configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this._configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this._configuration.lab.flashlight.specular.b;
                 }
 
             }
@@ -390,7 +331,7 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
             this.scene.registerBeforeRender(updateFlashlightFunction);
-            this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
+            this._registeredOnBeforeRenderFunctions.push(updateFlashlightFunction);
         }
     }
 }

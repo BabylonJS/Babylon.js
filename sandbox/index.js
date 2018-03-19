@@ -1,25 +1,49 @@
 ﻿/// <reference path="../dist/preview release/babylon.d.ts" />
 /// <reference path="../dist/preview release/loaders/babylon.glTFFileLoader.d.ts" />
 
+var assetUrl;
+var cameraPosition;
+var kiosk;
+
+var indexOf = location.href.indexOf("?");
+if (indexOf !== -1) {
+    var params = location.href.substr(indexOf + 1).split("&");
+    for (var index = 0; index < params.length; index++) {
+        var [name, value] = params[index].split("=");
+        switch (name) {
+            case "assetUrl": {
+                assetUrl = value;
+                break;
+            }
+            case "cameraPosition": {
+                cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(component => +component));
+                break;
+            }
+            case "kiosk": {
+                kiosk = value === "true" ? true : false;
+                break;
+            }
+        }
+    }
+}
+
 if (BABYLON.Engine.isSupported()) {
     var canvas = document.getElementById("renderCanvas");
     var engine = new BABYLON.Engine(canvas, true);
-    var divFps = document.getElementById("fps");
     var htmlInput = document.getElementById("files");
+    var footer = document.getElementById("footer");
     var btnFullScreen = document.getElementById("btnFullscreen");
-    var btnDownArrow = document.getElementById("btnDownArrow");
-    var perffooter = document.getElementById("perf");
     var btnPerf = document.getElementById("btnPerf");
-    var miscCounters = document.getElementById("miscCounters");
     var help01 = document.getElementById("help01");
     var help02 = document.getElementById("help02");
-    var loadingText = document.getElementById("loadingText");
+    var errorZone = document.getElementById("errorZone");
     var filesInput;
     var currentHelpCounter;
     var currentScene;
     var currentSkybox;
     var enableDebugLayer = false;
     var currentPluginName;
+    var skyboxPath = "Assets/environment.dds";
 
     canvas.addEventListener("contextmenu", function (evt) {
         evt.preventDefault();
@@ -53,13 +77,13 @@ if (BABYLON.Engine.isSupported()) {
             enableDebugLayer = false;
             currentScene.debugLayer.hide();
         };
-
-        if (enableDebugLayer) {
+    
+            if (enableDebugLayer) {
             hideDebugLayerAndLogs();
         }
 
         // Clear the error
-        document.getElementById("errorZone").style.display = 'none';
+        errorZone.style.display = 'none';
 
         currentScene = babylonScene;
         document.title = "BabylonJS - " + sceneFile.name;
@@ -74,17 +98,28 @@ if (BABYLON.Engine.isSupported()) {
         // Attach camera to canvas inputs
         if (!currentScene.activeCamera || currentScene.lights.length === 0) {
             currentScene.createDefaultCameraOrLight(true);
-            // Enable camera's behaviors
-            currentScene.activeCamera.useFramingBehavior = true;
 
-            var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
-            framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnTime = -1;
+            if (cameraPosition) {
+                currentScene.activeCamera.setPosition(cameraPosition);
+            }
+            else {
+                if (currentPluginName === "gltf") {
+                    // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                    currentScene.activeCamera.alpha += Math.PI;
+                }
 
-            if (currentScene.meshes.length) {
-                var worldExtends = currentScene.getWorldExtends();
-                currentScene.activeCamera.lowerRadiusLimit = null;
-                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                // Enable camera's behaviors
+                currentScene.activeCamera.useFramingBehavior = true;
+
+                var framingBehavior = currentScene.activeCamera.getBehaviorByName("Framing");
+                framingBehavior.framingTime = 0;
+                framingBehavior.elevationReturnTime = -1;
+
+                if (currentScene.meshes.length) {
+                    var worldExtends = currentScene.getWorldExtends();
+                    currentScene.activeCamera.lowerRadiusLimit = null;
+                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                }
             }
 
             currentScene.activeCamera.pinchPrecision = 200 / currentScene.activeCamera.radius;
@@ -98,11 +133,8 @@ if (BABYLON.Engine.isSupported()) {
 
         // Environment
         if (currentPluginName === "gltf") {
-            var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("Assets/environment.dds", currentScene);
+            var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(skyboxPath, currentScene);
             currentSkybox = currentScene.createDefaultSkybox(hdrTexture, true, (currentScene.activeCamera.maxZ - currentScene.activeCamera.minZ) / 2, 0.3);
-
-            // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
-            currentScene.activeCamera.alpha += Math.PI;
         }
 
         // In case of error during loading, meshes will be empty and clearColor is set to red
@@ -137,39 +169,85 @@ if (BABYLON.Engine.isSupported()) {
 
         var errorContent = '<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>' + message.replace("file:[object File]", "'" + sceneFile.name + "'") + '</div>';
 
-        document.getElementById("errorZone").style.display = 'block';
-        document.getElementById("errorZone").innerHTML = errorContent;
+        errorZone.style.display = 'block';
+        errorZone.innerHTML = errorContent;
 
         // Close button error
-        document.getElementById("errorZone").querySelector('.close').addEventListener('click', function () {
-            document.getElementById("errorZone").style.display = 'none';
+        errorZone.querySelector('.close').addEventListener('click', function () {
+            errorZone.style.display = 'none';
         });
     };
 
-    filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
-    filesInput.monitorElementForDragNDrop(canvas);
+    if (assetUrl) {
+        var rootUrl = BABYLON.Tools.GetFolderPath(assetUrl);
+        var fileName = BABYLON.Tools.GetFilename(assetUrl);
+        BABYLON.SceneLoader.LoadAsync(rootUrl, fileName, engine).then(function (scene) {
+            sceneLoaded({ name: fileName }, scene);
+            scene.whenReadyAsync().then(function () {
+                engine.runRenderLoop(function ()  {
+                    scene.render();
+                });
+            });
+        }).catch(function (reason) {
+            sceneError({ name: fileName }, null, reason);
+        });
+    }
+    else {
+        filesInput = new BABYLON.FilesInput(engine, null, sceneLoaded, null, null, null, function () { BABYLON.Tools.ClearLogCache() }, null, sceneError);
+        filesInput.onProcessFileCallback = (function (file, name, extension) {
+            if (filesInput._filesToLoad && filesInput._filesToLoad.length === 1 && extension && extension.toLowerCase() === "dds") {
+                BABYLON.FilesInput.FilesToLoad[name] = file;
+                skyboxPath = "file:" + file.correctName;
+                return false;
+            }
+            return true;
+        }).bind(this);
+        filesInput.monitorElementForDragNDrop(canvas);
 
-    window.addEventListener("keydown", function (evt) {
-        // Press R to reload
-        if (evt.keyCode === 82) {
-            filesInput.reload();
+        window.addEventListener("keydown", function (evt) {
+            // Press R to reload
+            if (evt.keyCode === 82) {
+                filesInput.reload();
+            }
+        });
+
+        htmlInput.addEventListener('change', function (event) {
+            var filestoLoad;
+            // Handling data transfer via drag'n'drop
+            if (event && event.dataTransfer && event.dataTransfer.files) {
+                filesToLoad = event.dataTransfer.files;
+            }
+            // Handling files from input files
+            if (event && event.target && event.target.files) {
+                filesToLoad = event.target.files;
+            }
+            filesInput.loadFiles(event);
+        }, false);
+    }
+
+    if (kiosk) {
+        footer.style.display = "none";
+    }
+    else {
+        // The help tips will be displayed only 5 times
+        if (currentHelpCounter < 5) {
+            help01.className = "help shown";
+
+            setTimeout(function () {
+                help01.className = "help";
+                help02.className = "help2 shown";
+                setTimeout(function () {
+                    help02.className = "help2";
+                    localStorage.setItem("helpcounter", currentHelpCounter + 1);
+                }, 5000);
+            }, 5000);
         }
-    });
-    htmlInput.addEventListener('change', function (event) {
-        var filestoLoad;
-        // Handling data transfer via drag'n'drop
-        if (event && event.dataTransfer && event.dataTransfer.files) {
-            filesToLoad = event.dataTransfer.files;
-        }
-        // Handling files from input files
-        if (event && event.target && event.target.files) {
-            filesToLoad = event.target.files;
-        }
-        filesInput.loadFiles(event);
-    }, false);
+    }
+
     btnFullScreen.addEventListener('click', function () {
         engine.switchFullscreen(true);
     }, false);
+
     btnPerf.addEventListener('click', function () {
         if (currentScene) {
             if (!enableDebugLayer) {
@@ -182,19 +260,23 @@ if (BABYLON.Engine.isSupported()) {
             }
         }
     }, false);
-    // The help tips will be displayed only 5 times
-    if (currentHelpCounter < 5) {
-        help01.className = "help shown";
 
-        setTimeout(function () {
-            help01.className = "help";
-            help02.className = "help2 shown";
-            setTimeout(function () {
-                help02.className = "help2";
-                localStorage.setItem("helpcounter", currentHelpCounter + 1);
-            }, 5000);
-        }, 5000);
-    }
+    window.addEventListener("keydown", function (evt) {
+        // Press Esc to toggle footer
+        if (evt.keyCode === 27) {
+            if (footer.style.display === "none") {
+                footer.style.display = "block";
+            }
+            else {
+                footer.style.display = "none";
+                errorZone.style.display = "none";
+                if (enableDebugLayer) {
+                    currentScene.debugLayer.hide();
+                    enableDebugLayer = false;
+                }
+            }
+        }
+    });
 
     sizeScene();
 

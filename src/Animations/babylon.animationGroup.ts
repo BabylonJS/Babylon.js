@@ -59,6 +59,13 @@ module BABYLON {
             return this._targetedAnimations;
         }
 
+        /**
+         * returning the list of animatables controlled by this animation group.
+         */
+        public get animatables(): Array<Animatable> {
+            return this._animatables;
+        }
+
         public constructor(public name: string, scene: Nullable<Scene> = null) {
             this._scene = scene || Engine.LastCreatedScene!;
 
@@ -137,15 +144,25 @@ module BABYLON {
          * Start all animations on given targets
          * @param loop defines if animations must loop
          * @param speedRatio defines the ratio to apply to animation speed (1 by default)
+         * @param from defines the from key (optional)
+         * @param to defines the to key (optional)
+         * @returns the current animation group
          */
-        public start(loop = false, speedRatio = 1): AnimationGroup {
+        public start(loop = false, speedRatio = 1, from?: number, to?: number): AnimationGroup {
             if (this._isStarted || this._targetedAnimations.length === 0) {
                 return this;
             }
 
             for (var index = 0; index < this._targetedAnimations.length; index++) {
                 let targetedAnimation = this._targetedAnimations[index];
-                this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], this._from, this._to, loop, speedRatio, () => {
+                if (!targetedAnimation.target.animations) {
+                    targetedAnimation.target.animations = [];
+                }
+                if (targetedAnimation.target.animations.indexOf(targetedAnimation.animation) === -1) {
+                    targetedAnimation.target.animations.push(targetedAnimation.animation);
+                }
+                
+                this._animatables.push(this._scene.beginDirectAnimation(targetedAnimation.target, [targetedAnimation.animation], from !== undefined ? from : this._from, to !== undefined ? to : this._to, loop, speedRatio, () => {
                     this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 }));
             }
@@ -240,6 +257,25 @@ module BABYLON {
             }
 
             this._isStarted = false;
+
+            return this;
+        }
+
+        /**
+         * Goes to a specific frame in this animation group
+         * 
+         * @param frame the frame number to go to
+         * @return the animationGroup
+         */
+        public goToFrame(frame: number): AnimationGroup {
+            if (!this._isStarted) {
+                return this;
+            }
+
+            for (var index = 0; index < this._animatables.length; index++) {
+                let animatable = this._animatables[index];
+                animatable.goToFrame(frame);
+            }
 
             return this;
         }

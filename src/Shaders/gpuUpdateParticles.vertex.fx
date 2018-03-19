@@ -4,6 +4,7 @@
 
 uniform float currentCount;
 uniform float timeDelta;
+uniform float stopFactor;
 uniform vec3 generalRandoms;
 uniform mat4 emitterWM;
 uniform vec2 lifeTime;
@@ -67,6 +68,16 @@ vec4 getRandomVec4(float offset) {
 
 void main() {
   if (age >= life) {
+    if (stopFactor == 0.) {
+      outPosition = position;
+      outAge = life;
+      outLife = life;
+      outSeed = seed;
+      outColor = vec4(0.,0.,0.,0.);
+      outSize = 0.;
+      outDirection = direction;
+      return;
+    }
     vec3 position;
     vec3 direction;
 
@@ -122,7 +133,7 @@ void main() {
     // Better distribution in a cone at normal angles.
     h = 1. - h * h;
     float lRadius = radius * randoms2.z;
-    lRadius = lRadius * h / height;
+    lRadius = lRadius * h;
 
     float randX = lRadius * sin(s);
     float randZ = lRadius * cos(s);
@@ -151,12 +162,12 @@ void main() {
     outDirection = (emitterWM * vec4(direction * power, 0.)).xyz;
 
   } else {   
-    outPosition = position + (direction + gravity) * timeDelta;
+    outPosition = position + direction * timeDelta;
     outAge = age + timeDelta;
     outLife = life;
     outSeed = seed;
     outColor = color;
     outSize = size;
-    outDirection = direction;
+    outDirection = direction + gravity * timeDelta;
   }
 }

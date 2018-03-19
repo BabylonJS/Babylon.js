@@ -1,0 +1,162 @@
+{
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC3",
+      "max": [
+        0.5,
+        0.5,
+        0.0
+      ],
+      "min": [
+        -0.5,
+        -0.5,
+        0.0
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5125,
+      "count": 6,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "uri": "TwoQuads.bin",
+      "byteLength": 104
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 48
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 48,
+      "byteLength": 32
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 80,
+      "byteLength": 24
+    }
+  ],
+  "extensionsUsed": [
+    "MSFT_lod"
+  ],
+  "images": [
+    {
+      "uri": "LOD0.png"
+    },
+    {
+      "uri": "LOD1.png"
+    },
+    {
+      "uri": "LOD2.png"
+    }
+  ],
+  "materials": [
+    {
+      "name": "LOD0",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0
+      },
+      "extensions": {
+        "MSFT_lod": {
+          "ids": [
+            1,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "name": "LOD1",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 1
+        },
+        "metallicFactor": 0
+      }
+    },
+    {
+      "name": "LOD2",
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 2
+        },
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "TEXCOORD_0": 1
+          },
+          "indices": 2,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "node0",
+      "mesh": 0,
+      "translation": [
+        -0.55,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "node1",
+      "mesh": 0,
+      "translation": [
+        0.55,
+        0,
+        0
+      ]
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0,
+        1
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "source": 0
+    },
+    {
+      "source": 1
+    },
+    {
+      "source": 2
+    }
+  ]
+}

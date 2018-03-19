@@ -20,15 +20,16 @@ module BABYLON {
          * @param engine The engine which the post process will be applied. (default: current engine)
          * @param reusable If the post process can be reused on the same frame. (default: false)
          * @param textureType Type of textures used when performing the post process. (default: 0)
+         * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion:PostProcess, imageToBlur:Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT) {
-            super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`);
+        constructor(name: string, scene: Scene, public direction: Vector2, kernel: number, options: number | PostProcessOptions, camera: Nullable<Camera>, circleOfConfusion:PostProcess, imageToBlur:Nullable<PostProcess> = null, samplingMode: number = Texture.BILINEAR_SAMPLINGMODE, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+            super(name, direction, kernel, options, camera, samplingMode = Texture.BILINEAR_SAMPLINGMODE, engine, reusable, textureType = Engine.TEXTURETYPE_UNSIGNED_INT, `#define DOF 1\r\n`, blockCompilation);
 			
 			this.onApplyObservable.add((effect: Effect) => {
                 if(imageToBlur != null){
                     effect.setTextureFromPostProcess("textureSampler", imageToBlur);
                 }
-                effect.setTextureFromPostProcess("circleOfConfusionSampler", circleOfConfusion);
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
                 if(scene.activeCamera){
                     effect.setFloat2('cameraMinMaxZ', scene.activeCamera.minZ, scene.activeCamera.maxZ);
                 }

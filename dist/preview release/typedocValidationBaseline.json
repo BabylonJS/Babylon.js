@@ -1,7 +1,7 @@
 {
-  "errors": 7218,
+  "errors": 7152,
   "babylon.typedoc.json": {
-    "errors": 7218,
+    "errors": 7152,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -2205,11 +2205,6 @@
             "MissingText": true
           }
         },
-        "speedRatio": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "target": {
           "Comments": {
             "MissingText": true
@@ -3144,11 +3139,6 @@
           }
         },
         "restart": {
-          "Comments": {
-            "MissingReturn": true
-          }
-        },
-        "start": {
           "Comments": {
             "MissingReturn": true
           }
@@ -8797,6 +8787,11 @@
             "NotCamelCase": true
           }
         },
+        "ChromaticAberrationPostProcessId": {
+          "Naming": {
+            "NotCamelCase": true
+          }
+        },
         "CopyBackPostProcessId": {
           "Naming": {
             "NotCamelCase": true
@@ -12124,28 +12119,6 @@
           },
           "Parameter": {
             "operation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setTexture": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "channel": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "uniform": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "texture": {
               "Comments": {
                 "MissingText": true
               }
@@ -16451,28 +16424,6 @@
           },
           "Parameter": {
             "source": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "Lerp": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "startValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "endValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "gradient": {
               "Comments": {
                 "MissingText": true
               }
@@ -24125,35 +24076,6 @@
             }
           }
         },
-        "toEulerAngles": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "order": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "toEulerAnglesToRef": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "result": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "order": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "toRotationMatrix": {
           "Comments": {
             "MissingReturn": true
@@ -25344,35 +25266,6 @@
         }
       }
     },
-    "RenderTargetCreationOptions": {
-      "Property": {
-        "generateDepthBuffer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "generateMipMaps": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "generateStencilBuffer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "samplingMode": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "type": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "RenderTargetTexture": {
       "Class": {
         "Comments": {
@@ -25828,32 +25721,8 @@
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new RuntimeAnimation": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Property": {
         "animation": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "currentFrame": {
           "Comments": {
             "MissingText": true
           }
@@ -25872,58 +25741,9 @@
             }
           }
         },
-        "animate": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "delay": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "from": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "to": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "loop": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "blend": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "dispose": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "goToFrame": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "frame": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         },
         "isStopped": {
@@ -25934,23 +25754,6 @@
         "reset": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "setValue": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "currentValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "blend": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }
@@ -27252,33 +27055,6 @@
           },
           "Parameter": {
             "newTransformNode": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "beginAnimation": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "loop": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "speedRatio": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "onAnimationEnd": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "animatable": {
               "Comments": {
                 "MissingText": true
               }
@@ -38814,114 +38590,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "IImageProcessingConfigurationDefines": {
-      "Property": {
-        "COLORCURVES": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "COLORGRADING": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "COLORGRADING3D": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "CONTRAST": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "EXPOSURE": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IMAGEPROCESSING": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IMAGEPROCESSINGPOSTPROCESS": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SAMPLER3DBGRMAP": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SAMPLER3DGREENDEPTH": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "TONEMAPPING": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "VIGNETTE": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "VIGNETTEBLENDMODEMULTIPLY": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "VIGNETTEBLENDMODEOPAQUE": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
           }
         }
       }

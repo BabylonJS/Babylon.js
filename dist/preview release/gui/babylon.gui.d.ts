@@ -187,6 +187,7 @@ declare module BABYLON.GUI {
         private _transformMatrix;
         protected _invertTransformMatrix: Matrix2D;
         protected _transformedPosition: Vector2;
+        private _onlyMeasureMode;
         private _isMatrixDirty;
         private _cachedOffsetX;
         private _cachedOffsetY;
@@ -356,6 +357,10 @@ declare module BABYLON.GUI {
         protected _children: Control[];
         protected _measureForChildren: Measure;
         protected _background: string;
+        protected _adaptWidthToChildren: boolean;
+        protected _adaptHeightToChildren: boolean;
+        adaptHeightToChildren: boolean;
+        adaptWidthToChildren: boolean;
         background: string;
         readonly children: Control[];
         constructor(name?: string | undefined);

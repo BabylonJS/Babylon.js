@@ -170,7 +170,18 @@
             return this._imageProcessingConfiguration;
         }
 
-        public forceWireframe = false;
+        private _forceWireframe = false;
+        public set forceWireframe(value: boolean) {
+            if (this._forceWireframe === value) {
+                return;
+            }
+            this._forceWireframe = value;
+            this.markAllMaterialsAsDirty(Material.MiscDirtyFlag);
+        }
+        public get forceWireframe(): boolean {
+            return this._forceWireframe;
+        }
+
         private _forcePointsCloud = false;
         public set forcePointsCloud(value: boolean) {
             if (this._forcePointsCloud === value) {
@@ -211,7 +222,7 @@
         */
         public onDisposeObservable = new Observable<Scene>();
 
-        private _onDisposeObserver: Nullable<Observer<Scene>>;
+        private _onDisposeObserver: Nullable<Observer<Scene>> = null;
         /** A function to be executed when this scene is disposed. */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
@@ -226,7 +237,7 @@
         */
         public onBeforeRenderObservable = new Observable<Scene>();
 
-        private _onBeforeRenderObserver: Nullable<Observer<Scene>>;
+        private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
         /** A function to be executed before rendering this scene */
         public set beforeRender(callback: Nullable<() => void>) {
             if (this._onBeforeRenderObserver) {
@@ -243,7 +254,7 @@
         */
         public onAfterRenderObservable = new Observable<Scene>();
 
-        private _onAfterRenderObserver: Nullable<Observer<Scene>>;
+        private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
         /** A function to be executed after rendering this scene */
         public set afterRender(callback: Nullable<() => void>) {
             if (this._onAfterRenderObserver) {
@@ -303,7 +314,7 @@
         */
         public onBeforeCameraRenderObservable = new Observable<Camera>();
 
-        private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>>;
+        private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
         public set beforeCameraRender(callback: () => void) {
             if (this._onBeforeCameraRenderObserver) {
                 this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
@@ -318,7 +329,7 @@
         */
         public onAfterCameraRenderObservable = new Observable<Camera>();
 
-        private _onAfterCameraRenderObserver: Nullable<Observer<Camera>>;
+        private _onAfterCameraRenderObserver: Nullable<Observer<Camera>> = null;
         public set afterCameraRender(callback: () => void) {
             if (this._onAfterCameraRenderObserver) {
                 this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
@@ -467,6 +478,7 @@
 
         // Animations
         public animations: Animation[] = [];
+        private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
         // Pointers
         public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
@@ -477,11 +489,11 @@
         private _onPointerUp: (evt: PointerEvent) => void;
 
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerMove: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo) => void;
+        public onPointerDown: (evt: PointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
-        public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>) => void;
+        public onPointerUp: (evt: PointerEvent, pickInfo: Nullable<PickingInfo>, type: PointerEventTypes) => void;
         /** Deprecated. Use onPointerObservable instead */
         public onPointerPick: (evt: PointerEvent, pickInfo: PickingInfo) => void;
 
@@ -1278,12 +1290,13 @@
             }
 
             if (pickResult) {
+                let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
+
                 if (this.onPointerMove) {
-                    this.onPointerMove(evt, pickResult);
+                    this.onPointerMove(evt, pickResult, type);
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let type = evt.type === "mousewheel" || evt.type === "DOMMouseScroll" ? PointerEventTypes.POINTERWHEEL : PointerEventTypes.POINTERMOVE;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
@@ -1345,12 +1358,13 @@
             }
 
             if (pickResult) {
+                let type = PointerEventTypes.POINTERDOWN;
+
                 if (this.onPointerDown) {
-                    this.onPointerDown(evt, pickResult);
+                    this.onPointerDown(evt, pickResult, type);
                 }
 
                 if (this.onPointerObservable.hasObservers()) {
-                    let type = PointerEventTypes.POINTERDOWN;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
@@ -1406,10 +1420,7 @@
                 this._pickedDownMesh.actionManager.processTrigger(ActionManager.OnPickOutTrigger, ActionEvent.CreateNew(this._pickedDownMesh, evt));
             }
 
-            if (this.onPointerUp) {
-                this.onPointerUp(evt, pickResult);
-            }
-
+            let type = PointerEventTypes.POINTERUP;
             if (this.onPointerObservable.hasObservers()) {
                 if (!clickInfo.ignore) {
                     if (!clickInfo.hasSwiped) {
@@ -1426,10 +1437,13 @@
                     }
                 }
                 else {
-                    let type = PointerEventTypes.POINTERUP;
                     let pi = new PointerInfo(type, evt, pickResult);
                     this.onPointerObservable.notifyObservers(pi, type);
                 }
+            }
+
+            if (this.onPointerUp) {
+                this.onPointerUp(evt, pickResult, type);
             }
 
             return this;
@@ -1937,6 +1951,13 @@
                 }
             }
 
+            // Particles
+            for (var particleSystem of this.particleSystems) {
+                if (!particleSystem.isReady()) {
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -2057,25 +2078,49 @@
         }
 
         // Animations
+
         /**
          * Will start the animation sequence of a given target
-         * @param target - the target
-         * @param {number} from - from which frame should animation start
-         * @param {number} to - till which frame should animation run.
-         * @param {boolean} [loop] - should the animation loop
-         * @param {number} [speedRatio] - the speed in which to run the animation
-         * @param {Function} [onAnimationEnd] function to be executed when the animation ended.
-         * @param {BABYLON.Animatable} [animatable] an animatable object. If not provided a new one will be created from the given params.
-         * Returns {BABYLON.Animatable} the animatable object created for this animation
-         * See BABYLON.Animatable
+         * @param target defines the target
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param weight defines the weight to apply to the animation (1.0 by default)
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @returns the animatable object created for this animation
+         * @see BABYLON.Animatable
          */
-        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
+        public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
+            let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
+            returnedAnimatable.weight = weight;
+
+            return returnedAnimatable;
+        }
+
+        /**
+         * Will start the animation sequence of a given target
+         * @param target defines the target
+         * @param from defines from which frame should animation start
+         * @param to defines until which frame should animation run.
+         * @param loop defines if the animation loops
+         * @param speedRatio defines the speed in which to run the animation (1.0 by default)
+         * @param onAnimationEnd defines the function to be executed when the animation ends
+         * @param animatable defines an animatable object. If not provided a new one will be created from the given params
+         * @param stopCurrent defines if the current animations must be stopped first (true by default)
+         * @returns the animatable object created for this animation
+         * @see BABYLON.Animatable
+         */
+        public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true): Animatable {
 
             if (from > to && speedRatio > 0) {
                 speedRatio *= -1;
             }
 
-            this.stopAnimation(target);
+            if (stopCurrent) {
+                this.stopAnimation(target);
+            }
 
             if (!animatable) {
                 animatable = new Animatable(this, target, from, to, loop, speedRatio, onAnimationEnd);
@@ -2090,7 +2135,7 @@
             if (target.getAnimatables) {
                 var animatables = target.getAnimatables();
                 for (var index = 0; index < animatables.length; index++) {
-                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable);
+                    this.beginAnimation(animatables[index], from, to, loop, speedRatio, onAnimationEnd, animatable, stopCurrent);
                 }
             }
 
@@ -2152,6 +2197,22 @@
             return null;
         }
 
+        /**
+         * Gets all animatables associated with a given target
+         * @param target defines the target to look animatables for
+         * @returns an array of Animatables
+         */
+        public getAllAnimatablesByTarget(target: any): Array<Animatable> {
+            let result = [];
+            for (var index = 0; index < this._activeAnimatables.length; index++) {
+                if (this._activeAnimatables[index].target === target) {
+                    result.push(this._activeAnimatables[index]);
+                }
+            }
+
+            return result;
+        }        
+
         public get animatables(): Animatable[] {
             return this._activeAnimatables;
         }
@@ -2159,13 +2220,13 @@
         /**
          * Will stop the animation of the given target
          * @param target - the target
-         * @param animationName - the name of the animation to stop (all animations will be stopped is empty)
+         * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
          * @see beginAnimation
          */
         public stopAnimation(target: any, animationName?: string): void {
-            var animatable = this.getAnimatableByTarget(target);
+            var animatables = this.getAllAnimatablesByTarget(target);
 
-            if (animatable) {
+            for (var animatable of animatables) {
                 animatable.stop(animationName);
             }
         }
@@ -2186,7 +2247,7 @@
             if (!this.animationsEnabled || this._activeAnimatables.length === 0) {
                 return;
             }
-
+           
             // Getting time
             var now = Tools.Now;
             if (!this._animationTimeLast) {
@@ -2201,6 +2262,74 @@
             for (var index = 0; index < this._activeAnimatables.length; index++) {
                 this._activeAnimatables[index]._animate(this._animationTime);
             }
+
+            // Late animation bindings
+            this._processLateAnimationBindings();
+        }
+
+        /** @ignore */
+        public _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void {
+            let target = runtimeAnimation.target;
+            this._registeredForLateAnimationBindings.pushNoDuplicate(target);
+
+            if (!target._lateAnimationHolders) {
+                target._lateAnimationHolders = {};               
+            }
+
+            if (!target._lateAnimationHolders[runtimeAnimation.targetPath]) {
+                target._lateAnimationHolders[runtimeAnimation.targetPath] = {
+                    totalWeight: 0,
+                    animations: []
+                }
+            }
+
+            target._lateAnimationHolders[runtimeAnimation.targetPath].animations.push(runtimeAnimation);
+            target._lateAnimationHolders[runtimeAnimation.targetPath].totalWeight += runtimeAnimation.weight;
+        }
+
+        private _processLateAnimationBindings(): void {
+            if (!this._registeredForLateAnimationBindings.length) {
+                return;
+            }
+            for (var index = 0; index < this._registeredForLateAnimationBindings.length; index++) {
+                var target = this._registeredForLateAnimationBindings.data[index];
+
+                for (var path in target._lateAnimationHolders) {
+                    var holder = target._lateAnimationHolders[path];       
+                    
+                    // Sanity check
+                    if (!holder.animations[0].originalValue.scaleAndAddToRef) {
+                        continue;
+                    }
+
+                    let normalizer = 1.0;
+                    let finalValue: any;
+
+                    if (holder.totalWeight < 1.0) {
+                        // We need to mix the original value in
+                        let originalValue = holder.animations[0].originalValue;                       
+
+                        finalValue = originalValue.scale(1.0 - holder.totalWeight)
+                    } else {
+                        // We need to normalize the weights
+                        normalizer = holder.totalWeight;
+                    }
+
+                    for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
+                        var runtimeAnimation = holder.animations[animIndex];    
+                        if (finalValue) {
+                            runtimeAnimation.currentValue.scaleAndAddToRef(runtimeAnimation.weight / normalizer, finalValue);
+                        } else {
+                            finalValue = runtimeAnimation.currentValue.scale(runtimeAnimation.weight / normalizer);
+                        }
+                    }
+
+                    runtimeAnimation.target[path] = finalValue;
+                }
+
+                target._lateAnimationHolders = {};
+            }
+            this._registeredForLateAnimationBindings.reset();
         }
 
         // Matrix
@@ -3170,6 +3299,48 @@
             }
         }
 
+        /**
+         * Clear the processed materials smart array preventing retention point in material dispose.
+         */
+        public freeProcessedMaterials(): void {
+            this._processedMaterials.dispose();
+        }
+
+        /**
+         * Clear the active meshes smart array preventing retention point in mesh dispose.
+         */
+        public freeActiveMeshes(): void {
+            this._activeMeshes.dispose();
+            if (this.activeCamera && this.activeCamera._activeMeshes) {
+                this.activeCamera._activeMeshes.dispose();
+            }
+            if (this.activeCameras) {
+                for (let i = 0; i < this.activeCameras.length; i++) {
+                    let activeCamera = this.activeCameras[i];
+                    if (activeCamera && activeCamera._activeMeshes) {
+                        activeCamera._activeMeshes.dispose();
+                    }
+                }
+            }
+        }
+
+        /**
+         * Clear the info related to rendering groups preventing retention points during dispose.
+         */
+        public freeRenderingGroups(): void {
+            if (this._renderingManager) {
+                this._renderingManager.freeRenderingGroups();
+            }
+            if (this.textures) {
+                for (let i = 0; i < this.textures.length; i++) {
+                    let texture = this.textures[i];
+                    if (texture && (<RenderTargetTexture>texture).renderList) {
+                        (<RenderTargetTexture>texture).freeRenderingGroups();
+                    }
+                }
+            }
+        }
+
         public _isInIntermediateRendering(): boolean {
             return this._intermediateRendering
         }
@@ -3188,6 +3359,14 @@
          * Use this function to stop evaluating active meshes. The current list will be keep alive between frames
          */
         public freezeActiveMeshes(): Scene {
+            if (!this.activeCamera) {
+                return this;
+            }
+
+            if (!this._frustumPlanes) {
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+            }
+
             this._evaluateActiveMeshes();
             this._activeMeshesFrozen = true;
             return this;
@@ -3706,9 +3885,6 @@
                 this._gamepadManager._checkGamepadsStatus();
             }
 
-            // Before render
-            this.onBeforeRenderObservable.notifyObservers(this);
-
             // Update Cameras
             if (this.activeCameras.length > 0) {
                 for (var cameraIndex = 0; cameraIndex < this.activeCameras.length; cameraIndex++) {
@@ -3730,6 +3906,9 @@
                     }
                 }
             }
+
+            // Before render
+            this.onBeforeRenderObservable.notifyObservers(this);
 
             // Customs render targets
             this.OnBeforeRenderTargetsRenderObservable.notifyObservers(this);
@@ -4090,6 +4269,7 @@
             this._activeSkeletons.dispose();
             this._softwareSkinnedMeshes.dispose();
             this._renderTargets.dispose();
+            this._registeredForLateAnimationBindings.dispose();
 
             if (this._boundingBoxRenderer) {
                 this._boundingBoxRenderer.dispose();

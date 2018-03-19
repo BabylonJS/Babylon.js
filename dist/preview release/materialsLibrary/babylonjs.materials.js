@@ -1,33 +1,30 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __extends = (this && this.__extends) || (function () {
-            var extendStatics = Object.setPrototypeOf ||
-                ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-                function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-            return function (d, b) {
-                extendStatics(d, b);
-                function __() { this.constructor = d; }
-                d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-            };
-        })();
-        
+var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
+var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
+
 
 (function universalModuleDefinition(root, factory) {
-    if(typeof exports === 'object' && typeof module === 'object')
-        module.exports = factory(require("babylonjs"));
-    else if(typeof define === 'function' && define.amd)
-        define("babylonjs-materials", ["babylonjs"], factory);
-    else if(typeof exports === 'object')
-        exports["babylonjs-materials"] = factory(require("babylonjs"));
-    else {
-        root["BABYLON"] = factory(root["BABYLON"]);
+    var amdDependencies = [];
+    var BABYLON = root.BABYLON;
+    if(typeof exports === 'object' && typeof module === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
+        module.exports = factory(BABYLON);
+    } else if(typeof define === 'function' && define.amd) {
+         amdDependencies.push("babylonjs");
+
+        define("babylonjs-materials", amdDependencies, factory);
+    } else if(typeof exports === 'object') {
+         BABYLON = BABYLON || require("babylonjs"); 
+
+        exports["babylonjs-materials"] = factory(BABYLON);
+    } else {
+        root["BABYLON"] = factory(BABYLON);
     }
 })(this, function(BABYLON) {
-    
+  BABYLON = BABYLON || this.BABYLON;
+
+"use strict";
+
 
 var BABYLON;
 (function (BABYLON) {
@@ -230,6 +227,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['shadowOnlyVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['shadowOnlyPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform float alpha;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#include<lightFragment>[0..1]\n\nvec4 color=vec4(0.,0.,0.,(1.0-clamp(shadow,0.,1.))*alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}";
 
+"use strict";
 
 
 
@@ -274,10 +272,18 @@ var BABYLON;
             _this.SHADOWESM1 = false;
             _this.SHADOWESM2 = false;
             _this.SHADOWESM3 = false;
+            _this.SHADOWPOISSON0 = false;
+            _this.SHADOWPOISSON1 = false;
+            _this.SHADOWPOISSON2 = false;
+            _this.SHADOWPOISSON3 = false;
             _this.SHADOWPCF0 = false;
             _this.SHADOWPCF1 = false;
             _this.SHADOWPCF2 = false;
             _this.SHADOWPCF3 = false;
+            _this.SHADOWPCSS0 = false;
+            _this.SHADOWPCSS1 = false;
+            _this.SHADOWPCSS2 = false;
+            _this.SHADOWPCSS3 = false;
             _this.NORMAL = false;
             _this.UV1 = false;
             _this.UV2 = false;
@@ -508,6 +514,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['gradientVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex> \ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['gradientPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nuniform vec4 topColor;\nuniform vec4 bottomColor;\nuniform float offset;\nuniform float smoothness;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0]\n#include<__decl__lightFragment>[1]\n#include<__decl__lightFragment>[2]\n#include<__decl__lightFragment>[3]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\nfloat h=normalize(vPositionW).y+offset;\nfloat mysmoothness=clamp(smoothness,0.01,max(smoothness,10.));\nvec4 baseColor=mix(bottomColor,topColor,max(pow(max(h,0.0),mysmoothness),0.0));\n\nvec3 diffuseColor=baseColor.rgb;\n\nfloat alpha=baseColor.a;\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#include<lightFragment>[0]\n#include<lightFragment>[1]\n#include<lightFragment>[2]\n#include<lightFragment>[3]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
 
+"use strict";
 
 
 
@@ -552,10 +559,18 @@ var BABYLON;
             _this.SHADOWESM1 = false;
             _this.SHADOWESM2 = false;
             _this.SHADOWESM3 = false;
+            _this.SHADOWPOISSON0 = false;
+            _this.SHADOWPOISSON1 = false;
+            _this.SHADOWPOISSON2 = false;
+            _this.SHADOWPOISSON3 = false;
             _this.SHADOWPCF0 = false;
             _this.SHADOWPCF1 = false;
             _this.SHADOWPCF2 = false;
             _this.SHADOWPCF3 = false;
+            _this.SHADOWPCSS0 = false;
+            _this.SHADOWPCSS1 = false;
+            _this.SHADOWPCSS2 = false;
+            _this.SHADOWPCSS3 = false;
             _this.NORMAL = false;
             _this.UV1 = false;
             _this.UV2 = false;
@@ -813,6 +828,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['normalVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['normalPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0]\n#include<__decl__lightFragment>[1]\n#include<__decl__lightFragment>[2]\n#include<__decl__lightFragment>[3]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef NORMAL\nbaseColor=mix(baseColor,vec4(vNormalW,1.0),0.5);\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#include<lightFragment>[0]\n#include<lightFragment>[1]\n#include<lightFragment>[2]\n#include<lightFragment>[3]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}";
 
+"use strict";
 
 
 
@@ -857,10 +873,18 @@ var BABYLON;
             _this.SHADOWESM1 = false;
             _this.SHADOWESM2 = false;
             _this.SHADOWESM3 = false;
+            _this.SHADOWPOISSON0 = false;
+            _this.SHADOWPOISSON1 = false;
+            _this.SHADOWPOISSON2 = false;
+            _this.SHADOWPOISSON3 = false;
             _this.SHADOWPCF0 = false;
             _this.SHADOWPCF1 = false;
             _this.SHADOWPCF2 = false;
             _this.SHADOWPCF3 = false;
+            _this.SHADOWPCSS0 = false;
+            _this.SHADOWPCSS1 = false;
+            _this.SHADOWPCSS2 = false;
+            _this.SHADOWPCSS3 = false;
             _this.NORMAL = false;
             _this.UV1 = false;
             _this.UV2 = false;
@@ -1164,6 +1188,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['lavaVertexShader'] = "precision highp float;\n\nuniform float time;\nuniform float lowFrequencySpeed;\n\nvarying float noise;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\n\n\nvec3 mod289(vec3 x)\n{\nreturn x-floor(x*(1.0/289.0))*289.0;\n}\nvec4 mod289(vec4 x)\n{\nreturn x-floor(x*(1.0/289.0))*289.0;\n}\nvec4 permute(vec4 x)\n{\nreturn mod289(((x*34.0)+1.0)*x);\n}\nvec4 taylorInvSqrt(vec4 r)\n{\nreturn 1.79284291400159-0.85373472095314*r;\n}\nvec3 fade(vec3 t) {\nreturn t*t*t*(t*(t*6.0-15.0)+10.0);\n}\n\nfloat pnoise(vec3 P,vec3 rep)\n{\nvec3 Pi0=mod(floor(P),rep); \nvec3 Pi1=mod(Pi0+vec3(1.0),rep); \nPi0=mod289(Pi0);\nPi1=mod289(Pi1);\nvec3 Pf0=fract(P); \nvec3 Pf1=Pf0-vec3(1.0); \nvec4 ix=vec4(Pi0.x,Pi1.x,Pi0.x,Pi1.x);\nvec4 iy=vec4(Pi0.yy,Pi1.yy);\nvec4 iz0=Pi0.zzzz;\nvec4 iz1=Pi1.zzzz;\nvec4 ixy=permute(permute(ix)+iy);\nvec4 ixy0=permute(ixy+iz0);\nvec4 ixy1=permute(ixy+iz1);\nvec4 gx0=ixy0*(1.0/7.0);\nvec4 gy0=fract(floor(gx0)*(1.0/7.0))-0.5;\ngx0=fract(gx0);\nvec4 gz0=vec4(0.5)-abs(gx0)-abs(gy0);\nvec4 sz0=step(gz0,vec4(0.0));\ngx0-=sz0*(step(0.0,gx0)-0.5);\ngy0-=sz0*(step(0.0,gy0)-0.5);\nvec4 gx1=ixy1*(1.0/7.0);\nvec4 gy1=fract(floor(gx1)*(1.0/7.0))-0.5;\ngx1=fract(gx1);\nvec4 gz1=vec4(0.5)-abs(gx1)-abs(gy1);\nvec4 sz1=step(gz1,vec4(0.0));\ngx1-=sz1*(step(0.0,gx1)-0.5);\ngy1-=sz1*(step(0.0,gy1)-0.5);\nvec3 g000=vec3(gx0.x,gy0.x,gz0.x);\nvec3 g100=vec3(gx0.y,gy0.y,gz0.y);\nvec3 g010=vec3(gx0.z,gy0.z,gz0.z);\nvec3 g110=vec3(gx0.w,gy0.w,gz0.w);\nvec3 g001=vec3(gx1.x,gy1.x,gz1.x);\nvec3 g101=vec3(gx1.y,gy1.y,gz1.y);\nvec3 g011=vec3(gx1.z,gy1.z,gz1.z);\nvec3 g111=vec3(gx1.w,gy1.w,gz1.w);\nvec4 norm0=taylorInvSqrt(vec4(dot(g000,g000),dot(g010,g010),dot(g100,g100),dot(g110,g110)));\ng000*=norm0.x;\ng010*=norm0.y;\ng100*=norm0.z;\ng110*=norm0.w;\nvec4 norm1=taylorInvSqrt(vec4(dot(g001,g001),dot(g011,g011),dot(g101,g101),dot(g111,g111)));\ng001*=norm1.x;\ng011*=norm1.y;\ng101*=norm1.z;\ng111*=norm1.w;\nfloat n000=dot(g000,Pf0);\nfloat n100=dot(g100,vec3(Pf1.x,Pf0.yz));\nfloat n010=dot(g010,vec3(Pf0.x,Pf1.y,Pf0.z));\nfloat n110=dot(g110,vec3(Pf1.xy,Pf0.z));\nfloat n001=dot(g001,vec3(Pf0.xy,Pf1.z));\nfloat n101=dot(g101,vec3(Pf1.x,Pf0.y,Pf1.z));\nfloat n011=dot(g011,vec3(Pf0.x,Pf1.yz));\nfloat n111=dot(g111,Pf1);\nvec3 fade_xyz=fade(Pf0);\nvec4 n_z=mix(vec4(n000,n100,n010,n110),vec4(n001,n101,n011,n111),fade_xyz.z);\nvec2 n_yz=mix(n_z.xy,n_z.zw,fade_xyz.y);\nfloat n_xyz=mix(n_yz.x,n_yz.y,fade_xyz.x);\nreturn 2.2*n_xyz;\n}\n\nfloat turbulence( vec3 p ) {\nfloat w=100.0;\nfloat t=-.5;\nfor (float f=1.0 ; f<=10.0 ; f++ ){\nfloat power=pow( 2.0,f );\nt+=abs( pnoise( vec3( power*p ),vec3( 10.0,10.0,10.0 ) )/power );\n}\nreturn t;\n}\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\n#ifdef NORMAL\n\nnoise=10.0*-.10*turbulence( .5*normal+time*1.15 );\n\nfloat b=lowFrequencySpeed*5.0*pnoise( 0.05*position +vec3(time*1.025),vec3( 100.0 ) );\n\nfloat displacement =-1.5*noise+b;\n\nvec3 newPosition=position+normal*displacement;\ngl_Position=viewProjection*finalWorld*vec4( newPosition,1.0 );\nvec4 worldPos=finalWorld*vec4(newPosition,1.0);\nvPositionW=vec3(worldPos);\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}";
 BABYLON.Effect.ShadersStore['lavaPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nvarying vec3 vPositionW;\n\nuniform float time;\nuniform float speed;\nuniform float movingSpeed;\nuniform vec3 fogColor;\nuniform sampler2D noiseTexture;\nuniform float fogDensity;\n\nvarying float noise;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0]\n#include<__decl__lightFragment>[1]\n#include<__decl__lightFragment>[2]\n#include<__decl__lightFragment>[3]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nfloat random( vec3 scale,float seed ){\nreturn fract( sin( dot( gl_FragCoord.xyz+seed,scale ) )*43758.5453+seed ) ;\n}\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\n\nvec4 noiseTex=texture2D( noiseTexture,vDiffuseUV );\nvec2 T1=vDiffuseUV+vec2( 1.5,-1.5 )*time*0.02;\nvec2 T2=vDiffuseUV+vec2( -0.5,2.0 )*time*0.01*speed;\nT1.x+=noiseTex.x*2.0;\nT1.y+=noiseTex.y*2.0;\nT2.x-=noiseTex.y*0.2+time*0.001*movingSpeed;\nT2.y+=noiseTex.z*0.2+time*0.002*movingSpeed;\nfloat p=texture2D( noiseTexture,T1*3.0 ).a;\nvec4 lavaColor=texture2D( diffuseSampler,T2*4.0);\nvec4 temp=lavaColor*( vec4( p,p,p,p )*2. )+( lavaColor*lavaColor-0.1 );\nbaseColor=temp;\nfloat depth=gl_FragCoord.z*4.0;\nconst float LOG2=1.442695;\nfloat fogFactor=exp2(-fogDensity*fogDensity*depth*depth*LOG2 );\nfogFactor=1.0-clamp( fogFactor,0.0,1.0 );\nbaseColor=mix( baseColor,vec4( fogColor,baseColor.w ),fogFactor );\ndiffuseColor=baseColor.rgb;\n\n\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#include<lightFragment>[0]\n#include<lightFragment>[1]\n#include<lightFragment>[2]\n#include<lightFragment>[3]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}";
 
+"use strict";
 
 
 
@@ -1436,6 +1461,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['simpleVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['simplePixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\nbaseColor=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\n#endif \n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}";
 
+"use strict";
 
 
 
@@ -2052,6 +2078,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['waterVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef BUMP\nvarying vec2 vNormalUV;\n#ifdef BUMPSUPERIMPOSE\nvarying vec2 vNormalUV2;\n#endif\nuniform mat4 normalMatrix;\nuniform vec2 vNormalInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<logDepthDeclaration>\n\nuniform mat4 worldReflectionViewProjection;\nuniform vec2 windDirection;\nuniform float waveLength;\nuniform float time;\nuniform float windForce;\nuniform float waveHeight;\nuniform float waveSpeed;\n\nvarying vec3 vPosition;\nvarying vec3 vRefractionMapTexCoord;\nvarying vec3 vReflectionMapTexCoord;\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef BUMP\nif (vNormalInfos.x == 0.)\n{\nvNormalUV=vec2(normalMatrix*vec4((uv*1.0)/waveLength+time*windForce*windDirection,1.0,0.0));\n#ifdef BUMPSUPERIMPOSE\nvNormalUV2=vec2(normalMatrix*vec4((uv*0.721)/waveLength+time*1.2*windForce*windDirection,1.0,0.0));\n#endif\n}\nelse\n{\nvNormalUV=vec2(normalMatrix*vec4((uv2*1.0)/waveLength+time*windForce*windDirection ,1.0,0.0));\n#ifdef BUMPSUPERIMPOSE\nvNormalUV2=vec2(normalMatrix*vec4((uv2*0.721)/waveLength+time*1.2*windForce*windDirection ,1.0,0.0));\n#endif\n}\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\nvec3 p=position;\nfloat newY=(sin(((p.x/0.05)+time*waveSpeed))*waveHeight*windDirection.x*5.0)\n+(cos(((p.z/0.05)+time*waveSpeed))*waveHeight*windDirection.y*5.0);\np.y+=abs(newY);\ngl_Position=viewProjection*finalWorld*vec4(p,1.0);\n#ifdef REFLECTION\nworldPos=viewProjection*finalWorld*vec4(p,1.0);\n\nvPosition=position;\nvRefractionMapTexCoord.x=0.5*(worldPos.w+worldPos.x);\nvRefractionMapTexCoord.y=0.5*(worldPos.w+worldPos.y);\nvRefractionMapTexCoord.z=worldPos.w;\nworldPos=worldReflectionViewProjection*vec4(position,1.0);\nvReflectionMapTexCoord.x=0.5*(worldPos.w+worldPos.x);\nvReflectionMapTexCoord.y=0.5*(worldPos.w+worldPos.y);\nvReflectionMapTexCoord.z=worldPos.w;\n#endif\n#include<logDepthVertex>\n}\n";
 BABYLON.Effect.ShadersStore['waterPixelShader'] = "#ifdef LOGARITHMICDEPTH\n#extension GL_EXT_frag_depth : enable\n#endif\nprecision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n\n#ifdef BUMP\nvarying vec2 vNormalUV;\nvarying vec2 vNormalUV2;\nuniform sampler2D normalSampler;\nuniform vec2 vNormalInfos;\n#endif\nuniform sampler2D refractionSampler;\nuniform sampler2D reflectionSampler;\n\nconst float LOG2=1.442695;\nuniform vec3 cameraPosition;\nuniform vec4 waterColor;\nuniform float colorBlendFactor;\nuniform vec4 waterColor2;\nuniform float colorBlendFactor2;\nuniform float bumpHeight;\nuniform float time;\n\nvarying vec3 vRefractionMapTexCoord;\nvarying vec3 vReflectionMapTexCoord;\nvarying vec3 vPosition;\n#include<clipPlaneFragmentDeclaration>\n#include<logDepthDeclaration>\n\n#include<fogFragmentDeclaration>\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef BUMP\n#ifdef BUMPSUPERIMPOSE\nbaseColor=0.6*texture2D(normalSampler,vNormalUV)+0.4*texture2D(normalSampler,vec2(vNormalUV2.x,vNormalUV2.y));\n#else\nbaseColor=texture2D(normalSampler,vNormalUV);\n#endif\nvec3 bumpColor=baseColor.rgb;\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\nbaseColor.rgb*=vNormalInfos.y;\n#else\nvec3 bumpColor=vec3(1.0);\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec2 perturbation=bumpHeight*(baseColor.rg-0.5);\n#ifdef BUMPAFFECTSREFLECTION\nvec3 normalW=normalize(vNormalW+vec3(perturbation.x*8.0,0.0,perturbation.y*8.0));\nif (normalW.y<0.0) {\nnormalW.y=-normalW.y;\n}\n#else\nvec3 normalW=normalize(vNormalW);\n#endif\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\nvec2 perturbation=bumpHeight*(vec2(1.0,1.0)-0.5);\n#endif\n#ifdef FRESNELSEPARATE\n#ifdef REFLECTION\n\nvec3 eyeVector=normalize(vEyePosition-vPosition);\nvec2 projectedRefractionTexCoords=clamp(vRefractionMapTexCoord.xy/vRefractionMapTexCoord.z+perturbation*0.5,0.0,1.0);\nvec4 refractiveColor=texture2D(refractionSampler,projectedRefractionTexCoords);\nvec2 projectedReflectionTexCoords=clamp(vec2(\nvReflectionMapTexCoord.x/vReflectionMapTexCoord.z+perturbation.x*0.3,\nvReflectionMapTexCoord.y/vReflectionMapTexCoord.z+perturbation.y\n),0.0,1.0);\nvec4 reflectiveColor=texture2D(reflectionSampler,projectedReflectionTexCoords);\nvec3 upVector=vec3(0.0,1.0,0.0);\nfloat fresnelTerm=clamp(abs(pow(dot(eyeVector,upVector),3.0)),0.05,0.65);\nfloat IfresnelTerm=1.0-fresnelTerm;\nrefractiveColor=colorBlendFactor*waterColor+(1.0-colorBlendFactor)*refractiveColor;\nreflectiveColor=IfresnelTerm*colorBlendFactor2*waterColor+(1.0-colorBlendFactor2*IfresnelTerm)*reflectiveColor;\nvec4 combinedColor=refractiveColor*fresnelTerm+reflectiveColor*IfresnelTerm;\nbaseColor=combinedColor;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\nvec3 finalDiffuse=clamp(baseColor.rgb,0.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#else \n#ifdef REFLECTION\n\nvec3 eyeVector=normalize(vEyePosition-vPosition);\nvec2 projectedRefractionTexCoords=clamp(vRefractionMapTexCoord.xy/vRefractionMapTexCoord.z+perturbation,0.0,1.0);\nvec4 refractiveColor=texture2D(refractionSampler,projectedRefractionTexCoords);\nvec2 projectedReflectionTexCoords=clamp(vReflectionMapTexCoord.xy/vReflectionMapTexCoord.z+perturbation,0.0,1.0);\nvec4 reflectiveColor=texture2D(reflectionSampler,projectedReflectionTexCoords);\nvec3 upVector=vec3(0.0,1.0,0.0);\nfloat fresnelTerm=max(dot(eyeVector,upVector),0.0);\nvec4 combinedColor=refractiveColor*fresnelTerm+reflectiveColor*(1.0-fresnelTerm);\nbaseColor=colorBlendFactor*waterColor+(1.0-colorBlendFactor)*combinedColor;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\nvec3 finalDiffuse=clamp(baseColor.rgb,0.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\n#endif\n\nvec4 color=vec4(finalDiffuse+finalSpecular,alpha);\n#include<logDepthFragment>\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
 
+"use strict";
 
 
 
@@ -2374,6 +2401,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['fireVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n\nuniform float time;\nuniform float speed;\n#ifdef DIFFUSE\nvarying vec2 vDistortionCoords1;\nvarying vec2 vDistortionCoords2;\nvarying vec2 vDistortionCoords3;\n#endif\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n\n#ifdef DIFFUSE\nvDiffuseUV=uv;\nvDiffuseUV.y-=0.2;\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n#ifdef DIFFUSE\n\nvec3 layerSpeed=vec3(-0.2,-0.52,-0.1)*speed;\nvDistortionCoords1.x=uv.x;\nvDistortionCoords1.y=uv.y+layerSpeed.x*time/1000.0;\nvDistortionCoords2.x=uv.x;\nvDistortionCoords2.y=uv.y+layerSpeed.y*time/1000.0;\nvDistortionCoords3.x=uv.x;\nvDistortionCoords3.y=uv.y+layerSpeed.z*time/1000.0;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['firePixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\nuniform sampler2D distortionSampler;\nuniform sampler2D opacitySampler;\n#ifdef DIFFUSE\nvarying vec2 vDistortionCoords1;\nvarying vec2 vDistortionCoords2;\nvarying vec2 vDistortionCoords3;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\nvec4 bx2(vec4 x)\n{\nreturn vec4(2.0)*x-vec4(1.0);\n}\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\n\nfloat alpha=1.0;\n#ifdef DIFFUSE\n\nconst float distortionAmount0=0.092;\nconst float distortionAmount1=0.092;\nconst float distortionAmount2=0.092;\nvec2 heightAttenuation=vec2(0.3,0.39);\nvec4 noise0=texture2D(distortionSampler,vDistortionCoords1);\nvec4 noise1=texture2D(distortionSampler,vDistortionCoords2);\nvec4 noise2=texture2D(distortionSampler,vDistortionCoords3);\nvec4 noiseSum=bx2(noise0)*distortionAmount0+bx2(noise1)*distortionAmount1+bx2(noise2)*distortionAmount2;\nvec4 perturbedBaseCoords=vec4(vDiffuseUV,0.0,1.0)+noiseSum*(vDiffuseUV.y*heightAttenuation.x+heightAttenuation.y);\nvec4 opacityColor=texture2D(opacitySampler,perturbedBaseCoords.xy);\n#ifdef ALPHATEST\nif (opacityColor.r<0.1)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor=texture2D(diffuseSampler,perturbedBaseCoords.xy)*2.0;\nbaseColor*=opacityColor;\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 diffuseBase=vec3(1.0,1.0,1.0);\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n\nvec4 color=vec4(baseColor.rgb,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}";
 
+"use strict";
 
 
 
@@ -2833,9 +2861,10 @@ var BABYLON;
 
 //# sourceMappingURL=babylon.furMaterial.js.map
 
-BABYLON.Effect.ShadersStore['furVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\nuniform float furLength;\nuniform float furAngle;\n#ifdef HIGHLEVEL\nuniform float furOffset;\nuniform vec3 furGravity;\nuniform float furTime;\nuniform float furSpacing;\nuniform float furDensity;\n#endif\n#ifdef HEIGHTMAP\nuniform sampler2D heightTexture;\n#endif\n#ifdef HIGHLEVEL\nvarying vec2 vFurUV;\n#endif\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\nvarying float vfur_length;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nfloat Rand(vec3 rv) {\nfloat x=dot(rv,vec3(12.9898,78.233,24.65487));\nreturn fract(sin(x)*43758.5453);\n}\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\n\nfloat r=Rand(position);\n#ifdef HEIGHTMAP\n#if __VERSION__>100\nvfur_length=furLength*texture(heightTexture,uv).x;\n#else\nvfur_length=furLength*texture2D(heightTexture,uv).r;\n#endif\n#else \nvfur_length=(furLength*r);\n#endif\nvec3 tangent1=vec3(normal.y,-normal.x,0);\nvec3 tangent2=vec3(-normal.z,0,normal.x);\nr=Rand(tangent1*r);\nfloat J=(2.0+4.0*r);\nr=Rand(tangent2*r);\nfloat K=(2.0+2.0*r);\ntangent1=tangent1*J+tangent2*K;\ntangent1=normalize(tangent1);\nvec3 newPosition=position+normal*vfur_length*cos(furAngle)+tangent1*vfur_length*sin(furAngle);\n#ifdef HIGHLEVEL\n\nvec3 forceDirection=vec3(0.0,0.0,0.0);\nforceDirection.x=sin(furTime+position.x*0.05)*0.2;\nforceDirection.y=cos(furTime*0.7+position.y*0.04)*0.2;\nforceDirection.z=sin(furTime*0.7+position.z*0.04)*0.2;\nvec3 displacement=vec3(0.0,0.0,0.0);\ndisplacement=furGravity+forceDirection;\nfloat displacementFactor=pow(furOffset,3.0);\nvec3 aNormal=normal;\naNormal.xyz+=displacement*displacementFactor;\nnewPosition=vec3(newPosition.x,newPosition.y,newPosition.z)+(normalize(aNormal)*furOffset*furSpacing);\n#endif\n#ifdef NORMAL\n#ifdef HIGHLEVEL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0))*aNormal);\n#else\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n#endif\n\ngl_Position=viewProjection*finalWorld*vec4(newPosition,1.0);\nvec4 worldPos=finalWorld*vec4(newPosition,1.0);\nvPositionW=vec3(worldPos);\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#ifdef HIGHLEVEL\nvFurUV=vDiffuseUV*furDensity;\n#endif\n#else\n#ifdef HIGHLEVEL\nvFurUV=uv*furDensity;\n#endif\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
+BABYLON.Effect.ShadersStore['furVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\nuniform float furLength;\nuniform float furAngle;\n#ifdef HIGHLEVEL\nuniform float furOffset;\nuniform vec3 furGravity;\nuniform float furTime;\nuniform float furSpacing;\nuniform float furDensity;\n#endif\n#ifdef HEIGHTMAP\nuniform sampler2D heightTexture;\n#endif\n#ifdef HIGHLEVEL\nvarying vec2 vFurUV;\n#endif\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform mat4 diffuseMatrix;\nuniform vec2 vDiffuseInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\nvarying float vfur_length;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nfloat Rand(vec3 rv) {\nfloat x=dot(rv,vec3(12.9898,78.233,24.65487));\nreturn fract(sin(x)*43758.5453);\n}\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\n\nfloat r=Rand(position);\n#ifdef HEIGHTMAP\n#if __VERSION__>100\nvfur_length=furLength*texture(heightTexture,uv).x;\n#else\nvfur_length=furLength*texture2D(heightTexture,uv).r;\n#endif\n#else \nvfur_length=(furLength*r);\n#endif\nvec3 tangent1=vec3(normal.y,-normal.x,0);\nvec3 tangent2=vec3(-normal.z,0,normal.x);\nr=Rand(tangent1*r);\nfloat J=(2.0+4.0*r);\nr=Rand(tangent2*r);\nfloat K=(2.0+2.0*r);\ntangent1=tangent1*J+tangent2*K;\ntangent1=normalize(tangent1);\nvec3 newPosition=position+normal*vfur_length*cos(furAngle)+tangent1*vfur_length*sin(furAngle);\n#ifdef HIGHLEVEL\n\nvec3 forceDirection=vec3(0.0,0.0,0.0);\nforceDirection.x=sin(furTime+position.x*0.05)*0.2;\nforceDirection.y=cos(furTime*0.7+position.y*0.04)*0.2;\nforceDirection.z=sin(furTime*0.7+position.z*0.04)*0.2;\nvec3 displacement=vec3(0.0,0.0,0.0);\ndisplacement=furGravity+forceDirection;\nfloat displacementFactor=pow(furOffset,3.0);\nvec3 aNormal=normal;\naNormal.xyz+=displacement*displacementFactor;\nnewPosition=vec3(newPosition.x,newPosition.y,newPosition.z)+(normalize(aNormal)*furOffset*furSpacing);\n#endif\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\ngl_Position=viewProjection*finalWorld*vec4(newPosition,1.0);\nvec4 worldPos=finalWorld*vec4(newPosition,1.0);\nvPositionW=vec3(worldPos);\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vDiffuseInfos.x == 0.)\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n}\n#ifdef HIGHLEVEL\nvFurUV=vDiffuseUV*furDensity;\n#endif\n#else\n#ifdef HIGHLEVEL\nvFurUV=uv*furDensity;\n#endif\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['furPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n\nuniform vec4 furColor;\nuniform float furLength;\nvarying vec3 vPositionW;\nvarying float vfur_length;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\n#ifdef DIFFUSE\nvarying vec2 vDiffuseUV;\nuniform sampler2D diffuseSampler;\nuniform vec2 vDiffuseInfos;\n#endif\n\n#ifdef HIGHLEVEL\nuniform float furOffset;\nuniform sampler2D furTexture;\nvarying vec2 vFurUV;\n#endif\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n#include<fogFragmentDeclaration>\n#include<clipPlaneFragmentDeclaration>\nfloat Rand(vec3 rv) {\nfloat x=dot(rv,vec3(12.9898,78.233,24.65487));\nreturn fract(sin(x)*43758.5453);\n}\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=furColor;\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n#ifdef DIFFUSE\nbaseColor*=texture2D(diffuseSampler,vDiffuseUV);\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vDiffuseInfos.y;\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n#ifdef HIGHLEVEL\n\nvec4 furTextureColor=texture2D(furTexture,vec2(vFurUV.x,vFurUV.y));\nif (furTextureColor.a<=0.0 || furTextureColor.g<furOffset) {\ndiscard;\n}\nfloat occlusion=mix(0.0,furTextureColor.b*1.2,furOffset);\nbaseColor=vec4(baseColor.xyz*occlusion,1.1-furOffset);\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\nfloat glossiness=0.;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\nvec3 finalDiffuse=clamp(diffuseBase.rgb*baseColor.rgb,0.0,1.0);\n\n#ifdef HIGHLEVEL\nvec4 color=vec4(finalDiffuse,alpha);\n#else\nfloat r=vfur_length/furLength*0.5;\nvec4 color=vec4(finalDiffuse*(0.5+r),alpha);\n#endif\n#include<fogFragment>\ngl_FragColor=color;\n}";
 
+"use strict";
 
 
 
@@ -3223,6 +3252,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['terrainVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef UV1\nattribute vec2 uv;\n#endif\n#ifdef UV2\nattribute vec2 uv2;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSE\nvarying vec2 vTextureUV;\nuniform mat4 textureMatrix;\nuniform vec2 vTextureInfos;\n#endif\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void) {\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef NORMAL\nvNormalW=normalize(vec3(finalWorld*vec4(normal,0.0)));\n#endif\n\n#ifndef UV1\nvec2 uv=vec2(0.,0.);\n#endif\n#ifndef UV2\nvec2 uv2=vec2(0.,0.);\n#endif\n#ifdef DIFFUSE\nif (vTextureInfos.x == 0.)\n{\nvTextureUV=vec2(textureMatrix*vec4(uv,1.0,0.0));\n}\nelse\n{\nvTextureUV=vec2(textureMatrix*vec4(uv2,1.0,0.0));\n}\n#endif\n\n#ifdef CLIPPLANE\nfClipDistance=dot(worldPos,vClipPlane);\n#endif\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['terrainPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying vec3 vNormalW;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\n#ifdef DIFFUSE\nvarying vec2 vTextureUV;\nuniform sampler2D textureSampler;\nuniform vec2 vTextureInfos;\nuniform sampler2D diffuse1Sampler;\nuniform sampler2D diffuse2Sampler;\nuniform sampler2D diffuse3Sampler;\nuniform vec2 diffuse1Infos;\nuniform vec2 diffuse2Infos;\nuniform vec2 diffuse3Infos;\n#endif\n#ifdef BUMP\nuniform sampler2D bump1Sampler;\nuniform sampler2D bump2Sampler;\nuniform sampler2D bump3Sampler;\n#endif\n\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n#include<clipPlaneFragmentDeclaration>\n\n#include<fogFragmentDeclaration>\n\n#ifdef BUMP\n#extension GL_OES_standard_derivatives : enable\n\nmat3 cotangent_frame(vec3 normal,vec3 p,vec2 uv)\n{\n\nvec3 dp1=dFdx(p);\nvec3 dp2=dFdy(p);\nvec2 duv1=dFdx(uv);\nvec2 duv2=dFdy(uv);\n\nvec3 dp2perp=cross(dp2,normal);\nvec3 dp1perp=cross(normal,dp1);\nvec3 tangent=dp2perp*duv1.x+dp1perp*duv2.x;\nvec3 binormal=dp2perp*duv1.y+dp1perp*duv2.y;\n\nfloat invmax=inversesqrt(max(dot(tangent,tangent),dot(binormal,binormal)));\nreturn mat3(tangent*invmax,binormal*invmax,normal);\n}\nvec3 perturbNormal(vec3 viewDir,vec3 mixColor)\n{ \nvec3 bump1Color=texture2D(bump1Sampler,vTextureUV*diffuse1Infos).xyz;\nvec3 bump2Color=texture2D(bump2Sampler,vTextureUV*diffuse2Infos).xyz;\nvec3 bump3Color=texture2D(bump3Sampler,vTextureUV*diffuse3Infos).xyz;\nbump1Color.rgb*=mixColor.r;\nbump2Color.rgb=mix(bump1Color.rgb,bump2Color.rgb,mixColor.g);\nvec3 map=mix(bump2Color.rgb,bump3Color.rgb,mixColor.b);\nmap=map*255./127.-128./127.;\nmat3 TBN=cotangent_frame(vNormalW*vTextureInfos.y,-viewDir,vTextureUV);\nreturn normalize(TBN*map);\n}\n#endif\nvoid main(void) {\n\n#ifdef CLIPPLANE\nif (fClipDistance>0.0)\ndiscard;\n#endif\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(1.,1.,1.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n\nfloat alpha=vDiffuseColor.a;\n\n#ifdef NORMAL\nvec3 normalW=normalize(vNormalW);\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\n#ifdef DIFFUSE\nbaseColor=texture2D(textureSampler,vTextureUV);\n#if defined(BUMP) && defined(DIFFUSE)\nnormalW=perturbNormal(viewDirectionW,baseColor.rgb);\n#endif\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\nbaseColor.rgb*=vTextureInfos.y;\nvec4 diffuse1Color=texture2D(diffuse1Sampler,vTextureUV*diffuse1Infos);\nvec4 diffuse2Color=texture2D(diffuse2Sampler,vTextureUV*diffuse2Infos);\nvec4 diffuse3Color=texture2D(diffuse3Sampler,vTextureUV*diffuse3Infos);\ndiffuse1Color.rgb*=baseColor.r;\ndiffuse2Color.rgb=mix(diffuse1Color.rgb,diffuse2Color.rgb,baseColor.g);\nbaseColor.rgb=mix(diffuse2Color.rgb,diffuse3Color.rgb,baseColor.b);\n#endif\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nvec3 specularBase=vec3(0.,0.,0.);\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor*baseColor.rgb,0.0,1.0);\n\nvec4 color=vec4(finalDiffuse+finalSpecular,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
 
+"use strict";
 
 
 
@@ -3605,6 +3635,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['triplanarVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef NORMAL\nattribute vec3 normal;\n#endif\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n#include<bonesDeclaration>\n\n#include<instancesDeclaration>\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef DIFFUSEX\nvarying vec2 vTextureUVX;\n#endif\n#ifdef DIFFUSEY\nvarying vec2 vTextureUVY;\n#endif\n#ifdef DIFFUSEZ\nvarying vec2 vTextureUVZ;\n#endif\nuniform float tileSize;\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef NORMAL\nvarying mat3 tangentSpace;\n#endif\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\nvoid main(void)\n{\n#include<instancesVertex>\n#include<bonesVertex>\ngl_Position=viewProjection*finalWorld*vec4(position,1.0);\nvec4 worldPos=finalWorld*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n#ifdef DIFFUSEX\nvTextureUVX=worldPos.zy/tileSize;\n#endif\n#ifdef DIFFUSEY\nvTextureUVY=worldPos.xz/tileSize;\n#endif\n#ifdef DIFFUSEZ\nvTextureUVZ=worldPos.xy/tileSize;\n#endif\n#ifdef NORMAL\n\nvec3 xtan=vec3(0,0,1);\nvec3 xbin=vec3(0,1,0);\nvec3 ytan=vec3(1,0,0);\nvec3 ybin=vec3(0,0,1);\nvec3 ztan=vec3(1,0,0);\nvec3 zbin=vec3(0,1,0);\nvec3 normalizedNormal=normalize(normal);\nnormalizedNormal*=normalizedNormal;\nvec3 worldBinormal=normalize(xbin*normalizedNormal.x+ybin*normalizedNormal.y+zbin*normalizedNormal.z);\nvec3 worldTangent=normalize(xtan*normalizedNormal.x+ytan*normalizedNormal.y+ztan*normalizedNormal.z);\nworldTangent=(world*vec4(worldTangent,1.0)).xyz;\nworldBinormal=(world*vec4(worldBinormal,1.0)).xyz;\nvec3 worldNormal=normalize(cross(worldTangent,worldBinormal));\ntangentSpace[0]=worldTangent;\ntangentSpace[1]=worldBinormal;\ntangentSpace[2]=worldNormal;\n#endif\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#include<shadowsVertex>[0..maxSimultaneousLights]\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['triplanarPixelShader'] = "precision highp float;\n\nuniform vec3 vEyePosition;\nuniform vec4 vDiffuseColor;\n#ifdef SPECULARTERM\nuniform vec4 vSpecularColor;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n\n#include<helperFunctions>\n\n#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\n#ifdef DIFFUSEX\nvarying vec2 vTextureUVX;\nuniform sampler2D diffuseSamplerX;\n#ifdef BUMPX\nuniform sampler2D normalSamplerX;\n#endif\n#endif\n#ifdef DIFFUSEY\nvarying vec2 vTextureUVY;\nuniform sampler2D diffuseSamplerY;\n#ifdef BUMPY\nuniform sampler2D normalSamplerY;\n#endif\n#endif\n#ifdef DIFFUSEZ\nvarying vec2 vTextureUVZ;\nuniform sampler2D diffuseSamplerZ;\n#ifdef BUMPZ\nuniform sampler2D normalSamplerZ;\n#endif\n#endif\n#ifdef NORMAL\nvarying mat3 tangentSpace;\n#endif\n#include<lightsFragmentFunctions>\n#include<shadowsFragmentFunctions>\n#include<clipPlaneFragmentDeclaration>\n#include<fogFragmentDeclaration>\nvoid main(void) {\n\n#include<clipPlaneFragment>\nvec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\nvec4 baseColor=vec4(0.,0.,0.,1.);\nvec3 diffuseColor=vDiffuseColor.rgb;\n\nfloat alpha=vDiffuseColor.a;\n\n#ifdef NORMAL\nvec3 normalW=tangentSpace[2];\n#else\nvec3 normalW=vec3(1.0,1.0,1.0);\n#endif\nvec4 baseNormal=vec4(0.0,0.0,0.0,1.0);\nnormalW*=normalW;\n#ifdef DIFFUSEX\nbaseColor+=texture2D(diffuseSamplerX,vTextureUVX)*normalW.x;\n#ifdef BUMPX\nbaseNormal+=texture2D(normalSamplerX,vTextureUVX)*normalW.x;\n#endif\n#endif\n#ifdef DIFFUSEY\nbaseColor+=texture2D(diffuseSamplerY,vTextureUVY)*normalW.y;\n#ifdef BUMPY\nbaseNormal+=texture2D(normalSamplerY,vTextureUVY)*normalW.y;\n#endif\n#endif\n#ifdef DIFFUSEZ\nbaseColor+=texture2D(diffuseSamplerZ,vTextureUVZ)*normalW.z;\n#ifdef BUMPZ\nbaseNormal+=texture2D(normalSamplerZ,vTextureUVZ)*normalW.z;\n#endif\n#endif\n#ifdef NORMAL\nnormalW=normalize((2.0*baseNormal.xyz-1.0)*tangentSpace);\n#endif\n#ifdef ALPHATEST\nif (baseColor.a<0.4)\ndiscard;\n#endif\n#include<depthPrePass>\n#ifdef VERTEXCOLOR\nbaseColor.rgb*=vColor.rgb;\n#endif\n\nvec3 diffuseBase=vec3(0.,0.,0.);\nlightingInfo info;\nfloat shadow=1.;\n#ifdef SPECULARTERM\nfloat glossiness=vSpecularColor.a;\nvec3 specularBase=vec3(0.,0.,0.);\nvec3 specularColor=vSpecularColor.rgb;\n#else\nfloat glossiness=0.;\n#endif\n#include<lightFragment>[0..maxSimultaneousLights]\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n#ifdef SPECULARTERM\nvec3 finalSpecular=specularBase*specularColor;\n#else\nvec3 finalSpecular=vec3(0.0);\n#endif\nvec3 finalDiffuse=clamp(diffuseBase*diffuseColor,0.0,1.0)*baseColor.rgb;\n\nvec4 color=vec4(finalDiffuse+finalSpecular,alpha);\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
 
+"use strict";
 
 
 
@@ -3820,6 +3851,7 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['skyVertexShader'] = "precision highp float;\n\nattribute vec3 position;\n#ifdef VERTEXCOLOR\nattribute vec4 color;\n#endif\n\nuniform mat4 world;\nuniform mat4 view;\nuniform mat4 viewProjection;\n#ifdef POINTSIZE\nuniform float pointSize;\n#endif\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneVertexDeclaration>\n#include<fogVertexDeclaration>\nvoid main(void) {\ngl_Position=viewProjection*world*vec4(position,1.0);\nvec4 worldPos=world*vec4(position,1.0);\nvPositionW=vec3(worldPos);\n\n#include<clipPlaneVertex>\n\n#include<fogVertex>\n\n#ifdef VERTEXCOLOR\nvColor=color;\n#endif\n\n#ifdef POINTSIZE\ngl_PointSize=pointSize;\n#endif\n}\n";
 BABYLON.Effect.ShadersStore['skyPixelShader'] = "precision highp float;\n\nvarying vec3 vPositionW;\n#ifdef VERTEXCOLOR\nvarying vec4 vColor;\n#endif\n#include<clipPlaneFragmentDeclaration>\n\nuniform vec3 cameraPosition;\nuniform float luminance;\nuniform float turbidity;\nuniform float rayleigh;\nuniform float mieCoefficient;\nuniform float mieDirectionalG;\nuniform vec3 sunPosition;\n\n#include<fogFragmentDeclaration>\n\nconst float e=2.71828182845904523536028747135266249775724709369995957;\nconst float pi=3.141592653589793238462643383279502884197169;\nconst float n=1.0003;\nconst float N=2.545E25;\nconst float pn=0.035;\nconst vec3 lambda=vec3(680E-9,550E-9,450E-9);\nconst vec3 K=vec3(0.686,0.678,0.666);\nconst float v=4.0;\nconst float rayleighZenithLength=8.4E3;\nconst float mieZenithLength=1.25E3;\nconst vec3 up=vec3(0.0,1.0,0.0);\nconst float EE=1000.0;\nconst float sunAngularDiameterCos=0.999956676946448443553574619906976478926848692873900859324;\nconst float cutoffAngle=pi/1.95;\nconst float steepness=1.5;\nvec3 totalRayleigh(vec3 lambda)\n{\nreturn (8.0*pow(pi,3.0)*pow(pow(n,2.0)-1.0,2.0)*(6.0+3.0*pn))/(3.0*N*pow(lambda,vec3(4.0))*(6.0-7.0*pn));\n}\nvec3 simplifiedRayleigh()\n{\nreturn 0.0005/vec3(94,40,18);\n}\nfloat rayleighPhase(float cosTheta)\n{ \nreturn (3.0/(16.0*pi))*(1.0+pow(cosTheta,2.0));\n}\nvec3 totalMie(vec3 lambda,vec3 K,float T)\n{\nfloat c=(0.2*T )*10E-18;\nreturn 0.434*c*pi*pow((2.0*pi)/lambda,vec3(v-2.0))*K;\n}\nfloat hgPhase(float cosTheta,float g)\n{\nreturn (1.0/(4.0*pi))*((1.0-pow(g,2.0))/pow(1.0-2.0*g*cosTheta+pow(g,2.0),1.5));\n}\nfloat sunIntensity(float zenithAngleCos)\n{\nreturn EE*max(0.0,1.0-exp((-(cutoffAngle-acos(zenithAngleCos))/steepness)));\n}\nfloat A=0.15;\nfloat B=0.50;\nfloat C=0.10;\nfloat D=0.20;\nfloat EEE=0.02;\nfloat F=0.30;\nfloat W=1000.0;\nvec3 Uncharted2Tonemap(vec3 x)\n{\nreturn ((x*(A*x+C*B)+D*EEE)/(x*(A*x+B)+D*F))-EEE/F;\n}\nvoid main(void) {\n\n#include<clipPlaneFragment>\n\nfloat sunfade=1.0-clamp(1.0-exp((sunPosition.y/450000.0)),0.0,1.0);\nfloat rayleighCoefficient=rayleigh-(1.0*(1.0-sunfade));\nvec3 sunDirection=normalize(sunPosition);\nfloat sunE=sunIntensity(dot(sunDirection,up));\nvec3 betaR=simplifiedRayleigh()*rayleighCoefficient;\nvec3 betaM=totalMie(lambda,K,turbidity)*mieCoefficient;\nfloat zenithAngle=acos(max(0.0,dot(up,normalize(vPositionW-cameraPosition))));\nfloat sR=rayleighZenithLength/(cos(zenithAngle)+0.15*pow(93.885-((zenithAngle*180.0)/pi),-1.253));\nfloat sM=mieZenithLength/(cos(zenithAngle)+0.15*pow(93.885-((zenithAngle*180.0)/pi),-1.253));\nvec3 Fex=exp(-(betaR*sR+betaM*sM));\nfloat cosTheta=dot(normalize(vPositionW-cameraPosition),sunDirection);\nfloat rPhase=rayleighPhase(cosTheta*0.5+0.5);\nvec3 betaRTheta=betaR*rPhase;\nfloat mPhase=hgPhase(cosTheta,mieDirectionalG);\nvec3 betaMTheta=betaM*mPhase;\nvec3 Lin=pow(sunE*((betaRTheta+betaMTheta)/(betaR+betaM))*(1.0-Fex),vec3(1.5));\nLin*=mix(vec3(1.0),pow(sunE*((betaRTheta+betaMTheta)/(betaR+betaM))*Fex,vec3(1.0/2.0)),clamp(pow(1.0-dot(up,sunDirection),5.0),0.0,1.0));\nvec3 direction=normalize(vPositionW-cameraPosition);\nfloat theta=acos(direction.y);\nfloat phi=atan(direction.z,direction.x);\nvec2 uv=vec2(phi,theta)/vec2(2.0*pi,pi)+vec2(0.5,0.0);\nvec3 L0=vec3(0.1)*Fex;\nfloat sundisk=smoothstep(sunAngularDiameterCos,sunAngularDiameterCos+0.00002,cosTheta);\nL0+=(sunE*19000.0*Fex)*sundisk;\nvec3 whiteScale=1.0/Uncharted2Tonemap(vec3(W));\nvec3 texColor=(Lin+L0); \ntexColor*=0.04 ;\ntexColor+=vec3(0.0,0.001,0.0025)*0.3;\nfloat g_fMaxLuminance=1.0;\nfloat fLumScaled=0.1/luminance; \nfloat fLumCompressed=(fLumScaled*(1.0+(fLumScaled/(g_fMaxLuminance*g_fMaxLuminance))))/(1.0+fLumScaled); \nfloat ExposureBias=fLumCompressed;\nvec3 curr=Uncharted2Tonemap((log2(2.0/pow(luminance,4.0)))*texColor);\n\n\n\nvec3 retColor=curr*whiteScale;\n\n\nfloat alpha=1.0;\n#ifdef VERTEXCOLOR\nretColor.rgb*=vColor.rgb;\n#endif\n#ifdef VERTEXALPHA\nalpha*=vColor.a;\n#endif\n\nvec4 color=clamp(vec4(retColor.rgb,alpha),0.0,1.0);\n\n#include<fogFragment>\ngl_FragColor=color;\n}\n";
 
+"use strict";
 
 
 
@@ -4019,1383 +4051,11 @@ var BABYLON;
 BABYLON.Effect.ShadersStore['gridVertexShader'] = "precision highp float;\n\nattribute vec3 position;\nattribute vec3 normal;\n\nuniform mat4 projection;\nuniform mat4 world;\nuniform mat4 view;\nuniform mat4 worldView;\n\n#ifdef TRANSPARENT\nvarying vec4 vCameraSpacePosition;\n#endif\nvarying vec3 vPosition;\nvarying vec3 vNormal;\n#include<fogVertexDeclaration>\nvoid main(void) {\n#ifdef FOG\nvec4 worldPos=world*vec4(position,1.0);\n#endif\n#include<fogVertex>\nvec4 cameraSpacePosition=worldView*vec4(position,1.0);\ngl_Position=projection*cameraSpacePosition;\n#ifdef TRANSPARENT\nvCameraSpacePosition=cameraSpacePosition;\n#endif\nvPosition=position;\nvNormal=normal;\n}";
 BABYLON.Effect.ShadersStore['gridPixelShader'] = "#extension GL_OES_standard_derivatives : enable\n#define SQRT2 1.41421356\n#define PI 3.14159\nprecision highp float;\nuniform vec3 mainColor;\nuniform vec3 lineColor;\nuniform vec4 gridControl;\nuniform vec3 gridOffset;\n\n#ifdef TRANSPARENT\nvarying vec4 vCameraSpacePosition;\n#endif\nvarying vec3 vPosition;\nvarying vec3 vNormal;\n#include<fogFragmentDeclaration>\nfloat getVisibility(float position) {\n\nfloat majorGridFrequency=gridControl.y;\nif (floor(position+0.5) == floor(position/majorGridFrequency+0.5)*majorGridFrequency)\n{\nreturn 1.0;\n} \nreturn gridControl.z;\n}\nfloat getAnisotropicAttenuation(float differentialLength) {\nconst float maxNumberOfLines=10.0;\nreturn clamp(1.0/(differentialLength+1.0)-1.0/maxNumberOfLines,0.0,1.0);\n}\nfloat isPointOnLine(float position,float differentialLength) {\nfloat fractionPartOfPosition=position-floor(position+0.5); \nfractionPartOfPosition/=differentialLength; \nfractionPartOfPosition=clamp(fractionPartOfPosition,-1.,1.);\nfloat result=0.5+0.5*cos(fractionPartOfPosition*PI); \nreturn result; \n}\nfloat contributionOnAxis(float position) {\nfloat differentialLength=length(vec2(dFdx(position),dFdy(position)));\ndifferentialLength*=SQRT2; \n\nfloat result=isPointOnLine(position,differentialLength);\n\nfloat visibility=getVisibility(position);\nresult*=visibility;\n\nfloat anisotropicAttenuation=getAnisotropicAttenuation(differentialLength);\nresult*=anisotropicAttenuation;\nreturn result;\n}\nfloat normalImpactOnAxis(float x) {\nfloat normalImpact=clamp(1.0-3.0*abs(x*x*x),0.0,1.0);\nreturn normalImpact;\n}\nvoid main(void) {\n\nfloat gridRatio=gridControl.x;\nvec3 gridPos=(vPosition+gridOffset)/gridRatio;\n\nfloat x=contributionOnAxis(gridPos.x);\nfloat y=contributionOnAxis(gridPos.y);\nfloat z=contributionOnAxis(gridPos.z);\n\nvec3 normal=normalize(vNormal);\nx*=normalImpactOnAxis(normal.x);\ny*=normalImpactOnAxis(normal.y);\nz*=normalImpactOnAxis(normal.z);\n\nfloat grid=clamp(x+y+z,0.,1.);\n\nvec3 color=mix(mainColor,lineColor,grid);\n#ifdef FOG\n#include<fogFragment>\n#endif\n#ifdef TRANSPARENT\nfloat distanceToFragment=length(vCameraSpacePosition.xyz);\nfloat cameraPassThrough=clamp(distanceToFragment-0.25,0.0,1.0);\nfloat opacity=clamp(grid,0.08,cameraPassThrough*gridControl.w*grid);\ngl_FragColor=vec4(color.rgb,opacity);\n#ifdef PREMULTIPLYALPHA\ngl_FragColor.rgb*=opacity;\n#endif\n#else\n\ngl_FragColor=vec4(color.rgb,1.0);\n#endif\n}";
 
-
+"use strict";
 
 
 var BABYLON;
 (function (BABYLON) {
-    // old version of standard material updated every 3 months
-    var StandardMaterialDefines_OldVer = /** @class */ (function (_super) {
-        __extends(StandardMaterialDefines_OldVer, _super);
-        function StandardMaterialDefines_OldVer() {
-            var _this = _super.call(this) || this;
-            _this.DIFFUSE = false;
-            _this.AMBIENT = false;
-            _this.OPACITY = false;
-            _this.OPACITYRGB = false;
-            _this.REFLECTION = false;
-            _this.EMISSIVE = false;
-            _this.SPECULAR = false;
-            _this.BUMP = false;
-            _this.PARALLAX = false;
-            _this.PARALLAXOCCLUSION = false;
-            _this.SPECULAROVERALPHA = false;
-            _this.CLIPPLANE = false;
-            _this.ALPHATEST = false;
-            _this.ALPHAFROMDIFFUSE = false;
-            _this.POINTSIZE = false;
-            _this.FOG = false;
-            _this.SPECULARTERM = false;
-            _this.DIFFUSEFRESNEL = false;
-            _this.OPACITYFRESNEL = false;
-            _this.REFLECTIONFRESNEL = false;
-            _this.REFRACTIONFRESNEL = false;
-            _this.EMISSIVEFRESNEL = false;
-            _this.FRESNEL = false;
-            _this.NORMAL = false;
-            _this.UV1 = false;
-            _this.UV2 = false;
-            _this.VERTEXCOLOR = false;
-            _this.VERTEXALPHA = false;
-            _this.NUM_BONE_INFLUENCERS = 0;
-            _this.BonesPerMesh = 0;
-            _this.INSTANCES = false;
-            _this.GLOSSINESS = false;
-            _this.ROUGHNESS = false;
-            _this.EMISSIVEASILLUMINATION = false;
-            _this.LINKEMISSIVEWITHDIFFUSE = false;
-            _this.REFLECTIONFRESNELFROMSPECULAR = false;
-            _this.LIGHTMAP = false;
-            _this.USELIGHTMAPASSHADOWMAP = false;
-            _this.REFLECTIONMAP_3D = false;
-            _this.REFLECTIONMAP_SPHERICAL = false;
-            _this.REFLECTIONMAP_PLANAR = false;
-            _this.REFLECTIONMAP_CUBIC = false;
-            _this.REFLECTIONMAP_PROJECTION = false;
-            _this.REFLECTIONMAP_SKYBOX = false;
-            _this.REFLECTIONMAP_EXPLICIT = false;
-            _this.REFLECTIONMAP_EQUIRECTANGULAR = false;
-            _this.REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-            _this.REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-            _this.INVERTCUBICMAP = false;
-            _this.LOGARITHMICDEPTH = false;
-            _this.REFRACTION = false;
-            _this.REFRACTIONMAP_3D = false;
-            _this.REFLECTIONOVERALPHA = false;
-            _this.TWOSIDEDLIGHTING = false;
-            _this.SHADOWFLOAT = false;
-            _this.MORPHTARGETS = false;
-            _this.MORPHTARGETS_NORMAL = false;
-            _this.MORPHTARGETS_TANGENT = false;
-            _this.NUM_MORPH_INFLUENCERS = 0;
-            _this.IMAGEPROCESSING = false;
-            _this.VIGNETTE = false;
-            _this.VIGNETTEBLENDMODEMULTIPLY = false;
-            _this.VIGNETTEBLENDMODEOPAQUE = false;
-            _this.TONEMAPPING = false;
-            _this.CONTRAST = false;
-            _this.COLORCURVES = false;
-            _this.COLORGRADING = false;
-            _this.COLORGRADING3D = false;
-            _this.SAMPLER3DGREENDEPTH = false;
-            _this.SAMPLER3DBGRMAP = false;
-            _this.IMAGEPROCESSINGPOSTPROCESS = false;
-            _this.EXPOSURE = false;
-            _this.rebuild();
-            return _this;
-        }
-        StandardMaterialDefines_OldVer.prototype.setReflectionMode = function (modeToEnable) {
-            var modes = [
-                "REFLECTIONMAP_CUBIC", "REFLECTIONMAP_EXPLICIT", "REFLECTIONMAP_PLANAR",
-                "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_PROJECTION", "REFLECTIONMAP_SKYBOX",
-                "REFLECTIONMAP_SPHERICAL", "REFLECTIONMAP_EQUIRECTANGULAR", "REFLECTIONMAP_EQUIRECTANGULAR_FIXED",
-                "REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED"
-            ];
-            for (var _i = 0, modes_1 = modes; _i < modes_1.length; _i++) {
-                var mode = modes_1[_i];
-                this[mode] = (mode === modeToEnable);
-            }
-        };
-        return StandardMaterialDefines_OldVer;
-    }(BABYLON.MaterialDefines));
-    BABYLON.StandardMaterialDefines_OldVer = StandardMaterialDefines_OldVer;
-    var StandardMaterial_OldVer = /** @class */ (function (_super) {
-        __extends(StandardMaterial_OldVer, _super);
-        function StandardMaterial_OldVer(name, scene) {
-            var _this = _super.call(this, name, scene) || this;
-            _this.ambientColor = new BABYLON.Color3(0, 0, 0);
-            _this.diffuseColor = new BABYLON.Color3(1, 1, 1);
-            _this.specularColor = new BABYLON.Color3(1, 1, 1);
-            _this.emissiveColor = new BABYLON.Color3(0, 0, 0);
-            _this.specularPower = 64;
-            _this._useAlphaFromDiffuseTexture = false;
-            _this._useEmissiveAsIllumination = false;
-            _this._linkEmissiveWithDiffuse = false;
-            _this._useSpecularOverAlpha = false;
-            _this._useReflectionOverAlpha = false;
-            _this._disableLighting = false;
-            _this._useParallax = false;
-            _this._useParallaxOcclusion = false;
-            _this.parallaxScaleBias = 0.05;
-            _this._roughness = 0;
-            _this.indexOfRefraction = 0.98;
-            _this.invertRefractionY = true;
-            _this._useLightmapAsShadowmap = false;
-            _this._useReflectionFresnelFromSpecular = false;
-            _this._useGlossinessFromSpecularMapAlpha = false;
-            _this._maxSimultaneousLights = 4;
-            /**
-             * If sets to true, x component of normal map value will invert (x = 1.0 - x).
-             */
-            _this._invertNormalMapX = false;
-            /**
-             * If sets to true, y component of normal map value will invert (y = 1.0 - y).
-             */
-            _this._invertNormalMapY = false;
-            /**
-             * If sets to true and backfaceCulling is false, normals will be flipped on the backside.
-             */
-            _this._twoSidedLighting = false;
-            _this._renderTargets = new BABYLON.SmartArray(16);
-            _this._worldViewProjectionMatrix = BABYLON.Matrix.Zero();
-            _this._globalAmbientColor = new BABYLON.Color3(0, 0, 0);
-            // Setup the default processing configuration to the scene.
-            _this._attachImageProcessingConfiguration(null);
-            _this.getRenderTargetTextures = function () {
-                _this._renderTargets.reset();
-                if (StandardMaterial_OldVer.ReflectionTextureEnabled && _this._reflectionTexture && _this._reflectionTexture.isRenderTarget) {
-                    _this._renderTargets.push(_this._reflectionTexture);
-                }
-                if (StandardMaterial_OldVer.RefractionTextureEnabled && _this._refractionTexture && _this._refractionTexture.isRenderTarget) {
-                    _this._renderTargets.push(_this._refractionTexture);
-                }
-                return _this._renderTargets;
-            };
-            return _this;
-        }
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "imageProcessingConfiguration", {
-            /**
-             * Gets the image processing configuration used either in this material.
-             */
-            get: function () {
-                return this._imageProcessingConfiguration;
-            },
-            /**
-             * Sets the Default image processing configuration used either in the this material.
-             *
-             * If sets to null, the scene one is in use.
-             */
-            set: function (value) {
-                this._attachImageProcessingConfiguration(value);
-                // Ensure the effect will be rebuilt.
-                this._markAllSubMeshesAsTexturesDirty();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        /**
-         * Attaches a new image processing configuration to the Standard Material.
-         * @param configuration
-         */
-        StandardMaterial_OldVer.prototype._attachImageProcessingConfiguration = function (configuration) {
-            var _this = this;
-            if (configuration === this._imageProcessingConfiguration) {
-                return;
-            }
-            // Detaches observer.
-            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-            }
-            // Pick the scene configuration if needed.
-            if (!configuration) {
-                this._imageProcessingConfiguration = this.getScene().imageProcessingConfiguration;
-            }
-            else {
-                this._imageProcessingConfiguration = configuration;
-            }
-            // Attaches observer.
-            this._imageProcessingObserver = this._imageProcessingConfiguration.onUpdateParameters.add(function (conf) {
-                _this._markAllSubMeshesAsImageProcessingDirty();
-            });
-        };
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "cameraColorCurvesEnabled", {
-            /**
-             * Gets wether the color curves effect is enabled.
-             */
-            get: function () {
-                return this.imageProcessingConfiguration.colorCurvesEnabled;
-            },
-            /**
-             * Sets wether the color curves effect is enabled.
-             */
-            set: function (value) {
-                this.imageProcessingConfiguration.colorCurvesEnabled = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "cameraColorGradingEnabled", {
-            /**
-             * Gets wether the color grading effect is enabled.
-             */
-            get: function () {
-                return this.imageProcessingConfiguration.colorGradingEnabled;
-            },
-            /**
-             * Gets wether the color grading effect is enabled.
-             */
-            set: function (value) {
-                this.imageProcessingConfiguration.colorGradingEnabled = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "cameraToneMappingEnabled", {
-            /**
-             * Gets wether tonemapping is enabled or not.
-             */
-            get: function () {
-                return this._imageProcessingConfiguration.toneMappingEnabled;
-            },
-            /**
-             * Sets wether tonemapping is enabled or not
-             */
-            set: function (value) {
-                this._imageProcessingConfiguration.toneMappingEnabled = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ;
-        ;
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "cameraExposure", {
-            /**
-             * The camera exposure used on this material.
-             * This property is here and not in the camera to allow controlling exposure without full screen post process.
-             * This corresponds to a photographic exposure.
-             */
-            get: function () {
-                return this._imageProcessingConfiguration.exposure;
-            },
-            /**
-             * The camera exposure used on this material.
-             * This property is here and not in the camera to allow controlling exposure without full screen post process.
-             * This corresponds to a photographic exposure.
-             */
-            set: function (value) {
-                this._imageProcessingConfiguration.exposure = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ;
-        ;
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "cameraContrast", {
-            /**
-             * Gets The camera contrast used on this material.
-             */
-            get: function () {
-                return this._imageProcessingConfiguration.contrast;
-            },
-            /**
-             * Sets The camera contrast used on this material.
-             */
-            set: function (value) {
-                this._imageProcessingConfiguration.contrast = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "cameraColorGradingTexture", {
-            /**
-             * Gets the Color Grading 2D Lookup Texture.
-             */
-            get: function () {
-                return this._imageProcessingConfiguration.colorGradingTexture;
-            },
-            /**
-             * Sets the Color Grading 2D Lookup Texture.
-             */
-            set: function (value) {
-                this._imageProcessingConfiguration.colorGradingTexture = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        StandardMaterial_OldVer.prototype._shouldTurnAlphaTestOn = function (mesh) {
-            return (!this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting());
-        };
-        StandardMaterial_OldVer.prototype.getClassName = function () {
-            return "StandardMaterial_OldVer";
-        };
-        Object.defineProperty(StandardMaterial_OldVer.prototype, "useLogarithmicDepth", {
-            get: function () {
-                return this._useLogarithmicDepth;
-            },
-            set: function (value) {
-                this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
-                this._markAllSubMeshesAsMiscDirty();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        StandardMaterial_OldVer.prototype.needAlphaBlending = function () {
-            return (this.alpha < 1.0) || (this._opacityTexture != null) || this._shouldUseAlphaFromDiffuseTexture() || this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled;
-        };
-        StandardMaterial_OldVer.prototype.needAlphaTesting = function () {
-            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha;
-        };
-        StandardMaterial_OldVer.prototype._shouldUseAlphaFromDiffuseTexture = function () {
-            return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture;
-        };
-        StandardMaterial_OldVer.prototype.getAlphaTestTexture = function () {
-            return this._diffuseTexture;
-        };
-        /**
-         * Child classes can use it to update shaders
-         */
-        StandardMaterial_OldVer.prototype.isReadyForSubMesh = function (mesh, subMesh, useInstances) {
-            if (this.isFrozen) {
-                if (this._wasPreviouslyReady && subMesh.effect) {
-                    return true;
-                }
-            }
-            if (!subMesh._materialDefines) {
-                subMesh._materialDefines = new StandardMaterialDefines_OldVer();
-            }
-            var scene = this.getScene();
-            var defines = subMesh._materialDefines;
-            if (!this.checkReadyOnEveryCall && subMesh.effect) {
-                if (defines._renderId === scene.getRenderId()) {
-                    return true;
-                }
-            }
-            var engine = scene.getEngine();
-            // Lights
-            defines._needNormals = BABYLON.MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
-            // Textures
-            if (defines._areTexturesDirty) {
-                defines._needUVs = false;
-                if (scene.texturesEnabled) {
-                    if (this._diffuseTexture && StandardMaterial_OldVer.DiffuseTextureEnabled) {
-                        if (!this._diffuseTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.DIFFUSE = true;
-                        }
-                    }
-                    else {
-                        defines.DIFFUSE = false;
-                    }
-                    if (this._ambientTexture && StandardMaterial_OldVer.AmbientTextureEnabled) {
-                        if (!this._ambientTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.AMBIENT = true;
-                        }
-                    }
-                    else {
-                        defines.AMBIENT = false;
-                    }
-                    if (this._opacityTexture && StandardMaterial_OldVer.OpacityTextureEnabled) {
-                        if (!this._opacityTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.OPACITY = true;
-                            defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
-                        }
-                    }
-                    else {
-                        defines.OPACITY = false;
-                    }
-                    if (this._reflectionTexture && StandardMaterial_OldVer.ReflectionTextureEnabled) {
-                        if (!this._reflectionTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needNormals = true;
-                            defines.REFLECTION = true;
-                            defines.ROUGHNESS = (this._roughness > 0);
-                            defines.REFLECTIONOVERALPHA = this._useReflectionOverAlpha;
-                            defines.INVERTCUBICMAP = (this._reflectionTexture.coordinatesMode === BABYLON.Texture.INVCUBIC_MODE);
-                            defines.REFLECTIONMAP_3D = this._reflectionTexture.isCube;
-                            switch (this._reflectionTexture.coordinatesMode) {
-                                case BABYLON.Texture.CUBIC_MODE:
-                                case BABYLON.Texture.INVCUBIC_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_CUBIC");
-                                    break;
-                                case BABYLON.Texture.EXPLICIT_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_EXPLICIT");
-                                    break;
-                                case BABYLON.Texture.PLANAR_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_PLANAR");
-                                    break;
-                                case BABYLON.Texture.PROJECTION_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_PROJECTION");
-                                    break;
-                                case BABYLON.Texture.SKYBOX_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_SKYBOX");
-                                    break;
-                                case BABYLON.Texture.SPHERICAL_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_SPHERICAL");
-                                    break;
-                                case BABYLON.Texture.EQUIRECTANGULAR_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_EQUIRECTANGULAR");
-                                    break;
-                                case BABYLON.Texture.FIXED_EQUIRECTANGULAR_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_EQUIRECTANGULAR_FIXED");
-                                    break;
-                                case BABYLON.Texture.FIXED_EQUIRECTANGULAR_MIRRORED_MODE:
-                                    defines.setReflectionMode("REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED");
-                                    break;
-                            }
-                        }
-                    }
-                    else {
-                        defines.REFLECTION = false;
-                    }
-                    if (this._emissiveTexture && StandardMaterial_OldVer.EmissiveTextureEnabled) {
-                        if (!this._emissiveTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.EMISSIVE = true;
-                        }
-                    }
-                    else {
-                        defines.EMISSIVE = false;
-                    }
-                    if (this._lightmapTexture && StandardMaterial_OldVer.LightmapTextureEnabled) {
-                        if (!this._lightmapTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.LIGHTMAP = true;
-                            defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
-                        }
-                    }
-                    else {
-                        defines.LIGHTMAP = false;
-                    }
-                    if (this._specularTexture && StandardMaterial_OldVer.SpecularTextureEnabled) {
-                        if (!this._specularTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.SPECULAR = true;
-                            defines.GLOSSINESS = this._useGlossinessFromSpecularMapAlpha;
-                        }
-                    }
-                    else {
-                        defines.SPECULAR = false;
-                    }
-                    if (scene.getEngine().getCaps().standardDerivatives && this._bumpTexture && StandardMaterial_OldVer.BumpTextureEnabled) {
-                        // Bump texure can not be not blocking.
-                        if (!this._bumpTexture.isReady()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.BUMP = true;
-                            defines.PARALLAX = this._useParallax;
-                            defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
-                        }
-                    }
-                    else {
-                        defines.BUMP = false;
-                    }
-                    if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
-                        if (!this._refractionTexture.isReadyOrNotBlocking()) {
-                            return false;
-                        }
-                        else {
-                            defines._needUVs = true;
-                            defines.REFRACTION = true;
-                            defines.REFRACTIONMAP_3D = this._refractionTexture.isCube;
-                        }
-                    }
-                    else {
-                        defines.REFRACTION = false;
-                    }
-                    defines.TWOSIDEDLIGHTING = !this._backFaceCulling && this._twoSidedLighting;
-                }
-                else {
-                    defines.DIFFUSE = false;
-                    defines.AMBIENT = false;
-                    defines.OPACITY = false;
-                    defines.REFLECTION = false;
-                    defines.EMISSIVE = false;
-                    defines.LIGHTMAP = false;
-                    defines.BUMP = false;
-                    defines.REFRACTION = false;
-                }
-                defines.ALPHAFROMDIFFUSE = this._shouldUseAlphaFromDiffuseTexture();
-                defines.EMISSIVEASILLUMINATION = this._useEmissiveAsIllumination;
-                defines.LINKEMISSIVEWITHDIFFUSE = this._linkEmissiveWithDiffuse;
-                defines.SPECULAROVERALPHA = this._useSpecularOverAlpha;
-            }
-            if (defines._areImageProcessingDirty) {
-                if (!this._imageProcessingConfiguration.isReady()) {
-                    return false;
-                }
-                this._imageProcessingConfiguration.prepareDefines(defines);
-            }
-            if (defines._areFresnelDirty) {
-                if (StandardMaterial_OldVer.FresnelEnabled) {
-                    // Fresnel
-                    if (this._diffuseFresnelParameters || this._opacityFresnelParameters ||
-                        this._emissiveFresnelParameters || this._refractionFresnelParameters ||
-                        this._reflectionFresnelParameters) {
-                        defines.DIFFUSEFRESNEL = (this._diffuseFresnelParameters && this._diffuseFresnelParameters.isEnabled);
-                        defines.OPACITYFRESNEL = (this._opacityFresnelParameters && this._opacityFresnelParameters.isEnabled);
-                        defines.REFLECTIONFRESNEL = (this._reflectionFresnelParameters && this._reflectionFresnelParameters.isEnabled);
-                        defines.REFLECTIONFRESNELFROMSPECULAR = this._useReflectionFresnelFromSpecular;
-                        defines.REFRACTIONFRESNEL = (this._refractionFresnelParameters && this._refractionFresnelParameters.isEnabled);
-                        defines.EMISSIVEFRESNEL = (this._emissiveFresnelParameters && this._emissiveFresnelParameters.isEnabled);
-                        defines._needNormals = true;
-                        defines.FRESNEL = true;
-                    }
-                }
-                else {
-                    defines.FRESNEL = false;
-                }
-            }
-            // Misc.
-            BABYLON.MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
-            // Attribs
-            BABYLON.MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
-            // Values that need to be evaluated on every frame
-            BABYLON.MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false);
-            // Get correct effect      
-            if (defines.isDirty) {
-                defines.markAsProcessed();
-                scene.resetCachedMaterial();
-                // Fallbacks
-                var fallbacks = new BABYLON.EffectFallbacks();
-                if (defines.REFLECTION) {
-                    fallbacks.addFallback(0, "REFLECTION");
-                }
-                if (defines.SPECULAR) {
-                    fallbacks.addFallback(0, "SPECULAR");
-                }
-                if (defines.BUMP) {
-                    fallbacks.addFallback(0, "BUMP");
-                }
-                if (defines.PARALLAX) {
-                    fallbacks.addFallback(1, "PARALLAX");
-                }
-                if (defines.PARALLAXOCCLUSION) {
-                    fallbacks.addFallback(0, "PARALLAXOCCLUSION");
-                }
-                if (defines.SPECULAROVERALPHA) {
-                    fallbacks.addFallback(0, "SPECULAROVERALPHA");
-                }
-                if (defines.FOG) {
-                    fallbacks.addFallback(1, "FOG");
-                }
-                if (defines.POINTSIZE) {
-                    fallbacks.addFallback(0, "POINTSIZE");
-                }
-                if (defines.LOGARITHMICDEPTH) {
-                    fallbacks.addFallback(0, "LOGARITHMICDEPTH");
-                }
-                BABYLON.MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
-                if (defines.SPECULARTERM) {
-                    fallbacks.addFallback(0, "SPECULARTERM");
-                }
-                if (defines.DIFFUSEFRESNEL) {
-                    fallbacks.addFallback(1, "DIFFUSEFRESNEL");
-                }
-                if (defines.OPACITYFRESNEL) {
-                    fallbacks.addFallback(2, "OPACITYFRESNEL");
-                }
-                if (defines.REFLECTIONFRESNEL) {
-                    fallbacks.addFallback(3, "REFLECTIONFRESNEL");
-                }
-                if (defines.EMISSIVEFRESNEL) {
-                    fallbacks.addFallback(4, "EMISSIVEFRESNEL");
-                }
-                if (defines.FRESNEL) {
-                    fallbacks.addFallback(4, "FRESNEL");
-                }
-                //Attributes
-                var attribs = [BABYLON.VertexBuffer.PositionKind];
-                if (defines.NORMAL) {
-                    attribs.push(BABYLON.VertexBuffer.NormalKind);
-                }
-                if (defines.UV1) {
-                    attribs.push(BABYLON.VertexBuffer.UVKind);
-                }
-                if (defines.UV2) {
-                    attribs.push(BABYLON.VertexBuffer.UV2Kind);
-                }
-                if (defines.VERTEXCOLOR) {
-                    attribs.push(BABYLON.VertexBuffer.ColorKind);
-                }
-                BABYLON.MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-                BABYLON.MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-                BABYLON.MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-                var shaderName = "default";
-                var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor",
-                    "vFogInfos", "vFogColor", "pointSize",
-                    "vDiffuseInfos", "vAmbientInfos", "vOpacityInfos", "vReflectionInfos", "vEmissiveInfos", "vSpecularInfos", "vBumpInfos", "vLightmapInfos", "vRefractionInfos",
-                    "mBones",
-                    "vClipPlane", "diffuseMatrix", "ambientMatrix", "opacityMatrix", "reflectionMatrix", "emissiveMatrix", "specularMatrix", "bumpMatrix", "lightmapMatrix", "refractionMatrix",
-                    "diffuseLeftColor", "diffuseRightColor", "opacityParts", "reflectionLeftColor", "reflectionRightColor", "emissiveLeftColor", "emissiveRightColor", "refractionLeftColor", "refractionRightColor",
-                    "logarithmicDepthConstant", "vTangentSpaceParams"
-                ];
-                var samplers = ["diffuseSampler", "ambientSampler", "opacitySampler", "reflectionCubeSampler", "reflection2DSampler", "emissiveSampler", "specularSampler", "bumpSampler", "lightmapSampler", "refractionCubeSampler", "refraction2DSampler"];
-                var uniformBuffers = ["Material", "Scene"];
-                BABYLON.ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
-                BABYLON.ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
-                BABYLON.MaterialHelper.PrepareUniformsAndSamplersList({
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: defines,
-                    maxSimultaneousLights: this._maxSimultaneousLights
-                });
-                if (this.customShaderNameResolve) {
-                    shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines);
-                }
-                var join = defines.toString();
-                subMesh.setEffect(scene.getEngine().createEffect(shaderName, {
-                    attributes: attribs,
-                    uniformsNames: uniforms,
-                    uniformBuffersNames: uniformBuffers,
-                    samplers: samplers,
-                    defines: join,
-                    fallbacks: fallbacks,
-                    onCompiled: this.onCompiled,
-                    onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS }
-                }, engine), defines);
-                this.buildUniformLayout();
-            }
-            if (!subMesh.effect || !subMesh.effect.isReady()) {
-                return false;
-            }
-            defines._renderId = scene.getRenderId();
-            this._wasPreviouslyReady = true;
-            return true;
-        };
-        StandardMaterial_OldVer.prototype.buildUniformLayout = function () {
-            // Order is important !
-            this._uniformBuffer.addUniform("diffuseLeftColor", 4);
-            this._uniformBuffer.addUniform("diffuseRightColor", 4);
-            this._uniformBuffer.addUniform("opacityParts", 4);
-            this._uniformBuffer.addUniform("reflectionLeftColor", 4);
-            this._uniformBuffer.addUniform("reflectionRightColor", 4);
-            this._uniformBuffer.addUniform("refractionLeftColor", 4);
-            this._uniformBuffer.addUniform("refractionRightColor", 4);
-            this._uniformBuffer.addUniform("emissiveLeftColor", 4);
-            this._uniformBuffer.addUniform("emissiveRightColor", 4);
-            this._uniformBuffer.addUniform("vDiffuseInfos", 2);
-            this._uniformBuffer.addUniform("vAmbientInfos", 2);
-            this._uniformBuffer.addUniform("vOpacityInfos", 2);
-            this._uniformBuffer.addUniform("vReflectionInfos", 2);
-            this._uniformBuffer.addUniform("vEmissiveInfos", 2);
-            this._uniformBuffer.addUniform("vLightmapInfos", 2);
-            this._uniformBuffer.addUniform("vSpecularInfos", 2);
-            this._uniformBuffer.addUniform("vBumpInfos", 3);
-            this._uniformBuffer.addUniform("diffuseMatrix", 16);
-            this._uniformBuffer.addUniform("ambientMatrix", 16);
-            this._uniformBuffer.addUniform("opacityMatrix", 16);
-            this._uniformBuffer.addUniform("reflectionMatrix", 16);
-            this._uniformBuffer.addUniform("emissiveMatrix", 16);
-            this._uniformBuffer.addUniform("lightmapMatrix", 16);
-            this._uniformBuffer.addUniform("specularMatrix", 16);
-            this._uniformBuffer.addUniform("bumpMatrix", 16);
-            this._uniformBuffer.addUniform("vTangentSpaceParams", 2);
-            this._uniformBuffer.addUniform("refractionMatrix", 16);
-            this._uniformBuffer.addUniform("vRefractionInfos", 4);
-            this._uniformBuffer.addUniform("vSpecularColor", 4);
-            this._uniformBuffer.addUniform("vEmissiveColor", 3);
-            this._uniformBuffer.addUniform("vDiffuseColor", 4);
-            this._uniformBuffer.addUniform("pointSize", 1);
-            this._uniformBuffer.create();
-        };
-        StandardMaterial_OldVer.prototype.unbind = function () {
-            if (this._activeEffect) {
-                if (this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
-                    this._activeEffect.setTexture("reflection2DSampler", null);
-                }
-                if (this._refractionTexture && this._refractionTexture.isRenderTarget) {
-                    this._activeEffect.setTexture("refraction2DSampler", null);
-                }
-            }
-            _super.prototype.unbind.call(this);
-        };
-        StandardMaterial_OldVer.prototype.bindForSubMesh = function (world, mesh, subMesh) {
-            var scene = this.getScene();
-            var defines = subMesh._materialDefines;
-            if (!defines) {
-                return;
-            }
-            var effect = subMesh.effect;
-            if (!effect) {
-                return;
-            }
-            this._activeEffect = effect;
-            // Matrices        
-            this.bindOnlyWorldMatrix(world);
-            // Bones
-            BABYLON.MaterialHelper.BindBonesParameters(mesh, effect);
-            if (this._mustRebind(scene, effect, mesh.visibility)) {
-                this._uniformBuffer.bindToEffect(effect, "Material");
-                this.bindViewProjection(effect);
-                if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
-                    if (StandardMaterial_OldVer.FresnelEnabled && defines.FRESNEL) {
-                        // Fresnel
-                        if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
-                            this._uniformBuffer.updateColor4("diffuseLeftColor", this.diffuseFresnelParameters.leftColor, this.diffuseFresnelParameters.power);
-                            this._uniformBuffer.updateColor4("diffuseRightColor", this.diffuseFresnelParameters.rightColor, this.diffuseFresnelParameters.bias);
-                        }
-                        if (this.opacityFresnelParameters && this.opacityFresnelParameters.isEnabled) {
-                            this._uniformBuffer.updateColor4("opacityParts", new BABYLON.Color3(this.opacityFresnelParameters.leftColor.toLuminance(), this.opacityFresnelParameters.rightColor.toLuminance(), this.opacityFresnelParameters.bias), this.opacityFresnelParameters.power);
-                        }
-                        if (this.reflectionFresnelParameters && this.reflectionFresnelParameters.isEnabled) {
-                            this._uniformBuffer.updateColor4("reflectionLeftColor", this.reflectionFresnelParameters.leftColor, this.reflectionFresnelParameters.power);
-                            this._uniformBuffer.updateColor4("reflectionRightColor", this.reflectionFresnelParameters.rightColor, this.reflectionFresnelParameters.bias);
-                        }
-                        if (this.refractionFresnelParameters && this.refractionFresnelParameters.isEnabled) {
-                            this._uniformBuffer.updateColor4("refractionLeftColor", this.refractionFresnelParameters.leftColor, this.refractionFresnelParameters.power);
-                            this._uniformBuffer.updateColor4("refractionRightColor", this.refractionFresnelParameters.rightColor, this.refractionFresnelParameters.bias);
-                        }
-                        if (this.emissiveFresnelParameters && this.emissiveFresnelParameters.isEnabled) {
-                            this._uniformBuffer.updateColor4("emissiveLeftColor", this.emissiveFresnelParameters.leftColor, this.emissiveFresnelParameters.power);
-                            this._uniformBuffer.updateColor4("emissiveRightColor", this.emissiveFresnelParameters.rightColor, this.emissiveFresnelParameters.bias);
-                        }
-                    }
-                    // Textures     
-                    if (scene.texturesEnabled) {
-                        if (this._diffuseTexture && StandardMaterial_OldVer.DiffuseTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                            this._uniformBuffer.updateMatrix("diffuseMatrix", this._diffuseTexture.getTextureMatrix());
-                        }
-                        if (this._ambientTexture && StandardMaterial_OldVer.AmbientTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
-                            this._uniformBuffer.updateMatrix("ambientMatrix", this._ambientTexture.getTextureMatrix());
-                        }
-                        if (this._opacityTexture && StandardMaterial_OldVer.OpacityTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                            this._uniformBuffer.updateMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
-                        }
-                        if (this._reflectionTexture && StandardMaterial_OldVer.ReflectionTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vReflectionInfos", this._reflectionTexture.level, this.roughness);
-                            this._uniformBuffer.updateMatrix("reflectionMatrix", this._reflectionTexture.getReflectionTextureMatrix());
-                        }
-                        if (this._emissiveTexture && StandardMaterial_OldVer.EmissiveTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                            this._uniformBuffer.updateMatrix("emissiveMatrix", this._emissiveTexture.getTextureMatrix());
-                        }
-                        if (this._lightmapTexture && StandardMaterial_OldVer.LightmapTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                            this._uniformBuffer.updateMatrix("lightmapMatrix", this._lightmapTexture.getTextureMatrix());
-                        }
-                        if (this._specularTexture && StandardMaterial_OldVer.SpecularTextureEnabled) {
-                            this._uniformBuffer.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
-                            this._uniformBuffer.updateMatrix("specularMatrix", this._specularTexture.getTextureMatrix());
-                        }
-                        if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial_OldVer.BumpTextureEnabled) {
-                            this._uniformBuffer.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
-                            this._uniformBuffer.updateMatrix("bumpMatrix", this._bumpTexture.getTextureMatrix());
-                            if (scene._mirroredCameraPosition) {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
-                            }
-                            else {
-                                this._uniformBuffer.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? -1.0 : 1.0, this._invertNormalMapY ? -1.0 : 1.0);
-                            }
-                        }
-                        if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
-                            var depth = 1.0;
-                            if (!this._refractionTexture.isCube) {
-                                this._uniformBuffer.updateMatrix("refractionMatrix", this._refractionTexture.getReflectionTextureMatrix());
-                                if (this._refractionTexture.depth) {
-                                    depth = this._refractionTexture.depth;
-                                }
-                            }
-                            this._uniformBuffer.updateFloat4("vRefractionInfos", this._refractionTexture.level, this.indexOfRefraction, depth, this.invertRefractionY ? -1 : 1);
-                        }
-                    }
-                    // Point size
-                    if (this.pointsCloud) {
-                        this._uniformBuffer.updateFloat("pointSize", this.pointSize);
-                    }
-                    if (defines.SPECULARTERM) {
-                        this._uniformBuffer.updateColor4("vSpecularColor", this.specularColor, this.specularPower);
-                    }
-                    this._uniformBuffer.updateColor3("vEmissiveColor", this.emissiveColor);
-                    // Diffuse
-                    this._uniformBuffer.updateColor4("vDiffuseColor", this.diffuseColor, this.alpha * mesh.visibility);
-                }
-                // Textures     
-                if (scene.texturesEnabled) {
-                    if (this._diffuseTexture && StandardMaterial_OldVer.DiffuseTextureEnabled) {
-                        effect.setTexture("diffuseSampler", this._diffuseTexture);
-                    }
-                    if (this._ambientTexture && StandardMaterial_OldVer.AmbientTextureEnabled) {
-                        effect.setTexture("ambientSampler", this._ambientTexture);
-                    }
-                    if (this._opacityTexture && StandardMaterial_OldVer.OpacityTextureEnabled) {
-                        effect.setTexture("opacitySampler", this._opacityTexture);
-                    }
-                    if (this._reflectionTexture && StandardMaterial_OldVer.ReflectionTextureEnabled) {
-                        if (this._reflectionTexture.isCube) {
-                            effect.setTexture("reflectionCubeSampler", this._reflectionTexture);
-                        }
-                        else {
-                            effect.setTexture("reflection2DSampler", this._reflectionTexture);
-                        }
-                    }
-                    if (this._emissiveTexture && StandardMaterial_OldVer.EmissiveTextureEnabled) {
-                        effect.setTexture("emissiveSampler", this._emissiveTexture);
-                    }
-                    if (this._lightmapTexture && StandardMaterial_OldVer.LightmapTextureEnabled) {
-                        effect.setTexture("lightmapSampler", this._lightmapTexture);
-                    }
-                    if (this._specularTexture && StandardMaterial_OldVer.SpecularTextureEnabled) {
-                        effect.setTexture("specularSampler", this._specularTexture);
-                    }
-                    if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial_OldVer.BumpTextureEnabled) {
-                        effect.setTexture("bumpSampler", this._bumpTexture);
-                    }
-                    if (this._refractionTexture && StandardMaterial_OldVer.RefractionTextureEnabled) {
-                        var depth = 1.0;
-                        if (this._refractionTexture.isCube) {
-                            effect.setTexture("refractionCubeSampler", this._refractionTexture);
-                        }
-                        else {
-                            effect.setTexture("refraction2DSampler", this._refractionTexture);
-                        }
-                    }
-                }
-                // Clip plane
-                BABYLON.MaterialHelper.BindClipPlane(effect, scene);
-                // Colors
-                scene.ambientColor.multiplyToRef(this.ambientColor, this._globalAmbientColor);
-                BABYLON.MaterialHelper.BindEyePosition(effect, scene);
-                effect.setColor3("vAmbientColor", this._globalAmbientColor);
-            }
-            if (this._mustRebind(scene, effect) || !this.isFrozen) {
-                // Lights
-                if (scene.lightsEnabled && !this._disableLighting) {
-                    BABYLON.MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
-                }
-                // View
-                if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== BABYLON.Scene.FOGMODE_NONE || this._reflectionTexture || this._refractionTexture) {
-                    this.bindView(effect);
-                }
-                // Fog
-                BABYLON.MaterialHelper.BindFogParameters(scene, mesh, effect);
-                // Morph targets
-                if (defines.NUM_MORPH_INFLUENCERS) {
-                    BABYLON.MaterialHelper.BindMorphTargetParameters(mesh, effect);
-                }
-                // Log. depth
-                BABYLON.MaterialHelper.BindLogDepth(defines, effect, scene);
-                // image processing
-                this._imageProcessingConfiguration.bind(this._activeEffect);
-            }
-            this._uniformBuffer.update();
-            this._afterBind(mesh, this._activeEffect);
-        };
-        StandardMaterial_OldVer.prototype.getAnimatables = function () {
-            var results = [];
-            if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
-                results.push(this._diffuseTexture);
-            }
-            if (this._ambientTexture && this._ambientTexture.animations && this._ambientTexture.animations.length > 0) {
-                results.push(this._ambientTexture);
-            }
-            if (this._opacityTexture && this._opacityTexture.animations && this._opacityTexture.animations.length > 0) {
-                results.push(this._opacityTexture);
-            }
-            if (this._reflectionTexture && this._reflectionTexture.animations && this._reflectionTexture.animations.length > 0) {
-                results.push(this._reflectionTexture);
-            }
-            if (this._emissiveTexture && this._emissiveTexture.animations && this._emissiveTexture.animations.length > 0) {
-                results.push(this._emissiveTexture);
-            }
-            if (this._specularTexture && this._specularTexture.animations && this._specularTexture.animations.length > 0) {
-                results.push(this._specularTexture);
-            }
-            if (this._bumpTexture && this._bumpTexture.animations && this._bumpTexture.animations.length > 0) {
-                results.push(this._bumpTexture);
-            }
-            if (this._lightmapTexture && this._lightmapTexture.animations && this._lightmapTexture.animations.length > 0) {
-                results.push(this._lightmapTexture);
-            }
-            if (this._refractionTexture && this._refractionTexture.animations && this._refractionTexture.animations.length > 0) {
-                results.push(this._refractionTexture);
-            }
-            return results;
-        };
-        StandardMaterial_OldVer.prototype.getActiveTextures = function () {
-            var activeTextures = _super.prototype.getActiveTextures.call(this);
-            if (this._diffuseTexture) {
-                activeTextures.push(this._diffuseTexture);
-            }
-            if (this._ambientTexture) {
-                activeTextures.push(this._ambientTexture);
-            }
-            if (this._opacityTexture) {
-                activeTextures.push(this._opacityTexture);
-            }
-            if (this._reflectionTexture) {
-                activeTextures.push(this._reflectionTexture);
-            }
-            if (this._emissiveTexture) {
-                activeTextures.push(this._emissiveTexture);
-            }
-            if (this._specularTexture) {
-                activeTextures.push(this._specularTexture);
-            }
-            if (this._bumpTexture) {
-                activeTextures.push(this._bumpTexture);
-            }
-            if (this._lightmapTexture) {
-                activeTextures.push(this._lightmapTexture);
-            }
-            if (this._refractionTexture) {
-                activeTextures.push(this._refractionTexture);
-            }
-            return activeTextures;
-        };
-        StandardMaterial_OldVer.prototype.dispose = function (forceDisposeEffect, forceDisposeTextures) {
-            if (forceDisposeTextures) {
-                if (this._diffuseTexture) {
-                    this._diffuseTexture.dispose();
-                }
-                if (this._ambientTexture) {
-                    this._ambientTexture.dispose();
-                }
-                if (this._opacityTexture) {
-                    this._opacityTexture.dispose();
-                }
-                if (this._reflectionTexture) {
-                    this._reflectionTexture.dispose();
-                }
-                if (this._emissiveTexture) {
-                    this._emissiveTexture.dispose();
-                }
-                if (this._specularTexture) {
-                    this._specularTexture.dispose();
-                }
-                if (this._bumpTexture) {
-                    this._bumpTexture.dispose();
-                }
-                if (this._lightmapTexture) {
-                    this._lightmapTexture.dispose();
-                }
-                if (this._refractionTexture) {
-                    this._refractionTexture.dispose();
-                }
-            }
-            if (this._imageProcessingConfiguration && this._imageProcessingObserver) {
-                this._imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingObserver);
-            }
-            _super.prototype.dispose.call(this, forceDisposeEffect, forceDisposeTextures);
-        };
-        StandardMaterial_OldVer.prototype.clone = function (name) {
-            var _this = this;
-            var result = BABYLON.SerializationHelper.Clone(function () { return new StandardMaterial_OldVer(name, _this.getScene()); }, this);
-            result.name = name;
-            result.id = name;
-            return result;
-        };
-        StandardMaterial_OldVer.prototype.serialize = function () {
-            return BABYLON.SerializationHelper.Serialize(this);
-        };
-        // Statics
-        StandardMaterial_OldVer.Parse = function (source, scene, rootUrl) {
-            return BABYLON.SerializationHelper.Parse(function () { return new StandardMaterial_OldVer(source.name, scene); }, source, scene, rootUrl);
-        };
-        Object.defineProperty(StandardMaterial_OldVer, "DiffuseTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._DiffuseTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._DiffuseTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._DiffuseTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "AmbientTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._AmbientTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._AmbientTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._AmbientTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "OpacityTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._OpacityTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._OpacityTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._OpacityTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "ReflectionTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._ReflectionTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._ReflectionTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._ReflectionTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "EmissiveTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._EmissiveTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._EmissiveTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._EmissiveTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "SpecularTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._SpecularTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._SpecularTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._SpecularTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "BumpTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._BumpTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._BumpTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._BumpTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "LightmapTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._LightmapTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._LightmapTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._LightmapTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "RefractionTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._RefractionTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._RefractionTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._RefractionTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "ColorGradingTextureEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._ColorGradingTextureEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._ColorGradingTextureEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._ColorGradingTextureEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.TextureDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(StandardMaterial_OldVer, "FresnelEnabled", {
-            get: function () {
-                return StandardMaterial_OldVer._FresnelEnabled;
-            },
-            set: function (value) {
-                if (StandardMaterial_OldVer._FresnelEnabled === value) {
-                    return;
-                }
-                StandardMaterial_OldVer._FresnelEnabled = value;
-                BABYLON.Engine.MarkAllMaterialsAsDirty(BABYLON.Material.FresnelDirtyFlag);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        // Flags used to enable or disable a type of texture for all Standard Materials
-        StandardMaterial_OldVer._DiffuseTextureEnabled = true;
-        StandardMaterial_OldVer._AmbientTextureEnabled = true;
-        StandardMaterial_OldVer._OpacityTextureEnabled = true;
-        StandardMaterial_OldVer._ReflectionTextureEnabled = true;
-        StandardMaterial_OldVer._EmissiveTextureEnabled = true;
-        StandardMaterial_OldVer._SpecularTextureEnabled = true;
-        StandardMaterial_OldVer._BumpTextureEnabled = true;
-        StandardMaterial_OldVer._LightmapTextureEnabled = true;
-        StandardMaterial_OldVer._RefractionTextureEnabled = true;
-        StandardMaterial_OldVer._ColorGradingTextureEnabled = true;
-        StandardMaterial_OldVer._FresnelEnabled = true;
-        __decorate([
-            BABYLON.serializeAsTexture("diffuseTexture")
-        ], StandardMaterial_OldVer.prototype, "_diffuseTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "diffuseTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("ambientTexture")
-        ], StandardMaterial_OldVer.prototype, "_ambientTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "ambientTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("opacityTexture")
-        ], StandardMaterial_OldVer.prototype, "_opacityTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "opacityTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("reflectionTexture")
-        ], StandardMaterial_OldVer.prototype, "_reflectionTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "reflectionTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("emissiveTexture")
-        ], StandardMaterial_OldVer.prototype, "_emissiveTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "emissiveTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("specularTexture")
-        ], StandardMaterial_OldVer.prototype, "_specularTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "specularTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("bumpTexture")
-        ], StandardMaterial_OldVer.prototype, "_bumpTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "bumpTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("lightmapTexture")
-        ], StandardMaterial_OldVer.prototype, "_lightmapTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "lightmapTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsTexture("refractionTexture")
-        ], StandardMaterial_OldVer.prototype, "_refractionTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "refractionTexture", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("ambient")
-        ], StandardMaterial_OldVer.prototype, "ambientColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("diffuse")
-        ], StandardMaterial_OldVer.prototype, "diffuseColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("specular")
-        ], StandardMaterial_OldVer.prototype, "specularColor", void 0);
-        __decorate([
-            BABYLON.serializeAsColor3("emissive")
-        ], StandardMaterial_OldVer.prototype, "emissiveColor", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], StandardMaterial_OldVer.prototype, "specularPower", void 0);
-        __decorate([
-            BABYLON.serialize("useAlphaFromDiffuseTexture")
-        ], StandardMaterial_OldVer.prototype, "_useAlphaFromDiffuseTexture", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useAlphaFromDiffuseTexture", void 0);
-        __decorate([
-            BABYLON.serialize("useEmissiveAsIllumination")
-        ], StandardMaterial_OldVer.prototype, "_useEmissiveAsIllumination", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useEmissiveAsIllumination", void 0);
-        __decorate([
-            BABYLON.serialize("linkEmissiveWithDiffuse")
-        ], StandardMaterial_OldVer.prototype, "_linkEmissiveWithDiffuse", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "linkEmissiveWithDiffuse", void 0);
-        __decorate([
-            BABYLON.serialize("useSpecularOverAlpha")
-        ], StandardMaterial_OldVer.prototype, "_useSpecularOverAlpha", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useSpecularOverAlpha", void 0);
-        __decorate([
-            BABYLON.serialize("useReflectionOverAlpha")
-        ], StandardMaterial_OldVer.prototype, "_useReflectionOverAlpha", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useReflectionOverAlpha", void 0);
-        __decorate([
-            BABYLON.serialize("disableLighting")
-        ], StandardMaterial_OldVer.prototype, "_disableLighting", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], StandardMaterial_OldVer.prototype, "disableLighting", void 0);
-        __decorate([
-            BABYLON.serialize("useParallax")
-        ], StandardMaterial_OldVer.prototype, "_useParallax", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useParallax", void 0);
-        __decorate([
-            BABYLON.serialize("useParallaxOcclusion")
-        ], StandardMaterial_OldVer.prototype, "_useParallaxOcclusion", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useParallaxOcclusion", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], StandardMaterial_OldVer.prototype, "parallaxScaleBias", void 0);
-        __decorate([
-            BABYLON.serialize("roughness")
-        ], StandardMaterial_OldVer.prototype, "_roughness", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "roughness", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], StandardMaterial_OldVer.prototype, "indexOfRefraction", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], StandardMaterial_OldVer.prototype, "invertRefractionY", void 0);
-        __decorate([
-            BABYLON.serialize("useLightmapAsShadowmap")
-        ], StandardMaterial_OldVer.prototype, "_useLightmapAsShadowmap", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useLightmapAsShadowmap", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters("diffuseFresnelParameters")
-        ], StandardMaterial_OldVer.prototype, "_diffuseFresnelParameters", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        ], StandardMaterial_OldVer.prototype, "diffuseFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters("opacityFresnelParameters")
-        ], StandardMaterial_OldVer.prototype, "_opacityFresnelParameters", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        ], StandardMaterial_OldVer.prototype, "opacityFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters("reflectionFresnelParameters")
-        ], StandardMaterial_OldVer.prototype, "_reflectionFresnelParameters", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        ], StandardMaterial_OldVer.prototype, "reflectionFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters("refractionFresnelParameters")
-        ], StandardMaterial_OldVer.prototype, "_refractionFresnelParameters", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        ], StandardMaterial_OldVer.prototype, "refractionFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serializeAsFresnelParameters("emissiveFresnelParameters")
-        ], StandardMaterial_OldVer.prototype, "_emissiveFresnelParameters", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        ], StandardMaterial_OldVer.prototype, "emissiveFresnelParameters", void 0);
-        __decorate([
-            BABYLON.serialize("useReflectionFresnelFromSpecular")
-        ], StandardMaterial_OldVer.prototype, "_useReflectionFresnelFromSpecular", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsFresnelDirty")
-        ], StandardMaterial_OldVer.prototype, "useReflectionFresnelFromSpecular", void 0);
-        __decorate([
-            BABYLON.serialize("useGlossinessFromSpecularMapAlpha")
-        ], StandardMaterial_OldVer.prototype, "_useGlossinessFromSpecularMapAlpha", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "useGlossinessFromSpecularMapAlpha", void 0);
-        __decorate([
-            BABYLON.serialize("maxSimultaneousLights")
-        ], StandardMaterial_OldVer.prototype, "_maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsLightsDirty")
-        ], StandardMaterial_OldVer.prototype, "maxSimultaneousLights", void 0);
-        __decorate([
-            BABYLON.serialize("invertNormalMapX")
-        ], StandardMaterial_OldVer.prototype, "_invertNormalMapX", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "invertNormalMapX", void 0);
-        __decorate([
-            BABYLON.serialize("invertNormalMapY")
-        ], StandardMaterial_OldVer.prototype, "_invertNormalMapY", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "invertNormalMapY", void 0);
-        __decorate([
-            BABYLON.serialize("twoSidedLighting")
-        ], StandardMaterial_OldVer.prototype, "_twoSidedLighting", void 0);
-        __decorate([
-            BABYLON.expandToProperty("_markAllSubMeshesAsTexturesDirty")
-        ], StandardMaterial_OldVer.prototype, "twoSidedLighting", void 0);
-        __decorate([
-            BABYLON.serialize()
-        ], StandardMaterial_OldVer.prototype, "useLogarithmicDepth", null);
-        return StandardMaterial_OldVer;
-    }(BABYLON.PushMaterial));
-    BABYLON.StandardMaterial_OldVer = StandardMaterial_OldVer;
     var CustomShaderStructure = /** @class */ (function () {
         function CustomShaderStructure() {
         }
@@ -5408,560 +4068,64 @@ var BABYLON;
         return ShaderSpecialParts;
     }());
     BABYLON.ShaderSpecialParts = ShaderSpecialParts;
-    var ShaderForVer3_0 = /** @class */ (function (_super) {
-        __extends(ShaderForVer3_0, _super);
-        function ShaderForVer3_0() {
-            var _this = _super.call(this) || this;
-            _this.VertexStore = "";
-            _this.FragmentStore = "#include<__decl__defaultFragment>\n\
-#[Fragment_Begin]\n\
-#extension GL_OES_standard_derivatives : enable\n\
-#ifdef LOGARITHMICDEPTH\n\
-#extension GL_EXT_frag_depth : enable\n\
-#endif\n\
-\n\
-#define RECIPROCAL_PI2 0.15915494\n\
-uniform vec3 vEyePosition;\n\
-uniform vec3 vAmbientColor;\n\
-\n\
-varying vec3 vPositionW;\n\
-#ifdef NORMAL\n\
-varying vec3 vNormalW_helper;\n\
-varying vec3 localNormal;\n\
-varying vec3 localPosition;\n\
-vec3 vNormalW;\n\
-#endif\n\
-#ifdef VERTEXCOLOR\n\
-varying vec4 vColor;\n\
-#endif\n\
-\n\
-#include<helperFunctions>\n\
-\n\
-#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\
-#include<lightsFragmentFunctions>\n\
-#include<shadowsFragmentFunctions>\n\
-\n\
-#ifdef DIFFUSE\n\
-varying vec2 vDiffuseUV;\n\
-uniform sampler2D diffuseSampler;\n\
-#endif\n\
-#ifdef AMBIENT\n\
-varying vec2 vAmbientUV;\n\
-uniform sampler2D ambientSampler;\n\
-#endif\n\
-#ifdef OPACITY\n\
-varying vec2 vOpacityUV;\n\
-uniform sampler2D opacitySampler;\n\
-#endif\n\
-#ifdef EMISSIVE\n\
-varying vec2 vEmissiveUV;\n\
-uniform sampler2D emissiveSampler;\n\
-#endif\n\
-#ifdef LIGHTMAP\n\
-varying vec2 vLightmapUV;\n\
-uniform sampler2D lightmapSampler;\n\
-#endif\n\
-#ifdef REFRACTION\n\
-#ifdef REFRACTIONMAP_3D\n\
-uniform samplerCube refractionCubeSampler;\n\
-#else\n\
-uniform sampler2D refraction2DSampler;\n\
-#endif\n\
-#endif\n\
-#if defined(SPECULAR) && defined(SPECULARTERM)\n\
-varying vec2 vSpecularUV;\n\
-uniform sampler2D specularSampler;\n\
-#endif\n\
-\n\
-#include<fresnelFunction>\n\
-\n\
-#ifdef REFLECTION\n\
-#ifdef REFLECTIONMAP_3D\n\
-uniform samplerCube reflectionCubeSampler;\n\
-#else\n\
-uniform sampler2D reflection2DSampler;\n\
-#endif\n\
-#ifdef REFLECTIONMAP_SKYBOX\n\
-varying vec3 vPositionUVW;\n\
-#else\n\
-#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\n\
-varying vec3 vDirectionW;\n\
-#endif\n\
-#endif\n\
-#include<reflectionFunction>\n\
-#endif\n\
-#include<imageProcessingDeclaration>\n\
-#include<imageProcessingFunctions>\n\
-\n\
-#include<bumpFragmentFunctions>\n\
-#include<clipPlaneFragmentDeclaration>\n\
-#include<logDepthDeclaration>\n\
-#include<fogFragmentDeclaration>\n\
-\n\
-#[Fragment_Definitions]\n\
-\n\
-void main(void) {\n\
-\n\
-vNormalW = vNormalW_helper;\n\
-#[Fragment_MainBegin]\n\
-\n\
-#include<clipPlaneFragment>\n\
-vec3 viewDirectionW=normalize(vEyePosition-vPositionW);\n\
-\n\
-vec4 baseColor=vec4(1.,1.,1.,1.);\n\
-vec3 diffuseColor=vDiffuseColor.rgb;\n\
-#[Fragment_Custom_Diffuse]\n\
-\n\
-float alpha=vDiffuseColor.a;\n\
-#[Fragment_Custom_Alpha]\n\
-\n\
-#ifdef NORMAL\n\
-vec3 normalW=normalize(vNormalW);\n\
-#else\n\
-vec3 normalW=vec3(1.0,1.0,1.0);\n\
-#endif\n\
-#include<bumpFragment>\n\
-#ifdef TWOSIDEDLIGHTING\n\
-normalW=gl_FrontFacing ? normalW : -normalW;\n\
-#endif\n\
-#ifdef DIFFUSE\n\
-baseColor=texture2D(diffuseSampler,vDiffuseUV+uvOffset);\n\
-#ifdef ALPHATEST\n\
-if (baseColor.a<0.4)\n\
-discard;\n\
-#endif\n\
-#ifdef ALPHAFROMDIFFUSE\n\
-alpha*=baseColor.a;\n\
-#endif\n\
-baseColor.rgb*=vDiffuseInfos.y;\n\
-#endif\n\
-#ifdef VERTEXCOLOR\n\
-baseColor.rgb*=vColor.rgb;\n\
-#endif\n\
-\n\
-vec3 baseAmbientColor=vec3(1.,1.,1.);\n\
-#ifdef AMBIENT\n\
-baseAmbientColor=texture2D(ambientSampler,vAmbientUV+uvOffset).rgb*vAmbientInfos.y;\n\
-#endif\n\
-\n\
-#ifdef SPECULARTERM\n\
-float glossiness=vSpecularColor.a;\n\
-vec3 specularColor=vSpecularColor.rgb;\n\
-#ifdef SPECULAR\n\
-vec4 specularMapColor=texture2D(specularSampler,vSpecularUV+uvOffset);\n\
-specularColor=specularMapColor.rgb;\n\
-#ifdef GLOSSINESS\n\
-glossiness=glossiness*specularMapColor.a;\n\
-#endif\n\
-#endif\n\
-#else\n\
-float glossiness=0.;\n\
-#endif\n\
-\n\
-vec3 diffuseBase=vec3(0.,0.,0.);\n\
-lightingInfo info;\n\
-#ifdef SPECULARTERM\n\
-vec3 specularBase=vec3(0.,0.,0.);\n\
-#endif\n\
-float shadow=1.;\n\
-#ifdef LIGHTMAP\n\
-vec3 lightmapColor=texture2D(lightmapSampler,vLightmapUV+uvOffset).rgb*vLightmapInfos.y;\n\
-#endif\n\
-#include<lightFragment>[0..maxSimultaneousLights]\n\
-\n\
-vec3 refractionColor=vec3(0.,0.,0.);\n\
-#ifdef REFRACTION\n\
-vec3 refractionVector=normalize(refract(-viewDirectionW,normalW,vRefractionInfos.y));\n\
-#ifdef REFRACTIONMAP_3D\n\
-refractionVector.y=refractionVector.y*vRefractionInfos.w;\n\
-if (dot(refractionVector,viewDirectionW)<1.0)\n\
-{\n\
-refractionColor=textureCube(refractionCubeSampler,refractionVector).rgb*vRefractionInfos.x;\n\
-}\n\
-#else\n\
-vec3 vRefractionUVW=vec3(refractionMatrix*(view*vec4(vPositionW+refractionVector*vRefractionInfos.z,1.0)));\n\
-vec2 refractionCoords=vRefractionUVW.xy/vRefractionUVW.z;\n\
-refractionCoords.y=1.0-refractionCoords.y;\n\
-refractionColor=texture2D(refraction2DSampler,refractionCoords).rgb*vRefractionInfos.x;\n\
-#endif\n\
-#endif\n\
-\n\
-vec3 reflectionColor=vec3(0.,0.,0.);\n\
-#ifdef REFLECTION\n\
-vec3 vReflectionUVW=computeReflectionCoords(vec4(vPositionW,1.0),normalW);\n\
-#ifdef REFLECTIONMAP_3D\n\
-#ifdef ROUGHNESS\n\
-float bias=vReflectionInfos.y;\n\
-#ifdef SPECULARTERM\n\
-#ifdef SPECULAR\n\
-#ifdef GLOSSINESS\n\
-bias*=(1.0-specularMapColor.a);\n\
-#endif\n\
-#endif\n\
-#endif\n\
-reflectionColor=textureCube(reflectionCubeSampler,vReflectionUVW,bias).rgb*vReflectionInfos.x;\n\
-#else\n\
-reflectionColor=textureCube(reflectionCubeSampler,vReflectionUVW).rgb*vReflectionInfos.x;\n\
-#endif\n\
-#else\n\
-vec2 coords=vReflectionUVW.xy;\n\
-#ifdef REFLECTIONMAP_PROJECTION\n\
-coords/=vReflectionUVW.z;\n\
-#endif\n\
-coords.y=1.0-coords.y;\n\
-reflectionColor=texture2D(reflection2DSampler,coords).rgb*vReflectionInfos.x;\n\
-#endif\n\
-#ifdef REFLECTIONFRESNEL\n\
-float reflectionFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);\n\
-#ifdef REFLECTIONFRESNELFROMSPECULAR\n\
-#ifdef SPECULARTERM\n\
-reflectionColor*=specularColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n\
-#else\n\
-reflectionColor*=reflectionLeftColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n\
-#endif\n\
-#else\n\
-reflectionColor*=reflectionLeftColor.rgb*(1.0-reflectionFresnelTerm)+reflectionFresnelTerm*reflectionRightColor.rgb;\n\
-#endif\n\
-#endif\n\
-#endif\n\
-#ifdef REFRACTIONFRESNEL\n\
-float refractionFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,refractionRightColor.a,refractionLeftColor.a);\n\
-refractionColor*=refractionLeftColor.rgb*(1.0-refractionFresnelTerm)+refractionFresnelTerm*refractionRightColor.rgb;\n\
-#endif\n\
-#ifdef OPACITY\n\
-vec4 opacityMap=texture2D(opacitySampler,vOpacityUV+uvOffset);\n\
-#ifdef OPACITYRGB\n\
-opacityMap.rgb=opacityMap.rgb*vec3(0.3,0.59,0.11);\n\
-alpha*=(opacityMap.x+opacityMap.y+opacityMap.z)* vOpacityInfos.y;\n\
-#else\n\
-alpha*=opacityMap.a*vOpacityInfos.y;\n\
-#endif\n\
-#endif\n\
-#ifdef VERTEXALPHA\n\
-alpha*=vColor.a;\n\
-#endif\n\
-#ifdef OPACITYFRESNEL\n\
-float opacityFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,opacityParts.z,opacityParts.w);\n\
-alpha+=opacityParts.x*(1.0-opacityFresnelTerm)+opacityFresnelTerm*opacityParts.y;\n\
-#endif\n\
-\n\
-vec3 emissiveColor=vEmissiveColor;\n\
-#ifdef EMISSIVE\n\
-emissiveColor+=texture2D(emissiveSampler,vEmissiveUV+uvOffset).rgb*vEmissiveInfos.y;\n\
-#endif\n\
-#ifdef EMISSIVEFRESNEL\n\
-float emissiveFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,emissiveRightColor.a,emissiveLeftColor.a);\n\
-emissiveColor*=emissiveLeftColor.rgb*(1.0-emissiveFresnelTerm)+emissiveFresnelTerm*emissiveRightColor.rgb;\n\
-#endif\n\
-\n\
-#ifdef DIFFUSEFRESNEL\n\
-float diffuseFresnelTerm=computeFresnelTerm(viewDirectionW,normalW,diffuseRightColor.a,diffuseLeftColor.a);\n\
-diffuseBase*=diffuseLeftColor.rgb*(1.0-diffuseFresnelTerm)+diffuseFresnelTerm*diffuseRightColor.rgb;\n\
-#endif\n\
-\n\
-#ifdef EMISSIVEASILLUMINATION\n\
-vec3 finalDiffuse=clamp(diffuseBase*diffuseColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n\
-#else\n\
-#ifdef LINKEMISSIVEWITHDIFFUSE\n\
-vec3 finalDiffuse=clamp((diffuseBase+emissiveColor)*diffuseColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n\
-#else\n\
-vec3 finalDiffuse=clamp(diffuseBase*diffuseColor+emissiveColor+vAmbientColor,0.0,1.0)*baseColor.rgb;\n\
-#endif\n\
-#endif\n\
-#ifdef SPECULARTERM\n\
-vec3 finalSpecular=specularBase*specularColor;\n\
-#ifdef SPECULAROVERALPHA\n\
-alpha=clamp(alpha+dot(finalSpecular,vec3(0.3,0.59,0.11)),0.,1.);\n\
-#endif\n\
-#else\n\
-vec3 finalSpecular=vec3(0.0);\n\
-#endif\n\
-#ifdef REFLECTIONOVERALPHA\n\
-alpha=clamp(alpha+dot(reflectionColor,vec3(0.3,0.59,0.11)),0.,1.);\n\
-#endif\n\
-\n\
-#ifdef EMISSIVEASILLUMINATION\n\
-vec4 color=vec4(clamp(finalDiffuse*baseAmbientColor+finalSpecular+reflectionColor+emissiveColor+refractionColor,0.0,1.0),alpha);\n\
-#else\n\
-vec4 color=vec4(finalDiffuse*baseAmbientColor+finalSpecular+reflectionColor+refractionColor,alpha);\n\
-#endif\n\
-\n\
-#ifdef LIGHTMAP\n\
-#ifndef LIGHTMAPEXCLUDED\n\
-#ifdef USELIGHTMAPASSHADOWMAP\n\
-color.rgb*=lightmapColor;\n\
-#else\n\
-color.rgb+=lightmapColor;\n\
-#endif\n\
-#endif\n\
-#endif\n\
-#include<logDepthFragment>\n\
-#include<fogFragment>\n\
-\n\
-// Apply image processing if relevant. As this applies in linear space, \n\
-// We first move from gamma to linear.\n\
-#ifdef IMAGEPROCESSINGPOSTPROCESS\n\
-	color.rgb = toLinearSpace(color.rgb);\n\
-#else\n\
-	#ifdef IMAGEPROCESSING\n\
-		color.rgb = toLinearSpace(color.rgb);\n\
-		color = applyImageProcessing(color);\n\
-	#endif\n\
-#endif\n\
-\n\
-#[Fragment_Before_FragColor]\n\
-gl_FragColor=color;\n\
-}";
-            _this.VertexStore = "#include<__decl__defaultVertex>\n\
-\n\
-#[Vertex_Begin]\n\
-\n\
-attribute vec3 position;\n\
-#ifdef NORMAL\n\
-attribute vec3 normal;\n\
-#endif\n\
-#ifdef TANGENT\n\
-attribute vec4 tangent;\n\
-#endif\n\
-#ifdef UV1\n\
-attribute vec2 uv;\n\
-#endif\n\
-#ifdef UV2\n\
-attribute vec2 uv2;\n\
-#endif\n\
-#ifdef VERTEXCOLOR\n\
-attribute vec4 color;\n\
-#endif\n\
-#include<bonesDeclaration>\n\
-\n\
-#include<instancesDeclaration>\n\
-#ifdef DIFFUSE\n\
-varying vec2 vDiffuseUV;\n\
-#endif\n\
-#ifdef AMBIENT\n\
-varying vec2 vAmbientUV;\n\
-#endif\n\
-#ifdef OPACITY\n\
-varying vec2 vOpacityUV;\n\
-#endif\n\
-#ifdef EMISSIVE\n\
-varying vec2 vEmissiveUV;\n\
-#endif\n\
-#ifdef LIGHTMAP\n\
-varying vec2 vLightmapUV;\n\
-#endif\n\
-#if defined(SPECULAR) && defined(SPECULARTERM)\n\
-varying vec2 vSpecularUV;\n\
-#endif\n\
-#ifdef BUMP\n\
-varying vec2 vBumpUV;\n\
-#endif\n\
-\n\
-varying vec3 localPosition;\n\
-varying vec3 vPositionW;\n\
-#ifdef NORMAL\n\
-varying vec3 vNormalW_helper;\n\
-varying vec3 localNormal;\n\
-#endif\n\
-#ifdef VERTEXCOLOR\n\
-varying vec4 vColor;\n\
-#endif\n\
-#include<bumpVertexDeclaration>\n\
-#include<clipPlaneVertexDeclaration>\n\
-#include<fogVertexDeclaration>\n\
-#include<__decl__lightFragment>[0..maxSimultaneousLights]\n\
-#include<morphTargetsVertexGlobalDeclaration>\n\
-#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]\n\
-#ifdef REFLECTIONMAP_SKYBOX\n\
-varying vec3 vPositionUVW;\n\
-#endif\n\
-#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\n\
-varying vec3 vDirectionW;\n\
-#endif\n\
-#include<logDepthDeclaration>\n\
-\n\
-#[Vertex_Definitions]\n\
-\n\
-void main(void) {\n\
-    \n\
-    #[Vertex_MainBegin]\n\
-    \n\
-vec3 positionUpdated=position;\n\
-#ifdef NORMAL \n\
-vec3 normalUpdated=normal;\n\
-#endif\n\
-#ifdef TANGENT\n\
-vec4 tangentUpdated=tangent;\n\
-#endif\n\
-#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]\n\
-#ifdef REFLECTIONMAP_SKYBOX\n\
-vPositionUVW=positionUpdated;\n\
-#endif \n\
-#include<instancesVertex>\n\
-#include<bonesVertex>\n\
-\n\
-localPosition = positionUpdated;\n\
-#[Vertex_Before_PositionUpdated]\n\
-\n\
-gl_Position=viewProjection*finalWorld*vec4(positionUpdated,1.0);\n\
-vec4 worldPos=finalWorld*vec4(positionUpdated,1.0);\n\
-vPositionW=vec3(worldPos);\n\
-#ifdef NORMAL\n\
-\n\
-#[Vertex_Before_NormalUpdated]\n\
-\n\
-localNormal = normalUpdated;\n\
-vNormalW_helper=normalize(vec3(finalWorld*vec4(normalUpdated,0.0)));\n\
-#endif\n\
-#if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)\n\
-vDirectionW=normalize(vec3(finalWorld*vec4(positionUpdated,0.0)));\n\
-#endif\n\
-\n\
-#ifndef UV1\n\
-vec2 uv=vec2(0.,0.);\n\
-#endif\n\
-#ifndef UV2\n\
-vec2 uv2=vec2(0.,0.);\n\
-#endif\n\
-#ifdef DIFFUSE\n\
-if (vDiffuseInfos.x == 0.)\n\
-{\n\
-vDiffuseUV=vec2(diffuseMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vDiffuseUV=vec2(diffuseMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#ifdef AMBIENT\n\
-if (vAmbientInfos.x == 0.)\n\
-{\n\
-vAmbientUV=vec2(ambientMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vAmbientUV=vec2(ambientMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#ifdef OPACITY\n\
-if (vOpacityInfos.x == 0.)\n\
-{\n\
-vOpacityUV=vec2(opacityMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vOpacityUV=vec2(opacityMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#ifdef EMISSIVE\n\
-if (vEmissiveInfos.x == 0.)\n\
-{\n\
-vEmissiveUV=vec2(emissiveMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vEmissiveUV=vec2(emissiveMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#ifdef LIGHTMAP\n\
-if (vLightmapInfos.x == 0.)\n\
-{\n\
-vLightmapUV=vec2(lightmapMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vLightmapUV=vec2(lightmapMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#if defined(SPECULAR) && defined(SPECULARTERM)\n\
-if (vSpecularInfos.x == 0.)\n\
-{\n\
-vSpecularUV=vec2(specularMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vSpecularUV=vec2(specularMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#ifdef BUMP\n\
-if (vBumpInfos.x == 0.)\n\
-{\n\
-vBumpUV=vec2(bumpMatrix*vec4(uv,1.0,0.0));\n\
-}\n\
-else\n\
-{\n\
-vBumpUV=vec2(bumpMatrix*vec4(uv2,1.0,0.0));\n\
-}\n\
-#endif\n\
-#include<bumpVertex>\n\
-#include<clipPlaneVertex>\n\
-#include<fogVertex>\n\
-#include<shadowsVertex>[0..maxSimultaneousLights]\n\
-#ifdef VERTEXCOLOR\n\
-\n\
-vColor=color;\n\
-#endif\n\
-#include<pointCloudVertex>\n\
-#include<logDepthVertex>\n\
-}";
-            return _this;
-        }
-        return ShaderForVer3_0;
-    }(CustomShaderStructure));
-    BABYLON.ShaderForVer3_0 = ShaderForVer3_0;
-    var StandardShaderVersions = /** @class */ (function () {
-        function StandardShaderVersions() {
-        }
-        StandardShaderVersions.Ver3_0 = "3.0.0";
-        return StandardShaderVersions;
-    }());
-    BABYLON.StandardShaderVersions = StandardShaderVersions;
     var CustomMaterial = /** @class */ (function (_super) {
         __extends(CustomMaterial, _super);
         function CustomMaterial(name, scene) {
             var _this = _super.call(this, name, scene) || this;
             _this.CustomParts = new ShaderSpecialParts();
             _this.customShaderNameResolve = _this.Builder;
-            _this.SelectVersion("3.0.0");
+            _this.FragmentShader = BABYLON.Effect.ShadersStore["defaultPixelShader"];
+            _this.VertexShader = BABYLON.Effect.ShadersStore["defaultVertexShader"];
             return _this;
         }
         CustomMaterial.prototype.AttachAfterBind = function (mesh, effect) {
             for (var el in this._newUniformInstances) {
                 var ea = el.toString().split('-');
-                if (ea[0] == 'vec2')
+                if (ea[0] == 'vec2') {
                     effect.setVector2(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'vec3')
+                }
+                else if (ea[0] == 'vec3') {
                     effect.setVector3(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'vec4')
+                }
+                else if (ea[0] == 'vec4') {
                     effect.setVector4(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'mat4')
+                }
+                else if (ea[0] == 'mat4') {
                     effect.setMatrix(ea[1], this._newUniformInstances[el]);
-                else if (ea[0] == 'float')
+                }
+                else if (ea[0] == 'float') {
                     effect.setFloat(ea[1], this._newUniformInstances[el]);
+                }
             }
             for (var el in this._newSamplerInstances) {
                 var ea = el.toString().split('-');
-                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady())
+                if (ea[0] == 'sampler2D' && this._newSamplerInstances[el].isReady && this._newSamplerInstances[el].isReady()) {
                     effect.setTexture(ea[1], this._newSamplerInstances[el]);
+                }
             }
         };
         CustomMaterial.prototype.ReviewUniform = function (name, arr) {
             if (name == "uniform") {
-                for (var ind in this._newUniforms)
-                    if (this._customUniform[ind].indexOf('sampler') == -1)
+                for (var ind in this._newUniforms) {
+                    if (this._customUniform[ind].indexOf('sampler') == -1) {
                         arr.push(this._newUniforms[ind]);
+                    }
+                }
             }
             if (name == "sampler") {
-                for (var ind in this._newUniforms)
-                    if (this._customUniform[ind].indexOf('sampler') != -1)
+                for (var ind in this._newUniforms) {
+                    if (this._customUniform[ind].indexOf('sampler') != -1) {
                         arr.push(this._newUniforms[ind]);
+                    }
+                }
             }
             return arr;
         };
         CustomMaterial.prototype.Builder = function (shaderName, uniforms, uniformBuffers, samplers, defines) {
             var _this = this;
-            if (this._isCreatedShader)
+            if (this._isCreatedShader) {
                 return this._createdShaderName;
+            }
             this._isCreatedShader = false;
             CustomMaterial.ShaderIndexer++;
             var name = "custom_" + CustomMaterial.ShaderIndexer;
@@ -5977,31 +4141,26 @@ vColor=color;\n\
                     fn_afterBind(m, e);
                 }
                 catch (e) { }
-                ;
             };
-            BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.ShaderVersion.VertexStore
-                .replace('#[Vertex_Begin]', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
-                .replace('#[Vertex_Definitions]', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
-                .replace('#[Vertex_MainBegin]', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
-                .replace('#[Vertex_Before_PositionUpdated]', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
-                .replace('#[Vertex_Before_NormalUpdated]', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""));
-            BABYLON.Effect.ShadersStore[name + "PixelShader"] = this.ShaderVersion.FragmentStore
-                .replace('#[Fragment_Begin]', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
-                .replace('#[Fragment_MainBegin]', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
-                .replace('#[Fragment_Definitions]', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
-                .replace('#[Fragment_Custom_Diffuse]', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
-                .replace('#[Fragment_Custom_Alpha]', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
-                .replace('#[Fragment_Before_FragColor]', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+            BABYLON.Effect.ShadersStore[name + "VertexShader"] = this.VertexShader
+                .replace('#define CUSTOM_VERTEX_BEGIN', (this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : ""))
+                .replace('#define CUSTOM_VERTEX_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : ""))
+                .replace('#define CUSTOM_VERTEX_MAIN_BEGIN', (this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : ""))
+                .replace('#define CUSTOM_VERTEX_UPDATE_POSITION', (this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : ""))
+                .replace('#define CUSTOM_VERTEX_UPDATE_NORMAL', (this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : ""));
+            // #define CUSTOM_VERTEX_MAIN_END
+            BABYLON.Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader
+                .replace('#define CUSTOM_FRAGMENT_BEGIN', (this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""))
+                .replace('#define CUSTOM_FRAGMENT_MAIN_BEGIN', (this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : ""))
+                .replace('#define CUSTOM_FRAGMENT_DEFINITIONS', (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : ""))
+                .replace('#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE', (this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : ""))
+                .replace('#define CUSTOM_FRAGMENT_UPDATE_ALPHA', (this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : ""))
+                .replace('#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR', (this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : ""));
+            // #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
+            // #define CUSTOM_FRAGMENT_BEFORE_FOG
             this._isCreatedShader = true;
             this._createdShaderName = name;
             return name;
-        };
-        CustomMaterial.prototype.SelectVersion = function (ver) {
-            switch (ver) {
-                case "3.0.0":
-                    this.ShaderVersion = new ShaderForVer3_0();
-                    break;
-            }
         };
         CustomMaterial.prototype.AddUniform = function (name, kind, param) {
             if (!this._customUniform) {
@@ -6068,12 +4227,13 @@ vColor=color;\n\
         };
         CustomMaterial.ShaderIndexer = 1;
         return CustomMaterial;
-    }(StandardMaterial_OldVer));
+    }(BABYLON.StandardMaterial));
     BABYLON.CustomMaterial = CustomMaterial;
 })(BABYLON || (BABYLON = {}));
 
 //# sourceMappingURL=babylon.customMaterial.js.map
 
+"use strict";
 
 
 

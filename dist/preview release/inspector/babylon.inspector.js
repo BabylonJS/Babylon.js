@@ -1,3 +1,4 @@
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var Inspector = /** @class */ (function () {
@@ -353,6 +354,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=Inspector.js.map
 
+"use strict";
 /// <reference path="../../dist/preview release/babylon.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -481,6 +483,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=properties.js.map
 
+"use strict";
 /// <reference path="../../dist/preview release/gui/babylon.gui.d.ts"/>
 var INSPECTOR;
 (function (INSPECTOR) {
@@ -601,6 +604,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=properties_gui.js.map
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -632,6 +636,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=BasicElement.js.map
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var Adapter = /** @class */ (function () {
@@ -669,6 +674,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=Adapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -718,6 +724,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=CameraAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -779,6 +786,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=PhysicsImpostorAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -830,6 +838,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=GUIAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -886,6 +895,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=SoundAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -932,6 +942,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=TextureAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -983,6 +994,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=LightAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1027,6 +1039,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=MaterialAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1134,6 +1147,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=MeshAdapter.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1164,6 +1178,9 @@ var INSPECTOR;
         Object.defineProperty(DetailPanel.prototype, "details", {
             set: function (detailsRow) {
                 this.clean();
+                //add the searchBar
+                this._addSearchBarDetails();
+                this._details = INSPECTOR.Helpers.CreateDiv('details', this._div);
                 this._detailRows = detailsRow;
                 // Refresh HTML
                 this.update();
@@ -1179,16 +1196,49 @@ var INSPECTOR;
             this._div.appendChild(this._headerRow);
         };
         /** Updates the HTML of the detail panel */
-        DetailPanel.prototype.update = function () {
+        DetailPanel.prototype.update = function (_items) {
             this._sortDetails('name', 1);
-            this._addDetails();
+            // Check the searchbar
+            if (_items) {
+                this.cleanRow();
+                this._addSearchDetails(_items);
+                //console.log(_items);
+            }
+            else {
+                this._addDetails();
+                //console.log("np");
+            }
+        };
+        /** Add the search bar for the details */
+        DetailPanel.prototype._addSearchBarDetails = function () {
+            var searchDetails = INSPECTOR.Helpers.CreateDiv('searchbar-details', this._div);
+            // Create search bar
+            this._searchDetails = new INSPECTOR.SearchBarDetails(this);
+            searchDetails.appendChild(this._searchDetails.toHtml());
+            this._div.appendChild(searchDetails);
+        };
+        /** Search an element by name  */
+        DetailPanel.prototype.searchByName = function (searchName) {
+            var rows = [];
+            for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
+                var row = _a[_i];
+                if (row.name.indexOf(searchName) >= 0) {
+                    rows.push(row);
+                }
+            }
+            this.update(rows);
         };
         /** Add all lines in the html div. Does not sort them! */
         DetailPanel.prototype._addDetails = function () {
-            var details = INSPECTOR.Helpers.CreateDiv('details', this._div);
             for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
                 var row = _a[_i];
-                details.appendChild(row.toHtml());
+                this._details.appendChild(row.toHtml());
+            }
+        };
+        DetailPanel.prototype._addSearchDetails = function (_items) {
+            for (var _i = 0, _items_1 = _items; _i < _items_1.length; _i++) {
+                var row = _items_1[_i];
+                this._details.appendChild(row.toHtml());
             }
         };
         /**
@@ -1251,6 +1301,17 @@ var INSPECTOR;
             // Header row
             this._div.appendChild(this._headerRow);
         };
+        /**
+         * Clean the rows only
+         */
+        DetailPanel.prototype.cleanRow = function () {
+            // Delete all details row
+            for (var _i = 0, _a = this._detailRows; _i < _a.length; _i++) {
+                var pline = _a[_i];
+                pline.dispose();
+            }
+            INSPECTOR.Helpers.CleanDiv(this._details);
+        };
         /** Overrides basicelement.dispose */
         DetailPanel.prototype.dispose = function () {
             // Delete all details row
@@ -1292,6 +1353,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=DetailPanel.js.map
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -1343,6 +1405,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=Property.js.map
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var PropertyFormatter = /** @class */ (function () {
@@ -1630,6 +1693,57 @@ var INSPECTOR;
             }
             else {
                 this._valueDiv.childNodes[0].nodeValue = this._displayValueContent();
+                //Doing the Hexa convertion
+                if ((this._property.type == "Color3" && this._children.length == 5 && this._children[1].value == true) || (this._property.type == "Color4" && this._children.length == 6 && this._children[1].value == true)) {
+                    if (this._children[0] != undefined && this._children[0].name == "hex") {
+                        var hexLineString = this._children[0].value;
+                        var rValue = (parseInt((hexLineString.slice(1, 3)), 16)) * (1 / 255);
+                        var rValueRound = Math.round(100 * rValue) / 100;
+                        this.value.r = rValueRound;
+                        var gValue = (parseInt((hexLineString.slice(3, 5)), 16)) * (1 / 255);
+                        var gValueRound = Math.round(100 * gValue) / 100;
+                        this.value.g = gValueRound;
+                        var bValue = (parseInt((hexLineString.slice(5, 7)), 16)) * (1 / 255);
+                        var bValueRound = Math.round(100 * bValue) / 100;
+                        this.value.b = bValueRound;
+                        if (this._children[2].name == "a") {
+                            var aValue = (parseInt((hexLineString.slice(7, 9)), 16)) * (1 / 255);
+                            var aValueRound = Math.round(100 * aValue) / 100;
+                            this.value.a = aValueRound;
+                        }
+                    }
+                }
+                else if (this._property.type == "Color3" || this._property.type == "Color4") {
+                    if (this._property.value.hex != undefined && this._property.value.hex != null) {
+                        var hexLineInfos = [];
+                        var valHexR = ((this._property.value.r * 255) | 0).toString(16);
+                        hexLineInfos.push(valHexR);
+                        if (valHexR == "0") {
+                            hexLineInfos.push("0");
+                        }
+                        var valHexG = ((this._property.value.g * 255) | 0).toString(16);
+                        hexLineInfos.push(valHexG);
+                        if (valHexG == "0") {
+                            hexLineInfos.push("0");
+                        }
+                        var valHexB = ((this._property.value.b * 255) | 0).toString(16);
+                        hexLineInfos.push(valHexB);
+                        if (valHexB == "0") {
+                            hexLineInfos.push("0");
+                        }
+                        if (this._property.value.a != undefined) {
+                            var valHexA = ((this._property.value.a * 255) | 0).toString(16);
+                            hexLineInfos.push(valHexA);
+                            if (valHexA == "0") {
+                                hexLineInfos.push("0");
+                            }
+                        }
+                        hexLineInfos.unshift("#");
+                        var hexLineString = hexLineInfos.join("");
+                        this._property.value.hex = hexLineString;
+                        hexLineInfos.length = 0;
+                    }
+                }
             }
             for (var _i = 0, _a = this._elements; _i < _a.length; _i++) {
                 var elem = _a[_i];
@@ -1714,11 +1828,35 @@ var INSPECTOR;
                         var child = new PropertyLine(infos, this, this._level + PropertyLine._MARGIN_LEFT);
                         this._children.push(child);
                     }
+                    //Add the Hexa converter
+                    if ((propToDisplay.indexOf('r') && propToDisplay.indexOf('g') && propToDisplay.indexOf('b') && propToDisplay.indexOf('a')) == 0) {
+                        var hexLineInfos = [];
+                        var hexLinePropCheck = new INSPECTOR.Property("hexEnable", this._property.value);
+                        hexLinePropCheck.value = false;
+                        var hexLineCheck = new PropertyLine(hexLinePropCheck, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLineCheck);
+                        for (var _c = 0, propToDisplay_2 = propToDisplay; _c < propToDisplay_2.length; _c++) {
+                            var prop = propToDisplay_2[_c];
+                            var infos = new INSPECTOR.Property(prop, this._property.value);
+                            var valHex = ((infos.value * 255) | 0).toString(16);
+                            hexLineInfos.push(valHex);
+                            if (valHex == "0") {
+                                hexLineInfos.push("0");
+                            }
+                        }
+                        hexLineInfos.push("#");
+                        hexLineInfos.reverse();
+                        var hexLineString = hexLineInfos.join("");
+                        var hexLineProp = new INSPECTOR.Property("hex", this._property.value);
+                        hexLineProp.value = hexLineString;
+                        var hexLine = new PropertyLine(hexLineProp, this, this._level + PropertyLine._MARGIN_LEFT);
+                        this._children.unshift(hexLine);
+                    }
                 }
                 // otherwise display it    
                 if (this._div.parentNode) {
-                    for (var _c = 0, _d = this._children; _c < _d.length; _c++) {
-                        var child = _d[_c];
+                    for (var _d = 0, _e = this._children; _d < _e.length; _d++) {
+                        var child = _e[_d];
                         this._div.parentNode.insertBefore(child.toHtml(), this._div.nextSibling);
                     }
                 }
@@ -1812,6 +1950,7 @@ var INSPECTOR;
 
 //# sourceMappingURL=PropertyLine.js.map
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1861,6 +2000,7 @@ var INSPECTOR;
     INSPECTOR.ColorElement = ColorElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1931,6 +2071,7 @@ var INSPECTOR;
     INSPECTOR.ColorPickerElement = ColorPickerElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2048,6 +2189,7 @@ var INSPECTOR;
     INSPECTOR.CubeTextureElement = CubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2092,6 +2234,7 @@ var INSPECTOR;
     INSPECTOR.HDRCubeTextureElement = HDRCubeTextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2112,7 +2255,7 @@ var INSPECTOR;
         __extends(SearchBar, _super);
         function SearchBar(tab) {
             var _this = _super.call(this) || this;
-            _this._tab = tab;
+            _this._propTab = tab;
             _this._div.classList.add('searchbar');
             var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
             filter.className = 'fa fa-search';
@@ -2123,7 +2266,7 @@ var INSPECTOR;
             _this._div.appendChild(_this._inputElement);
             _this._inputElement.addEventListener('keyup', function (evt) {
                 var filter = _this._inputElement.value;
-                _this._tab.filter(filter);
+                _this._propTab.filter(filter);
             });
             return _this;
         }
@@ -2137,8 +2280,38 @@ var INSPECTOR;
         return SearchBar;
     }(INSPECTOR.BasicElement));
     INSPECTOR.SearchBar = SearchBar;
+    var SearchBarDetails = /** @class */ (function (_super) {
+        __extends(SearchBarDetails, _super);
+        function SearchBarDetails(tab) {
+            var _this = _super.call(this) || this;
+            _this._detailTab = tab;
+            _this._div.classList.add('searchbar');
+            var filter = INSPECTOR.Inspector.DOCUMENT.createElement('i');
+            filter.className = 'fa fa-search';
+            _this._div.appendChild(filter);
+            // Create input
+            _this._inputElement = INSPECTOR.Inspector.DOCUMENT.createElement('input');
+            _this._inputElement.placeholder = 'Filter by name...';
+            _this._div.appendChild(_this._inputElement);
+            _this._inputElement.addEventListener('keyup', function (evt) {
+                var filter = _this._inputElement.value;
+                _this._detailTab.searchByName(filter);
+            });
+            return _this;
+        }
+        /** Delete all characters typped in the input element */
+        SearchBarDetails.prototype.reset = function () {
+            this._inputElement.value = '';
+        };
+        SearchBarDetails.prototype.update = function () {
+            // Nothing to update
+        };
+        return SearchBarDetails;
+    }(INSPECTOR.BasicElement));
+    INSPECTOR.SearchBarDetails = SearchBarDetails;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2185,6 +2358,7 @@ var INSPECTOR;
     INSPECTOR.TextureElement = TextureElement;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     /**
@@ -2210,6 +2384,7 @@ var INSPECTOR;
     INSPECTOR.Tooltip = Tooltip;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var Helpers = /** @class */ (function () {
@@ -2424,6 +2599,7 @@ var INSPECTOR;
     INSPECTOR.Helpers = Helpers;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var Scheduler = /** @class */ (function () {
@@ -2470,6 +2646,7 @@ var INSPECTOR;
     INSPECTOR.Scheduler = Scheduler;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2546,6 +2723,7 @@ var INSPECTOR;
     INSPECTOR.Tab = Tab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2696,6 +2874,7 @@ var INSPECTOR;
     INSPECTOR.PropertyTab = PropertyTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2729,6 +2908,7 @@ var INSPECTOR;
     INSPECTOR.CameraTab = CameraTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2784,6 +2964,7 @@ var INSPECTOR;
     INSPECTOR.GUITab = GUITab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2824,6 +3005,7 @@ var INSPECTOR;
     INSPECTOR.PhysicsTab = PhysicsTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -2861,6 +3043,7 @@ var INSPECTOR;
     INSPECTOR.SoundTab = SoundTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3034,6 +3217,7 @@ var INSPECTOR;
     INSPECTOR.TextureTab = TextureTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3067,6 +3251,7 @@ var INSPECTOR;
     INSPECTOR.LightTab = LightTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3100,6 +3285,7 @@ var INSPECTOR;
     INSPECTOR.MaterialTab = MaterialTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 /// <reference path="../../../dist/preview release/babylon.d.ts"/>
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -3190,6 +3376,7 @@ var INSPECTOR;
     INSPECTOR.MeshTab = MeshTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3376,6 +3563,7 @@ var INSPECTOR;
     INSPECTOR.SceneTab = SceneTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3515,6 +3703,7 @@ var INSPECTOR;
     INSPECTOR.ConsoleTab = ConsoleTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3859,6 +4048,7 @@ var INSPECTOR;
     INSPECTOR.StatsTab = StatsTab;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4080,6 +4270,7 @@ var INSPECTOR;
     INSPECTOR.TabBar = TabBar;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var AbstractTool = /** @class */ (function () {
@@ -4120,6 +4311,7 @@ var INSPECTOR;
     INSPECTOR.AbstractTool = AbstractTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4156,6 +4348,7 @@ var INSPECTOR;
     INSPECTOR.PauseScheduleTool = PauseScheduleTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4219,6 +4412,7 @@ var INSPECTOR;
     INSPECTOR.PickTool = PickTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4245,6 +4439,7 @@ var INSPECTOR;
     INSPECTOR.PopupTool = PopupTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4271,6 +4466,7 @@ var INSPECTOR;
     INSPECTOR.RefreshTool = RefreshTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4391,6 +4587,7 @@ var INSPECTOR;
     INSPECTOR.LabelTool = LabelTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4454,6 +4651,7 @@ var INSPECTOR;
     INSPECTOR.Toolbar = Toolbar;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4483,6 +4681,7 @@ var INSPECTOR;
     INSPECTOR.DisposeTool = DisposeTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4668,6 +4867,7 @@ var INSPECTOR;
     INSPECTOR.TreeItem = TreeItem;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var INSPECTOR;
 (function (INSPECTOR) {
     var AbstractTreeTool = /** @class */ (function () {
@@ -4700,6 +4900,7 @@ var INSPECTOR;
     INSPECTOR.AbstractTreeTool = AbstractTreeTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4747,6 +4948,7 @@ var INSPECTOR;
     INSPECTOR.BoundingBox = BoundingBox;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4791,6 +4993,7 @@ var INSPECTOR;
     INSPECTOR.CameraPOV = CameraPOV;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4838,6 +5041,7 @@ var INSPECTOR;
     INSPECTOR.SoundInteractions = SoundInteractions;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4891,6 +5095,7 @@ var INSPECTOR;
     INSPECTOR.Checkbox = Checkbox;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -4928,6 +5133,7 @@ var INSPECTOR;
     INSPECTOR.DebugArea = DebugArea;
 })(INSPECTOR || (INSPECTOR = {}));
 
+"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||

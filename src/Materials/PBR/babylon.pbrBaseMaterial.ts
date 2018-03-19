@@ -26,7 +26,7 @@
         public DEPTHPREPASS = false;
         public ALPHABLEND = false;
         public ALPHAFROMALBEDO = false;
-        public ALPHATESTVALUE = 0.5;
+        public ALPHATESTVALUE = "0.5";
         public SPECULAROVERALPHA = false;
         public RADIANCEOVERALPHA = false;
         public ALPHAFRESNEL = false;
@@ -65,13 +65,14 @@
         public LIGHTMAP = false;
         public LIGHTMAPDIRECTUV = 0;
         public USELIGHTMAPASSHADOWMAP = false;
+        public GAMMALIGHTMAP = false;
 
         public REFLECTION = false;
         public REFLECTIONMAP_3D = false;
         public REFLECTIONMAP_SPHERICAL = false;
         public REFLECTIONMAP_PLANAR = false;
         public REFLECTIONMAP_CUBIC = false;
-        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;        
+        public USE_LOCAL_REFLECTIONMAP_CUBIC = false;
         public REFLECTIONMAP_PROJECTION = false;
         public REFLECTIONMAP_SKYBOX = false;
         public REFLECTIONMAP_EXPLICIT = false;
@@ -119,6 +120,7 @@
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
+        public GRAIN = false;
 
         public USEPHYSICALLIGHTFALLOFF = false;
         public TWOSIDEDLIGHTING = false;
@@ -129,6 +131,8 @@
         public LOGARITHMICDEPTH = false;
 
         public FORCENORMALFORWARD = false;
+
+        public UNLIT = false;
 
         /**
          * Initializes the PBR Material defines.
@@ -143,7 +147,7 @@
          */
         public reset(): void {
             super.reset();
-            this.ALPHATESTVALUE = 0.5;
+            this.ALPHATESTVALUE = "0.5";
             this.PBR = true;
         }
     }
@@ -477,11 +481,6 @@
         protected _forceNormalForward = false;
 
         /**
-         * Force metallic workflow.
-         */
-        protected _forceMetallicWorkflow = false;
-
-        /**
          * Default configuration related to image processing available in the PBR Material.
          */
         @serializeAsImageProcessingConfiguration()
@@ -534,6 +533,11 @@
          * Enables the use of logarithmic depth buffers, which is good for wide depth buffers.
          */
         private _useLogarithmicDepth: boolean;
+
+        /**
+         * If set to true, no lighting calculations will be applied.
+         */
+        private _unlit = false;
 
         /**
          * Instantiates a new PBRMaterial instance.
@@ -790,20 +794,10 @@
                 }
             }
 
-            if (!engine.getCaps().standardDerivatives) {
-                let bufferMesh = null;
-                if (mesh.getClassName() === "InstancedMesh") {
-                    bufferMesh = (mesh as InstancedMesh).sourceMesh;
+            if (!engine.getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
+                mesh.createNormals(true);
+                Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + mesh.name);
                 }
-                else if (mesh.getClassName() === "Mesh") {
-                    bufferMesh = mesh as Mesh;
-                }
-
-                if (bufferMesh && bufferMesh.geometry && bufferMesh.geometry.isReady() && !bufferMesh.geometry.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    bufferMesh.createNormals(true);
-                    Tools.Warn("PBRMaterial: Normals have been created for the mesh: " + bufferMesh.name);
-                }
-            }
 
             const effect = this._prepareEffect(mesh, defines, this.onCompiled, this.onError, useInstances);
             if (effect) {
@@ -820,6 +814,18 @@
             this._wasPreviouslyReady = true;
 
             return true;
+        }
+
+        /** 
+         * Specifies if the material uses metallic roughness workflow.
+         * @returns boolean specifiying if the material uses metallic roughness workflow.
+        */
+        public isMetallicWorkflow(): boolean {
+            if (this._metallic != null || this._roughness != null || this._metallicTexture) {
+                return true;
+            }
+
+            return false;
         }
 
         private _prepareEffect(mesh: AbstractMesh, defines: PBRMaterialDefines, onCompiled: Nullable<(effect: Effect) => void> = null, onError: Nullable<(effect: Effect, errors: string) => void> = null, useInstances: Nullable<boolean> = null, useClipPlane: Nullable<boolean> = null): Nullable<Effect> {
@@ -989,6 +995,7 @@
             defines._needNormals = true;
 
             // Textures
+            defines.METALLICWORKFLOW = this.isMetallicWorkflow();
             if (defines._areTexturesDirty) {
                 defines._needUVs = false;
                 if (scene.texturesEnabled) {
@@ -1096,6 +1103,7 @@
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
+                        defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
                     } else {
                         defines.LIGHTMAP = false;
                     }
@@ -1109,19 +1117,16 @@
                     if (StandardMaterial.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
                             MaterialHelper.PrepareDefinesForMergedUV(this._metallicTexture, defines, "REFLECTIVITY");
-                            defines.METALLICWORKFLOW = true;
                             defines.ROUGHNESSSTOREINMETALMAPALPHA = this._useRoughnessFromMetallicTextureAlpha;
                             defines.ROUGHNESSSTOREINMETALMAPGREEN = !this._useRoughnessFromMetallicTextureAlpha && this._useRoughnessFromMetallicTextureGreen;
                             defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallnessFromMetallicTextureBlue;
                             defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                         }
                         else if (this._reflectivityTexture) {
-                            defines.METALLICWORKFLOW = false;
                             MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                             defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                             defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         } else {
-                            defines.METALLICWORKFLOW = false;
                             defines.REFLECTIVITY = false;
                         }
 
@@ -1185,19 +1190,13 @@
 
                 defines.RADIANCEOVERALPHA = this._useRadianceOverAlpha;
 
-                if (this._forceMetallicWorkflow || (this._metallic !== undefined && this._metallic !== null) || (this._roughness !== undefined && this._roughness !== null)) {
-                    defines.METALLICWORKFLOW = true;
-                } else {
-                    defines.METALLICWORKFLOW = false;
-                }
-
                 if (!this.backFaceCulling && this._twoSidedLighting) {
                     defines.TWOSIDEDLIGHTING = true;
                 } else {
                     defines.TWOSIDEDLIGHTING = false;
                 }
 
-                defines.ALPHATESTVALUE = this._alphaCutOff;
+                defines.ALPHATESTVALUE = `${this._alphaCutOff}${this._alphaCutOff % 1 === 0 ? "." : ""}`;
                 defines.PREMULTIPLYALPHA = (this.alphaMode === Engine.ALPHA_PREMULTIPLIED || this.alphaMode === Engine.ALPHA_PREMULTIPLIED_PORTERDUFF);
                 defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
@@ -1215,7 +1214,10 @@
             defines.HORIZONOCCLUSION = this._useHorizonOcclusion;
 
             // Misc.
-            MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
+            if (defines._areMiscDirty) {
+                MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh) || this._forceAlphaTest, defines);
+                defines.UNLIT = this._unlit || ((this.pointsCloud || this.wireframe) && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind));
+            }
 
             // Values that need to be evaluated on every frame
             MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, defines, useInstances ? true : false, useClipPlane);

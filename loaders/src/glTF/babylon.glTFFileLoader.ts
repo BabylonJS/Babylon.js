@@ -63,6 +63,7 @@ module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -150,7 +151,7 @@ module BABYLON {
         public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
 
         private _onTextureLoadedObserver: Nullable<Observer<BaseTexture>>;
-        public set onTextureLoaded(callback: (Texture: BaseTexture) => void) {
+        public set onTextureLoaded(callback: (texture: BaseTexture) => void) {
             if (this._onTextureLoadedObserver) {
                 this.onTextureLoadedObservable.remove(this._onTextureLoadedObserver);
             }
@@ -163,11 +164,24 @@ module BABYLON {
         public readonly onMaterialLoadedObservable = new Observable<Material>();
 
         private _onMaterialLoadedObserver: Nullable<Observer<Material>>;
-        public set onMaterialLoaded(callback: (Material: Material) => void) {
+        public set onMaterialLoaded(callback: (material: Material) => void) {
             if (this._onMaterialLoadedObserver) {
                 this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
             }
             this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
+        }
+
+        /**
+         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
+         */
+        public readonly onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
+
+        private _onAnimationGroupLoadedObserver: Nullable<Observer<AnimationGroup>>;
+        public set onAnimationGroupLoaded(callback: (animationGroup: AnimationGroup) => void) {
+            if (this._onAnimationGroupLoadedObserver) {
+                this.onAnimationGroupLoadedObservable.remove(this._onAnimationGroupLoadedObserver);
+            }
+            this._onAnimationGroupLoadedObserver = this.onAnimationGroupLoadedObservable.add(callback);
         }
 
         /**
@@ -210,6 +224,18 @@ module BABYLON {
                 this.onExtensionLoadedObservable.remove(this._onExtensionLoadedObserver);
             }
             this._onExtensionLoadedObserver = this.onExtensionLoadedObservable.add(callback);
+        }
+
+        /**
+         * Gets a promise that resolves when the asset is completely loaded.
+         * @returns A promise that resolves when the asset is completely loaded.
+         */
+        public whenCompleteAsync(): Promise<void> {
+            return new Promise(resolve => {
+                this.onCompleteObservable.add(() => {
+                    resolve();
+                }, undefined, undefined, undefined, true);
+            });
         }
 
         /**
@@ -347,6 +373,7 @@ module BABYLON {
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
             loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
+            loader.onAnimationGroupLoadedObservable.add(animationGroup => this.onAnimationGroupLoadedObservable.notifyObservers(animationGroup));
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();

@@ -2,23 +2,32 @@
 
 ## Major updates
 
-- Support for [GPU particles](https://doc.babylonjs.com/babylon101/particles#gpu-particles) ([deltakosh](https://github.com/deltakosh))
+- Support for [GPU particles](https://doc.babylonjs.com/babylon101/particles#gpu-particles). Demo [here](https://www.babylonjs-playground.com/frame.html#PU4WYI#2) ([deltakosh](https://github.com/deltakosh))
 - Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments and what's new updates are now mandatory ([sebavan](https://github.com/sebavan))
+- Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 - Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
 - New [AnimationGroup class](http://doc.babylonjs.com/how_to/group) to control simultaneously multiple animations with different targets ([deltakosh](https://github.com/deltakosh))
-- `WebVRCamera` add basic support for Daydream and Gear VR ([brianzinn](https://github.com/brianzinn))
+- `WebVRCamera`: added basic support for Daydream and Gear VR ([brianzinn](https://github.com/brianzinn))
+- Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture). Demo [here](https://www.babylonjs-playground.com/frame.html#CQNGRK) ([lostink](https://github.com/lostink))
+- Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode). Demo [here](https://www.babylonjs-playground.com/frame.html#RNASML#4) ([deltakosh](https://github.com/deltakosh))
+- Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos. Demo [here](https://www.babylonjs-playground.com/frame.html#1E9JQ8#7) ([DavidHGillen](https://github.com/DavidHGillen))
+- Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials. Demo [here](http://www.babylonjs.com/demos/GlowLayer/) ([sebavan](https://github.com/sebavan))
+- New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) class and loading methods ([trevordev](https://github.com/trevordev))
+- Added [depth of field](https://www.babylonjs-playground.com/frame.html#8F5HYV#5), sharpening, MSAA, chromatic aberration and grain effect to the default pipeline ([trevordev](https://github.com/trevordev))
+- Added support for [animation weights](http://doc.babylonjs.com/babylon101/animations#animation-weights). Demo [here](https://www.babylonjs-playground.com/#IQN716#9) ([deltakosh](https://github.com/deltakosh))
+- Added [sub emitters for particle system](http://doc.babylonjs.com/babylon101/particles#sub-emitters) which will spawn new particle systems when particles dies. Demo [here](https://www.babylonjs-playground.com/frame.html#9NHBCC#1) ([IbraheemOsama](https://github.com/IbraheemOsama))
+- New [Babylon.js](http://doc.babylonjs.com/resources/maya) and [glTF](http://doc.babylonjs.com/resources/maya_to_gltf) exporter for Autodesk Maya ([Noalak](https://github.com/Noalak))
 - New glTF [serializer](https://github.com/BabylonJS/Babylon.js/tree/master/serializers/src/glTF/2.0). You can now export glTF or glb files directly from a Babylon scene ([kcoley](https://github.com/kcoley))
-- Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
-- Introduced [Projection Texture on SpotLight](http://doc.babylonjs.com/babylon101/lights#projection-texture) ([lostink](https://github.com/lostink))
-- Introduced support for [local cubemaps](http://doc.babylonjs.com/how_to/reflect#using-local-cubemap-mode) ([deltakosh](https://github.com/deltakosh))
-- Added [VideoDome](http://doc.babylonjs.com/how_to/360videodome) class to easily support 360 videos ([DavidHGillen](https://github.com/DavidHGillen))
-- Added [GlowLayer](https://doc.babylonjs.com/how_to/glow_layer) to easily support glow from emissive materials ([sebavan](https://github.com/sebavan))
-- New [AssetContainer](http://doc.babylonjs.com/how_to/how_to_use_assetcontainer) Class and loading methods ([trevordev](https://github.com/trevordev))
-- Added depth of field effect to the default pipeline ([trevordev](https://github.com/trevordev))
+- New [glTF exporter](http://doc.babylonjs.com/resources/3dsmax_to_gltf) for Autodesk 3dsmax ([Noalak](https://github.com/Noalak))
+- Physics - Latest production version of Oimo.js is being used - 1.0.9 ([RaananW](https://github.com/RaananW))
+- Shadows - Introduces [PCF](https://doc.babylonjs.com/babylon101/shadows#percentage-closer-filtering-webgl2-only) and [PCSS](https://doc.babylonjs.com/babylon101/shadows#contact-hardening-shadow-webgl2-only) support in Webgl 2 ([sebavan](https://github.com/sebavan)))
 
 ## Updates
 
 - Tons of functions and classes received the code comments they deserved (All the community)
+- New [particle system emitter shapes](http://doc.babylonjs.com/babylon101/particles#particles-shapes): cone and sphere ([IbraheemOsama](https://github.com/IbraheemOsama))
+- Added support for 16bits TGA ([deltakosh](https://github.com/deltakosh))
+- New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))
 - New `Texture.UseSerializedUrlIfAny` static property to let textures serialize complete URL instead of using side by side loading ([deltakosh](https://github.com/deltakosh))
 - Added `particleSystem.reset()` to clear a particle system ([deltakosh](https://github.com/deltakosh))
 - Added support for all RGBA orders (BGR, RGB, etc..) for the DDS loader ([deltakosh](https://github.com/deltakosh))
@@ -80,8 +89,18 @@
 - Support depth maps for multiple active cameras for post processes like depth of field ([trevordev](https://github.com/trevordev))
 - Integrates depth texture support in the engine ([sebavan](https://github.com/sebavan))
 - NPM package now has a dependency system, updated during build. ([RaananW](https://github.com/RaananW))
+- WebVRExperienceHelper will create an empty controller model so that controller interactions can be used while the actual model is still loading ([trevordev](https://github.com/trevordev))
 - Default fragment shader will clamp negative values to avoid underflow, webVR post processing will render to eye texture size ([trevordev](https://github.com/trevordev))
-- Add msaa and sharpening options to the default pipeline ([trevordev](https://github.com/trevordev))
+- Supports Environment Drag and Drop in Sandbox ([sebavan](https://github.com/sebavan))
+- EnvironmentHelper has no an onError observable to handle errors when loading the textures ([RaananW](https://github.com/RaananW))
+- (Viewer) Viewer supports model animations and multi-model loading ([RaananW](https://github.com/RaananW))
+- Tests for sharpen, chromatic aberration, default pipeline and enable/disable post processes ([trevordev](https://github.com/trevordev))
+- onPointer* callbacks have now the event type as a 3rd variable ([RaananW](https://github.com/RaananW))
+- Lightmap texture in PBR material follow the gammaSpace Flag of the texture ([sebavan](https://github.com/sebavan))
+- Added setTextureFromPostProcessOutput to bind the output of a postprocess into an effect ([trevordev](https://github.com/trevordev))
+- Added support for primitive modes to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
+- Cannon and Oimo are optional dependencies ([RaananW](https://github.com/RaananW))
+- Shadows - Introduces [Normal Bias](https://doc.babylonjs.com/babylon101/shadows#normal-bias-since-32) ([sebavan](https://github.com/sebavan)))
 
 ## Bug fixes
 
@@ -89,17 +108,22 @@
 - SPS solid particle `.pivot` property now also behaves like the standard mesh pivot. Former behavior (particle translation) can be kept with the particle property `.translateFromPivot` set to true ([jbousquie](https://github.com/jbousquie))
 - Texture extension detection in `Engine.CreateTexture` ([sebavan](https://github.com/sebavan))
 - SPS internal temporary vector3 instead of Tmp.Vector3 to avoid possible concurrent uses ([jbousquie](https://github.com/jbousquie))
-- Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739). ([RaananW](https://github.com/RaananW))
+- Fixed a bug when calling load on an empty assets manager - [#3739](https://github.com/BabylonJS/Babylon.js/issues/3739) ([RaananW](https://github.com/RaananW))
 - Enabling teleportation in the vr helper class caused a redundant post process to be added ([trevordev](https://github.com/trevordev))
 - (Viewer) Fixed a bug where loading another mesh positioned it incorrectly ([RaananW](https://github.com/RaananW))
+- Scale vr controllers by deviceScale when it is set in VRExperienceHelper ([trevordev](https://github.com/trevordev))
 - (Viewer) Disabling templates now work correctly ([RaananW](https://github.com/RaananW))
 - AMD "define" declaration is no longer anonymous ([RaananW](https://github.com/RaananW))
 - Collision worker didn't initialize instanced meshes correctly - [#3819](https://github.com/BabylonJS/Babylon.js/issues/3819) ([RaananW](https://github.com/RaananW))
-- postMessage calls in webworkers were fixed ([RaananW](https://github.com/RaananW))
+- postMessage calls in webworkers were fixed. ([RaananW](https://github.com/RaananW))
+- Fixed WebCam Texture on Firefox and Edge - [#3825](https://github.com/BabylonJS/Babylon.js/issues/3825) ([sebavan](https://github.com/sebavan))
+- Add onLoadObservable on VideoTexture - [#3845](https://github.com/BabylonJS/Babylon.js/issues/3845) ([sebavan](https://github.com/sebavan))
+- beforeRender is now triggered after the camera updated its state - [#3873](https://github.com/BabylonJS/Babylon.js/issues/3873) ([RaananW](https://github.com/RaananW))
+- Tools.DeepCopy no longer copying getter-only elements - [#3929](https://github.com/BabylonJS/Babylon.js/issues/3929) ([RaananW](https://github.com/RaananW))
 
 ## Breaking changes
 
 - Removed the unused PostProcessRenderPass class and extended postProcessingRenderingEffect to support multiple PostProcesses ([trevordev](https://github.com/trevordev))
 - VertexData.merge no longer supports merging of data that do not have the same set of attributes. ([bghgary](https://github.com/bghgary)]
-- glTF 2.0 loader will now create a mesh for each primitive instead of merging the primitives together into one mesh. ([bghgary](https://github.com/bghgary)]
+- glTF 2.0 loader now creates a mesh for each primitive instead of merging the primitives together into one mesh. If a mesh only has one primitive, the behavior is the same as before. This change only affects meshes that have multiple primitives. ([bghgary](https://github.com/bghgary)]
 - Engine's onCanvasPointerOutObservable will now return a PointerEvent instead of the Engine. ([trevordev](https://github.com/trevordev))

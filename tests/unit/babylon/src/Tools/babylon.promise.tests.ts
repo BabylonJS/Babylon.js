@@ -2,8 +2,6 @@
  * Describes the test suite.
  */
 describe('Babylon.Promise', function () {
-    var subject: BABYLON.Engine;
-
     this.timeout(10000);
 
     /**
@@ -17,19 +15,6 @@ describe('Babylon.Promise', function () {
                 BABYLON.PromisePolyfill.Apply(true);
                 done();
             });
-    });
-
-    /**
-     * Create a new engine subject before each test.
-     */
-    beforeEach(function () {
-        subject = new BABYLON.NullEngine({
-            renderHeight: 256,
-            renderWidth: 256,
-            textureSize: 256,
-            deterministicLockstep: false,
-            lockstepMaxSteps: 1
-        });
     });
 
     describe('#Composition', () => {
@@ -136,6 +121,64 @@ describe('Babylon.Promise', function () {
             });
 
             tempString += " second";
+        });
+
+        it('should chain promises correctly #5', (done) => {
+            var tempString = "";
+            var promise = new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve(44);
+                }, 100);
+            });
+        
+            promise = promise.then(function () {
+                return 55;
+            });
+        
+            promise.then(function (value) {
+                tempString += "1: " + value;
+                setTimeout(function () {
+                    promise.then(function (value) {
+                        tempString += " 2: " + value;
+                        try {
+                            expect(tempString).to.eq("1: 55 2: 55");
+                            done();
+                        }
+                        catch(error) {
+                            done(error);
+                        }                        
+                    });
+                }, 0);
+            });
+        });
+
+        it('should chain promises correctly #6', (done) => {
+            var tempString = "";
+            var promise = new Promise(function (resolve) {
+                setTimeout(function () {
+                    resolve(44);
+                }, 100);
+            });
+        
+            promise = promise.then(function () {
+                return Promise.resolve(55);
+            });
+        
+            promise.then(function (value) {
+                tempString += "1: " + value;
+                setTimeout(function () {
+                    promise.then(function (value) {
+                        tempString += " 2: " + value;
+                        try {
+                            expect(tempString).to.eq("1: 55 2: 55");
+                            done();
+                        }
+                        catch(error) {
+                            done(error);
+                        }                        
+                    });
+                }, 0);
+            });
         });
     });
 

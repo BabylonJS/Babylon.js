@@ -68,6 +68,7 @@ export interface ViewerConfiguration {
 
 export interface IModelConfiguration {
     url?: string;
+    root?: string; //optional
     loader?: string; // obj, gltf?
     position?: { x: number, y: number, z: number };
     rotation?: { x: number, y: number, z: number, w?: number };
@@ -84,6 +85,11 @@ export interface IModelConfiguration {
     title?: string;
     subtitle?: string;
     thumbnail?: string; // URL or data-url
+
+    animation?: {
+        autoStart?: boolean | string;
+        playOnce?: boolean;
+    }
 
     // [propName: string]: any; // further configuration, like title and creator
 }

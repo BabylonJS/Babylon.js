@@ -58,6 +58,15 @@
             return this._sourceMesh.renderingGroupId;
         }
 
+        public set renderingGroupId(value: number) {
+            if (!this._sourceMesh || value === this._sourceMesh.renderingGroupId) {
+                return;
+            }
+
+            //no-op with warning
+            Tools.Warn("Note - setting renderingGroupId of an instanced mesh has no effect on the scene");
+        }
+
         /**
          * Returns the total number of vertices (integer).  
          */
@@ -282,13 +291,13 @@
          * Disposes the InstancedMesh.  
          * Returns nothing.  
          */
-        public dispose(doNotRecurse?: boolean): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
 
             // Remove from mesh
             var index = this._sourceMesh.instances.indexOf(this);
             this._sourceMesh.instances.splice(index, 1);
 
-            super.dispose(doNotRecurse);
+            super.dispose(doNotRecurse, disposeMaterialAndTextures);
         }
     }
 } 

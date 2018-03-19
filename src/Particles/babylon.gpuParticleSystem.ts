@@ -241,6 +241,12 @@
         }
 
         /**
+         * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
+         * to override the particles.
+         */
+        public forceDepthWrite = false;        
+
+        /**
          * Gets or set the number of active particles
          */
         public get activeParticleCount(): number {
@@ -250,6 +256,25 @@
         public set activeParticleCount(value: number) {
             this._activeCount = Math.min(value, this._capacity);
         }
+
+        /**
+         * Is this system ready to be used/rendered
+         * @return true if the system is ready
+         */
+        public isReady(): boolean {
+            if (!this._updateEffect) {
+                this._recreateUpdateEffect();
+                this._recreateRenderEffect();
+                return false;
+            }
+
+
+            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() || !this.particleTexture || !this.particleTexture.isReady()) {
+                return false;
+            }
+
+            return true;
+        }        
 
         /**
          * Gets Wether the system has been started.
@@ -323,7 +348,7 @@
             this._updateEffectOptions = {
                 attributes: ["position", "age", "life", "seed", "size", "color", "direction"],
                 uniformsNames: ["currentCount", "timeDelta", "generalRandoms", "emitterWM", "lifeTime", "color1", "color2", "sizeRange", "gravity", "emitPower",
-                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "angle"],
+                                "direction1", "direction2", "minEmitBox", "maxEmitBox", "radius", "directionRandomizer", "height", "angle", "stopFactor"],
                 uniformBuffersNames: [],
                 samplers:["randomSampler"],
                 defines: "",
@@ -478,14 +503,13 @@
          * Animates the particle system for the current frame by emitting new particles and or animating the living ones.
          */
         public animate(): void {           
-            if (!this._stopped) {
-                this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
-                this._actualFrame += this._timeDelta;
+            this._timeDelta = this.updateSpeed * this._scene.getAnimationRatio();   
+            this._actualFrame += this._timeDelta;
 
-                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration)
+            if (!this._stopped) {
+                if (this.targetStopDuration && this._actualFrame >= this.targetStopDuration) {
                     this.stop();
-            } else {
-                this._timeDelta = 0;
+                }
             }             
         }        
 
@@ -501,7 +525,7 @@
             this._recreateUpdateEffect();
             this._recreateRenderEffect();
 
-            if (!this.emitter || !this._updateEffect.isReady() || !this._renderEffect.isReady() ) {
+            if (!this.isReady()) {
                 return 0;
             }
 
@@ -523,6 +547,7 @@
             
             this._updateEffect.setFloat("currentCount", this._currentActiveCount);
             this._updateEffect.setFloat("timeDelta", this._timeDelta);
+            this._updateEffect.setFloat("stopFactor", this._stopped ? 0 : 1);
             this._updateEffect.setFloat3("generalRandoms", Math.random(), Math.random(), Math.random());
             this._updateEffect.setTexture("randomSampler", this._randomTexture);
             this._updateEffect.setFloat2("lifeTime", this.minLifeTime, this.maxLifeTime);
@@ -582,6 +607,10 @@
                 this._engine.setAlphaMode(Engine.ALPHA_COMBINE);
             }            
 
+            if (this.forceDepthWrite) {
+                this._engine.setDepthWrite(true);
+            }
+
             // Bind source VAO
             this._engine.bindVertexArrayObject(this._renderVAO[this._targetIndex], null);
 
@@ -626,6 +655,10 @@
         }
 
         private _releaseVAOs() {
+            if (!this._updateVAO) {
+                return;
+            }
+            
             for (var index = 0; index < this._updateVAO.length; index++) {
                 this._engine.releaseVertexArrayObject(this._updateVAO[index]);
             }

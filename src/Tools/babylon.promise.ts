@@ -91,10 +91,9 @@ module BABYLON {
             }
         }
 
-        private _resolve(value?: Nullable<T>): Nullable<InternalPromise<T>> | T {
+        private _resolve(value?: Nullable<T>): void {
             try {
                 this._state = PromiseStates.Fulfilled;
-                this._result = value;
                 let returnedValue: Nullable<InternalPromise<T>> | T = null;
 
                 if (this._onFulfilled) {
@@ -107,10 +106,13 @@ module BABYLON {
                         let returnedPromise = returnedValue as InternalPromise<T>;
 
                         returnedPromise._moveChildren(this._children);
+                        value = returnedPromise._result;
                     } else {
                         value = <T>returnedValue;
                     }
                 }
+
+                this._result = value;
 
                 for (var child of this._children) {
                     child._resolve(value);
@@ -119,13 +121,9 @@ module BABYLON {
                 this._children.length = 0;
                 delete this._onFulfilled;
                 delete this._onRejected;
-
-                return returnedValue;
             } catch (e) {
                 this._reject(e, true);
             }
-
-            return null;
         }
 
         private _reject(reason: any, onLocalThrow = false): void {
@@ -193,6 +191,29 @@ module BABYLON {
                 newPromise._resolve([]);
             }
 
+
+            return newPromise;
+        }
+
+        public static race<T>(promises: InternalPromise<T>[]): InternalPromise<T> {
+            let newPromise: Nullable<InternalPromise<T>> = new InternalPromise();
+
+            if (promises.length) {
+                for (const promise of promises) {
+                    promise.then((value?: Nullable<T>) => {
+                        if (newPromise) {
+                            newPromise._resolve(value);
+                            newPromise = null;
+                        }
+                        return null;
+                    }, (reason: any) => {
+                        if (newPromise) {
+                            newPromise._reject(reason);
+                            newPromise = null;
+                        }
+                    });
+                }
+            }
 
             return newPromise;
         }

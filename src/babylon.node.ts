@@ -109,6 +109,20 @@
             return this._parentNode;
         }
 
+        
+        private _animationPropertiesOverride: Nullable<AnimationPropertiesOverride> = null;
+
+        /**
+         * Gets or sets the animation properties override
+         */
+        public get animationPropertiesOverride(): Nullable<AnimationPropertiesOverride> {
+            return this._animationPropertiesOverride;
+        }
+
+        public set animationPropertiesOverride(value: Nullable<AnimationPropertiesOverride>) {
+            this._animationPropertiesOverride = value;
+        }
+
         /**
          * Gets a string idenfifying the name of the class
          * @returns "Node" string
@@ -463,10 +477,10 @@
                 return;
             }
 
-            this._isReady = true;
             if (this.onReady) {
                 this.onReady(this);
             }
+            this._isReady = true;
         }
 
         /**
@@ -575,9 +589,24 @@
         }
 
         /**
-         * Releases all associated resources
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
          */
-        public dispose(): void {
+        public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+            if (!doNotRecurse) {
+                const nodes = this.getDescendants(true);
+                for (const node of nodes) {
+                    node.dispose(doNotRecurse, disposeMaterialAndTextures);
+                }
+            } else {
+                const transformNodes = this.getChildTransformNodes(true);
+                for (const transformNode of transformNodes) {
+                    transformNode.parent = null;
+                    transformNode.computeWorldMatrix(true);
+                }
+            }
+
             this.parent = null;
 
             // Callback
@@ -590,7 +619,7 @@
             }
 
             this._behaviors = [];
-            this._isDisposed = true;            
+            this._isDisposed = true;
         }
 
         /**

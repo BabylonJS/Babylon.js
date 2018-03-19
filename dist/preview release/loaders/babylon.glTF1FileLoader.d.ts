@@ -52,6 +52,7 @@ declare module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -107,13 +108,19 @@ declare module BABYLON {
          */
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
         private _onTextureLoadedObserver;
-        onTextureLoaded: (Texture: BaseTexture) => void;
+        onTextureLoaded: (texture: BaseTexture) => void;
         /**
          * Raised when the loader creates a material after parsing the glTF properties of the material.
          */
         readonly onMaterialLoadedObservable: Observable<Material>;
         private _onMaterialLoadedObserver;
-        onMaterialLoaded: (Material: Material) => void;
+        onMaterialLoaded: (material: Material) => void;
+        /**
+         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
+         */
+        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
+        private _onAnimationGroupLoadedObserver;
+        onAnimationGroupLoaded: (animationGroup: AnimationGroup) => void;
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
@@ -135,6 +142,11 @@ declare module BABYLON {
         readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         private _onExtensionLoadedObserver;
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
+        /**
+         * Gets a promise that resolves when the asset is completely loaded.
+         * @returns A promise that resolves when the asset is completely loaded.
+         */
+        whenCompleteAsync(): Promise<void>;
         /**
          * The loader state or null if not active.
          */
@@ -549,7 +561,7 @@ declare module BABYLON.GLTF1 {
         static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void;
         static LoadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: Nullable<ArrayBufferView>) => void, onError: (message: string) => void): void;
         static CreateTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: Nullable<ArrayBufferView>, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
-        static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): void;
+        static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string | ArrayBuffer) => void, onError?: (message: string) => void): void;
         static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void;
     }
     /**
@@ -569,18 +581,19 @@ declare module BABYLON.GLTF1 {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
+        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
         dispose(): void;
-        private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress, onError);
-        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<{
+        private _importMeshAsync(meshesNames, scene, data, rootUrl, onSuccess, onProgress?, onError?);
+        importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
         }>;
-        private _loadAsync(scene, data, rootUrl, onSuccess, onProgress, onError);
-        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress: (event: SceneLoaderProgressEvent) => void): Promise<void>;
+        private _loadAsync(scene, data, rootUrl, onSuccess, onProgress?, onError?);
+        loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         private _loadShadersAsync(gltfRuntime, onload);
         private _loadBuffersAsync(gltfRuntime, onLoad, onProgress?);
         private _createNodes(gltfRuntime);
@@ -657,12 +670,12 @@ declare module BABYLON.GLTF1 {
         * Defines an override for loading the runtime
         * Return true to stop further extensions from loading the runtime
         */
-        loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): boolean;
+        loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean;
         /**
          * Defines an onverride for creating gltf runtime
          * Return true to stop further extensions from creating the runtime
          */
-        loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): boolean;
+        loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): boolean;
         /**
         * Defines an override for loading buffers
         * Return true to stop further extensions from loading this buffer
@@ -688,11 +701,11 @@ declare module BABYLON.GLTF1 {
         * Return true to stop further extensions from loading this material
         */
         loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean;
-        static LoadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void, onError: (message: string) => void): void;
-        static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError: (message: string) => void): void;
+        static LoadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): void;
+        static LoadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): void;
         static LoadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (bufferView: ArrayBufferView) => void, onError: (message: string) => void, onProgress?: () => void): void;
         static LoadTextureAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (texture: Texture) => void, onError: (message: string) => void): void;
-        static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string) => void, onError: (message: string) => void): void;
+        static LoadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderData: string | ArrayBuffer) => void, onError: (message: string) => void): void;
         static LoadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): void;
         private static LoadTextureBufferAsync(gltfRuntime, id, onSuccess, onError);
         private static CreateTextureAsync(gltfRuntime, id, buffer, onSuccess, onError);

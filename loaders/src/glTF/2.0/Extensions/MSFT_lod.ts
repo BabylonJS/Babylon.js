@@ -33,19 +33,28 @@ module BABYLON.GLTF2.Extensions {
 
                     if (indexLOD !== 0) {
                         this._loadingNodeLOD = nodeLOD;
-                        this._loadNodeSignals[nodeLOD._index] = new Deferred<void>();
+
+                        if (!this._loadNodeSignals[nodeLOD._index]) {
+                            this._loadNodeSignals[nodeLOD._index] = new Deferred<void>();
+                        }
                     }
 
-                    const promise = this._loader._loadNodeAsync("#/nodes/" + nodeLOD._index, nodeLOD).then(() => {
+                    const promise = this._loader._loadNodeAsync(`#/nodes/${nodeLOD._index}`, nodeLOD).then(() => {
                         if (indexLOD !== 0) {
                             const previousNodeLOD = nodeLODs[indexLOD - 1];
-                            previousNodeLOD._babylonMesh!.setEnabled(false);
+                            if (previousNodeLOD._babylonMesh) {
+                                previousNodeLOD._babylonMesh.dispose(false, true);
+                                delete previousNodeLOD._babylonMesh;
+                            }
                         }
 
                         if (indexLOD !== nodeLODs.length - 1) {
                             const nodeIndex = nodeLODs[indexLOD + 1]._index;
-                            this._loadNodeSignals[nodeIndex].resolve();
-                            delete this._loadNodeSignals[nodeIndex];
+
+                            if (this._loadNodeSignals[nodeIndex]) {
+                                this._loadNodeSignals[nodeIndex].resolve();
+                                delete this._loadNodeSignals[nodeIndex];
+                            }
                         }
                     });
 
@@ -62,7 +71,7 @@ module BABYLON.GLTF2.Extensions {
             });
         }
 
-        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh): Nullable<Promise<void>> {
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
             // Don't load material LODs if already loading a node LOD.
             if (this._loadingNodeLOD) {
                 return null;
@@ -77,14 +86,30 @@ module BABYLON.GLTF2.Extensions {
 
                     if (indexLOD !== 0) {
                         this._loadingMaterialLOD = materialLOD;
-                        this._loadMaterialSignals[materialLOD._index] = new Deferred<void>();
+
+                        if (!this._loadMaterialSignals[materialLOD._index]) {
+                            this._loadMaterialSignals[materialLOD._index] = new Deferred<void>();
+                        }
                     }
 
-                    const promise = this._loader._loadMaterialAsync("#/materials/" + materialLOD._index, materialLOD, babylonMesh).then(() => {
+                    const promise = this._loader._loadMaterialAsync(`#/materials/${materialLOD._index}`, materialLOD, babylonMesh, babylonDrawMode, indexLOD === 0 ? assign : () => {}).then(() => {
+                        if (indexLOD !== 0) {
+                            const babylonDataLOD = materialLOD._babylonData!;
+                            assign(babylonDataLOD[babylonDrawMode].material);
+
+                            const previousBabylonDataLOD = materialLODs[indexLOD - 1]._babylonData!;
+                            if (previousBabylonDataLOD[babylonDrawMode]) {
+                                previousBabylonDataLOD[babylonDrawMode].material.dispose();
+                                delete previousBabylonDataLOD[babylonDrawMode];
+                            }
+                        }
+
                         if (indexLOD !== materialLODs.length - 1) {
                             const materialIndex = materialLODs[indexLOD + 1]._index;
-                            this._loadMaterialSignals[materialIndex].resolve();
-                            delete this._loadMaterialSignals[materialIndex];
+                            if (this._loadMaterialSignals[materialIndex]) {
+                                this._loadMaterialSignals[materialIndex].resolve();
+                                delete this._loadMaterialSignals[materialIndex];
+                            }
                         }
                     });
 
@@ -130,7 +155,7 @@ module BABYLON.GLTF2.Extensions {
             const properties = new Array<T>();
 
             for (let i = ids.length - 1; i >= 0; i--) {
-                properties.push(GLTFLoader._GetProperty(context + "/ids/" + ids[i], array, ids[i]));
+                properties.push(GLTFLoader._GetProperty(`${context}/ids/${ids[i]}`, array, ids[i]));
                 if (properties.length === this.maxLODsToLoad) {
                     return properties;
                 }
