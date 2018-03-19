@@ -7,7 +7,8 @@ import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
 import { ModelLoader } from './model/modelLoader';
-import { ViewerModel } from './model/viewerModel';
+import { ViewerModel, ModelState } from './model/viewerModel';
+import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
 
 /**
  * BabylonJS Viewer
@@ -41,4 +42,4 @@ function disposeAll() {
 }
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };
