@@ -84,7 +84,7 @@
         public get sharpenEnabled(): boolean {
             return this._sharpenEnabled;
         }
-        
+
         private _resizeObserver:Nullable<Observer<Engine>> = null;
         private _hardwareScaleLevel = 1.0;
         private _bloomKernel: number = 64;
@@ -140,14 +140,8 @@
             if (this._bloomThreshold === value) {
                 return;
             }
-            if((this.bloom.threshold > 0 && value == 0) || (this.bloom.threshold == 0 && value > 0)){
-                this.bloom.threshold = value;
-                this._bloomThreshold = value;
-                this._buildPipeline();
-            }else{
-                this.bloom.threshold = value;
-                this._bloomThreshold = value;
-            }
+            this.bloom.threshold = value;
+            this._bloomThreshold = value;
         }
 
         @serialize()
@@ -474,7 +468,7 @@
                 if(!this.bloom._isReady()){
                     this.bloom._updateEffects();
                 }
-                mergeOptions.bloom = {blurred: this.bloom._effects[this.bloom._effects.length-1], weight: this.bloomWeight, mix: this._bloomThreshold == 0}
+                mergeOptions.bloom = {blurred: this.bloom._effects[this.bloom._effects.length-1], weight: this.bloomWeight}
                 if(!mergeOptions.originalFromInput){
                     mergeOptions.originalFromInput=this.bloom._effects[0];
                 }
