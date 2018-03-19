@@ -447,7 +447,7 @@ declare module BabylonViewer {
     }
 
     export class ViewerModel {
-        constructor(scene: BABYLON.Scene, modelConfiguration: IModelConfiguration);
+        constructor(viewer: AbstractViewer, modelConfiguration: IModelConfiguration);
         loader: BABYLON.ISceneLoaderPlugin | BABYLON.ISceneLoaderPluginAsync;
         meshes: Array<BABYLON.AbstractMesh>;
         rootMesh: BABYLON.AbstractMesh;
