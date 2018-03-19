@@ -1,7 +1,4 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
-/// <reference path="../../dist/preview release/loaders/babylon.glTFFileLoader.d.ts"/>
-
 import { mapperManager } from './configuration/mappers';
 import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
