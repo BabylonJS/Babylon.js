@@ -30,8 +30,8 @@
             var serializationObject: any = {};
 
             serializationObject.isEnabled = this.isEnabled;
-            serializationObject.leftColor = this.leftColor;
-            serializationObject.rightColor = this.rightColor;
+            serializationObject.leftColor = this.leftColor.asArray();
+            serializationObject.rightColor = this.rightColor.asArray();
             serializationObject.bias = this.bias;
             serializationObject.power = this.power;
 
