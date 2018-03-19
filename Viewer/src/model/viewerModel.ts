@@ -3,6 +3,7 @@ import { IModelConfiguration } from "../configuration/configuration";
 import { IModelAnimation, GroupModelAnimation, AnimationPlayMode } from "./modelAnimation";
 
 import * as deepmerge from '../../assets/deepmerge.min.js';
+import { AbstractViewer } from "..";
 
 
 export enum ModelState {
@@ -78,7 +79,7 @@ export class ViewerModel implements IDisposable {
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
-    constructor(private _scene: Scene, modelConfiguration: IModelConfiguration) {
+    constructor(private _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();
@@ -89,6 +90,8 @@ export class ViewerModel implements IDisposable {
         this._animations = [];
         //create a copy of the configuration to make sure it doesn't change even after it is changed in the viewer
         this._modelConfiguration = deepmerge({}, modelConfiguration);
+
+        this._viewer.models.push(this);
     }
 
     /**
@@ -128,7 +131,7 @@ export class ViewerModel implements IDisposable {
         // check if this is not a gltf loader and init the animations
         if (this.loader.name !== 'gltf') {
             this.skeletons.forEach((skeleton, idx) => {
-                let ag = new AnimationGroup("animation-" + idx, this._scene);
+                let ag = new AnimationGroup("animation-" + idx, this._viewer.scene);
                 skeleton.getAnimatables().forEach(a => {
                     if (a.animations[0]) {
                         ag.addTargetedAnimation(a.animations[0], a);
@@ -327,5 +330,6 @@ export class ViewerModel implements IDisposable {
         this._animations.length = 0;
         this.meshes.forEach(m => m.dispose());
         this.meshes.length = 0;
+        this._viewer.models.splice(this._viewer.models.indexOf(this), 1);
     }
 }

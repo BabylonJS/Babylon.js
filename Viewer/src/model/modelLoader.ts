@@ -31,7 +31,7 @@ export class ModelLoader {
      */
     public load(modelConfiguration: IModelConfiguration): ViewerModel {
 
-        const model = new ViewerModel(this._viewer.scene, modelConfiguration);
+        const model = new ViewerModel(this._viewer, modelConfiguration);
 
         if (!modelConfiguration.url) {
             model.state = ModelState.ERROR;

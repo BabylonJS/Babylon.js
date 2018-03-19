@@ -845,7 +845,6 @@ export abstract class AbstractViewer {
             this.models.length = 0;
         }
 
-        this.models.push(model);
         this.lastUsedLoader = model.loader;
         model.onLoadErrorObservable.add((errorObject) => {
             this.onModelLoadErrorObservable.notifyObserversWithPromise(errorObject);
