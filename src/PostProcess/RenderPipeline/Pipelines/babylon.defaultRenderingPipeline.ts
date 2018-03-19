@@ -84,8 +84,9 @@
         public get sharpenEnabled(): boolean {
             return this._sharpenEnabled;
         }
-
-
+        
+        private _resizeObserver:Nullable<Observer<Engine>> = null;
+        private _hardwareScaleLevel = 1.0;
         private _bloomKernel: number = 64;
         /**
 		 * Specifies the size of the bloom blur kernel, relative to the final output size
@@ -96,7 +97,7 @@
         }
         public set bloomKernel(value: number){
             this._bloomKernel = value;
-            this.bloom.kernel = value;
+            this.bloom.kernel = value/this._hardwareScaleLevel;
         }
 
         /**
@@ -360,14 +361,19 @@
 
             this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false, true);
             
-            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false, true);
+            this.bloom = new BloomEffect(this._scene, this._bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false, true);
 
             this._defaultPipelineMerge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._defaultPipelineTextureType, true);
             this._defaultPipelineMergeEffect = new PostProcessRenderEffect(engine, "defaultPipelineMerge", () => { return this._defaultPipelineMerge; }, true);
 
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
-            
+
+            this._resizeObserver = engine.onResizeObservable.add(()=>{
+                this._hardwareScaleLevel = engine.getHardwareScalingLevel();
+                this.bloomKernel = this.bloomKernel
+            })
+
             this._buildPipeline();
         }
 
@@ -568,6 +574,10 @@
             this._disposePostProcesses(true);
             this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);
             this._scene.autoClear = true;
+            if(this._resizeObserver){
+                this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
+                this._resizeObserver = null;
+            }
             super.dispose();
         }
 
