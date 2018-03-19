@@ -10,51 +10,135 @@ import { ViewerModel } from '../model/viewerModel';
 import { GroupModelAnimation } from '../model/modelAnimation';
 import { ModelLoader } from '../model/modelLoader';
 
+/**
+ * The AbstractViewr is the center of Babylon's viewer.
+ * It is the basic implementation of the default viewer and is responsible of loading and showing the model and the templates
+ */
 export abstract class AbstractViewer {
 
+    /**
+     * The corresponsing template manager of this viewer.
+     */
     public templateManager: TemplateManager;
 
+    /**
+     * Babylon Engine corresponding with this viewer
+     */
     public engine: Engine;
+    /**
+     * The Babylon Scene of this viewer
+     */
     public scene: Scene;
+    /**
+     * The camera used in this viewer
+     */
     public camera: ArcRotateCamera;
+    /**
+     * Babylon's scene optimizer
+     */
     public sceneOptimizer: SceneOptimizer;
-    public baseId: string;
+    /**
+     * The ID of this viewer. it will be generated randomly or use the HTML Element's ID.
+     */
+    public readonly baseId: string;
+    /**
+     * Models displayed in this viewer.
+     */
     public models: Array<ViewerModel>;
 
     /**
      * The last loader used to load a model. 
      */
     public lastUsedLoader: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    /**
+     * The ModelLoader instance connected with this viewer.
+     */
     public modelLoader: ModelLoader;
 
+    /**
+     * the viewer configuration object
+     */
     protected _configuration: ViewerConfiguration;
+    /**
+     * Babylon's environment helper of this viewer
+     */
     public environmentHelper: EnvironmentHelper;
 
+    //The following are configuration objects, default values.
     protected _defaultHighpTextureType: number;
     protected _shadowGeneratorBias: number;
     protected _defaultPipelineTextureType: number;
+
+    /**
+     * The maximum number of shadows supported by the curent viewer
+     */
     protected _maxShadows: number;
+    /**
+     * is HDR supported?
+     */
     private _hdrSupport: boolean;
 
+    /**
+     * is this viewer disposed?
+     */
     protected _isDisposed: boolean = false;
 
+    /**
+     * Returns a boolean representing HDR support
+     */
     public get isHdrSupported() {
         return this._hdrSupport;
     }
 
 
     // observables
+    /**
+     * Will notify when the scene was initialized
+     */
     public onSceneInitObservable: Observable<Scene>;
+    /**
+     * will notify when the engine was initialized
+     */
     public onEngineInitObservable: Observable<Engine>;
+    /**
+     * will notify after every model load
+     */
     public onModelLoadedObservable: Observable<ViewerModel>;
+    /**
+     * will notify when any model notify of progress
+     */
     public onModelLoadProgressObservable: Observable<SceneLoaderProgressEvent>;
+    /**
+     * will notify when any model load failed.
+     */
     public onModelLoadErrorObservable: Observable<{ message: string; exception: any }>;
+    /**
+     * will notify when a new loader was initialized.
+     * Used mainly to know when a model starts loading.
+     */
     public onLoaderInitObservable: Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>;
+    /**
+     * Observers registered here will be executed when the entire load process has finished.
+     */
     public onInitDoneObservable: Observable<AbstractViewer>;
 
-    public canvas: HTMLCanvasElement;
+    private _canvas: HTMLCanvasElement;
 
-    protected _registeredOnBeforerenderFunctions: Array<() => void>;
+    /**
+     * The (single) canvas of this viewer
+     */
+    public get canvas(): HTMLCanvasElement {
+        return this._canvas;
+    }
+
+    /**
+     * registered onBeforeRender functions.
+     * This functions are also registered at the native scene. The reference can be used to unregister them.
+     */
+    protected _registeredOnBeforeRenderFunctions: Array<() => void>;
+    /**
+     * The configuration loader of this viewer
+     */
     protected _configurationLoader: ConfigurationLoader;
 
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = {}) {
@@ -73,7 +157,7 @@ export abstract class AbstractViewer {
         this.onInitDoneObservable = new Observable();
         this.onLoaderInitObservable = new Observable();
 
-        this._registeredOnBeforerenderFunctions = [];
+        this._registeredOnBeforeRenderFunctions = [];
         this.models = [];
         this.modelLoader = new ModelLoader(this);
 
@@ -101,24 +185,30 @@ export abstract class AbstractViewer {
             this.templateManager.onAllLoaded.add(() => {
                 let canvas = this.templateManager.getCanvas();
                 if (canvas) {
-                    this.canvas = canvas;
+                    this._canvas = canvas;
                 }
                 this._onTemplateLoaded();
             });
         });
-
-        //this.onModelLoadedObservable.add(this.initEnvironment.bind(this));
-
     }
 
+    /**
+     * get the baseId of this viewer
+     */
     public getBaseId(): string {
         return this.baseId;
     }
 
+    /**
+     * Do we have a canvas to render on, and is it a part of the scene
+     */
     public isCanvasInDOM(): boolean {
-        return !!this.canvas && !!this.canvas.parentElement;
+        return !!this._canvas && !!this._canvas.parentElement;
     }
 
+    /**
+     * The resize function that will be registered with the window object
+     */
     protected _resize = (): void => {
         // Only resize if Canvas is in the DOM
         if (!this.isCanvasInDOM()) {
@@ -132,6 +222,9 @@ export abstract class AbstractViewer {
         this.engine.resize();
     }
 
+    /**
+     * render loop that will be executed by the engine
+     */
     protected _render = (): void => {
         this.scene && this.scene.activeCamera && this.scene.render();
     }
@@ -298,7 +391,12 @@ export abstract class AbstractViewer {
         }
     }
 
-    protected _configureScene(sceneConfig: ISceneConfiguration, optimizerConfig?: ISceneOptimizerConfiguration) {
+    /**
+     * internally configure the scene using the provided configuration.
+     * The scene will not be recreated, but just updated.
+     * @param sceneConfig the (new) scene configuration
+     */
+    protected _configureScene(sceneConfig: ISceneConfiguration) {
         // sanity check!
         if (!this.scene) {
             return;
@@ -345,6 +443,12 @@ export abstract class AbstractViewer {
         }
     }
 
+
+    /**
+     * Configure the scene optimizer.
+     * The existing scene optimizer will be disposed and a new one will be created.
+     * @param optimizerConfig the (new) optimizer configuration
+     */
     protected _configureOptimizer(optimizerConfig: ISceneOptimizerConfiguration | boolean) {
         if (typeof optimizerConfig === 'boolean') {
             if (this.sceneOptimizer) {
@@ -381,6 +485,11 @@ export abstract class AbstractViewer {
         }
     }
 
+    /**
+     * this is used to register native functions using the configuration object.
+     * This will configure the observers.
+     * @param observersConfiguration observers configuration
+     */
     protected _configureObservers(observersConfiguration: IObserversConfiguration) {
         if (observersConfiguration.onEngineInit) {
             this.onEngineInitObservable.add(window[observersConfiguration.onEngineInit]);
@@ -405,6 +514,11 @@ export abstract class AbstractViewer {
         }
     }
 
+    /**
+     * (Re) configure the camera. The camera will only be created once and from this point will only be reconfigured.
+     * @param cameraConfig the new camera configuration
+     * @param model optionally use the model to configure the camera.
+     */
     protected _configureCamera(cameraConfig: ICameraConfiguration, model?: ViewerModel) {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
 
@@ -440,6 +554,12 @@ export abstract class AbstractViewer {
             this.camera.upperRadiusLimit = sceneDiagonalLenght * 3;
     }
 
+    /**
+     * configure the lights.
+     * 
+     * @param lightsConfiguration the (new) light(s) configuration
+     * @param model optionally use the model to configure the camera.
+     */
     protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model?: ViewerModel) {
         let focusMeshes = model ? model.meshes : this.scene.meshes;
         // sanity check!
@@ -529,12 +649,19 @@ export abstract class AbstractViewer {
         });
     }
 
-    protected _configureModel(modelConfiguration: Partial<IModelConfiguration>, model?: ViewerModel) {
+    /**
+     * configure all models using the configuration.
+     * @param modelConfiguration the configuration to use to reconfigure the models
+     */
+    protected _configureModel(modelConfiguration: Partial<IModelConfiguration>) {
         this.models.forEach(model => {
-            model.configuration = modelConfiguration;
+            model.updateConfiguration(modelConfiguration);
         })
     }
 
+    /**
+     * Dispoe the entire viewer including the scene and the engine
+     */
     public dispose() {
         if (this._isDisposed) {
             return;
@@ -589,15 +716,16 @@ export abstract class AbstractViewer {
         this._isDisposed = true;
     }
 
+    /**
+     * This will prepare the container element for the viewer
+     */
     protected abstract _prepareContainerElement();
 
     /**
      * This function will execute when the HTML templates finished initializing.
      * It should initialize the engine and continue execution.
      * 
-     * @protected
      * @returns {Promise<AbstractViewer>} The viewer object will be returned after the object was loaded.
-     * @memberof AbstractViewer
      */
     protected _onTemplatesLoaded(): Promise<AbstractViewer> {
         return Promise.resolve(this);
@@ -671,6 +799,9 @@ export abstract class AbstractViewer {
         return Promise.resolve(this.engine);
     }
 
+    /**
+     * initialize the scene. Calling thsi function again will dispose the old scene, if exists.
+     */
     protected _initScene(): Promise<Scene> {
 
         // if the scen exists, dispose it.
@@ -698,7 +829,15 @@ export abstract class AbstractViewer {
     private _isLoading: boolean;
     private _nextLoading: Function;
 
-    public initModel(modelConfig: any = this._configuration.model, clearScene: boolean = true): ViewerModel {
+    /**
+     * Initialize a model loading. The returns object (a ViewerModel object) will be loaded in the background.
+     * The difference between this and loadModel is that loadModel will fulfill the promise when the model finished loading.
+     * 
+     * @param modelConfig model configuration to use when loading the model.
+     * @param clearScene should the scene be cleared before loading this model
+     * @returns a ViewerModel object that is not yet fully loaded.
+     */
+    public initModel(modelConfig: IModelConfiguration, clearScene: boolean = true): ViewerModel {
         let model = this.modelLoader.load(modelConfig);
 
         if (clearScene) {
@@ -735,6 +874,13 @@ export abstract class AbstractViewer {
         return model;
     }
 
+    /**
+     * load a model using the provided configuration
+     * 
+     * @param modelConfig the model configuration or URL to load.
+     * @param clearScene Should the scene be cleared before loading the model
+     * @returns a Promise the fulfills when the model finished loading successfully. 
+     */
     public loadModel(modelConfig: any = this._configuration.model, clearScene: boolean = true): Promise<ViewerModel> {
         // no model was provided? Do nothing!
         let modelUrl = (typeof modelConfig === 'string') ? modelConfig : modelConfig.url;
@@ -769,6 +915,12 @@ export abstract class AbstractViewer {
         })
     }
 
+    /**
+     * initialize the environment for a specific model.
+     * Per default it will use the viewer'S configuration.
+     * @param model the model to use to configure the environment.
+     * @returns a Promise that will resolve when the configuration is done.
+     */
     protected _initEnvironment(model?: ViewerModel): Promise<Scene> {
         this._configureEnvironment(this._configuration.skybox, this._configuration.ground);
 
@@ -776,9 +928,9 @@ export abstract class AbstractViewer {
     }
 
     /**
-		 * Alters render settings to reduce features based on hardware feature limitations
-		 * @param options Viewer options to modify
-		 */
+     * Alters render settings to reduce features based on hardware feature limitations
+     * @param options Viewer options to modify
+     */
     protected _handleHardwareLimitations() {
         //flip rendering settings switches based on hardware support
         let maxVaryingRows = this.engine.getCaps().maxVaryingVectors;
@@ -835,6 +987,13 @@ export abstract class AbstractViewer {
         }
     }
 
+    /**
+     * This will extend an object with configuration values.
+     * What it practically does it take the keys from the configuration and set them on the object.
+     * I the configuration is a tree, it will traverse into the tree.
+     * @param object the object to extend
+     * @param config the configuration object that will extend the object
+     */
     protected _extendClassWithConfig(object: any, config: any) {
         if (!config) return;
         Object.keys(config).forEach(key => {

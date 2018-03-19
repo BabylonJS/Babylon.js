@@ -331,7 +331,7 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
             this.scene.registerBeforeRender(updateFlashlightFunction);
-            this._registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
+            this._registeredOnBeforeRenderFunctions.push(updateFlashlightFunction);
         }
     }
 }
