@@ -356,6 +356,14 @@
             });
         }
 
+        public disableBlending() {
+            this.bones.forEach((bone) => {
+                bone.animations.forEach((animation: Animation) => {
+                    animation.enableBlending = false;
+                });
+            });
+        }
+
         public dispose() {
             this._meshesWithPoseMatrix = [];
 
