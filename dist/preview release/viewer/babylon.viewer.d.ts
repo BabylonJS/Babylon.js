@@ -828,10 +828,6 @@ declare module BabylonViewer {
         /**
          * Get the model's configuration
          */
-        /**
-         * (Re-)set the model's entire configuration
-         * @param newConfiguration the new configuration to replace the new one
-         */
         configuration: IModelConfiguration;
         /**
          * Update the current configuration with new values.
