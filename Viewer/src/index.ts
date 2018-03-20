@@ -33,6 +33,9 @@ function init(event) {
     InitTags();
 }
 
+/**
+ * Dispose all viewers currently registered
+ */
 function disposeAll() {
     viewerManager.dispose();
     mapperManager.dispose();
