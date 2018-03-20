@@ -2,7 +2,7 @@
 
 ## Major updates
 
-- Support for [GPU particles](https://doc.babylonjs.com/babylon101/particles#gpu-particles). Demo [here](https://www.babylonjs-playground.com/frame.html#PU4WYI#2) ([deltakosh](https://github.com/deltakosh))
+- Support for [GPU particles](https://doc.babylonjs.com/babylon101/particles#gpu-particles). Demo [here](https://www.babylonjs-playground.com/frame.html#PU4WYI#14) ([deltakosh](https://github.com/deltakosh))
 - Improved building process: We now run a full visual validation test for each pull request. Furthermore, code comments and what's new updates are now mandatory ([sebavan](https://github.com/sebavan))
 - Babylon.js now uses Promises in addition to callbacks. We created several `xxxAsync` functions all over the framework (`SceneLoader.AppendAsync` for instance, which returns a Promise). A polyfill is also integrated to support older browsers ([deltakosh](https://github.com/deltakosh))
 - Introduced texture binding atlas. This optimization allows the engine to reuse texture bindings instead of rebinding textures when they are not on constant sampler indexes ([deltakosh](https://github.com/deltakosh))
