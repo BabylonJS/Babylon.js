@@ -436,6 +436,17 @@
 
             var mergeOptions = new DefaultPipelineMergePostProcessOptions();
 
+            if (this._imageProcessingEnabled) {
+                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                if (this._hdr) {
+                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
+                    this._setAutoClearAndTextureSharing(this.imageProcessing);
+                    this._firstPostProcess = null;
+                } else {	
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;	
+                }	
+            }
+
             if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
@@ -482,16 +493,6 @@
                 this._defaultPipelineMerge.updateEffect();
                 this.addEffect(this._defaultPipelineMergeEffect);
                 this._setAutoClearAndTextureSharing(this._defaultPipelineMerge, true);
-            }
-
-            if (this._imageProcessingEnabled) {
-                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                if (this._hdr) {
-                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
-                    this._setAutoClearAndTextureSharing(this.imageProcessing);
-                } else {	
-                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;	
-                }	
             }
 
             if (this.chromaticAberrationEnabled) {
