@@ -31,5 +31,9 @@
                 "../dist/babylon.glTF2Interface.d.ts"
             ]
         }
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
 }
