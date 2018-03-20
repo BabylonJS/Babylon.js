@@ -861,8 +861,8 @@ export abstract class AbstractViewer {
                 .then(() => {
                     this._configureLights(this._configuration.lights);
 
-                    if (this._configuration.camera) {
-                        this._configureCamera(this._configuration.camera, model);
+                    if (this._configuration.camera || !this.scene.activeCamera) {
+                        this._configureCamera(this._configuration.camera || {}, model);
                     }
                     return this._initEnvironment(model);
                 }).then(() => {
