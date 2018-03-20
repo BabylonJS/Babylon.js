@@ -122,7 +122,6 @@ interface MouseEvent {
 }
 
 interface Navigator {
-    getVRDisplays: () => any;
     mozGetVRDevices: (any: any) => any;
     webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
     mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;

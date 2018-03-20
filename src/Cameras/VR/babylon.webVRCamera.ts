@@ -1,5 +1,3 @@
-declare var HMDVRDevice: any;
-declare var VRDisplay: any;
 declare var VRFrameData: any;
 
 module BABYLON {
