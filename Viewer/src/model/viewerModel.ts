@@ -79,7 +79,7 @@ export class ViewerModel implements IDisposable {
     private _loadedUrl: string;
     private _modelConfiguration: IModelConfiguration;
 
-    constructor(private _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
+    constructor(protected _viewer: AbstractViewer, modelConfiguration: IModelConfiguration) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();

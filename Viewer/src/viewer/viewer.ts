@@ -122,7 +122,10 @@ export abstract class AbstractViewer {
      */
     public onInitDoneObservable: Observable<AbstractViewer>;
 
-    private _canvas: HTMLCanvasElement;
+    /**
+     * The canvas associated with this viewer
+     */
+    protected _canvas: HTMLCanvasElement;
 
     /**
      * The (single) canvas of this viewer
@@ -838,12 +841,11 @@ export abstract class AbstractViewer {
      * @returns a ViewerModel object that is not yet fully loaded.
      */
     public initModel(modelConfig: IModelConfiguration, clearScene: boolean = true): ViewerModel {
-        let model = this.modelLoader.load(modelConfig);
-
         if (clearScene) {
             this.models.forEach(m => m.dispose());
             this.models.length = 0;
         }
+        let model = this.modelLoader.load(modelConfig);
 
         this.lastUsedLoader = model.loader;
         model.onLoadErrorObservable.add((errorObject) => {

@@ -1,6 +1,11 @@
 import { DefaultViewer } from './viewer/defaultViewer';
 import { mapperManager } from './configuration/mappers';
 
+/**
+ * Select all HTML tags on the page that match the selector and initialize a viewer
+ * 
+ * @param selector the selector to initialize the viewer on (default is 'babylon')
+ */
 export function InitTags(selector: string = 'babylon') {
     let elements = document.querySelectorAll(selector);
     for (let i = 0; i < elements.length; ++i) {
