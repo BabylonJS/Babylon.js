@@ -22,6 +22,10 @@
 		 * ID of the chromatic aberration post process,
 		 */
         readonly ChromaticAberrationPostProcessId: string = "ChromaticAberrationPostProcessEffect";
+        /**
+		 * ID of the grain post process,
+		 */
+        readonly GrainPostProcessId: string = "GrainPostProcessEffect";
 
         // Post-processes
         /**
@@ -49,6 +53,11 @@
 		 */
         public chromaticAberration: ChromaticAberrationPostProcess;
         private _chromaticAberrationEffect: PostProcessRenderEffect;
+        /**
+		 * Grain post process which add noise to the image
+		 */
+        public grain: GrainPostProcess;
+        private _grainEffect: PostProcessRenderEffect;
 
         /**
          * Animations which can be used to tweak settings over a period of time
@@ -65,6 +74,7 @@
         private _defaultPipelineTextureType: number;
         private _bloomScale: number = 0.6;
         private _chromaticAberrationEnabled:boolean = false;  
+        private _grainEnabled:boolean = false;  
 
         private _buildAllowed = true;
 
@@ -311,6 +321,22 @@
         public get chromaticAberrationEnabled(): boolean {
             return this._chromaticAberrationEnabled;
         }
+        /**
+         * Enable or disable the grain process from the pipeline
+         */
+        public set grainEnabled(enabled: boolean) {
+            if (this._grainEnabled === enabled) {
+                return;
+            }
+            this._grainEnabled = enabled;
+
+            this._buildPipeline();
+        }
+
+        @serialize()
+        public get grainEnabled(): boolean {
+            return this._grainEnabled;
+        }
 
         /**
          * @constructor
@@ -362,6 +388,9 @@
 
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
+
+            this.grain = new GrainPostProcess("Grain", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
+            this._grainEffect = new PostProcessRenderEffect(engine, this.GrainPostProcessId, () => { return this.grain; }, true);
 
             this._resizeObserver = engine.onResizeObservable.add(()=>{
                 this._hardwareScaleLevel = engine.getHardwareScalingLevel();
@@ -495,6 +524,14 @@
                 this._setAutoClearAndTextureSharing(this._defaultPipelineMerge, true);
             }
 
+            if (this.grainEnabled) {
+                if(!this.grain.isReady()){
+                    this.grain.updateEffect();
+                }
+                this.addEffect(this._grainEffect);
+                this._setAutoClearAndTextureSharing(this.grain);
+            }
+
             if (this.chromaticAberrationEnabled) {
                 if(!this.chromaticAberration.isReady()){
                     this.chromaticAberration.updateEffect();
@@ -543,6 +580,10 @@
                         this.chromaticAberration.dispose(camera);
                     }
 
+                    if(this.grain){
+                        this.grain.dispose(camera);
+                    }
+
                     if(this._defaultPipelineMerge){
                         this._defaultPipelineMerge.dispose(camera);
                     }
@@ -559,6 +600,8 @@
                 (<any>this.bloom) = null;
                 (<any>this.chromaticAberration) = null;
                 (<any>this._chromaticAberrationEffect) = null;
+                (<any>this.grain) = null;
+                (<any>this._grainEffect) = null;
             } 
         }
 
