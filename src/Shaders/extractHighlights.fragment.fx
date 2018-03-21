@@ -8,6 +8,6 @@ uniform float threshold;
 void main(void) 
 {
 	gl_FragColor = texture2D(textureSampler, vUV);
-	float luma = getLuminance(toLinearSpace(gl_FragColor.rgb));
+	float luma = getLuminance(gl_FragColor.rgb);
 	gl_FragColor.rgb = step(threshold, luma) * gl_FragColor.rgb;
 }

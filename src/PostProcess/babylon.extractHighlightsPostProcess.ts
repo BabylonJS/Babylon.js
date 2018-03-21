@@ -17,7 +17,7 @@ module BABYLON {
                 if(this._inputPostProcess){
                     effect.setTextureFromPostProcess("textureSampler", this._inputPostProcess);
                 }
-                effect.setFloat('threshold', this.threshold);
+                effect.setFloat('threshold', Math.pow(this.threshold, BABYLON.ToGammaSpace));
             })
         }
     }
