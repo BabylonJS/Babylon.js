@@ -197,18 +197,17 @@ module BABYLON {
             if (!this._intersectsWithSphere(impostor, origin, radius)) {
                 return null;
             }
-            
-            if (impostor.object.getClassName() !== 'Mesh') {
+  
+            if (impostor.object.getClassName() !== 'Mesh' && impostor.object.getClassName() !== 'InstancedMesh') {
                 return null;
             }
 
-            var impostorObject = <Mesh>impostor.object;
             var impostorObjectCenter = impostor.getObjectCenter();
             var direction = impostorObjectCenter.subtract(origin);
 
             var ray = new Ray(origin, direction, radius);
             this._rays.push(ray);
-            var hit = ray.intersectsMesh(impostorObject);
+            var hit = ray.intersectsMesh(<Mesh>impostor.object);
 
             var contactPoint = hit.pickedPoint;
             if (!contactPoint) {
@@ -553,18 +552,17 @@ module BABYLON {
             if (!this._intersectsWithCylinder(impostor)) {
                 return null;
             }
-            
-            if (impostor.object.getClassName() !== 'Mesh') {
+
+            if (impostor.object.getClassName() !== 'Mesh' && impostor.object.getClassName() !== 'InstancedMesh') {
                 return null;
             }
 
-            var impostorObject = <Mesh>impostor.object;
             var impostorObjectCenter = impostor.getObjectCenter();
             var originOnPlane = new Vector3(this._origin.x, impostorObjectCenter.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
             var originToImpostorDirection = impostorObjectCenter.subtract(originOnPlane);
 
             var ray = new Ray(originOnPlane, originToImpostorDirection, this._radius);
-            var hit = ray.intersectsMesh(impostorObject);
+            var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
             var contactPoint = hit.pickedPoint;
             if (!contactPoint) {
                 return null;
