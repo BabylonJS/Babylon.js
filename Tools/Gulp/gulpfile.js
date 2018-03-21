@@ -532,21 +532,6 @@ gulp.task("typescript-libraries", config.modules, function () {
 });
 
 /**
- * Dynamic custom configurations.
- */
-config.buildConfigurations.distributed.map(function (customConfiguration) {
-    gulp.task(customConfiguration, function (cb) {
-        config.build.currentConfig = customConfiguration;
-        config.build.outputDirectory = config.build.outputCustomConfigurationsDirectory + "/" + customConfiguration;
-        runSequence("typescript-compile", "build", cb);
-    });
-});
-
-gulp.task("typescript-customConfigurations", function (cb) {
-    runSequence(config.buildConfigurations.distributed, cb);
-});
-
-/**
  * Custom build with full path file control; used by profile.html
  */
 gulp.task("build-custom", function (cb) {
@@ -557,7 +542,7 @@ gulp.task("build-custom", function (cb) {
  * Do it all.
  */
 gulp.task("typescript-all", function (cb) {
-    runSequence("typescript", "typescript-libraries", "typescript-customConfigurations", cb);
+    runSequence("typescript", "typescript-libraries", cb);
 });
 
 /**
