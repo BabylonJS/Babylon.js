@@ -8,6 +8,7 @@ module BABYLON {
         public static BILLBOARDMODE_ALL = 7;
         
         private _forward = new Vector3(0, 0, 1);
+        private _forwardInverted = new Vector3(0, 0, -1);
         private _up = new Vector3(0, 1, 0);
         private _right = new Vector3(1, 0, 0);
         private _rightInverted = new Vector3(-1, 0, 0);
@@ -121,7 +122,7 @@ module BABYLON {
          */
         public get forward(): Vector3 {
             return Vector3.Normalize(Vector3.TransformNormal(
-                this._forward,
+                this.getScene().useRightHandedSystem ? this._forwardInverted : this._forward,
                 this.getWorldMatrix()
             ));
         }
@@ -137,7 +138,7 @@ module BABYLON {
         }
 
         /**
-         * The up direction of that transform in world space.
+         * The right direction of that transform in world space.
          */
         public get right(): Vector3 {
             return Vector3.Normalize(Vector3.TransformNormal(
