@@ -740,6 +740,7 @@ module BABYLON {
             }
 
             if (!force && this.isSynchronized(true)) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
 
@@ -748,6 +749,7 @@ module BABYLON {
             this._cache.pivotMatrixUpdated = false;
             this._cache.billboardMode = this.billboardMode;
             this._currentRenderId = this.getScene().getRenderId();
+            this._childRenderId = this.getScene().getRenderId();
             this._isDirty = false;
 
             // Scaling
