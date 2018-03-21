@@ -207,7 +207,7 @@ module BABYLON {
 
             var ray = new Ray(origin, direction, radius);
             this._rays.push(ray);
-            var hit = ray.intersectsMesh(<Mesh>impostor.object);
+            var hit = ray.intersectsMesh(<AbstractMesh>impostor.object);
 
             var contactPoint = hit.pickedPoint;
             if (!contactPoint) {
@@ -254,7 +254,7 @@ module BABYLON {
         }
 
         private _intersectsWithSphere(impostor: PhysicsImpostor, origin: Vector3, radius: number): boolean {
-            var impostorObject = <Mesh>impostor.object;
+            var impostorObject = <AbstractMesh>impostor.object;
 
             this._prepareSphere();
 
@@ -467,7 +467,7 @@ module BABYLON {
         }
 
         private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
-            var impostorObject = <Mesh>impostor.object;
+            var impostorObject = <AbstractMesh>impostor.object;
 
             this._prepareCylinder();
 
@@ -616,7 +616,7 @@ module BABYLON {
         }
 
         private _intersectsWithCylinder(impostor: PhysicsImpostor): boolean {
-            var impostorObject = <Mesh>impostor.object;
+            var impostorObject = <AbstractMesh>impostor.object;
 
             this._prepareCylinder();
 
