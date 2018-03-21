@@ -22,7 +22,7 @@ module BABYLON {
         /**
          * ParticleSystems to keep.
          */
-        public particleSystems = new Array<ParticleSystem>();
+        public particleSystems = new Array<IParticleSystem>();
         /**
          * Animations to keep.
          */
@@ -135,115 +135,115 @@ module BABYLON {
          * Sounds populated in the container.
          */
         public sounds = new Array<Sound>();
-        
+
         /**
          * Instantiates an AssetContainer.
          * @param scene The scene the AssetContainer belongs to.
          */
-        constructor(scene:Scene){
+        constructor(scene: Scene) {
             this.scene = scene;
         }
-        
+
         /**
          * Adds all the assets from the container to the scene.
          */
-        public addAllToScene(){
-            this.cameras.forEach((o)=>{
+        public addAllToScene() {
+            this.cameras.forEach((o) => {
                 this.scene.addCamera(o);
             });
-            this.lights.forEach((o)=>{
+            this.lights.forEach((o) => {
                 this.scene.addLight(o);
             });
-            this.meshes.forEach((o)=>{
+            this.meshes.forEach((o) => {
                 this.scene.addMesh(o);
             });
-            this.skeletons.forEach((o)=>{
+            this.skeletons.forEach((o) => {
                 this.scene.addSkeleton(o);
             });
-            this.particleSystems.forEach((o)=>{
+            this.particleSystems.forEach((o) => {
                 this.scene.addParticleSystem(o);
             });
-            this.animations.forEach((o)=>{
+            this.animations.forEach((o) => {
                 this.scene.addAnimation(o);
             });
-            this.multiMaterials.forEach((o)=>{
+            this.multiMaterials.forEach((o) => {
                 this.scene.addMultiMaterial(o);
             });
-            this.materials.forEach((o)=>{
+            this.materials.forEach((o) => {
                 this.scene.addMaterial(o);
             });
-            this.morphTargetManagers.forEach((o)=>{
+            this.morphTargetManagers.forEach((o) => {
                 this.scene.addMorphTargetManager(o);
             });
-            this.geometries.forEach((o)=>{
+            this.geometries.forEach((o) => {
                 this.scene.addGeometry(o);
             });
-            this.transformNodes.forEach((o)=>{
+            this.transformNodes.forEach((o) => {
                 this.scene.addTransformNode(o);
             });
-            this.lensFlareSystems.forEach((o)=>{
+            this.lensFlareSystems.forEach((o) => {
                 this.scene.addLensFlareSystem(o);
             });
-            this.actionManagers.forEach((o)=>{
+            this.actionManagers.forEach((o) => {
                 this.scene.addActionManager(o);
             });
-            this.sounds.forEach((o)=>{
+            this.sounds.forEach((o) => {
                 o.play();
-                o.autoplay=true;
+                o.autoplay = true;
                 this.scene.mainSoundTrack.AddSound(o);
-            })
+            });
         }
 
         /**
          * Removes all the assets in the container from the scene
          */
-        public removeAllFromScene(){
-            this.cameras.forEach((o)=>{
+        public removeAllFromScene() {
+            this.cameras.forEach((o) => {
                 this.scene.removeCamera(o);
             });
-            this.lights.forEach((o)=>{
+            this.lights.forEach((o) => {
                 this.scene.removeLight(o);
             });
-            this.meshes.forEach((o)=>{
+            this.meshes.forEach((o) => {
                 this.scene.removeMesh(o);
             });
-            this.skeletons.forEach((o)=>{
+            this.skeletons.forEach((o) => {
                 this.scene.removeSkeleton(o);
             });
-            this.particleSystems.forEach((o)=>{
+            this.particleSystems.forEach((o) => {
                 this.scene.removeParticleSystem(o);
             });
-            this.animations.forEach((o)=>{
+            this.animations.forEach((o) => {
                 this.scene.removeAnimation(o);
             });
-            this.multiMaterials.forEach((o)=>{
+            this.multiMaterials.forEach((o) => {
                 this.scene.removeMultiMaterial(o);
             });
-            this.materials.forEach((o)=>{
+            this.materials.forEach((o) => {
                 this.scene.removeMaterial(o);
             });
-            this.morphTargetManagers.forEach((o)=>{
+            this.morphTargetManagers.forEach((o) => {
                 this.scene.removeMorphTargetManager(o);
             });
-            this.geometries.forEach((o)=>{
+            this.geometries.forEach((o) => {
                 this.scene.removeGeometry(o);
             });
-            this.transformNodes.forEach((o)=>{
+            this.transformNodes.forEach((o) => {
                 this.scene.removeTransformNode(o);
             });
-            this.lensFlareSystems.forEach((o)=>{
+            this.lensFlareSystems.forEach((o) => {
                 this.scene.removeLensFlareSystem(o);
             });
-            this.actionManagers.forEach((o)=>{
+            this.actionManagers.forEach((o) => {
                 this.scene.removeActionManager(o);
             });
-            this.sounds.forEach((o)=>{
+            this.sounds.forEach((o) => {
                 o.stop();
                 o.autoplay = false;
                 this.scene.mainSoundTrack.RemoveSound(o);
-            })
+            });
         }
-        
+
         private _moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
             for (let asset of sourceAssets) {
                 let move = true;
@@ -253,7 +253,7 @@ module BABYLON {
                         break;
                     }
                 }
-    
+
                 if (move) {
                     targetAssets.push(asset);
                 }
@@ -269,7 +269,7 @@ module BABYLON {
             if (keepAssets === undefined) {
                 keepAssets = new KeepAssets();
             }
-    
+
             this._moveAssets(this.scene.cameras, this.cameras, keepAssets.cameras);
             this._moveAssets(this.scene.meshes, this.meshes, keepAssets.meshes);
             this._moveAssets(this.scene.getGeometries(), this.geometries, keepAssets.geometries);
@@ -284,7 +284,7 @@ module BABYLON {
             this._moveAssets(this.scene.particleSystems, this.particleSystems, keepAssets.particleSystems);
             this._moveAssets(this.scene.mainSoundTrack.soundCollection, this.sounds, keepAssets.sounds);
             this._moveAssets(this.scene.transformNodes, this.transformNodes, keepAssets.transformNodes);
-    
+
             this.removeAllFromScene();
         }
     }
