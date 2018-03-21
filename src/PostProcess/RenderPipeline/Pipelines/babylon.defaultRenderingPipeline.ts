@@ -9,7 +9,7 @@
         /**
 		 * ID of the sharpen post process,
 		 */
-        readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
+        private readonly SharpenPostProcessId: string = "SharpenPostProcessEffect";
         /**
 		 * ID of the image processing post process;
 		 */
@@ -21,11 +21,11 @@
         /**
 		 * ID of the chromatic aberration post process,
 		 */
-        readonly ChromaticAberrationPostProcessId: string = "ChromaticAberrationPostProcessEffect";
+        private readonly ChromaticAberrationPostProcessId: string = "ChromaticAberrationPostProcessEffect";
         /**
-		 * ID of the grain post process,
+		 * ID of the grain post process
 		 */
-        readonly GrainPostProcessId: string = "GrainPostProcessEffect";
+        private readonly GrainPostProcessId: string = "GrainPostProcessEffect";
 
         // Post-processes
         /**
