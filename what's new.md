@@ -66,6 +66,7 @@
 - Added scope option to Observerable ([adam](https://github.com/abow))
 - Added shadowBlur, shadowOffsetX, shadowOffsetY, shadowColor to GUI Controls ([adam](https://github.com/abow))
 - Added alignWithNormal to AbstractMesh ([adam](https://github.com/abow))
+- Added transformNode.forward/up/right ([bobalazek](https://github.com/bobalazek))
 
 ## Bug fixes
 
