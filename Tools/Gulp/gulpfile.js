@@ -589,13 +589,12 @@ gulp.task("watch", ["srcTscWatch"], function () {
 
 gulp.task("intellisense", function () {
     gulp.src(config.build.intellisenseSources)
-        .pipe(concat(config.build.intellisenseFile))
-        .pipe(replace(/^\s*_.*?$/gm, ""))
-        .pipe(replace(/^\s*private .*?$/gm, ""))
-        .pipe(replace(/^\s*public _.*?$/gm, ""))
-        .pipe(replace(/^\s*protected .*?$/gm, ""))
-        .pipe(replace(/^\s*public static _.*?$/gm, ""))
-        .pipe(replace(/^\s*static _.*?$/gm, ""))
+        .pipe(concat(config.build.intellisenseFile))    
+        .pipe(replace(/^\s+_.*?;/gm, ""))
+        .pipe(replace(/^\s+_[\S\s]*?}/gm, ""))
+        .pipe(replace(/^\s*readonly _/gm, "protected readonly _"))
+        .pipe(replace(/^\s*static _/gm, "private static _"))
+        .pipe(replace(/^\s*abstract _/gm, ""))
         .pipe(gulp.dest(config.build.playgroundDirectory));
 });
 
