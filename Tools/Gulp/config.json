@@ -804,6 +804,17 @@
                 "chromaticAberration.fragment"
             ]
         },
+        "additionalPostProcess_grain": {
+            "files": [
+                "../../src/PostProcess/babylon.grainPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "grain.fragment"
+            ]
+        },
         "additionalPostProcess_defaultPipelineMerge": {
             "files": [
                 "../../src/PostProcess/babylon.defaultPipelineMergePostProcess.js"
@@ -888,6 +899,7 @@
                 "../../src/PostProcess/babylon.convolutionPostProcess.js",
                 "../../src/PostProcess/babylon.sharpenPostProcess.js",
                 "../../src/PostProcess/babylon.chromaticAberrationPostProcess.js",
+                "../../src/PostProcess/babylon.grainPostProcess.js",
                 "../../src/PostProcess/babylon.filterPostProcess.js",
                 "../../src/PostProcess/babylon.fxaaPostProcess.js",
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
@@ -942,7 +954,6 @@
                 "ssao.fragment",
                 "ssao2.fragment",
                 "ssaoCombine.fragment",
-                "chromaticAberration.fragment",
                 "lensHighlights.fragment",
                 "depthOfField.fragment",
                 "standard.fragment"
@@ -956,6 +967,7 @@
                 "renderingPipeline",
                 "additionalPostProcess_fxaa",
                 "additionalPostProcess_chromaticAberration",
+                "additionalPostProcess_grain",
                 "additionalPostProcess_sharpen",
                 "additionalPostProcess_depthOfFieldEffect",
                 "additionalPostProcess_bloomEffect"
