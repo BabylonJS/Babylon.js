@@ -9,8 +9,8 @@ module BABYLON {
         
         private _forward = new Vector3(0, 0, 1);
         private _up = new Vector3(0, 1, 0);
-        private _right = new Vector3(0, 1, 0);
-        private _rightInverted = new Vector3(0, -1, 0);
+        private _right = new Vector3(1, 0, 0);
+        private _rightInverted = new Vector3(-1, 0, 0);
 
         // Properties
         @serializeAsVector3()
