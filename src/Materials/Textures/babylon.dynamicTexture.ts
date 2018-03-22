@@ -50,7 +50,7 @@
         }
 
         /**
-         * Gets the current state of canRescale as true
+         * Gets the current state of canRescale
          */
         public get canRescale(): boolean {
             return true;
