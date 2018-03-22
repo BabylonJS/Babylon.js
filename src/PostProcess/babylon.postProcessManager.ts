@@ -150,6 +150,9 @@
                 var pp = postProcesses[index];
 
                 if (index < len - 1) {
+                    if(pp._outputTextureScale){
+                        postProcesses[index + 1]._options = pp._outputTextureScale;
+                    }
                     pp._outputTexture = postProcesses[index + 1].activate(camera, targetTexture);
                 } else {
                     if (targetTexture) {

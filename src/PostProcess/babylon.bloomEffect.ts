@@ -59,10 +59,11 @@ module BABYLON {
             this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
             this._blurY.alwaysForcePOT = true;
             this._blurY.autoClear = false;
+            this._blurY._outputTextureScale = bloomScale;
 
             this.kernel = bloomKernel;
 
-            this._effects = [this._downscale, this._blurY, this._blurX];
+            this._effects = [this._downscale, this._blurX, this._blurY];
 
             if(performMerge){
                 this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._blurX, bloom: {blurred: this._blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
