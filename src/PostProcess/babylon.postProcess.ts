@@ -76,6 +76,9 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
+        /**
+        * Internal
+        */
         public _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
