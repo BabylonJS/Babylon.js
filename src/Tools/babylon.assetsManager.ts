@@ -32,7 +32,7 @@ module BABYLON {
         public onSuccess: (task: any) => void;
 
         /**
-         * Callback called when the task is successful
+         * Callback called when the task is not successful
          */
         public onError: (task: any, message?: string, exception?: any) => void;
 
