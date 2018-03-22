@@ -14,7 +14,6 @@ module BABYLON {
         public _downscale:ExtractHighlightsPostProcess;
         private _blurX:BlurPostProcess;
         private _blurY:BlurPostProcess;
-        private _upscale:PassPostProcess;
         private _merge:Nullable<DefaultPipelineMergeMergePostProcess>;
 
         /**
@@ -63,9 +62,7 @@ module BABYLON {
 
             this.kernel = bloomKernel;
 
-            this._upscale = new PassPostProcess("sceneRenderTarget", bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
-            this._upscale.autoClear = false;
-            this._effects = [this._downscale, this._blurY, this._blurX, this._upscale];
+            this._effects = [this._downscale, this._blurY, this._blurX];
 
             if(performMerge){
                 this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._blurX, bloom: {blurred: this._blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
