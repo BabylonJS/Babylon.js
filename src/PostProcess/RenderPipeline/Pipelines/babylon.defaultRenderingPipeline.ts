@@ -73,7 +73,7 @@
         private _fxaaEnabled: boolean = false;
         private _imageProcessingEnabled: boolean = true;
         private _defaultPipelineTextureType: number;
-        private _bloomScale: number = 0.6;
+        private _bloomScale: number = 0.5;
         private _chromaticAberrationEnabled:boolean = false;  
         private _grainEnabled:boolean = false;  
 
