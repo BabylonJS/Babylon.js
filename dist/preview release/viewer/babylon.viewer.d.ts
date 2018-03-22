@@ -1099,10 +1099,10 @@ declare module BabylonViewer {
          */
         protected _initEnvironment(model?: ViewerModel): Promise<BABYLON.Scene>;
         /**
-         * Alters render settings to reduce features based on hardware feature limitations
-         * @param options Viewer options to modify
-         */
-        protected _handleHardwareLimitations(): void;
+		 * Alters render settings to reduce features based on hardware feature limitations
+		 * @param enableHDR Allows the viewer to run in HDR mode.
+		 */
+        protected _handleHardwareLimitations(enableHDR?: boolean): void;
         /**
          * Injects all the spectre shader in the babylon shader store
          */
