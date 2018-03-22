@@ -64,6 +64,7 @@
          */
         public animations: Animation[] = [];
 
+        private _imageProcessingConfigurationObserver:Nullable<Observer<ImageProcessingConfiguration>> = null;
         // Values   
         private _sharpenEnabled:boolean = false;    
         private _bloomEnabled: boolean = false;
@@ -397,6 +398,10 @@
                 this.bloomKernel = this.bloomKernel
             })
 
+            this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(()=>{
+                this.bloom._downscale._exposure = this._scene.imageProcessingConfiguration.exposure;
+            })
+
             this._buildPipeline();
         }
 
@@ -465,17 +470,6 @@
 
             var mergeOptions = new DefaultPipelineMergePostProcessOptions();
 
-            if (this._imageProcessingEnabled) {
-                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                if (this._hdr) {
-                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));
-                    this._setAutoClearAndTextureSharing(this.imageProcessing);
-                    this._firstPostProcess = null;
-                } else {	
-                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;	
-                }	
-            }
-
             if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
@@ -522,6 +516,16 @@
                 this._defaultPipelineMerge.updateEffect();
                 this.addEffect(this._defaultPipelineMergeEffect);
                 this._setAutoClearAndTextureSharing(this._defaultPipelineMerge, true);
+            }
+
+            if (this._imageProcessingEnabled) {	
+                this.imageProcessing = new ImageProcessingPostProcess("imageProcessing", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);	
+                if (this._hdr) {	
+                    this.addEffect(new PostProcessRenderEffect(engine, this.ImageProcessingPostProcessId, () => { return this.imageProcessing; }, true));	
+                    this._setAutoClearAndTextureSharing(this.imageProcessing);	
+                } else {		
+                    this._scene.imageProcessingConfiguration.applyByPostProcess = false;		
+                }		
             }
 
             if (this.grainEnabled) {
@@ -616,6 +620,7 @@
                 this._scene.getEngine().onResizeObservable.remove(this._resizeObserver);
                 this._resizeObserver = null;
             }
+            this._scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigurationObserver)
             super.dispose();
         }
 
