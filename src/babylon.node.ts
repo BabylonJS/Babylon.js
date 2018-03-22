@@ -58,6 +58,7 @@
         /** @ignore */
         public _currentRenderId = -1;
         private _parentRenderId = -1;
+        protected _childRenderId = -1;
 
         /** @ignore */
         public _waitingParentId: Nullable<string>;
@@ -295,7 +296,7 @@
         /** @ignore */
         public _markSyncedWithParent() {
             if (this.parent) {
-                this._parentRenderId = this.parent._currentRenderId;
+                this._parentRenderId = this.parent._childRenderId;
             }
         }
 
@@ -305,7 +306,7 @@
                 return true;
             }
 
-            if (this._parentRenderId !== this.parent._currentRenderId) {
+            if (this._parentRenderId !== this.parent._childRenderId) {
                 return false;
             }
 
