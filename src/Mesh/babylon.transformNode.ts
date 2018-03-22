@@ -6,6 +6,12 @@ module BABYLON {
         public static BILLBOARDMODE_Y = 2;
         public static BILLBOARDMODE_Z = 4;
         public static BILLBOARDMODE_ALL = 7;
+        
+        private _forward = new Vector3(0, 0, 1);
+        private _forwardInverted = new Vector3(0, 0, -1);
+        private _up = new Vector3(0, 1, 0);
+        private _right = new Vector3(1, 0, 0);
+        private _rightInverted = new Vector3(-1, 0, 0);
 
         // Properties
         @serializeAsVector3()
@@ -109,6 +115,36 @@ module BABYLON {
             if (quaternion && this.rotation.length()) {
                 this.rotation.copyFromFloats(0.0, 0.0, 0.0);
             }
+        }
+
+        /**
+         * The forward direction of that transform in world space.
+         */
+        public get forward(): Vector3 {
+            return Vector3.Normalize(Vector3.TransformNormal(
+                this.getScene().useRightHandedSystem ? this._forwardInverted : this._forward,
+                this.getWorldMatrix()
+            ));
+        }
+
+        /**
+         * The up direction of that transform in world space.
+         */
+        public get up(): Vector3 {
+            return Vector3.Normalize(Vector3.TransformNormal(
+                this._up,
+                this.getWorldMatrix()
+            ));
+        }
+
+        /**
+         * The right direction of that transform in world space.
+         */
+        public get right(): Vector3 {
+            return Vector3.Normalize(Vector3.TransformNormal(
+                this.getScene().useRightHandedSystem ? this._rightInverted : this._right,
+                this.getWorldMatrix()
+            ));
         }
 
         /**
@@ -705,6 +741,7 @@ module BABYLON {
             }
 
             if (!force && this.isSynchronized(true)) {
+                this._currentRenderId = this.getScene().getRenderId();
                 return this._worldMatrix;
             }
 
@@ -713,6 +750,7 @@ module BABYLON {
             this._cache.pivotMatrixUpdated = false;
             this._cache.billboardMode = this.billboardMode;
             this._currentRenderId = this.getScene().getRenderId();
+            this._childRenderId = this.getScene().getRenderId();
             this._isDirty = false;
 
             // Scaling
