@@ -49,7 +49,9 @@
             this._context = <CanvasRenderingContext2D>this._canvas.getContext("2d");
         }
 
-        /** @ignore */
+        /**
+         * Gets the current state of canRescale as true
+         */
         public get canRescale(): boolean {
             return true;
         }
@@ -92,6 +94,7 @@
 
         /**
          * Gets the context of the canvas used by the texture
+         * @returns the canvas context of the dynamic texture
          */
         public getContext(): CanvasRenderingContext2D {
             return this._context;
@@ -151,6 +154,7 @@
 
         /**
          * Clones the texture
+         * @returns the clone of the texture.
          */
         public clone(): DynamicTexture {
             let scene = this.getScene();
