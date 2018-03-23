@@ -26,8 +26,3 @@
 	#endif
 	uniform vec4 colorTransformSettings;
 #endif
-
-#ifdef GRAIN
-	uniform float grainVarianceAmount;
-	uniform float grainAnimatedSeed;
-#endif

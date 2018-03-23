@@ -1956,6 +1956,19 @@
                 }
             }
 
+            // Post-processes
+            if (this.activeCameras && this.activeCameras.length > 0) {
+                for (var camera of this.activeCameras) {
+                    if (!camera.isReady(true)) {
+                        return false;
+                    }
+                }
+            } else if (this.activeCamera) {
+                if (!this.activeCamera.isReady(true)) {
+                    return false;
+                }
+            }
+
             // Particles
             for (var particleSystem of this.particleSystems) {
                 if (!particleSystem.isReady()) {
@@ -4186,7 +4199,16 @@
                 throw "No camera available to enable depth renderer";
             }
             if (!this._depthRenderer[camera.id]) {
-                this._depthRenderer[camera.id] = new DepthRenderer(this, Engine.TEXTURETYPE_FLOAT, camera);
+                var textureType = 0;
+                if (this._engine.getCaps().textureHalfFloatRender) {
+                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else if (this._engine.getCaps().textureFloatRender) {
+                    textureType = Engine.TEXTURETYPE_FLOAT;
+                } else {
+                    throw "Depth renderer does not support int texture type";
+                }
+                this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera);
             }
 
             return this._depthRenderer[camera.id];
