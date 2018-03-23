@@ -189,6 +189,7 @@
 
         public markAsDirty(): void {
             this._currentRenderId++;
+            this._childRenderId++;
             this._skeleton._markAsDirty();
         }
 
