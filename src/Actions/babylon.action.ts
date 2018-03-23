@@ -119,6 +119,7 @@
          * Adds action to chain of actions, may be {DoNothingAction}
          * @param index The index of the attribute.
          * @returns The action passed in
+         * @see https://www.babylonjs-playground.com/#1T30HR#0
          */
         public then(action: Action): Action {
             this._child = action;
