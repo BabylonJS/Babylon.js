@@ -1956,6 +1956,19 @@
                 }
             }
 
+            // Post-processes
+            if (this.activeCameras && this.activeCameras.length > 0) {
+                for (var camera of this.activeCameras) {
+                    if (!camera.isReady(true)) {
+                        return false;
+                    }
+                }
+            } else if (this.activeCamera) {
+                if (!this.activeCamera.isReady(true)) {
+                    return false;
+                }
+            }
+
             // Particles
             for (var particleSystem of this.particleSystems) {
                 if (!particleSystem.isReady()) {
