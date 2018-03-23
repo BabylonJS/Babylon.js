@@ -411,7 +411,6 @@
         private _hasCleared = false;
         private _prevPostProcess:Nullable<PostProcess> = null;
         private _prevPrevPostProcess:Nullable<PostProcess> = null;
-        private _firstPostProcess:Nullable<PostProcess> = null;
 
         private _setAutoClearAndTextureSharing(postProcess:PostProcess, skipTextureSharing = false){
             if(this._hasCleared){
@@ -420,11 +419,6 @@
                 postProcess.autoClear = true;
                 this._scene.autoClear = false;
                 this._hasCleared = true;
-            }
-
-            if(!this._firstPostProcess){
-                this._firstPostProcess = postProcess;
-                skipTextureSharing = true;
             }
 
             if(!skipTextureSharing){
@@ -458,10 +452,7 @@
             this._reset();
             this._prevPostProcess = null;
             this._prevPrevPostProcess = null;
-            this._hasCleared = false;
-            this._firstPostProcess = null;
-
-            
+            this._hasCleared = false;            
 
             if (this.depthOfFieldEnabled) {
                 var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
@@ -518,7 +509,7 @@
             if (this.fxaaEnabled) {
                 this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
                 this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
-                this._setAutoClearAndTextureSharing(this.fxaa);
+                this._setAutoClearAndTextureSharing(this.fxaa, true);
             }
 
             if (this._cameras !== null) {
