@@ -73,7 +73,8 @@
             "additionalPostProcess_depthOfFieldBlur",
             "additionalPostProcess_fxaa",
             "additionalPostProcess_circleOfConfusion",
-            "additionalPostProcess_defaultPipelineMerge",
+            "additionalPostProcess_depthOfFieldMerge",
+            "additionalPostProcess_bloomMerge",
             "additionalPostProcess_depthOfFieldEffect",
             "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
@@ -815,15 +816,26 @@
                 "grain.fragment"
             ]
         },
-        "additionalPostProcess_defaultPipelineMerge": {
+        "additionalPostProcess_depthOfFieldMerge": {
             "files": [
-                "../../src/PostProcess/babylon.defaultPipelineMergePostProcess.js"
+                "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
             ],
             "dependUpon": [
                 "postProcesses"
             ],
             "shaders": [
-                "defaultPipelineMerge.fragment"
+                "depthOfFieldMerge.fragment"
+            ]
+        },
+        "additionalPostProcess_bloomMerge": {
+            "files": [
+                "../../src/PostProcess/babylon.bloomMergePostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "bloomMerge.fragment"
             ]
         },
         "additionalPostProcess_depthOfFieldEffect": {
@@ -832,7 +844,7 @@
             ],
             "dependUpon": [
                 "additionalPostProcess_depthOfFieldBlur",
-                "additionalPostProcess_defaultPipelineMerge",
+                "additionalPostProcess_depthOfFieldMerge",
                 "additionalPostProcess_circleOfConfusion"
             ]
         },
@@ -842,7 +854,7 @@
             ],
             "dependUpon": [
                 "additionalPostProcess_blur",
-                "additionalPostProcess_defaultPipelineMerge",
+                "additionalPostProcess_bloomMerge",
                 "additionalPostProcess_extractHighlights"
             ]
         },

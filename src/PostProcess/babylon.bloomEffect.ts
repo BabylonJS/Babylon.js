@@ -14,8 +14,9 @@ module BABYLON {
         public _downscale:ExtractHighlightsPostProcess;
         private _blurX:BlurPostProcess;
         private _blurY:BlurPostProcess;
-        private _merge:Nullable<DefaultPipelineMergeMergePostProcess>;
-
+        private _upscale:PassPostProcess;
+        private _merge:BloomMergePostProcess;
+        
         /**
          * The luminance threshold to find bright areas of the image to bloom. 
          */
@@ -24,6 +25,16 @@ module BABYLON {
         }
         public set threshold(value: number){
             this._downscale.threshold = value;
+        }
+
+        /**
+         * The strength of the bloom.
+         */
+        public get weight():number{
+            return this._merge.weight;
+        }
+        public set weight(value: number){
+            this._merge.weight = value;
         }
 
         /**
@@ -42,11 +53,11 @@ module BABYLON {
          * @param scene The scene the effect belongs to.
          * @param bloomScale The ratio of the blur texture to the input texture that should be used to compute the bloom.
          * @param bloomKernel The size of the kernel to be used when applying the blur.
+         * @param bloomWeight The the strength of bloom.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
-         * @param performMerge If the finalization merge should be performed by this effect.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, private bloomScale:number, bloomKernel:number, pipelineTextureType = 0, performMerge = true, blockCompilation = false) {
+        constructor(scene: Scene, private bloomScale:number, bloomWeight:number, bloomKernel:number, pipelineTextureType = 0, blockCompilation = false) {
             super(scene.getEngine(), "bloom", ()=>{
                 return this._effects;
             }, true);
@@ -59,17 +70,16 @@ module BABYLON {
             this._blurY = new BlurPostProcess("vertical blur", new Vector2(0, 1.0), 10.0, bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, undefined, blockCompilation);
             this._blurY.alwaysForcePOT = true;
             this._blurY.autoClear = false;
-            this._blurY._outputTextureScale = bloomScale;
 
             this.kernel = bloomKernel;
 
-            this._effects = [this._downscale, this._blurX, this._blurY];
+            this._upscale = new PassPostProcess("upscale", bloomScale, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._upscale.autoClear = false;
+            this._effects = [this._downscale, this._blurX, this._blurY, this._upscale];
 
-            if(performMerge){
-                this._merge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._blurX, bloom: {blurred: this._blurY, weight: 0}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
-                this._merge.autoClear = false;
-                this._effects.push(this._merge);
-            }
+            this._merge = new BloomMergePostProcess("bloomMerge", this._downscale, this._blurY, bloomWeight, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._merge.autoClear = false;
+            this._effects.push(this._merge);
         }
 
         /**
