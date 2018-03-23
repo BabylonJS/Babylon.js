@@ -1,6 +1,6 @@
 ﻿module BABYLON {
     /**
-     * A condition applied to an action 
+     * A Condition applied to an Action 
      */
     export class Condition {
         /**
@@ -22,15 +22,15 @@
         public _currentResult: boolean;
 
         /**
-         * Creates a new {BABYLON.Condition}
-         * @param actionManager  
+         * Creates a new Condition
+         * @param actionManager the manager of the action the condition is applied to 
          */
         constructor(actionManager: ActionManager) {
             this._actionManager = actionManager;
         }
 
         /**
-         * Gets the current state of isValid
+         * Check if the current condition is valid
          */
         public isValid(): boolean {
             return true;
@@ -73,7 +73,7 @@
     }
 
     /**
-     * Defines specific conditional operators as extensions of {BABYLON.Condition}
+     * Defines specific conditional operators as extensions of Condition
      */
     export class ValueCondition extends Condition {
         
@@ -154,7 +154,7 @@
         private _property: string;
 
         /**
-         * Creates a new {BABYLON.ValueCondition}
+         * Creates a new ValueCondition
          * @param actionManager manager for the action the condition applies to
          * @param target for the action
          * @param propertyPath path to specify the property of the target the conditional operator uses 
@@ -195,7 +195,7 @@
         }
         
         /**
-         * Serialize the {BABYLON.ValueCondition} into a JSON compatible object
+         * Serialize the ValueCondition into a JSON compatible object
          * @returns serialization object
          */
         public serialize(): any {
@@ -211,7 +211,7 @@
         }
         
         /**
-         * Gets the name of the conditional operator for the {BABYLON.ValueCondition}
+         * Gets the name of the conditional operator for the ValueCondition
          * @param operator the conditional operator
          * @returns the name 
          */
@@ -227,7 +227,7 @@
     }
 
     /**
-     * Defines a predicate condition as an extension of {BABYLON.Condition}
+     * Defines a predicate condition as an extension of Condition
      */
     export class PredicateCondition extends Condition {
         

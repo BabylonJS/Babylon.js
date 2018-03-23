@@ -22,14 +22,14 @@
 
         /**
         * An event triggered prior to action being executed.
-        * @type {BABYLON.Observable}
+        * @type Observable
         */
         public onBeforeExecuteObservable = new Observable<Action>();
 
         /**
-         * Creates a new {BABYLON.Action}
+         * Creates a new Action
          * @param triggerOptions the trigger, with or without parameters, for the action
-         * @param condition optional determinant of action 
+         * @param condition an optional determinant of action 
          */
         constructor(public triggerOptions: any, condition?: Condition) {
 
@@ -116,7 +116,7 @@
         }
 
         /**
-         * Adds action to chain of actions, may be {DoNothingAction}
+         * Adds action to chain of actions, may be a DoNothingAction
          * @param index The index of the attribute.
          * @returns The action passed in
          * @see https://www.babylonjs-playground.com/#1T30HR#0
