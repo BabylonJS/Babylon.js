@@ -19,7 +19,6 @@
         * Internal, reference to the location where this postprocess was output to. (Typically the texture on the next postprocess in the chain)
         */
         public _outputTexture: Nullable<InternalTexture> = null;
-
         /**
         * Sampling mode used by the shader
         * See https://doc.babylonjs.com/classes/3.1/texture
@@ -73,6 +72,7 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
+        
         private _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
