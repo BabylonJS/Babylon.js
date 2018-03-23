@@ -2,11 +2,11 @@ module BABYLON {
     /**
      * Options to be set when merging outputs from the default pipeline.
      */
-	export class DefaultPipelineMergePostProcessOptions {
+	export class DepthOfFieldMergePostProcessOptions {
         /**
          * The original image to merge on top of
          */
-        public originalFromInput?: PostProcess;
+        public originalFromInput: PostProcess;
         /**
          * Parameters to perform the merge of the depth of field effect
          */
@@ -24,18 +24,15 @@ module BABYLON {
     }
 
     /**
-     * The DefaultPipelineMergeMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
+     * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
      */
-    export class DefaultPipelineMergeMergePostProcess extends PostProcess {
+    export class DepthOfFieldMergePostProcess extends PostProcess {
         /**
-         * Internal, optins for the merge post process
-         */
-        public _mergeOptions:DefaultPipelineMergePostProcessOptions;
-
-        /**
-         * Creates a new instance of @see DefaultPipelineMergeMergePostProcess
+         * Creates a new instance of @see DepthOfFieldMergePostProcess
          * @param name The name of the effect.
-         * @param mergeOptions Options to be set when merging outputs from the default pipeline.
+         * @param originalFromInput Post process which's input will be used for the merge.
+         * @param circleOfConfusion Circle of confusion post process which's output will be used to blur each pixel.
+         * @param blurSteps Blur post processes from low to high which will be mixed with the original image.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.
          * @param samplingMode The sampling mode to be used when computing the pass. (default: 0)
@@ -44,23 +41,14 @@ module BABYLON {
          * @param textureType Type of textures used when performing the post process. (default: 0)
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(name: string, mergeOptions: DefaultPipelineMergePostProcessOptions, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-            super(name, "defaultPipelineMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
-            this._mergeOptions = mergeOptions;
+        constructor(name: string, originalFromInput:PostProcess, circleOfConfusion:PostProcess, private blurSteps:Array<PostProcess>, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
+            super(name, "depthOfFieldMerge", ["bloomWeight"], ["circleOfConfusionSampler", "blurStep0", "blurStep1", "blurStep2", "bloomBlur"], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, true);
             this.onApplyObservable.add((effect: Effect) => {
-                if(this._mergeOptions.originalFromInput){
-                    effect.setTextureFromPostProcess("textureSampler", this._mergeOptions.originalFromInput);
-                }
-                if(this._mergeOptions.depthOfField){
-                    effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", this._mergeOptions.depthOfField.circleOfConfusion);
-                    this._mergeOptions.depthOfField.blurSteps.forEach((step,index)=>{
-                        effect.setTextureFromPostProcessOutput("blurStep"+(this._mergeOptions.depthOfField!.blurSteps.length-index-1), step);
-                    });
-                }
-                if(this._mergeOptions.bloom){
-                    effect.setTextureFromPostProcessOutput("bloomBlur", this._mergeOptions.bloom.blurred);
-                    effect.setFloat("bloomWeight", this._mergeOptions.bloom.weight);
-                }        
+                effect.setTextureFromPostProcess("textureSampler", originalFromInput);
+                effect.setTextureFromPostProcessOutput("circleOfConfusionSampler", circleOfConfusion);
+                blurSteps.forEach((step,index)=>{
+                    effect.setTextureFromPostProcessOutput("blurStep"+(blurSteps.length-index-1), step);
+                });    
             });
 
             if(!blockCompilation){
@@ -81,13 +69,7 @@ module BABYLON {
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void) {
             if(!defines){
                 defines = "";
-                if(this._mergeOptions.depthOfField){
-                    defines += "#define DOF 1\n";
-                    defines += "#define BLUR_LEVEL "+(this._mergeOptions.depthOfField.blurSteps.length-1)+"\n";
-                }
-                if(this._mergeOptions.bloom){
-                    defines += "#define BLOOM 1\n";
-                }
+                defines += "#define BLUR_LEVEL "+(this.blurSteps.length-1)+"\n";
             }
             super.updateEffect(defines, uniforms, samplers, indexParameters, onCompiled, onError);
         }

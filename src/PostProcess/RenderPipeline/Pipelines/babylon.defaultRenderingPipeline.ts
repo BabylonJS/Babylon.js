@@ -34,8 +34,6 @@
         public sharpen: SharpenPostProcess;
         private _sharpenEffect: PostProcessRenderEffect;
         private bloom: BloomEffect;
-        private _defaultPipelineMerge:DefaultPipelineMergeMergePostProcess;
-        private _defaultPipelineMergeEffect: PostProcessRenderEffect;
         /**
          * Depth of field effect, applies a blur based on how far away objects are from the focus distance.
          */
@@ -132,9 +130,7 @@
             if (this._bloomWeight === value) {
                 return;
             }
-            if(this._defaultPipelineMerge._mergeOptions && this._defaultPipelineMerge._mergeOptions.bloom){
-                this._defaultPipelineMerge._mergeOptions.bloom.weight = value;
-            }
+            this.bloom.weight = value;
             
             this._bloomWeight = value;
         }
@@ -200,7 +196,7 @@
         private _rebuildBloom(){
             // recreate bloom and dispose old as this setting is not dynamic
             var oldBloom = this.bloom;
-            this.bloom = new BloomEffect(this._scene, this.bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false);
+            this.bloom = new BloomEffect(this._scene, this.bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, false);
             this.bloom.threshold = oldBloom.threshold;
             for (var i = 0; i < this._cameras.length; i++) {
                 oldBloom.disposeEffects(this._cameras[i]);
@@ -380,12 +376,9 @@
             this.sharpen = new SharpenPostProcess("sharpen", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._sharpenEffect = new PostProcessRenderEffect(engine, this.SharpenPostProcessId, () => { return this.sharpen; }, true);
 
-            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, false, true);
+            this.depthOfField = new DepthOfFieldEffect(this._scene, null, this._depthOfFieldBlurLevel, this._defaultPipelineTextureType, true);
             
-            this.bloom = new BloomEffect(this._scene, this._bloomScale, this.bloomKernel, this._defaultPipelineTextureType, false, true);
-
-            this._defaultPipelineMerge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, this._defaultPipelineTextureType, true);
-            this._defaultPipelineMergeEffect = new PostProcessRenderEffect(engine, "defaultPipelineMerge", () => { return this._defaultPipelineMerge; }, true);
+            this.bloom = new BloomEffect(this._scene, this._bloomScale, this._bloomWeight, this.bloomKernel, this._defaultPipelineTextureType, true);
 
             this.chromaticAberration = new ChromaticAberrationPostProcess("ChromaticAberration", engine.getRenderWidth(), engine.getRenderHeight(), 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType, true);
             this._chromaticAberrationEffect = new PostProcessRenderEffect(engine, this.ChromaticAberrationPostProcessId, () => { return this.chromaticAberration; }, true);
@@ -468,21 +461,7 @@
             this._hasCleared = false;
             this._firstPostProcess = null;
 
-            var mergeOptions = new DefaultPipelineMergePostProcessOptions();
-
-            if (this.fxaaEnabled) {
-                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
-                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
-                this._setAutoClearAndTextureSharing(this.fxaa);
-            }
-
-            if (this.sharpenEnabled) {
-                if(!this.sharpen.isReady()){
-                    this.sharpen.updateEffect();
-                }
-                this.addEffect(this._sharpenEffect);
-                this._setAutoClearAndTextureSharing(this.sharpen);
-            }
+            
 
             if (this.depthOfFieldEnabled) {
                 var depthTexture = this._scene.enableDepthRenderer(this._cameras[0]).getDepthMap();
@@ -490,32 +469,16 @@
                 if(!this.depthOfField._isReady()){
                     this.depthOfField._updateEffects();
                 }
-                mergeOptions.depthOfField = {circleOfConfusion: this.depthOfField._effects[0], blurSteps: this.depthOfField._depthOfFieldBlurX};
-                if(!mergeOptions.originalFromInput){
-                    mergeOptions.originalFromInput=this.depthOfField._effects[0];
-                }
                 this.addEffect(this.depthOfField);
                 this._setAutoClearAndTextureSharing(this.depthOfField._effects[0], true);
             }
-            
+
             if (this.bloomEnabled) {
                 if(!this.bloom._isReady()){
                     this.bloom._updateEffects();
                 }
-                mergeOptions.bloom = {blurred: this.bloom._effects[this.bloom._effects.length-1], weight: this.bloomWeight}
-                if(!mergeOptions.originalFromInput){
-                    mergeOptions.originalFromInput=this.bloom._effects[0];
-                }
-                this.bloom._downscale._inputPostProcess = this._firstPostProcess;
                 this.addEffect(this.bloom);
                 this._setAutoClearAndTextureSharing(this.bloom._effects[0], true);
-            }
-            
-            if(mergeOptions.originalFromInput){
-                this._defaultPipelineMerge._mergeOptions = mergeOptions;
-                this._defaultPipelineMerge.updateEffect();
-                this.addEffect(this._defaultPipelineMergeEffect);
-                this._setAutoClearAndTextureSharing(this._defaultPipelineMerge, true);
             }
 
             if (this._imageProcessingEnabled) {	
@@ -526,6 +489,14 @@
                 } else {		
                     this._scene.imageProcessingConfiguration.applyByPostProcess = false;		
                 }		
+            }
+
+            if (this.sharpenEnabled) {
+                if(!this.sharpen.isReady()){
+                    this.sharpen.updateEffect();
+                }
+                this.addEffect(this._sharpenEffect);
+                this._setAutoClearAndTextureSharing(this.sharpen);
             }
 
             if (this.grainEnabled) {
@@ -544,11 +515,17 @@
                 this._setAutoClearAndTextureSharing(this.chromaticAberration);
             }
 
+            if (this.fxaaEnabled) {
+                this.fxaa = new FxaaPostProcess("fxaa", 1.0, null, Texture.BILINEAR_SAMPLINGMODE, engine, false, this._defaultPipelineTextureType);
+                this.addEffect(new PostProcessRenderEffect(engine, this.FxaaPostProcessId, () => { return this.fxaa; }, true));
+                this._setAutoClearAndTextureSharing(this.fxaa);
+            }
+
             if (this._cameras !== null) {
                 this._scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this._name, this._cameras);
             }
 
-
+            
             if(!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1){
                 BABYLON.Tools.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
             }
@@ -586,10 +563,6 @@
 
                     if(this.grain){
                         this.grain.dispose(camera);
-                    }
-
-                    if(this._defaultPipelineMerge){
-                        this._defaultPipelineMerge.dispose(camera);
                     }
                 }
             }

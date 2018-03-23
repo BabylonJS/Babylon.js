@@ -26,7 +26,7 @@ module BABYLON {
          */
         public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
         private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
-        private _defaultPipelineMerge: Nullable<DefaultPipelineMergeMergePostProcess>;
+        private _dofMerge: Nullable<DepthOfFieldMergePostProcess>;
 
         /**
          * Internal post processes in depth of field effect
@@ -75,10 +75,9 @@ module BABYLON {
          * @param scene The scene the effect belongs to.
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.This must be set in order for this to function but may be set after initialization if needed.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
-         * @param performMerge If the finalization merge should be performed by this effect.
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
-        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0, performMerge = true, blockCompilation = false) {
+        constructor(scene: Scene, depthTexture: Nullable<RenderTargetTexture>, blurLevel: DepthOfFieldEffectBlurLevel = DepthOfFieldEffectBlurLevel.Low, pipelineTextureType = 0, blockCompilation = false) {
             super(scene.getEngine(), "depth of field", ()=>{
                 return this._effects;
             }, true);
@@ -126,12 +125,10 @@ module BABYLON {
                 this._effects.push(this._depthOfFieldBlurX[i]);
             }
 
-            if(performMerge){
-                // Merge blurred images with original image based on circleOfConfusion
-                this._defaultPipelineMerge = new DefaultPipelineMergeMergePostProcess("defaultPipelineMerge", {originalFromInput: this._circleOfConfusion, depthOfField: {circleOfConfusion: this._circleOfConfusion, blurSteps: this._depthOfFieldBlurX}}, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
-                this._defaultPipelineMerge.autoClear = false;
-                this._effects.push(this._defaultPipelineMerge);
-            }
+            // Merge blurred images with original image based on circleOfConfusion
+            this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._dofMerge.autoClear = false;
+            this._effects.push(this._dofMerge);
         }
 
         /**
