@@ -20,10 +20,6 @@
         */
         public _outputTexture: Nullable<InternalTexture> = null;
         /**
-        * Internal, if set, this will override the next postprocess in the chain's input texture's width an height
-        */
-        public _outputTextureScale:number = 0;
-        /**
         * Sampling mode used by the shader
         * See https://doc.babylonjs.com/classes/3.1/texture
         */
@@ -76,10 +72,8 @@
         private _camera: Camera;
         private _scene: Scene;
         private _engine: Engine;
-        /**
-        * Internal
-        */
-        public _options: number | PostProcessOptions;
+        
+        private _options: number | PostProcessOptions;
         private _reusable = false;
         private _textureType: number;
         /**
