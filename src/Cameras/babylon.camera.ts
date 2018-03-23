@@ -261,7 +261,7 @@
             if (completeCheck) {
                 for (var pp of this._postProcesses) {
                     if (pp && !pp.isReady()) {
-                        return
+                        return false;
                     }
                 }
             }
