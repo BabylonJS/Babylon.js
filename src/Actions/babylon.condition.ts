@@ -31,6 +31,7 @@
 
         /**
          * Check if the current condition is valid
+         * @returns a boolean
          */
         public isValid(): boolean {
             return true;
@@ -54,6 +55,7 @@
         
         /**
          * Serialize placeholder for child classes
+         * @returns the serialized object
          */
         public serialize(): any {
         }
@@ -102,28 +104,28 @@
         private static _IsLesser = 3;
 
         /**
-         * @returns the number for IsEqual
+         * returns the number for IsEqual
          */
         public static get IsEqual(): number {
             return ValueCondition._IsEqual;
         }
 
         /**
-         * @returns the number for IsDifferent
+         * Returns the number for IsDifferent
          */
         public static get IsDifferent(): number {
             return ValueCondition._IsDifferent;
         }
 
         /**
-         * @returns the number for IsGreater
+         * Returns the number for IsGreater
          */
         public static get IsGreater(): number {
             return ValueCondition._IsGreater;
         }
 
         /**
-         * @returns the number for IsLesser
+         * Returns the number for IsLesser
          */
         public static get IsLesser(): number {
             return ValueCondition._IsLesser;
