@@ -26,7 +26,7 @@ module BABYLON {
         private _transformToBoneReferal: Nullable<TransformNode>;
 
         @serialize()
-        public billboardMode = AbstractMesh.BILLBOARDMODE_NONE;
+        public billboardMode = TransformNode.BILLBOARDMODE_NONE;
 
         @serialize()
         public scalingDeterminant = 1;
@@ -175,7 +175,7 @@ module BABYLON {
 
         /**
          * Copies the paramater passed Matrix into the mesh Pose matrix.  
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public updatePoseMatrix(matrix: Matrix): TransformNode {
             this._poseMatrix.copyFrom(matrix);
@@ -195,7 +195,7 @@ module BABYLON {
                 return false;
             }
 
-            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE)
+            if (this.billboardMode !== this._cache.billboardMode || this.billboardMode !== TransformNode.BILLBOARDMODE_NONE)
                 return false;
 
             if (this._cache.pivotMatrixUpdated) {
@@ -293,7 +293,7 @@ module BABYLON {
 
         /**
          * Prevents the World matrix to be computed any longer.
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public freezeWorldMatrix(): TransformNode {
             this._isWorldMatrixFrozen = false;  // no guarantee world is not already frozen, switch off temporarily
@@ -304,7 +304,7 @@ module BABYLON {
 
         /**
          * Allows back the World matrix computation. 
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public unfreezeWorldMatrix() {
             this._isWorldMatrixFrozen = false;
@@ -331,7 +331,7 @@ module BABYLON {
 
         /**
          * Sets the mesh absolute position in the World from a Vector3 or an Array(3).
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public setAbsolutePosition(absolutePosition: Vector3): TransformNode {
             if (!absolutePosition) {
@@ -368,7 +368,7 @@ module BABYLON {
 
         /**
            * Sets the mesh position in its local space.  
-           * Returns the AbstractMesh.  
+           * Returns the TransformNode.  
            */
         public setPositionWithLocalVector(vector3: Vector3): TransformNode {
             this.computeWorldMatrix();
@@ -390,7 +390,7 @@ module BABYLON {
 
         /**
          * Translates the mesh along the passed Vector3 in its local space.  
-         * Returns the AbstractMesh. 
+         * Returns the TransformNode. 
          */
         public locallyTranslate(vector3: Vector3): TransformNode {
             this.computeWorldMatrix(true);
@@ -410,7 +410,7 @@ module BABYLON {
          * @returns the TransformNode. 
          */
         public lookAt(targetPoint: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0, space: Space = Space.LOCAL): TransformNode {
-            var dv = AbstractMesh._lookAtVectorCache;
+            var dv = TransformNode._lookAtVectorCache;
             var pos = space === Space.LOCAL ? this.position : this.getAbsolutePosition();
             targetPoint.subtractToRef(pos, dv);
             var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
@@ -443,7 +443,7 @@ module BABYLON {
          * Sets the Vector3 "result" as the rotated Vector3 "localAxis" in the same rotation than the mesh.
          * localAxis is expressed in the mesh local space.
          * result is computed in the Wordl space from the mesh World matrix.  
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public getDirectionToRef(localAxis: Vector3, result: Vector3): TransformNode {
             Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
@@ -483,7 +483,7 @@ module BABYLON {
 
         /**
          * Sets the passed Vector3 "result" with the coordinates of the mesh pivot point in the local space.   
-         * Returns the AbstractMesh.   
+         * Returns the TransformNode.   
          */
         public getPivotPointToRef(result: Vector3): TransformNode {
             result.x = -this._pivotMatrix.m[12];
@@ -503,7 +503,7 @@ module BABYLON {
 
         /**
          * Sets the Vector3 "result" coordinates with the mesh pivot point World coordinates.  
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public getAbsolutePivotPointToRef(result: Vector3): TransformNode {
             result.x = this._pivotMatrix.m[12];
@@ -626,7 +626,7 @@ module BABYLON {
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
          * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
          * The passed axis is also normalized.  
-         * Returns the AbstractMesh.
+         * Returns the TransformNode.
          */
         public rotate(axis: Vector3, amount: number, space?: Space): TransformNode {
             axis.normalize();
@@ -636,7 +636,7 @@ module BABYLON {
             }
             var rotationQuaternion: Quaternion;
             if (!space || (space as any) === Space.LOCAL) {
-                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._rotationAxisCache);
                 this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
             }
             else {
@@ -645,7 +645,7 @@ module BABYLON {
                     invertParentWorldMatrix.invert();
                     axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
                 }
-                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, AbstractMesh._rotationAxisCache);
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._rotationAxisCache);
                 rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
             return this;
@@ -655,7 +655,7 @@ module BABYLON {
          * Rotates the mesh around the axis vector for the passed angle (amount) expressed in radians, in world space.  
          * Note that the property `rotationQuaternion` is then automatically updated and the property `rotation` is set to (0,0,0) and no longer used.  
          * The passed axis is also normalized.  
-         * Returns the AbstractMesh.
+         * Returns the TransformNode.
          * Method is based on http://www.euclideanspace.com/maths/geometry/affine/aroundPoint/index.htm
          */
         public rotateAround(point: Vector3, axis: Vector3, amount: number): TransformNode {
@@ -682,7 +682,7 @@ module BABYLON {
         /**
          * Translates the mesh along the axis vector for the passed distance in the given space.  
          * space (default LOCAL) can be either BABYLON.Space.LOCAL, either BABYLON.Space.WORLD.
-         * Returns the AbstractMesh.
+         * Returns the TransformNode.
          */
         public translate(axis: Vector3, distance: number, space?: Space): TransformNode {
             var displacementVector = axis.scale(distance);
@@ -708,7 +708,7 @@ module BABYLON {
          * ```
          * Note that `addRotation()` accumulates the passed rotation values to the current ones and computes the .rotation or .rotationQuaternion updated values.  
          * Under the hood, only quaternions are used. So it's a little faster is you use .rotationQuaternion because it doesn't need to translate them back to Euler angles.   
-         * Returns the AbstractMesh.  
+         * Returns the TransformNode.  
          */
         public addRotation(x: number, y: number, z: number): TransformNode {
             var rotationQuaternion;
@@ -795,8 +795,8 @@ module BABYLON {
             Tmp.Matrix[4].multiplyToRef(Tmp.Matrix[0], Tmp.Matrix[5]);
 
             // Billboarding (testing PG:http://www.babylonjs-playground.com/#UJEIL#13)
-            if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE && camera) {
-                if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_ALL) !== AbstractMesh.BILLBOARDMODE_ALL) {
+            if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE && camera) {
+                if ((this.billboardMode & TransformNode.BILLBOARDMODE_ALL) !== TransformNode.BILLBOARDMODE_ALL) {
                     // Need to decompose each rotation here
                     var currentPosition = Tmp.Vector3[3];
 
@@ -814,15 +814,15 @@ module BABYLON {
                     currentPosition.subtractInPlace(camera.globalPosition);
 
                     var finalEuler = Tmp.Vector3[4].copyFromFloats(0, 0, 0);
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_X) === AbstractMesh.BILLBOARDMODE_X) {
+                    if ((this.billboardMode & TransformNode.BILLBOARDMODE_X) === TransformNode.BILLBOARDMODE_X) {
                         finalEuler.x = Math.atan2(-currentPosition.y, currentPosition.z);
                     }
 
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Y) === AbstractMesh.BILLBOARDMODE_Y) {
+                    if ((this.billboardMode & TransformNode.BILLBOARDMODE_Y) === TransformNode.BILLBOARDMODE_Y) {
                         finalEuler.y = Math.atan2(currentPosition.x, currentPosition.z);
                     }
 
-                    if ((this.billboardMode & AbstractMesh.BILLBOARDMODE_Z) === AbstractMesh.BILLBOARDMODE_Z) {
+                    if ((this.billboardMode & TransformNode.BILLBOARDMODE_Z) === TransformNode.BILLBOARDMODE_Z) {
                         finalEuler.z = Math.atan2(currentPosition.y, currentPosition.x);
                     }
 
@@ -843,7 +843,7 @@ module BABYLON {
 
             // Parent
             if (this.parent && this.parent.getWorldMatrix) {
-                if (this.billboardMode !== AbstractMesh.BILLBOARDMODE_NONE) {
+                if (this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
                     if (this._transformToBoneReferal) {
                         this.parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), Tmp.Matrix[6]);
                         Tmp.Matrix[5].copyFrom(Tmp.Matrix[6]);
