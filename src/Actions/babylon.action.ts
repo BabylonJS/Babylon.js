@@ -149,6 +149,7 @@
         /**
          * Serialize placeholder for child classes
          * @param parent of child
+         * @returns the serialized object
          */
         public serialize(parent: any): any {
         }

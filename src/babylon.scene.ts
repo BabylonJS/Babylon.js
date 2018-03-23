@@ -212,6 +212,11 @@
         public metadata: any = null;
         public loadingPluginName: string;
 
+        /**
+         * Use this array to add regular expressions used to disable offline support for specific urls
+         */
+        public disableOfflineSupportExceptionRules = new Array<RegExp>();        
+
         // Events
 
         private _spritePredicate: (sprite: Sprite) => boolean;
