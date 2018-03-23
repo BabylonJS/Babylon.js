@@ -22,9 +22,12 @@
 - Physics - Latest production version of Oimo.js is being used - 1.0.9 ([RaananW](https://github.com/RaananW))
 - Shadows - Introduces [PCF](https://doc.babylonjs.com/babylon101/shadows#percentage-closer-filtering-webgl2-only) and [PCSS](https://doc.babylonjs.com/babylon101/shadows#contact-hardening-shadow-webgl2-only) support in Webgl 2 ([sebavan](https://github.com/sebavan)))
 
+## Documentation
+- Tons of functions and classes received the code comments they deserved (All the community)
+- Moved the class API documentation to Typedoc ([deltakosh](https://github.com/deltakosh))
+
 ## Updates
 
-- Tons of functions and classes received the code comments they deserved (All the community)
 - New [particle system emitter shapes](http://doc.babylonjs.com/babylon101/particles#particles-shapes): cone and sphere ([IbraheemOsama](https://github.com/IbraheemOsama))
 - Added support for 16bits TGA ([deltakosh](https://github.com/deltakosh))
 - New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))
