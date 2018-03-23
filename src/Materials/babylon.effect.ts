@@ -258,7 +258,7 @@
 
                 this._attributesNames = options.attributes;
                 this._uniformsNames = options.uniformsNames.concat(options.samplers);
-                this._samplers = options.samplers;
+                this._samplers = options.samplers.slice();
                 this.defines = options.defines;
                 this.onError = options.onError;
                 this.onCompiled = options.onCompiled;
@@ -275,7 +275,7 @@
                 this._engine = <Engine>engine;
                 this.defines = <string>defines;
                 this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
-                this._samplers = <string[]>samplers;
+                this._samplers = samplers ? <string[]>samplers.slice() : [];
                 this._attributesNames = (<string[]>attributesNamesOrOptions);
 
                 this.onError = onError;
