@@ -1,4 +1,5 @@
 module BABYLON {
+    declare var earcut: any;
     class IndexedVector2 extends Vector2 {
         constructor(original: Vector2, public index: number) {
             super(original.x, original.y);
@@ -161,7 +162,7 @@ module BABYLON {
 
             var indices = new Array<number>();
 
-            let res = Earcut.earcut(this._epoints, this._eholes, 2);
+            let res = earcut(this._epoints, this._eholes, 2);
 
             for (let i = 0; i < res.length; i++) {
                 indices.push(res[i]);
