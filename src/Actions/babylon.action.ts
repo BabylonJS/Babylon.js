@@ -22,7 +22,6 @@
 
         /**
         * An event triggered prior to action being executed.
-        * @type Observable
         */
         public onBeforeExecuteObservable = new Observable<Action>();
 

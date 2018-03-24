@@ -51,7 +51,6 @@ module BABYLON {
 
         /**
         * An event triggered after the world matrix is updated
-        * @type {BABYLON.Observable}
         */
         public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();
 

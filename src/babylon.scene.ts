@@ -92,7 +92,7 @@
 
     /**
      * Represents a scene to be rendered by the engine.
-     * @see http://doc.babylonjs.com/page.php?p=21911
+     * @see http://doc.babylonjs.com/features/scene
      */
     export class Scene implements IAnimatable {
         // Statics
@@ -223,7 +223,6 @@
 
         /**
         * An event triggered when the scene is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<Scene>();
 
@@ -238,7 +237,6 @@
 
         /**
         * An event triggered before rendering the scene (right after animations and physics)
-        * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<Scene>();
 
@@ -255,7 +253,6 @@
 
         /**
         * An event triggered after rendering the scene
-        * @type {BABYLON.Observable}
         */
         public onAfterRenderObservable = new Observable<Scene>();
 
@@ -273,49 +270,41 @@
 
         /**
         * An event triggered before animating the scene
-        * @type {BABYLON.Observable}
         */
         public onBeforeAnimationsObservable = new Observable<Scene>();
 
         /**
         * An event triggered after animations processing
-        * @type {BABYLON.Observable}
         */
         public onAfterAnimationsObservable = new Observable<Scene>();
 
         /**
         * An event triggered before draw calls are ready to be sent
-        * @type {BABYLON.Observable}
         */
         public onBeforeDrawPhaseObservable = new Observable<Scene>();
 
         /**
         * An event triggered after draw calls have been sent
-        * @type {BABYLON.Observable}
         */
         public onAfterDrawPhaseObservable = new Observable<Scene>();
 
         /**
         * An event triggered when physic simulation is about to be run
-        * @type {BABYLON.Observable}
         */
         public onBeforePhysicsObservable = new Observable<Scene>();
 
         /**
         * An event triggered when physic simulation has been done
-        * @type {BABYLON.Observable}
         */
         public onAfterPhysicsObservable = new Observable<Scene>();
 
         /**
         * An event triggered when the scene is ready
-        * @type {BABYLON.Observable}
         */
         public onReadyObservable = new Observable<Scene>();
 
         /**
         * An event triggered before rendering a camera
-        * @type {BABYLON.Observable}
         */
         public onBeforeCameraRenderObservable = new Observable<Camera>();
 
@@ -330,7 +319,6 @@
 
         /**
         * An event triggered after rendering a camera
-        * @type {BABYLON.Observable}
         */
         public onAfterCameraRenderObservable = new Observable<Camera>();
 
@@ -344,133 +332,112 @@
 
         /**
         * An event triggered when active meshes evaluation is about to start
-        * @type {BABYLON.Observable}
         */
         public onBeforeActiveMeshesEvaluationObservable = new Observable<Scene>();
 
         /**
         * An event triggered when active meshes evaluation is done
-        * @type {BABYLON.Observable}
         */
         public onAfterActiveMeshesEvaluationObservable = new Observable<Scene>();
 
         /**
         * An event triggered when particles rendering is about to start
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onBeforeParticlesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when particles rendering is done
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onAfterParticlesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when sprites rendering is about to start
         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onBeforeSpritesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when sprites rendering is done
         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onAfterSpritesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
-        * @type {BABYLON.Observable}
         */
         public onDataLoadedObservable = new Observable<Scene>();
 
         /**
         * An event triggered when a camera is created
-        * @type {BABYLON.Observable}
         */
         public onNewCameraAddedObservable = new Observable<Camera>();
 
         /**
         * An event triggered when a camera is removed
-        * @type {BABYLON.Observable}
         */
         public onCameraRemovedObservable = new Observable<Camera>();
 
         /**
         * An event triggered when a light is created
-        * @type {BABYLON.Observable}
         */
         public onNewLightAddedObservable = new Observable<Light>();
 
         /**
         * An event triggered when a light is removed
-        * @type {BABYLON.Observable}
         */
         public onLightRemovedObservable = new Observable<Light>();
 
         /**
         * An event triggered when a geometry is created
-        * @type {BABYLON.Observable}
         */
         public onNewGeometryAddedObservable = new Observable<Geometry>();
 
         /**
         * An event triggered when a geometry is removed
-        * @type {BABYLON.Observable}
         */
         public onGeometryRemovedObservable = new Observable<Geometry>();
 
         /**
         * An event triggered when a transform node is created
-        * @type {BABYLON.Observable}
         */
         public onNewTransformNodeAddedObservable = new Observable<TransformNode>();
 
         /**
         * An event triggered when a transform node is removed
-        * @type {BABYLON.Observable}
         */
         public onTransformNodeRemovedObservable = new Observable<TransformNode>();
 
         /**
         * An event triggered when a mesh is created
-        * @type {BABYLON.Observable}
         */
         public onNewMeshAddedObservable = new Observable<AbstractMesh>();
 
         /**
         * An event triggered when a mesh is removed
-        * @type {BABYLON.Observable}
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
         /**
         * An event triggered when render targets are about to be rendered
         * Can happen multiple times per frame.
-        * @type {BABYLON.Observable}
         */
         public OnBeforeRenderTargetsRenderObservable = new Observable<Scene>();
 
         /**
         * An event triggered when render targets were rendered.
         * Can happen multiple times per frame.
-        * @type {BABYLON.Observable}
         */
         public OnAfterRenderTargetsRenderObservable = new Observable<Scene>();
 
         /**
         * An event triggered before calculating deterministic simulation step
-        * @type {BABYLON.Observable}
         */
         public onBeforeStepObservable = new Observable<Scene>();
 
         /**
         * An event triggered after calculating deterministic simulation step
-        * @type {BABYLON.Observable}
         */
         public onAfterStepObservable = new Observable<Scene>();
 
@@ -589,7 +556,6 @@
         // Coordinate system
         /**
         * use right-handed coordinate system on this scene.
-        * @type {boolean}
         */
         private _useRightHandedSystem = false;
         public set useRightHandedSystem(value: boolean) {
@@ -652,7 +618,6 @@
         // Lights
         /**
         * is shadow enabled on this scene.
-        * @type {boolean}
         */
         private _shadowsEnabled = true;
         public set shadowsEnabled(value: boolean) {
@@ -668,7 +633,6 @@
 
         /**
         * is light enabled on this scene.
-        * @type {boolean}
         */
         private _lightsEnabled = true;
         public set lightsEnabled(value: boolean) {
@@ -830,7 +794,6 @@
 
         /**
          * This scene's action manager
-         * @type {BABYLON.ActionManager}
         */
         public actionManager: ActionManager;
 
