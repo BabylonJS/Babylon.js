@@ -105,6 +105,7 @@
 - Updated bloom effect to only bloom areas of the image above a luminance threshold ([trevordev](https://github.com/trevordev))
 - Cannon and Oimo are optional dependencies ([RaananW](https://github.com/RaananW))
 - Shadows - Introduces [Normal Bias](https://doc.babylonjs.com/babylon101/shadows#normal-bias-since-32) ([sebavan](https://github.com/sebavan)))
+- Earcut is an external, optional dependency. ([RaananW](https://github.com/RaananW))
 
 ## Bug fixes
 
