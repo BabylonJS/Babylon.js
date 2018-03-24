@@ -27,6 +27,11 @@
                 "name": "OIMO",
                 "module": "oimo",
                 "optional": true
+            },
+            {
+                "name": "earcut",
+                "module": "earcut",
+                "optional": true
             }
         ]
     },
@@ -949,7 +954,6 @@
         },
         "polygonMesh": {
             "files": [
-                "../../src/Tools/babylon.earcut.js",
                 "../../src/Mesh/babylon.polygonMesh.js"
             ],
             "dependUpon": [
