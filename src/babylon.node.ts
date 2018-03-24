@@ -134,7 +134,6 @@
 
         /**
         * An event triggered when the mesh is disposed
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<Node>();
 

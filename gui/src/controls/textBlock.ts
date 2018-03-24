@@ -14,13 +14,11 @@ module BABYLON.GUI {
         private _outlineColor: string = "white";
         /**
         * An event triggered after the text is changed
-        * @type {BABYLON.Observable}
         */
         public onTextChangedObservable = new Observable<TextBlock>();
 
         /**
         * An event triggered after the text was broken up into lines
-        * @type {BABYLON.Observable}
         */
         public onLinesReadyObservable = new Observable<TextBlock>();
 
