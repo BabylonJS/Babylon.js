@@ -1,7 +1,7 @@
 module BABYLON {
     export class PostProcessRenderPipelineManager {
-        private _renderPipelines: any;
-
+        private _renderPipelines: {[Key:string]:PostProcessRenderPipeline};
+        
         constructor() {
             this._renderPipelines = {};
         }

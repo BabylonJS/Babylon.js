@@ -21,14 +21,17 @@ module BABYLON {
      */
     export class DepthOfFieldEffect extends PostProcessRenderEffect{
         private _circleOfConfusion: CircleOfConfusionPostProcess;
-        private _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
-        private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
         /**
-         * Private, last post process of dof
+         * Internal, blurs from high to low
          */
-        public _depthOfFieldMerge: DepthOfFieldMergePostProcess;
+        public _depthOfFieldBlurX: Array<DepthOfFieldBlurPostProcess>;
+        private _depthOfFieldBlurY: Array<DepthOfFieldBlurPostProcess>;
+        private _dofMerge: Nullable<DepthOfFieldMergePostProcess>;
 
-        private _effects: Array<PostProcess> = [];
+        /**
+         * Internal post processes in depth of field effect
+         */
+        public _effects: Array<PostProcess> = [];
 
         /**
          * The focal the length of the camera used in the effect
@@ -114,10 +117,6 @@ module BABYLON {
                 this._depthOfFieldBlurY.push(blurY);
                 this._depthOfFieldBlurX.push(blurX);
             }
-
-            // Merge blurred images with original image based on circleOfConfusion
-            this._depthOfFieldMerge = new DepthOfFieldMergePostProcess("depthOfFieldMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
-            this._depthOfFieldMerge.autoClear = false;
             
             // Set all post processes on the effect.
             this._effects= [this._circleOfConfusion];
@@ -125,7 +124,11 @@ module BABYLON {
                 this._effects.push(this._depthOfFieldBlurY[i]);
                 this._effects.push(this._depthOfFieldBlurX[i]);
             }
-            this._effects.push(this._depthOfFieldMerge);
+
+            // Merge blurred images with original image based on circleOfConfusion
+            this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._dofMerge.autoClear = false;
+            this._effects.push(this._dofMerge);
         }
 
         /**
@@ -140,14 +143,9 @@ module BABYLON {
          * @param camera The camera to dispose the effect on.
          */
         public disposeEffects(camera:Camera){
-            this._circleOfConfusion.dispose(camera);
-            this._depthOfFieldBlurX.forEach(element => {
-                element.dispose(camera);
-            });
-            this._depthOfFieldBlurY.forEach(element => {
-                element.dispose(camera);
-            });
-            this._depthOfFieldMerge.dispose(camera);
+            for(var effect in this._effects){
+                this._effects[effect].dispose(camera);
+            }            
         }
 
         /**
