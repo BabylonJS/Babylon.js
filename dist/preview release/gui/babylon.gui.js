@@ -5129,11 +5129,6 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
     
-//backwards compatibility
-if(typeof earcut !== 'undefined') {
-    globalObject["Earcut"] = {
-        earcut: earcut
-    };
-}
+
     return BABYLON.GUI;
 });
