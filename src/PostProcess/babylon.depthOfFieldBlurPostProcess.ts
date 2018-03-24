@@ -7,7 +7,7 @@ module BABYLON {
      */
     export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         /**
-         * Creates a new instance of @see CircleOfConfusionPostProcess
+         * Creates a new instance CircleOfConfusionPostProcess
          * @param name The name of the effect.
          * @param scene The scene the effect belongs to.
          * @param direction The direction the blur should be applied.

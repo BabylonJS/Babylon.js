@@ -685,8 +685,6 @@
 
         /**
         * All of the lights added to this scene.
-        * @see BABYLON.Light
-        * @type {BABYLON.Light[]}
         */
         public lights = new Array<Light>();
 
@@ -701,22 +699,16 @@
         // Meshes
         /**
         * All of the tranform nodes added to this scene.
-        * @see BABYLON.TransformNode
-        * @type {BABYLON.TransformNode[]}
         */
         public transformNodes = new Array<TransformNode>();
 
         /**
         * All of the (abstract) meshes added to this scene.
-        * @see BABYLON.AbstractMesh
-        * @type {BABYLON.AbstractMesh[]}
         */
         public meshes = new Array<AbstractMesh>();
 
         /**
         * All of the animation groups added to this scene.
-        * @see BABYLON.AnimationGroup
-        * @type {BABYLON.AnimationGroup[]}
         */
         public animationGroups = new Array<AnimationGroup>();
 
@@ -2108,7 +2100,6 @@
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @returns the animatable object created for this animation
-         * @see BABYLON.Animatable
          */
         public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
             let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
@@ -2128,7 +2119,6 @@
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
          * @returns the animatable object created for this animation
-         * @see BABYLON.Animatable
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true): Animatable {
 
@@ -2239,7 +2229,6 @@
          * Will stop the animation of the given target
          * @param target - the target
          * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
-         * @see beginAnimation
          */
         public stopAnimation(target: any, animationName?: string): void {
             var animatables = this.getAllAnimatablesByTarget(target);
@@ -2671,7 +2660,6 @@
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
          * @return {BABYLON.Camera|null} the new active camera or null if none found.
-         * @see activeCamera
          */
         public setActiveCameraByID(id: string): Nullable<Camera> {
             var camera = this.getCameraByID(id);
@@ -2688,7 +2676,6 @@
          * sets the active camera of the scene using its name
          * @param {string} name - the camera's name
          * @return {BABYLON.Camera|null} the new active camera or null if none found.
-         * @see activeCamera
          */
         public setActiveCameraByName(name: string): Nullable<Camera> {
             var camera = this.getCameraByName(name);

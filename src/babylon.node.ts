@@ -352,7 +352,6 @@
          * If the node has a parent, all ancestors will be checked and false will be returned if any are false (not enabled), otherwise will return true
          * @param checkAncestors indicates if this method should check the ancestors. The default is to check the ancestors. If set to false, the method will return the value of this node without checking ancestors
          * @return whether this node (and its parent) is enabled
-         * @see setEnabled
          */
         public isEnabled(checkAncestors: boolean = true): boolean {
             if (checkAncestors === false) {
@@ -373,7 +372,6 @@
         /**
          * Set the enabled state of this node
          * @param value defines the new enabled state
-         * @see isEnabled
          */
         public setEnabled(value: boolean): void {
             this._isEnabled = value;
@@ -383,7 +381,6 @@
          * Is this node a descendant of the given node?
          * The function will iterate up the hierarchy until the ancestor was found or no more parents defined
          * @param ancestor defines the parent node to inspect
-         * @see parent
          * @returns a boolean indicating if this node is a descendant of the given node
          */
         public isDescendantOf(ancestor: Node): boolean {
