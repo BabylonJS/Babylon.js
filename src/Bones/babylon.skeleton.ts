@@ -31,7 +31,6 @@
         // Events
         /**
          * An event triggered before computing the skeleton's matrices
-         * @type {BABYLON.Observable}
          */
         public onBeforeComputeObservable = new Observable<Skeleton>();
 

@@ -612,8 +612,12 @@
         public cullBackFaces = true;
         public renderEvenInBackground = true;
         public preventCacheWipeBetweenFrames = false;
-        // To enable/disable IDB support and avoid XHR on .manifest
+
+        /** 
+         * To enable/disable IDB support and avoid XHR on .manifest
+         **/
         public enableOfflineSupport = false;
+
         public scenes = new Array<Scene>();
         public postProcesses = new Array<PostProcess>();
 

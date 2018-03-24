@@ -1,5 +1,6 @@
-// samplers
 uniform sampler2D textureSampler;
+varying vec2 vUV;
+
 uniform sampler2D circleOfConfusionSampler;
 uniform sampler2D blurStep0;
 
@@ -9,8 +10,6 @@ uniform sampler2D blurStep1;
 #if BLUR_LEVEL > 1
 uniform sampler2D blurStep2;
 #endif
-// varyings
-varying vec2 vUV;
 
 void main(void)
 {

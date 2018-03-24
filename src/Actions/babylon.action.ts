@@ -22,7 +22,6 @@
 
         /**
         * An event triggered prior to action being executed.
-        * @type Observable
         */
         public onBeforeExecuteObservable = new Observable<Action>();
 
@@ -149,6 +148,7 @@
         /**
          * Serialize placeholder for child classes
          * @param parent of child
+         * @returns the serialized object
          */
         public serialize(parent: any): any {
         }

@@ -909,42 +909,34 @@ var BABYLON;
                 this._linkOffsetY = new GUI.ValueAndUnit(0);
                 /**
                 * An event triggered when the pointer move over the control.
-                * @type {BABYLON.Observable}
                 */
                 this.onPointerMoveObservable = new BABYLON.Observable();
                 /**
                 * An event triggered when the pointer move out of the control.
-                * @type {BABYLON.Observable}
                 */
                 this.onPointerOutObservable = new BABYLON.Observable();
                 /**
                 * An event triggered when the pointer taps the control
-                * @type {BABYLON.Observable}
                 */
                 this.onPointerDownObservable = new BABYLON.Observable();
                 /**
                 * An event triggered when pointer up
-                * @type {BABYLON.Observable}
                 */
                 this.onPointerUpObservable = new BABYLON.Observable();
                 /**
                 * An event triggered when a control is clicked on
-                * @type {BABYLON.Observable}
                 */
                 this.onPointerClickObservable = new BABYLON.Observable();
                 /**
                 * An event triggered when pointer enters the control
-                * @type {BABYLON.Observable}
                 */
                 this.onPointerEnterObservable = new BABYLON.Observable();
                 /**
                 * An event triggered when the control is marked as dirty
-                * @type {BABYLON.Observable}
                 */
                 this.onDirtyObservable = new BABYLON.Observable();
                 /**
                * An event triggered after the control is drawn
-               * @type {BABYLON.Observable}
                */
                 this.onAfterDrawObservable = new BABYLON.Observable();
             }
@@ -3413,12 +3405,10 @@ var BABYLON;
                 _this._outlineColor = "white";
                 /**
                 * An event triggered after the text is changed
-                * @type {BABYLON.Observable}
                 */
                 _this.onTextChangedObservable = new BABYLON.Observable();
                 /**
                 * An event triggered after the text was broken up into lines
-                * @type {BABYLON.Observable}
                 */
                 _this.onLinesReadyObservable = new BABYLON.Observable();
                 _this.text = text;

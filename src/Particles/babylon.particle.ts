@@ -58,7 +58,7 @@
         private _currentFrameCounter = 0;
 
         /**
-         * Creates a new instance of @see Particle
+         * Creates a new instance Particle
          * @param particleSystem the particle system the particle belongs to
          */
         constructor(

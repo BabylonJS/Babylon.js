@@ -23,7 +23,16 @@ module BABYLON {
                 var delta = 0;
 
                 if (event.wheelDelta) {
-                    delta = this.wheelDeltaPercentage ? (event.wheelDelta * 0.01) * this.camera.radius * this.wheelDeltaPercentage : event.wheelDelta / (this.wheelPrecision * 40);
+                    if (this.wheelDeltaPercentage) {
+                        var wheelDelta = (event.wheelDelta * 0.01 * this.wheelDeltaPercentage) * this.camera.radius;
+                        if (event.wheelDelta > 0) {
+                            delta = wheelDelta / (1.0 + this.wheelDeltaPercentage);
+                        } else {
+                            delta = wheelDelta * (1.0 + this.wheelDeltaPercentage);
+                        }
+                    } else {
+                        delta = event.wheelDelta / (this.wheelPrecision * 40);
+                    }
                 } else if (event.detail) {
                     delta = -event.detail / this.wheelPrecision;
                 }
