@@ -493,13 +493,11 @@
 
         /**
         * An event triggered when the material is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<Material>();
 
         /**
          * An observer which watches for dispose events.
-         * @type {BABYLON.Observer}
          */
         private _onDisposeObserver: Nullable<Observer<Material>>;
 
@@ -515,13 +513,11 @@
 
         /**
         * An event triggered when the material is bound.
-        * @type {BABYLON.Observable}
         */
         public onBindObservable = new Observable<AbstractMesh>();
 
         /**
          * An observer which watches for bind events.
-         * @type {BABYLON.Observer}
          */
         private _onBindObserver: Nullable<Observer<AbstractMesh>>;
 
@@ -537,7 +533,6 @@
 
         /**
         * An event triggered when the material is unbound.
-        * @type {BABYLON.Observable}
         */
         public onUnBindObservable = new Observable<Material>();
 

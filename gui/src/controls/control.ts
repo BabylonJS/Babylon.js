@@ -69,49 +69,41 @@ module BABYLON.GUI {
 
         /**
         * An event triggered when the pointer move over the control.
-        * @type {BABYLON.Observable}
         */
         public onPointerMoveObservable = new Observable<Vector2>();
 
         /**
         * An event triggered when the pointer move out of the control.
-        * @type {BABYLON.Observable}
         */
         public onPointerOutObservable = new Observable<Control>();
 
         /**
         * An event triggered when the pointer taps the control
-        * @type {BABYLON.Observable}
         */
         public onPointerDownObservable = new Observable<Vector2WithInfo>();
 
         /**
         * An event triggered when pointer up
-        * @type {BABYLON.Observable}
         */
         public onPointerUpObservable = new Observable<Vector2WithInfo>();
 
         /**
         * An event triggered when a control is clicked on
-        * @type {BABYLON.Observable}
         */
         public onPointerClickObservable = new Observable<Vector2WithInfo>();
 
         /**
         * An event triggered when pointer enters the control
-        * @type {BABYLON.Observable}
         */
         public onPointerEnterObservable = new Observable<Control>();
 
         /**
         * An event triggered when the control is marked as dirty
-        * @type {BABYLON.Observable}
         */
         public onDirtyObservable = new Observable<Control>();
 
         /**
        * An event triggered after the control is drawn
-       * @type {BABYLON.Observable}
        */
         public onAfterDrawObservable = new Observable<Control>();
 

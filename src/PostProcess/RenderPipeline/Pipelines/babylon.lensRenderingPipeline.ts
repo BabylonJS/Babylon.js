@@ -21,17 +21,14 @@ module BABYLON {
 
         /**
         * The chromatic aberration PostProcess id in the pipeline
-        * @type {string}
         */
         public LensChromaticAberrationEffect: string = "LensChromaticAberrationEffect";
         /**
         * The highlights enhancing PostProcess id in the pipeline
-        * @type {string}
         */
         public HighlightsEnhancingEffect: string = "HighlightsEnhancingEffect";
         /**
         * The depth-of-field PostProcess id in the pipeline
-        * @type {string}
         */
         public LensDepthOfFieldEffect: string = "LensDepthOfFieldEffect";
 

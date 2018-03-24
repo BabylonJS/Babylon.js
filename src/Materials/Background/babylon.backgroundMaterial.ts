@@ -354,7 +354,6 @@
 
         /**
          * Enable the FOV adjustment feature controlled by fovMultiplier.
-         * @type {boolean}
          */
         public useEquirectangularFOV: boolean = false;
 

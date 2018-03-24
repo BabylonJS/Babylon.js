@@ -137,7 +137,6 @@
 
         /**
         * An event triggered when the texture is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<BaseTexture>();
 

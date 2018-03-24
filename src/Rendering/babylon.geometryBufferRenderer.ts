@@ -59,7 +59,7 @@ module BABYLON {
 
 
         /**
-         * Creates a new G Buffer for the scene. @see GeometryBufferRenderer
+         * Creates a new G Buffer for the scene
          * @param scene The scene the buffer belongs to
          * @param ratio How big is the buffer related to the main canvas.
          */

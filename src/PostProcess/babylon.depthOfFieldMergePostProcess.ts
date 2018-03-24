@@ -28,7 +28,7 @@ module BABYLON {
      */
     export class DepthOfFieldMergePostProcess extends PostProcess {
         /**
-         * Creates a new instance of @see DepthOfFieldMergePostProcess
+         * Creates a new instance of DepthOfFieldMergePostProcess
          * @param name The name of the effect.
          * @param originalFromInput Post process which's input will be used for the merge.
          * @param circleOfConfusion Circle of confusion post process which's output will be used to blur each pixel.
