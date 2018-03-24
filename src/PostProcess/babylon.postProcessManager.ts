@@ -9,7 +9,7 @@
         private _vertexBuffers: { [key: string]: Nullable<VertexBuffer> } = {};
 
         /**
-         * Creates a new instance of @see PostProcess
+         * Creates a new instance PostProcess
          * @param scene The scene that the post process is associated with.
          */
         constructor(scene: Scene) {

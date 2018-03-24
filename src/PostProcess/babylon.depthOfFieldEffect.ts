@@ -68,7 +68,7 @@ module BABYLON {
         }
 
         /**
-         * Creates a new instance of @see DepthOfFieldEffect
+         * Creates a new instance DepthOfFieldEffect
          * @param scene The scene the effect belongs to.
          * @param depthTexture The depth texture of the scene to compute the circle of confusion.This must be set in order for this to function but may be set after initialization if needed.
          * @param pipelineTextureType The type of texture to be used when performing the post processing.
