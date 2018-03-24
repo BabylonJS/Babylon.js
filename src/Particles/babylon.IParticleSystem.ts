@@ -2,7 +2,7 @@ module BABYLON {
     /**
      * Interface representing a particle system in Babylon.
      * This groups the common functionalities that needs to be implemented in order to create a particle system.
-     * A particle system represents a way to manage particles (@see Particle) from their emission to their animation and rendering.
+     * A particle system represents a way to manage particles from their emission to their animation and rendering.
      */
     export interface IParticleSystem {
         /**

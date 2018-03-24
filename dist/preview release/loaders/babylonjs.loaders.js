@@ -5571,5 +5571,6 @@ var BABYLON;
 //# sourceMappingURL=KHR_lights.js.map
 
     
+
     return BABYLON;
 });

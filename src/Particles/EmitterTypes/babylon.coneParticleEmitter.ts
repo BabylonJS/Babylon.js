@@ -29,7 +29,7 @@ module BABYLON {
         }
 
         /**
-         * Creates a new instance of @see ConeParticleEmitter
+         * Creates a new instance ConeParticleEmitter
          * @param radius the radius of the emission cone (1 by default)
          * @param angles the cone base angle (PI by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]

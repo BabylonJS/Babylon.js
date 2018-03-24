@@ -99,7 +99,6 @@
 
         /**
         * An event triggered when the postprocess is activated.
-        * @type {BABYLON.Observable}
         */
         public onActivateObservable = new Observable<Camera>();
 
@@ -118,7 +117,6 @@
 
         /**
         * An event triggered when the postprocess changes its size.
-        * @type {BABYLON.Observable}
         */
         public onSizeChangedObservable = new Observable<PostProcess>();
 
@@ -135,7 +133,6 @@
 
         /**
         * An event triggered when the postprocess applies its effect.
-        * @type {BABYLON.Observable}
         */
         public onApplyObservable = new Observable<Effect>();
 
@@ -152,7 +149,6 @@
 
         /**
         * An event triggered before rendering the postprocess
-        * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<Effect>();
 
@@ -169,7 +165,6 @@
 
         /**
         * An event triggered after rendering the postprocess
-        * @type {BABYLON.Observable}
         */
         public onAfterRenderObservable = new Observable<Effect>();
 
@@ -221,7 +216,7 @@
         }
 
         /**
-         * Creates a new instance of @see PostProcess
+         * Creates a new instance PostProcess
          * @param name The name of the PostProcess.
          * @param fragmentUrl The url of the fragment shader to be used.
 		 * @param parameters Array of the names of uniform non-sampler2D variables that will be passed to the shader.

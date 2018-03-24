@@ -4,67 +4,56 @@
 
         /**
         * The PassPostProcess id in the pipeline that contains the original scene color
-        * @type {string}
         */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
         /**
         * The SSAO PostProcess id in the pipeline
-        * @type {string}
         */
         public SSAORenderEffect: string = "SSAORenderEffect";
         /**
         * The horizontal blur PostProcess id in the pipeline
-        * @type {string}
         */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
         /**
         * The vertical blur PostProcess id in the pipeline
-        * @type {string}
         */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         /**
         * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
-        * @type {string}
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
 
         /**
         * The output strength of the SSAO post-process. Default value is 1.0.
-        * @type {number}
         */
         @serialize()
         public totalStrength: number = 1.0;
 
         /**
         * Maximum depth value to still render AO. A smooth falloff makes the dimming more natural, so there will be no abrupt shading change.
-        * @type {number}
         */
         @serialize()
         public maxZ: number = 100.0;
 
         /**
         * In order to save performances, SSAO radius is clamped on close geometry. This ratio changes by how much
-        * @type {number}
         */
         @serialize()
         public minZAspect: number = 0.2;
 
         /**
         * Number of samples used for the SSAO calculations. Default value is 8
-        * @type {number}
         */
         @serialize("samples")
         private _samples: number = 8;
 
         /**
         * Dynamically generated sphere sampler.
-        * @type {number[]}
         */
         private _sampleSphere: number[];
 
         /**
         * Blur filter offsets
-        * @type {number[]}
         */
         private _samplerOffsets: number[];
 
@@ -82,7 +71,6 @@
 
         /**
         * Are we using bilateral blur ?
-        * @type {boolean}
         */
         @serialize("expensiveBlur")
         private _expensiveBlur: boolean = true;
@@ -101,7 +89,6 @@
 
         /**
         * The radius around the analyzed pixel used by the SSAO post-process. Default value is 2.0
-        * @type {number}
         */
         @serialize()
         public radius: number = 2.0;
@@ -109,14 +96,12 @@
         /**
         * The base color of the SSAO post-process
         * The final result is "base + ssao" between [0, 1]
-        * @type {number}
         */
         @serialize()
         public base: number = 0.1;
 
         /**
         *  Support test.
-        * @type {boolean}
         */
         public static get IsSupported(): boolean {
             var engine = Engine.LastCreatedEngine;
