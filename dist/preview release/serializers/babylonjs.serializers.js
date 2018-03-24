@@ -1798,5 +1798,11 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFMaterial.js.map
 
     
+//backwards compatibility
+if(typeof earcut !== 'undefined') {
+    globalObject["Earcut"] = {
+        earcut: earcut
+    };
+}
     return BABYLON;
 });
