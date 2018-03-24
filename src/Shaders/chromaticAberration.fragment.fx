@@ -39,6 +39,6 @@ void main(void)
 	original.r = texture2D(textureSampler, ref_coords_r).r;
 	original.g = texture2D(textureSampler, ref_coords_g).g;
 	original.b = texture2D(textureSampler, ref_coords_b).b;
-
+	original.a = clamp(texture2D(textureSampler, ref_coords_r).a + texture2D(textureSampler, ref_coords_g).a + texture2D(textureSampler, ref_coords_b).a, 0., 1.);
 	gl_FragColor = original;
 }
