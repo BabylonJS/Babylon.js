@@ -132,6 +132,10 @@ module BABYLON {
 
             this._points.add(points);
             this._outlinepoints.add(points);
+
+            if (typeof earcut === 'undefined') {
+                Tools.Warn("Earcut was not found, the polygon will not be built.")
+            }
         }
 
         addHole(hole: Vector2[]): PolygonMeshBuilder {
