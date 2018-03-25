@@ -1573,7 +1573,6 @@ module BABYLON.GLTF1 {
         public onMeshLoadedObservable = new Observable<AbstractMesh>();
         public onTextureLoadedObservable = new Observable<BaseTexture>();
         public onMaterialLoadedObservable = new Observable<Material>();
-        public onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
         public onCompleteObservable = new Observable<IGLTFLoader>();
         public onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
 
@@ -1582,7 +1581,7 @@ module BABYLON.GLTF1 {
         public dispose(): void {}
         // #endregion
 
-        private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
+        private _importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (meshes: AbstractMesh[], skeletons: Skeleton[]) => void, onProgress?: (event: SceneLoaderProgressEvent) => void, onError?: (message: string) => void): boolean {
             scene.useRightHandedSystem = true;
 
             GLTFLoaderExtension.LoadRuntimeAsync(scene, data, rootUrl, gltfRuntime => {
@@ -1632,26 +1631,27 @@ module BABYLON.GLTF1 {
                         postLoad(gltfRuntime);
 
                         if (!GLTFFileLoader.IncrementalLoading && onSuccess) {
-                            onSuccess(meshes, [], skeletons);
+                            onSuccess(meshes, skeletons);
                         }
                     });
                 }, onProgress);
 
                 if (GLTFFileLoader.IncrementalLoading && onSuccess) {
-                    onSuccess(meshes, [], skeletons);
+                    onSuccess(meshes, skeletons);
                 }
             }, onError);
 
             return true;
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return new Promise((resolve, reject) => {
-                this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, particleSystems, skeletons) => {
+                this._importMeshAsync(meshesNames, scene, data, rootUrl, (meshes, skeletons) => {
                     resolve({
                         meshes: meshes,
-                        particleSystems: particleSystems,
-                        skeletons: skeletons
+                        particleSystems: [],
+                        skeletons: skeletons,
+                        animationGroups: []
                     });
                 }, onProgress, message => {
                     reject(new Error(message));

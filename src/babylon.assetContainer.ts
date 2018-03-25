@@ -28,6 +28,10 @@ module BABYLON {
          */
         public animations = new Array<Animation>();
         /**
+         * AnimationGroups to keep.
+         */
+        public animationGroups = new Array<AnimationGroup>();
+        /**
          * MultiMaterials to keep.
          */
         public multiMaterials = new Array<MultiMaterial>();
@@ -63,6 +67,10 @@ module BABYLON {
          * Sounds to keep.
          */
         public sounds = new Array<Sound>();
+        /**
+         * Textures to keep.
+         */
+        public textures = new Array<Texture>();
     }
 
     /**
@@ -100,6 +108,10 @@ module BABYLON {
          */
         public animations = new Array<Animation>();
         /**
+         * AnimationGroups populated in the container.
+         */
+        public animationGroups = new Array<AnimationGroup>();
+        /**
          * MultiMaterials populated in the container.
          */
         public multiMaterials = new Array<MultiMaterial>();
@@ -135,6 +147,10 @@ module BABYLON {
          * Sounds populated in the container.
          */
         public sounds = new Array<Sound>();
+        /**
+         * Textures populated in the container.
+         */
+        public textures = new Array<Texture>();
 
         /**
          * Instantiates an AssetContainer.
@@ -166,6 +182,9 @@ module BABYLON {
             this.animations.forEach((o) => {
                 this.scene.addAnimation(o);
             });
+            this.animationGroups.forEach((o) => {
+                this.scene.addAnimationGroup(o);
+            });
             this.multiMaterials.forEach((o) => {
                 this.scene.addMultiMaterial(o);
             });
@@ -192,6 +211,9 @@ module BABYLON {
                 o.autoplay = true;
                 this.scene.mainSoundTrack.AddSound(o);
             });
+            this.textures.forEach((o) => {
+                this.scene.addTexture
+            });
         }
 
         /**
@@ -215,6 +237,9 @@ module BABYLON {
             });
             this.animations.forEach((o) => {
                 this.scene.removeAnimation(o);
+            });
+            this.animationGroups.forEach((o) => {
+                this.scene.removeAnimationGroup(o);
             });
             this.multiMaterials.forEach((o) => {
                 this.scene.removeMultiMaterial(o);
@@ -241,6 +266,9 @@ module BABYLON {
                 o.stop();
                 o.autoplay = false;
                 this.scene.mainSoundTrack.RemoveSound(o);
+            });
+            this.textures.forEach((o) => {
+                this.scene.removeTexture(o);
             });
         }
 
@@ -276,6 +304,7 @@ module BABYLON {
             this._moveAssets(this.scene.materials, this.materials, keepAssets.materials);
             this._moveAssets(this.scene._actionManagers, this.actionManagers, keepAssets.actionManagers);
             this._moveAssets(this.scene.animations, this.animations, keepAssets.animations);
+            this._moveAssets(this.scene.animationGroups, this.animationGroups, keepAssets.animationGroups);
             this._moveAssets(this.scene.lensFlareSystems, this.lensFlareSystems, keepAssets.lensFlareSystems);
             this._moveAssets(this.scene.lights, this.lights, keepAssets.lights);
             this._moveAssets(this.scene.morphTargetManagers, this.morphTargetManagers, keepAssets.morphTargetManagers);
@@ -284,6 +313,7 @@ module BABYLON {
             this._moveAssets(this.scene.particleSystems, this.particleSystems, keepAssets.particleSystems);
             this._moveAssets(this.scene.mainSoundTrack.soundCollection, this.sounds, keepAssets.sounds);
             this._moveAssets(this.scene.transformNodes, this.transformNodes, keepAssets.transformNodes);
+            this._moveAssets(this.scene.textures, this.textures, keepAssets.textures);
 
             this.removeAllFromScene();
         }

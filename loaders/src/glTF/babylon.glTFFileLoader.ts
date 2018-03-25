@@ -63,14 +63,13 @@ module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
-        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
 
         state: Nullable<GLTFLoaderState>;
 
-        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }>;
+        importMeshAsync: (meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
 
@@ -172,19 +171,6 @@ module BABYLON {
         }
 
         /**
-         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
-         */
-        public readonly onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
-
-        private _onAnimationGroupLoadedObserver: Nullable<Observer<AnimationGroup>>;
-        public set onAnimationGroupLoaded(callback: (animationGroup: AnimationGroup) => void) {
-            if (this._onAnimationGroupLoadedObserver) {
-                this.onAnimationGroupLoadedObservable.remove(this._onAnimationGroupLoadedObserver);
-            }
-            this._onAnimationGroupLoadedObserver = this.onAnimationGroupLoadedObservable.add(callback);
-        }
-
-        /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after onSuccess.
@@ -273,7 +259,7 @@ module BABYLON {
             this.onDisposeObservable.clear();
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: any, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
                 const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
@@ -294,10 +280,11 @@ module BABYLON {
                 const loaderData = this._parse(data);
                 this._loader = this._getLoader(loaderData);
                 return this._loader.importMeshAsync(null, scene, loaderData, rootUrl, onProgress).then(result => {
-                    var container = new AssetContainer(scene);
+                    const container = new AssetContainer(scene);
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                     Array.prototype.push.apply(container.skeletons, result.skeletons);
+                    Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                     container.removeAllFromScene();
                     return container;
                 });
@@ -373,7 +360,6 @@ module BABYLON {
             loader.onTextureLoadedObservable.add(texture => this.onTextureLoadedObservable.notifyObservers(texture));
             loader.onMaterialLoadedObservable.add(material => this.onMaterialLoadedObservable.notifyObservers(material));
             loader.onExtensionLoadedObservable.add(extension => this.onExtensionLoadedObservable.notifyObservers(extension));
-            loader.onAnimationGroupLoadedObservable.add(animationGroup => this.onAnimationGroupLoadedObservable.notifyObservers(animationGroup));
 
             loader.onCompleteObservable.add(() => {
                 this.onMeshLoadedObservable.clear();
