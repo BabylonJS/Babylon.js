@@ -2539,6 +2539,19 @@
             return index;
         }
 
+        /**
+         * Removes the given animation group from this scene.
+         * @param toRemove The animation group to remove
+         * @returns The index of the removed animation group
+         */
+        public removeAnimationGroup(toRemove: AnimationGroup): number {
+            var index = this.animationGroups.indexOf(toRemove);
+            if (index !== -1) {
+                this.animationGroups.splice(index, 1);
+            }
+            return index;
+        }
+
         public removeMultiMaterial(toRemove: MultiMaterial): number {
             var index = this.multiMaterials.indexOf(toRemove);
             if (index !== -1) {
@@ -2567,6 +2580,19 @@
             var index = this._actionManagers.indexOf(toRemove);
             if (index !== -1) {
                 this._actionManagers.splice(index, 1);
+            }
+            return index;
+        }
+
+        /**
+         * Removes the given texture from this scene.
+         * @param toRemove The texture to remove
+         * @returns The index of the removed texture
+         */
+        public removeTexture(toRemove: BaseTexture): number {
+            var index = this.textures.indexOf(toRemove);
+            if (index !== -1) {
+                this.textures.splice(index, 1);
             }
             return index;
         }
@@ -2609,6 +2635,14 @@
             this.animations.push(newAnimation);
         }
 
+        /**
+         * Adds the given animation group to this scene.
+         * @param newAnimationGroup The animation group to add
+         */
+        public addAnimationGroup(newAnimationGroup: AnimationGroup): void {
+            this.animationGroups.push(newAnimationGroup);
+        }
+
         public addMultiMaterial(newMultiMaterial: MultiMaterial): void {
             this.multiMaterials.push(newMultiMaterial);
         }
@@ -2631,6 +2665,14 @@
 
         public addActionManager(newActionManager: ActionManager): void {
             this._actionManagers.push(newActionManager);
+        }
+
+        /**
+         * Adds the given texture to this scene.
+         * @param newTexture The texture to add
+         */
+        public addTexture(newTexture: BaseTexture): void {
+            this.textures.push(newTexture);
         }
 
         /**
