@@ -101,6 +101,7 @@
 - Added support for primitive modes to glTF 2.0 loader. ([bghgary](https://github.com/bghgary)]
 - Cannon and Oimo are optional dependencies ([RaananW](https://github.com/RaananW))
 - Shadows - Introduces [Normal Bias](https://doc.babylonjs.com/babylon101/shadows#normal-bias-since-32) ([sebavan](https://github.com/sebavan)))
+- Return animation groups when calling `SceneLoader.ImportMesh`. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
 
