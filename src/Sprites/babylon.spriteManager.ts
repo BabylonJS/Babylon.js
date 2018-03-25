@@ -10,7 +10,6 @@
 
         /**
         * An event triggered when the manager is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<SpriteManager>();
 

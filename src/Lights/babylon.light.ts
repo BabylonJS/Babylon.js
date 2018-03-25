@@ -374,7 +374,6 @@ module BABYLON {
         /**
          * Set the enabled state of this node.
          * @param value - the new enabled state
-         * @see isEnabled
          */
         public setEnabled(value: boolean): void {
             super.setEnabled(value);

@@ -18,10 +18,6 @@ module BABYLON {
         SAMPLER3DGREENDEPTH: boolean;
         SAMPLER3DBGRMAP: boolean;
         IMAGEPROCESSINGPOSTPROCESS: boolean;
-        /** 
-         * If the grain should be performed in the image processing shader.
-         */
-        GRAIN: boolean;
     }
 
     /**
@@ -221,57 +217,6 @@ module BABYLON {
         public vignetteCameraFov = 0.5;
 
         @serialize()
-        private _grainEnabled = false;
-
-        /**
-         * If the grain effect should be enabled.
-         */
-        public get grainEnabled(): boolean {
-            return this._grainEnabled;
-        }
-        public set grainEnabled(value: boolean) {
-            if (this._grainEnabled === value) {
-                return;
-            }
-
-            this._grainEnabled = value;
-            this._updateParameters();
-        }
-
-        @serialize()
-        private _grainIntensity = 30;
-        /**
-         * Amount of grain to be applied by the grain effect.
-         */
-        public get grainIntensity(): number {
-            return this._grainIntensity;
-        }
-        public set grainIntensity(value: number) {
-            if (this._grainIntensity === value) {
-                return;
-            }
-            this._grainIntensity = value;
-        }
-
-        @serialize()
-        private _grainAnimated = false;
-
-        /**
-         * If the grain effect should be animated.
-         */
-        public get grainAnimated(): boolean {
-            return this._grainAnimated;
-        }
-        public set grainAnimated(value: boolean) {
-            if (this._grainAnimated === value) {
-                return;
-            }
-
-            this._grainAnimated = value;
-            this._updateParameters();
-        }
-
-        @serialize()
         private _vignetteBlendMode = ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY;
         /**
          * Gets the vignette blend mode allowing different kind of effect.
@@ -353,7 +298,6 @@ module BABYLON {
 
         /**
         * An event triggered when the configuration changes and requires Shader to Update some parameters.
-        * @type {BABYLON.Observable}
         */
         public onUpdateParameters = new Observable<ImageProcessingConfiguration>();
 
@@ -390,10 +334,6 @@ module BABYLON {
             }
             if (defines.COLORCURVES) {
                 ColorCurves.PrepareUniforms(uniforms);
-            }
-            if (defines.GRAIN){
-                uniforms.push("grainVarianceAmount");
-                uniforms.push("grainAnimatedSeed");
             }
         }
 
@@ -442,8 +382,7 @@ module BABYLON {
             defines.SAMPLER3DGREENDEPTH = this.colorGradingWithGreenDepth;
             defines.SAMPLER3DBGRMAP = this.colorGradingBGR;
             defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
-            defines.GRAIN = this.grainEnabled;
-            defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING || defines.GRAIN;
+            defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING;
         }
 
         /**
@@ -501,9 +440,6 @@ module BABYLON {
                     this.colorGradingTexture.level // weight
                 );
             }
-
-            effect.setFloat("grainVarianceAmount", this.grainIntensity);
-            effect.setFloat("grainAnimatedSeed", this.grainAnimated ? Math.random() + 1 : 1);
         }
 
         /**

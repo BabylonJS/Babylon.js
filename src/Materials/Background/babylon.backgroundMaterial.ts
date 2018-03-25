@@ -83,7 +83,6 @@
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
         public EXPOSURE = false;
-        public GRAIN = false;
 
         // Reflection.
         public REFLECTION = false;
@@ -355,7 +354,6 @@
 
         /**
          * Enable the FOV adjustment feature controlled by fovMultiplier.
-         * @type {boolean}
          */
         public useEquirectangularFOV: boolean = false;
 

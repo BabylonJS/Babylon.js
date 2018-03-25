@@ -27,6 +27,11 @@
                 "name": "OIMO",
                 "module": "oimo",
                 "optional": true
+            },
+            {
+                "name": "earcut",
+                "module": "earcut",
+                "optional": true
             }
         ]
     },
@@ -74,7 +79,9 @@
             "additionalPostProcess_fxaa",
             "additionalPostProcess_circleOfConfusion",
             "additionalPostProcess_depthOfFieldMerge",
+            "additionalPostProcess_bloomMerge",
             "additionalPostProcess_depthOfFieldEffect",
+            "additionalPostProcess_bloomEffect",
             "additionalPostProcess_imageProcessing",
             "bones",
             "hdr",
@@ -110,75 +117,6 @@
             "meshBuilder",
             "freeCamera",
             "hemisphericLight"
-        ],
-        "minimalGLTFViewer": [
-            "pbrMaterial",
-            "freeCamera",
-            "arcRotateCamera",
-            "hemisphericLight",
-            "pointLight",
-            "directionalLight",
-            "spotLight",
-            "animations",
-            "actions",
-            "sprites",
-            "picking",
-            "collisions",
-            "particles",
-            "solidParticles",
-            "additionalMeshes",
-            "meshBuilder",
-            "meshCompression",
-            "audio",
-            "additionalTextures",
-            "shadows",
-            "loader",
-            "userData",
-            "offline",
-            "fresnel",
-            "multiMaterial",
-            "touchCamera",
-            "procedural",
-            "gamepad",
-            "additionalCameras",
-            "postProcesses",
-            "renderingPipeline",
-            "additionalRenderingPipeline",
-            "defaultRenderingPipeline",
-            "depthRenderer",
-            "geometryBufferRenderer",
-            "additionalPostProcesses",
-            "additionalPostProcess_blur",
-            "additionalPostProcess_fxaa",
-            "additionalPostProcess_imageProcessing",
-            "bones",
-            "hdr",
-            "polygonMesh",
-            "csg",
-            "lensFlares",
-            "physics",
-            "textureFormats",
-            "debug",
-            "morphTargets",
-            "octrees",
-            "vr",
-            "virtualJoystick",
-            "optimizations",
-            "highlights",
-            "assetsManager",
-            "serialization",
-            "probes",
-            "layer",
-            "textureTools",
-            "cameraBehaviors",
-            "instrumentation",
-            "backgroundMaterial",
-            "environmentHelper",
-            "materialsLibrary/babylon.gridMaterial.js",
-            "loaders/babylon.glTFFileLoader.js"
-        ],
-        "distributed": [
-            "minimalGLTFViewer"
         ]
     },
     "workloads": {
@@ -803,6 +741,17 @@
                 "chromaticAberration.fragment"
             ]
         },
+        "additionalPostProcess_grain": {
+            "files": [
+                "../../src/PostProcess/babylon.grainPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "grain.fragment"
+            ]
+        },
         "additionalPostProcess_depthOfFieldMerge": {
             "files": [
                 "../../src/PostProcess/babylon.depthOfFieldMergePostProcess.js"
@@ -814,6 +763,17 @@
                 "depthOfFieldMerge.fragment"
             ]
         },
+        "additionalPostProcess_bloomMerge": {
+            "files": [
+                "../../src/PostProcess/babylon.bloomMergePostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "bloomMerge.fragment"
+            ]
+        },
         "additionalPostProcess_depthOfFieldEffect": {
             "files": [
                 "../../src/PostProcess/babylon.depthOfFieldEffect.js"
@@ -822,6 +782,16 @@
                 "additionalPostProcess_depthOfFieldBlur",
                 "additionalPostProcess_depthOfFieldMerge",
                 "additionalPostProcess_circleOfConfusion"
+            ]
+        },
+        "additionalPostProcess_bloomEffect": {
+            "files": [
+                "../../src/PostProcess/babylon.bloomEffect.js"
+            ],
+            "dependUpon": [
+                "additionalPostProcess_blur",
+                "additionalPostProcess_bloomMerge",
+                "additionalPostProcess_extractHighlights"
             ]
         },
         "additionalPostProcess_fxaa": {
@@ -847,6 +817,17 @@
                 "highlights.fragment"
             ]
         },
+        "additionalPostProcess_extractHighlights": {
+            "files": [
+                "../../src/PostProcess/babylon.extractHighlightsPostProcess.js"
+            ],
+            "dependUpon": [
+                "postProcesses"
+            ],
+            "shaders": [
+                "extractHighlights.fragment"
+            ]
+        },
         "additionalPostProcess_imageProcessing": {
             "files": [
                 "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
@@ -866,6 +847,7 @@
                 "../../src/PostProcess/babylon.convolutionPostProcess.js",
                 "../../src/PostProcess/babylon.sharpenPostProcess.js",
                 "../../src/PostProcess/babylon.chromaticAberrationPostProcess.js",
+                "../../src/PostProcess/babylon.grainPostProcess.js",
                 "../../src/PostProcess/babylon.filterPostProcess.js",
                 "../../src/PostProcess/babylon.fxaaPostProcess.js",
                 "../../src/PostProcess/babylon.volumetricLightScatteringPostProcess.js",
@@ -873,6 +855,7 @@
                 "../../src/PostProcess/babylon.tonemapPostProcess.js",
                 "../../src/PostProcess/babylon.displayPassPostProcess.js",
                 "../../src/PostProcess/babylon.highlightsPostProcess.js",
+                "../../src/PostProcess/babylon.extractHighlightsPostProcess.js",
                 "../../src/PostProcess/babylon.imageProcessingPostProcess.js"
             ],
             "dependUpon": [
@@ -919,7 +902,6 @@
                 "ssao.fragment",
                 "ssao2.fragment",
                 "ssaoCombine.fragment",
-                "chromaticAberration.fragment",
                 "lensHighlights.fragment",
                 "depthOfField.fragment",
                 "standard.fragment"
@@ -933,8 +915,10 @@
                 "renderingPipeline",
                 "additionalPostProcess_fxaa",
                 "additionalPostProcess_chromaticAberration",
+                "additionalPostProcess_grain",
                 "additionalPostProcess_sharpen",
-                "additionalPostProcess_depthOfFieldEffect"
+                "additionalPostProcess_depthOfFieldEffect",
+                "additionalPostProcess_bloomEffect"
             ]
         },
         "bones": {
@@ -970,7 +954,6 @@
         },
         "polygonMesh": {
             "files": [
-                "../../src/Tools/babylon.earcut.js",
                 "../../src/Mesh/babylon.polygonMesh.js"
             ],
             "dependUpon": [

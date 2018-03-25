@@ -10,34 +10,29 @@
 
         /**
         * If not undefined, the mesh position is computed from the attached node position
-        * @type {{position: Vector3}}
         */
         public attachedNode: { position: Vector3 };
 
         /**
         * Custom position of the mesh. Used if "useCustomMeshPosition" is set to "true"
-        * @type {Vector3}
         */
         @serializeAsVector3()
         public customMeshPosition: Vector3 = Vector3.Zero();
 
         /**
         * Set if the post-process should use a custom position for the light source (true) or the internal mesh position (false)
-        * @type {boolean}
         */
         @serialize()
         public useCustomMeshPosition: boolean = false;
 
         /**
         * If the post-process should inverse the light scattering direction
-        * @type {boolean}
         */
         @serialize()
         public invert: boolean = true;
 
         /**
         * The internal mesh used by the post-process
-        * @type {boolean}
         */
         @serializeAsMeshReference()
         public mesh: Mesh;
@@ -60,28 +55,24 @@
 
         /**
         * Controls the overall intensity of the post-process
-        * @type {number}
         */
         @serialize()
         public exposure = 0.3;
 
         /**
         * Dissipates each sample's contribution in range [0, 1]
-        * @type {number}
         */
         @serialize()
         public decay = 0.96815;
 
         /**
         * Controls the overall intensity of each sample
-        * @type {number}
         */
         @serialize()
         public weight = 0.58767;
 
         /**
         * Controls the density of each sample
-        * @type {number}
         */
         @serialize()
         public density = 0.926;

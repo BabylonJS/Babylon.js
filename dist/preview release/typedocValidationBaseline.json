@@ -1,7 +1,7 @@
 {
-  "errors": 7152,
+  "errors": 7080,
   "babylon.typedoc.json": {
-    "errors": 7152,
+    "errors": 7080,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -1418,147 +1418,15 @@
       }
     },
     "Action": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new Action": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "triggerOptions": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "condition": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Property": {
-        "_actionManager": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onBeforeExecuteObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "trigger": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "triggerOptions": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_GetTargetProperty": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_SerializeValueAsString": {
           "Comments": {
             "MissingText": true
           }
         }
       },
       "Method": {
-        "_executeCurrent": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "evt": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_getEffectiveTarget": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "propertyPath": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_getProperty": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "propertyPath": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_prepare": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "execute": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "evt": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getTriggerParameter": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "serialize": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "parent": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "skipToNextActiveAction": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "then": {
-          "Comments": {
-            "MissingText": true
-          },
           "Parameter": {
             "action": {
               "Comments": {
@@ -8024,85 +7892,6 @@
         }
       }
     },
-    "Condition": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Constructor": {
-        "new Condition": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "actionManager": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
-      "Property": {
-        "_actionManager": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_currentResult": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_evaluationId": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "_getEffectiveTarget": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "target": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "propertyPath": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "_getProperty": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "propertyPath": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "isValid": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "serialize": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "CubeTexture": {
       "Class": {
         "Comments": {
@@ -8777,52 +8566,12 @@
     },
     "DefaultRenderingPipeline": {
       "Property": {
-        "BlurXPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "BlurYPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "ChromaticAberrationPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "CopyBackPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "FinalMergePostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
         "FxaaPostProcessId": {
           "Naming": {
             "NotCamelCase": true
           }
         },
-        "HighLightsPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
         "ImageProcessingPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "PassPostProcessId": {
-          "Naming": {
-            "NotCamelCase": true
-          }
-        },
-        "SharpenPostProcessId": {
           "Naming": {
             "NotCamelCase": true
           }
@@ -8858,101 +8607,6 @@
       "Class": {
         "Comments": {
           "MissingText": true
-        }
-      }
-    },
-    "DynamicTexture": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Method": {
-        "clear": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "drawText": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "text": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "x": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "y": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "font": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "color": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "clearColor": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "invertY": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "update": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getContext": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "scaleTo": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "width": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "height": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "update": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "invertY": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
         }
       }
     },
@@ -9192,11 +8846,6 @@
           }
         },
         "emptyTexture3D": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "enableOfflineSupport": {
           "Comments": {
             "MissingText": true
           }
@@ -23329,11 +22978,6 @@
       }
     },
     "PredicateCondition": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Property": {
         "predicate": {
           "Comments": {
@@ -31252,11 +30896,6 @@
       }
     },
     "StateCondition": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Property": {
         "value": {
           "Comments": {
@@ -34564,11 +34203,6 @@
       }
     },
     "ValueCondition": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Property": {
         "operator": {
           "Comments": {
@@ -34583,40 +34217,6 @@
         "value": {
           "Comments": {
             "MissingText": true
-          }
-        },
-        "IsDifferent": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IsEqual": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IsGreater": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "IsLesser": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "GetOperatorName": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "operator": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
           }
         }
       }

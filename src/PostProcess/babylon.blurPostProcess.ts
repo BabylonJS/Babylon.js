@@ -52,7 +52,7 @@
 		}
 
 		/**
-         * Creates a new instance of @see BlurPostProcess
+         * Creates a new instance BlurPostProcess
          * @param name The name of the effect.
          * @param direction The direction in which to blur the image.
 		 * @param kernel The size of the kernel to be used when computing the blur. eg. Size of 3 will blur the center pixel by 2 pixels surrounding it.
@@ -174,6 +174,7 @@
 				defines += `#define PACKEDFLOAT 1`;
 			}
 
+			this.blockCompilation = false;
             super.updateEffect(defines, null, null, {
 				varyingCount: varyingCount,
 				depCount: depCount

@@ -92,7 +92,7 @@
 
     /**
      * Represents a scene to be rendered by the engine.
-     * @see http://doc.babylonjs.com/page.php?p=21911
+     * @see http://doc.babylonjs.com/features/scene
      */
     export class Scene implements IAnimatable {
         // Statics
@@ -212,13 +212,17 @@
         public metadata: any = null;
         public loadingPluginName: string;
 
+        /**
+         * Use this array to add regular expressions used to disable offline support for specific urls
+         */
+        public disableOfflineSupportExceptionRules = new Array<RegExp>();        
+
         // Events
 
         private _spritePredicate: (sprite: Sprite) => boolean;
 
         /**
         * An event triggered when the scene is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<Scene>();
 
@@ -233,7 +237,6 @@
 
         /**
         * An event triggered before rendering the scene (right after animations and physics)
-        * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<Scene>();
 
@@ -250,7 +253,6 @@
 
         /**
         * An event triggered after rendering the scene
-        * @type {BABYLON.Observable}
         */
         public onAfterRenderObservable = new Observable<Scene>();
 
@@ -268,49 +270,41 @@
 
         /**
         * An event triggered before animating the scene
-        * @type {BABYLON.Observable}
         */
         public onBeforeAnimationsObservable = new Observable<Scene>();
 
         /**
         * An event triggered after animations processing
-        * @type {BABYLON.Observable}
         */
         public onAfterAnimationsObservable = new Observable<Scene>();
 
         /**
         * An event triggered before draw calls are ready to be sent
-        * @type {BABYLON.Observable}
         */
         public onBeforeDrawPhaseObservable = new Observable<Scene>();
 
         /**
         * An event triggered after draw calls have been sent
-        * @type {BABYLON.Observable}
         */
         public onAfterDrawPhaseObservable = new Observable<Scene>();
 
         /**
         * An event triggered when physic simulation is about to be run
-        * @type {BABYLON.Observable}
         */
         public onBeforePhysicsObservable = new Observable<Scene>();
 
         /**
         * An event triggered when physic simulation has been done
-        * @type {BABYLON.Observable}
         */
         public onAfterPhysicsObservable = new Observable<Scene>();
 
         /**
         * An event triggered when the scene is ready
-        * @type {BABYLON.Observable}
         */
         public onReadyObservable = new Observable<Scene>();
 
         /**
         * An event triggered before rendering a camera
-        * @type {BABYLON.Observable}
         */
         public onBeforeCameraRenderObservable = new Observable<Camera>();
 
@@ -325,7 +319,6 @@
 
         /**
         * An event triggered after rendering a camera
-        * @type {BABYLON.Observable}
         */
         public onAfterCameraRenderObservable = new Observable<Camera>();
 
@@ -339,133 +332,112 @@
 
         /**
         * An event triggered when active meshes evaluation is about to start
-        * @type {BABYLON.Observable}
         */
         public onBeforeActiveMeshesEvaluationObservable = new Observable<Scene>();
 
         /**
         * An event triggered when active meshes evaluation is done
-        * @type {BABYLON.Observable}
         */
         public onAfterActiveMeshesEvaluationObservable = new Observable<Scene>();
 
         /**
         * An event triggered when particles rendering is about to start
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onBeforeParticlesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when particles rendering is done
         * Note: This event can be trigger more than once per frame (because particles can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onAfterParticlesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when sprites rendering is about to start
         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onBeforeSpritesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when sprites rendering is done
         * Note: This event can be trigger more than once per frame (because sprites can be rendered by render target textures as well)
-        * @type {BABYLON.Observable}
         */
         public onAfterSpritesRenderingObservable = new Observable<Scene>();
 
         /**
         * An event triggered when SceneLoader.Append or SceneLoader.Load or SceneLoader.ImportMesh were successfully executed
-        * @type {BABYLON.Observable}
         */
         public onDataLoadedObservable = new Observable<Scene>();
 
         /**
         * An event triggered when a camera is created
-        * @type {BABYLON.Observable}
         */
         public onNewCameraAddedObservable = new Observable<Camera>();
 
         /**
         * An event triggered when a camera is removed
-        * @type {BABYLON.Observable}
         */
         public onCameraRemovedObservable = new Observable<Camera>();
 
         /**
         * An event triggered when a light is created
-        * @type {BABYLON.Observable}
         */
         public onNewLightAddedObservable = new Observable<Light>();
 
         /**
         * An event triggered when a light is removed
-        * @type {BABYLON.Observable}
         */
         public onLightRemovedObservable = new Observable<Light>();
 
         /**
         * An event triggered when a geometry is created
-        * @type {BABYLON.Observable}
         */
         public onNewGeometryAddedObservable = new Observable<Geometry>();
 
         /**
         * An event triggered when a geometry is removed
-        * @type {BABYLON.Observable}
         */
         public onGeometryRemovedObservable = new Observable<Geometry>();
 
         /**
         * An event triggered when a transform node is created
-        * @type {BABYLON.Observable}
         */
         public onNewTransformNodeAddedObservable = new Observable<TransformNode>();
 
         /**
         * An event triggered when a transform node is removed
-        * @type {BABYLON.Observable}
         */
         public onTransformNodeRemovedObservable = new Observable<TransformNode>();
 
         /**
         * An event triggered when a mesh is created
-        * @type {BABYLON.Observable}
         */
         public onNewMeshAddedObservable = new Observable<AbstractMesh>();
 
         /**
         * An event triggered when a mesh is removed
-        * @type {BABYLON.Observable}
         */
         public onMeshRemovedObservable = new Observable<AbstractMesh>();
 
         /**
         * An event triggered when render targets are about to be rendered
         * Can happen multiple times per frame.
-        * @type {BABYLON.Observable}
         */
         public OnBeforeRenderTargetsRenderObservable = new Observable<Scene>();
 
         /**
         * An event triggered when render targets were rendered.
         * Can happen multiple times per frame.
-        * @type {BABYLON.Observable}
         */
         public OnAfterRenderTargetsRenderObservable = new Observable<Scene>();
 
         /**
         * An event triggered before calculating deterministic simulation step
-        * @type {BABYLON.Observable}
         */
         public onBeforeStepObservable = new Observable<Scene>();
 
         /**
         * An event triggered after calculating deterministic simulation step
-        * @type {BABYLON.Observable}
         */
         public onAfterStepObservable = new Observable<Scene>();
 
@@ -584,7 +556,6 @@
         // Coordinate system
         /**
         * use right-handed coordinate system on this scene.
-        * @type {boolean}
         */
         private _useRightHandedSystem = false;
         public set useRightHandedSystem(value: boolean) {
@@ -647,7 +618,6 @@
         // Lights
         /**
         * is shadow enabled on this scene.
-        * @type {boolean}
         */
         private _shadowsEnabled = true;
         public set shadowsEnabled(value: boolean) {
@@ -663,7 +633,6 @@
 
         /**
         * is light enabled on this scene.
-        * @type {boolean}
         */
         private _lightsEnabled = true;
         public set lightsEnabled(value: boolean) {
@@ -680,8 +649,6 @@
 
         /**
         * All of the lights added to this scene.
-        * @see BABYLON.Light
-        * @type {BABYLON.Light[]}
         */
         public lights = new Array<Light>();
 
@@ -696,22 +663,16 @@
         // Meshes
         /**
         * All of the tranform nodes added to this scene.
-        * @see BABYLON.TransformNode
-        * @type {BABYLON.TransformNode[]}
         */
         public transformNodes = new Array<TransformNode>();
 
         /**
         * All of the (abstract) meshes added to this scene.
-        * @see BABYLON.AbstractMesh
-        * @type {BABYLON.AbstractMesh[]}
         */
         public meshes = new Array<AbstractMesh>();
 
         /**
         * All of the animation groups added to this scene.
-        * @see BABYLON.AnimationGroup
-        * @type {BABYLON.AnimationGroup[]}
         */
         public animationGroups = new Array<AnimationGroup>();
 
@@ -833,7 +794,6 @@
 
         /**
          * This scene's action manager
-         * @type {BABYLON.ActionManager}
         */
         public actionManager: ActionManager;
 
@@ -1951,6 +1911,19 @@
                 }
             }
 
+            // Post-processes
+            if (this.activeCameras && this.activeCameras.length > 0) {
+                for (var camera of this.activeCameras) {
+                    if (!camera.isReady(true)) {
+                        return false;
+                    }
+                }
+            } else if (this.activeCamera) {
+                if (!this.activeCamera.isReady(true)) {
+                    return false;
+                }
+            }
+
             // Particles
             for (var particleSystem of this.particleSystems) {
                 if (!particleSystem.isReady()) {
@@ -2090,7 +2063,6 @@
          * @param onAnimationEnd defines the function to be executed when the animation ends
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @returns the animatable object created for this animation
-         * @see BABYLON.Animatable
          */
         public beginWeightedAnimation(target: any, from: number, to: number, weight = 1.0, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable): Animatable {
             let returnedAnimatable = this.beginAnimation(target, from, to, loop, speedRatio, onAnimationEnd, animatable, false);
@@ -2110,7 +2082,6 @@
          * @param animatable defines an animatable object. If not provided a new one will be created from the given params
          * @param stopCurrent defines if the current animations must be stopped first (true by default)
          * @returns the animatable object created for this animation
-         * @see BABYLON.Animatable
          */
         public beginAnimation(target: any, from: number, to: number, loop?: boolean, speedRatio: number = 1.0, onAnimationEnd?: () => void, animatable?: Animatable, stopCurrent = true): Animatable {
 
@@ -2221,7 +2192,6 @@
          * Will stop the animation of the given target
          * @param target - the target
          * @param animationName - the name of the animation to stop (all animations will be stopped if empty)
-         * @see beginAnimation
          */
         public stopAnimation(target: any, animationName?: string): void {
             var animatables = this.getAllAnimatablesByTarget(target);
@@ -2700,7 +2670,6 @@
          * sets the active camera of the scene using its ID
          * @param {string} id - the camera's ID
          * @return {BABYLON.Camera|null} the new active camera or null if none found.
-         * @see activeCamera
          */
         public setActiveCameraByID(id: string): Nullable<Camera> {
             var camera = this.getCameraByID(id);
@@ -2717,7 +2686,6 @@
          * sets the active camera of the scene using its name
          * @param {string} name - the camera's name
          * @return {BABYLON.Camera|null} the new active camera or null if none found.
-         * @see activeCamera
          */
         public setActiveCameraByName(name: string): Nullable<Camera> {
             var camera = this.getCameraByName(name);
@@ -4228,7 +4196,16 @@
                 throw "No camera available to enable depth renderer";
             }
             if (!this._depthRenderer[camera.id]) {
-                this._depthRenderer[camera.id] = new DepthRenderer(this, Engine.TEXTURETYPE_FLOAT, camera);
+                var textureType = 0;
+                if (this._engine.getCaps().textureHalfFloatRender) {
+                    textureType = Engine.TEXTURETYPE_HALF_FLOAT;
+                }
+                else if (this._engine.getCaps().textureFloatRender) {
+                    textureType = Engine.TEXTURETYPE_FLOAT;
+                } else {
+                    throw "Depth renderer does not support int texture type";
+                }
+                this._depthRenderer[camera.id] = new DepthRenderer(this, textureType, camera);
             }
 
             return this._depthRenderer[camera.id];

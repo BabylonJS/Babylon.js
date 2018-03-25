@@ -597,7 +597,7 @@
         }
 
         public static get Version(): string {
-            return "3.2.0-beta.1";
+            return "3.2.0-beta.3";
         }
 
         // Updatable statics so stick with vars here
@@ -612,8 +612,12 @@
         public cullBackFaces = true;
         public renderEvenInBackground = true;
         public preventCacheWipeBetweenFrames = false;
-        // To enable/disable IDB support and avoid XHR on .manifest
+
+        /** 
+         * To enable/disable IDB support and avoid XHR on .manifest
+         **/
         public enableOfflineSupport = false;
+
         public scenes = new Array<Scene>();
         public postProcesses = new Array<PostProcess>();
 

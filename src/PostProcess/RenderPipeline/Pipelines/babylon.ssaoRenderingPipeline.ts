@@ -4,40 +4,33 @@
 
         /**
         * The PassPostProcess id in the pipeline that contains the original scene color
-        * @type {string}
         */
         public SSAOOriginalSceneColorEffect: string = "SSAOOriginalSceneColorEffect";
         /**
         * The SSAO PostProcess id in the pipeline
-        * @type {string}
         */
         public SSAORenderEffect: string = "SSAORenderEffect";
         /**
         * The horizontal blur PostProcess id in the pipeline
-        * @type {string}
         */
         public SSAOBlurHRenderEffect: string = "SSAOBlurHRenderEffect";
         /**
         * The vertical blur PostProcess id in the pipeline
-        * @type {string}
         */
         public SSAOBlurVRenderEffect: string = "SSAOBlurVRenderEffect";
         /**
         * The PostProcess id in the pipeline that combines the SSAO-Blur output with the original scene color (SSAOOriginalSceneColorEffect)
-        * @type {string}
         */
         public SSAOCombineRenderEffect: string = "SSAOCombineRenderEffect";
 
         /**
         * The output strength of the SSAO post-process. Default value is 1.0.
-        * @type {number}
         */
         @serialize()
         public totalStrength: number = 1.0;
 
         /**
         * The radius around the analyzed pixel used by the SSAO post-process. Default value is 0.0006
-        * @type {number}
         */
         @serialize()
         public radius: number = 0.0001;
@@ -46,7 +39,6 @@
         * Related to fallOff, used to interpolate SSAO samples (first interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to fallOff and superior to fallOff.
         * Default value is 0.975
-        * @type {number}
         */
         @serialize()
         public area: number = 0.0075;
@@ -55,7 +47,6 @@
         * Related to area, used to interpolate SSAO samples (second interpolate function input) based on the occlusion difference of each pixel
         * Must not be equal to area and inferior to area.
         * Default value is 0.0
-        * @type {number}
         */
         @serialize()
         public fallOff: number = 0.000001;
@@ -63,7 +54,6 @@
         /**
         * The base color of the SSAO post-process
         * The final result is "base + ssao" between [0, 1]
-        * @type {number}
         */
         @serialize()
         public base: number = 0.5;

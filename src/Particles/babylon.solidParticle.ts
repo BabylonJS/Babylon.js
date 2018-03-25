@@ -1,7 +1,6 @@
 module BABYLON {
     /**
      * Represents one particle of a solid particle system.
-     * @see SolidParticleSystem
      */
     export class SolidParticle {
         /**
@@ -177,7 +176,6 @@ module BABYLON {
     /**
      * Represents the shape of the model used by one particle of a solid particle system.
      * SPS internal tool, don't use it manually.
-     * @see SolidParticleSystem
      */
     export class ModelShape {
         /**
@@ -223,7 +221,6 @@ module BABYLON {
 
     /**
      * Represents a Depth Sorted Particle in the solid particle system.
-     * @see SolidParticleSystem
      */
     export class DepthSortedParticle {
         /**

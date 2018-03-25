@@ -930,9 +930,9 @@ export abstract class AbstractViewer {
 
     /**
      * Alters render settings to reduce features based on hardware feature limitations
-     * @param options Viewer options to modify
+     * @param enableHDR Allows the viewer to run in HDR mode.
      */
-    protected _handleHardwareLimitations() {
+    protected _handleHardwareLimitations(enableHDR = true) {
         //flip rendering settings switches based on hardware support
         let maxVaryingRows = this.engine.getCaps().maxVaryingVectors;
         let maxFragmentSamplers = this.engine.getCaps().maxTexturesImageUnits;
@@ -949,7 +949,7 @@ export abstract class AbstractViewer {
         let linearHalfFloatTargets = caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering;
         let linearFloatTargets = caps.textureFloatRender && caps.textureFloatLinearFiltering;
 
-        this._hdrSupport = !!(linearFloatTargets || linearHalfFloatTargets);
+        this._hdrSupport = enableHDR && !!(linearFloatTargets || linearHalfFloatTargets);
 
         if (linearHalfFloatTargets) {
             this._defaultHighpTextureType = Engine.TEXTURETYPE_HALF_FLOAT;

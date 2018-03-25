@@ -309,7 +309,21 @@
             }
 
             if (rootUrl.indexOf("file:") === -1) {
-                if (scene.getEngine().enableOfflineSupport) {
+                let canUseOfflineSupport = scene.getEngine().enableOfflineSupport;
+                if (canUseOfflineSupport) {
+                    // Also check for exceptions
+                    let exceptionFound = false;
+                    for (var regex of scene.disableOfflineSupportExceptionRules) {
+                        if (regex.test(rootUrl + sceneFilename)) {
+                            exceptionFound = true;
+                            break;
+                        }
+                    }
+
+                    canUseOfflineSupport = !exceptionFound;
+                }
+
+                if (canUseOfflineSupport) {
                     // Checking if a manifest file has been set for this scene and if offline mode has been requested
                     database = new Database(rootUrl + sceneFilename, manifestChecked);
                 }

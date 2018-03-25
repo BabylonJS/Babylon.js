@@ -532,21 +532,6 @@ gulp.task("typescript-libraries", config.modules, function () {
 });
 
 /**
- * Dynamic custom configurations.
- */
-config.buildConfigurations.distributed.map(function (customConfiguration) {
-    gulp.task(customConfiguration, function (cb) {
-        config.build.currentConfig = customConfiguration;
-        config.build.outputDirectory = config.build.outputCustomConfigurationsDirectory + "/" + customConfiguration;
-        runSequence("typescript-compile", "build", cb);
-    });
-});
-
-gulp.task("typescript-customConfigurations", function (cb) {
-    runSequence(config.buildConfigurations.distributed, cb);
-});
-
-/**
  * Custom build with full path file control; used by profile.html
  */
 gulp.task("build-custom", function (cb) {
@@ -557,7 +542,7 @@ gulp.task("build-custom", function (cb) {
  * Do it all.
  */
 gulp.task("typescript-all", function (cb) {
-    runSequence("typescript", "typescript-libraries", "typescript-customConfigurations", cb);
+    runSequence("typescript", "typescript-libraries", cb);
 });
 
 /**
@@ -604,13 +589,12 @@ gulp.task("watch", ["srcTscWatch"], function () {
 
 gulp.task("intellisense", function () {
     gulp.src(config.build.intellisenseSources)
-        .pipe(concat(config.build.intellisenseFile))
-        .pipe(replace(/^\s*_.*?$/gm, ""))
-        .pipe(replace(/^\s*private .*?$/gm, ""))
-        .pipe(replace(/^\s*public _.*?$/gm, ""))
-        .pipe(replace(/^\s*protected .*?$/gm, ""))
-        .pipe(replace(/^\s*public static _.*?$/gm, ""))
-        .pipe(replace(/^\s*static _.*?$/gm, ""))
+        .pipe(concat(config.build.intellisenseFile))    
+        .pipe(replace(/^\s+_.*?;/gm, ""))
+        .pipe(replace(/^\s+_[\S\s]*?}/gm, ""))
+        .pipe(replace(/^\s*readonly _/gm, "protected readonly _"))
+        .pipe(replace(/^\s*static _/gm, "private static _"))
+        .pipe(replace(/^\s*abstract _/gm, ""))
         .pipe(gulp.dest(config.build.playgroundDirectory));
 });
 
