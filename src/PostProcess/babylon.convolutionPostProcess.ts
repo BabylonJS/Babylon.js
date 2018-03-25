@@ -6,7 +6,7 @@
      */
     export class ConvolutionPostProcess extends PostProcess{
         /**
-         * Creates a new instance of @see ConvolutionPostProcess
+         * Creates a new instance ConvolutionPostProcess
          * @param name The name of the effect.
          * @param kernel Array of 9 values corrisponding to the 3x3 kernel to be applied
          * @param options The required width/height ratio to downsize to before computing the render pass.

@@ -287,11 +287,9 @@ vec4 color = vec4(finalColor, finalAlpha);
     color.rgb *= color.a;
 #endif
 
-#ifndef GRAIN // Do not apply noise multiple times
-    #ifdef NOISE
-        color.rgb += dither(vPositionW.xy, 0.5);
-        color = max(color, 0.0);
-    #endif
+#ifdef NOISE
+    color.rgb += dither(vPositionW.xy, 0.5);
+    color = max(color, 0.0);
 #endif
 
     gl_FragColor = color;

@@ -1,19 +1,19 @@
 module BABYLON {
     /**
-     * The SharpenPostProcess applies a sharpen kernel to every pixel
-     * See http://en.wikipedia.org/wiki/Kernel_(image_processing)
+     * The GrainPostProcess adds noise to the image at mid luminance levels
      */
-    export class SharpenPostProcess extends PostProcess{
+    export class GrainPostProcess extends PostProcess {
         /**
-         * How much of the original color should be applied. Setting this to 0 will display edge detection. (default: 1)
+         * The intensity of the grain added (default: 30)
          */
-        public colorAmount:number = 1.0;
+        public intensity:number = 30;
         /**
-         * How much sharpness should be applied (default: 0.3)
+         * If the grain should be randomized on every frame
          */
-        public edgeAmount:number = 0.3;
+        public animated:boolean = false;
+        
         /**
-         * Creates a new instance ConvolutionPostProcess
+         * Creates a new instance of @see GrainPostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.
@@ -24,12 +24,11 @@ module BABYLON {
          * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
          */
         constructor(name: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean, textureType: number = Engine.TEXTURETYPE_UNSIGNED_INT, blockCompilation = false) {
-            super(name, "sharpen", ["sharpnessAmounts", "screenSize"], null, options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
-
-            this.onApply = (effect: Effect) => {
-                effect.setFloat2("screenSize", this.width, this.height);
-                effect.setFloat2("sharpnessAmounts", this.edgeAmount, this.colorAmount);
-            };
+            super(name, "grain", ["intensity", "animatedSeed"], [], options, camera, samplingMode, engine, reusable, null, textureType, undefined, null, blockCompilation);
+            this.onApplyObservable.add((effect: Effect) => {
+                effect.setFloat('intensity', this.intensity);
+                effect.setFloat('animatedSeed', this.animated ? Math.random() + 1 : 1);
+            })
         }
     }
 }

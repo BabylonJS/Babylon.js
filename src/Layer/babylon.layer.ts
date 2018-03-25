@@ -20,7 +20,6 @@
 
         /**
         * An event triggered when the layer is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<Layer>();
 
@@ -34,7 +33,6 @@
 
         /**
         * An event triggered before rendering the scene
-        * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<Layer>();
 
@@ -48,7 +46,6 @@
 
         /**
         * An event triggered after rendering the scene
-        * @type {BABYLON.Observable}
         */
         public onAfterRenderObservable = new Observable<Layer>();
 

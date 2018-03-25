@@ -43,13 +43,11 @@
 
         /**
         * An event triggered when the texture is unbind.
-        * @type {BABYLON.Observable}
         */
         public onBeforeBindObservable = new Observable<RenderTargetTexture>();
 
         /**
         * An event triggered when the texture is unbind.
-        * @type {BABYLON.Observable}
         */
         public onAfterUnbindObservable = new Observable<RenderTargetTexture>();
 
@@ -63,7 +61,6 @@
 
         /**
         * An event triggered before rendering the texture
-        * @type {BABYLON.Observable}
         */
         public onBeforeRenderObservable = new Observable<number>();
 
@@ -77,7 +74,6 @@
 
         /**
         * An event triggered after rendering the texture
-        * @type {BABYLON.Observable}
         */
         public onAfterRenderObservable = new Observable<number>();
 
@@ -91,7 +87,6 @@
 
         /**
         * An event triggered after the texture clear
-        * @type {BABYLON.Observable}
         */
         public onClearObservable = new Observable<Engine>();
 

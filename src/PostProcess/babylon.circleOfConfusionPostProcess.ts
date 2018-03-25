@@ -22,7 +22,7 @@ module BABYLON {
         
         private _depthTexture:Nullable<RenderTargetTexture> = null;
         /**
-         * Creates a new instance of @see CircleOfConfusionPostProcess
+         * Creates a new instance CircleOfConfusionPostProcess
          * @param name The name of the effect.
          * @param depthTexture The depth texture of the scene to compute the circle of confusion. This must be set in order for this to function but may be set after initialization if needed.
          * @param options The required width/height ratio to downsize to before computing the render pass.
