@@ -183,6 +183,12 @@
       "referenceImage": "customRTT.png"
     },
     {
+      "title": "GLTF Buffer Interleaved",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createBufferInterleavedScene",
+      "referenceImage": "gltfBufferInterleaved.png"
+    },
+    {
       "title": "GLTF Normals",
       "scriptToRun": "/Demos/GLTFNormals/index.js",
       "functionToCall": "createScene",
@@ -195,22 +201,46 @@
       "referenceImage": "gltfMaterial.png"
     },
     {
-      "title": "GLTF Material Alpha",
+      "title": "GLTF Material Alpha Blend",
       "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialAlphaScene",
-      "referenceImage": "gltfMaterialAlpha.png"
+      "functionToCall": "createMaterialAlphaBlendScene",
+      "referenceImage": "gltfMaterialAlphaBlend.png"
     },
     {
-      "title": "GLTF Material Alpha (Back)",
+      "title": "GLTF Material Alpha Mask",
       "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createMaterialAlphaFlippedScene",
-      "referenceImage": "gltfMaterialAlphaBack.png"
+      "functionToCall": "createMaterialAlphaMaskScene",
+      "referenceImage": "gltfMaterialAlphaMask.png"
+    },
+    {
+      "title": "GLTF Material Double Sided",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialDoubleSidedScene",
+      "referenceImage": "gltfMaterialDoubleSided.png"
+    },
+    {
+      "title": "GLTF Material Mixed",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialMixedScene",
+      "referenceImage": "gltfMaterialMixed.png"
     },
     {
       "title": "GLTF Mesh Primitives",
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createMeshPrimitivesScene",
       "referenceImage": "gltfMeshPrimitives.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Mode",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMeshPrimitiveModeScene",
+      "referenceImage": "gltfMeshPrimitiveMode.png"
+    },
+    {
+      "title": "GLTF Mesh Primitive Vertex Color",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createPrimitiveVertexColorScene",
+      "referenceImage": "gltfMeshPrimitiveVertexColor.png"
     },
     {
       "title": "GLTF Mesh Primitives UV",
