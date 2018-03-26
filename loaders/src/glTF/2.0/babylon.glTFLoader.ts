@@ -60,7 +60,6 @@ module BABYLON.GLTF2 {
         public readonly onMeshLoadedObservable = new Observable<AbstractMesh>();
         public readonly onTextureLoadedObservable = new Observable<BaseTexture>();
         public readonly onMaterialLoadedObservable = new Observable<Material>();
-        public readonly onAnimationGroupLoadedObservable = new Observable<AnimationGroup>();
         public readonly onExtensionLoadedObservable = new Observable<IGLTFLoaderExtension>();
         public readonly onCompleteObservable = new Observable<IGLTFLoader>();
 
@@ -81,7 +80,7 @@ module BABYLON.GLTF2 {
             this._clear();
         }
 
-        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[] }> {
+        public importMeshAsync(meshesNames: any, scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<{ meshes: AbstractMesh[], particleSystems: ParticleSystem[], skeletons: Skeleton[], animationGroups: AnimationGroup[] }> {
             return Promise.resolve().then(() => {
                 let nodes: Nullable<Array<ILoaderNode>> = null;
 
@@ -111,6 +110,7 @@ module BABYLON.GLTF2 {
                         meshes: this._getMeshes(),
                         particleSystems: [],
                         skeletons: this._getSkeletons(),
+                        animationGroups: this._getAnimationGroups()
                     };
                 });
             });
@@ -363,25 +363,38 @@ module BABYLON.GLTF2 {
             return skeletons;
         }
 
-        private _startAnimations(): void {
+        private _getAnimationGroups(): AnimationGroup[] {
+            const animationGroups = new Array<AnimationGroup>();
+
             const animations = this._gltf.animations;
-            if (!animations) {
-                return;
+            if (animations) {
+                for (const animation of animations) {
+                    if (animation._babylonAnimationGroup) {
+                        animationGroups.push(animation._babylonAnimationGroup);
+                    }
+                }
             }
 
+            return animationGroups;
+        }
+
+        private _startAnimations(): void {
             switch (this.animationStartMode) {
                 case GLTFLoaderAnimationStartMode.NONE: {
                     // do nothing
                     break;
                 }
                 case GLTFLoaderAnimationStartMode.FIRST: {
-                    const animation = animations[0];
-                    animation._babylonAnimationGroup!.start(true);
+                    const babylonAnimationGroups = this._getAnimationGroups();
+                    if (babylonAnimationGroups.length !== 0) {
+                        babylonAnimationGroups[0].start(true);
+                    }
                     break;
                 }
                 case GLTFLoaderAnimationStartMode.ALL: {
-                    for (const animation of animations) {
-                        animation._babylonAnimationGroup!.start(true);
+                    const babylonAnimationGroups = this._getAnimationGroups();
+                    for (const babylonAnimationGroup of babylonAnimationGroups) {
+                        babylonAnimationGroup.start(true);
                     }
                     break;
                 }
@@ -722,6 +735,8 @@ module BABYLON.GLTF2 {
                     babylonMesh.skeleton = skin._babylonSkeleton!;
                 });
 
+                // Ignore the TRS of skinned nodes.
+                // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
                 node._babylonMesh!.parent = this._rootBabylonMesh;
                 node._babylonMesh!.position = Vector3.Zero();
                 node._babylonMesh!.rotationQuaternion = Quaternion.Identity();
@@ -836,8 +851,6 @@ module BABYLON.GLTF2 {
                 promises.push(this._loadAnimationChannelAsync(`${context}/channels/${channel._index}`, context, animation, channel, babylonAnimationGroup));
             }
 
-            this.onAnimationGroupLoadedObservable.notifyObservers(babylonAnimationGroup);
-
             return Promise.all(promises).then(() => {
                 babylonAnimationGroup.normalize();
             });
@@ -845,7 +858,13 @@ module BABYLON.GLTF2 {
 
         private _loadAnimationChannelAsync(context: string, animationContext: string, animation: ILoaderAnimation, channel: ILoaderAnimationChannel, babylonAnimationGroup: AnimationGroup): Promise<void> {
             const targetNode = GLTFLoader._GetProperty(`${context}/target/node`, this._gltf.nodes, channel.target.node);
-            if (!targetNode._babylonMesh || targetNode.skin != undefined) {
+            if (!targetNode._babylonMesh) {
+                return Promise.resolve();
+            }
+
+            // Ignore animations targeting TRS of skinned nodes.
+            // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
+            if (targetNode.skin != undefined && channel.target.path !== AnimationChannelTargetPath.WEIGHTS) {
                 return Promise.resolve();
             }
 
@@ -962,10 +981,13 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
+                        const multiTarget = new AnimationMultiTarget();
                         this._forEachPrimitive(targetNode, babylonMesh => {
                             const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
+                            multiTarget.subTargets.push(morphTarget);
                         });
+
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
                     }
                 }
                 else {
@@ -974,9 +996,11 @@ module BABYLON.GLTF2 {
                     babylonAnimation.setKeys(keys);
 
                     if (targetNode._babylonAnimationTargets) {
+                        const multiTarget = new AnimationMultiTarget();
                         for (const target of targetNode._babylonAnimationTargets) {
-                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, target);
+                            multiTarget.subTargets.push(target);
                         }
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
                     }
                 }
             });

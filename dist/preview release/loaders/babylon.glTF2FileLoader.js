@@ -78,10 +78,6 @@ var BABYLON;
              */
             this.onMaterialLoadedObservable = new BABYLON.Observable();
             /**
-             * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
-             */
-            this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
-            /**
              * Raised when the asset is completely loaded, immediately before the loader is disposed.
              * For assets with LODs, raised when all of the LODs are complete.
              * For assets without LODs, raised when the model is complete, immediately after onSuccess.
@@ -140,16 +136,6 @@ var BABYLON;
                     this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
                 }
                 this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GLTFFileLoader.prototype, "onAnimationGroupLoaded", {
-            set: function (callback) {
-                if (this._onAnimationGroupLoadedObserver) {
-                    this.onAnimationGroupLoadedObservable.remove(this._onAnimationGroupLoadedObserver);
-                }
-                this._onAnimationGroupLoadedObserver = this.onAnimationGroupLoadedObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -246,6 +232,7 @@ var BABYLON;
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                     Array.prototype.push.apply(container.skeletons, result.skeletons);
+                    Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                     container.removeAllFromScene();
                     return container;
                 });
@@ -307,7 +294,6 @@ var BABYLON;
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
             loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
-            loader.onAnimationGroupLoadedObservable.add(function (animationGroup) { return _this.onAnimationGroupLoadedObservable.notifyObservers(animationGroup); });
             loader.onCompleteObservable.add(function () {
                 _this.onMeshLoadedObservable.clear();
                 _this.onTextureLoadedObservable.clear();
@@ -496,6 +482,53 @@ var BABYLON;
             return ArrayItem;
         }());
         GLTF2.ArrayItem = ArrayItem;
+        var AnimationMultiTarget = /** @class */ (function () {
+            function AnimationMultiTarget() {
+                this.subTargets = new Array();
+            }
+            Object.defineProperty(AnimationMultiTarget.prototype, "position", {
+                set: function (value) {
+                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
+                        var subTarget = _a[_i];
+                        subTarget.position = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AnimationMultiTarget.prototype, "rotationQuaternion", {
+                set: function (value) {
+                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
+                        var subTarget = _a[_i];
+                        subTarget.rotationQuaternion = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AnimationMultiTarget.prototype, "scaling", {
+                set: function (value) {
+                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
+                        var subTarget = _a[_i];
+                        subTarget.scaling = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(AnimationMultiTarget.prototype, "influence", {
+                set: function (value) {
+                    for (var _i = 0, _a = this.subTargets; _i < _a.length; _i++) {
+                        var subTarget = _a[_i];
+                        subTarget.influence = value;
+                    }
+                },
+                enumerable: true,
+                configurable: true
+            });
+            return AnimationMultiTarget;
+        }());
+        GLTF2.AnimationMultiTarget = AnimationMultiTarget;
     })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
 })(BABYLON || (BABYLON = {}));
 
@@ -531,7 +564,6 @@ var BABYLON;
                 this.onMeshLoadedObservable = new BABYLON.Observable();
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
-                this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
                 this.onExtensionLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
             }
@@ -588,6 +620,7 @@ var BABYLON;
                             meshes: _this._getMeshes(),
                             particleSystems: [],
                             skeletons: _this._getSkeletons(),
+                            animationGroups: _this._getAnimationGroups()
                         };
                     });
                 });
@@ -808,25 +841,37 @@ var BABYLON;
                 }
                 return skeletons;
             };
-            GLTFLoader.prototype._startAnimations = function () {
+            GLTFLoader.prototype._getAnimationGroups = function () {
+                var animationGroups = new Array();
                 var animations = this._gltf.animations;
-                if (!animations) {
-                    return;
+                if (animations) {
+                    for (var _i = 0, animations_1 = animations; _i < animations_1.length; _i++) {
+                        var animation = animations_1[_i];
+                        if (animation._babylonAnimationGroup) {
+                            animationGroups.push(animation._babylonAnimationGroup);
+                        }
+                    }
                 }
+                return animationGroups;
+            };
+            GLTFLoader.prototype._startAnimations = function () {
                 switch (this.animationStartMode) {
                     case BABYLON.GLTFLoaderAnimationStartMode.NONE: {
                         // do nothing
                         break;
                     }
                     case BABYLON.GLTFLoaderAnimationStartMode.FIRST: {
-                        var animation = animations[0];
-                        animation._babylonAnimationGroup.start(true);
+                        var babylonAnimationGroups = this._getAnimationGroups();
+                        if (babylonAnimationGroups.length !== 0) {
+                            babylonAnimationGroups[0].start(true);
+                        }
                         break;
                     }
                     case BABYLON.GLTFLoaderAnimationStartMode.ALL: {
-                        for (var _i = 0, animations_1 = animations; _i < animations_1.length; _i++) {
-                            var animation = animations_1[_i];
-                            animation._babylonAnimationGroup.start(true);
+                        var babylonAnimationGroups = this._getAnimationGroups();
+                        for (var _i = 0, babylonAnimationGroups_1 = babylonAnimationGroups; _i < babylonAnimationGroups_1.length; _i++) {
+                            var babylonAnimationGroup = babylonAnimationGroups_1[_i];
+                            babylonAnimationGroup.start(true);
                         }
                         break;
                     }
@@ -1116,6 +1161,8 @@ var BABYLON;
                     _this._forEachPrimitive(node, function (babylonMesh) {
                         babylonMesh.skeleton = skin._babylonSkeleton;
                     });
+                    // Ignore the TRS of skinned nodes.
+                    // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
                     node._babylonMesh.parent = _this._rootBabylonMesh;
                     node._babylonMesh.position = BABYLON.Vector3.Zero();
                     node._babylonMesh.rotationQuaternion = BABYLON.Quaternion.Identity();
@@ -1205,7 +1252,6 @@ var BABYLON;
                     var channel = _a[_i];
                     promises.push(this._loadAnimationChannelAsync(context + "/channels/" + channel._index, context, animation, channel, babylonAnimationGroup));
                 }
-                this.onAnimationGroupLoadedObservable.notifyObservers(babylonAnimationGroup);
                 return Promise.all(promises).then(function () {
                     babylonAnimationGroup.normalize();
                 });
@@ -1213,7 +1259,12 @@ var BABYLON;
             GLTFLoader.prototype._loadAnimationChannelAsync = function (context, animationContext, animation, channel, babylonAnimationGroup) {
                 var _this = this;
                 var targetNode = GLTFLoader._GetProperty(context + "/target/node", this._gltf.nodes, channel.target.node);
-                if (!targetNode._babylonMesh || targetNode.skin != undefined) {
+                if (!targetNode._babylonMesh) {
+                    return Promise.resolve();
+                }
+                // Ignore animations targeting TRS of skinned nodes.
+                // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
+                if (targetNode.skin != undefined && channel.target.path !== "weights" /* WEIGHTS */) {
                     return Promise.resolve();
                 }
                 var sampler = GLTFLoader._GetProperty(context + "/sampler", animation.samplers, channel.sampler);
@@ -1324,10 +1375,12 @@ var BABYLON;
                                 value: key.value[targetIndex],
                                 outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                             }); }));
+                            var multiTarget = new GLTF2.AnimationMultiTarget();
                             _this._forEachPrimitive(targetNode, function (babylonMesh) {
                                 var morphTarget = babylonMesh.morphTargetManager.getTarget(targetIndex);
-                                babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTarget);
+                                multiTarget.subTargets.push(morphTarget);
                             });
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
                         };
                         for (var targetIndex = 0; targetIndex < targetNode._numMorphTargets; targetIndex++) {
                             _loop_1(targetIndex);
@@ -1338,10 +1391,12 @@ var BABYLON;
                         var babylonAnimation = new BABYLON.Animation(animationName, targetPath, 1, animationType);
                         babylonAnimation.setKeys(keys);
                         if (targetNode._babylonAnimationTargets) {
+                            var multiTarget = new GLTF2.AnimationMultiTarget();
                             for (var _i = 0, _a = targetNode._babylonAnimationTargets; _i < _a.length; _i++) {
                                 var target = _a[_i];
-                                babylonAnimationGroup.addTargetedAnimation(babylonAnimation, target);
+                                multiTarget.subTargets.push(target);
                             }
+                            babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
                         }
                     }
                 });

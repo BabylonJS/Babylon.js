@@ -1695,6 +1695,7 @@
                     "../../inspector/src/tools/LabelTool.ts",
                     "../../inspector/src/tools/Toolbar.ts",
                     "../../inspector/src/tools/DisposeTool.ts",
+                    "../../inspector/src/tools/FullscreenTool.ts",
                     "../../inspector/src/tree/TreeItem.ts",
                     "../../inspector/src/treetools/AbstractTreeTool.ts",
                     "../../inspector/src/treetools/BoundingBox.ts",

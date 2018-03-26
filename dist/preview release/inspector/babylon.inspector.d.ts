@@ -1165,6 +1165,13 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class FullscreenTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module INSPECTOR {
     class TreeItem extends BasicElement {
         private _tab;
         private _adapter;

@@ -33,6 +33,9 @@
             if (!this._inspector.popupMode && !Helpers.IsBrowserEdge()) {
                 this._tools.push(new PopupTool(this._div, this._inspector));
             }
+            // FullScreen
+            this._tools.push(new FullscreenTool(this._div, this._inspector));
+
             // Pause schedule
             this._tools.push(new PauseScheduleTool(this._div, this._inspector));
             
