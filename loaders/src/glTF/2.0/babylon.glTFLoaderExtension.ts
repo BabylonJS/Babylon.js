@@ -35,7 +35,7 @@ module BABYLON.GLTF2 {
         // #endregion
 
         /** Helper method called by a loader extension to load an glTF extension. */
-        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (context: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>> {
+        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>> {
             if (!property.extensions) {
                 return null;
             }

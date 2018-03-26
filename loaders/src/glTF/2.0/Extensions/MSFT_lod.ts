@@ -24,10 +24,10 @@ module BABYLON.GLTF2.Extensions {
         private _loadMaterialSignals: { [materialIndex: number]: Deferred<void> } = {};
 
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> {
-            return this._loadExtensionAsync<IMSFTLOD>(context, node, (context, extension) => {
+            return this._loadExtensionAsync<IMSFTLOD>(context, node, (extensionContext, extension) => {
                 let firstPromise: Promise<void>;
 
-                const nodeLODs = this._getLODs(context, node, this._loader._gltf.nodes, extension.ids);
+                const nodeLODs = this._getLODs(extensionContext, node, this._loader._gltf.nodes, extension.ids);
                 for (let indexLOD = 0; indexLOD < nodeLODs.length; indexLOD++) {
                     const nodeLOD = nodeLODs[indexLOD];
 
@@ -77,10 +77,10 @@ module BABYLON.GLTF2.Extensions {
                 return null;
             }
 
-            return this._loadExtensionAsync<IMSFTLOD>(context, material, (context, extension) => {
+            return this._loadExtensionAsync<IMSFTLOD>(context, material, (extensionContext, extension) => {
                 let firstPromise: Promise<void>;
 
-                const materialLODs = this._getLODs(context, material, this._loader._gltf.materials, extension.ids);
+                const materialLODs = this._getLODs(extensionContext, material, this._loader._gltf.materials, extension.ids);
                 for (let indexLOD = 0; indexLOD < materialLODs.length; indexLOD++) {
                     const materialLOD = materialLODs[indexLOD];
 
