@@ -35,12 +35,12 @@ module BABYLON.GLTF2.Extensions {
         public readonly name = NAME;
 
         protected _loadSceneAsync(context: string, scene: ILoaderScene): Nullable<Promise<void>> { 
-            return this._loadExtensionAsync<ILightReference>(context, scene, (context, extension) => {
-                const promise = this._loader._loadSceneAsync(context, scene);
+            return this._loadExtensionAsync<ILightReference>(context, scene, (extensionContext, extension) => {
+                const promise = this._loader._loadSceneAsync(extensionContext, scene);
 
-                const light = GLTFLoader._GetProperty(context, this._lights, extension.light);
+                const light = GLTFLoader._GetProperty(extensionContext, this._lights, extension.light);
                 if (light.type !== LightType.AMBIENT) {
-                    throw new Error(`${context}: Only ambient lights are allowed on a scene`);
+                    throw new Error(`${extensionContext}: Only ambient lights are allowed on a scene`);
                 }
 
                 this._loader._babylonScene.ambientColor = light.color ? Color3.FromArray(light.color) : Color3.Black();
@@ -50,16 +50,16 @@ module BABYLON.GLTF2.Extensions {
         }
 
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { 
-            return this._loadExtensionAsync<ILightReference>(context, node, (context, extension) => {
-                const promise = this._loader._loadNodeAsync(context, node);
+            return this._loadExtensionAsync<ILightReference>(context, node, (extensionContext, extension) => {
+                const promise = this._loader._loadNodeAsync(extensionContext, node);
 
                 let babylonLight: Light;
 
-                const light = GLTFLoader._GetProperty(context, this._lights, extension.light);
+                const light = GLTFLoader._GetProperty(extensionContext, this._lights, extension.light);
                 const name = node._babylonMesh!.name;
                 switch (light.type) {
                     case LightType.AMBIENT: {
-                        throw new Error(`${context}: Ambient lights are not allowed on a node`);
+                        throw new Error(`${extensionContext}: Ambient lights are not allowed on a node`);
                     }
                     case LightType.DIRECTIONAL: {
                         babylonLight = new DirectionalLight(name, Vector3.Forward(), this._loader._babylonScene);
@@ -78,7 +78,7 @@ module BABYLON.GLTF2.Extensions {
                         break;
                     }
                     default: {
-                        throw new Error(`${context}: Invalid light type (${light.type})`);
+                        throw new Error(`${extensionContext}: Invalid light type (${light.type})`);
                     }
                 }
 
