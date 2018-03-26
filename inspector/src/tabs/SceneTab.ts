@@ -67,6 +67,24 @@ module INSPECTOR {
                 wireframe.addEventListener('click', () => { this._inspector.scene.forcePointsCloud = false; this._inspector.scene.forceWireframe = true; });
                 solid.addEventListener('click', () => { this._inspector.scene.forcePointsCloud = false; this._inspector.scene.forceWireframe = false; });
 
+                // Cameras
+                title = Helpers.CreateDiv('actions-title', this._actions);
+                title.textContent = 'Cameras';
+                let cameraRadioButtons = [];
+                for (let camera of this._inspector.scene.cameras) {
+                    let cameraRadio = Helpers.CreateDiv('action-radio', this._actions);
+                    cameraRadio.textContent = camera.name;
+                    if(this._inspector.scene.activeCamera == camera)
+                    {
+                        cameraRadio.classList.add('active');
+                    }
+                    cameraRadioButtons.push(cameraRadio);
+                    cameraRadio.addEventListener('click', () => { this._inspector.scene.switchActiveCamera(camera);});
+                }
+
+                this._generateRadioAction(cameraRadioButtons);
+                
+
                 // Textures
                 title = Helpers.CreateDiv('actions-title', this._actions);
                 title.textContent = 'Textures channels';

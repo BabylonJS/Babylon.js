@@ -43,13 +43,17 @@ export class ModelLoader {
         let base = modelConfiguration.root || Tools.GetFolderPath(modelConfiguration.url);
         let plugin = modelConfiguration.loader;
 
-        model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.scene, (meshes, particleSystems, skeletons) => {
+        model.loader = SceneLoader.ImportMesh(undefined, base, filename, this._viewer.scene, (meshes, particleSystems, skeletons, animationGroups) => {
             meshes.forEach(mesh => {
                 Tags.AddTagsTo(mesh, "viewerMesh");
             });
             model.meshes = meshes;
             model.particleSystems = particleSystems;
             model.skeletons = skeletons;
+
+            for (const animationGroup of animationGroups) {
+                model.addAnimationGroup(animationGroup);
+            }
 
             model.initAnimations();
             model.onLoadedObservable.notifyObserversWithPromise(model);
@@ -63,10 +67,7 @@ export class ModelLoader {
 
         if (model.loader.name === "gltf") {
             let gltfLoader = (<GLTFFileLoader>model.loader);
-            gltfLoader.animationStartMode = 0;
-            gltfLoader.onAnimationGroupLoaded = ag => {
-                model.addAnimationGroup(ag);
-            }
+            gltfLoader.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE;
         }
 
         model.loadId = this._loadId++;

@@ -36,6 +36,21 @@ var Test = (function () {
         var scene = new BABYLON.Scene(this.engine);
         var canvas = scene.getEngine().getRenderingCanvas();
 
+        var camera = new BABYLON.FreeCamera("Camera", new BABYLON.Vector3(0, 0, 0), scene); 
+        
+        var camera2 = new BABYLON.ArcRotateCamera("Camera2", 0, 0, -0.1, new BABYLON.Vector3(0, 0, 0), scene);
+
+        var camera3 = new BABYLON.ArcRotateCamera("Camera3", 0, 0, -0.1, new BABYLON.Vector3(0, 0, 0), scene);
+
+        var camera4 = new BABYLON.ArcRotateCamera("Camera4", 0, 0, -0.1, new BABYLON.Vector3(0, 0, 0), scene);
+
+        var camera5 = new BABYLON.ArcRotateCamera("Camera5", 0, 0, -0.1, new BABYLON.Vector3(0, 0, 0), scene);
+
+        var camera6 = new BABYLON.ArcRotateCamera("Camera6", 0, 0, -0.1, new BABYLON.Vector3(0, 0, 0), scene);
+
+        scene.activeCamera = camera2;
+        
+        camera2.attachControl(canvas);
 
         var sceneRoot = new BABYLON.TransformNode("abstractmesh");
 
