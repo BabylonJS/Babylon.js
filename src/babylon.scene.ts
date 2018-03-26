@@ -1,13 +1,28 @@
 ﻿module BABYLON {
+    /**
+     * Define an interface for all classes that will hold resources
+     */
     export interface IDisposable {
         dispose(): void;
     }
 
+    /**
+     * Interface used to let developers provide their own mesh selection mechanism
+     */
     export interface IActiveMeshCandidateProvider {
+        /**
+         * Return the list of active meshes
+         * @param scene defines the current scene
+         * @returns the list of active meshes
+         */
         getMeshes(scene: Scene): AbstractMesh[];
-        readonly checksIsEnabled: boolean; // Indicates if the meshes have been checked to make sure they are isEnabled().
+        /** 
+         * Indicates if the meshes have been checked to make sure they are isEnabled()
+         */
+        readonly checksIsEnabled: boolean;
     }
 
+    /** @ignore */
     class ClickInfo {
         private _singleClick = false;
         private _doubleClick = false;
@@ -103,7 +118,15 @@
 
         private static _uniqueIdCounter = 0;
 
+        /**
+         * Gets or sets the minimum deltatime when deterministic lock step is enabled
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public static MinDeltaTime = 1.0;
+        /**
+         * Gets or sets the maximum deltatime when deterministic lock step is enabled
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public static MaxDeltaTime = 1000.0;
 
         /** The fog is deactivated */
@@ -127,13 +150,28 @@
         }
 
         // Members
+
+        /**
+         * Gets or sets a boolean that indicates if the scene must clear the render buffer before rendering a frame
+         */
         public autoClear = true;
+        /**
+         * Gets or sets a boolean that indicates if the scene must clear the depth and stencil buffers before rendering a frame
+         */        
         public autoClearDepthAndStencil = true;
+        /**
+         * Defines the color used to clear the render buffer (Default is (0.2, 0.2, 0.3, 1.0))
+         */
         public clearColor: Color4 = new Color4(0.2, 0.2, 0.3, 1.0);
+        /**
+         * Defines the color used to simulate the ambient color (Default is (0, 0, 0))
+         */        
         public ambientColor = new Color3(0, 0, 0);
 
+        /** @ignore */
         public _environmentBRDFTexture: BaseTexture;
 
+        /** @ignore */
         protected _environmentTexture: BaseTexture;
         /**
          * Texture used in all pbr material as the reflection texture.
@@ -157,6 +195,7 @@
             this.markAllMaterialsAsDirty(Material.TextureDirtyFlag);
         }
 
+        /** @ignore */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
          * Default image processing configuration used either in the rendering
@@ -171,6 +210,9 @@
         }
 
         private _forceWireframe = false;
+        /**
+         * Gets or sets a boolean indicating if all rendering must be done in wireframe
+         */
         public set forceWireframe(value: boolean) {
             if (this._forceWireframe === value) {
                 return;
@@ -183,6 +225,9 @@
         }
 
         private _forcePointsCloud = false;
+        /**
+         * Gets or sets a boolean indicating if all rendering must be done in point cloud
+         */        
         public set forcePointsCloud(value: boolean) {
             if (this._forcePointsCloud === value) {
                 return;
@@ -194,13 +239,38 @@
             return this._forcePointsCloud;
         }
 
+        /**
+         * Gets or sets a boolean indicating if all bounding boxes must be rendered
+         */    
         public forceShowBoundingBoxes = false;
+
+        /**
+         * Gets or sets the active clipplane
+         */
         public clipPlane: Nullable<Plane>;
+
+        /**
+         * Gets or sets a boolean indicating if animations are enabled
+         */
         public animationsEnabled = true;
+        /**
+         * Gets or sets a boolean indicating if a constant deltatime has to be used
+         * This is mostly useful for testing purposes when you do not want the animations to scale with the framerate
+         */        
         public useConstantAnimationDeltaTime = false;
+        /**
+         * Gets or sets a boolean indicating if the scene must keep the meshUnderPointer property updated
+         * Please note that it requires to run a ray cast through the scene on every frame
+         */
         public constantlyUpdateMeshUnderPointer = false;
 
+        /**
+         * Defines the HTML cursor to use when hovering over interactive elements
+         */
         public hoverCursor = "pointer";
+        /**
+         * Defines the HTML default cursor to use (empty by default)
+         */        
         public defaultCursor: string = "";
         /**
          * This is used to call preventDefault() on pointer down
@@ -209,7 +279,13 @@
         public preventDefaultOnPointerDown = true;
 
         // Metadata
+        /**
+         * Gets or sets user defined metadata
+         */
         public metadata: any = null;
+        /**
+         * Gets the name of the plugin used to load this scene (null by default)
+         */
         public loadingPluginName: string;
 
         /**
@@ -227,7 +303,7 @@
         public onDisposeObservable = new Observable<Scene>();
 
         private _onDisposeObserver: Nullable<Observer<Scene>> = null;
-        /** A function to be executed when this scene is disposed. */
+        /** Sets a function to be executed when this scene is disposed. */
         public set onDispose(callback: () => void) {
             if (this._onDisposeObserver) {
                 this.onDisposeObservable.remove(this._onDisposeObserver);
@@ -241,7 +317,7 @@
         public onBeforeRenderObservable = new Observable<Scene>();
 
         private _onBeforeRenderObserver: Nullable<Observer<Scene>> = null;
-        /** A function to be executed before rendering this scene */
+        /** Sets a function to be executed before rendering this scene */
         public set beforeRender(callback: Nullable<() => void>) {
             if (this._onBeforeRenderObserver) {
                 this.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
@@ -257,7 +333,7 @@
         public onAfterRenderObservable = new Observable<Scene>();
 
         private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
-        /** A function to be executed after rendering this scene */
+        /** Sets a function to be executed after rendering this scene */
         public set afterRender(callback: Nullable<() => void>) {
             if (this._onAfterRenderObserver) {
                 this.onAfterRenderObservable.remove(this._onAfterRenderObserver);
@@ -309,6 +385,7 @@
         public onBeforeCameraRenderObservable = new Observable<Camera>();
 
         private _onBeforeCameraRenderObserver: Nullable<Observer<Camera>> = null;
+        /** Sets a function to be executed before rendering a camera*/
         public set beforeCameraRender(callback: () => void) {
             if (this._onBeforeCameraRenderObserver) {
                 this.onBeforeCameraRenderObservable.remove(this._onBeforeCameraRenderObserver);
@@ -323,6 +400,7 @@
         public onAfterCameraRenderObservable = new Observable<Camera>();
 
         private _onAfterCameraRenderObserver: Nullable<Observer<Camera>> = null;
+        /** Sets a function to be executed after rendering a camera*/
         public set afterCameraRender(callback: () => void) {
             if (this._onAfterCameraRenderObserver) {
                 this.onAfterCameraRenderObservable.remove(this._onAfterCameraRenderObserver);
@@ -449,12 +527,24 @@
         public onRenderingGroupObservable = new Observable<RenderingGroupInfo>();
 
         // Animations
+        /**
+         * Gets a list of Animations associated with the scene
+         */        
         public animations: Animation[] = [];
         private _registeredForLateAnimationBindings = new SmartArrayNoDuplicate<any>(256);
 
         // Pointers
+        /**
+         * Gets or sets a predicate used to select candidate meshes for a pointer down event
+         */
         public pointerDownPredicate: (Mesh: AbstractMesh) => boolean;
+        /**
+         * Gets or sets a predicate used to select candidate meshes for a pointer up event
+         */        
         public pointerUpPredicate: (Mesh: AbstractMesh) => boolean;
+        /**
+         * Gets or sets a predicate used to select candidate meshes for a pointer move event
+         */
         public pointerMovePredicate: (Mesh: AbstractMesh) => boolean;
         private _onPointerMove: (evt: PointerEvent) => void;
         private _onPointerDown: (evt: PointerEvent) => void;
@@ -472,6 +562,10 @@
         // Gamepads
         private _gamepadManager: Nullable<GamepadManager>;
 
+        /**
+         * Gets the gamepad manager associated with the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_gamepads
+         */
         public get gamepadManager(): GamepadManager {
             if (!this._gamepadManager) {
                 this._gamepadManager = new GamepadManager(this);
@@ -491,6 +585,9 @@
          */
         public onPointerObservable = new Observable<PointerInfo>();
 
+        /**
+         * Gets the pointer coordinates without any translation (ie. straight out of the pointer event)
+         */
         public get unTranslatedPointer(): Vector2 {
             return new Vector2(this._unTranslatedPointerX, this._unTranslatedPointerY);
         }
@@ -534,6 +631,7 @@
         private _currentInternalStep: number = 0;
 
         // Mirror
+        /** @ignore */
         public _mirroredCameraPosition: Nullable<Vector3>;
 
         // Keyboard
@@ -553,11 +651,12 @@
         private _onCanvasFocusObserver: Nullable<Observer<Engine>>;
         private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
 
-        // Coordinate system
-        /**
-        * use right-handed coordinate system on this scene.
-        */
+        // Coordinates system
+        
         private _useRightHandedSystem = false;
+        /**
+        * Gets or sets a boolean indicating if the scene must use right-handed coordinates system
+        */
         public set useRightHandedSystem(value: boolean) {
             if (this._useRightHandedSystem === value) {
                 return;
@@ -569,14 +668,29 @@
             return this._useRightHandedSystem;
         }
 
+        /**
+         * Sets the step Id used by deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @param newStepId defines the step Id
+         */
         public setStepId(newStepId: number): void {
             this._currentStepId = newStepId;
         };
 
+        /**
+         * Gets the step Id used by deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @returns the step Id
+         */
         public getStepId(): number {
             return this._currentStepId;
         };
 
+        /**
+         * Gets the internal step used by deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         * @returns the internal step
+         */        
         public getInternalStep(): number {
             return this._currentInternalStep;
         };
@@ -585,7 +699,8 @@
 
         private _fogEnabled = true;
         /**
-        * is fog enabled on this scene.
+        * Gets or sets a boolean indicating if fog is enabled on this scene
+        * @see http://doc.babylonjs.com/babylon101/environment#fog
         */
         public set fogEnabled(value: boolean) {
             if (this._fogEnabled === value) {
@@ -599,6 +714,10 @@
         }
 
         private _fogMode = Scene.FOGMODE_NONE;
+        /**
+        * Gets or sets the fog mode to use
+        * @see http://doc.babylonjs.com/babylon101/environment#fog
+        */        
         public set fogMode(value: number) {
             if (this._fogMode === value) {
                 return;
@@ -610,17 +729,33 @@
             return this._fogMode;
         }
 
+        /**
+        * Gets or sets the fog color to use
+        * @see http://doc.babylonjs.com/babylon101/environment#fog
+        */          
         public fogColor = new Color3(0.2, 0.2, 0.3);
+        /**
+        * Gets or sets the fog density to use
+        * @see http://doc.babylonjs.com/babylon101/environment#fog
+        */  
         public fogDensity = 0.1;
+        /**
+        * Gets or sets the fog start distance to use
+        * @see http://doc.babylonjs.com/babylon101/environment#fog
+        */          
         public fogStart = 0;
+        /**
+        * Gets or sets the fog end distance to use
+        * @see http://doc.babylonjs.com/babylon101/environment#fog
+        */          
         public fogEnd = 1000.0;
 
         // Lights
-        /**
-        * is shadow enabled on this scene.
-        */
         private _shadowsEnabled = true;
-        public set shadowsEnabled(value: boolean) {
+        /**
+        * Gets or sets a boolean indicating if shadows are enabled on this scene
+        */
+       public set shadowsEnabled(value: boolean) {
             if (this._shadowsEnabled === value) {
                 return;
             }
@@ -631,10 +766,10 @@
             return this._shadowsEnabled;
         }
 
-        /**
-        * is light enabled on this scene.
-        */
         private _lightsEnabled = true;
+        /**
+        * Gets or sets a boolean indicating if lights are enabled on this scene
+        */
         public set lightsEnabled(value: boolean) {
             if (this._lightsEnabled === value) {
                 return;
@@ -648,12 +783,15 @@
         }
 
         /**
-        * All of the lights added to this scene.
+        * All of the lights added to this scene
+        * @see http://doc.babylonjs.com/babylon101/lights
         */
         public lights = new Array<Light>();
 
         // Cameras
-        /** All of the cameras added to this scene. */
+        /** All of the cameras added to this scene. 
+         * @see http://doc.babylonjs.com/babylon101/cameras
+         */
         public cameras = new Array<Camera>();
         /** All of the active cameras added to this scene. */
         public activeCameras = new Array<Camera>();
@@ -662,24 +800,34 @@
 
         // Meshes
         /**
-        * All of the tranform nodes added to this scene.
+        * All of the tranform nodes added to this scene
+        * @see http://doc.babylonjs.com/how_to/transformnode
         */
         public transformNodes = new Array<TransformNode>();
 
         /**
-        * All of the (abstract) meshes added to this scene.
+        * All of the (abstract) meshes added to this scene
         */
         public meshes = new Array<AbstractMesh>();
 
         /**
-        * All of the animation groups added to this scene.
+        * All of the animation groups added to this scene
+        * @see http://doc.babylonjs.com/how_to/group
         */
         public animationGroups = new Array<AnimationGroup>();
 
         // Geometries
         private _geometries = new Array<Geometry>();
 
+        /**
+        * All of the materials added to this scene
+        * @see http://doc.babylonjs.com/babylon101/materials
+        */        
         public materials = new Array<Material>();
+        /**
+        * All of the multi-materials added to this scene
+        * @see http://doc.babylonjs.com/how_to/multi_materials
+        */        
         public multiMaterials = new Array<MultiMaterial>();
         private _defaultMaterial: Material;
 
@@ -699,6 +847,9 @@
 
         // Textures
         private _texturesEnabled = true;
+        /**
+        * Gets or sets a boolean indicating if textures are enabled on this scene
+        */        
         public set texturesEnabled(value: boolean) {
             if (this._texturesEnabled === value) {
                 return;
@@ -711,28 +862,51 @@
             return this._texturesEnabled;
         }
 
+        /**
+        * All of the textures added to this scene
+        */       
         public textures = new Array<BaseTexture>();
 
         // Particles
+        /**
+        * Gets or sets a boolean indicating if particles are enabled on this scene
+        */           
         public particlesEnabled = true;
+
+        /**
+        * All of the particle systems added to this scene
+        * @see http://doc.babylonjs.com/babylon101/particles
+        */            
         public particleSystems = new Array<IParticleSystem>();
 
         // Sprites
+        /**
+        * Gets or sets a boolean indicating if sprites are enabled on this scene
+        */           
         public spritesEnabled = true;
+        /**
+        * All of the sprite managers added to this scene
+        * @see http://doc.babylonjs.com/babylon101/sprites
+        */          
         public spriteManagers = new Array<SpriteManager>();
 
         /**
-         * The list of layers (background and foreground) of the scene.
+         * The list of layers (background and foreground) of the scene
          */
         public layers = new Array<Layer>();
 
         /**
-         * The list of effect layers (highlights/glow) contained in the scene.
+         * The list of effect layers (highlights/glow) added to the scene
+         * @see http://doc.babylonjs.com/how_to/highlight_layer
+         * @see http://doc.babylonjs.com/how_to/glow_layer
          */
         public effectLayers = new Array<EffectLayer>();
 
         // Skeletons
         private _skeletonsEnabled = true;
+        /**
+        * Gets or sets a boolean indicating if skeletons are enabled on this scene
+        */            
         public set skeletonsEnabled(value: boolean) {
             if (this._skeletonsEnabled === value) {
                 return;
@@ -745,27 +919,64 @@
             return this._skeletonsEnabled;
         }
 
+        /**
+         * The list of skeletons added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_bones_and_skeletons
+         */        
         public skeletons = new Array<Skeleton>();
 
         // Morph targets
+        /**
+         * The list of morph target managers added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_dynamically_morph_a_mesh
+         */            
         public morphTargetManagers = new Array<MorphTargetManager>();
 
         // Lens flares
+        /**
+        * Gets or sets a boolean indicating if lens flares are enabled on this scene
+        */          
         public lensFlaresEnabled = true;
+        /**
+         * The list of lens flare system added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_lens_flares
+         */         
         public lensFlareSystems = new Array<LensFlareSystem>();
 
         // Collisions
+        /**
+        * Gets or sets a boolean indicating if collisions are enabled on this scene
+        * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+        */           
         public collisionsEnabled = true;
         private _workerCollisions: boolean;
+        /** @ignore */
         public collisionCoordinator: ICollisionCoordinator;
-        /** Defines the gravity applied to this scene */
+        /** 
+         * Defines the gravity applied to this scene (used only for collisions)
+         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity
+         */
         public gravity = new Vector3(0, -9.807, 0);
 
         // Postprocesses
-        public postProcesses = new Array<PostProcess>();
+        /**
+        * Gets or sets a boolean indicating if postprocesses are enabled on this scene
+        */          
         public postProcessesEnabled = true;
+        /**
+         * The list of postprocesses added to the scene
+         */          
+        public postProcesses = new Array<PostProcess>();
+        /**
+         * Gets the current postprocess manager
+         */
         public postProcessManager: PostProcessManager;
         private _postProcessRenderPipelineManager: PostProcessRenderPipelineManager
+        /**
+         * Gets the postprocess render pipeline manager
+         * @see http://doc.babylonjs.com/how_to/how_to_use_postprocessrenderpipeline
+         * @see http://doc.babylonjs.com/how_to/using_default_rendering_pipeline
+         */
         public get postProcessRenderPipelineManager(): PostProcessRenderPipelineManager {
             if (!this._postProcessRenderPipelineManager) {
                 this._postProcessRenderPipelineManager = new PostProcessRenderPipelineManager();
@@ -775,41 +986,82 @@
         }
 
         // Customs render targets
+        /**
+        * Gets or sets a boolean indicating if render targets are enabled on this scene
+        */           
         public renderTargetsEnabled = true;
+        /**
+        * Gets or sets a boolean indicating if next render targets must be dumped as image for debugging purposes
+        * We recommend not using it and instead rely on Spector.js: http://spector.babylonjs.com
+        */                   
         public dumpNextRenderTargets = false;
+        /**
+         * The list of user defined render targets added to the scene
+         */           
         public customRenderTargets = new Array<RenderTargetTexture>();
 
-        // Delay loading
+        /**
+         * Defines if texture loading must be delayed
+         * If true, textures will only be loaded when they need to be rendered
+         */
         public useDelayedTextureLoading: boolean;
 
-        // Imported meshes
+        /**
+         * Gets the list of meshes imported to the scene through SceneLoader
+         */
         public importedMeshesFiles = new Array<String>();
 
         // Probes
+        /**
+        * Gets or sets a boolean indicating if probes are enabled on this scene
+        */          
         public probesEnabled = true;
+        /**
+         * The list of reflection probes added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_reflection_probes
+         */           
         public reflectionProbes = new Array<ReflectionProbe>();
 
         // Database
+        /**
+         * @ignore
+         */
         public database: Database;
 
         /**
-         * This scene's action manager
+         * Gets or sets the action manager associated with the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_actions
         */
         public actionManager: ActionManager;
 
+        /** @ignore */
         public _actionManagers = new Array<ActionManager>();
         private _meshesForIntersections = new SmartArrayNoDuplicate<AbstractMesh>(256);
 
         // Procedural textures
+        /**
+        * Gets or sets a boolean indicating if procedural textures are enabled on this scene
+        */         
         public proceduralTexturesEnabled = true;
-        public _proceduralTextures = new Array<ProceduralTexture>();
+        /**
+         * The list of procedural textures added to the scene
+         * @see http://doc.babylonjs.com/how_to/how_to_use_procedural_textures
+         */             
+        public proceduralTextures = new Array<ProceduralTexture>();
 
         // Sound Tracks
         private _mainSoundTrack: SoundTrack;
+        /**
+         * The list of sound tracks added to the scene
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */     
         public soundTracks = new Array<SoundTrack>();
         private _audioEnabled = true;
         private _headphone = false;
 
+        /**
+         * Gets the main soundtrack associated with the scene
+         */
         public get mainSoundTrack(): SoundTrack {
             if (!this._mainSoundTrack) {
                 this._mainSoundTrack = new SoundTrack(this, { mainTrack: true });
@@ -818,10 +1070,16 @@
             return this._mainSoundTrack;
         }
 
-        // VR Helper
+        /**
+         * Gets or sets the VRExperienceHelper attached to the scene
+         * @see http://doc.babylonjs.com/how_to/webvr_helper
+         */
         public VRHelper: VRExperienceHelper;
 
-        //Simplification Queue
+        /**
+         * Gets or sets the simplification queue attached to the scene
+         * @see http://doc.babylonjs.com/how_to/in-browser_mesh_simplification
+         */
         public simplificationQueue: SimplificationQueue;
 
         // Private
@@ -829,18 +1087,28 @@
 
         // Performance counters
         private _totalVertices = new PerfCounter();
+        /** @ignore */
         public _activeIndices = new PerfCounter();
+        /** @ignore */
         public _activeParticles = new PerfCounter();
+        /** @ignore */
         public _activeBones = new PerfCounter();
 
         private _animationRatio: number;
 
         private _animationTimeLast: number;
         private _animationTime: number = 0;
+        /**
+         * Gets or sets a general scale for animation speed
+         * @see https://www.babylonjs-playground.com/#IBU2W7#3
+         */
         public animationTimeScale: number = 1;
 
+        /** @ignore */
         public _cachedMaterial: Nullable<Material>;
+        /** @ignore */
         public _cachedEffect: Nullable<Effect>;
+        /** @ignore */
         public _cachedVisibility: Nullable<number>;
 
         private _renderId = 0;
@@ -852,15 +1120,21 @@
         private _alternateViewUpdateFlag = -1;
         private _alternateProjectionUpdateFlag = -1;
 
+        /** @ignore */
         public _toBeDisposed = new SmartArray<Nullable<IDisposable>>(256);
         private _activeRequests = new Array<IFileRequest>();
         private _pendingData = new Array();
         private _isDisposed = false;
 
+        /**
+         * Gets or sets a boolean indicating that all submeshes of active meshes must be rendered
+         * Use this boolean to avoid computing frustum clipping on submeshes (This could help when you are CPU bound)
+         */
         public dispatchAllSubMeshesOfActiveMeshes: boolean = false;
         private _activeMeshes = new SmartArray<AbstractMesh>(256);
         private _processedMaterials = new SmartArray<Material>(256);
         private _renderTargets = new SmartArrayNoDuplicate<RenderTargetTexture>(256);
+        /** @ignore */
         public _activeParticleSystems = new SmartArray<IParticleSystem>(256);
         private _activeSkeletons = new SmartArrayNoDuplicate<Skeleton>(32);
         private _softwareSkinnedMeshes = new SmartArrayNoDuplicate<Mesh>(32);
@@ -868,6 +1142,7 @@
         private _renderingManager: RenderingManager;
         private _physicsEngine: Nullable<PhysicsEngine>;
 
+        /** @ignore */
         public _activeAnimatables = new Array<Animatable>();
 
         private _transformMatrix = Matrix.Zero();
@@ -886,17 +1161,26 @@
         private _alternateTransformMatrix: Matrix;
         private _useAlternateCameraConfiguration = false;
         private _alternateRendering = false;
+        /** @ignore */
         public _forcedViewPosition: Nullable<Vector3>;
 
+        /** @ignore */
         public get _isAlternateRenderingEnabled(): boolean {
             return this._alternateRendering;
         }
 
         private _frustumPlanes: Plane[];
+        /**
+         * Gets the list of frustum planes (built from the active camera)
+         */
         public get frustumPlanes(): Plane[] {
             return this._frustumPlanes;
         }
 
+        /**
+         * Gets or sets a boolean indicating if lights must be sorted by priority (off by default)
+         * This is useful if there are more lights that the maximum simulteanous authorized
+         */
         public requireLightSorting = false;
 
         private _selectionOctree: Octree<AbstractMesh>;
@@ -931,8 +1215,8 @@
         private _uid: Nullable<string>;
 
         /**
-         * @constructor
-         * @param {BABYLON.Engine} engine - the engine to be used to render this scene.
+         * Creates a new Scene
+         * @param engine defines the engine to use to render this scene
          */
         constructor(engine: Engine) {
             this._engine = engine || Engine.LastCreatedEngine;
@@ -967,7 +1251,10 @@
             this._imageProcessingConfiguration = new ImageProcessingConfiguration();
         }
 
-        // Properties
+        /**
+         * Gets the debug layer associated with the scene
+         * @see http://doc.babylonjs.com/features/playground_debuglayer
+         */
         public get debugLayer(): DebugLayer {
             if (!this._debugLayer) {
                 this._debugLayer = new DebugLayer(this);
@@ -992,54 +1279,79 @@
             this.collisionCoordinator.init(this);
         }
 
+        /**
+         * Gets a boolean indicating if collisions are processed on a web worker
+         * @see http://doc.babylonjs.com/babylon101/cameras,_mesh_collisions_and_gravity#web-worker-based-collision-system-since-21
+         */
         public get workerCollisions(): boolean {
             return this._workerCollisions;
         }
 
+        /**
+         * Gets the octree used to boost mesh selection (picking)
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene_with_octrees
+         */
         public get selectionOctree(): Octree<AbstractMesh> {
             return this._selectionOctree;
         }
 
         /**
-         * The mesh that is currently under the pointer.
-         * @return {BABYLON.AbstractMesh} mesh under the pointer/mouse cursor or null if none.
+         * Gets the mesh that is currently under the pointer
          */
         public get meshUnderPointer(): Nullable<AbstractMesh> {
             return this._pointerOverMesh;
         }
 
         /**
-         * Current on-screen X position of the pointer
-         * @return {number} X position of the pointer
+         * Gets the current on-screen X position of the pointer
          */
         public get pointerX(): number {
             return this._pointerX;
         }
 
         /**
-         * Current on-screen Y position of the pointer
-         * @return {number} Y position of the pointer
+         * Gets the current on-screen Y position of the pointer
          */
         public get pointerY(): number {
             return this._pointerY;
         }
 
+        /** 
+         * Gets the cached material (ie. the latest rendered one)
+         */
         public getCachedMaterial(): Nullable<Material> {
             return this._cachedMaterial;
         }
 
+        /** 
+         * Gets the cached effect (ie. the latest rendered one)
+         */
         public getCachedEffect(): Nullable<Effect> {
             return this._cachedEffect;
         }
 
+        /** 
+         * Gets the cached visibility state (ie. the latest rendered one)
+         */
         public getCachedVisibility(): Nullable<number> {
             return this._cachedVisibility;
         }
 
+        /**
+         * Gets a boolean indicating if the current material / effect / visibility must be bind again
+         * @param material defines the current material
+         * @param effect defines the current effect
+         * @param visibility defines the current visibility state
+         * @returns true if one parameter is not cached
+         */
         public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
             return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
         }
 
+        /** 
+         * Gets the bounding box renderer associated with the scene
+         * @returns a BoundingBoxRenderer
+         */
         public getBoundingBoxRenderer(): BoundingBoxRenderer {
             if (!this._boundingBoxRenderer) {
                 this._boundingBoxRenderer = new BoundingBoxRenderer(this);
@@ -1048,123 +1360,193 @@
             return this._boundingBoxRenderer;
         }
 
+        /** 
+         * Gets the outline renderer associated with the scene
+         * @returns a OutlineRenderer
+         */        
         public getOutlineRenderer(): OutlineRenderer {
             return this._outlineRenderer;
         }
 
+        /** 
+         * Gets the engine associated with the scene
+         * @returns an Engine
+         */
         public getEngine(): Engine {
             return this._engine;
         }
 
+        /** 
+         * Gets the total number of vertices rendered per frame
+         * @returns the total number of vertices rendered per frame
+         */
         public getTotalVertices(): number {
             return this._totalVertices.current;
         }
 
+        /**
+         * Gets the performance counter for total vertices
+         * @returns a PerfCounter
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+         */
         public get totalVerticesPerfCounter(): PerfCounter {
             return this._totalVertices;
         }
 
+        /** 
+         * Gets the total number of active indices rendered per frame (You can deduce the number of rendered triangles by dividing this number by 3)
+         * @returns the total number of active indices rendered per frame         
+         */        
         public getActiveIndices(): number {
             return this._activeIndices.current;
         }
 
+        /**
+         * Gets the performance counter for active indices
+         * @returns a PerfCounter
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+         */        
         public get totalActiveIndicesPerfCounter(): PerfCounter {
             return this._activeIndices;
         }
 
+        /** 
+         * Gets the total number of active particles rendered per frame
+         * @returns the total number of active particles rendered per frame         
+         */            
         public getActiveParticles(): number {
             return this._activeParticles.current;
         }
 
+        /**
+         * Gets the performance counter for active particles
+         * @returns a PerfCounter
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+         */ 
         public get activeParticlesPerfCounter(): PerfCounter {
             return this._activeParticles;
         }
 
+        /** 
+         * Gets the total number of active bones rendered per frame
+         * @returns the total number of active bones rendered per frame         
+         */             
         public getActiveBones(): number {
             return this._activeBones.current;
         }
 
+        /**
+         * Gets the performance counter for active bones
+         * @returns a PerfCounter
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#instrumentation
+         */ 
         public get activeBonesPerfCounter(): PerfCounter {
             return this._activeBones;
         }
 
-        // Stats
+        /** @ignore */
         public getInterFramePerfCounter(): number {
             Tools.Warn("getInterFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get interFramePerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("interFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
+        /** @ignore */
         public getLastFrameDuration(): number {
             Tools.Warn("getLastFrameDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get lastFramePerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("lastFramePerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
+        /** @ignore */
         public getEvaluateActiveMeshesDuration(): number {
             Tools.Warn("getEvaluateActiveMeshesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get evaluateActiveMeshesDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("evaluateActiveMeshesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
+
+        /** 
+         * Gets the array of active meshes
+         * @returns an array of AbstractMesh 
+         */
         public getActiveMeshes(): SmartArray<AbstractMesh> {
             return this._activeMeshes;
         }
 
+        /** @ignore */
         public getRenderTargetsDuration(): number {
             Tools.Warn("getRenderTargetsDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public getRenderDuration(): number {
             Tools.Warn("getRenderDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get renderDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("renderDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
+        /** @ignore */
         public getParticlesDuration(): number {
             Tools.Warn("getParticlesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get particlesDurationPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("particlesDurationPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
+        /** @ignore */
         public getSpritesDuration(): number {
             Tools.Warn("getSpritesDuration is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get spriteDuractionPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("spriteDuractionPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
+        /** 
+         * Gets the animation ratio (which is 1.0 is the scene renders at 60fps and 2 if the scene renders at 30fps, etc.)
+         * @returns a number
+         */
         public getAnimationRatio(): number {
             return this._animationRatio;
         }
 
+        /** 
+         * Gets an unique Id for the current frame
+         * @returns a number
+         */
         public getRenderId(): number {
             return this._renderId;
         }
 
+        /** Call this function if you want to manually increment the render Id*/
         public incrementRenderId(): void {
             this._renderId++;
         }
@@ -1415,7 +1797,7 @@
         * @param attachDown defines if you want to attach events to pointerdown
         * @param attachMove defines if you want to attach events to pointermove
         */
-        public attachControl(attachUp = true, attachDown = true, attachMove = true) {
+        public attachControl(attachUp = true, attachDown = true, attachMove = true): void {
             this._initActionManager = (act: Nullable<ActionManager>, clickInfo: ClickInfo): Nullable<ActionManager> => {
                 if (!this._meshPickProceed) {
                     let pickResult = this.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, this.pointerDownPredicate, false, this.cameraToUseForPointers);
@@ -1819,6 +2201,7 @@
             canvas.tabIndex = 1;
         }
 
+        /** Detaches all event handlers*/
         public detachControl() {
             let engine = this.getEngine();
             var eventPrefix = Tools.GetPointerPrefix();
@@ -1934,24 +2317,41 @@
             return true;
         }
 
+        /** Resets all cached information relative to material (including effect and visibility) */
         public resetCachedMaterial(): void {
             this._cachedMaterial = null;
             this._cachedEffect = null;
             this._cachedVisibility = null;
         }
 
+        /**
+         * Registers a function to be called before every frame render
+         * @param func defines the function to register
+         */
         public registerBeforeRender(func: () => void): void {
             this.onBeforeRenderObservable.add(func);
         }
 
+        /**
+         * Unregisters a function called before every frame render
+         * @param func defines the function to unregister
+         */
         public unregisterBeforeRender(func: () => void): void {
             this.onBeforeRenderObservable.removeCallback(func);
         }
 
+        /**
+         * Registers a function to be called after every frame render
+         * @param func defines the function to register
+         */        
         public registerAfterRender(func: () => void): void {
             this.onAfterRenderObservable.add(func);
         }
 
+        /**
+         * Unregisters a function called after every frame render
+         * @param func defines the function to unregister
+         */        
         public unregisterAfterRender(func: () => void): void {
             this.onAfterRenderObservable.removeCallback(func);
         }
@@ -1983,10 +2383,12 @@
             }
         }
 
+        /** @ignore */            
         public _addPendingData(data: any): void {
             this._pendingData.push(data);
         }
 
+        /** @ignore */
         public _removePendingData(data: any): void {
             var wasLoading = this.isLoading;
             var index = this._pendingData.indexOf(data);
@@ -2000,17 +2402,25 @@
             }
         }
 
+        /** 
+         * Returns the number of items waiting to be loaded
+         * @returns the number of items waiting to be loaded
+         */
         public getWaitingItemsCount(): number {
             return this._pendingData.length;
         }
 
+        /**
+         * Returns a boolean indicating if the scene is still loading data
+         * @returns true if the scene is loading data
+         */
         public get isLoading(): boolean {
             return this._pendingData.length > 0;
         }
 
         /**
-         * Registers a function to be executed when the scene is ready.
-         * @param {Function} func - the function to be executed.
+         * Registers a function to be executed when the scene is ready
+         * @param {Function} func - the function to be executed
          */
         public executeWhenReady(func: () => void): void {
             this.onReadyObservable.add(func);
@@ -2025,8 +2435,8 @@
         }
 
         /**
-         * Returns a promise that resolves when the scene is ready.
-         * @returns A promise that resolves when the scene is ready.
+         * Returns a promise that resolves when the scene is ready
+         * @returns A promise that resolves when the scene is ready
          */
         public whenReadyAsync(): Promise<void> {
             return new Promise(resolve => {
@@ -2036,6 +2446,7 @@
             });
         }
 
+        /** @ignore */
         public _checkIsReady() {
             if (this.isReady()) {
                 this.onReadyObservable.notifyObservers(this);
@@ -2158,6 +2569,11 @@
             return result;
         }
 
+        /**
+         * Gets the animatable associated with a specific target
+         * @param target defines the target of the animatable
+         * @returns the required animatable if found
+         */
         public getAnimatableByTarget(target: any): Nullable<Animatable> {
             for (var index = 0; index < this._activeAnimatables.length; index++) {
                 if (this._activeAnimatables[index].target === target) {
@@ -2184,6 +2600,10 @@
             return result;
         }        
 
+        /**
+         * Gets all animatable attached to the scene
+         * @returns an array of Animatable
+         */
         public get animatables(): Animatable[] {
             return this._activeAnimatables;
         }
@@ -3966,14 +4386,14 @@
 
             // Procedural textures
             if (this.proceduralTexturesEnabled) {
-                Tools.StartPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
-                for (var proceduralIndex = 0; proceduralIndex < this._proceduralTextures.length; proceduralIndex++) {
-                    var proceduralTexture = this._proceduralTextures[proceduralIndex];
+                Tools.StartPerformanceCounter("Procedural textures", this.proceduralTextures.length > 0);
+                for (var proceduralIndex = 0; proceduralIndex < this.proceduralTextures.length; proceduralIndex++) {
+                    var proceduralTexture = this.proceduralTextures[proceduralIndex];
                     if (proceduralTexture._shouldRender()) {
                         proceduralTexture.render();
                     }
                 }
-                Tools.EndPerformanceCounter("Procedural textures", this._proceduralTextures.length > 0);
+                Tools.EndPerformanceCounter("Procedural textures", this.proceduralTextures.length > 0);
             }
 
             // Clear
