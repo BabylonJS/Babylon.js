@@ -109,10 +109,12 @@ module BABYLON {
                 }
             }
             var adjustedKernelSize = kernelSize/Math.pow(2, blurCount-1);
+            var ratio = 1.0/Math.pow(2, 0);
             for(var i = 0;i<blurCount;i++){
-                var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, 1.0/Math.pow(2, i), null, this._circleOfConfusion, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+                var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, ratio, null, this._circleOfConfusion, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
                 blurY.autoClear = false;
-                var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, 1.0/Math.pow(2, i), null,  this._circleOfConfusion, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+                ratio = 1.0/Math.pow(2, i);
+                var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, ratio, null,  this._circleOfConfusion, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
                 blurX.autoClear = false;
                 this._depthOfFieldBlurY.push(blurY);
                 this._depthOfFieldBlurX.push(blurX);
@@ -126,7 +128,7 @@ module BABYLON {
             }
 
             // Merge blurred images with original image based on circleOfConfusion
-            this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, 1, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
+            this._dofMerge = new DepthOfFieldMergePostProcess("dofMerge", this._circleOfConfusion, this._circleOfConfusion, this._depthOfFieldBlurX, ratio, null, BABYLON.Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
             this._dofMerge.autoClear = false;
             this._effects.push(this._dofMerge);
         }
