@@ -3441,6 +3441,25 @@ var INSPECTOR;
                 point.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = true; _this._inspector.scene.forceWireframe = false; });
                 wireframe.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = false; _this._inspector.scene.forceWireframe = true; });
                 solid.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = false; _this._inspector.scene.forceWireframe = false; });
+                // Cameras
+                title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
+                title.textContent = 'Cameras';
+                var cameraRadioButtons = [];
+                var _loop_1 = function (camera) {
+                    var cameraRadio = INSPECTOR.Helpers.CreateDiv('action-radio', this_1._actions);
+                    cameraRadio.textContent = camera.name;
+                    if (this_1._inspector.scene.activeCamera == camera) {
+                        cameraRadio.classList.add('active');
+                    }
+                    cameraRadioButtons.push(cameraRadio);
+                    cameraRadio.addEventListener('click', function () { _this._inspector.scene.switchActiveCamera(camera); });
+                };
+                var this_1 = this;
+                for (var _a = 0, _b = _this._inspector.scene.cameras; _a < _b.length; _a++) {
+                    var camera = _b[_a];
+                    _loop_1(camera);
+                }
+                _this._generateRadioAction(cameraRadioButtons);
                 // Textures
                 title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Textures channels';
@@ -4629,6 +4648,8 @@ var INSPECTOR;
             if (!this._inspector.popupMode && !INSPECTOR.Helpers.IsBrowserEdge()) {
                 this._tools.push(new INSPECTOR.PopupTool(this._div, this._inspector));
             }
+            // FullScreen
+            this._tools.push(new INSPECTOR.FullscreenTool(this._div, this._inspector));
             // Pause schedule
             this._tools.push(new INSPECTOR.PauseScheduleTool(this._div, this._inspector));
             // Pause schedule
@@ -4679,6 +4700,39 @@ var INSPECTOR;
         return DisposeTool;
     }(INSPECTOR.AbstractTool));
     INSPECTOR.DisposeTool = DisposeTool;
+})(INSPECTOR || (INSPECTOR = {}));
+
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var FullscreenTool = /** @class */ (function (_super) {
+        __extends(FullscreenTool, _super);
+        function FullscreenTool(parent, inspector) {
+            return _super.call(this, 'fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit') || this;
+        }
+        // Action : refresh the whole panel
+        FullscreenTool.prototype.action = function () {
+            var elem = document.body;
+            function requestFullScreen(element) {
+                // Supports most browsers and their versions.
+                var requestMethod = element.requestFullscreen || element.webkitRequestFullScreen;
+                requestMethod.call(element);
+            }
+            requestFullScreen(elem);
+        };
+        return FullscreenTool;
+    }(INSPECTOR.AbstractTool));
+    INSPECTOR.FullscreenTool = FullscreenTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
 "use strict";

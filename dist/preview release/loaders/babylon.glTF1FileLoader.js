@@ -78,10 +78,6 @@ var BABYLON;
              */
             this.onMaterialLoadedObservable = new BABYLON.Observable();
             /**
-             * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
-             */
-            this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
-            /**
              * Raised when the asset is completely loaded, immediately before the loader is disposed.
              * For assets with LODs, raised when all of the LODs are complete.
              * For assets without LODs, raised when the model is complete, immediately after onSuccess.
@@ -140,16 +136,6 @@ var BABYLON;
                     this.onMaterialLoadedObservable.remove(this._onMaterialLoadedObserver);
                 }
                 this._onMaterialLoadedObserver = this.onMaterialLoadedObservable.add(callback);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(GLTFFileLoader.prototype, "onAnimationGroupLoaded", {
-            set: function (callback) {
-                if (this._onAnimationGroupLoadedObserver) {
-                    this.onAnimationGroupLoadedObservable.remove(this._onAnimationGroupLoadedObserver);
-                }
-                this._onAnimationGroupLoadedObserver = this.onAnimationGroupLoadedObservable.add(callback);
             },
             enumerable: true,
             configurable: true
@@ -246,6 +232,7 @@ var BABYLON;
                     Array.prototype.push.apply(container.meshes, result.meshes);
                     Array.prototype.push.apply(container.particleSystems, result.particleSystems);
                     Array.prototype.push.apply(container.skeletons, result.skeletons);
+                    Array.prototype.push.apply(container.animationGroups, result.animationGroups);
                     container.removeAllFromScene();
                     return container;
                 });
@@ -307,7 +294,6 @@ var BABYLON;
             loader.onTextureLoadedObservable.add(function (texture) { return _this.onTextureLoadedObservable.notifyObservers(texture); });
             loader.onMaterialLoadedObservable.add(function (material) { return _this.onMaterialLoadedObservable.notifyObservers(material); });
             loader.onExtensionLoadedObservable.add(function (extension) { return _this.onExtensionLoadedObservable.notifyObservers(extension); });
-            loader.onAnimationGroupLoadedObservable.add(function (animationGroup) { return _this.onAnimationGroupLoadedObservable.notifyObservers(animationGroup); });
             loader.onCompleteObservable.add(function () {
                 _this.onMeshLoadedObservable.clear();
                 _this.onTextureLoadedObservable.clear();
@@ -1872,7 +1858,6 @@ var BABYLON;
                 this.onMeshLoadedObservable = new BABYLON.Observable();
                 this.onTextureLoadedObservable = new BABYLON.Observable();
                 this.onMaterialLoadedObservable = new BABYLON.Observable();
-                this.onAnimationGroupLoadedObservable = new BABYLON.Observable();
                 this.onCompleteObservable = new BABYLON.Observable();
                 this.onExtensionLoadedObservable = new BABYLON.Observable();
                 this.state = null;
@@ -1927,12 +1912,12 @@ var BABYLON;
                             importMaterials(gltfRuntime);
                             postLoad(gltfRuntime);
                             if (!BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                                onSuccess(meshes, [], skeletons);
+                                onSuccess(meshes, skeletons);
                             }
                         });
                     }, onProgress);
                     if (BABYLON.GLTFFileLoader.IncrementalLoading && onSuccess) {
-                        onSuccess(meshes, [], skeletons);
+                        onSuccess(meshes, skeletons);
                     }
                 }, onError);
                 return true;
@@ -1940,11 +1925,12 @@ var BABYLON;
             GLTFLoader.prototype.importMeshAsync = function (meshesNames, scene, data, rootUrl, onProgress) {
                 var _this = this;
                 return new Promise(function (resolve, reject) {
-                    _this._importMeshAsync(meshesNames, scene, data, rootUrl, function (meshes, particleSystems, skeletons) {
+                    _this._importMeshAsync(meshesNames, scene, data, rootUrl, function (meshes, skeletons) {
                         resolve({
                             meshes: meshes,
-                            particleSystems: particleSystems,
-                            skeletons: skeletons
+                            particleSystems: [],
+                            skeletons: skeletons,
+                            animationGroups: []
                         });
                     }, onProgress, function (message) {
                         reject(new Error(message));
