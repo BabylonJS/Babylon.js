@@ -2499,44 +2499,75 @@
                 this.particleSystems.splice(index, 1);
             }
             return index;
-        };
+        }
+
         public removeAnimation(toRemove: Animation): number {
             var index = this.animations.indexOf(toRemove);
             if (index !== -1) {
                 this.animations.splice(index, 1);
             }
             return index;
-        };
+        }
+
+        /**
+         * Removes the given animation group from this scene.
+         * @param toRemove The animation group to remove
+         * @returns The index of the removed animation group
+         */
+        public removeAnimationGroup(toRemove: AnimationGroup): number {
+            var index = this.animationGroups.indexOf(toRemove);
+            if (index !== -1) {
+                this.animationGroups.splice(index, 1);
+            }
+            return index;
+        }
+
         public removeMultiMaterial(toRemove: MultiMaterial): number {
             var index = this.multiMaterials.indexOf(toRemove);
             if (index !== -1) {
                 this.multiMaterials.splice(index, 1);
             }
             return index;
-        };
+        }
+
         public removeMaterial(toRemove: Material): number {
             var index = this.materials.indexOf(toRemove);
             if (index !== -1) {
                 this.materials.splice(index, 1);
             }
             return index;
-        };
-        public removeLensFlareSystem(toRemove: LensFlareSystem) {
+        }
+
+        public removeLensFlareSystem(toRemove: LensFlareSystem): number {
             var index = this.lensFlareSystems.indexOf(toRemove);
             if (index !== -1) {
                 this.lensFlareSystems.splice(index, 1);
             }
             return index;
-        };
-        public removeActionManager(toRemove: ActionManager) {
+        }
+
+        public removeActionManager(toRemove: ActionManager): number {
             var index = this._actionManagers.indexOf(toRemove);
             if (index !== -1) {
                 this._actionManagers.splice(index, 1);
             }
             return index;
-        };
+        }
 
-        public addLight(newLight: Light) {
+        /**
+         * Removes the given texture from this scene.
+         * @param toRemove The texture to remove
+         * @returns The index of the removed texture
+         */
+        public removeTexture(toRemove: BaseTexture): number {
+            var index = this.textures.indexOf(toRemove);
+            if (index !== -1) {
+                this.textures.splice(index, 1);
+            }
+            return index;
+        }
+
+        public addLight(newLight: Light): void {
             this.lights.push(newLight);
             this.sortLightsByPriority();
 
@@ -2557,53 +2588,69 @@
             }
         }
 
-        public addCamera(newCamera: Camera) {
+        public addCamera(newCamera: Camera): void {
             this.cameras.push(newCamera);
             this.onNewCameraAddedObservable.notifyObservers(newCamera);
         }
 
-        public addSkeleton(newSkeleton: Skeleton) {
-            this.skeletons.push(newSkeleton)
+        public addSkeleton(newSkeleton: Skeleton): void {
+            this.skeletons.push(newSkeleton);
         }
 
-        public addParticleSystem(newParticleSystem: IParticleSystem) {
-            this.particleSystems.push(newParticleSystem)
+        public addParticleSystem(newParticleSystem: IParticleSystem): void {
+            this.particleSystems.push(newParticleSystem);
         }
 
-        public addAnimation(newAnimation: Animation) {
-            this.animations.push(newAnimation)
+        public addAnimation(newAnimation: Animation): void {
+            this.animations.push(newAnimation);
         }
 
-        public addMultiMaterial(newMultiMaterial: MultiMaterial) {
-            this.multiMaterials.push(newMultiMaterial)
+        /**
+         * Adds the given animation group to this scene.
+         * @param newAnimationGroup The animation group to add
+         */
+        public addAnimationGroup(newAnimationGroup: AnimationGroup): void {
+            this.animationGroups.push(newAnimationGroup);
         }
 
-        public addMaterial(newMaterial: Material) {
-            this.materials.push(newMaterial)
+        public addMultiMaterial(newMultiMaterial: MultiMaterial): void {
+            this.multiMaterials.push(newMultiMaterial);
         }
 
-        public addMorphTargetManager(newMorphTargetManager: MorphTargetManager) {
-            this.morphTargetManagers.push(newMorphTargetManager)
+        public addMaterial(newMaterial: Material): void {
+            this.materials.push(newMaterial);
         }
 
-        public addGeometry(newGeometrie: Geometry) {
-            this._geometries.push(newGeometrie)
+        public addMorphTargetManager(newMorphTargetManager: MorphTargetManager): void {
+            this.morphTargetManagers.push(newMorphTargetManager);
         }
 
-        public addLensFlareSystem(newLensFlareSystem: LensFlareSystem) {
-            this.lensFlareSystems.push(newLensFlareSystem)
+        public addGeometry(newGeometrie: Geometry): void {
+            this._geometries.push(newGeometrie);
         }
 
-        public addActionManager(newActionManager: ActionManager) {
-            this._actionManagers.push(newActionManager)
+        public addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void {
+            this.lensFlareSystems.push(newLensFlareSystem);
+        }
+
+        public addActionManager(newActionManager: ActionManager): void {
+            this._actionManagers.push(newActionManager);
+        }
+
+        /**
+         * Adds the given texture to this scene.
+         * @param newTexture The texture to add
+         */
+        public addTexture(newTexture: BaseTexture): void {
+            this.textures.push(newTexture);
         }
 
         /**
          * Switch active camera
          * @param {Camera} newCamera - new active camera
-		 * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
+         * @param {boolean} attachControl - call attachControl for the new active camera (default: true)
          */
-        public switchActiveCamera(newCamera: Camera, attachControl = true) {
+        public switchActiveCamera(newCamera: Camera, attachControl = true): void {
             var canvas = this._engine.getRenderingCanvas();
 
             if (!canvas) {
