@@ -62,6 +62,7 @@ describe('Babylon Scene Loader', function () {
                 expect(result.meshes.length, "meshes.length").to.equal(scene.meshes.length);
                 expect(result.particleSystems.length, "particleSystems.length").to.equal(0);
                 expect(result.skeletons.length, "skeletons.length").to.equal(0);
+                expect(result.animationGroups.length, "animationGroups.length").to.equal(0);
             });
         });
 
@@ -205,9 +206,7 @@ describe('Babylon Scene Loader', function () {
         it('Load Alien', () => {
             const scene = new BABYLON.Scene(subject);
             return BABYLON.SceneLoader.ImportMeshAsync(null, "/Playground/scenes/Alien/", "Alien.gltf", scene).then(result => {
-                expect(result.skeletons.length, "skeletons.length").to.equal(scene.skeletons.length);
-
-                const mapping = {
+                const skeletonsMapping = {
                     "AlienHead": "skeleton0",
                     "Collar": "skeleton1",
                     "LeftEye": "skeleton2",
@@ -218,10 +217,29 @@ describe('Babylon Scene Loader', function () {
                     "Teeth": "skeleton1",
                 };
 
-                for (const meshName in mapping) {
-                    const skeletonName = mapping[meshName];
+                expect(scene.skeletons, "scene.skeletons").to.have.lengthOf(4);
+                expect(result.skeletons, "skeletons").to.have.lengthOf(4);
+
+                for (const meshName in skeletonsMapping) {
+                    const skeletonName = skeletonsMapping[meshName];
                     expect(scene.getMeshByName(meshName).skeleton.name, `skeleton name of mesh '${meshName}'`).to.equal(skeletonName);
                 }
+
+                const alienHeadMesh = scene.getMeshByName("AlienHead") as BABYLON.Mesh;
+                expect(alienHeadMesh.morphTargetManager.numTargets, "alienHeadMesh.morphTargetManager.numTargets").to.equal(2);
+
+                expect(scene.animationGroups, "scene.animationGroups").to.have.lengthOf(1);
+                expect(result.animationGroups, "animationGroups").to.have.lengthOf(1);
+
+                const animationGroup = result.animationGroups[0];
+                expect(animationGroup.name, "animationGroup.name").to.equal("TwoTargetBlend");
+                expect(animationGroup.targetedAnimations, "animationGroup.targetedAnimations").to.have.lengthOf(7);
+                const influenceAnimations = animationGroup.targetedAnimations.filter(_ => _.animation.targetProperty === "influence");
+                expect(influenceAnimations, "influenceAnimations").to.have.lengthOf(2);
+                const rotationAnimations = animationGroup.targetedAnimations.filter(_ => _.animation.targetProperty === "rotationQuaternion");
+                expect(rotationAnimations, "rotationAnimations").to.have.lengthOf(4);
+                const positionAnimations = animationGroup.targetedAnimations.filter(_ => _.animation.targetProperty === "position");
+                expect(positionAnimations, "positionAnimations").to.have.lengthOf(1);
             });
         });
 
