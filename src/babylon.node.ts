@@ -43,7 +43,7 @@
         public _isDisposed = false;        
 
         /**
-         * Gets a list of {BABYLON.Animation} associated with the node
+         * Gets a list of Animations associated with the node
          */
         public animations = new Array<Animation>();
         private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
