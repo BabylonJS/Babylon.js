@@ -432,6 +432,7 @@ module BABYLON {
          */
         public getWorldMatrix(): Matrix {
             this._currentRenderId = this.getScene().getRenderId();
+            this._childRenderId = this._currentRenderId;
 
             var worldMatrix = this._getWorldMatrix();
 
