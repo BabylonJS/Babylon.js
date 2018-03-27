@@ -72,6 +72,15 @@
             return this._buffer;
         }
 
+        /**
+         * Gets the stride in float32 units (i.e. byte stride / 4).
+         * May not be an integer if the byte stride is not divisible by 4.
+         * DEPRECATED. Use byteStride instead.
+         */
+        public getStrideSize(): number {
+            return this.byteStride / 4;
+        }
+
         // Methods
         public create(data: Nullable<DataArray> = null): void {
             if (!data && this._buffer) {
