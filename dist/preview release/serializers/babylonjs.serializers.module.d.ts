@@ -1,5 +1,3 @@
-/// <reference types="babylonjs"/>
-/// <reference types="babylonjs-gltf2interface"/>
 
 
 declare module 'babylonjs-serializers' { 

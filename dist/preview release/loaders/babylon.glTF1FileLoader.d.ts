@@ -52,7 +52,6 @@ declare module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
-        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -61,6 +60,7 @@ declare module BABYLON {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
@@ -116,12 +116,6 @@ declare module BABYLON {
         private _onMaterialLoadedObserver;
         onMaterialLoaded: (material: Material) => void;
         /**
-         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
-         */
-        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
-        private _onAnimationGroupLoadedObserver;
-        onAnimationGroupLoaded: (animationGroup: AnimationGroup) => void;
-        /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after onSuccess.
@@ -162,6 +156,7 @@ declare module BABYLON {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
@@ -581,7 +576,6 @@ declare module BABYLON.GLTF1 {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
-        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
@@ -591,6 +585,7 @@ declare module BABYLON.GLTF1 {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         private _loadAsync(scene, data, rootUrl, onSuccess, onProgress?, onError?);
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;

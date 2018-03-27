@@ -2,6 +2,9 @@
 import { Observable, IFileRequest, Tools } from 'babylonjs';
 import { isUrl, camelToKebab, kebabToCamel } from './helper';
 
+/**
+ * A single template configuration object
+ */
 export interface ITemplateConfiguration {
     location?: string; // #template-id OR http://example.com/loading.html
     html?: string; // raw html string
@@ -27,6 +30,9 @@ export interface ITemplateConfiguration {
     }
 }
 
+/**
+ * The object sent when an event is triggered
+ */
 export interface EventCallback {
     event: Event;
     template: Template;
@@ -34,14 +40,36 @@ export interface EventCallback {
     payload?: any;
 }
 
+/**
+ * The template manager, a member of the viewer class, will manage the viewer's templates and generate the HTML.
+ * The template manager managers a single viewer and can be seen as the collection of all sub-templates of the viewer.
+ */
 export class TemplateManager {
 
-    public onInit: Observable<Template>;
-    public onLoaded: Observable<Template>;
-    public onStateChange: Observable<Template>;
+    /**
+     * Will be triggered when any template is initialized
+     */
+    public onTemplateInit: Observable<Template>;
+    /**
+     * Will be triggered when any template is fully loaded
+     */
+    public onTemplateLoaded: Observable<Template>;
+    /**
+     * Will be triggered when a template state changes
+     */
+    public onTemplateStateChange: Observable<Template>;
+    /**
+     * Will be triggered when all templates finished loading
+     */
     public onAllLoaded: Observable<TemplateManager>;
+    /**
+     * Will be triggered when any event on any template is triggered.
+     */
     public onEventTriggered: Observable<EventCallback>;
 
+    /**
+     * This template manager's event manager. In charge of callback registrations to native event types
+     */
     public eventManager: EventManager;
 
     private templates: { [name: string]: Template };
@@ -49,15 +77,19 @@ export class TemplateManager {
     constructor(public containerElement: HTMLElement) {
         this.templates = {};
 
-        this.onInit = new Observable<Template>();
-        this.onLoaded = new Observable<Template>();
-        this.onStateChange = new Observable<Template>();
+        this.onTemplateInit = new Observable<Template>();
+        this.onTemplateLoaded = new Observable<Template>();
+        this.onTemplateStateChange = new Observable<Template>();
         this.onAllLoaded = new Observable<TemplateManager>();
         this.onEventTriggered = new Observable<EventCallback>();
 
         this.eventManager = new EventManager(this);
     }
 
+    /**
+     * Initialize the template(s) for the viewer. Called bay the Viewer class
+     * @param templates the templates to be used to initialize the main template
+     */
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
 
         let internalInit = (dependencyMap, name: string, parentTemplate?: Template) => {
@@ -73,7 +105,7 @@ export class TemplateManager {
             let addToParent = () => {
                 let containingElement = parentTemplate && parentTemplate.parent.querySelector(camelToKebab(name)) || this.containerElement;
                 template.appendTo(containingElement);
-                this.checkLoadedState();
+                this._checkLoadedState();
             }
 
             if (parentTemplate && !parentTemplate.parent) {
@@ -89,11 +121,11 @@ export class TemplateManager {
         }
 
         //build the html tree
-        return this.buildHTMLTree(templates).then(htmlTree => {
+        return this._buildHTMLTree(templates).then(htmlTree => {
             if (this.templates['main']) {
                 internalInit(htmlTree, 'main');
             } else {
-                this.checkLoadedState();
+                this._checkLoadedState();
             }
             return;
         });
@@ -105,16 +137,21 @@ export class TemplateManager {
      * It will compile each template, check if its children exist in the configuration and will add them if they do.
      * It is expected that the main template will be called main!
      * 
-     * @private
-     * @param {{ [key: string]: ITemplateConfiguration }} templates 
-     * @memberof TemplateManager
+     * @param templates
      */
-    private buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
+    private _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
         let promises: Array<Promise<Template | boolean>> = Object.keys(templates).map(name => {
             // if the template was overridden
             if (!templates[name]) return Promise.resolve(false);
             // else - we have a template, let's do our job!
             let template = new Template(name, templates[name]);
+            template.onLoaded.add(() => {
+                this.onTemplateLoaded.notifyObservers(template);
+            });
+            template.onStateChange.add(() => {
+                this.onTemplateStateChange.notifyObservers(template);
+            });
+            this.onTemplateInit.notifyObservers(template);
             // make sure the global onEventTriggered is called as well
             template.onEventTriggered.add(eventData => this.onEventTriggered.notifyObservers(eventData));
             this.templates[name] = template;
@@ -139,16 +176,23 @@ export class TemplateManager {
         });
     }
 
-    // assumiung only ONE(!) canvas
+    /**
+     * Get the canvas in the template tree.
+     * There must be one and only one canvas inthe template.
+     */
     public getCanvas(): HTMLCanvasElement | null {
         return this.containerElement.querySelector('canvas');
     }
 
+    /**
+     * Get a specific template from the template tree
+     * @param name the name of the template to load
+     */
     public getTemplate(name: string): Template | undefined {
         return this.templates[name];
     }
 
-    private checkLoadedState() {
+    private _checkLoadedState() {
         let done = Object.keys(this.templates).length === 0 || Object.keys(this.templates).every((key) => {
             return (this.templates[key].isLoaded && !!this.templates[key].parent) || !this.templates[key].isInHtmlTree;
         });
@@ -158,6 +202,9 @@ export class TemplateManager {
         }
     }
 
+    /**
+     * Dispose the template manager
+     */
     public dispose() {
         // dispose all templates
         Object.keys(this.templates).forEach(template => {
@@ -166,11 +213,11 @@ export class TemplateManager {
         this.templates = {};
         this.eventManager.dispose();
 
-        this.onInit.clear();
+        this.onTemplateInit.clear();
         this.onAllLoaded.clear();
         this.onEventTriggered.clear();
-        this.onLoaded.clear();
-        this.onStateChange.clear();
+        this.onTemplateLoaded.clear();
+        this.onTemplateStateChange.clear();
     }
 
 }
@@ -193,14 +240,37 @@ Handlebars.registerHelper('eachInMap', function (map, block) {
     return out;
 });
 
+/**
+ * This class represents a single template in the viewer's template tree.
+ * An example for a template is a single canvas, an overlay (containing sub-templates) or the navigation bar.
+ * A template is injected using the template manager in the correct position.
+ * The template is rendered using Handlebars and can use Handlebars' features (such as parameter injection)
+ * 
+ * For further information please refer to the documentation page, https://doc.babylonjs.com
+ */
 export class Template {
 
-    public onInit: Observable<Template>;
+    /**
+     * Will be triggered when the template is loaded
+     */
     public onLoaded: Observable<Template>;
+    /**
+     * will be triggered when the template is appended to the tree
+     */
     public onAppended: Observable<Template>;
+    /**
+     * Will be triggered when the template's state changed (shown, hidden)
+     */
     public onStateChange: Observable<Template>;
+    /**
+     * Will be triggered when an event is triggered on ths template.
+     * The event is a native browser event (like mouse or pointer events)
+     */
     public onEventTriggered: Observable<EventCallback>;
 
+    /**
+     * is the template loaded?
+     */
     public isLoaded: boolean;
     /**
      * This is meant to be used to track the show and hide functions.
@@ -208,19 +278,27 @@ export class Template {
      */
     public isShown: boolean;
 
+    /**
+     * Is this template a part of the HTML tree (the template manager injected it)
+     */
     public isInHtmlTree: boolean;
 
+    /**
+     * The HTML element containing this template
+     */
     public parent: HTMLElement;
 
+    /**
+     * A promise that is fulfilled when the template finished loading.
+     */
     public initPromise: Promise<Template>;
 
-    private fragment: DocumentFragment;
-    private htmlTemplate: string;
+    private _fragment: DocumentFragment;
+    private _htmlTemplate: string;
 
     private loadRequests: Array<IFileRequest>;
 
     constructor(public name: string, private _configuration: ITemplateConfiguration) {
-        this.onInit = new Observable<Template>();
         this.onLoaded = new Observable<Template>();
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();
@@ -231,22 +309,16 @@ export class Template {
         this.isLoaded = false;
         this.isShown = false;
         this.isInHtmlTree = false;
-        /*
-        if (configuration.id) {
-            this.parent.id = configuration.id;
-        }
-        */
-        this.onInit.notifyObservers(this);
 
-        let htmlContentPromise = this.getTemplateAsHtml(_configuration);
+        let htmlContentPromise = this._getTemplateAsHtml(_configuration);
 
         this.initPromise = htmlContentPromise.then(htmlTemplate => {
             if (htmlTemplate) {
-                this.htmlTemplate = htmlTemplate;
+                this._htmlTemplate = htmlTemplate;
                 let compiledTemplate = Handlebars.compile(htmlTemplate);
                 let config = this._configuration.params || {};
                 let rawHtml = compiledTemplate(config);
-                this.fragment = document.createRange().createContextualFragment(rawHtml);
+                this._fragment = document.createRange().createContextualFragment(rawHtml);
                 this.isLoaded = true;
                 this.isShown = true;
                 this.onLoaded.notifyObservers(this);
@@ -255,32 +327,46 @@ export class Template {
         });
     }
 
+    /**
+     * Some templates have parameters (like background color for example).
+     * The parameters are provided to Handlebars which in turn generates the template.
+     * This function will update the template with the new parameters
+     * 
+     * @param params the new template parameters
+     */
     public updateParams(params: { [key: string]: string | number | boolean | object }) {
         this._configuration.params = params;
         // update the template
         if (this.isLoaded) {
             this.dispose();
         }
-        let compiledTemplate = Handlebars.compile(this.htmlTemplate);
+        let compiledTemplate = Handlebars.compile(this._htmlTemplate);
         let config = this._configuration.params || {};
         let rawHtml = compiledTemplate(config);
-        this.fragment = document.createRange().createContextualFragment(rawHtml);
+        this._fragment = document.createRange().createContextualFragment(rawHtml);
         if (this.parent) {
             this.appendTo(this.parent, true);
         }
     }
 
+    /**
+     * Get the template'S configuration
+     */
     public get configuration(): ITemplateConfiguration {
         return this._configuration;
     }
 
+    /**
+     * A template can be a parent element for other templates or HTML elements.
+     * This function will deliver all child HTML elements of this template.
+     */
     public getChildElements(): Array<string> {
         let childrenArray: string[] = [];
         //Edge and IE don't support frage,ent.children
-        let children = this.fragment.children;
+        let children = this._fragment.children;
         if (!children) {
             // casting to HTMLCollection, as both NodeListOf and HTMLCollection have 'item()' and 'length'.
-            children = <HTMLCollection>this.fragment.querySelectorAll('*');
+            children = <HTMLCollection>this._fragment.querySelectorAll('*');
         }
         for (let i = 0; i < children.length; ++i) {
             childrenArray.push(kebabToCamel(children.item(i).nodeName.toLowerCase()));
@@ -288,10 +374,16 @@ export class Template {
         return childrenArray;
     }
 
+    /**
+     * Appending the template to a parent HTML element.
+     * If a parent is already set and you wish to replace the old HTML with new one, forceRemove should be true.
+     * @param parent the parent to which the template is added
+     * @param forceRemove if the parent already exists, shoud the template be removed from it?
+     */
     public appendTo(parent: HTMLElement, forceRemove?: boolean) {
         if (this.parent) {
             if (forceRemove) {
-                this.parent.removeChild(this.fragment);
+                this.parent.removeChild(this._fragment);
             } else {
                 return;
             }
@@ -301,20 +393,28 @@ export class Template {
         if (this._configuration.id) {
             this.parent.id = this._configuration.id;
         }
-        this.fragment = this.parent.appendChild(this.fragment);
+        this._fragment = this.parent.appendChild(this._fragment);
         // appended only one frame after.
         setTimeout(() => {
-            this.registerEvents();
+            this._registerEvents();
             this.onAppended.notifyObservers(this);
         });
     }
 
-    private isShowing: boolean;
-    private isHiding: boolean;
+    private _isShowing: boolean;
+    private _isHiding: boolean;
+
+    /**
+     * Show the template using the provided visibilityFunction, or natively using display: flex.
+     * The provided function returns a promise that should be fullfilled when the element is shown.
+     * Since it is a promise async operations are more than possible.
+     * See the default viewer for an opacity example.
+     * @param visibilityFunction The function to execute to show the template. 
+     */
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (this.isHiding) return Promise.resolve(this);
+        if (this._isHiding) return Promise.resolve(this);
         return Promise.resolve().then(() => {
-            this.isShowing = true;
+            this._isShowing = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -324,16 +424,23 @@ export class Template {
             }
         }).then(() => {
             this.isShown = true;
-            this.isShowing = false;
+            this._isShowing = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
     }
 
+    /**
+     * Hide the template using the provided visibilityFunction, or natively using display: none.
+     * The provided function returns a promise that should be fullfilled when the element is hidden.
+     * Since it is a promise async operations are more than possible.
+     * See the default viewer for an opacity example.
+     * @param visibilityFunction The function to execute to show the template. 
+     */
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
-        if (this.isShowing) return Promise.resolve(this);
+        if (this._isShowing) return Promise.resolve(this);
         return Promise.resolve().then(() => {
-            this.isHiding = true;
+            this._isHiding = true;
             if (visibilityFunction) {
                 return visibilityFunction(this);
             } else {
@@ -343,22 +450,24 @@ export class Template {
             }
         }).then(() => {
             this.isShown = false;
-            this.isHiding = false;
+            this._isHiding = false;
             this.onStateChange.notifyObservers(this);
             return this;
         });
     }
 
+    /**
+     * Dispose this template
+     */
     public dispose() {
         this.onAppended.clear();
         this.onEventTriggered.clear();
-        this.onInit.clear();
         this.onLoaded.clear();
         this.onStateChange.clear();
         this.isLoaded = false;
         // remove from parent
         try {
-            this.parent.removeChild(this.fragment);
+            this.parent.removeChild(this._fragment);
         } catch (e) {
             //noop
         }
@@ -367,22 +476,22 @@ export class Template {
             request.abort();
         });
 
-        if (this.registeredEvents) {
-            this.registeredEvents.forEach(evt => {
+        if (this._registeredEvents) {
+            this._registeredEvents.forEach(evt => {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
 
-        delete this.fragment;
+        delete this._fragment;
     }
 
-    private getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
+    private _getTemplateAsHtml(templateConfig: ITemplateConfiguration): Promise<string> {
         if (!templateConfig) {
             return Promise.reject('No templateConfig provided');
         } else if (templateConfig.html !== undefined) {
             return Promise.resolve(templateConfig.html);
         } else {
-            let location = getTemplateLocation(templateConfig);
+            let location = this._getTemplateLocation(templateConfig);
             if (isUrl(location)) {
                 return new Promise((resolve, reject) => {
                     let fileRequest = Tools.LoadFile(location, (data: string) => {
@@ -404,14 +513,13 @@ export class Template {
         }
     }
 
-    private registeredEvents: Array<{ htmlElement: HTMLElement, eventName: string, function: EventListenerOrEventListenerObject }>;
+    private _registeredEvents: Array<{ htmlElement: HTMLElement, eventName: string, function: EventListenerOrEventListenerObject }>;
 
-    // TODO - Should events be removed as well? when are templates disposed?
-    private registerEvents() {
-        this.registeredEvents = this.registeredEvents || [];
-        if (this.registeredEvents.length) {
+    private _registerEvents() {
+        this._registeredEvents = this._registeredEvents || [];
+        if (this._registeredEvents.length) {
             // first remove the registered events
-            this.registeredEvents.forEach(evt => {
+            this._registeredEvents.forEach(evt => {
                 evt.htmlElement.removeEventListener(evt.eventName, evt.function);
             });
         }
@@ -426,7 +534,7 @@ export class Template {
                     if (typeof this._configuration.events[eventName] === 'boolean') {
                         let binding = functionToFire.bind(this, '#' + this.parent.id);
                         this.parent.addEventListener(eventName, functionToFire.bind(this, '#' + this.parent.id), false);
-                        this.registeredEvents.push({
+                        this._registeredEvents.push({
                             htmlElement: this.parent,
                             eventName: eventName,
                             function: binding
@@ -443,7 +551,7 @@ export class Template {
                             if (htmlElement) {
                                 let binding = functionToFire.bind(this, selector);
                                 htmlElement.addEventListener(eventName, binding, false);
-                                this.registeredEvents.push({
+                                this._registeredEvents.push({
                                     htmlElement: htmlElement,
                                     eventName: eventName,
                                     function: binding
@@ -455,12 +563,12 @@ export class Template {
             }
         }
     }
-}
 
-export function getTemplateLocation(templateConfig): string {
-    if (!templateConfig || typeof templateConfig === 'string') {
-        return templateConfig;
-    } else {
-        return templateConfig.location;
+    private _getTemplateLocation(templateConfig): string {
+        if (!templateConfig || typeof templateConfig === 'string') {
+            return templateConfig;
+        } else {
+            return templateConfig.location;
+        }
     }
 }

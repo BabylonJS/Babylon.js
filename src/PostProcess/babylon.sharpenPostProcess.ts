@@ -13,7 +13,7 @@ module BABYLON {
          */
         public edgeAmount:number = 0.3;
         /**
-         * Creates a new instance of @see ConvolutionPostProcess
+         * Creates a new instance ConvolutionPostProcess
          * @param name The name of the effect.
          * @param options The required width/height ratio to downsize to before computing the render pass.
          * @param camera The camera to apply the render pass to.

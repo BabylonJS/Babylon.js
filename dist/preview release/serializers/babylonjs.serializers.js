@@ -1798,5 +1798,6 @@ var BABYLON;
 //# sourceMappingURL=babylon.glTFMaterial.js.map
 
     
+
     return BABYLON;
 });

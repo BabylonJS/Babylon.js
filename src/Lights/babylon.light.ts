@@ -374,7 +374,6 @@ module BABYLON {
         /**
          * Set the enabled state of this node.
          * @param value - the new enabled state
-         * @see isEnabled
          */
         public setEnabled(value: boolean): void {
             super.setEnabled(value);
@@ -433,6 +432,7 @@ module BABYLON {
          */
         public getWorldMatrix(): Matrix {
             this._currentRenderId = this.getScene().getRenderId();
+            this._childRenderId = this._currentRenderId;
 
             var worldMatrix = this._getWorldMatrix();
 

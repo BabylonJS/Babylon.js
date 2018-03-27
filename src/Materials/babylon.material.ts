@@ -493,13 +493,11 @@
 
         /**
         * An event triggered when the material is disposed.
-        * @type {BABYLON.Observable}
         */
         public onDisposeObservable = new Observable<Material>();
 
         /**
          * An observer which watches for dispose events.
-         * @type {BABYLON.Observer}
          */
         private _onDisposeObserver: Nullable<Observer<Material>>;
 
@@ -515,13 +513,11 @@
 
         /**
         * An event triggered when the material is bound.
-        * @type {BABYLON.Observable}
         */
         public onBindObservable = new Observable<AbstractMesh>();
 
         /**
          * An observer which watches for bind events.
-         * @type {BABYLON.Observer}
          */
         private _onBindObserver: Nullable<Observer<AbstractMesh>>;
 
@@ -537,7 +533,6 @@
 
         /**
         * An event triggered when the material is unbound.
-        * @type {BABYLON.Observable}
         */
         public onUnBindObservable = new Observable<Material>();
 
@@ -549,6 +544,21 @@
 
         /**
          * Sets the value of the alpha mode.
+         *
+         * | Value | Type | Description |
+         * | --- | --- | --- |
+         * | 0 | ALPHA_DISABLE |   |
+         * | 1 | ALPHA_ADD |   |
+         * | 2 | ALPHA_COMBINE |   |
+         * | 3 | ALPHA_SUBTRACT |   |
+         * | 4 | ALPHA_MULTIPLY |   |
+         * | 5 | ALPHA_MAXIMIZED |   |
+         * | 6 | ALPHA_ONEONE |   |
+         * | 7 | ALPHA_PREMULTIPLIED |   |
+         * | 8 | ALPHA_PREMULTIPLIED_PORTERDUFF |   |
+         * | 9 | ALPHA_INTERPOLATE |   |
+         * | 10 | ALPHA_SCREENMODE |   |
+         *
          */
         public set alphaMode(value: number) {
             if (this._alphaMode === value) {

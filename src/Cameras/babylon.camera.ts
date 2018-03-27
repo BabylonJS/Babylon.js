@@ -252,6 +252,22 @@
             return (this._activeMeshes.indexOf(mesh) !== -1);
         }
 
+        /**
+         * Is this camera ready to be used/rendered
+         * @param completeCheck defines if a complete check (including post processes) has to be done (false by default)
+         * @return true if the camera is ready
+         */
+        public isReady(completeCheck = false): boolean {
+            if (completeCheck) {
+                for (var pp of this._postProcesses) {
+                    if (pp && !pp.isReady()) {
+                        return false;
+                    }
+                }
+            }
+            return super.isReady(completeCheck);
+        }
+
         //Cache
         public _initCache() {
             super._initCache();
@@ -442,6 +458,7 @@
             this.updateCache();
             this._computedViewMatrix = this._getViewMatrix();
             this._currentRenderId = this.getScene().getRenderId();
+            this._childRenderId = this._currentRenderId;
 
             this._refreshFrustumPlanes = true;
 

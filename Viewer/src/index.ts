@@ -1,13 +1,11 @@
-/// <reference path="../../dist/preview release/babylon.d.ts"/>
 /// <reference path="../../dist/babylon.glTF2Interface.d.ts"/>
-/// <reference path="../../dist/preview release/loaders/babylon.glTFFileLoader.d.ts"/>
-
 import { mapperManager } from './configuration/mappers';
 import { viewerManager } from './viewer/viewerManager';
 import { DefaultViewer } from './viewer/defaultViewer';
 import { AbstractViewer } from './viewer/viewer';
 import { ModelLoader } from './model/modelLoader';
-import { ViewerModel } from './model/viewerModel';
+import { ViewerModel, ModelState } from './model/viewerModel';
+import { AnimationPlayMode, AnimationState } from './model/modelAnimation';
 
 /**
  * BabylonJS Viewer
@@ -35,10 +33,13 @@ function init(event) {
     InitTags();
 }
 
+/**
+ * Dispose all viewers currently registered
+ */
 function disposeAll() {
     viewerManager.dispose();
     mapperManager.dispose();
 }
 
 // public API for initialization
-export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel };
+export { InitTags, DefaultViewer, AbstractViewer, viewerManager, mapperManager, disposeAll, ModelLoader, ViewerModel, AnimationPlayMode, AnimationState, ModelState };

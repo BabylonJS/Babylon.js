@@ -1,5 +1,3 @@
-/// <reference types="babylonjs"/>
-/// <reference types="babylonjs-gltf2interface"/>
 
 
 declare module 'babylonjs-loaders' { 
@@ -154,7 +152,6 @@ declare module BABYLON {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
-        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onDisposeObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
@@ -163,6 +160,7 @@ declare module BABYLON {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void) => Promise<void>;
     }
@@ -218,12 +216,6 @@ declare module BABYLON {
         private _onMaterialLoadedObserver;
         onMaterialLoaded: (material: Material) => void;
         /**
-         * Raised when the loader creates an animation group after parsing the glTF properties of the animation.
-         */
-        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
-        private _onAnimationGroupLoadedObserver;
-        onAnimationGroupLoaded: (animationGroup: AnimationGroup) => void;
-        /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
          * For assets without LODs, raised when the model is complete, immediately after onSuccess.
@@ -264,6 +256,7 @@ declare module BABYLON {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         loadAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         loadAssetContainerAsync(scene: Scene, data: string | ArrayBuffer, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<AssetContainer>;
@@ -683,7 +676,6 @@ declare module BABYLON.GLTF1 {
         onMeshLoadedObservable: Observable<AbstractMesh>;
         onTextureLoadedObservable: Observable<BaseTexture>;
         onMaterialLoadedObservable: Observable<Material>;
-        onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         onCompleteObservable: Observable<IGLTFLoader>;
         onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         state: Nullable<GLTFLoaderState>;
@@ -693,6 +685,7 @@ declare module BABYLON.GLTF1 {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         private _loadAsync(scene, data, rootUrl, onSuccess, onProgress?, onError?);
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
@@ -848,6 +841,13 @@ declare module BABYLON.GLTF2 {
     class ArrayItem {
         static Assign(values?: IArrayItem[]): void;
     }
+    class AnimationMultiTarget {
+        subTargets: any[];
+        position: Vector3;
+        rotationQuaternion: Quaternion;
+        scaling: Vector3;
+        influence: number;
+    }
 }
 
 
@@ -968,7 +968,6 @@ declare module BABYLON.GLTF2 {
         readonly onMeshLoadedObservable: Observable<AbstractMesh>;
         readonly onTextureLoadedObservable: Observable<BaseTexture>;
         readonly onMaterialLoadedObservable: Observable<Material>;
-        readonly onAnimationGroupLoadedObservable: Observable<AnimationGroup>;
         readonly onExtensionLoadedObservable: Observable<IGLTFLoaderExtension>;
         readonly onCompleteObservable: Observable<IGLTFLoader>;
         readonly state: Nullable<GLTFLoaderState>;
@@ -977,6 +976,7 @@ declare module BABYLON.GLTF2 {
             meshes: AbstractMesh[];
             particleSystems: ParticleSystem[];
             skeletons: Skeleton[];
+            animationGroups: AnimationGroup[];
         }>;
         loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: SceneLoaderProgressEvent) => void): Promise<void>;
         private _loadAsync(nodes, scene, data, rootUrl, onProgress?);
@@ -990,6 +990,7 @@ declare module BABYLON.GLTF2 {
         private _forEachPrimitive(node, callback);
         private _getMeshes();
         private _getSkeletons();
+        private _getAnimationGroups();
         private _startAnimations();
         _loadNodeAsync(context: string, node: ILoaderNode): Promise<void>;
         private _loadMeshAsync(context, node, mesh, babylonMesh);

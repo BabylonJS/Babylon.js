@@ -35,6 +35,7 @@ uniform float pointSize;
 
 // Output
 varying vec3 vPositionW;
+varying vec3 vPosition;
 #ifdef NORMAL
 varying vec3 vNormalW;
 #endif
@@ -56,6 +57,7 @@ void main(void) {
 
 	vec4 worldPos = finalWorld * vec4(position, 1.0);
 	vPositionW = vec3(worldPos);
+	vPosition = position;
 
 #ifdef NORMAL
 	vNormalW = normalize(vec3(finalWorld * vec4(normal, 0.0)));

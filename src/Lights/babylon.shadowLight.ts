@@ -111,7 +111,7 @@
     }
 
     /**
-     * Base implementation of @see IShadowLight
+     * Base implementation IShadowLight
      * It groups all the common behaviour in order to reduce dupplication and better follow the DRY pattern.
      */
     export abstract class ShadowLight extends Light implements IShadowLight {

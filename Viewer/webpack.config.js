@@ -26,7 +26,8 @@ module.exports = {
         // until physics will be integrated in the viewer, ignore cannon
         cannon: 'CANNON',
         oimo: 'OIMO',
-        './Oimo': 'OIMO'
+        './Oimo': 'OIMO',
+        "earcut": true
     },
     devtool: 'source-map',
     plugins: [
