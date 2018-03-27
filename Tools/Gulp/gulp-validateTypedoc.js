@@ -413,7 +413,7 @@ Validate.prototype.validateTags = function(node) {
         if (tags) {
             for (var i = 0; i < tags.length; i++) {
                 var tag = tags[i];
-                var validTags = ["constructor", "throw", "type", "deprecated", "example", "examples", "remark", "see", "remarks", "ignoreNamingConvention"]
+                var validTags = ["constructor", "throw", "type", "deprecated", "example", "examples", "remark", "see", "remarks", "ignorenaming"]
                 if (validTags.indexOf(tag.tag) === -1) {
                     errorTags.push(tag.tag);
                 }
@@ -499,10 +499,8 @@ Validate.prototype.validateNaming = function(parent, node) {
         return;
     }
 
-    var exceptionList = ["VRHelper"];
-
     // Ignore Naming Tag Check
-    if (exceptionList.indexOf(node.name) !== -1) {
+    if (Validate.hasTag(node, 'ignoreNaming')) {
         return;
     }
 
