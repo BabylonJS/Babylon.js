@@ -158,10 +158,17 @@
 			let maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors;
 			let freeVaryingVec2 = Math.max(maxVaryingRows, 0.) - 1; // Because of sampleCenter
 
-            let varyingCount = Math.min(offsets.length, freeVaryingVec2);
-        
+			let varyingCount = Math.min(offsets.length, freeVaryingVec2);
+
 			let defines = "";
 			defines+=this._staticDefines;
+
+			// The DOF fragment should ignore the center pixel when looping as it is handled manualy in the fragment shader.
+			if(this._staticDefines.indexOf("DOF") != -1){
+				defines += `#define CENTER_WEIGHT ${this._glslFloat(weights[varyingCount-1])}\r\n`;
+				varyingCount--;
+			}
+			
             for (let i = 0; i < varyingCount; i++) {
                 defines += `#define KERNEL_OFFSET${i} ${this._glslFloat(offsets[i])}\r\n`;
                 defines += `#define KERNEL_WEIGHT${i} ${this._glslFloat(weights[i])}\r\n`;
