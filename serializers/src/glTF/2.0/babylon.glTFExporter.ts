@@ -239,20 +239,20 @@ module BABYLON.GLTF2 {
          * Returns the bytelength of the data.
          * @param vertexBufferKind - Indicates what kind of vertex data is being passed in.
          * @param meshAttributeArray - Array containing the attribute data. 
-         * @param strideSize - Represents the offset between consecutive attributes
          * @param byteOffset - The offset to start counting bytes from.
          * @param dataBuffer - The buffer to write the binary data to.
          * @returns - Byte length of the attribute data.
          */
-        private writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, strideSize: number, vertexBufferOffset: number, byteOffset: number, dataBuffer: DataView): number {
+        private writeAttributeData(vertexBufferKind: string, meshAttributeArray: FloatArray, byteOffset: number, dataBuffer: DataView): number {
             let byteOff = byteOffset;
 
-            const end = meshAttributeArray.length / strideSize;
+            const stride = VertexBuffer.DeduceStride(vertexBufferKind);
+            const end = meshAttributeArray.length / stride;
 
             let byteLength = 0;
 
             for (let k = 0; k < end; ++k) {
-                const index = k * strideSize;
+                const index = k * stride;
                 let vector: number[] = [];
 
                 if (vertexBufferKind === VertexBuffer.PositionKind || vertexBufferKind === VertexBuffer.NormalKind) {
@@ -533,36 +533,22 @@ module BABYLON.GLTF2 {
                 bufferMesh = (babylonMesh as InstancedMesh).sourceMesh;
             }
             if (bufferMesh) {
-                let vertexBuffer = null;
-                let vertexBufferOffset = null;
-                let vertexData = null;
-                let vertexStrideSize = null;
-                if (bufferMesh.isVerticesDataPresent(kind)) {
-                    vertexBuffer = bufferMesh.getVertexBuffer(kind);
-                    if (vertexBuffer) {
-                        vertexBufferOffset = vertexBuffer.getOffset();
-                        vertexData = vertexBuffer.getData();
-                        if (vertexData) {
-                            vertexStrideSize = vertexBuffer.getStrideSize();
-
-                            if (dataBuffer && vertexData) { // write data to buffer
-                                byteLength = this.writeAttributeData(
-                                    kind,
-                                    vertexData,
-                                    vertexStrideSize,
-                                    vertexBufferOffset,
-                                    byteOffset,
-                                    dataBuffer,
-                                );
-                                byteOffset += byteLength;
-                            }
-                            else {
-                                byteLength = vertexData.length * 4;
-                                const bufferView = this.createBufferView(0, byteOffset, byteLength, vertexStrideSize * 4, kind + " - " + bufferMesh.name);
-                                byteOffset += byteLength;
-                                this.bufferViews.push(bufferView);
-                            }
-                        }
+                const vertexData = bufferMesh.getVerticesData(kind);
+                if (vertexData) {
+                    if (dataBuffer && vertexData) { // write data to buffer
+                        byteLength = this.writeAttributeData(
+                            kind,
+                            vertexData,
+                            byteOffset,
+                            dataBuffer,
+                        );
+                        byteOffset += byteLength;
+                    }
+                    else {
+                        byteLength = vertexData.length * 4;
+                        const bufferView = this.createBufferView(0, byteOffset, byteLength, undefined, kind + " - " + bufferMesh.name);
+                        byteOffset += byteLength;
+                        this.bufferViews.push(bufferView);
                     }
                 }
             }
@@ -638,57 +624,51 @@ module BABYLON.GLTF2 {
                         if (!dataBuffer) {
                             for (const attribute of attributeData) {
                                 const attributeKind = attribute.kind;
+                                const vertexData = bufferMesh.getVerticesData(attributeKind);
+                                if (vertexData) {
+                                    const stride = VertexBuffer.DeduceStride(attributeKind);
+                                    let minMax: Nullable<{ min: number[], max: number[] }>;
+                                    let min = null;
+                                    let max = null;
+                                    const bufferViewIndex = attribute.bufferViewIndex;
+                                    if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
+                                        if (attributeKind == VertexBuffer.PositionKind) {
+                                            minMax = this.calculateMinMaxPositions(vertexData, 0, vertexData.length / stride);
+                                            min = minMax.min;
+                                            max = minMax.max;
+                                        }
+                                        const accessor = this.createAccessor(bufferViewIndex, attributeKind + " - " + babylonMesh.name, attribute.accessorType, AccessorComponentType.FLOAT, vertexData.length / stride, 0, min, max);
+                                        this.accessors.push(accessor);
 
-                                if (bufferMesh.isVerticesDataPresent(attributeKind)) {
-                                    const vertexBuffer = bufferMesh.getVertexBuffer(attributeKind);
-                                    if (vertexBuffer) {
-                                        const bufferData = vertexBuffer.getData();
-                                        if (bufferData) {
-                                            const strideSize = vertexBuffer.getStrideSize();
-                                            let minMax: Nullable<{ min: number[], max: number[] }>;
-                                            let min = null;
-                                            let max = null;
-                                            const bufferViewIndex = attribute.bufferViewIndex;
-                                            if (bufferViewIndex != undefined) { // check to see if bufferviewindex has a numeric value assigned.
-                                                if (attributeKind == VertexBuffer.PositionKind) {
-                                                    minMax = this.calculateMinMaxPositions(bufferData, 0, bufferData.length / strideSize);
-                                                    min = minMax.min;
-                                                    max = minMax.max;
-                                                }
-                                                const accessor = this.createAccessor(bufferViewIndex, attributeKind + " - " + babylonMesh.name, attribute.accessorType, AccessorComponentType.FLOAT, bufferData.length / strideSize, 0, min, max);
-                                                this.accessors.push(accessor);
-
-                                                switch (attributeKind) {
-                                                    case VertexBuffer.PositionKind: {
-                                                        meshPrimitive.attributes.POSITION = this.accessors.length - 1;
-                                                        break;
-                                                    }
-                                                    case VertexBuffer.NormalKind: {
-                                                        meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
-                                                        break;
-                                                    }
-                                                    case VertexBuffer.ColorKind: {
-                                                        meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
-                                                        break;
-                                                    }
-                                                    case VertexBuffer.TangentKind: {
-                                                        meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
-                                                        break;
-                                                    }
-                                                    case VertexBuffer.UVKind: {
-                                                        meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
-                                                        uvCoordsPresent = true;
-                                                        break;
-                                                    }
-                                                    case VertexBuffer.UV2Kind: {
-                                                        meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
-                                                        uvCoordsPresent = true;
-                                                        break;
-                                                    }
-                                                    default: {
-                                                        Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
-                                                    }
-                                                }
+                                        switch (attributeKind) {
+                                            case VertexBuffer.PositionKind: {
+                                                meshPrimitive.attributes.POSITION = this.accessors.length - 1;
+                                                break;
+                                            }
+                                            case VertexBuffer.NormalKind: {
+                                                meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
+                                                break;
+                                            }
+                                            case VertexBuffer.ColorKind: {
+                                                meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
+                                                break;
+                                            }
+                                            case VertexBuffer.TangentKind: {
+                                                meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
+                                                break;
+                                            }
+                                            case VertexBuffer.UVKind: {
+                                                meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
+                                                uvCoordsPresent = true;
+                                                break;
+                                            }
+                                            case VertexBuffer.UV2Kind: {
+                                                meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
+                                                uvCoordsPresent = true;
+                                                break;
+                                            }
+                                            default: {
+                                                Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
                                             }
                                         }
                                     }

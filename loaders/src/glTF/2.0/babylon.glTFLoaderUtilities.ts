@@ -1,10 +1,6 @@
 /// <reference path="../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2 {
-    export interface TypedArray extends ArrayBufferView {
-        [index: number]: number;
-    }
-
     export interface IArrayItem {
         _index: number;
     }
