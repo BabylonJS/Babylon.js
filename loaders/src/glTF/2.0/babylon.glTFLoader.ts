@@ -519,7 +519,7 @@ module BABYLON.GLTF2 {
                 }));
             }
 
-            const loadAttribute = (attribute: string, kind: string) => {
+            const loadAttribute = (attribute: string, kind: string, callback?: (accessor: ILoaderAccessor) => void) => {
                 if (attributes[attribute] == undefined) {
                     return;
                 }
@@ -533,6 +533,10 @@ module BABYLON.GLTF2 {
                 promises.push(this._loadVertexAccessorAsync("#/accessors/" + accessor._index, accessor, kind).then(babylonVertexBuffer => {
                     babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
                 }));
+
+                if (callback) {
+                    callback(accessor);
+                }
             };
 
             loadAttribute("POSITION", VertexBuffer.PositionKind);
@@ -542,7 +546,11 @@ module BABYLON.GLTF2 {
             loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind);
             loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
             loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
-            loadAttribute("COLOR_0", VertexBuffer.ColorKind);
+            loadAttribute("COLOR_0", VertexBuffer.ColorKind, accessor => {
+                if (accessor.type === AccessorType.VEC4) {
+                    babylonMesh.hasVertexAlpha = true;
+                }
+            });
 
             return Promise.all(promises).then(() => {
                 return babylonGeometry;
