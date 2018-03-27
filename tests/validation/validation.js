@@ -289,8 +289,7 @@ function runTest(index, done) {
                             scriptToRun = scriptToRun.replace(regex, config.root + test.rootPath + source);
                         }
                     }
-
-                    currentScene = eval(scriptToRun + test.functionToCall + "(engine)");
+                    currentScene = Function(scriptToRun + 'return ' + test.functionToCall + '(engine)')();
                     processCurrentScene(test, resultCanvas, result, renderImage, index, waitRing, done);
                 }
                 catch (e) {
@@ -305,7 +304,6 @@ function runTest(index, done) {
         }
 
         request.send(null);
-
     }
 }
 
