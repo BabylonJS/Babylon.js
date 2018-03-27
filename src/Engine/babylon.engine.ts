@@ -2192,6 +2192,11 @@
             this._cachedVertexBuffers = null;
         }
 
+        /**
+         * Creates a vertex buffer
+         * @param data the data for the vertex buffer
+         * @returns the new WebGL static buffer
+         */
         public createVertexBuffer(data: DataArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
@@ -2212,6 +2217,11 @@
             return vbo;
         }
 
+        /**
+         * Creates a dynamic vertex buffer
+         * @param data the data for the dynamic vertex buffer
+         * @returns the new WebGL dynamic buffer
+         */
         public createDynamicVertexBuffer(data: DataArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
@@ -2249,6 +2259,13 @@
             this._resetIndexBufferBinding();
         }
 
+        /**
+         * Updates a dynamic vertex buffer.
+         * @param vertexBuffer the vertex buffer to update
+         * @param data the data used to update the vertex buffer
+         * @param byteOffset the byte offset of the data (optional)
+         * @param byteLength the byte length of the data (optional)
+         */
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
             this.bindArrayBuffer(vertexBuffer);
 

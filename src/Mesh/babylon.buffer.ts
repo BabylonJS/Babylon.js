@@ -11,6 +11,16 @@
          */
         public readonly byteStride: number;
 
+        /**
+         * Constructor
+         * @param engine the engine
+         * @param data the data to use for this buffer
+         * @param updatable whether the data is updatable
+         * @param stride the stride (optional)
+         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+         * @param instanced whether the buffer is instanced (optional)
+         * @param useBytes set to true if the stride in in bytes (optional)
+         */
         constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
@@ -96,6 +106,13 @@
             this.create(data);
         }
 
+        /**
+         * Updates the data directly.
+         * @param data the new data
+         * @param offset the new offset
+         * @param vertexCount the vertex count (optional)
+         * @param useBytes set to true if the offset is in bytes
+         */
         public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes = false): void {
             if (!this._buffer) {
                 return;

@@ -116,6 +116,8 @@
         /**
          * Provides a slice function that will work even on IE
          * @param data defines the array to slice
+         * @param start defines the start of the data (optional)
+         * @param end defines the end of the data (optional)
          * @returns the new sliced array
          */
         public static Slice<T>(data: T, start?: number, end?: number): T {
