@@ -11,15 +11,15 @@ module.exports = function (varName, moduleName, subModule, extendsRoot, dependen
 
         let referenceText = '';
         if (subModule) {
-            referenceText = '/// <reference types="babylonjs"/>\n';
+            // referenceText = '/// <reference types="babylonjs"/>\n';
         }
 
         if (dependencies) {
             referenceText = '';
             dependencies.forEach(element => {
                 // was "babylonjs/${element}""
-                referenceText += `/// <reference types="${element}"/>
-`;
+                /*referenceText += `/// <reference types="${element}"/>
+`;*/
             });
         }
 

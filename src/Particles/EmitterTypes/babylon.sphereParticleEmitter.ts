@@ -6,7 +6,7 @@ module BABYLON {
     export class SphereParticleEmitter implements IParticleEmitterType {
 
         /**
-         * Creates a new instance of @see SphereParticleEmitter
+         * Creates a new instance SphereParticleEmitter
          * @param radius the radius of the emission sphere (1 by default)
          * @param directionRandomizer defines how much to randomize the particle direction [0-1]
          */
@@ -125,7 +125,7 @@ module BABYLON {
     export class SphereDirectedParticleEmitter extends SphereParticleEmitter {
 
         /**
-         * Creates a new instance of @see SphereDirectedParticleEmitter
+         * Creates a new instance SphereDirectedParticleEmitter
          * @param radius the radius of the emission sphere (1 by default)
          * @param direction1 the min limit of the emission direction (up vector by default)
          * @param direction2 the max limit of the emission direction (up vector by default)

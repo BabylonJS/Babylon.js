@@ -277,7 +277,7 @@ void main(void) {
 
 #if !defined(LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
 	#ifdef ALPHATEST
-		if (alpha <= ALPHATESTVALUE)
+		if (alpha < ALPHATESTVALUE)
 			discard;
 
 		#ifndef ALPHABLEND
@@ -405,7 +405,7 @@ void main(void) {
 			alpha = fresnelSchlickEnvironmentGGX(clamp(dot(viewDirectionW, normalForward), 0.0, 1.0), vec3(opacity0), vec3(opacity90), sqrt(microSurface)).x;
 
 			#ifdef ALPHATEST
-				if (alpha <= ALPHATESTVALUE)
+				if (alpha < ALPHATESTVALUE)
 					discard;
 
 				#ifndef ALPHABLEND
@@ -605,11 +605,11 @@ void main(void) {
 	#endif
 
 	#ifdef LIGHTMAP
-		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb);
+		vec3 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset).rgb;
 		#ifdef GAMMALIGHTMAP
 			lightmapColor = toLinearSpace(lightmapColor);
 		#endif
-		lightmapColor *= vLightmapInfos.y
+		lightmapColor *= vLightmapInfos.y;
 	#endif
 
 		lightingInfo info;

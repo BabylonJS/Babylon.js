@@ -7,26 +7,40 @@ import { SpotLight, MirrorTexture, Plane, ShadowGenerator, Texture, BackgroundMa
 import { CameraBehavior } from '../interfaces';
 import { ViewerModel } from '../model/viewerModel';
 
+/**
+ * The Default viewer is the default implementation of the AbstractViewer.
+ * It uses the templating system to render a new canvas and controls.
+ */
 export class DefaultViewer extends AbstractViewer {
 
+    /**
+     * Create a new default viewer
+     * @param containerElement the element in which the templates will be rendered
+     * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
+     */
     constructor(public containerElement: HTMLElement, initialConfiguration: ViewerConfiguration = { extends: 'default' }) {
         super(containerElement, initialConfiguration);
-        this.onModelLoadedObservable.add(this.onModelLoaded);
+        this.onModelLoadedObservable.add(this._onModelLoaded);
     }
 
-    public initScene(): Promise<Scene> {
-        return super.initScene().then(() => {
-            this.extendClassWithConfig(this.scene, this.configuration.scene);
+    /**
+     * Overriding the AbstractViewer's _initScene fcuntion
+     */
+    protected _initScene(): Promise<Scene> {
+        return super._initScene().then(() => {
+            this._extendClassWithConfig(this.scene, this._configuration.scene);
             return this.scene;
         })
     }
 
-    protected onTemplatesLoaded() {
-
+    /**
+     * This will be executed when the templates initialize.
+     */
+    protected _onTemplatesLoaded() {
         this.showLoadingScreen();
 
         // navbar
-        this.initNavbar();
+        this._initNavbar();
 
         // close overlay button
         let closeButton = document.getElementById('close-button');
@@ -36,10 +50,10 @@ export class DefaultViewer extends AbstractViewer {
             })
         }
 
-        return super.onTemplatesLoaded();
+        return super._onTemplatesLoaded();
     }
 
-    private initNavbar() {
+    private _initNavbar() {
         let navbar = this.templateManager.getTemplate('navBar');
         if (navbar) {
             let navbarHeight = navbar.parent.clientHeight + 'px';
@@ -99,12 +113,20 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    protected prepareContainerElement() {
+    /**
+     * Preparing the container element to present the viewer
+     */
+    protected _prepareContainerElement() {
         this.containerElement.style.position = 'relative';
         this.containerElement.style.display = 'flex';
     }
 
-    protected configureTemplate(model: ViewerModel) {
+    /**
+     * This function will configure the templates and update them after a model was loaded
+     * It is mainly responsible to changing the title and subtitle etc'.
+     * @param model the model to be used to configure the templates by
+     */
+    protected _configureTemplate(model: ViewerModel) {
         let navbar = this.templateManager.getTemplate('navBar');
         if (!navbar) return;
 
@@ -132,7 +154,13 @@ export class DefaultViewer extends AbstractViewer {
         }
     }
 
-    public loadModel(model: any = this.configuration.model): Promise<ViewerModel> {
+    /**
+     * This will load a new model to the default viewer
+     * overriding the AbstractViewer's loadModel.
+     * The scene will automatically be cleared of the old models, if exist.
+     * @param model the configuration object (or URL) to load.
+     */
+    public loadModel(model: any = this._configuration.model): Promise<ViewerModel> {
         this.showLoadingScreen();
         return super.loadModel(model, true).catch((error) => {
             console.log(error);
@@ -142,12 +170,12 @@ export class DefaultViewer extends AbstractViewer {
         });
     }
 
-    private onModelLoaded = (model: ViewerModel) => {
-        this.configureTemplate(model);
+    private _onModelLoaded = (model: ViewerModel) => {
+        this._configureTemplate(model);
         // with a short timeout, making sure everything is there already.
         let hideLoadingDelay = 500;
-        if (this.configuration.lab && this.configuration.lab.hideLoadingDelay !== undefined) {
-            hideLoadingDelay = this.configuration.lab.hideLoadingDelay;
+        if (this._configuration.lab && this._configuration.lab.hideLoadingDelay !== undefined) {
+            hideLoadingDelay = this._configuration.lab.hideLoadingDelay;
         }
         setTimeout(() => {
             this.hideLoadingScreen();
@@ -156,6 +184,11 @@ export class DefaultViewer extends AbstractViewer {
         return;
     }
 
+    /**
+     * Show the overlay and the defined sub-screen.
+     * Mainly used for help and errors
+     * @param subScreen the name of the subScreen. Those can be defined in the configuration object
+     */
     public showOverlayScreen(subScreen: string) {
         let template = this.templateManager.getTemplate('overlay');
         if (!template) return Promise.resolve('Overlay template not found');
@@ -181,6 +214,9 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * Hide the overlay screen.
+     */
     public hideOverlayScreen() {
         let template = this.templateManager.getTemplate('overlay');
         if (!template) return Promise.resolve('Overlay template not found');
@@ -200,15 +236,14 @@ export class DefaultViewer extends AbstractViewer {
                     htmlElement.style.display = 'none';
                 }
             }
-
-            /*return this.templateManager.getTemplate(subScreen).show((template => {
-                template.parent.style.display = 'none';
-                return Promise.resolve(template);
-            }));*/
             return Promise.resolve(template);
         }));
     }
 
+    /**
+     * Show the loading screen.
+     * The loading screen can be configured using the configuration object
+     */
     public showLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
         if (!template) return Promise.resolve('Loading Screen template not found');
@@ -228,6 +263,9 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
+    /**
+     * Hide the loading screen
+     */
     public hideLoadingScreen() {
         let template = this.templateManager.getTemplate('loadingScreen');
         if (!template) return Promise.resolve('Loading Screen template not found');
@@ -243,31 +281,36 @@ export class DefaultViewer extends AbstractViewer {
         }));
     }
 
-    protected configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
-        super.configureLights(lightsConfiguration, model);
+    /**
+     * An extension of the light configuration of the abstract viewer.
+     * @param lightsConfiguration the light configuration to use
+     * @param model the model that will be used to configure the lights (if the lights are model-dependant)
+     */
+    protected _configureLights(lightsConfiguration: { [name: string]: ILightConfiguration | boolean } = {}, model: ViewerModel) {
+        super._configureLights(lightsConfiguration, model);
         // labs feature - flashlight
-        if (this.configuration.lab && this.configuration.lab.flashlight) {
+        if (this._configuration.lab && this._configuration.lab.flashlight) {
             let pointerPosition = Vector3.Zero();
             let lightTarget;
             let angle = 0.5;
             let exponent = Math.PI / 2;
-            if (typeof this.configuration.lab.flashlight === "object") {
-                exponent = this.configuration.lab.flashlight.exponent || exponent;
-                angle = this.configuration.lab.flashlight.angle || angle;
+            if (typeof this._configuration.lab.flashlight === "object") {
+                exponent = this._configuration.lab.flashlight.exponent || exponent;
+                angle = this._configuration.lab.flashlight.angle || angle;
             }
             var flashlight = new SpotLight("flashlight", Vector3.Zero(),
                 Vector3.Zero(), exponent, angle, this.scene);
-            if (typeof this.configuration.lab.flashlight === "object") {
-                flashlight.intensity = this.configuration.lab.flashlight.intensity || flashlight.intensity;
-                if (this.configuration.lab.flashlight.diffuse) {
-                    flashlight.diffuse.r = this.configuration.lab.flashlight.diffuse.r;
-                    flashlight.diffuse.g = this.configuration.lab.flashlight.diffuse.g;
-                    flashlight.diffuse.b = this.configuration.lab.flashlight.diffuse.b;
+            if (typeof this._configuration.lab.flashlight === "object") {
+                flashlight.intensity = this._configuration.lab.flashlight.intensity || flashlight.intensity;
+                if (this._configuration.lab.flashlight.diffuse) {
+                    flashlight.diffuse.r = this._configuration.lab.flashlight.diffuse.r;
+                    flashlight.diffuse.g = this._configuration.lab.flashlight.diffuse.g;
+                    flashlight.diffuse.b = this._configuration.lab.flashlight.diffuse.b;
                 }
-                if (this.configuration.lab.flashlight.specular) {
-                    flashlight.specular.r = this.configuration.lab.flashlight.specular.r;
-                    flashlight.specular.g = this.configuration.lab.flashlight.specular.g;
-                    flashlight.specular.b = this.configuration.lab.flashlight.specular.b;
+                if (this._configuration.lab.flashlight.specular) {
+                    flashlight.specular.r = this._configuration.lab.flashlight.specular.r;
+                    flashlight.specular.g = this._configuration.lab.flashlight.specular.g;
+                    flashlight.specular.b = this._configuration.lab.flashlight.specular.b;
                 }
 
             }
@@ -288,7 +331,7 @@ export class DefaultViewer extends AbstractViewer {
                 }
             }
             this.scene.registerBeforeRender(updateFlashlightFunction);
-            this.registeredOnBeforerenderFunctions.push(updateFlashlightFunction);
+            this._registeredOnBeforeRenderFunctions.push(updateFlashlightFunction);
         }
     }
 }

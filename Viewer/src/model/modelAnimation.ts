@@ -1,10 +1,16 @@
 import { AnimationGroup, Animatable, Skeleton } from "babylonjs";
 
+/**
+ * Animation play mode enum - is the animation looping or playing once
+ */
 export enum AnimationPlayMode {
     ONCE,
     LOOP
 }
 
+/**
+ * An enum representing the current state of an animation object
+ */
 export enum AnimationState {
     INIT,
     PLAYING,
@@ -13,28 +19,89 @@ export enum AnimationState {
     ENDED
 }
 
+/**
+ * This interface can be implemented to define new types of ModelAnimation objects.
+ */
 export interface IModelAnimation {
+    /**
+     * Current animation state (playing, stopped etc')
+     */
     readonly state: AnimationState;
+    /**
+     * the name of the animation
+     */
     readonly name: string;
+    /**
+     * Get the max numbers of frame available in the animation group
+     * 
+     * In correlation to an arry, this would be ".length"
+     */
     readonly frames: number;
+    /**
+     * Get the current frame playing right now. 
+     * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
+     * 
+     * In correlation to an array, this would be the current index
+     */
     readonly currentFrame: number;
+    /**
+     * Animation's FPS value
+     */
     readonly fps: number;
+    /**
+     * Get or set the animation's speed ration (Frame-to-fps)
+     */
     speedRatio: number;
+    /**
+     * Gets or sets the aimation's play mode.
+     */
     playMode: AnimationPlayMode;
+    /**
+     * Start the animation
+     */
     start();
+    /**
+     * Stop the animation.
+     * This will fail silently if the animation group is already stopped.
+     */
     stop();
+    /**
+     * Pause the animation
+     * This will fail silently if the animation is not currently playing
+     */
     pause();
+    /**
+     * Reset this animation
+     */
     reset();
+    /**
+     * Restart the animation
+     */
     restart();
+    /**
+     * Go to a specific 
+     * @param frameNumber the frame number to go to
+     */
     goToFrame(frameNumber: number);
+    /**
+     * Dispose this animation
+     */
     dispose();
 }
 
+/**
+ * The GroupModelAnimation is an implementation of the IModelAnimation interface using BABYLON's
+ * native GroupAnimation class.
+ */
 export class GroupModelAnimation implements IModelAnimation {
 
     private _playMode: AnimationPlayMode;
     private _state: AnimationState;
 
+    /**
+     * Create a new GroupModelAnimation object using an AnimationGroup object
+     * @param _animationGroup The aniamtion group to base the class on
+     */
     constructor(private _animationGroup: AnimationGroup) {
         this._state = AnimationState.INIT;
         this._playMode = AnimationPlayMode.LOOP;
@@ -42,31 +109,42 @@ export class GroupModelAnimation implements IModelAnimation {
         this._animationGroup.onAnimationEndObservable.add(() => {
             this.stop();
             this._state = AnimationState.ENDED;
-        })
+        });
     }
 
+    /**
+     * Get the animation's name
+     */
     public get name() {
         return this._animationGroup.name;
     }
 
+    /**
+     * Get the current animation's state
+     */
     public get state() {
         return this._state;
     }
 
     /**
-     * Gets or sets the speed ratio to use for all animations
+     * Gets the speed ratio to use for all animations
      */
     public get speedRatio(): number {
         return this._animationGroup.speedRatio;
     }
 
     /**
-     * Gets or sets the speed ratio to use for all animations
+     * Sets the speed ratio to use for all animations
      */
     public set speedRatio(value: number) {
         this._animationGroup.speedRatio = value;
     }
 
+    /**
+     * Get the max numbers of frame available in the animation group
+     * 
+     * In correlation to an arry, this would be ".length"
+     */
     public get frames(): number {
         let animationFrames = this._animationGroup.targetedAnimations.map(ta => {
             let keys = ta.animation.getKeys();
@@ -75,6 +153,12 @@ export class GroupModelAnimation implements IModelAnimation {
         return Math.max.apply(null, animationFrames);
     }
 
+    /**
+     * Get the current frame playing right now. 
+     * This can be used to poll the frame currently playing (and, for exmaple, display a progress bar with the data)
+     * 
+     * In correlation to an array, this would be the current index
+     */
     public get currentFrame(): number {
         // get the first currentFrame found
         for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
@@ -92,6 +176,9 @@ export class GroupModelAnimation implements IModelAnimation {
         return 0;
     }
 
+    /**
+     * Get the FPS value of this animation
+     */
     public get fps(): number {
         // get the first currentFrame found
         for (let i = 0; i < this._animationGroup.animatables.length; ++i) {
@@ -109,10 +196,18 @@ export class GroupModelAnimation implements IModelAnimation {
         return 0;
     }
 
+    /**
+     * What is the animation'S play mode (looping or played once)
+     */
     public get playMode(): AnimationPlayMode {
         return this._playMode;
     }
 
+    /**
+     * Set the play mode.
+     * If the animation is played, it will continue playing at least once more, depending on the new play mode set.
+     * If the animation is not set, the will be initialized and will wait for the user to start playing it.
+     */
     public set playMode(value: AnimationPlayMode) {
         if (value === this._playMode) {
             return;
@@ -128,14 +223,24 @@ export class GroupModelAnimation implements IModelAnimation {
         }
     }
 
+    /**
+     * Reset the animation group
+     */
     reset() {
         this._animationGroup.reset();
     }
 
+    /**
+     * Restart the animation group
+     */
     restart() {
         this._animationGroup.restart();
     }
 
+    /**
+     * 
+     * @param frameNumber Go to a specific frame in the animation
+     */
     goToFrame(frameNumber: number) {
         // this._animationGroup.goToFrame(frameNumber);
         this._animationGroup['_animatables'].forEach(a => {
@@ -143,6 +248,9 @@ export class GroupModelAnimation implements IModelAnimation {
         })
     }
 
+    /**
+     * Start playing the animation.
+     */
     public start() {
         this._animationGroup.start(this.playMode === AnimationPlayMode.LOOP, this.speedRatio);
         if (this._animationGroup.isStarted) {
@@ -150,11 +258,18 @@ export class GroupModelAnimation implements IModelAnimation {
         }
     }
 
+    /**
+     * Pause the animation
+     */
     pause() {
         this._animationGroup.pause();
         this._state = AnimationState.PAUSED;
     }
 
+    /**
+     * Stop the animation.
+     * This will fail silently if the animation group is already stopped.
+     */
     public stop() {
         this._animationGroup.stop();
         if (!this._animationGroup.isStarted) {
@@ -162,6 +277,9 @@ export class GroupModelAnimation implements IModelAnimation {
         }
     }
 
+    /**
+     * Dispose this animation object.
+     */
     public dispose() {
         this._animationGroup.dispose();
     }

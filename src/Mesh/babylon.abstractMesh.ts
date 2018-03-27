@@ -118,7 +118,6 @@
 
         /**
         * An event triggered when this mesh collides with another one
-        * @type {BABYLON.Observable}
         */
         public onCollideObservable = new Observable<AbstractMesh>();
 
@@ -132,7 +131,6 @@
 
         /**
         * An event triggered when the collision's position changes
-        * @type {BABYLON.Observable}
         */
         public onCollisionPositionChangeObservable = new Observable<Vector3>();
 
@@ -146,7 +144,6 @@
 
         /**
         * An event triggered when material is changed
-        * @type {BABYLON.Observable}
         */
         public onMaterialChangedObservable = new Observable<AbstractMesh>();
 
@@ -367,7 +364,6 @@
 
         /**
          * This scene's action manager
-         * @type {BABYLON.ActionManager}
         */
         public actionManager: Nullable<ActionManager> = null;
 

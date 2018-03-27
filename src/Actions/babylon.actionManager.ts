@@ -1,7 +1,7 @@
 ﻿module BABYLON {
 
     /**
-     * ActionEvent is the event beint sent when an action is triggered.
+     * ActionEvent is the event being sent when an action is triggered.
      */
     export class ActionEvent {
         /**

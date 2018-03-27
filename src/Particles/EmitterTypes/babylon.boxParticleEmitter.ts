@@ -24,7 +24,7 @@ module BABYLON {
         public maxEmitBox = new Vector3(0.5, 0.5, 0.5);  
                
         /**
-         * Creates a new instance of @see BoxParticleEmitter
+         * Creates a new instance BoxParticleEmitter
          */
         constructor() {
 

@@ -12,6 +12,7 @@ uniform float smoothness;
 
 // Input
 varying vec3 vPositionW;
+varying vec3 vPosition;
 
 #ifdef NORMAL
 varying vec3 vNormalW;
@@ -51,7 +52,7 @@ void main(void) {
 
 	vec3 viewDirectionW = normalize(vEyePosition - vPositionW);
 
-    float h = normalize(vPositionW).y + offset;
+    float h = normalize(vPosition).y + offset;
     float mysmoothness = clamp(smoothness, 0.01, max(smoothness, 10.));
 
     vec4 baseColor = mix(bottomColor, topColor, max(pow(max(h, 0.0), mysmoothness), 0.0));

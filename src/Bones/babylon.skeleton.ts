@@ -31,7 +31,6 @@
         // Events
         /**
          * An event triggered before computing the skeleton's matrices
-         * @type {BABYLON.Observable}
          */
         public onBeforeComputeObservable = new Observable<Skeleton>();
 
@@ -371,7 +370,7 @@
 
             serializationObject.name = this.name;
             serializationObject.id = this.id;
-            serializationObject.dimensionsAtRest = this.dimensionsAtRest;
+            serializationObject.dimensionsAtRest = this.dimensionsAtRest.asArray();
 
             serializationObject.bones = [];
 

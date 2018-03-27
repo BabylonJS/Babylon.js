@@ -1,9 +1,23 @@
 ﻿module BABYLON {
+    /**
+     * A class extending {BABYLON.Texture} allowing drawing on a texture
+     * @see http://doc.babylonjs.com/how_to/dynamictexture
+     */
     export class DynamicTexture extends Texture {
         private _generateMipMaps: boolean;
         private _canvas: HTMLCanvasElement;
         private _context: CanvasRenderingContext2D;
         private _engine: Engine;
+
+        /**
+         * Creates a {BABYLON.DynamicTexture}
+         * @param name defines the name of the texture
+         * @param options provides 3 alternatives for width and height of texture, a canvas, object with width and height properties, number for both width and height
+         * @param scene defines the scene where you want the texture
+         * @param generateMipMaps defines the use of MinMaps or not (default is false)
+         * @param samplingMode defines the sampling mode to use (default is BABYLON.Texture.TRILINEAR_SAMPLINGMODE)
+         * @param format defines the texture format to use (default is BABYLON.Engine.TEXTUREFORMAT_RGBA)
+         */
 
         constructor(name: string, options: any, scene: Nullable<Scene> = null, generateMipMaps: boolean, samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE, format: number = Engine.TEXTUREFORMAT_RGBA) {
             super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
@@ -35,6 +49,9 @@
             this._context = <CanvasRenderingContext2D>this._canvas.getContext("2d");
         }
 
+        /**
+         * Gets the current state of canRescale
+         */
         public get canRescale(): boolean {
             return true;
         }
@@ -48,6 +65,10 @@
             this._texture = this._engine.createDynamicTexture(textureSize.width, textureSize.height, this._generateMipMaps, this._samplingMode);
         }
 
+        /**
+         * Scales the texture
+         * @param ratio the scale factor to apply to both width and height
+         */
         public scale(ratio: number): void {
             var textureSize = this.getSize();
 
@@ -57,6 +78,11 @@
             this._recreate(textureSize);
         }
 
+        /**
+         * Resizes the texture
+         * @param width the new width
+         * @param height the new height
+         */
         public scaleTo(width: number, height: number): void {
             var textureSize = this.getSize();
 
@@ -66,19 +92,41 @@
             this._recreate(textureSize);
         }
 
+        /**
+         * Gets the context of the canvas used by the texture
+         * @returns the canvas context of the dynamic texture
+         */
         public getContext(): CanvasRenderingContext2D {
             return this._context;
         }
 
+        /**
+         * Clears the texture
+         */
         public clear(): void {
             var size = this.getSize();
             this._context.fillRect(0, 0, size.width, size.height);
         }
 
+        /**
+         * Updates the texture
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         */
         public update(invertY?: boolean): void {
             this._engine.updateDynamicTexture(this._texture, this._canvas, invertY === undefined ? true : invertY, undefined, this._format || undefined);
         }
 
+        /**
+         * Draws text onto the texture
+         * @param text defines the text to be drawn
+         * @param x defines the placement of the text from the left
+         * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
+         * @param font defines the font to be used with font-style, font-size, font-name 
+         * @param color defines the color used for the text
+         * @param clearColor defines the color for the canvas, use null to not overwrite canvas 
+         * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
+         * @param update defines whether texture is immediately update (default is true)  
+         */
         public drawText(text: string, x: number, y: number, font: string, color: string, clearColor: string, invertY?: boolean, update = true) {
             var size = this.getSize();
             if (clearColor) {
@@ -104,6 +152,10 @@
             }
         }
 
+        /**
+         * Clones the texture
+         * @returns the clone of the texture.
+         */
         public clone(): DynamicTexture {
             let scene = this.getScene();
 
@@ -125,6 +177,7 @@
             return newTexture;
         }
 
+        /** @ignore */
         public _rebuild(): void {
             this.update();
         }

@@ -1,6 +1,18 @@
 ﻿module BABYLON {
+    /**
+     * The action to be carried out following a trigger
+     * @see http://doc.babylonjs.com/how_to/how_to_use_actions#available-actions
+     */
     export class Action {
+        /**
+         * Trigger for the action
+         */
         public trigger: number;
+
+        /**
+         * Internal only - manager for action
+         * @ignore 
+         */
         public _actionManager: ActionManager;
 
         private _nextActiveAction: Action;
@@ -8,8 +20,16 @@
         private _condition?: Condition;
         private _triggerParameter: any;
 
+        /**
+        * An event triggered prior to action being executed.
+        */
         public onBeforeExecuteObservable = new Observable<Action>();
 
+        /**
+         * Creates a new Action
+         * @param triggerOptions the trigger, with or without parameters, for the action
+         * @param condition an optional determinant of action 
+         */
         constructor(public triggerOptions: any, condition?: Condition) {
 
             if (triggerOptions.parameter) {
@@ -23,14 +43,25 @@
             this._condition = condition;
         }
 
-        // Methods
+        /**
+         * Internal only
+         * @ignore 
+         */
         public _prepare(): void {
         }
 
+        /**
+         * Gets the trigger parameters
+         * @returns the trigger parameters
+         */
         public getTriggerParameter(): any {
             return this._triggerParameter;
         }
 
+        /**
+         * Internal only - executes current action event
+         * @ignore 
+         */
         public _executeCurrent(evt?: ActionEvent): void {
             if (this._nextActiveAction._condition) {
                 var condition = this._nextActiveAction._condition;
@@ -59,10 +90,17 @@
             this.skipToNextActiveAction();
         }
 
+        /**
+         * Execute placeholder for child classes
+         * @param evt optional action event
+         */
         public execute(evt?: ActionEvent): void {
 
         }
 
+        /**
+         * Skips to next active action
+         */
         public skipToNextActiveAction(): void {
             if (this._nextActiveAction._child) {
 
@@ -76,6 +114,12 @@
             }
         }
 
+        /**
+         * Adds action to chain of actions, may be a DoNothingAction
+         * @param index The index of the attribute.
+         * @returns The action passed in
+         * @see https://www.babylonjs-playground.com/#1T30HR#0
+         */
         public then(action: Action): Action {
             this._child = action;
 
@@ -85,18 +129,34 @@
             return action;
         }
 
+        /**
+         * Internal only
+         * @ignore 
+         */
         public _getProperty(propertyPath: string): string {
             return this._actionManager._getProperty(propertyPath);
         }
 
+        /**
+         * Internal only
+         * @ignore 
+         */
         public _getEffectiveTarget(target: any, propertyPath: string): any {
             return this._actionManager._getEffectiveTarget(target, propertyPath);
         }
         
+        /**
+         * Serialize placeholder for child classes
+         * @param parent of child
+         * @returns the serialized object
+         */
         public serialize(parent: any): any {
         }
         
-        // Called by BABYLON.Action objects in serialize(...). Internal use
+        /**
+         * Internal only called by serialize
+         * @ignore 
+         */
         protected _serialize(serializedAction: any, parent?: any): any {
             var serializationObject: any = { 
                 type: 1,
@@ -127,6 +187,10 @@
             return serializationObject;
         }
         
+        /**
+         * Internal only
+         * @ignore 
+         */
         public static _SerializeValueAsString = (value: any): string => {
             if (typeof value === "number") {
                 return value.toString();
@@ -152,7 +216,11 @@
             
             return value; // string
         };
-    
+        
+        /**
+         * Internal only
+         * @ignore 
+         */
         public static _GetTargetProperty = (target: Scene | Node) => {
             return {
                 name: "target",
