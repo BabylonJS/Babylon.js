@@ -1076,6 +1076,7 @@
         /**
          * Gets or sets the VRExperienceHelper attached to the scene
          * @see http://doc.babylonjs.com/how_to/webvr_helper
+         * @ignoreNaming
          */
         public VRHelper: VRExperienceHelper;
 
