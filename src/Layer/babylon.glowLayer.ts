@@ -68,6 +68,7 @@
         /**
          * Gets the kernel size of the blur.
          */
+        @serialize()
         public get blurKernelSize(): number {
             return this._horizontalBlurPostprocess1.kernel;
         }
@@ -82,11 +83,14 @@
         /**
          * Gets the glow intensity.
          */
+        @serialize()
         public get intensity(): number {
             return this._intensity;
         }
 
+        @serialize('options')
         private _options: IGlowLayerOptions;
+
         private _intensity: number = 1.0;
         private _horizontalBlurPostprocess1: BlurPostProcess;
         private _verticalBlurPostprocess1: BlurPostProcess;
@@ -115,7 +119,7 @@
          * @param scene The scene to use the layer in
          * @param options Sets of none mandatory options to use with the layer (see IGlowLayerOptions for more information)
          */
-        constructor(public name: string, scene: Scene, options?: Partial<IGlowLayerOptions>) {
+        constructor(name: string, scene: Scene, options?: Partial<IGlowLayerOptions>) {
             super(name, scene);
             this.neutralColor = new Color4(0, 0, 0, 1);
 
@@ -440,6 +444,71 @@
         public _disposeMesh(mesh: Mesh): void {
             this.removeIncludedOnlyMesh(mesh);
             this.removeExcludedMesh(mesh);
+        }
+
+        /**
+         * Serializes this glow layer
+         * @returns - serialized glow layer object.
+         */
+        public serialize(): any {
+            var serializationObject = SerializationHelper.Serialize(this);
+            var index;
+
+            // Included meshes
+            serializationObject.includedMeshes = [];
+
+            if (this._includedOnlyMeshes.length) {
+                for (index = 0; index < this._includedOnlyMeshes.length; index++) {
+                    var mesh = this._scene.getMeshByUniqueID(this._includedOnlyMeshes[index]);
+                    if (mesh) {
+                        serializationObject.includedMeshes.push(mesh.id);
+                    }
+                }
+            }
+
+            // Excluded meshes
+            serializationObject.excludedMeshes = [];
+
+            if (this._excludedMeshes.length) {
+                for (index = 0; index < this._excludedMeshes.length; index++) {
+                    var mesh = this._scene.getMeshByUniqueID(this._excludedMeshes[index]);
+                    if (mesh) {
+                        serializationObject.excludedMeshes.push(mesh.id);
+                    }
+                }
+            }
+
+            return serializationObject;
+        }
+
+        /**
+         * Creates a Glow Layer from parsed glow layer data.
+         * @param parsedGlowLayer - Parsed glow layer data.
+         * @param scene - BJS scene.
+         * @param rootUrl - Root URL containing the glow layer information.
+         * @returns - Parsed Glow Layer.
+         */
+        public static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer {
+            var gl = SerializationHelper.Parse(() => new GlowLayer(parsedGlowLayer.name, scene, parsedGlowLayer.options), parsedGlowLayer, scene, rootUrl);
+            var index;
+
+            // Excluded meshes
+            for (index = 0; index < parsedGlowLayer.excludedMeshes.length; index++) {
+                var mesh = scene.getMeshByID(parsedGlowLayer.excludedMeshes[index]);
+                if (mesh) {
+                    gl.addExcludedMesh(<Mesh>mesh);
+                }
+            }
+
+            // Included meshes
+            for (index = 0; index < parsedGlowLayer.includedMeshes.length; index++) {
+                var mesh = scene.getMeshByID(parsedGlowLayer.includedMeshes[index]);
+                if (mesh) {
+                    gl.addIncludedOnlyMesh(<Mesh>mesh);
+                }
+            }
+
+            return gl;
         }
     }
 } 

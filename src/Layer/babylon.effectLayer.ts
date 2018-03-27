@@ -54,18 +54,27 @@
         protected _emissiveTextureAndColor: { texture: Nullable<BaseTexture>, color: Color4 } = { texture: null, color: new Color4() };
 
         /**
+         * The name of the layer
+         */
+        @serialize()
+        public name: string;
+
+        /**
          * The clear color of the texture used to generate the glow map.
          */
+        @serializeAsColor4()
         public neutralColor: Color4 = new Color4();
 
         /**
          * Specifies wether the highlight layer is enabled or not.
          */
+        @serialize()
         public isEnabled: boolean = true;
 
         /**
          * Gets the camera attached to the layer.
          */
+        @serializeAsCameraReference()
         public get camera(): Nullable<Camera> {
             return this._effectLayerOptions.camera;
         }
@@ -102,8 +111,10 @@
          */
         constructor(
             /** The Friendly of the effect in the scene */
-            public name: string, 
+            name: string, 
             scene: Scene) {
+            this.name = name;
+
             this._scene = scene || Engine.LastCreatedScene;
             this._engine = scene.getEngine();
             this._maxSize = this._engine.getCaps().maxTextureSize;
@@ -650,6 +661,14 @@
             this.onBeforeComposeObservable.clear();
             this.onAfterComposeObservable.clear();
             this.onSizeChangedObservable.clear();
+        }
+
+        /**
+         * Serializes this effect layer
+         * @returns - serialized effect layer object.
+         */
+        public serialize(): any {
+            return SerializationHelper.Serialize(this);
         }
     }
 } 
