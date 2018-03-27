@@ -14,6 +14,7 @@ module.exports = function (config) {
         frameworks: ['mocha', 'chai', 'sinon'],
 
         files: [
+            './dist/preview release/earcut.min.js',
             './Tools/DevLoader/BabylonLoader.js',
             './tests/validation/index.css',
             './tests/validation/integration.js',
