@@ -319,7 +319,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
                 this.validateNaming(containerNode, childNode);
 
                 //if comment contains @ignore then skip validation completely
-                if (Validate.hasTag(childNode, 'ignore')) continue;                
+                if (Validate.hasTag(childNode, 'ignore')) continue;
 
                 if (isPublic) {
                     tags = this.validateTags(childNode);
@@ -413,7 +413,7 @@ Validate.prototype.validateTags = function(node) {
         if (tags) {
             for (var i = 0; i < tags.length; i++) {
                 var tag = tags[i];
-                var validTags = ["constructor", "throw", "type", "deprecated", "example", "examples", "remark", "see", "remarks"]
+                var validTags = ["constructor", "throw", "type", "deprecated", "example", "examples", "remark", "see", "remarks", "ignorenaming"]
                 if (validTags.indexOf(tag.tag) === -1) {
                     errorTags.push(tag.tag);
                 }
@@ -449,10 +449,9 @@ Validate.prototype.validateComment = function(node) {
     if (node.overwrites) {
         return true;
     }
-    
 
+    // Check comments.
     if (node.comment) {
-
         if (node.comment.text || node.comment.shortText) {
             return true;
         }
@@ -497,6 +496,11 @@ Validate.prototype.validateParameters = function(containerNode, method, signatur
  */
 Validate.prototype.validateNaming = function(parent, node) {
     if (!this.validateNamingConvention) {
+        return;
+    }
+
+    // Ignore Naming Tag Check
+    if (Validate.hasTag(node, 'ignoreNaming')) {
         return;
     }
 
