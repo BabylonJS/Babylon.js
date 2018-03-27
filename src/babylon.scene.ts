@@ -4386,18 +4386,6 @@
                 Tools.EndPerformanceCounter("Lens flares", this.lensFlareSystems.length > 0);
             }
 
-            // Foregrounds
-            if (this.layers.length) {
-                engine.setDepthBuffer(false);
-                for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-                    layer = this.layers[layerIndex];
-                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
-                        layer.render();
-                    }
-                }
-                engine.setDepthBuffer(true);
-            }
-
             // Effect Layer
             if (renderEffects) {
                 engine.setDepthBuffer(false);
@@ -4409,6 +4397,18 @@
                 engine.setDepthBuffer(true);
             }
 
+            // Foregrounds
+            if (this.layers.length) {
+                engine.setDepthBuffer(false);
+                for (layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+                    layer = this.layers[layerIndex];
+                    if (!layer.isBackground && ((layer.layerMask & this.activeCamera.layerMask) !== 0)) {
+                        layer.render();
+                    }
+                }
+                engine.setDepthBuffer(true);
+            }
+            
             // Finalize frame
             this.postProcessManager._finalizeFrame(camera.isIntermediate);
 
