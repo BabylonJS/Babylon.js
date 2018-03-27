@@ -41,9 +41,9 @@ xhr.addEventListener("load", function () {
                 it(test.title, function (done) {
                     this.timeout(180000);
 
-                    var deferredDone = function() {
+                    var deferredDone = function(err) {
                         setTimeout(function() {
-                            done();
+                            done(err);
                         }, 3000);
                     }
 
