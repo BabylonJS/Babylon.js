@@ -7,12 +7,39 @@
         private _instanced: boolean;
         private _instanceDivisor: number;
 
+        /**
+         * The byte type.
+         */
         public static readonly BYTE = 5120;
+
+        /**
+         * The unsigned byte type.
+         */
         public static readonly UNSIGNED_BYTE = 5121;
+
+        /**
+         * The short type.
+         */
         public static readonly SHORT = 5122;
+
+        /**
+         * The unsigned short type.
+         */
         public static readonly UNSIGNED_SHORT = 5123;
+
+        /**
+         * The integer type.
+         */
         public static readonly INT = 5124;
+
+        /**
+         * The unsigned integer type.
+         */
         public static readonly UNSIGNED_INT = 5125;
+
+        /**
+         * The float type.
+         */
         public static readonly FLOAT = 5126;
 
         /**
@@ -51,6 +78,21 @@
          */
         public readonly type: number;
 
+        /**
+         * Constructor
+         * @param engine the engine
+         * @param data the data to use for this vertex buffer
+         * @param kind the vertex buffer kind
+         * @param updatable whether the data is updatable
+         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+         * @param stride the stride (optional)
+         * @param instanced whether the buffer is instanced (optional)
+         * @param offset the offset of the data (optional)
+         * @param size the number of components (optional)
+         * @param type the type of the component (optional)
+         * @param normalized whether the data contains normalized data (optional)
+         * @param useBytes set to true if stride and offset are in bytes (optional)
+         */
         constructor(engine: any, data: DataArray | Buffer, kind: string, updatable: boolean, postponeInternalCreation?: boolean, stride?: number, instanced?: boolean, offset?: number, size?: number, type?: number, normalized = false, useBytes = false) {
             if (data instanceof Buffer) {
                 this._buffer = data;
@@ -205,6 +247,11 @@
             }
         }
 
+        /**
+         * Enumerates each value of this vertex buffer as numbers.
+         * @param count the number of values to enumerate
+         * @param callback the callback function called for each value
+         */
         public forEach(count: number, callback: (value: number, index: number) => void): void {
             VertexBuffer.ForEach(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, callback);
         }
@@ -310,6 +357,11 @@
             }
         }
 
+        /**
+         * Gets the byte length of the given type.
+         * @param type the type
+         * @returns the number of bytes
+         */
         public static GetTypeByteLength(type: number): number {
             switch (type) {
                 case VertexBuffer.BYTE:
@@ -326,6 +378,17 @@
             }
         }
 
+        /**
+         * Enumerates each value of the given parameters as numbers.
+         * @param data the data to enumerate
+         * @param byteOffset the byte offset of the data
+         * @param byteStride the byte stride of the data
+         * @param componentCount the number of components per element
+         * @param componentType the type of the component
+         * @param count the total number of components
+         * @param normalized whether the data is normalized
+         * @param callback the callback function called for each value
+         */
         public static ForEach(data: DataArray, byteOffset: number, byteStride: number, componentCount: number, componentType: number, count: number, normalized: boolean, callback: (value: number, index: number) => void): void {
             if (data instanceof Array) {
                 let offset = byteOffset / 4;
