@@ -2192,7 +2192,7 @@
             this._cachedVertexBuffers = null;
         }
 
-        public createVertexBuffer(vertices: FloatArray): WebGLBuffer {
+        public createVertexBuffer(data: DataArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
             if (!vbo) {
@@ -2201,10 +2201,10 @@
 
             this.bindArrayBuffer(vbo);
 
-            if (vertices instanceof Float32Array) {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, <Float32Array>vertices, this._gl.STATIC_DRAW);
+            if (data instanceof Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.STATIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(<number[]>vertices), this._gl.STATIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, data, this._gl.STATIC_DRAW);
             }
 
             this._resetVertexBufferBinding();
@@ -2212,7 +2212,7 @@
             return vbo;
         }
 
-        public createDynamicVertexBuffer(vertices: FloatArray): WebGLBuffer {
+        public createDynamicVertexBuffer(data: DataArray): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
             if (!vbo) {
@@ -2221,11 +2221,12 @@
 
             this.bindArrayBuffer(vbo);
 
-            if (vertices instanceof Float32Array) {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, <Float32Array>vertices, this._gl.DYNAMIC_DRAW);
+            if (data instanceof Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), this._gl.DYNAMIC_DRAW);
             } else {
-                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(<number[]>vertices), this._gl.DYNAMIC_DRAW);
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, data, this._gl.DYNAMIC_DRAW);
             }
+
             this._resetVertexBufferBinding();
             vbo.references = 1;
             return vbo;
@@ -2248,24 +2249,30 @@
             this._resetIndexBufferBinding();
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
             this.bindArrayBuffer(vertexBuffer);
 
-            if (offset === undefined) {
-                offset = 0;
+            if (byteOffset === undefined) {
+                byteOffset = 0;
             }
 
-            if (count === undefined) {
-                if (vertices instanceof Float32Array) {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, <Float32Array>vertices);
+            if (byteLength === undefined) {
+                if (data instanceof Array) {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
                 } else {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, offset, new Float32Array(<number[]>vertices));
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, data);
                 }
             } else {
-                if (vertices instanceof Float32Array) {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <Float32Array>vertices.subarray(offset, offset + count));
+                if (data instanceof Array) {
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
                 } else {
-                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(<number[]>vertices).subarray(offset, offset + count));
+                    if (data instanceof ArrayBuffer) {
+                        data = new Uint8Array(data, byteOffset, byteLength);
+                    } else {
+                        data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
+                    }
+
+                    this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
                 }
             }
 
@@ -2427,7 +2434,7 @@
 
                     var buffer = vertexBuffer.getBuffer();
                     if (buffer) {
-                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), this._gl.FLOAT, false, vertexBuffer.getStrideSize() * 4, vertexBuffer.getOffset() * 4);
+                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.byteStride, vertexBuffer.byteOffset);
 
                         if (vertexBuffer.getIsInstanced()) {
                             this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());

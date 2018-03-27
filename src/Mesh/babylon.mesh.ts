@@ -1123,7 +1123,7 @@
         }
 
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number, alternate = false): Mesh {
-            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
                 return this;
             }
 
@@ -1359,7 +1359,7 @@
             }
 
             // Checking geometry state
-            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
                 return this;
             }
 

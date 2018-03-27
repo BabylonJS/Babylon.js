@@ -3,7 +3,8 @@
 
 module BABYLON.GLTF2 {
     export interface ILoaderAccessor extends IAccessor, IArrayItem {
-        _data?: Promise<TypedArray>;
+        _data?: Promise<ArrayBufferView>;
+        _babylonVertexBuffer?: Promise<VertexBuffer>;
     }
 
     export interface ILoaderAnimationChannel extends IAnimationChannel, IArrayItem {
@@ -32,6 +33,7 @@ module BABYLON.GLTF2 {
 
     export interface ILoaderBufferView extends IBufferView, IArrayItem {
         _data?: Promise<ArrayBufferView>;
+        _babylonBuffer?: Promise<Buffer>;
     }
 
     export interface ILoaderCamera extends ICamera, IArrayItem {

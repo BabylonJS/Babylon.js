@@ -118,12 +118,12 @@
          * @param data defines the array to slice
          * @returns the new sliced array
          */
-        public static Slice(data: FloatArray): FloatArray {
-            if (data.slice) {
-                return data.slice();
+        public static Slice<T>(data: T, start?: number, end?: number): T {
+            if ((data as any).slice) {
+                return (data as any).slice(start, end);
             }
 
-            return Array.prototype.slice.call(data);
+            return Array.prototype.slice.call(data, start, end);
         }
 
         public static SetImmediate(action: () => void) {

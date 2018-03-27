@@ -24,7 +24,7 @@ module BABYLON.GLTF2 {
         protected _loadNodeAsync(context: string, node: ILoaderNode): Nullable<Promise<void>> { return null; }
 
         /** Override this method to modify the default behavior for loading mesh primitive vertex data. */
-        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> { return null; }
+        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> { return null; }
 
         /** Override this method to modify the default behavior for loading materials. */
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> { return null; }
@@ -70,7 +70,7 @@ module BABYLON.GLTF2 {
         }
 
         /** Helper method called by the loader to allow extensions to override loading mesh primitive vertex data. */
-        public static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> {
+        public static _LoadVertexDataAsync(loader: GLTFLoader, context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
             return loader._applyExtensions(extension => extension._loadVertexDataAsync(context, primitive, babylonMesh));
         }
 
