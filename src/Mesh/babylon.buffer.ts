@@ -76,6 +76,7 @@
          * Gets the stride in float32 units (i.e. byte stride / 4).
          * May not be an integer if the byte stride is not divisible by 4.
          * DEPRECATED. Use byteStride instead.
+         * @returns the stride in float32 units
          */
         public getStrideSize(): number {
             return this.byteStride / 4;
