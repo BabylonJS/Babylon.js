@@ -1,10 +1,5 @@
 ﻿#ifdef DOF
-    if(sampleCoord{X} == sampleCenter){
-        factor = 1.;
-    }else{
-        factor = sampleCoC(sampleCoord{X});
-    }
-    
+    factor = sampleCoC(sampleCoord{X});    
     computedWeight = KERNEL_WEIGHT{X} * factor;
     sumOfWeights += computedWeight;
 #else

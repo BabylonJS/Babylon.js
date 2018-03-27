@@ -43,19 +43,24 @@ varying vec2 sampleCenter;
 
 void main(void)
 {
-	#ifdef DOF
-		float sumOfWeights = 0.0; // Since not all values are blended, keep track of sum to devide result by at the end to get an average
-		float sampleDepth = 0.0;
-    	float factor = 0.0;
-		float centerSampleDepth = sampleDistance(sampleCenter);
-	#endif
-
 	float computedWeight = 0.0;
 
 	#ifdef PACKEDFLOAT	
 		float blend = 0.;
 	#else
 		vec4 blend = vec4(0.);
+	#endif
+
+	#ifdef DOF
+		float sumOfWeights = CENTER_WEIGHT; // Since not all values are blended, keep track of sum to devide result by at the end to get an average (start at center weight as center pixel is added by default)
+    	float factor = 0.0;
+
+		// Add center pixel to the blur by default
+		#ifdef PACKEDFLOAT
+			blend += unpack(texture2D(textureSampler, sampleCenter)) * CENTER_WEIGHT;
+		#else
+			blend += texture2D(textureSampler, sampleCenter) * CENTER_WEIGHT;
+		#endif
 	#endif
 
 	#include<kernelBlurFragment>[0..varyingCount]
@@ -68,10 +73,6 @@ void main(void)
 	#endif
 
 	#ifdef DOF
-		// If there are no samples to blend, make pixel black.
-		if(sumOfWeights == 0.0){
-			gl_FragColor = vec4(0.0,0.0,0.0,1.0);
-		}
 		gl_FragColor /= sumOfWeights;
 	#endif
 }
