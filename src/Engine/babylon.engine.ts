@@ -172,6 +172,9 @@
         public buffer: WebGLBuffer;
     }
 
+    /**
+     * Interface for attribute information associated with buffer instanciation
+     */
     export class InstancingAttributeInfo {
         /**
          * Index/offset of the attribute in the vertex shader
@@ -240,65 +243,129 @@
     }
 
     /**
-     * Regroup several parameters relative to the browser in use
+     * Class used to describe the capabilities of the engine relatively to the current browser
      */
     export class EngineCapabilities {
-        /** The maximum textures image */
+        /** Maximum textures units per fragment shader */
         public maxTexturesImageUnits: number;
+        /** Maximum texture units per vertex shader */
         public maxVertexTextureImageUnits: number;
+        /** Maximum textures units in the entire pipeline */
         public maxCombinedTexturesImageUnits: number;
-        /** The maximum texture size */
+        /** Maximum texture size */
         public maxTextureSize: number;
+        /** Maximum cube texture size */
         public maxCubemapTextureSize: number;
+        /** Maximum render texture size */
         public maxRenderTextureSize: number;
+        /** Maximum number of vertex attributes */
         public maxVertexAttribs: number;
+        /** Maximum number of varyings */
         public maxVaryingVectors: number;
+        /** Maximum number of uniforms per vertex shader */
         public maxVertexUniformVectors: number;
+        /** Maximum number of uniforms per fragment shader */
         public maxFragmentUniformVectors: number;
+        /** Defines if standard derivates (dx/dy) are supported */
         public standardDerivatives: boolean;
+        /** Defines if s3tc texture compression is supported */
         public s3tc: Nullable<WEBGL_compressed_texture_s3tc>;
+        /** Defines if pvrtc texture compression is supported */
         public pvrtc: any; //WEBGL_compressed_texture_pvrtc;
+        /** Defines if etc1 texture compression is supported */
         public etc1: any; //WEBGL_compressed_texture_etc1;
+        /** Defines if etc2 texture compression is supported */
         public etc2: any; //WEBGL_compressed_texture_etc;
+        /** Defines if astc texture compression is supported */
         public astc: any; //WEBGL_compressed_texture_astc;
+        /** Defines if float textures are supported */
         public textureFloat: boolean;
+        /** Defines if vertex array objects are supported */
         public vertexArrayObject: boolean;
+        /** Gets the webgl extension for anisotropic filtering (null if not supported) */
         public textureAnisotropicFilterExtension: Nullable<EXT_texture_filter_anisotropic>;
+        /** Gets the maximum level of anisotropy supported */
         public maxAnisotropy: number;
+        /** Defines if instancing is supported */
         public instancedArrays: boolean;
+        /** Defines if 32 bits indices are supported */
         public uintIndices: boolean;
+        /** Defines if high precision shaders are supported */
         public highPrecisionShaderSupported: boolean;
+        /** Defines if depth reading in the fragment shader is supported */
         public fragmentDepthSupported: boolean;
+        /** Defines if float texture linear filtering is supported*/
         public textureFloatLinearFiltering: boolean;
+        /** Defines if rendering to float textures is supported */
         public textureFloatRender: boolean;
+        /** Defines if half float textures are supported*/
         public textureHalfFloat: boolean;
+        /** Defines if half float texture linear filtering is supported*/
         public textureHalfFloatLinearFiltering: boolean;
+        /** Defines if rendering to half float textures is supported */
         public textureHalfFloatRender: boolean;
+        /** Defines if textureLOD shader command is supported */
         public textureLOD: boolean;
+        /** Defines if draw buffers extension is supported */
         public drawBuffersExtension: boolean;
+        /** Defines if depth textures are supported */
         public depthTextureExtension: boolean;
+        /** Defines if float color buffer are supported */
         public colorBufferFloat: boolean;
+        /** Gets disjoint timer query extension (null if not supported) */
         public timerQuery: EXT_disjoint_timer_query;
+        /** Defines if timestamp can be used with timer query */
         public canUseTimestampForTimerQuery: boolean;
     }
 
+    /** Interface defining initialization parameters for Engine class */
     export interface EngineOptions extends WebGLContextAttributes {
+        /** 
+         * Defines if the engine should no exceed a specified device ratio
+         * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+         */
         limitDeviceRatio?: number;
+        /** 
+         * Defines if webvr should be enabled automatically 
+         * @see http://doc.babylonjs.com/how_to/webvr_camera
+         */
         autoEnableWebVR?: boolean;
+        /** 
+         * Defines if webgl2 should be turned off even if supported 
+         * @see http://doc.babylonjs.com/features/webgl2
+         */
         disableWebGL2Support?: boolean;
+        /** 
+         * Defines if webaudio should be initialized as well
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
         audioEngine?: boolean;
+        /** 
+         * Defines if animations should run using a deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         deterministicLockstep?: boolean;
+        /** Defines the maximum steps to use with deterministic lock step mode */
         lockstepMaxSteps?: number;
+        /** 
+         * Defines that engine should ignore context lost events
+         * If this event happens when this parameter is true, you will have to reload the page to restore rendering
+         */
         doNotHandleContextLost?: boolean;
     }
 
+    /**
+     * Defines the interface used by display changed events
+     */
     export interface IDisplayChangedEventArgs {
+        /** Gets the vrDisplay object (if any) */
         vrDisplay: Nullable<any>;
+        /** Gets a boolean indicating if webVR is supported */
         vrSupported: boolean;
     }
 
     /**
-     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio.
+     * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
      */
     export class Engine {
         /** Use this array to turn off some WebGL2 features on known buggy browsers version */
@@ -311,8 +378,12 @@
             { key: "iPad", capture: null, captureConstraint: null, targets: ["textureBindingOptimization"] }
         ];
 
+        /** Gets the list of created engines */
         public static Instances = new Array<Engine>();
 
+        /**
+         * Gets the latest created engine
+         */
         public static get LastCreatedEngine(): Nullable<Engine> {
             if (Engine.Instances.length === 0) {
                 return null;
@@ -321,6 +392,9 @@
             return Engine.Instances[Engine.Instances.length - 1];
         }
 
+        /**
+         * Gets the latest created scene
+         */
         public static get LastCreatedScene(): Nullable<Scene> {
             var lastCreatedEngine = Engine.LastCreatedEngine;
             if (!lastCreatedEngine) {
@@ -385,38 +459,46 @@
         private static _LESS = 0x0201; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value.
         private static _EQUAL = 0x0202; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value.
         private static _LEQUAL = 0x0203; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value.
-        private static _GREATER = 0x0204; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
+        private static _GREATER = 0x0204; // Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value.
         private static _GEQUAL = 0x0206; //	Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value.
         private static _NOTEQUAL = 0x0205; //  Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value.
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will never pass. i.e. Nothing will be drawn */
         public static get NEVER(): number {
             return Engine._NEVER;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will always pass. i.e. Pixels will be drawn in the order they are drawn */
         public static get ALWAYS(): number {
             return Engine._ALWAYS;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than the stored value */
         public static get LESS(): number {
             return Engine._LESS;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is equals to the stored value */
         public static get EQUAL(): number {
             return Engine._EQUAL;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is less than or equal to the stored value */
         public static get LEQUAL(): number {
             return Engine._LEQUAL;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than the stored value */
         public static get GREATER(): number {
             return Engine._GREATER;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is greater than or equal to the stored value */
         public static get GEQUAL(): number {
             return Engine._GEQUAL;
         }
 
+        /** Passed to depthFunction or stencilFunction to specify depth or stencil tests will pass if the new depth value is not equal to the stored value */
         public static get NOTEQUAL(): number {
             return Engine._NOTEQUAL;
         }
@@ -430,98 +512,132 @@
         private static _INCR_WRAP = 0x8507;
         private static _DECR_WRAP = 0x8508;
 
+        /** Passed to stencilOperation to specify that stencil value must be kept */
         public static get KEEP(): number {
             return Engine._KEEP;
         }
 
+        /** Passed to stencilOperation to specify that stencil value must be replaced */
         public static get REPLACE(): number {
             return Engine._REPLACE;
         }
 
+        /** Passed to stencilOperation to specify that stencil value must be incremented */
         public static get INCR(): number {
             return Engine._INCR;
         }
 
+        /** Passed to stencilOperation to specify that stencil value must be decremented */
         public static get DECR(): number {
             return Engine._DECR;
         }
 
+        /** Passed to stencilOperation to specify that stencil value must be inverted */
         public static get INVERT(): number {
             return Engine._INVERT;
         }
 
+        /** Passed to stencilOperation to specify that stencil value must be incremented with wrapping */
         public static get INCR_WRAP(): number {
             return Engine._INCR_WRAP;
         }
 
+        /** Passed to stencilOperation to specify that stencil value must be decremented with wrapping */
         public static get DECR_WRAP(): number {
             return Engine._DECR_WRAP;
         }
 
+        // Alpha
+
+        /** Defines that alpha blending is disabled */
         public static get ALPHA_DISABLE(): number {
             return Engine._ALPHA_DISABLE;
         }
 
+        /** Defines that alpha blending to SRC + DEST */
         public static get ALPHA_ONEONE(): number {
             return Engine._ALPHA_ONEONE;
         }
 
+        /** Defines that alpha blending to SRC ALPHA * SRC + DEST */
         public static get ALPHA_ADD(): number {
             return Engine._ALPHA_ADD;
         }
 
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC ALPHA) * DEST */
         public static get ALPHA_COMBINE(): number {
             return Engine._ALPHA_COMBINE;
         }
 
+        /** Defines that alpha blending to DEST - SRC * DEST */
         public static get ALPHA_SUBTRACT(): number {
             return Engine._ALPHA_SUBTRACT;
         }
 
+        /** Defines that alpha blending to SRC * DEST */
         public static get ALPHA_MULTIPLY(): number {
             return Engine._ALPHA_MULTIPLY;
         }
 
+        /** Defines that alpha blending to SRC ALPHA * SRC + (1 - SRC) * DEST */
         public static get ALPHA_MAXIMIZED(): number {
             return Engine._ALPHA_MAXIMIZED;
         }
 
+        /** Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST */
         public static get ALPHA_PREMULTIPLIED(): number {
             return Engine._ALPHA_PREMULTIPLIED;
         }
 
+        /** 
+         * Defines that alpha blending to SRC + (1 - SRC ALPHA) * DEST
+         * Alpha will be set to (1 - SRC ALPHA) * DEST ALPHA
+         */
         public static get ALPHA_PREMULTIPLIED_PORTERDUFF(): number {
             return Engine._ALPHA_PREMULTIPLIED_PORTERDUFF;
         }
 
+        /** Defines that alpha blending to CST * SRC + (1 - CST) * DEST */
         public static get ALPHA_INTERPOLATE(): number {
             return Engine._ALPHA_INTERPOLATE;
         }
 
+        /** 
+         * Defines that alpha blending to SRC + (1 - SRC) * DEST 
+         * Alpha will be set to SRC ALPHA + (1 - SRC ALPHA) * DEST ALPHA
+         */
         public static get ALPHA_SCREENMODE(): number {
             return Engine._ALPHA_SCREENMODE;
         }
 
+        // Delays
+
+        /** Defines that the ressource is not delayed*/
         public static get DELAYLOADSTATE_NONE(): number {
             return Engine._DELAYLOADSTATE_NONE;
         }
 
+        /** Defines that the ressource was successfully delay loaded */
         public static get DELAYLOADSTATE_LOADED(): number {
             return Engine._DELAYLOADSTATE_LOADED;
         }
 
+        /** Defines that the ressource is currently delay loading */
         public static get DELAYLOADSTATE_LOADING(): number {
             return Engine._DELAYLOADSTATE_LOADING;
         }
 
+        /** Defines that the ressource is delayed and has not started loading */
         public static get DELAYLOADSTATE_NOTLOADED(): number {
             return Engine._DELAYLOADSTATE_NOTLOADED;
         }
 
+        /** ALPHA */
         public static get TEXTUREFORMAT_ALPHA(): number {
             return Engine._TEXTUREFORMAT_ALPHA;
         }
 
+        /** LUMINANCE */
         public static get TEXTUREFORMAT_LUMINANCE(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE;
         }
@@ -554,71 +670,124 @@
             return Engine._TEXTUREFORMAT_RGBA32F;
         }             
 
+        /** LUMINANCE_ALPHA */
         public static get TEXTUREFORMAT_LUMINANCE_ALPHA(): number {
             return Engine._TEXTUREFORMAT_LUMINANCE_ALPHA;
         }
 
+        /** RGB */
         public static get TEXTUREFORMAT_RGB(): number {
             return Engine._TEXTUREFORMAT_RGB;
         }
 
+        /** RGBA */
         public static get TEXTUREFORMAT_RGBA(): number {
             return Engine._TEXTUREFORMAT_RGBA;
         }
 
+        /** UNSIGNED_INT */
         public static get TEXTURETYPE_UNSIGNED_INT(): number {
             return Engine._TEXTURETYPE_UNSIGNED_INT;
         }
 
+        /** FLOAT */
         public static get TEXTURETYPE_FLOAT(): number {
             return Engine._TEXTURETYPE_FLOAT;
         }
 
+        /** HALF_FLOAT */
         public static get TEXTURETYPE_HALF_FLOAT(): number {
             return Engine._TEXTURETYPE_HALF_FLOAT;
         }
-
 
         // Texture rescaling mode
         private static _SCALEMODE_FLOOR = 1;
         private static _SCALEMODE_NEAREST = 2;
         private static _SCALEMODE_CEILING = 3;
 
+        /** Defines that texture rescaling will use a floor to find the closer power of 2 size */
         public static get SCALEMODE_FLOOR(): number {
             return Engine._SCALEMODE_FLOOR;
         }
 
+        /** Defines that texture rescaling will look for the nearest power of 2 size */
         public static get SCALEMODE_NEAREST(): number {
             return Engine._SCALEMODE_NEAREST;
         }
 
+        /** Defines that texture rescaling will use a ceil to find the closer power of 2 size */
         public static get SCALEMODE_CEILING(): number {
             return Engine._SCALEMODE_CEILING;
         }
 
+        /**
+         * Returns the current version of the framework
+         */
         public static get Version(): string {
             return "3.2.0-beta.3";
         }
 
         // Updatable statics so stick with vars here
+
+        /**
+         * Gets or sets the epsilon value used by collision engine
+         */
         public static CollisionsEpsilon = 0.001;
+
+        /**
+         * Gets or sets the relative url used to load code if using the engine in non-minified mode
+         */
         public static CodeRepository = "src/";
+        /**
+         * Gets or sets the relative url used to load shaders if using the engine in non-minified mode
+         */
         public static ShadersRepository = "src/Shaders/";
 
         // Public members
+
+        /**
+         * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
+         */
         public forcePOTTextures = false;
+
+        /**
+         * Gets a boolean indicating if the engine is currently rendering in fullscreen mode
+         */
         public isFullscreen = false;
+
+        /**
+         * Gets a boolean indicating if the pointer is currently locked
+         */
         public isPointerLock = false;
+
+        /**
+         * Gets or sets a boolean indicating if back faces must be culled (true by default)
+         */
         public cullBackFaces = true;
+
+        /**
+         * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foregroun
+         */
         public renderEvenInBackground = true;
+
+        /**
+         * Gets or sets a boolean indicating that cache can be kept between frames
+         */
         public preventCacheWipeBetweenFrames = false;
 
         /** 
-         * To enable/disable IDB support and avoid XHR on .manifest
+         * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
          **/
         public enableOfflineSupport = false;
 
+        /**
+         * Gets the list of created scenes
+         */
         public scenes = new Array<Scene>();
+
+        /**
+         * Gets the list of created postprocesses
+         */
         public postProcesses = new Array<PostProcess>();
 
         // Observables
@@ -657,13 +826,28 @@
         private _vrExclusivePointerMode = false;
         private _webVRInitPromise: Promise<IDisplayChangedEventArgs>;
 
+        /**
+         * Gets a boolean indicating that the engine is currently in VR exclusive mode for the pointers
+         * @see https://docs.microsoft.com/en-us/microsoft-edge/webvr/essentials#mouse-input
+         */
         public get isInVRExclusivePointerMode(): boolean {
             return this._vrExclusivePointerMode;
         }
 
         // Uniform buffers list
+
+        /**
+         * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
+         */
         public disableUniformBuffers = false;
+
+        /** @ignore */
         public _uniformBuffers = new Array<UniformBuffer>();
+
+        /**
+         * Gets a boolean indicating that the engine supports uniform buffers
+         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         */
         public get supportsUniformBuffers(): boolean {
             return this.webGLVersion > 1 && !this.disableUniformBuffers;
         }
@@ -696,19 +880,19 @@
         private _windowIsBackground = false;
         private _webGLVersion = 1.0;
 
+        /**
+         * Gets a boolean indicating that only power of 2 textures are supported
+         * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
+         */
         public get needPOTTextures(): boolean {
             return this._webGLVersion < 2 || this.forcePOTTextures;
         }
 
-        private _badOS = false;
-        public get badOS(): boolean {
-            return this._badOS;
-        }
+        /** @ignore */
+        public _badOS = false;
 
-        private _badDesktopOS = false;
-        public get badDesktopOS(): boolean {
-            return this._badDesktopOS;
-        }
+        /** @ignore */
+        public _badDesktopOS = false;
 
         /**
          * Gets or sets a value indicating if we want to disable texture binding optmization.
@@ -717,6 +901,10 @@
          */
         public disableTextureBindingOptimization = false;
 
+        /** 
+         * Gets the audio engine 
+         * @see http://doc.babylonjs.com/how_to/playing_sounds_and_music
+         */
         public static audioEngine: AudioEngine;
 
         // Focus
@@ -736,11 +924,22 @@
         private _onVrDisplayConnect: Nullable<(display: any) => void>;
         private _onVrDisplayDisconnect: Nullable<() => void>;
         private _onVrDisplayPresentChange: Nullable<() => void>;
+
+        /**
+         * Observable signaled when VR display mode changes
+         */
         public onVRDisplayChangedObservable = new Observable<IDisplayChangedEventArgs>();
+        /**
+         * Observable signaled when VR request present is complete
+         */
         public onVRRequestPresentComplete = new Observable<boolean>();
+        /**
+         * Observable signaled when VR request present starts
+         */
         public onVRRequestPresentStart = new Observable<Engine>();
 
         private _hardwareScalingLevel: number;
+        /** @ignore */
         protected _caps: EngineCapabilities;
         private _pointerLockRequested: boolean;
         private _isStencilEnable: boolean;
@@ -748,7 +947,9 @@
 
         private _loadingScreen: ILoadingScreen;
 
+        /** @ignore */
         public _drawCalls = new PerfCounter();
+        /** @ignore */
         public _textureCollisions = new PerfCounter();
 
         private _glVersion: string;
@@ -765,7 +966,13 @@
         private _lockstepMaxSteps: number = 4;
 
         // Lost context
+        /**
+         * Observable signaled when a context lost event is raised
+         */
         public onContextLostObservable = new Observable<Engine>();
+        /**
+         * Observable signaled when a context restored event is raised
+         */
         public onContextRestoredObservable = new Observable<Engine>();
         private _onContextLost: (evt: Event) => void;
         private _onContextRestored: (evt: Event) => void;
@@ -781,33 +988,51 @@
          */
         public disablePerformanceMonitorInBackground = false;
 
+        /**
+         * Gets the performance monitor attached to this engine
+         * @see http://doc.babylonjs.com/how_to/optimizing_your_scene#engineinstrumentation
+         */
         public get performanceMonitor(): PerformanceMonitor {
             return this._performanceMonitor;
         }
 
         // States
+        /** @ignore */
         protected _depthCullingState = new _DepthCullingState();
+        /** @ignore */
         protected _stencilState = new _StencilState();
+        /** @ignore */
         protected _alphaState = new _AlphaState();
+        /** @ignore */
         protected _alphaMode = Engine.ALPHA_DISABLE;
 
         // Cache
         private _internalTexturesCache = new Array<InternalTexture>();
+        /** @ignore */
         protected _activeChannel = 0;
         private _currentTextureChannel = -1;
+        /** @ignore */
         protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
+        /** @ignore */
         protected _currentEffect: Nullable<Effect>;
+        /** @ignore */
         protected _currentProgram: Nullable<WebGLProgram>;
         private _compiledEffects: { [key: string]: Effect } = {}
         private _vertexAttribArraysEnabled: boolean[] = [];
+        /** @ignore */
         protected _cachedViewport: Nullable<Viewport>;
         private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
+        /** @ignore */
         protected _cachedVertexBuffers: any;
+        /** @ignore */
         protected _cachedIndexBuffer: Nullable<WebGLBuffer>;
+        /** @ignore */
         protected _cachedEffectForVertexBuffers: Nullable<Effect>;
+        /** @ignore */
         protected _currentRenderTarget: Nullable<InternalTexture>;
         private _uintIndicesCurrentlySet = false;
         private _currentBoundBuffer = new Array<Nullable<WebGLBuffer>>();
+        /** @ignore */
         protected _currentFramebuffer: Nullable<WebGLFramebuffer>;
         private _currentBufferPointers = new Array<BufferPointer>();
         private _currentInstanceLocations = new Array<number>();
@@ -843,19 +1068,30 @@
         private _texturesSupported = new Array<string>();
         private _textureFormatInUse: Nullable<string>;
 
+        /**
+         * Gets the list of texture formats supported
+         */
         public get texturesSupported(): Array<string> {
             return this._texturesSupported;
         }
 
+        /**
+         * Gets the list of texture formats in use
+         */
         public get textureFormatInUse(): Nullable<string> {
             return this._textureFormatInUse;
         }
 
+        /**
+         * Gets the current viewport
+         */
         public get currentViewport(): Nullable<Viewport> {
             return this._cachedViewport;
         }
 
-        // Empty texture
+        /**
+         * Gets the default empty texture
+         */
         public get emptyTexture(): InternalTexture {
             if (!this._emptyTexture) {
                 this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
@@ -863,6 +1099,10 @@
 
             return this._emptyTexture;
         }
+
+        /**
+         * Gets the default empty 3D texture
+         */        
         public get emptyTexture3D(): InternalTexture {
             if (!this._emptyTexture3D) {
                 this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Engine.TEXTUREFORMAT_RGBA, false, false, Texture.NEAREST_SAMPLINGMODE);
@@ -870,6 +1110,10 @@
 
             return this._emptyTexture3D;
         }
+
+        /**
+         * Gets the default empty cube texture
+         */        
         public get emptyCubeTexture(): InternalTexture {
             if (!this._emptyCubeTexture) {
                 var faceData = new Uint8Array(4);
@@ -881,7 +1125,7 @@
         }
 
         /**
-         * @constructor
+         * Creates a new engine
          * @param canvasOrContext defines the canvas or WebGL context to use for rendering
          * @param antialias defines enable antialiasing (default: false)
          * @param options defines further options to be sent to the getContext() function
@@ -1383,6 +1627,9 @@
             }
         }
 
+        /**
+         * Gets version of the current webGL context
+         */
         public get webGLVersion(): number {
             return this._webGLVersion;
         }
@@ -1407,6 +1654,9 @@
             }
         }
 
+        /**
+         * Reset the texture cache to empty state
+         */
         public resetTextureCache() {
             for (var key in this._boundTexturesCache) {
                 let boundTexture = this._boundTexturesCache[key];
@@ -1426,14 +1676,26 @@
             this._currentTextureChannel = -1;
         }
 
+        /**
+         * Gets a boolean indicating that the engine is running in deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public isDeterministicLockStep(): boolean {
             return this._deterministicLockstep;
         }
 
+        /**
+         * Gets the max steps when engine is running in deterministic lock step
+         * @see http://doc.babylonjs.com/babylon101/animations#deterministic-lockstep
+         */
         public getLockstepMaxSteps(): number {
             return this._lockstepMaxSteps;
         }
 
+        /**
+         * Gets an object containing information about the current webGL context
+         * @returns an object containing the vender, the renderer and the version of the current webGL context
+         */
         public getGlInfo() {
             return {
                 vendor: this._glVendor,
@@ -1442,11 +1704,22 @@
             }
         }
 
+        /**
+         * Gets current aspect ratio
+         * @param camera defines the camera to use to get the aspect ratio
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the aspect ratio
+         */
         public getAspectRatio(camera: Camera, useScreen = false): number {
             var viewport = camera.viewport;
             return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
         }
 
+        /**
+         * Gets the current render width
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the current render width
+         */
         public getRenderWidth(useScreen = false): number {
             if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget.width;
@@ -1455,6 +1728,11 @@
             return this._gl.drawingBufferWidth;
         }
 
+        /**
+         * Gets the current render height
+         * @param useScreen defines if screen size must be used (or the current render target if any)
+         * @returns a number defining the current render height
+         */        
         public getRenderHeight(useScreen = false): number {
             if (!useScreen && this._currentRenderTarget) {
                 return this._currentRenderTarget.height;
@@ -1463,10 +1741,18 @@
             return this._gl.drawingBufferHeight;
         }
 
+        /**
+         * Gets the HTML canvas attached with the current webGL context
+         * @returns a HTML canvas
+         */
         public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
             return this._renderingCanvas;
         }
 
+        /**
+         * Gets the client rect of the HTML canvas attached with the current webGL context
+         * @returns a client rectanglee
+         */
         public getRenderingCanvasClientRect(): Nullable<ClientRect> {
             if (!this._renderingCanvas) {
                 return null;
@@ -1474,122 +1760,229 @@
             return this._renderingCanvas.getBoundingClientRect();
         }
 
+        /**
+         * Defines the hardware scaling level
+         * By default the hardware scaling level is computed from the window device ratio
+         * @description if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
+         * @param level defines the level to use
+         */
         public setHardwareScalingLevel(level: number): void {
             this._hardwareScalingLevel = level;
             this.resize();
         }
 
+        /**
+         * Gets the current hardware scaling level
+         * By default the hardware scaling level is computed from the window device ratio
+         * @description if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
+         */        
         public getHardwareScalingLevel(): number {
             return this._hardwareScalingLevel;
         }
 
+        /**
+         * Gets the list of loaded textures
+         * @returns an array containing all loaded textures
+         */
         public getLoadedTexturesCache(): InternalTexture[] {
             return this._internalTexturesCache;
         }
 
+        /**
+         * Gets the object containing all engine capabilities
+         * @returns the EngineCapabilities object
+         */
         public getCaps(): EngineCapabilities {
             return this._caps;
         }
 
-        /** The number of draw calls submitted last frame */
+        /** @ignore */
         public get drawCalls(): number {
             Tools.Warn("drawCalls is deprecated. Please use SceneInstrumentation class");
             return 0;
         }
 
+        /** @ignore */
         public get drawCallsPerfCounter(): Nullable<PerfCounter> {
             Tools.Warn("drawCallsPerfCounter is deprecated. Please use SceneInstrumentation class");
             return null;
         }
 
+        /**
+         * Gets the current depth function
+         * @returns a number defining the depth function
+         */
         public getDepthFunction(): Nullable<number> {
             return this._depthCullingState.depthFunc;
         }
 
+        /**
+         * Sets the current depth function
+         * @param depthFunc defines the function to use
+         */
         public setDepthFunction(depthFunc: number) {
             this._depthCullingState.depthFunc = depthFunc;
         }
 
+        /**
+         * Sets the current depth function to GREATER
+         */        
         public setDepthFunctionToGreater(): void {
             this._depthCullingState.depthFunc = this._gl.GREATER;
         }
 
+        /**
+         * Sets the current depth function to GEQUAL
+         */        
         public setDepthFunctionToGreaterOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.GEQUAL;
         }
 
+        /**
+         * Sets the current depth function to LESS
+         */          
         public setDepthFunctionToLess(): void {
             this._depthCullingState.depthFunc = this._gl.LESS;
         }
 
+        /**
+         * Sets the current depth function to LEQUAL
+         */                
         public setDepthFunctionToLessOrEqual(): void {
             this._depthCullingState.depthFunc = this._gl.LEQUAL;
         }
 
+        /**
+         * Gets a boolean indicating if stencil buffer is enabled
+         */
         public getStencilBuffer(): boolean {
             return this._stencilState.stencilTest;
         }
 
+        /**
+         * Enable or disable the stencil buffer
+         * @param enable defines if the stencil buffer must be enabled or disabled
+         */
         public setStencilBuffer(enable: boolean): void {
             this._stencilState.stencilTest = enable;
         }
 
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the new stencil mask to use
+         */
         public getStencilMask(): number {
             return this._stencilState.stencilMask;
         }
 
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */        
         public setStencilMask(mask: number): void {
             this._stencilState.stencilMask = mask;
         }
 
+        /**
+         * Gets the current stencil function
+         * @returns a number defining the stencil function to use
+         */        
         public getStencilFunction(): number {
             return this._stencilState.stencilFunc;
         }
 
+        /**
+         * Gets the current stencil reference value
+         * @returns a number defining the stencil reference value to use
+         */             
         public getStencilFunctionReference(): number {
             return this._stencilState.stencilFuncRef;
         }
 
+        /**
+         * Gets the current stencil mask
+         * @returns a number defining the stencil mask to use
+         */                 
         public getStencilFunctionMask(): number {
             return this._stencilState.stencilFuncMask;
         }
 
+        /**
+         * Sets the current stencil function
+         * @param stencilFunc defines the new stencil function to use
+         */             
         public setStencilFunction(stencilFunc: number) {
             this._stencilState.stencilFunc = stencilFunc;
         }
 
+        /**
+         * Sets the current stencil reference
+         * @param reference defines the new stencil reference to use
+         */            
         public setStencilFunctionReference(reference: number) {
             this._stencilState.stencilFuncRef = reference;
         }
 
+        /**
+         * Sets the current stencil mask
+         * @param mask defines the new stencil mask to use
+         */            
         public setStencilFunctionMask(mask: number) {
             this._stencilState.stencilFuncMask = mask;
         }
 
+        /**
+         * Gets the current stencil operation when stencil fails
+         * @returns a number defining stencil operation to use when stencil fails
+         */           
         public getStencilOperationFail(): number {
             return this._stencilState.stencilOpStencilFail;
         }
 
+        /**
+         * Gets the current stencil operation when depth fails
+         * @returns a number defining stencil operation to use when depth fails
+         */           
         public getStencilOperationDepthFail(): number {
             return this._stencilState.stencilOpDepthFail;
         }
 
+        /**
+         * Gets the current stencil operation when stencil passes
+         * @returns a number defining stencil operation to use when stencil passes
+         */         
         public getStencilOperationPass(): number {
             return this._stencilState.stencilOpStencilDepthPass;
         }
 
+        /**
+         * Sets the stencil operation to use when stencil fails
+         * @param operation defines the stencil operation to use when stencil fails
+         */         
         public setStencilOperationFail(operation: number): void {
             this._stencilState.stencilOpStencilFail = operation;
         }
 
+        /**
+         * Sets the stencil operation to use when depth fails
+         * @param operation defines the stencil operation to use when depth fails
+         */         
         public setStencilOperationDepthFail(operation: number): void {
             this._stencilState.stencilOpDepthFail = operation;
         }
 
+        /**
+         * Sets the stencil operation to use when stencil passes
+         * @param operation defines the stencil operation to use when stencil passes
+         */        
         public setStencilOperationPass(operation: number): void {
             this._stencilState.stencilOpStencilDepthPass = operation;
         }
 
+        /**
+         * Sets a boolean indicating if the dithering state is enabled or disabled
+         * @param value defines the dithering state
+         */
         public setDitheringState(value: boolean): void {
             if (value) {
                 this._gl.enable(this._gl.DITHER);
@@ -1598,6 +1991,10 @@
             }
         }
 
+        /**
+         * Sets a boolean indicating if the rasterizer state is enabled or disabled
+         * @param value defines the rasterizer state
+         */        
         public setRasterizerState(value: boolean): void {
             if (value) {
                 this._gl.disable(this._gl.RASTERIZER_DISCARD);
@@ -1608,7 +2005,7 @@
 
         /**
          * stop executing a render loop function and remove it from the execution array
-         * @param {Function} [renderFunction] the function to be removed. If not provided all functions will be removed.
+         * @param renderFunction defines the function to be removed. If not provided all functions will be removed.
          */
         public stopRenderLoop(renderFunction?: () => void): void {
             if (!renderFunction) {
@@ -1623,6 +2020,7 @@
             }
         }
 
+        /** @ignore */
         public _renderLoop(): void {
             if (!this._contextWasLost) {
                 var shouldRender = true;
@@ -1657,12 +2055,8 @@
         }
 
         /**
-         * Register and execute a render loop. The engine can have more than one render function.
-         * @param {Function} renderFunction - the function to continuously execute starting the next render loop.
-         * @example
-         * engine.runRenderLoop(function () {
-         *      scene.render()
-         * })
+         * Register and execute a render loop. The engine can have more than one render function
+         * @param renderFunction defines the function to continuously execute
          */
         public runRenderLoop(renderFunction: () => void): void {
             if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
@@ -1679,9 +2073,9 @@
         }
 
         /**
-         * Toggle full screen mode.
-         * @param {boolean} requestPointerLock - should a pointer lock be requested from the user
-         * @param {any} options - an options object to be sent to the requestFullscreen function
+         * Toggle full screen mode
+         * @param requestPointerLock defines if a pointer lock should be requested from the user
+         * @param options defines an option object to be sent to the requestFullscreen function
          */
         public switchFullscreen(requestPointerLock: boolean): void {
             if (this.isFullscreen) {
@@ -1694,6 +2088,13 @@
             }
         }
 
+        /**
+         * Clear the current render buffer or the current render target (if any is set up)
+         * @param color defines the color to use 
+         * @param backBuffer defines if the back buffer must be cleared
+         * @param depth defines if the depth buffer must be cleared
+         * @param stencil defines if the stencil buffer must be cleared
+         */
         public clear(color: Nullable<Color4>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
             this.applyStates();
 
@@ -1713,6 +2114,14 @@
             this._gl.clear(mode);
         }
 
+        /**
+         * Executes a scissor clear (ie. a clear on a specific portion of the screen)
+         * @param x defines the x-coordinate of the top left corner of the clear rectangle
+         * @param y defines the y-coordinate of the corner of the clear rectangle 
+         * @param width defines the width of the clear rectangle
+         * @param height defines the height of the clear rectangle
+         * @param clearColor defines the clear color
+         */
         public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4): void {
             let gl = this._gl;
 
@@ -1739,9 +2148,9 @@
 
         /**
          * Set the WebGL's viewport
-         * @param {BABYLON.Viewport} viewport - the viewport element to be used.
-         * @param {number} [requiredWidth] - the width required for rendering. If not provided the rendering canvas' width is used.
-         * @param {number} [requiredHeight] - the height required for rendering. If not provided the rendering canvas' height is used.
+         * @param viewport defines the viewport element to be used
+         * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
+         * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
          */
         public setViewport(viewport: Viewport, requiredWidth?: number, requiredHeight?: number): void {
             var width = requiredWidth || this.getRenderWidth();
@@ -1756,8 +2165,11 @@
 
         /**
          * Directly set the WebGL Viewport
-         * The x, y, width & height are directly passed to the WebGL call
-         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state.
+         * @param x defines the x coordinate of the viewport (in screen space)
+         * @param y defines the y coordinate of the viewport (in screen space)
+         * @param width defines the width of the viewport (in screen space)
+         * @param height defines the height of the viewport (in screen space)
+         * @return the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
          */
         public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<Viewport> {
             let currentViewport = this._cachedViewport;
@@ -1768,18 +2180,24 @@
             return currentViewport;
         }
 
+        /**
+         * Begin a new frame
+         */
         public beginFrame(): void {
             this.onBeginFrameObservable.notifyObservers(this);
             this._measureFps();
         }
 
+        /**
+         * Enf the current frame
+         */
         public endFrame(): void {
-            //force a flush in case we are using a bad OS.
+            // Force a flush in case we are using a bad OS.
             if (this._badOS) {
                 this.flushFramebuffer();
             }
 
-            //submit frame to the vr device, if enabled
+            // Submit frame to the vr device, if enabled
             if (this._vrDisplay && this._vrDisplay.isPresenting) {
                 // TODO: We should only submit the frame if we read frameData successfully.
                 this._vrDisplay.submitFrame();
@@ -1789,11 +2207,7 @@
         }
 
         /**
-         * resize the view according to the canvas' size.
-         * @example
-         *   window.addEventListener("resize", function () {
-         *      engine.resize();
-         *   });
+         * Resize the view according to the canvas' size
          */
         public resize(): void {
             // We're not resizing the size of the canvas while in VR mode & presenting
@@ -1806,9 +2220,9 @@
         }
 
         /**
-         * force a specific size of the canvas
-         * @param {number} width - the new canvas' width
-         * @param {number} height - the new canvas' height
+         * Force a specific size of the canvas
+         * @param width defines the new canvas' width
+         * @param height defines the new canvas' height
          */
         public setSize(width: number, height: number): void {
             if (!this._renderingCanvas) {
@@ -1838,18 +2252,25 @@
         }
 
         // WebVR functions
+
+        /**
+         * Gets a boolean indicating if a webVR device was detected
+         */
         public isVRDevicePresent(): boolean {
             return !!this._vrDisplay;
         }
 
+        /**
+         * Gets the current webVR device
+         */
         public getVRDevice(): any {
             return this._vrDisplay;
         }
 
         /**
-         * Initializes a webVR display and starts listening to display change events.
-         * The onVRDisplayChangedObservable will be notified upon these changes.
-         * @returns The onVRDisplayChangedObservable.
+         * Initializes a webVR display and starts listening to display change events
+         * The onVRDisplayChangedObservable will be notified upon these changes
+         * @returns The onVRDisplayChangedObservable
          */
         public initWebVR(): Observable<IDisplayChangedEventArgs> {
             this.initWebVRAsync();
@@ -1857,9 +2278,9 @@
         }
 
         /**
-         * Initializes a webVR display and starts listening to display change events.
-         * The onVRDisplayChangedObservable will be notified upon these changes.
-         * @returns A promise containing a VRDisplay and if vr is supported.
+         * Initializes a webVR display and starts listening to display change events
+         * The onVRDisplayChangedObservable will be notified upon these changes
+         * @returns A promise containing a VRDisplay and if vr is supported
          */
         public initWebVRAsync(): Promise<IDisplayChangedEventArgs> {
             var notifyObservers = () => {
@@ -1894,6 +2315,11 @@
             return this._webVRInitPromise;
         }
 
+        /**
+         * Call this function to switch to webVR mode
+         * Will do nothing if webVR is not supported or if there is no webVR device
+         * @see http://doc.babylonjs.com/how_to/webvr_camera
+         */
         public enableVR() {
             if (this._vrDisplay && !this._vrDisplay.isPresenting) {
                 var onResolved = () => {
@@ -1909,6 +2335,11 @@
             }
         }
 
+        /**
+         * Call this function to leave webVR mode
+         * Will do nothing if webVR is not supported or if there is no webVR device
+         * @see http://doc.babylonjs.com/how_to/webvr_camera
+         */
         public disableVR() {
             if (this._vrDisplay && this._vrDisplay.isPresenting) {
                 this._vrDisplay.exitPresent().then(this._onVRFullScreenTriggered).catch(this._onVRFullScreenTriggered);
@@ -2003,6 +2434,12 @@
             }
         }
 
+        /**
+         * Unbind the current render target texture from the webGL context
+         * @param texture defines the render target texture to unbind
+         * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+         * @param onBeforeUnbind defines a function which will be called before the effective unbind
+         */
         public unBindFramebuffer(texture: InternalTexture, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
             this._currentRenderTarget = null;
 
@@ -2034,6 +2471,13 @@
             this.bindUnboundFramebuffer(null);
         }
 
+        /**
+         * Unbind a list of render target textures from the webGL context
+         * This is used only when drawBuffer extension or webGL2 are active
+         * @param textures defines the render target textures to unbind
+         * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+         * @param onBeforeUnbind defines a function which will be called before the effective unbind
+         */        
         public unBindMultiColorAttachmentFramebuffer(textures: InternalTexture[], disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
             this._currentRenderTarget = null;
 
@@ -2092,6 +2536,10 @@
             this.bindUnboundFramebuffer(null);
         }
 
+        /**
+         * Force the mipmap generation for the given render target texture
+         * @param texture defines the render target texture to use
+         */
         public generateMipMapsForCubemap(texture: InternalTexture) {
             if (texture.generateMipMaps) {
                 var gl = this._gl;
@@ -2101,10 +2549,16 @@
             }
         }
 
+        /**
+         * Force a webGL flush (ie. a flush of all waiting webGL commands)
+         */
         public flushFramebuffer(): void {
             this._gl.flush();
         }
 
+        /**
+         * Unbind the current render target and bind the default framebuffer
+         */
         public restoreDefaultFramebuffer(): void {
             if (this._currentRenderTarget) {
                 this.unBindFramebuffer(this._currentRenderTarget);
@@ -2119,6 +2573,13 @@
         }
 
         // UBOs
+
+        /**
+         * Create an uniform buffer
+         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         * @param elements defines the content of the uniform buffer
+         * @returns the webGL uniform buffer
+         */
         public createUniformBuffer(elements: FloatArray): WebGLBuffer {
             var ubo = this._gl.createBuffer();
 
@@ -2140,6 +2601,12 @@
             return ubo;
         }
 
+        /**
+         * Create a dynamic uniform buffer
+         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         * @param elements defines the content of the uniform buffer
+         * @returns the webGL uniform buffer
+         */        
         public createDynamicUniformBuffer(elements: FloatArray): WebGLBuffer {
             var ubo = this._gl.createBuffer();
 
@@ -2161,6 +2628,14 @@
             return ubo;
         }
 
+        /**
+         * Update an existing uniform buffer
+         * @see http://doc.babylonjs.com/features/webgl2#uniform-buffer-objets
+         * @param uniformBuffer defines the target uniform buffer
+         * @param elements defines the content to update
+         * @param offset defines the offset in the uniform buffer where update should start
+         * @param count defines the size of the data to update
+         */
         public updateUniformBuffer(uniformBuffer: WebGLBuffer, elements: FloatArray, offset?: number, count?: number): void {
             this.bindUniformBuffer(uniformBuffer);
 
@@ -2242,6 +2717,12 @@
             return vbo;
         }
 
+        /**
+         * Update a dynamic index buffer
+         * @param indexBuffer defines the target index buffer
+         * @param indices defines the data to update
+         * @param offset defines the offset in the target index buffer where update should start
+         */
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
             // Force cache update
             this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
@@ -2263,8 +2744,8 @@
          * Updates a dynamic vertex buffer.
          * @param vertexBuffer the vertex buffer to update
          * @param data the data used to update the vertex buffer
-         * @param byteOffset the byte offset of the data (optional)
-         * @param byteLength the byte length of the data (optional)
+         * @param byteOffset the byte offset of the data
+         * @param byteLength the byte length of the data
          */
         public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
             this.bindArrayBuffer(vertexBuffer);
@@ -2301,6 +2782,12 @@
             this._cachedIndexBuffer = null;
         }
 
+        /**
+         * Creates a new index buffer
+         * @param indices defines the content of the index buffer
+         * @param updatable defines if the index buffer must be updatable
+         * @returns a new webGL buffer
+         */
         public createIndexBuffer(indices: IndicesArray, updatable?: boolean): WebGLBuffer {
             var vbo = this._gl.createBuffer();
 
@@ -2346,6 +2833,10 @@
             return vbo;
         }
 
+        /**
+         * Bind a webGL buffer to the webGL context
+         * @param buffer defines the buffer to bind
+         */
         public bindArrayBuffer(buffer: Nullable<WebGLBuffer>): void {
             if (!this._vaoRecordInProgress) {
                 this._unbindVertexArrayObject();
@@ -2353,14 +2844,29 @@
             this.bindBuffer(buffer, this._gl.ARRAY_BUFFER);
         }
 
+        /**
+         * Bind an uniform buffer to the current webGL context
+         * @param buffer defines the buffer to bind
+         */
         public bindUniformBuffer(buffer: Nullable<WebGLBuffer>): void {
             this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer);
         }
 
+        /**
+         * Bind a buffer to the current webGL context at a given location
+         * @param buffer defines the buffer to bind
+         * @param location defines the index where to bind the buffer
+         */        
         public bindUniformBufferBase(buffer: WebGLBuffer, location: number): void {
             this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer);
         }
 
+        /**
+         * Bind a specific block at a given index in a specific shader program
+         * @param shaderProgram defines the shader program
+         * @param blockName defines the block name
+         * @param index defines the index where to bind the block
+         */
         public bindUniformBlock(shaderProgram: WebGLProgram, blockName: string, index: number): void {
             var uniformLocation = this._gl.getUniformBlockIndex(shaderProgram, blockName);
 
@@ -2381,11 +2887,15 @@
             }
         }
 
+        /**
+         * update the bound buffer with the given data
+         * @param data defines the data to update
+         */
         public updateArrayBuffer(data: Float32Array): void {
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         }
 
-        private vertexAttribPointer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
+        private _vertexAttribPointer(buffer: WebGLBuffer, indx: number, size: number, type: number, normalized: boolean, stride: number, offset: number): void {
             var pointer = this._currentBufferPointers[indx];
 
             var changed = false;
@@ -2451,7 +2961,7 @@
 
                     var buffer = vertexBuffer.getBuffer();
                     if (buffer) {
-                        this.vertexAttribPointer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.byteStride, vertexBuffer.byteOffset);
+                        this._vertexAttribPointer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.byteStride, vertexBuffer.byteOffset);
 
                         if (vertexBuffer.getIsInstanced()) {
                             this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());
@@ -2465,6 +2975,13 @@
             }
         }
 
+        /**
+         * Records a vertex array object
+         * @see http://doc.babylonjs.com/features/webgl2#vertex-array-objects
+         * @param vertexBuffers defines the list of vertex buffers to store
+         * @param indexBuffer defines the index buffer to store
+         * @param effect defines the effect to store
+         */
         public recordVertexArrayObject(vertexBuffers: { [key: string]: VertexBuffer; }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): WebGLVertexArrayObject {
             var vao = this._gl.createVertexArray();
 
@@ -2483,6 +3000,12 @@
             return vao;
         }
 
+        /**
+         * Bind a specific vertex array object
+         * @see http://doc.babylonjs.com/features/webgl2#vertex-array-objects
+         * @param vertexArrayObject defines the vertex array object to bind
+         * @param indexBuffer defines the index buffer to bind
+         */
         public bindVertexArrayObject(vertexArrayObject: WebGLVertexArrayObject, indexBuffer: Nullable<WebGLBuffer>): void {
             if (this._cachedVertexArrayObject !== vertexArrayObject) {
                 this._cachedVertexArrayObject = vertexArrayObject;
@@ -2496,6 +3019,14 @@
             }
         }
 
+        /**
+         * Bind webGl buffers directly to the webGL context
+         * @param vertexBuffer defines the vertex buffer to bind
+         * @param indexBuffer defines the index buffer to bind
+         * @param vertexDeclaration defines the vertex declaration to use with the vertex buffer
+         * @param vertexStrideSize defines the vertex stride of the vertex buffer
+         * @param effect defines the effect associated with the vertex buffer
+         */
         public bindBuffersDirectly(vertexBuffer: WebGLBuffer, indexBuffer: WebGLBuffer, vertexDeclaration: number[], vertexStrideSize: number, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffer || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffer;
@@ -2516,7 +3047,7 @@
                         if (order >= 0) {
                             this._gl.enableVertexAttribArray(order);
                             this._vertexAttribArraysEnabled[order] = true;
-                            this.vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
+                            this._vertexAttribPointer(vertexBuffer, order, vertexDeclaration[index], this._gl.FLOAT, false, vertexStrideSize, offset);
                         }
 
                         offset += vertexDeclaration[index] * 4;
@@ -2536,6 +3067,12 @@
             this._gl.bindVertexArray(null);
         }
 
+        /**
+         * Bind a list of vertex buffers to the webGL context
+         * @param vertexBuffers defines the list of vertex buffers to bind
+         * @param indexBuffer defines the index buffer to bind
+         * @param effect defines the effect associated with the vertex buffers
+         */
         public bindBuffers(vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, indexBuffer: Nullable<WebGLBuffer>, effect: Effect): void {
             if (this._cachedVertexBuffers !== vertexBuffers || this._cachedEffectForVertexBuffers !== effect) {
                 this._cachedVertexBuffers = vertexBuffers;
@@ -2547,6 +3084,9 @@
             this._bindIndexBufferWithCache(indexBuffer);
         }
 
+        /**
+         * Unbind all instance attributes
+         */
         public unbindInstanceAttributes() {
             var boundBuffer;
             for (var i = 0, ul = this._currentInstanceLocations.length; i < ul; i++) {
@@ -2562,10 +3102,15 @@
             this._currentInstanceLocations.length = 0;
         }
 
+        /**
+         * Release and free the memory of a vertex array object
+         * @param vao defines the vertex array object to delete
+         */
         public releaseVertexArrayObject(vao: WebGLVertexArrayObject) {
             this._gl.deleteVertexArray(vao);
         }
 
+        /** @ignore */
         public _releaseBuffer(buffer: WebGLBuffer): boolean {
             buffer.references--;
 
@@ -2577,6 +3122,11 @@
             return false;
         }
 
+        /**
+         * Creates a webGL buffer to use with instanciation
+         * @param capacity defines the size of the buffer
+         * @returns the webGL buffer
+         */
         public createInstancesBuffer(capacity: number): WebGLBuffer {
             var buffer = this._gl.createBuffer();
 
@@ -2591,10 +3141,20 @@
             return buffer;
         }
 
+        /**
+         * Delete a webGL buffer used with instanciation
+         * @param buffer defines the webGL buffer to delete
+         */
         public deleteInstancesBuffer(buffer: WebGLBuffer): void {
             this._gl.deleteBuffer(buffer);
         }
 
+        /**
+         * Update the content of a webGL buffer used with instanciation and bind it to the webGL context
+         * @param instancesBuffer defines the webGL buffer to update and bind
+         * @param data defines the data to store in the buffer
+         * @param offsetLocations defines the offsets or attributes information used to determine where data must be stored in the buffer
+         */
         public updateAndBindInstancesBuffer(instancesBuffer: WebGLBuffer, data: Float32Array, offsetLocations: number[] | InstancingAttributeInfo[]): void {
             this.bindArrayBuffer(instancesBuffer);
             if (data) {
@@ -2615,7 +3175,7 @@
                         this._vertexAttribArraysEnabled[ai.index] = true;
                     }
 
-                    this.vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
+                    this._vertexAttribPointer(instancesBuffer, ai.index, ai.attributeSize, ai.attribyteType || this._gl.FLOAT, ai.normalized || false, stride, ai.offset);
                     this._gl.vertexAttribDivisor(ai.index, 1);
                     this._currentInstanceLocations.push(ai.index);
                     this._currentInstanceBuffers.push(instancesBuffer);
@@ -2629,7 +3189,7 @@
                         this._vertexAttribArraysEnabled[offsetLocation] = true;
                     }
 
-                    this.vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
+                    this._vertexAttribPointer(instancesBuffer, offsetLocation, 4, this._gl.FLOAT, false, 64, index * 16);
                     this._gl.vertexAttribDivisor(offsetLocation, 1);
                     this._currentInstanceLocations.push(offsetLocation);
                     this._currentInstanceBuffers.push(instancesBuffer);
@@ -2637,24 +3197,54 @@
             }
         }
 
+        /**
+         * Apply all cached states (depth, culling, stencil and alpha)
+         */
         public applyStates() {
             this._depthCullingState.apply(this._gl);
             this._stencilState.apply(this._gl);
             this._alphaState.apply(this._gl);
         }
 
+        /**
+         * Send a draw order
+         * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
+         * @param indexStart defines the starting index
+         * @param indexCount defines the number of index to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
         public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {
             this.drawElementsType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, indexStart, indexCount, instancesCount);
         }
 
+        /**
+         * Draw a list of points
+         * @param verticesStart defines the index of first vertex to draw
+         * @param verticesCount defines the count of vertices to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
         public drawPointClouds(verticesStart: number, verticesCount: number, instancesCount?: number): void {
             this.drawArraysType(Material.PointFillMode, verticesStart, verticesCount, instancesCount);
         }
 
+        /**
+         * Draw a list of unindexed primitives
+         * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
+         * @param verticesStart defines the index of first vertex to draw 
+         * @param verticesCount defines the count of vertices to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
         public drawUnIndexed(useTriangles: boolean, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             this.drawArraysType(useTriangles ? Material.TriangleFillMode : Material.WireFrameFillMode, verticesStart, verticesCount, instancesCount);
         }
 
+        /**
+         * Draw a list of indexed primitives
+         * @param fillMode defines the primitive to use
+         * @param indexStart defines the starting index
+         * @param indexCount defines the number of index to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
         public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
@@ -2672,6 +3262,13 @@
             }
         }
 
+        /**
+         * Draw a list of unindexed primitives
+         * @param fillMode defines the primitive to use
+         * @param verticesStart defines the index of first vertex to draw 
+         * @param verticesCount defines the count of vertices to draw
+         * @param instancesCount defines the number of instances to draw (if instanciation is enabled)
+         */
         public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
             // Apply states
             this.applyStates();
@@ -2713,6 +3310,8 @@
         }
 
         // Shaders
+        
+        /** @ignore */
         public _releaseEffect(effect: Effect): void {
             if (this._compiledEffects[effect._key]) {
                 delete this._compiledEffects[effect._key];
@@ -2721,6 +3320,7 @@
             }
         }
 
+        /** @ignore */
         public _deleteProgram(program: WebGLProgram): void {
             if (program) {
                 program.__SPECTOR_rebuildProgram = null;
@@ -2736,8 +3336,17 @@
 
 
         /**
-         * @param baseName The base name of the effect (The name of file without .fragment.fx or .vertex.fx)
-         * @param samplers An array of string used to represent textures
+         * Create a new effect (used to store vertex/fragment shaders)
+         * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+         * @param attributesNamesOrOptions defines either a list of attribute names or an EffectCreationOptions object
+         * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
+         * @param samplers defines an array of string used to represent textures
+         * @param defines defines the string containing the defines to use to compile the shaders
+         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+         * @param onCompiled defines a function to call when the effect creation is successful
+         * @param onError defines a function to call when the effect creation has failed
+         * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+         * @returns the new Effect
          */
         public createEffect(baseName: any, attributesNamesOrOptions: string[] | EffectCreationOptions, uniformsNamesOrEngine: string[] | Engine, samplers?: string[], defines?: string, fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void, indexParameters?: any): Effect {
@@ -2760,6 +3369,17 @@
             return effect;
         }
 
+        /**
+         * Create an effect to use with particle systems
+         * @param fragmentName defines the base name of the effect (The name of file without .fragment.fx)
+         * @param uniformsNames defines a list of attribute names 
+         * @param samplers defines an array of string used to represent textures
+         * @param defines defines the string containing the defines to use to compile the shaders
+         * @param fallbacks defines the list of potential fallbacks to use if shader conmpilation fails
+         * @param onCompiled defines a function to call when the effect creation is successful
+         * @param onError defines a function to call when the effect creation has failed
+         * @returns the new Effect
+         */
         public createEffectForParticles(fragmentName: string, uniformsNames: string[] = [], samplers: string[] = [], defines = "", fallbacks?: EffectFallbacks,
             onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): Effect {
 
