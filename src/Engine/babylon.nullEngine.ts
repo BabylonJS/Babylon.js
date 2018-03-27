@@ -392,7 +392,14 @@
         public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {
         }
 
-        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, offset?: number, count?: number): void {
+        /**
+         * Updates a dynamic vertex buffer.
+         * @param vertexBuffer the vertex buffer to update
+         * @param data the data used to update the vertex buffer
+         * @param byteOffset the byte offset of the data (optional)
+         * @param byteLength the byte length of the data (optional)
+         */
+        public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {
         }
 
         protected _bindTextureDirectly(target: number, texture: InternalTexture): void {
