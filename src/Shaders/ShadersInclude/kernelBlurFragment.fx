@@ -1,6 +1,10 @@
 ﻿#ifdef DOF
-    sampleDepth = sampleDistance(sampleCoord{X});
-    factor = clamp(1.0-((centerSampleDepth - sampleDepth)/centerSampleDepth),0.0,1.0);
+    if(sampleCoord{X} == sampleCenter){
+        factor = 1.;
+    }else{
+        factor = sampleCoC(sampleCoord{X});
+    }
+    
     computedWeight = KERNEL_WEIGHT{X} * factor;
     sumOfWeights += computedWeight;
 #else

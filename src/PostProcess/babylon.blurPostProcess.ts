@@ -68,7 +68,11 @@
 			super(name, "kernelBlur", ["delta", "direction", "cameraMinMaxZ"], ["circleOfConfusionSampler"], options, camera, samplingMode, engine, reusable, null, textureType, "kernelBlur", {varyingCount: 0, depCount: 0}, true);
 			this._staticDefines = defines;
 			this.onApplyObservable.add((effect: Effect) => {
-				effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
+				if(this._outputTexture){
+					effect.setFloat2('delta', (1 / this._outputTexture.width) * this.direction.x, (1 / this._outputTexture.height) * this.direction.y);
+				}else{
+					effect.setFloat2('delta', (1 / this.width) * this.direction.x, (1 / this.height) * this.direction.y);
+				}
 			});
 
             this.kernel = kernel;

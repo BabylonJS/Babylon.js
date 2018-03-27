@@ -14,6 +14,10 @@ varying vec2 sampleCenter;
 		float depth = texture2D(circleOfConfusionSampler, offset).g; // depth value from DepthRenderer: 0 to 1 
 		return cameraMinMaxZ.x + (cameraMinMaxZ.y - cameraMinMaxZ.x)*depth; // actual distance from the lens 
 	}
+	float sampleCoC(const in vec2 offset) {
+		float coc = texture2D(circleOfConfusionSampler, offset).r; 
+		return coc; // actual distance from the lens 
+	}
 #endif
 
 #include<kernelBlurVaryingDeclaration>[0..varyingCount]
