@@ -109,11 +109,11 @@ module BABYLON {
                 }
             }
             var adjustedKernelSize = kernelSize/Math.pow(2, blurCount-1);
-            var ratio = 1.0/Math.pow(2, 0);
+            var ratio = 1.0;
             for(var i = 0;i<blurCount;i++){
                 var blurY = new DepthOfFieldBlurPostProcess("verticle blur", scene, new Vector2(0, 1.0), adjustedKernelSize, ratio, null, this._circleOfConfusion, i == 0 ? this._circleOfConfusion : null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
                 blurY.autoClear = false;
-                ratio = 1.0/Math.pow(2, i);
+                ratio = 0.75/Math.pow(2, i);
                 var blurX = new DepthOfFieldBlurPostProcess("horizontal blur", scene, new Vector2(1.0, 0), adjustedKernelSize, ratio, null,  this._circleOfConfusion, null, Texture.BILINEAR_SAMPLINGMODE, scene.getEngine(), false, pipelineTextureType, blockCompilation);
                 blurX.autoClear = false;
                 this._depthOfFieldBlurY.push(blurY);
