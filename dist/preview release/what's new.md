@@ -107,6 +107,7 @@
 - Shadows - Introduces [Normal Bias](https://doc.babylonjs.com/babylon101/shadows#normal-bias-since-32) ([sebavan](https://github.com/sebavan)))
 - Earcut is an external, optional dependency. ([RaananW](https://github.com/RaananW))
 - Return animation groups when calling `SceneLoader.ImportMesh`. ([bghgary](https://github.com/bghgary)]
+- Add support for normalized and non-float data to `Buffer` and `VertexBuffer`. ([bghgary](https://github.com/bghgary)]
 
 ## Bug fixes
 
