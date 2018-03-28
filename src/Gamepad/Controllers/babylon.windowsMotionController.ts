@@ -1,33 +1,92 @@
 module BABYLON {
-
+    /**
+     * Defines the LoadedMeshInfo object that describes information about the loaded webVR controller mesh
+     */
     class LoadedMeshInfo {
+        /**
+         * Root of the mesh
+         */
         public rootNode: AbstractMesh;
+        /**
+         * Node of the mesh corrisponding to the direction the ray should be cast from the controller
+         */
         public pointingPoseNode: AbstractMesh;
+        /**
+         * Map of the button meshes contained in the controller
+         */
         public buttonMeshes: { [id: string]: IButtonMeshInfo; } = {};
+        /**
+         * Map of the axis meshes contained in the controller
+         */
         public axisMeshes: { [id: number]: IAxisMeshInfo; } = {};
     }
 
+    /**
+     * Defines the IMeshInfo object that describes information a webvr controller mesh
+     */
     interface IMeshInfo {
+        /**
+         * Index of the mesh inside the root mesh
+         */
         index: number;
+        /**
+         * The mesh
+         */
         value: AbstractMesh;
     }
 
+    /**
+     * Defines the IButtonMeshInfo object that describes a button mesh
+     */
     interface IButtonMeshInfo extends IMeshInfo {
+        /**
+         * The mesh that should be displayed when pressed
+         */
         pressed: AbstractMesh;
+        /**
+         * The mesh that should be displayed when not pressed
+         */
         unpressed: AbstractMesh;
     }
 
+    /**
+     * Defines the IAxisMeshInfo object that describes an axis mesh
+     */
     interface IAxisMeshInfo extends IMeshInfo {
+        /**
+         * The mesh that should be set when at its min
+         */
         min: AbstractMesh;
+        /**
+         * The mesh that should be set when at its max
+         */
         max: AbstractMesh;
     }
 
+    /**
+     * Defines the WindowsMotionController object that the state of the windows motion controller
+     */
     export class WindowsMotionController extends WebVRController {
+        /**
+         * The base url used to load the left and right controller models
+         */
         public static MODEL_BASE_URL: string = 'https://controllers.babylonjs.com/microsoft/';
+        /**
+         * The name of the left controller model file
+         */
         public static MODEL_LEFT_FILENAME: string = 'left.glb';
+        /**
+         * The name of the right controller model file
+         */
         public static MODEL_RIGHT_FILENAME: string = 'right.glb';
 
+        /**
+         * The controller name prefix for this controller type
+         */
         public static readonly GAMEPAD_ID_PREFIX: string = 'Spatial Controller (Spatial Interaction Source) ';
+        /**
+         * The controller id pattern for this controller type
+         */
         private static readonly GAMEPAD_ID_PATTERN = /([0-9a-zA-Z]+-[0-9a-zA-Z]+)$/;
 
         private _loadedMeshInfo: Nullable<LoadedMeshInfo>;
@@ -65,36 +124,67 @@ module BABYLON {
             pointingPoseMeshName: PoseEnabledController.POINTING_POSE
         };
 
+        /**
+         * Fired when the trackpad on this controller is clicked
+         */
         public onTrackpadChangedObservable = new Observable<ExtendedGamepadButton>();
+        /**
+         * Fired when the trackpad on this controller is modified
+         */
         public onTrackpadValuesChangedObservable = new Observable<StickValues>();
+        /**
+         * The current x and y values of this controller's trackpad
+         */
         public trackpad: StickValues = { x: 0, y: 0 };
 
+        /**
+         * Creates a new WindowsMotionController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
         constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.WINDOWS;
             this._loadedMeshInfo = null;
         }
 
+        /**
+         * Fired when the trigger on this controller is modified
+         */
         public get onTriggerButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTriggerStateChangedObservable;
         }
 
+        /**
+         * Fired when the menu button on this controller is modified
+         */
         public get onMenuButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onSecondaryButtonStateChangedObservable;
         }
 
+        /**
+         * Fired when the grip button on this controller is modified
+         */
         public get onGripButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onMainButtonStateChangedObservable;
         }
 
+        /**
+         * Fired when the thumbstick button on this controller is modified
+         */
         public get onThumbstickButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onPadStateChangedObservable;
         }
 
+        /**
+         * Fired when the touchpad button on this controller is modified
+         */
         public get onTouchpadButtonStateChangedObservable(): Observable<ExtendedGamepadButton> {
             return this.onTrackpadChangedObservable;
         }
 
+        /**
+         * Fired when the touchpad values on this controller are modified
+         */
         public get onTouchpadValuesChangedObservable(): Observable<StickValues> {
             return this.onTrackpadValuesChangedObservable;
         }
@@ -113,7 +203,7 @@ module BABYLON {
                 // Only need to animate axes if there is a loaded mesh
                 if (this._loadedMeshInfo) {
                     for (let axis = 0; axis < this._mapping.axisMeshNames.length; axis++) {
-                        this.lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
+                        this._lerpAxisTransform(axis, this.browserGamepad.axes[axis]);
                     }
                 }
             }
@@ -137,10 +227,15 @@ module BABYLON {
                 observable.notifyObservers(state);
             }
 
-            this.lerpButtonTransform(buttonName, state.value);
+            this._lerpButtonTransform(buttonName, state.value);
         }
 
-        protected lerpButtonTransform(buttonName: string, buttonValue: number) {
+        /**
+         * Moves the buttons on the controller mesh based on their current state
+         * @param buttonName the name of the button to move
+         * @param buttonValue the value of the button which determines the buttons new position
+         */
+        protected _lerpButtonTransform(buttonName: string, buttonValue: number) {
 
             // If there is no loaded mesh, there is nothing to transform.
             if (!this._loadedMeshInfo) {
@@ -165,7 +260,13 @@ module BABYLON {
                 meshInfo.value.position);
         }
 
-        protected lerpAxisTransform(axis: number, axisValue: number) {
+        /**
+         * Moves the axis on the controller mesh based on its current state
+         * @param axis the index of the axis
+         * @param axisValue the value of the axis which determines the meshes new position
+         * @ignore
+         */
+        protected _lerpAxisTransform(axis: number, axisValue: number) {
             if (!this._loadedMeshInfo) {
                 return;
             }
@@ -382,6 +483,11 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
         public getForwardRay(length = 100): Ray {
             if (!(this._loadedMeshInfo && this._loadedMeshInfo.pointingPoseNode)) {
                 return super.getForwardRay(length);
@@ -398,6 +504,9 @@ module BABYLON {
             return new Ray(origin, direction, length);
         }
 
+         /**
+         * Disposes of the controller
+         */
         public dispose(): void {
             super.dispose();
 
