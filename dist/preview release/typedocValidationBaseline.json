@@ -1,7 +1,7 @@
 {
-  "errors": 6675,
+  "errors": 5975,
   "babylon.typedoc.json": {
-    "errors": 6675,
+    "errors": 5975,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -8213,35 +8213,6 @@
         }
       }
     },
-    "Debug": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "AxesViewer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "BoneAxesViewer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "PhysicsViewer": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "SkeletonViewer": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "DebugLayer": {
       "Class": {
         "Comments": {
@@ -8708,175 +8679,6 @@
           }
         },
         "springiness": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "EngineCapabilities": {
-      "Property": {
-        "astc": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "canUseTimestampForTimerQuery": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "colorBufferFloat": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "depthTextureExtension": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "drawBuffersExtension": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "etc1": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "etc2": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "fragmentDepthSupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "highPrecisionShaderSupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "instancedArrays": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxAnisotropy": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxCombinedTexturesImageUnits": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxCubemapTextureSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxFragmentUniformVectors": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxRenderTextureSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxVaryingVectors": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxVertexAttribs": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxVertexTextureImageUnits": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "maxVertexUniformVectors": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "pvrtc": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "s3tc": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "standardDerivatives": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureAnisotropicFilterExtension": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureFloat": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureFloatLinearFiltering": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureFloatRender": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureHalfFloat": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureHalfFloatLinearFiltering": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureHalfFloatRender": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "textureLOD": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "timerQuery": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "uintIndices": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "vertexArrayObject": {
           "Comments": {
             "MissingText": true
           }
@@ -10599,13 +10401,6 @@
           "Comments": {
             "MissingReturn": true
           }
-        }
-      }
-    },
-    "InstancingAttributeInfo": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
         }
       }
     },
@@ -31887,50 +31682,6 @@
         }
       }
     },
-    "EngineOptions": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "audioEngine": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "autoEnableWebVR": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "deterministicLockstep": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "disableWebGL2Support": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "doNotHandleContextLost": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "limitDeviceRatio": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "lockstepMaxSteps": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "ExtendedGamepadButton": {
       "Interface": {
         "Comments": {
@@ -32285,25 +32036,6 @@
                 "MissingText": true
               }
             }
-          }
-        }
-      }
-    },
-    "IDisplayChangedEventArgs": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "vrDisplay": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "vrSupported": {
-          "Comments": {
-            "MissingText": true
           }
         }
       }
@@ -33940,97 +33672,6 @@
         "Naming": {
           "ShouldNotBeLooseVariable": true
         },
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "className": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "expandToProperty": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serialize": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsColor3": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsColor4": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsColorCurves": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsFresnelParameters": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsImageProcessingConfiguration": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsMeshReference": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsQuaternion": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsTexture": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsVector2": {
-      "Function": {
-        "Comments": {
-          "MissingText": true
-        }
-      }
-    },
-    "serializeAsVector3": {
-      "Function": {
         "Comments": {
           "MissingText": true
         }
