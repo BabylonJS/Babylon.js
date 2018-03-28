@@ -289,7 +289,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
         this.validateNaming(null, containerNode);
 
         // Validate Comments.
-        if (isPublic && !this.validateComment(containerNode)) {            
+        if (isPublic && !this.validateComment(containerNode)) {      
             this.errorCallback(null,
                 containerNode.name,
                 containerNode.kindString,
@@ -448,7 +448,7 @@ Validate.prototype.validateComment = function(node) {
     // Return true for overwrited properties
     if (node.overwrites) {
         return true;
-    }
+    } 
 
     // Check comments.
     if (node.comment) {
@@ -457,6 +457,11 @@ Validate.prototype.validateComment = function(node) {
         }
 
         return false;
+    }
+
+    // Return true for inherited properties (need to check signatures)
+    if (node.kindString === "Function") {
+        return true;
     }
 
     return false;
