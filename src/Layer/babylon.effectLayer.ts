@@ -111,7 +111,7 @@
          */
         constructor(
             /** The Friendly of the effect in the scene */
-            name: string, 
+            name: string,
             scene: Scene) {
             this.name = name;
 
@@ -661,6 +661,14 @@
             this.onBeforeComposeObservable.clear();
             this.onAfterComposeObservable.clear();
             this.onSizeChangedObservable.clear();
+        }
+
+        /**
+          * Gets the class name of the effect layer.
+          * @returns The string with the class name of the effect layer.
+          */
+         public getClassName(): string {
+            return "EffectLayer";
         }
     }
 } 
