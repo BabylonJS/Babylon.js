@@ -370,7 +370,10 @@
 
             serializationObject.name = this.name;
             serializationObject.id = this.id;
-            serializationObject.dimensionsAtRest = this.dimensionsAtRest.asArray();
+
+            if (this.dimensionsAtRest) {
+                serializationObject.dimensionsAtRest = this.dimensionsAtRest.asArray();
+            }
 
             serializationObject.bones = [];
 
