@@ -1059,7 +1059,7 @@ declare module BABYLON.GLTF2 {
         /** Override this method to modify the default behavior for loading uris. */
         protected _loadUriAsync(context: string, uri: string): Nullable<Promise<ArrayBufferView>>;
         /** Helper method called by a loader extension to load an glTF extension. */
-        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (context: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>>;
+        protected _loadExtensionAsync<TProperty, TResult = void>(context: string, property: IProperty, actionAsync: (extensionContext: string, extension: TProperty) => Promise<TResult>): Nullable<Promise<TResult>>;
         /** Helper method called by the loader to allow extensions to override loading scenes. */
         static _LoadSceneAsync(loader: GLTFLoader, context: string, scene: ILoaderScene): Nullable<Promise<void>>;
         /** Helper method called by the loader to allow extensions to override loading nodes. */
@@ -1112,6 +1112,15 @@ declare module BABYLON.GLTF2.Extensions {
         readonly name: string;
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
         private _loadSpecularGlossinessPropertiesAsync(context, material, properties, babylonMaterial);
+    }
+}
+
+
+declare module BABYLON.GLTF2.Extensions {
+    class KHR_materials_unlit extends GLTFLoaderExtension {
+        readonly name: string;
+        protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>>;
+        private _loadUnlitPropertiesAsync(context, material, babylonMaterial);
     }
 }
 

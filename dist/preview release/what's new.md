@@ -109,6 +109,7 @@
 - Earcut is an external, optional dependency. ([RaananW](https://github.com/RaananW))
 - Return animation groups when calling `SceneLoader.ImportMesh`. ([bghgary](https://github.com/bghgary)]
 - Add support for normalized and non-float data to `Buffer` and `VertexBuffer`. ([bghgary](https://github.com/bghgary)]
+- Added unlit material extension support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 
 ## Bug fixes
 
