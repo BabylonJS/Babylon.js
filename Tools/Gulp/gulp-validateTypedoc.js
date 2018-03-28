@@ -544,13 +544,13 @@ Validate.prototype.validateNaming = function(parent, node) {
         }
     }
     else if (node.kindString == "Module") {
-        if (!Validate.upperCase.test(node.name)) {
+        if (!(Validate.upperCase.test(node.name) || Validate.pascalCase.test(node.name))) {
             this.errorCallback(parent ? parent.name : null,
                 node.name,
                 node.kindString,
                 "Naming",
                 "NotUpperCase",
-                "Module is not Upper Case " + node.name + " (id: " + node.id + ")", Validate.position(node));
+                "Module is not Upper Case or Pascal Case " + node.name + " (id: " + node.id + ")", Validate.position(node));
         }
     }
     else if (node.kindString == "Interface" ||
