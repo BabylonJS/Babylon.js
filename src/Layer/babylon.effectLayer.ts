@@ -664,8 +664,8 @@
         }
 
         /**
-          * Gets the class name of the effect layer.
-          * @returns The string with the class name of the effect layer.
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
           */
          public getClassName(): string {
             return "EffectLayer";

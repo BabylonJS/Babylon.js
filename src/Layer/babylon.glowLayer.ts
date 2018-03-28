@@ -447,8 +447,8 @@
         }
 
         /**
-          * Gets the class name of the effect layer.
-          * @returns The string with the class name of the effect layer.
+          * Gets the class name of the effect layer
+          * @returns the string with the class name of the effect layer
           */
          public getClassName(): string {
             return "GlowLayer";
@@ -456,7 +456,7 @@
 
         /**
          * Serializes this glow layer
-         * @returns A serialized glow layer object.
+         * @returns a serialized glow layer object
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
@@ -490,11 +490,11 @@
         }
 
         /**
-         * Creates a Glow Layer from parsed glow layer data.
-         * @param parsedGlowLayer Defines glow layer data.
-         * @param scene BJS scene.
-         * @param rootUrl Root URL containing the glow layer information.
-         * @returns A parsed Glow Layer.
+         * Creates a Glow Layer from parsed glow layer data
+         * @param parsedGlowLayer defines glow layer data
+         * @param scene bjs scene
+         * @param rootUrl root URL containing the glow layer information
+         * @returns a parsed Glow Layer
          */
         public static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer {
             var gl = SerializationHelper.Parse(() => new GlowLayer(parsedGlowLayer.name, scene, parsedGlowLayer.options), parsedGlowLayer, scene, rootUrl);
