@@ -898,8 +898,8 @@
 
         /**
          * Gets or sets a value indicating if we want to disable texture binding optmization.
-         * This could be required on some buggy drivers which wants to have textures bound in a progressive order
-         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is.
+         * This could be required on some buggy drivers which wants to have textures bound in a progressive order.
+         * By default Babylon.js will try to let textures bound where they are and only update the samplers to point where the texture is
          */
         public disableTextureBindingOptimization = false;
 
