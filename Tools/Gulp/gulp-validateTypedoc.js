@@ -507,6 +507,15 @@ Validate.prototype.validateNaming = function(parent, node) {
     // Ignore Naming Tag Check
     if (Validate.hasTag(node, 'ignoreNaming')) {
         return;
+    } else {
+        if (node.signatures) {
+            for (var index = 0; index < node.signatures.length; index++) {
+                var signature = node.signatures[index];
+                if (Validate.hasTag(signature, 'ignoreNaming')) {
+                    return;
+                }
+            }
+        }
     }
 
     if (node.inheritedFrom) {
