@@ -1,6 +1,9 @@
 module BABYLON.Debug {
 
-    export class BoneAxesViewer extends Debug.AxesViewer {
+    /**
+     * The BoneAxesViewer will attach 3 axes to a specific bone of a specific mesh
+     */
+    export class BoneAxesViewer extends AxesViewer {
 
         public mesh: Nullable<Mesh>;
         public bone: Nullable<Bone>;

@@ -1,4 +1,12 @@
+/**
+ * Module Debug contains the (visual) components to debug a scene correctly
+ * @ignoreNaming
+ */
 module BABYLON.Debug {
+
+    /**
+     * The Axes viewer will show 3 axes in a specific point in space
+     */
     export class AxesViewer {
 
         private _xline = [Vector3.Zero(), Vector3.Zero()];
