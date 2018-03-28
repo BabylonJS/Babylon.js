@@ -1530,6 +1530,7 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "doNotIncludeInBundle": true,
@@ -1551,6 +1552,7 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
