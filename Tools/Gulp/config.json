@@ -999,9 +999,12 @@
         },
         "debug": {
             "files": [
-                "../../src/Debug/babylon.debugModules.js",
+                "../../src/Debug/babylon.skeletonViewer.js",
+                "../../src/Debug/babylon.axesViewer.js",
+                "../../src/Debug/babylon.boneAxesViewer.js",
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
+                "../../src/Debug/babylon.physicsViewer.js",
                 "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],
             "dependUpon": [
