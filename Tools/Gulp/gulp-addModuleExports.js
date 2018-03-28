@@ -46,7 +46,7 @@ module.exports = function (varName, config) {
                     amdText += `        ${dep.optional ? ' if(require.specified && require.specified("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
 `;
                     dependenciesDefinition += `
-    var ${dep.name} = root.${dep.name};`;
+    var ${dep.name} = root.${dep.name} || this.${dep.name};`;
                     afterInitText += `  ${dep.name} = ${dep.name} || this.${dep.name};
 `
                 });
