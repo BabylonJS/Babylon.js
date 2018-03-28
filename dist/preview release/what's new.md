@@ -23,6 +23,7 @@
 - Introduces [PCF](https://doc.babylonjs.com/babylon101/shadows#percentage-closer-filtering-webgl2-only) and [PCSS](https://doc.babylonjs.com/babylon101/shadows#contact-hardening-shadow-webgl2-only) shadow support in Webgl 2 ([sebavan](https://github.com/sebavan)))
 
 ## Documentation
+
 - Tons of functions and classes received the code comments they deserved (All the community with a special thanks to [John King](https://github.com/BabylonJSGuide))
 - Moved the class API documentation to Typedoc ([deltakosh](https://github.com/deltakosh))
 
