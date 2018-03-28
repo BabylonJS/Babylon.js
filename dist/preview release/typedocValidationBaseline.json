@@ -1,7 +1,7 @@
 {
-  "errors": 5975,
+  "errors": 5886,
   "babylon.typedoc.json": {
-    "errors": 5975,
+    "errors": 5886,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -9954,49 +9954,6 @@
         }
       }
     },
-    "GearVRController": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "GAMEPAD_ID_PREFIX": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "MODEL_BASE_URL": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "MODEL_FILENAME": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "GenericController": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "MODEL_BASE_URL": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "MODEL_FILENAME": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "GenericPad": {
       "Class": {
         "Comments": {
@@ -16086,60 +16043,6 @@
         }
       }
     },
-    "OculusTouchController": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "onAButtonStateChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onBButtonStateChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onSecondaryTriggerStateChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onThumbRestChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onXButtonStateChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "onYButtonStateChangedObservable": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "MODEL_BASE_URL": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "MODEL_LEFT_FILENAME": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "MODEL_RIGHT_FILENAME": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "OimoJSPlugin": {
       "Class": {
         "Comments": {
@@ -18620,136 +18523,6 @@
               }
             },
             "depth": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "PoseEnabledController": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "_deviceToWorld": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "_mesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "controllerType": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "devicePosition": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "deviceRotationQuaternion": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "deviceScaleFactor": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "mesh": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "position": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rawPose": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "rotationQuaternion": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "attachToMesh": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "mesh": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "attachToPoseControlledCamera": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "camera": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "getForwardRay": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "length": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "updateFromDevice": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "poseData": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
-    "PoseEnabledControllerHelper": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Method": {
-        "InitiateController": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "vrGamepad": {
               "Comments": {
                 "MissingText": true
               }
@@ -31442,28 +31215,6 @@
       },
       "Property": {
         "maxDistance": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "ExtendedGamepadButton": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "GamepadButton": {
-          "Naming": {
-            "NotCamelCase": true
-          },
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "touched": {
           "Comments": {
             "MissingText": true
           }
