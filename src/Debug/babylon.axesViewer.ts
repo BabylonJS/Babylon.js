@@ -1,6 +1,5 @@
 /**
  * Module Debug contains the (visual) components to debug a scene correctly
- * @ignoreNaming
  */
 module BABYLON.Debug {
 
