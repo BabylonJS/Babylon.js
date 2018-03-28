@@ -22,6 +22,7 @@
                 switch (propertyType) {
                     case 0:     // Value
                     case 6:     // Mesh reference
+                    case 11:    // Camera reference
                         (<any>destination)[property] = sourceProperty;
                         break;
                     case 1:     // Texture
@@ -182,6 +183,13 @@
         return generateSerializableMember(10, sourceName); // quaternion member
     }
 
+    /**
+     * Decorator used to define property that can be serialized as reference to a camera
+     * @param sourceName defines the name of the property to decorate
+     */
+    export function serializeAsCameraReference(sourceName?: string) {
+        return generateSerializableMember(11, sourceName); // camera reference member
+    }
 
     export class SerializationHelper {
 
@@ -235,6 +243,12 @@
                             break;
                         case 9:     // Image Processing
                             serializationObject[targetPropertyName] = (<ImageProcessingConfiguration>sourceProperty).serialize();
+                            break;
+                        case 10:    // Quaternion
+                            serializationObject[targetPropertyName] = (<Quaternion>sourceProperty).asArray();
+                            break;
+                        case 11:    // Camera reference
+                            serializationObject[targetPropertyName] = (<Camera>sourceProperty).id;
                             break;
                     }
                 }
@@ -299,6 +313,14 @@
                             break;
                         case 9:     // Image Processing
                             dest[property] = ImageProcessingConfiguration.Parse(sourceProperty);
+                            break;
+                        case 10:    // Quaternion
+                            dest[property] = Quaternion.FromArray(sourceProperty);
+                            break;
+                        case 11:    // Camera reference
+                            if (scene) {
+                                dest[property] = scene.getCameraByID(sourceProperty);
+                            }
                             break;
                     }
                 }

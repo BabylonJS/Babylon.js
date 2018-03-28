@@ -114,7 +114,7 @@ module BABYLON {
                     //but emptying completly pointers collection is required to fix a bug on iPhone : 
                     //when changing orientation while pinching camera, one pointer stay pressed forever if we don't release all pointers  
                     //will be ok to put back pointers.remove(evt.pointerId); when iPhone bug corrected
-                    if (engine.badOS) {
+                    if (engine._badOS) {
                         pointA = pointB = null;
                     }
                     else {

@@ -17,7 +17,7 @@ module BABYLON.GLTF2.Extensions {
         public readonly name = NAME;
 
         protected _loadMaterialAsync(context: string, material: ILoaderMaterial, babylonMesh: Mesh, babylonDrawMode: number, assign: (babylonMaterial: Material) => void): Nullable<Promise<void>> {
-            return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (context, extension) => {
+            return this._loadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, (extensionContext, extension) => {
                 material._babylonData = material._babylonData || {};
                 let babylonData = material._babylonData[babylonDrawMode];
                 if (!babylonData) {
@@ -27,7 +27,7 @@ module BABYLON.GLTF2.Extensions {
                     const babylonMaterial = this._loader._createMaterial(PBRMaterial, name, babylonDrawMode);
 
                     promises.push(this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                    promises.push(this._loadSpecularGlossinessPropertiesAsync(context, material, extension, babylonMaterial));
+                    promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
 
                     this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
 

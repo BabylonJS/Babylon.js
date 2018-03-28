@@ -4,7 +4,7 @@ var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__p
 
 (function universalModuleDefinition(root, factory) {
     var amdDependencies = [];
-    var BABYLON = root.BABYLON;
+    var BABYLON = root.BABYLON || this.BABYLON;
     if(typeof exports === 'object' && typeof module === 'object') {
          BABYLON = BABYLON || require("babylonjs"); 
 
@@ -5187,9 +5187,9 @@ var BABYLON;
                 }
                 MSFT_lod.prototype._loadNodeAsync = function (context, node) {
                     var _this = this;
-                    return this._loadExtensionAsync(context, node, function (context, extension) {
+                    return this._loadExtensionAsync(context, node, function (extensionContext, extension) {
                         var firstPromise;
-                        var nodeLODs = _this._getLODs(context, node, _this._loader._gltf.nodes, extension.ids);
+                        var nodeLODs = _this._getLODs(extensionContext, node, _this._loader._gltf.nodes, extension.ids);
                         var _loop_1 = function (indexLOD) {
                             var nodeLOD = nodeLODs[indexLOD];
                             if (indexLOD !== 0) {
@@ -5234,9 +5234,9 @@ var BABYLON;
                     if (this._loadingNodeLOD) {
                         return null;
                     }
-                    return this._loadExtensionAsync(context, material, function (context, extension) {
+                    return this._loadExtensionAsync(context, material, function (extensionContext, extension) {
                         var firstPromise;
-                        var materialLODs = _this._getLODs(context, material, _this._loader._gltf.materials, extension.ids);
+                        var materialLODs = _this._getLODs(extensionContext, material, _this._loader._gltf.materials, extension.ids);
                         var _loop_2 = function (indexLOD) {
                             var materialLOD = materialLODs[indexLOD];
                             if (indexLOD !== 0) {
@@ -5431,7 +5431,7 @@ var BABYLON;
                 }
                 KHR_materials_pbrSpecularGlossiness.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
                     var _this = this;
-                    return this._loadExtensionAsync(context, material, function (context, extension) {
+                    return this._loadExtensionAsync(context, material, function (extensionContext, extension) {
                         material._babylonData = material._babylonData || {};
                         var babylonData = material._babylonData[babylonDrawMode];
                         if (!babylonData) {
@@ -5439,7 +5439,7 @@ var BABYLON;
                             var name_1 = material.name || "materialSG_" + material._index;
                             var babylonMaterial = _this._loader._createMaterial(BABYLON.PBRMaterial, name_1, babylonDrawMode);
                             promises.push(_this._loader._loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-                            promises.push(_this._loadSpecularGlossinessPropertiesAsync(context, material, extension, babylonMaterial));
+                            promises.push(_this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
                             _this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
                             babylonData = {
                                 material: babylonMaterial,
@@ -5498,6 +5498,84 @@ var BABYLON;
     (function (GLTF2) {
         var Extensions;
         (function (Extensions) {
+            // https://github.com/donmccurdy/glTF/tree/feat-khr-materials-cmnConstant/extensions/2.0/Khronos/KHR_materials_unlit
+            var NAME = "KHR_materials_unlit";
+            var KHR_materials_unlit = /** @class */ (function (_super) {
+                __extends(KHR_materials_unlit, _super);
+                function KHR_materials_unlit() {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.name = NAME;
+                    return _this;
+                }
+                KHR_materials_unlit.prototype._loadMaterialAsync = function (context, material, babylonMesh, babylonDrawMode, assign) {
+                    var _this = this;
+                    return this._loadExtensionAsync(context, material, function () {
+                        material._babylonData = material._babylonData || {};
+                        var babylonData = material._babylonData[babylonDrawMode];
+                        if (!babylonData) {
+                            var name_1 = material.name || "materialUnlit_" + material._index;
+                            var babylonMaterial = _this._loader._createMaterial(BABYLON.PBRMaterial, name_1, babylonDrawMode);
+                            babylonMaterial.unlit = true;
+                            var promise = _this._loadUnlitPropertiesAsync(context, material, babylonMaterial);
+                            _this._loader.onMaterialLoadedObservable.notifyObservers(babylonMaterial);
+                            babylonData = {
+                                material: babylonMaterial,
+                                meshes: [],
+                                loaded: promise
+                            };
+                            material._babylonData[babylonDrawMode] = babylonData;
+                        }
+                        babylonData.meshes.push(babylonMesh);
+                        assign(babylonData.material);
+                        return babylonData.loaded;
+                    });
+                };
+                KHR_materials_unlit.prototype._loadUnlitPropertiesAsync = function (context, material, babylonMaterial) {
+                    var promises = new Array();
+                    // Ensure metallic workflow
+                    babylonMaterial.metallic = 1;
+                    babylonMaterial.roughness = 1;
+                    var properties = material.pbrMetallicRoughness;
+                    if (properties) {
+                        if (properties.baseColorFactor) {
+                            babylonMaterial.albedoColor = BABYLON.Color3.FromArray(properties.baseColorFactor);
+                            babylonMaterial.alpha = properties.baseColorFactor[3];
+                        }
+                        else {
+                            babylonMaterial.albedoColor = BABYLON.Color3.White();
+                        }
+                        if (properties.baseColorTexture) {
+                            promises.push(this._loader._loadTextureAsync(context + "/baseColorTexture", properties.baseColorTexture, function (texture) {
+                                babylonMaterial.albedoTexture = texture;
+                            }));
+                        }
+                    }
+                    if (material.doubleSided) {
+                        babylonMaterial.backFaceCulling = false;
+                        babylonMaterial.twoSidedLighting = true;
+                    }
+                    this._loader._loadMaterialAlphaProperties(context, material, babylonMaterial);
+                    return Promise.all(promises).then(function () { });
+                };
+                return KHR_materials_unlit;
+            }(GLTF2.GLTFLoaderExtension));
+            Extensions.KHR_materials_unlit = KHR_materials_unlit;
+            GLTF2.GLTFLoader._Register(NAME, function (loader) { return new KHR_materials_unlit(loader); });
+        })(Extensions = GLTF2.Extensions || (GLTF2.Extensions = {}));
+    })(GLTF2 = BABYLON.GLTF2 || (BABYLON.GLTF2 = {}));
+})(BABYLON || (BABYLON = {}));
+
+//# sourceMappingURL=KHR_materials_unlit.js.map
+
+"use strict";
+
+
+var BABYLON;
+(function (BABYLON) {
+    var GLTF2;
+    (function (GLTF2) {
+        var Extensions;
+        (function (Extensions) {
             // https://github.com/MiiBond/glTF/tree/khr_lights_v1/extensions/Khronos/KHR_lights
             var NAME = "KHR_lights";
             var LightType;
@@ -5516,11 +5594,11 @@ var BABYLON;
                 }
                 KHR_lights.prototype._loadSceneAsync = function (context, scene) {
                     var _this = this;
-                    return this._loadExtensionAsync(context, scene, function (context, extension) {
-                        var promise = _this._loader._loadSceneAsync(context, scene);
-                        var light = GLTF2.GLTFLoader._GetProperty(context, _this._lights, extension.light);
+                    return this._loadExtensionAsync(context, scene, function (extensionContext, extension) {
+                        var promise = _this._loader._loadSceneAsync(extensionContext, scene);
+                        var light = GLTF2.GLTFLoader._GetProperty(extensionContext, _this._lights, extension.light);
                         if (light.type !== LightType.AMBIENT) {
-                            throw new Error(context + ": Only ambient lights are allowed on a scene");
+                            throw new Error(extensionContext + ": Only ambient lights are allowed on a scene");
                         }
                         _this._loader._babylonScene.ambientColor = light.color ? BABYLON.Color3.FromArray(light.color) : BABYLON.Color3.Black();
                         return promise;
@@ -5528,14 +5606,14 @@ var BABYLON;
                 };
                 KHR_lights.prototype._loadNodeAsync = function (context, node) {
                     var _this = this;
-                    return this._loadExtensionAsync(context, node, function (context, extension) {
-                        var promise = _this._loader._loadNodeAsync(context, node);
+                    return this._loadExtensionAsync(context, node, function (extensionContext, extension) {
+                        var promise = _this._loader._loadNodeAsync(extensionContext, node);
                         var babylonLight;
-                        var light = GLTF2.GLTFLoader._GetProperty(context, _this._lights, extension.light);
+                        var light = GLTF2.GLTFLoader._GetProperty(extensionContext, _this._lights, extension.light);
                         var name = node._babylonMesh.name;
                         switch (light.type) {
                             case LightType.AMBIENT: {
-                                throw new Error(context + ": Ambient lights are not allowed on a node");
+                                throw new Error(extensionContext + ": Ambient lights are not allowed on a node");
                             }
                             case LightType.DIRECTIONAL: {
                                 babylonLight = new BABYLON.DirectionalLight(name, BABYLON.Vector3.Forward(), _this._loader._babylonScene);
@@ -5554,7 +5632,7 @@ var BABYLON;
                                 break;
                             }
                             default: {
-                                throw new Error(context + ": Invalid light type (" + light.type + ")");
+                                throw new Error(extensionContext + ": Invalid light type (" + light.type + ")");
                             }
                         }
                         babylonLight.diffuse = light.color ? BABYLON.Color3.FromArray(light.color) : BABYLON.Color3.White();
