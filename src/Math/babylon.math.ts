@@ -3596,6 +3596,9 @@
         }
     }
 
+    /**
+     * Class used to store matrix data (4x4)
+     */
     export class Matrix {
         private static _tempQuaternion: Quaternion = new Quaternion();
         private static _xAxis: Vector3 = Vector3.Zero();
@@ -3606,21 +3609,37 @@
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
+        /**
+         * Gets the update flag of the matrix which is an unique number for the matrix.
+         * It will be incremented every time the matrix data change.
+         * You can use it to speed the comparison between two versions of the same matrix.
+         */
         public updateFlag: number;
+
+        /**
+         * Gets or sets the internal data of the matrix
+         */
         public m: Float32Array = new Float32Array(16);
 
+        /** @ignore */
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;
         }
 
+        /**
+         * Creates an empty matrix (filled with zeros)
+         */
         public constructor() {
             this._markAsUpdated();
         }
 
         // Properties
+
         /**
-         * Boolean : True is the matrix is the identity matrix
+         * Check if the current matrix is indentity
+         * @param considerAsTextureMatrix defines if the current matrix must be considered as a texture matrix (3x2)
+         * @returns true is the matrix is the identity matrix
          */
         public isIdentity(considerAsTextureMatrix = false): boolean {
             if (this._isIdentityDirty) {
@@ -3644,7 +3663,8 @@
             return this._isIdentity;
         }
         /**
-         * Returns the matrix determinant (float).  
+         * Gets the determinant of the matrix
+         * @returns the matrix determinant
          */
         public determinant(): number {
             var temp1 = (this.m[10] * this.m[15]) - (this.m[11] * this.m[14]);
@@ -3660,29 +3680,33 @@
         }
 
         // Methods
+
         /**
-         * Returns the matrix underlying array.  
+         * Returns the matrix as a Float32Array 
+         * @returns the matrix underlying array
          */
         public toArray(): Float32Array {
             return this.m;
         }
         /**
-        * Returns the matrix underlying array.  
+         * Returns the matrix as a Float32Array 
+        * @returns the matrix underlying array.  
         */
         public asArray(): Float32Array {
             return this.toArray();
         }
+
         /**
-         * Inverts in place the Matrix.  
-         * Returns the Matrix inverted.  
+         * Inverts the current matrix in place
+         * @returns the current inverted matrix
          */
         public invert(): Matrix {
             this.invertToRef(this);
             return this;
         }
         /**
-         * Sets all the matrix elements to zero.  
-         * Returns the Matrix.  
+         * Sets all the matrix elements to zero
+         * @returns the current matrix  
          */
         public reset(): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3692,17 +3716,23 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Returns a new Matrix as the addition result of the current Matrix and the passed one.  
+         * Adds the current matrix with a second one
+         * @param other defines the matrix to add
+         * @returns a new matrix as the addition of the current matrix and the passed one 
          */
         public add(other: Matrix): Matrix {
             var result = new Matrix();
             this.addToRef(other, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" with the ddition result of the current Matrix and the passed one.  
-         * Returns the Matrix.  
+         * Sets the passed matrix "result" to the addition of the current matrix and the passed one
+         * @param other defines the matrix to add
+         * @param result defines the target matrix
+         * @returns the current matrix  
          */
         public addToRef(other: Matrix, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3711,9 +3741,11 @@
             result._markAsUpdated();
             return this;
         }
+
         /**
-         * Adds in place the passed matrix to the current Matrix.  
-         * Returns the updated Matrix.  
+         * Adds in place the passed matrix to the current matrix  
+         * @param other defines the second operand
+         * @returns the current updated matrix
          */
         public addToSelf(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3722,9 +3754,11 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Sets the passed matrix with the current inverted Matrix.  
-         * Returns the unmodified current Matrix.  
+         * Sets the passed matrix to the current inverted Matrix
+         * @param other defines the target matrix
+         * @returns the unmodified current matrix  
          */
         public invertToRef(other: Matrix): Matrix {
             var l1 = this.m[0];
@@ -3787,9 +3821,13 @@
             other._markAsUpdated();
             return this;
         }
+
         /**
-         * Inserts the translation vector (using 3 x floats) in the current Matrix.  
-         * Returns the updated Matrix.  
+         * Inserts the translation vector (using 3 floats) in the current matrix
+         * @param x defines the 1st component of the translation
+         * @param y defines the 2nd component of the translation
+         * @param z defines the 3rd component of the translation
+         * @returns the current updated matrix
          */
         public setTranslationFromFloats(x: number, y: number, z: number): Matrix {
             this.m[12] = x;
@@ -3799,10 +3837,12 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
- * Inserts the translation vector in the current Matrix.  
- * Returns the updated Matrix.  
- */
+         * Inserts the translation vector in the current matrix  
+         * @param vector3 defines the translation to insert
+         * @returns the current updated matrix
+         */
         public setTranslation(vector3: Vector3): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
@@ -3811,14 +3851,19 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Returns a new Vector3 as the extracted translation from the Matrix.  
+         * Gets the translation value of the current matrix
+         * @returns a new Vector3 as the extracted translation from the matrix
          */
         public getTranslation(): Vector3 {
             return new Vector3(this.m[12], this.m[13], this.m[14]);
         }
+
         /**
-         * Fill a Vector3 with the extracted translation from the Matrix.  
+         * Fill a Vector3 with the extracted translation from the matrix  
+         * @param result defines the Vector3 where to store the translation
+         * @returns the current matrix
          */
         public getTranslationToRef(result: Vector3): Matrix {
             result.x = this.m[12];
@@ -3827,9 +3872,10 @@
 
             return this;
         }
+
         /**
-         * Remove rotation and scaling part from the Matrix. 
-         * Returns the updated Matrix. 
+         * Remove rotation and scaling part from the matrix 
+         * @returns the updated matrix
          */
         public removeRotationAndScaling(): Matrix {
             this.setRowFromFloats(0, 1, 0, 0, 0);
@@ -3837,17 +3883,22 @@
             this.setRowFromFloats(2, 0, 0, 1, 0);
             return this;
         }
+
         /**
-         * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.  
+         * Multiply two matrices
+         * @param other defines the second operand
+         * @returns a new matrix set with the multiplication result of the current Matrix and the passed one  
          */
         public multiply(other: Matrix): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
         }
+
         /**
-         * Updates the current Matrix from the passed one values.  
-         * Returns the updated Matrix.  
+         * Copy the current matrix from the passed one  
+         * @param other defines the source matrix
+         * @returns the current updated matrix
          */
         public copyFrom(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3857,9 +3908,12 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Populates the passed array from the starting index with the Matrix values.  
-         * Returns the Matrix.  
+         * Populates the passed array from the starting index with the current matrix values
+         * @param array defines the target array
+         * @param offset defines the offset in the target array where to start storing values
+         * @returns the current matrix  
          */
         public copyToArray(array: Float32Array, offset: number = 0): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3867,8 +3921,12 @@
             }
             return this;
         }
+
         /**
-         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one.  
+         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one
+         * @param other defines the second operand
+         * @param result defines the matrix where to store the multiplication
+         * @returns the current matrix 
          */
         public multiplyToRef(other: Matrix, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
@@ -3876,8 +3934,13 @@
             result._markAsUpdated();
             return this;
         }
+
         /**
-         * Sets the Float32Array "result" from the passed index "offset" with the multiplication result of the current Matrix and the passed one.  
+         * Sets the Float32Array "result" from the passed index "offset" with the multiplication of the current matrix and the passed one
+         * @param other defines the second operand
+         * @param result defines the array where to store the multiplication
+         * @param offset defines the offset in the target array where to start storing values
+         * @returns the current matrix 
          */
         public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
             var tm0 = this.m[0];
@@ -3935,8 +3998,11 @@
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
             return this;
         }
+
         /**
-         * Boolean : True is the current Matrix and the passed one values are strictly equal.  
+         * Check equality between this matrix and a second one
+         * @param value defines the second matrix to compare
+         * @returns true is the current matrix and the passed one values are strictly equal
          */
         public equals(value: Matrix): boolean {
             return value &&
@@ -3945,6 +4011,7 @@
                     this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
                     this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
+        
         /**
          * Returns a new Matrix from the current Matrix.  
          */

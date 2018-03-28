@@ -5,19 +5,30 @@
     export class MaterialDefines {
         private _keys: string[];
         private _isDirty = true;
+        /** @ignore */
         public _renderId: number;
 
+        /** @ignore */
         public _areLightsDirty = true;
+        /** @ignore */
         public _areAttributesDirty = true;
+        /** @ignore */
         public _areTexturesDirty = true;
+        /** @ignore */
         public _areFresnelDirty = true;
+        /** @ignore */
         public _areMiscDirty = true;
+        /** @ignore */
         public _areImageProcessingDirty = true;
 
+        /** @ignore */
         public _normals = false;
+        /** @ignore */
         public _uvs = false;
 
+        /** @ignore */
         public _needNormals = false;
+        /** @ignore */
         public _needUVs = false;
 
         /**
