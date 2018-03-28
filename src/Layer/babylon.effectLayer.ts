@@ -662,13 +662,5 @@
             this.onAfterComposeObservable.clear();
             this.onSizeChangedObservable.clear();
         }
-
-        /**
-         * Serializes this effect layer
-         * @returns - serialized effect layer object.
-         */
-        public serialize(): any {
-            return SerializationHelper.Serialize(this);
-        }
     }
 } 
