@@ -70,9 +70,6 @@ module BABYLON {
         }
 
         /**
-         
-         */
-        /**
          * Called once for each button that changed state since the last frame
          * Vive mapping:
          * 0: touchpad
