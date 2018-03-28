@@ -2,12 +2,26 @@
     export class Buffer {
         private _engine: Engine;
         private _buffer: Nullable<WebGLBuffer>;
-        private _data: Nullable<FloatArray>;
+        private _data: Nullable<DataArray>;
         private _updatable: boolean;
-        private _strideSize: number;
         private _instanced: boolean;
 
-        constructor(engine: any, data: FloatArray, updatable: boolean, stride: number, postponeInternalCreation?: boolean, instanced: boolean = false) {
+        /**
+         * Gets the byte stride.
+         */
+        public readonly byteStride: number;
+
+        /**
+         * Constructor
+         * @param engine the engine
+         * @param data the data to use for this buffer
+         * @param updatable whether the data is updatable
+         * @param stride the stride (optional)
+         * @param postponeInternalCreation whether to postpone creating the internal WebGL buffer (optional)
+         * @param instanced whether the buffer is instanced (optional)
+         * @param useBytes set to true if the stride in in bytes (optional)
+         */
+        constructor(engine: any, data: DataArray, updatable: boolean, stride = 0, postponeInternalCreation = false, instanced = false, useBytes = false) {
             if (engine instanceof Mesh) { // old versions of BABYLON.VertexBuffer accepted 'mesh' instead of 'engine'
                 this._engine = engine.getScene().getEngine();
             }
@@ -20,7 +34,7 @@
 
             this._data = data;
 
-            this._strideSize = stride;
+            this.byteStride = useBytes ? stride : stride * 4;
 
             if (!postponeInternalCreation) { // by default
                 this.create();
@@ -34,11 +48,15 @@
          * @param size defines the size in floats of attributes (position is 3 for instance)
          * @param stride defines the stride size in floats in the buffer (the offset to apply to reach next value when data is interleaved)
          * @param instanced defines if the vertex buffer contains indexed data
+         * @param useBytes defines if the offset and stride are in bytes
          * @returns the new vertex buffer
          */
-        public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean): VertexBuffer {
+        public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes = false): VertexBuffer {
+            const byteOffset = useBytes ? offset : offset * 4;
+            const byteStride = stride ? (useBytes ? stride : stride * 4) : this.byteStride;
+
             // a lot of these parameters are ignored as they are overriden by the buffer
-            return new VertexBuffer(this._engine, this, kind, this._updatable, true, stride ? stride : this._strideSize, instanced === undefined ? this._instanced : instanced, offset, size);
+            return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true);
         }
 
         // Properties
@@ -46,7 +64,7 @@
             return this._updatable;
         }
 
-        public getData(): Nullable<FloatArray> {
+        public getData(): Nullable<DataArray> {
             return this._data;
         }
 
@@ -54,29 +72,18 @@
             return this._buffer;
         }
 
+        /**
+         * Gets the stride in float32 units (i.e. byte stride / 4).
+         * May not be an integer if the byte stride is not divisible by 4.
+         * DEPRECATED. Use byteStride instead.
+         * @returns the stride in float32 units
+         */
         public getStrideSize(): number {
-            return this._strideSize;
+            return this.byteStride / 4;
         }
 
-        // public getIsInstanced(): boolean {
-        //     return this._instanced;
-        // }
-
-        // public get instanceDivisor(): number {
-        //     return this._instanceDivisor;
-        // }
-
-        // public set instanceDivisor(value: number) {
-        //     this._instanceDivisor = value;
-        //     if (value == 0) {
-        //         this._instanced = false;
-        //     } else {
-        //         this._instanced = true;
-        //     }
-        // }
-
         // Methods
-        public create(data: Nullable<FloatArray> = null): void {
+        public create(data: Nullable<DataArray> = null): void {
             if (!data && this._buffer) {
                 return; // nothing to do
             }
@@ -105,17 +112,24 @@
             this.create(this._data);
         }
 
-        public update(data: FloatArray): void {
+        public update(data: DataArray): void {
             this.create(data);
         }
 
-        public updateDirectly(data: Float32Array, offset: number, vertexCount?: number): void {
+        /**
+         * Updates the data directly.
+         * @param data the new data
+         * @param offset the new offset
+         * @param vertexCount the vertex count (optional)
+         * @param useBytes set to true if the offset is in bytes
+         */
+        public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes = false): void {
             if (!this._buffer) {
                 return;
             }
 
             if (this._updatable) { // update buffer
-                this._engine.updateDynamicVertexBuffer(this._buffer, data, offset, (vertexCount ? vertexCount * this.getStrideSize() : undefined));
+                this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * 4, (vertexCount ? vertexCount * this.byteStride : undefined));
                 this._data = null;
             }
         }

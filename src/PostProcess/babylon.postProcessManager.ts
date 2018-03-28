@@ -154,8 +154,10 @@
                 } else {
                     if (targetTexture) {
                         engine.bindFramebuffer(targetTexture, faceIndex, undefined, undefined, forceFullscreenViewport);
+                        pp._outputTexture = targetTexture;
                     } else {
                         engine.restoreDefaultFramebuffer();
+                        pp._outputTexture = null;
                     }
                 }
 
