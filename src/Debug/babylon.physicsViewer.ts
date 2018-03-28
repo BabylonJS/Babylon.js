@@ -1,5 +1,8 @@
 module BABYLON.Debug {
 
+    /**
+     * Used to show the physics impostor around the specific mesh.
+     */
     export class PhysicsViewer {
 
         protected _impostors: Array<Nullable<PhysicsImpostor>> = [];
