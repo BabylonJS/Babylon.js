@@ -448,7 +448,7 @@
 
         /**
          * Serializes this glow layer
-         * @returns - serialized glow layer object.
+         * @returns A serialized glow layer object.
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
@@ -483,10 +483,10 @@
 
         /**
          * Creates a Glow Layer from parsed glow layer data.
-         * @param parsedGlowLayer - Parsed glow layer data.
-         * @param scene - BJS scene.
-         * @param rootUrl - Root URL containing the glow layer information.
-         * @returns - Parsed Glow Layer.
+         * @param parsedGlowLayer Defines glow layer data.
+         * @param scene BJS scene.
+         * @param rootUrl Root URL containing the glow layer information.
+         * @returns A parsed Glow Layer.
          */
         public static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer {
             var gl = SerializationHelper.Parse(() => new GlowLayer(parsedGlowLayer.name, scene, parsedGlowLayer.options), parsedGlowLayer, scene, rootUrl);
