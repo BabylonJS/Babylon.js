@@ -11296,32 +11296,6 @@
         }
       }
     },
-    "Material": {
-      "Method": {
-        "_preBind": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "effect": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "overrideOrientation": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "ToString": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
     "MaterialDefines": {
       "Property": {
         "_areAttributesDirty": {
