@@ -183,6 +183,10 @@
         return generateSerializableMember(10, sourceName); // quaternion member
     }
 
+    /**
+     * Decorator used to define property that can be serialized as reference to a camera
+     * @param sourceName defines the name of the property to decorate
+     */
     export function serializeAsCameraReference(sourceName?: string) {
         return generateSerializableMember(11, sourceName); // camera reference member
     }
