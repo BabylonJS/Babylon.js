@@ -1,30 +1,80 @@
 module BABYLON {
-
+    /**
+    * Defines the types of pose enabled controllers that are supported
+    */
     export enum PoseEnabledControllerType {
+        /**
+         * HTC Vive
+         */
         VIVE,
+        /**
+         * Oculus Rift
+         */
         OCULUS,
+        /**
+         * Windows mixed reality
+         */
         WINDOWS,
+        /**
+         * Samsung gear VR
+         */
         GEAR_VR,
         /**
          * Google Daydream
          */
         DAYDREAM,
+        /**
+         * Generic
+         */
         GENERIC
     }
 
+    /**
+     * Defines the MutableGamepadButton interface for the state of a gamepad button
+     */
     export interface MutableGamepadButton {
+        /**
+         * Value of the button/trigger
+         */
         value: number;
+        /**
+         * If the button/trigger is currently touched
+         */
         touched: boolean;
+        /**
+         * If the button/trigger is currently pressed
+         */
         pressed: boolean;
     }
 
+    /**
+     * Defines the ExtendedGamepadButton interface for a gamepad button which includes state provided by a pose controller
+     * @ignore
+     */
     export interface ExtendedGamepadButton extends GamepadButton {
+        /**
+         * If the button/trigger is currently pressed
+         */
         readonly pressed: boolean;
+        /**
+         * If the button/trigger is currently touched
+         */
         readonly touched: boolean;
+        /**
+         * Value of the button/trigger
+         */
         readonly value: number;
     }
 
+    /**
+     * Defines the PoseEnabledControllerHelper object that is used initialize a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
+     */
     export class PoseEnabledControllerHelper {
+        /**
+         * Initializes a gamepad as the controller type it is specified as (eg. windows mixed reality controller)
+         * @param vrGamepad the gamepad to initialized
+         * @returns a vr controller of the type the gamepad identified as
+         */
         public static InitiateController(vrGamepad: any) {
             // Oculus Touch
             if (vrGamepad.id.indexOf('Oculus Touch') !== -1) {
@@ -53,31 +103,59 @@ module BABYLON {
         }
     }
 
+    /**
+     * Defines the PoseEnabledController object that contains state of a vr capable controller
+     */
     export class PoseEnabledController extends Gamepad implements PoseControlled {
         // Represents device position and rotation in room space. Should only be used to help calculate babylon space values
         private _deviceRoomPosition = Vector3.Zero();
         private _deviceRoomRotationQuaternion = new Quaternion();
 
-        // Represents device position and rotation in babylon space
+        /**
+         * The device position in babylon space
+         */
         public devicePosition = Vector3.Zero();
+        /**
+         * The device rotation in babylon space
+         */
         public deviceRotationQuaternion = new Quaternion();
+        /**
+         * The scale factor of the device in babylon space
+         */
+        public deviceScaleFactor: number = 1;
 
-        deviceScaleFactor: number = 1;
-
+        /**
+         * (Likely devicePosition should be used instead) The device position in its room space
+         */
         public position: Vector3;
+        /**
+         * (Likely deviceRotationQuaternion should be used instead) The device rotation in its room space
+         */
         public rotationQuaternion: Quaternion;
+        /**
+         * The type of controller (Eg. Windows mixed reality)
+         */
         public controllerType: PoseEnabledControllerType;
 
         private _calculatedPosition: Vector3;
         private _calculatedRotation: Quaternion;
 
+        /**
+         * The raw pose from the device
+         */
         public rawPose: DevicePose; //GamepadPose;
 
+        /**
+         * Internal, the mesh attached to the controller
+         */
         public _mesh: Nullable<AbstractMesh>; // a node that will be attached to this Gamepad
         private _poseControlledCamera: TargetCamera;
 
         private _leftHandSystemQuaternion: Quaternion = new Quaternion();
 
+        /**
+         * Internal, matrix used to convert room space to babylon space
+         */
         public _deviceToWorld = Matrix.Identity();
 
         /**
@@ -88,7 +166,10 @@ module BABYLON {
          * Name of the child mesh that can be used to cast a ray from the controller
          */
         public static readonly POINTING_POSE = "POINTING_POSE";
-
+        /**
+         * Creates a new PoseEnabledController from a gamepad
+         * @param browserGamepad the gamepad that the PoseEnabledController should be created from
+         */
         constructor(browserGamepad: any) {
             super(browserGamepad.id, browserGamepad.index, browserGamepad);
             this.type = Gamepad.POSE_ENABLED;
@@ -102,6 +183,9 @@ module BABYLON {
         }
 
         private _workingMatrix = Matrix.Identity();
+        /**
+         * Updates the state of the pose enbaled controller and mesh based on the current position and rotation of the controller
+         */
         public update() {
             super.update();
             var pose: GamepadPose = this.browserGamepad.pose;
@@ -120,7 +204,10 @@ module BABYLON {
                 }
             }
         }
-
+        /**
+         * Updates the state of the pose enbaled controller based on the raw pose data from the device
+         * @param poseData raw pose fromthe device
+         */
         updateFromDevice(poseData: DevicePose) {
             if (poseData) {
                 this.rawPose = poseData;
@@ -151,7 +238,10 @@ module BABYLON {
             }
         }
 
-
+        /**
+         * Attaches a mesh to the controller
+         * @param mesh the mesh to be attached
+         */
         public attachToMesh(mesh: AbstractMesh) {
             if (this._mesh) {
                 this._mesh.parent = null;
@@ -165,6 +255,10 @@ module BABYLON {
             }
         }
 
+        /**
+         * Attaches the controllers mesh to a camera
+         * @param camera the camera the mesh should be attached to
+         */
         public attachToPoseControlledCamera(camera: TargetCamera) {
             this._poseControlledCamera = camera;
             if (this._mesh) {
@@ -172,6 +266,9 @@ module BABYLON {
             }
         }
 
+        /**
+         * Disposes of the controller
+         */
         public dispose() {
             if (this._mesh) {
                 this._mesh.dispose();
@@ -181,10 +278,18 @@ module BABYLON {
             super.dispose();
         }
 
+        /**
+         * The mesh that is attached to the controller
+         */
         public get mesh(): Nullable<AbstractMesh> {
             return this._mesh;
         }
 
+        /**
+         * Gets the ray of the controller in the direction the controller is pointing
+         * @param length the length the resulting ray should be
+         * @returns a ray in the direction the controller is pointing
+         */
         public getForwardRay(length = 100): Ray {
             if (!this.mesh) {
                 return new Ray(Vector3.Zero(), new Vector3(0, 0, 1), length);
