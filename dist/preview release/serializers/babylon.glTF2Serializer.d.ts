@@ -170,12 +170,11 @@ declare module BABYLON.GLTF2 {
          * Returns the bytelength of the data.
          * @param vertexBufferKind - Indicates what kind of vertex data is being passed in.
          * @param meshAttributeArray - Array containing the attribute data.
-         * @param strideSize - Represents the offset between consecutive attributes
          * @param byteOffset - The offset to start counting bytes from.
          * @param dataBuffer - The buffer to write the binary data to.
          * @returns - Byte length of the attribute data.
          */
-        private writeAttributeData(vertexBufferKind, meshAttributeArray, strideSize, vertexBufferOffset, byteOffset, dataBuffer);
+        private writeAttributeData(vertexBufferKind, meshAttributeArray, byteOffset, dataBuffer);
         /**
          * Generates glTF json data
          * @param shouldUseGlb - Indicates whether the json should be written for a glb file.

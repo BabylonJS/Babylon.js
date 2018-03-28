@@ -289,7 +289,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
         this.validateNaming(null, containerNode);
 
         // Validate Comments.
-        if (isPublic && !this.validateComment(containerNode)) {            
+        if (isPublic && !this.validateComment(containerNode)) {      
             this.errorCallback(null,
                 containerNode.name,
                 containerNode.kindString,
@@ -319,7 +319,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
                 this.validateNaming(containerNode, childNode);
 
                 //if comment contains @ignore then skip validation completely
-                if (Validate.hasTag(childNode, 'ignore')) continue;                
+                if (Validate.hasTag(childNode, 'ignore')) continue;
 
                 if (isPublic) {
                     tags = this.validateTags(childNode);
@@ -413,7 +413,7 @@ Validate.prototype.validateTags = function(node) {
         if (tags) {
             for (var i = 0; i < tags.length; i++) {
                 var tag = tags[i];
-                var validTags = ["constructor", "throw", "type", "deprecated", "example", "examples", "remark", "see", "remarks"]
+                var validTags = ["constructor", "throw", "type", "deprecated", "example", "examples", "remark", "see", "remarks", "ignorenaming"]
                 if (validTags.indexOf(tag.tag) === -1) {
                     errorTags.push(tag.tag);
                 }
@@ -448,16 +448,20 @@ Validate.prototype.validateComment = function(node) {
     // Return true for overwrited properties
     if (node.overwrites) {
         return true;
-    }
-    
+    } 
 
+    // Check comments.
     if (node.comment) {
-
         if (node.comment.text || node.comment.shortText) {
             return true;
         }
 
         return false;
+    }
+
+    // Return true for inherited properties (need to check signatures)
+    if (node.kindString === "Function") {
+        return true;
     }
 
     return false;
@@ -500,6 +504,20 @@ Validate.prototype.validateNaming = function(parent, node) {
         return;
     }
 
+    // Ignore Naming Tag Check
+    if (Validate.hasTag(node, 'ignoreNaming')) {
+        return;
+    } else {
+        if (node.signatures) {
+            for (var index = 0; index < node.signatures.length; index++) {
+                var signature = node.signatures[index];
+                if (Validate.hasTag(signature, 'ignoreNaming')) {
+                    return;
+                }
+            }
+        }
+    }
+
     if (node.inheritedFrom) {
         return;
     }
@@ -540,13 +558,13 @@ Validate.prototype.validateNaming = function(parent, node) {
         }
     }
     else if (node.kindString == "Module") {
-        if (!Validate.upperCase.test(node.name)) {
+        if (!(Validate.upperCase.test(node.name) || Validate.pascalCase.test(node.name))) {
             this.errorCallback(parent ? parent.name : null,
                 node.name,
                 node.kindString,
                 "Naming",
                 "NotUpperCase",
-                "Module is not Upper Case " + node.name + " (id: " + node.id + ")", Validate.position(node));
+                "Module is not Upper Case or Pascal Case " + node.name + " (id: " + node.id + ")", Validate.position(node));
         }
     }
     else if (node.kindString == "Interface" ||

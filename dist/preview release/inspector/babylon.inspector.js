@@ -710,12 +710,22 @@ var INSPECTOR;
         };
         CameraAdapter.prototype.getTools = function () {
             var tools = [];
-            // tools.push(new Checkbox(this));
             tools.push(new INSPECTOR.CameraPOV(this));
             return tools;
         };
+        // Set the point of view of the chosen camera
         CameraAdapter.prototype.setPOV = function () {
-            this._obj.getScene().activeCamera = this._obj;
+            this._obj.getScene().switchActiveCamera(this._obj);
+        };
+        // Return the name of the current active camera
+        CameraAdapter.prototype.getCurrentActiveCamera = function () {
+            var activeCamera = this._obj.getScene().activeCamera;
+            if (activeCamera != null) {
+                return activeCamera.name;
+            }
+            else {
+                return "0";
+            }
         };
         return CameraAdapter;
     }(INSPECTOR.Adapter));
@@ -3441,25 +3451,6 @@ var INSPECTOR;
                 point.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = true; _this._inspector.scene.forceWireframe = false; });
                 wireframe.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = false; _this._inspector.scene.forceWireframe = true; });
                 solid.addEventListener('click', function () { _this._inspector.scene.forcePointsCloud = false; _this._inspector.scene.forceWireframe = false; });
-                // Cameras
-                title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
-                title.textContent = 'Cameras';
-                var cameraRadioButtons = [];
-                var _loop_1 = function (camera) {
-                    var cameraRadio = INSPECTOR.Helpers.CreateDiv('action-radio', this_1._actions);
-                    cameraRadio.textContent = camera.name;
-                    if (this_1._inspector.scene.activeCamera == camera) {
-                        cameraRadio.classList.add('active');
-                    }
-                    cameraRadioButtons.push(cameraRadio);
-                    cameraRadio.addEventListener('click', function () { _this._inspector.scene.switchActiveCamera(camera); });
-                };
-                var this_1 = this;
-                for (var _a = 0, _b = _this._inspector.scene.cameras; _a < _b.length; _a++) {
-                    var camera = _b[_a];
-                    _loop_1(camera);
-                }
-                _this._generateRadioAction(cameraRadioButtons);
                 // Textures
                 title = INSPECTOR.Helpers.CreateDiv('actions-title', _this._actions);
                 title.textContent = 'Textures channels';
@@ -5023,7 +5014,15 @@ var INSPECTOR;
         function CameraPOV(camera) {
             var _this = _super.call(this) || this;
             _this.cameraPOV = camera;
-            _this._elem.classList.add('fa-video-camera');
+            // Setting the id of the line with the name of the camera
+            _this._elem.id = _this.cameraPOV.id();
+            // Put the right icon 
+            if (_this._elem.id == _this.cameraPOV.getCurrentActiveCamera()) {
+                _this._elem.classList.add('fa-check-circle');
+            }
+            else {
+                _this._elem.classList.add('fa-circle');
+            }
             return _this;
         }
         CameraPOV.prototype.action = function () {
@@ -5031,16 +5030,19 @@ var INSPECTOR;
             this._gotoPOV();
         };
         CameraPOV.prototype._gotoPOV = function () {
-            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-video-camera.active");
-            console.log(actives);
+            // Uncheck all the radio buttons
+            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-check-circle");
             for (var i = 0; i < actives.length; i++) {
-                actives[i].classList.remove('active');
+                actives[i].classList.remove('fa-check-circle');
+                actives[i].classList.add('fa-circle');
             }
-            //if (this._on) {
-            // set icon camera
-            this._elem.classList.add('active');
-            //}
+            // setting the point off view to the right camera
             this.cameraPOV.setPOV();
+            // Check the right radio button
+            if (this._elem.id == this.cameraPOV.getCurrentActiveCamera()) {
+                this._elem.classList.remove('fa-circle');
+                this._elem.classList.add('fa-check-circle');
+            }
         };
         return CameraPOV;
     }(INSPECTOR.AbstractTreeTool));

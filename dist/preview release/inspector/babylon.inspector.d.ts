@@ -294,6 +294,7 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+        getCurrentActiveCamera(): string;
     }
 }
 
@@ -1256,6 +1257,8 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface ICameraPOV {
         setPOV: () => void;
+        getCurrentActiveCamera: () => string;
+        id: () => string;
     }
     /**
      *

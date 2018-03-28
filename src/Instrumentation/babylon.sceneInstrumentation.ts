@@ -123,20 +123,20 @@ module BABYLON {
             this._captureRenderTargetsRenderTime = value;
 
             if (value) {
-                this._onBeforeRenderTargetsRenderObserver = this.scene.OnBeforeRenderTargetsRenderObservable.add(() => {
+                this._onBeforeRenderTargetsRenderObserver = this.scene.onBeforeRenderTargetsRenderObservable.add(() => {
                     Tools.StartPerformanceCounter("Render targets rendering");
                     this._renderTargetsRenderTime.beginMonitoring();
                 });
 
-                this._onAfterRenderTargetsRenderObserver = this.scene.OnAfterRenderTargetsRenderObservable.add(() => {
+                this._onAfterRenderTargetsRenderObserver = this.scene.onAfterRenderTargetsRenderObservable.add(() => {
                     Tools.EndPerformanceCounter("Render targets rendering");
                     this._renderTargetsRenderTime.endMonitoring(false);
                 });
             } else {
-                this.scene.OnBeforeRenderTargetsRenderObservable.remove(this._onBeforeRenderTargetsRenderObserver);
+                this.scene.onBeforeRenderTargetsRenderObservable.remove(this._onBeforeRenderTargetsRenderObserver);
                 this._onBeforeRenderTargetsRenderObserver = null;
 
-                this.scene.OnAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
+                this.scene.onAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
                 this._onAfterRenderTargetsRenderObserver = null;
             }
         }
@@ -466,10 +466,10 @@ module BABYLON {
             this.scene.onAfterActiveMeshesEvaluationObservable.remove(this._onAfterActiveMeshesEvaluationObserver);
             this._onAfterActiveMeshesEvaluationObserver = null;
 
-            this.scene.OnBeforeRenderTargetsRenderObservable.remove(this._onBeforeRenderTargetsRenderObserver);
+            this.scene.onBeforeRenderTargetsRenderObservable.remove(this._onBeforeRenderTargetsRenderObserver);
             this._onBeforeRenderTargetsRenderObserver = null;
 
-            this.scene.OnAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
+            this.scene.onAfterRenderTargetsRenderObservable.remove(this._onAfterRenderTargetsRenderObserver);
             this._onAfterRenderTargetsRenderObserver = null;
 
             this.scene.onBeforeAnimationsObservable.remove(this._onBeforeAnimationsObserver);
