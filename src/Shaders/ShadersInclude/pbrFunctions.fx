@@ -51,9 +51,11 @@ vec3 fresnelSchlickEnvironmentGGX(float VdotN, vec3 reflectance0, vec3 reflectan
 }
 
 // Cook Torance Specular computation.
-vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90)
+vec3 computeSpecularTerm(float NdotH, float NdotL, float NdotV, float VdotH, float roughness, vec3 reflectance0, vec3 reflectance90, float geometricRoughnessFactor)
 {
+    roughness = max(roughness, geometricRoughnessFactor);
     float alphaG = convertRoughnessToAverageSlope(roughness);
+
     float distribution = normalDistributionFunction_TrowbridgeReitzGGX(NdotH, alphaG);
     float visibility = smithVisibilityG_TrowbridgeReitzGGX_Walter(NdotL, NdotV, alphaG);
     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integated in viibility to avoid issues when visibility function changes.
