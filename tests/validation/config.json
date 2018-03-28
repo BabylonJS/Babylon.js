@@ -183,16 +183,16 @@
       "referenceImage": "customRTT.png"
     },
     {
-      "title": "GLTF Buffer Interleaved",
-      "scriptToRun": "/Demos/GLTFTests/index.js",
-      "functionToCall": "createBufferInterleavedScene",
-      "referenceImage": "gltfBufferInterleaved.png"
-    },
-    {
       "title": "GLTF Normals",
       "scriptToRun": "/Demos/GLTFNormals/index.js",
       "functionToCall": "createScene",
       "referenceImage": "gltfnormals.png"
+    },
+    {
+      "title": "GLTF Buffer Interleaved",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createBufferInterleavedScene",
+      "referenceImage": "gltfBufferInterleaved.png"
     },
     {
       "title": "GLTF Material",
@@ -217,6 +217,12 @@
       "scriptToRun": "/Demos/GLTFTests/index.js",
       "functionToCall": "createMaterialDoubleSidedScene",
       "referenceImage": "gltfMaterialDoubleSided.png"
+    },
+    {
+      "title": "GLTF Material Double Sided (Back)",
+      "scriptToRun": "/Demos/GLTFTests/index.js",
+      "functionToCall": "createMaterialDoubleSidedBackScene",
+      "referenceImage": "gltfMaterialDoubleSidedBack.png"
     },
     {
       "title": "GLTF Material Mixed",
@@ -284,6 +290,11 @@
       "title": "GLTF Buggy with Draco Mesh Compression",
       "playgroundId": "#JNW207#1",
       "referenceImage": "gltfBuggyDraco.png"
+    },
+    {
+      "title": "GLTF BoomBox with Unlit Material",
+      "playgroundId": "#GYM97C#2",
+      "referenceImage": "gltfUnlit.png"
     },
     {
       "title": "Asset Containers",

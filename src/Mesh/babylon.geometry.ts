@@ -65,7 +65,7 @@
 
             this._boundingBias = value.clone();
 
-            this.updateBoundingInfo(true, null);
+            this._updateBoundingInfo(true, null);
         }
 
         /**
@@ -116,7 +116,7 @@
             if (mesh) {
                 if (mesh.getClassName() === "LinesMesh") {
                     this.boundingBias = new Vector2(0, (<LinesMesh>mesh).intersectionThreshold);
-                    this.updateExtend();
+                    this._updateExtend();
                 }
 
                 this.applyToMesh(mesh);
@@ -204,8 +204,11 @@
          * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
          */
         public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
-            var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+            if (kind === VertexBuffer.PositionKind) {
+                this._totalVertices = data.length / (stride || 3);
+            }
 
+            var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
             this.setVerticesBuffer(buffer);
         }
 
@@ -223,8 +226,9 @@
         /**
          * Affect a vertex buffer to the geometry. the vertexBuffer.getKind() function is used to determine where to store the data
          * @param buffer defines the vertex buffer to use
+         * @param totalVertices defines the total number of vertices for position kind (could be null)
          */
-        public setVerticesBuffer(buffer: VertexBuffer): void {
+        public setVerticesBuffer(buffer: VertexBuffer, totalVertices: Nullable<number> = null): void {
             var kind = buffer.getKind();
             if (this._vertexBuffers[kind]) {
                 this._vertexBuffers[kind].dispose();
@@ -233,12 +237,11 @@
             this._vertexBuffers[kind] = buffer;
 
             if (kind === VertexBuffer.PositionKind) {
-                var data = <FloatArray>buffer.getData();
-                var stride = buffer.getStrideSize();
+                if (totalVertices != null) {
+                    this._totalVertices = totalVertices;
+                }
 
-                this._totalVertices = data.length / stride;
-
-                this.updateExtend(data, stride);
+                this._updateExtend();
                 this._resetPointsArrayCache();
 
                 var meshes = this._meshes;
@@ -285,7 +288,7 @@
          * @param kind defines the data kind (Position, normal, etc...)
          * @param data defines the data to use 
          * @param updateExtends defines if the geometry extends must be recomputed (false by default)
-         */        
+         */
         public updateVerticesData(kind: string, data: FloatArray, updateExtends: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
@@ -296,18 +299,14 @@
             vertexBuffer.update(data);
 
             if (kind === VertexBuffer.PositionKind) {
-
-                var stride = vertexBuffer.getStrideSize();
-                this._totalVertices = data.length / stride;
-
-                this.updateBoundingInfo(updateExtends, data);
+                this._updateBoundingInfo(updateExtends, data);
             }
             this.notifyUpdate(kind);
         }
 
-        private updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>) {
+        private _updateBoundingInfo(updateExtends: boolean, data: Nullable<FloatArray>) {
             if (updateExtends) {
-                this.updateExtend(data);
+                this._updateExtend(data);
             }
 
             var meshes = this._meshes;
@@ -369,28 +368,53 @@
         }
 
         /**
-         * Gets a specific vertex data attached to this geometry
+         * Gets a specific vertex data attached to this geometry. Float data is constructed if the vertex buffer data cannot be returned directly.
          * @param kind defines the data kind (Position, normal, etc...)
          * @param copyWhenShared defines if the returned array must be cloned upon returning it if the current geometry is shared between multiple meshes
          * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
          * @returns a float array containing vertex data
          */
         public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
-            var vertexBuffer = this.getVertexBuffer(kind);
+            const vertexBuffer = this.getVertexBuffer(kind);
             if (!vertexBuffer) {
                 return null;
             }
-            var orig = <FloatArray>vertexBuffer.getData();
-            if (!forceCopy && (!copyWhenShared || this._meshes.length === 1)) {
-                return orig;
-            } else {
-                var len = orig.length;
-                var copy = [];
-                for (var i = 0; i < len; i++) {
-                    copy.push(orig[i]);
-                }
+
+            let data = vertexBuffer.getData();
+            if (!data) {
+                 return null;
+            }
+
+            const defaultStride = VertexBuffer.DeduceStride(vertexBuffer.getKind());
+            const defaultByteStride = defaultStride * VertexBuffer.GetTypeByteLength(vertexBuffer.type);
+            const count = this._totalVertices * defaultStride;
+
+            if (vertexBuffer.type !== VertexBuffer.FLOAT || vertexBuffer.byteStride !== defaultByteStride) {
+                const copy = new Array<number>(count);
+                vertexBuffer.forEach(count, (value, index) => {
+                    copy[index] = value;
+                });
                 return copy;
             }
+
+            if (!(data instanceof Array || data instanceof Float32Array) || vertexBuffer.byteOffset !== 0 || data.length !== count) {
+                if (data instanceof Array) {
+                    const offset = vertexBuffer.byteOffset / 4;
+                    return Tools.Slice(data, offset, offset + count);
+                }
+                else if (data instanceof ArrayBuffer) {
+                    return new Float32Array(data, vertexBuffer.byteOffset, count);
+                }
+                else {
+                    return new Float32Array(data.buffer, data.byteOffset + vertexBuffer.byteOffset, count);
+                }
+            }
+
+            if (forceCopy || (copyWhenShared && this._meshes.length !== 1)) {
+                return Tools.Slice(data);
+            }
+
+            return data;
         }
 
         /**
@@ -624,12 +648,12 @@
             }
         }
 
-        private updateExtend(data: Nullable<FloatArray> = null, stride?: number) {
+        private _updateExtend(data: Nullable<FloatArray> = null) {
             if (!data) {
-                data = <FloatArray>this._vertexBuffers[VertexBuffer.PositionKind].getData();
+                data = this.getVerticesData(VertexBuffer.PositionKind)!;
             }
 
-            this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, stride);
+            this._extend = Tools.ExtractMinAndMax(data, 0, this._totalVertices, this.boundingBias, 3);
         }
 
         private _applyToMesh(mesh: Mesh): void {
@@ -646,7 +670,7 @@
 
                 if (kind === VertexBuffer.PositionKind) {
                     if (!this._extend) {
-                        this.updateExtend(this._vertexBuffers[kind].getData());
+                        this._updateExtend();
                     }
                     mesh._boundingInfo = new BoundingInfo(this._extend.minimum, this._extend.maximum);
 
