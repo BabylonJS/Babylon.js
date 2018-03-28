@@ -29,14 +29,27 @@ module INSPECTOR {
         
         public getTools() : Array<AbstractTreeTool> {
             let tools = [];
-            // tools.push(new Checkbox(this));
             tools.push(new CameraPOV(this));
             return tools;
         }
 
+        // Set the point of view of the chosen camera
         public setPOV() {
-           (this._obj as BABYLON.Camera).getScene().activeCamera = this._obj;
+           (this._obj as BABYLON.Camera).getScene().switchActiveCamera(this._obj);
         }
+
+        // Return the name of the current active camera
+        public getCurrentActiveCamera() {
+            let activeCamera = (this._obj as BABYLON.Camera).getScene().activeCamera;
+            if(activeCamera != null)
+            {
+                return activeCamera.name;
+            }else{
+                return "0";
+            }
+        }
+
+
         
     }
 }
