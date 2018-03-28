@@ -1,38 +1,80 @@
 module BABYLON {
-
+    /**
+     * Defines the WebVRController object that represents controllers tracked in 3D space
+     */
     export abstract class WebVRController extends PoseEnabledController {
-
+        /**
+         * Internal, the default controller model for the controller
+         */
         protected _defaultModel: AbstractMesh;
 
         // Observables
+        /**
+         * Fired when the trigger state has changed
+         */
         public onTriggerStateChangedObservable = new Observable<ExtendedGamepadButton>();
+        /**
+         * Fired when the main button state has changed
+         */
         public onMainButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
+        /**
+         * Fired when the secondary button state has changed
+         */
         public onSecondaryButtonStateChangedObservable = new Observable<ExtendedGamepadButton>();
+        /**
+         * Fired when the pad state has changed
+         */
         public onPadStateChangedObservable = new Observable<ExtendedGamepadButton>();
+        /**
+         * Fired when controllers stick values have changed
+         */
         public onPadValuesChangedObservable = new Observable<StickValues>();
 
+        /**
+         * Array of button availible on the controller
+         */
         protected _buttons: Array<MutableGamepadButton>;
 
         private _onButtonStateChange: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void;
 
+        /**
+         * Fired when a controller button's state has changed
+         * @param callback the callback containing the button that was modified
+         */
         public onButtonStateChange(callback: (controlledIndex: number, buttonIndex: number, state: ExtendedGamepadButton) => void) {
             this._onButtonStateChange = callback;
         }
 
+        /**
+         * X and Y axis corrisponding to the controllers joystick
+         */
         public pad: StickValues = { x: 0, y: 0 };
 
-        public hand: string; // 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
+        /**
+         * 'left' or 'right', see https://w3c.github.io/gamepad/extensions.html#gamepadhand-enum
+         */
+        public hand: string;
 
+        /**
+         * The default controller model for the controller
+         */
         public get defaultModel(): AbstractMesh {
             return this._defaultModel;
         }
 
+        /**
+         * Creates a new WebVRController from a gamepad
+         * @param vrGamepad the gamepad that the WebVRController should be created from
+         */
         constructor(vrGamepad: any) {
             super(vrGamepad);
             this._buttons = new Array<ExtendedGamepadButton>(vrGamepad.buttons.length);
             this.hand = vrGamepad.hand;
         }
 
+        /**
+         * Updates the state of the controller and mesh based on the current position and rotation of the controller
+         */
         public update() {
             super.update();
             for (var index = 0; index < this._buttons.length; index++) {
@@ -45,8 +87,16 @@ module BABYLON {
             }
         }
 
+        /**
+         * Function to be called when a button is modified
+         */
         protected abstract _handleButtonChange(buttonIdx: number, value: ExtendedGamepadButton, changes: GamepadButtonChanges): void;
 
+        /**
+         * Loads a mesh and attaches it to the controller
+         * @param scene the scene the mesh should be added to
+         * @param meshLoaded callback for when the mesh has been loaded
+         */
         public abstract initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void): void;
 
         private _setButtonValue(newState: ExtendedGamepadButton, currentState: ExtendedGamepadButton, buttonIndex: number) {
@@ -93,6 +143,9 @@ module BABYLON {
             return this._changes;
         }
 
+        /**
+         * Disposes of th webVRCOntroller
+         */
         public dispose(): void {
             super.dispose();
 
