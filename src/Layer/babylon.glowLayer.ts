@@ -492,8 +492,8 @@
         /**
          * Creates a Glow Layer from parsed glow layer data
          * @param parsedGlowLayer defines glow layer data
-         * @param scene defines the BJS scene
-         * @param rootUrl defines root URL containing the glow layer information
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the glow layer information
          * @returns a parsed Glow Layer
          */
         public static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer {
