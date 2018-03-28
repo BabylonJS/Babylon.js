@@ -193,17 +193,17 @@ var BABYLON;
              * Returns the bytelength of the data.
              * @param vertexBufferKind - Indicates what kind of vertex data is being passed in.
              * @param meshAttributeArray - Array containing the attribute data.
-             * @param strideSize - Represents the offset between consecutive attributes
              * @param byteOffset - The offset to start counting bytes from.
              * @param dataBuffer - The buffer to write the binary data to.
              * @returns - Byte length of the attribute data.
              */
-            _Exporter.prototype.writeAttributeData = function (vertexBufferKind, meshAttributeArray, strideSize, vertexBufferOffset, byteOffset, dataBuffer) {
+            _Exporter.prototype.writeAttributeData = function (vertexBufferKind, meshAttributeArray, byteOffset, dataBuffer) {
                 var byteOff = byteOffset;
-                var end = meshAttributeArray.length / strideSize;
+                var stride = BABYLON.VertexBuffer.DeduceStride(vertexBufferKind);
+                var end = meshAttributeArray.length / stride;
                 var byteLength = 0;
                 for (var k = 0; k < end; ++k) {
-                    var index = k * strideSize;
+                    var index = k * stride;
                     var vector = [];
                     if (vertexBufferKind === BABYLON.VertexBuffer.PositionKind || vertexBufferKind === BABYLON.VertexBuffer.NormalKind) {
                         var vertexData = BABYLON.Vector3.FromArray(meshAttributeArray, index);
@@ -445,28 +445,17 @@ var BABYLON;
                     bufferMesh = babylonMesh.sourceMesh;
                 }
                 if (bufferMesh) {
-                    var vertexBuffer = null;
-                    var vertexBufferOffset = null;
-                    var vertexData = null;
-                    var vertexStrideSize = null;
-                    if (bufferMesh.isVerticesDataPresent(kind)) {
-                        vertexBuffer = bufferMesh.getVertexBuffer(kind);
-                        if (vertexBuffer) {
-                            vertexBufferOffset = vertexBuffer.getOffset();
-                            vertexData = vertexBuffer.getData();
-                            if (vertexData) {
-                                vertexStrideSize = vertexBuffer.getStrideSize();
-                                if (dataBuffer && vertexData) {
-                                    byteLength = this.writeAttributeData(kind, vertexData, vertexStrideSize, vertexBufferOffset, byteOffset, dataBuffer);
-                                    byteOffset += byteLength;
-                                }
-                                else {
-                                    byteLength = vertexData.length * 4;
-                                    var bufferView = this.createBufferView(0, byteOffset, byteLength, vertexStrideSize * 4, kind + " - " + bufferMesh.name);
-                                    byteOffset += byteLength;
-                                    this.bufferViews.push(bufferView);
-                                }
-                            }
+                    var vertexData = bufferMesh.getVerticesData(kind);
+                    if (vertexData) {
+                        if (dataBuffer && vertexData) {
+                            byteLength = this.writeAttributeData(kind, vertexData, byteOffset, dataBuffer);
+                            byteOffset += byteLength;
+                        }
+                        else {
+                            byteLength = vertexData.length * 4;
+                            var bufferView = this.createBufferView(0, byteOffset, byteLength, undefined, kind + " - " + bufferMesh.name);
+                            byteOffset += byteLength;
+                            this.bufferViews.push(bufferView);
                         }
                     }
                 }
@@ -539,55 +528,50 @@ var BABYLON;
                                 for (var _c = 0, attributeData_2 = attributeData; _c < attributeData_2.length; _c++) {
                                     var attribute = attributeData_2[_c];
                                     var attributeKind = attribute.kind;
-                                    if (bufferMesh.isVerticesDataPresent(attributeKind)) {
-                                        var vertexBuffer = bufferMesh.getVertexBuffer(attributeKind);
-                                        if (vertexBuffer) {
-                                            var bufferData = vertexBuffer.getData();
-                                            if (bufferData) {
-                                                var strideSize = vertexBuffer.getStrideSize();
-                                                var minMax = void 0;
-                                                var min = null;
-                                                var max = null;
-                                                var bufferViewIndex = attribute.bufferViewIndex;
-                                                if (bufferViewIndex != undefined) {
-                                                    if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
-                                                        minMax = this.calculateMinMaxPositions(bufferData, 0, bufferData.length / strideSize);
-                                                        min = minMax.min;
-                                                        max = minMax.max;
-                                                    }
-                                                    var accessor = this.createAccessor(bufferViewIndex, attributeKind + " - " + babylonMesh.name, attribute.accessorType, 5126 /* FLOAT */, bufferData.length / strideSize, 0, min, max);
-                                                    this.accessors.push(accessor);
-                                                    switch (attributeKind) {
-                                                        case BABYLON.VertexBuffer.PositionKind: {
-                                                            meshPrimitive.attributes.POSITION = this.accessors.length - 1;
-                                                            break;
-                                                        }
-                                                        case BABYLON.VertexBuffer.NormalKind: {
-                                                            meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
-                                                            break;
-                                                        }
-                                                        case BABYLON.VertexBuffer.ColorKind: {
-                                                            meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
-                                                            break;
-                                                        }
-                                                        case BABYLON.VertexBuffer.TangentKind: {
-                                                            meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
-                                                            break;
-                                                        }
-                                                        case BABYLON.VertexBuffer.UVKind: {
-                                                            meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
-                                                            uvCoordsPresent = true;
-                                                            break;
-                                                        }
-                                                        case BABYLON.VertexBuffer.UV2Kind: {
-                                                            meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
-                                                            uvCoordsPresent = true;
-                                                            break;
-                                                        }
-                                                        default: {
-                                                            BABYLON.Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
-                                                        }
-                                                    }
+                                    var vertexData = bufferMesh.getVerticesData(attributeKind);
+                                    if (vertexData) {
+                                        var stride = BABYLON.VertexBuffer.DeduceStride(attributeKind);
+                                        var minMax = void 0;
+                                        var min = null;
+                                        var max = null;
+                                        var bufferViewIndex = attribute.bufferViewIndex;
+                                        if (bufferViewIndex != undefined) {
+                                            if (attributeKind == BABYLON.VertexBuffer.PositionKind) {
+                                                minMax = this.calculateMinMaxPositions(vertexData, 0, vertexData.length / stride);
+                                                min = minMax.min;
+                                                max = minMax.max;
+                                            }
+                                            var accessor = this.createAccessor(bufferViewIndex, attributeKind + " - " + babylonMesh.name, attribute.accessorType, 5126 /* FLOAT */, vertexData.length / stride, 0, min, max);
+                                            this.accessors.push(accessor);
+                                            switch (attributeKind) {
+                                                case BABYLON.VertexBuffer.PositionKind: {
+                                                    meshPrimitive.attributes.POSITION = this.accessors.length - 1;
+                                                    break;
+                                                }
+                                                case BABYLON.VertexBuffer.NormalKind: {
+                                                    meshPrimitive.attributes.NORMAL = this.accessors.length - 1;
+                                                    break;
+                                                }
+                                                case BABYLON.VertexBuffer.ColorKind: {
+                                                    meshPrimitive.attributes.COLOR_0 = this.accessors.length - 1;
+                                                    break;
+                                                }
+                                                case BABYLON.VertexBuffer.TangentKind: {
+                                                    meshPrimitive.attributes.TANGENT = this.accessors.length - 1;
+                                                    break;
+                                                }
+                                                case BABYLON.VertexBuffer.UVKind: {
+                                                    meshPrimitive.attributes.TEXCOORD_0 = this.accessors.length - 1;
+                                                    uvCoordsPresent = true;
+                                                    break;
+                                                }
+                                                case BABYLON.VertexBuffer.UV2Kind: {
+                                                    meshPrimitive.attributes.TEXCOORD_1 = this.accessors.length - 1;
+                                                    uvCoordsPresent = true;
+                                                    break;
+                                                }
+                                                default: {
+                                                    BABYLON.Tools.Warn("Unsupported Vertex Buffer Type: " + attributeKind);
                                                 }
                                             }
                                         }

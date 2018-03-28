@@ -2635,6 +2635,10 @@
                 }
                 this._activeAnimatables = [];
             }
+
+            for (var group of this.animationGroups) {
+                group.stop();
+            }
         }
 
         private _animate(): void {

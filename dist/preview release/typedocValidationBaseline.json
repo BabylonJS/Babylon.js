@@ -1,7 +1,7 @@
 {
-  "errors": 7080,
+  "errors": 6675,
   "babylon.typedoc.json": {
-    "errors": 7080,
+    "errors": 6675,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -5552,45 +5552,6 @@
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new Buffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "updatable": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "stride": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "postponeInternalCreation": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "instanced": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Method": {
         "_rebuild": {
           "Comments": {
@@ -5624,11 +5585,6 @@
             "MissingText": true
           }
         },
-        "getStrideSize": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
         "isUpdatable": {
           "Comments": {
             "MissingText": true
@@ -5640,28 +5596,6 @@
           },
           "Parameter": {
             "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "updateDirectly": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "offset": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "vertexCount": {
               "Comments": {
                 "MissingText": true
               }
@@ -9832,18 +9766,6 @@
             }
           }
         },
-        "createDynamicVertexBuffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "vertices": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
         "createEffect": {
           "Comments": {
             "MissingText": true,
@@ -10403,18 +10325,6 @@
           },
           "Parameter": {
             "elements": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "createVertexBuffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "vertices": {
               "Comments": {
                 "MissingText": true
               }
@@ -12020,33 +11930,6 @@
               }
             },
             "format": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "updateDynamicVertexBuffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "vertexBuffer": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "vertices": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "offset": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "count": {
               "Comments": {
                 "MissingText": true
               }
@@ -33688,60 +33571,6 @@
           "MissingText": true
         }
       },
-      "Constructor": {
-        "new VertexBuffer": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "engine": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "kind": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "updatable": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "postponeInternalCreation": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "stride": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "instanced": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "offset": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "size": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      },
       "Property": {
         "ColorKind": {
           "Comments": {
@@ -35622,34 +35451,6 @@
         }
       }
     },
-    "IActiveMeshCandidateProvider": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Property": {
-        "checksIsEnabled": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      },
-      "Method": {
-        "getMeshes": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        }
-      }
-    },
     "IAnimatable": {
       "Interface": {
         "Comments": {
@@ -35970,20 +35771,6 @@
           }
         },
         "vrSupported": {
-          "Comments": {
-            "MissingText": true
-          }
-        }
-      }
-    },
-    "IDisposable": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
-      "Method": {
-        "dispose": {
           "Comments": {
             "MissingText": true
           }
