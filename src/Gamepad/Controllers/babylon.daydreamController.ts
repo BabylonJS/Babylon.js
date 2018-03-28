@@ -18,11 +18,20 @@ module BABYLON {
          */
         public static readonly GAMEPAD_ID_PREFIX: string = 'Daydream'; // id is 'Daydream Controller'
 
+        /**
+         * Creates a new DaydreamController from a gamepad
+         * @param vrGamepad the gamepad that the controller should be created from
+         */
         constructor(vrGamepad: any) {
             super(vrGamepad);
             this.controllerType = PoseEnabledControllerType.DAYDREAM;
         }
 
+        /**
+         * Implements abstract method on WebVRController class, loading controller meshes and calling this.attachToMesh if successful.
+         * @param scene scene in which to add meshes
+         * @param meshLoaded optional callback function that will be called if the mesh loads successfully.
+         */
         public initControllerMesh(scene: Scene, meshLoaded?: (mesh: AbstractMesh) => void) {
             SceneLoader.ImportMesh("", DaydreamController.MODEL_BASE_URL, DaydreamController.MODEL_FILENAME, scene, (newMeshes) => {
                 this._defaultModel = newMeshes[1];
@@ -34,6 +43,12 @@ module BABYLON {
             });
         }
 
+        /**
+         * Called once for each button that changed state since the last frame
+         * @param buttonIdx Which button index changed
+         * @param state New state of the button
+         * @param changes Which properties on the state changed since last frame
+         */
         protected _handleButtonChange(buttonIdx: number, state: ExtendedGamepadButton, changes: GamepadButtonChanges) {
             // Daydream controller only has 1 GamepadButton (on the trackpad).
             if (buttonIdx === 0) {

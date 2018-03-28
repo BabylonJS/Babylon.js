@@ -1,6 +1,7 @@
 ﻿module BABYLON {
     /**
      * Manages the defines for the PBR Material.
+     * @ignoreChildren
      */
     class PBRMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
         public PBR = true;
@@ -130,6 +131,8 @@
         public LOGARITHMICDEPTH = false;
 
         public FORCENORMALFORWARD = false;
+
+        public GEOMETRYAA = false;
 
         public UNLIT = false;
 
@@ -478,6 +481,13 @@
          * Force normal to face away from face.
          */
         protected _forceNormalForward = false;
+
+        /**
+         * Enables specular anti aliasing in the PBR shader.
+         * It will both interacts on the Geometry for analytical and IBL lighting.
+         * It also prefilter the roughness map based on the bump values.
+         */
+        protected _enableSpecularAntiAliasing = false;
 
         /**
          * Default configuration related to image processing available in the PBR Material.
@@ -1200,6 +1210,8 @@
                 defines.ALPHABLEND = this.needAlphaBlendingForMesh(mesh);
                 defines.ALPHAFRESNEL = this._useAlphaFresnel || this._useLinearAlphaFresnel;
                 defines.LINEARALPHAFRESNEL = this._useLinearAlphaFresnel;
+
+                defines.GEOMETRYAA = scene.getEngine().getCaps().standardDerivatives && this._enableSpecularAntiAliasing;
             }
 
             if (defines._areImageProcessingDirty) {
