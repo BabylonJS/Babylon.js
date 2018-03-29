@@ -62,5 +62,9 @@
     },
     "scripts": {
         "install": "npm --prefix ../../Playground/ install ../../Playground/ && npm --prefix ../../tests/unit/ install ../../tests/unit/ && gulp deployLocalDev"
+    },
+    "dependencies": {
+        "dts-bundle": "^0.7.3",
+        "gulp-clean": "^0.4.0"
     }
 }
