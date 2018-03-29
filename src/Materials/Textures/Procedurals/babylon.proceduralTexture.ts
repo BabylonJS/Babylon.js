@@ -33,7 +33,7 @@
         constructor(name: string, size: any, fragment: any, scene: Scene, fallbackTexture: Nullable<Texture> = null, generateMipMaps = true, public isCube = false) {
             super(null, scene, !generateMipMaps);
 
-            scene._proceduralTextures.push(this);
+            scene.proceduralTextures.push(this);
 
             this._engine = scene.getEngine();
 
@@ -384,10 +384,10 @@
                 return;
             }
 
-            var index = scene._proceduralTextures.indexOf(this);
+            var index = scene.proceduralTextures.indexOf(this);
 
             if (index >= 0) {
-                scene._proceduralTextures.splice(index, 1);
+                scene.proceduralTextures.splice(index, 1);
             }
 
             var vertexBuffer = this._vertexBuffers[VertexBuffer.PositionKind];

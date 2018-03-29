@@ -1,3 +1,7 @@
+declare module "babylonjs-gltf2interface" {
+    export = BABYLON.GLTF2;
+}
+
 declare module BABYLON.GLTF2 {
     const enum AccessorComponentType {
         BYTE = 5120,

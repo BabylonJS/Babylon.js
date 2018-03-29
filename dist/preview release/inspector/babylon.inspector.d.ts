@@ -294,6 +294,7 @@ declare module INSPECTOR {
         getProperties(): Array<PropertyLine>;
         getTools(): Array<AbstractTreeTool>;
         setPOV(): void;
+        getCurrentActiveCamera(): string;
     }
 }
 
@@ -1165,6 +1166,13 @@ declare module INSPECTOR {
 }
 
 declare module INSPECTOR {
+    class FullscreenTool extends AbstractTool {
+        constructor(parent: HTMLElement, inspector: Inspector);
+        action(): void;
+    }
+}
+
+declare module INSPECTOR {
     class TreeItem extends BasicElement {
         private _tab;
         private _adapter;
@@ -1249,6 +1257,8 @@ declare module INSPECTOR {
 declare module INSPECTOR {
     interface ICameraPOV {
         setPOV: () => void;
+        getCurrentActiveCamera: () => string;
+        id: () => string;
     }
     /**
      *

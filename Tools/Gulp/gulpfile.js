@@ -331,13 +331,17 @@ var buildExternalLibraries = function (settings) {
             let dtsFiles = files.map(function (filename) {
                 return filename.replace(".js", ".d.ts");
             });
-            let dtsTask = gulp.src(dtsFiles)
+            let dtsModuleTask = gulp.src(dtsFiles)
                 .pipe(concat(settings.build.outputFilename + ".module.d.ts"))
                 .pipe(replace(referenceSearchRegex, ""))
                 .pipe(addDtsExport(settings.build.moduleDeclaration, settings.build.moduleName, true, settings.build.extendsRoot, settings.build.extraTypesDependencies))
                 .pipe(gulp.dest(outputDirectory));
+            let dtsTask = gulp.src(dtsFiles)
+                .pipe(concat(settings.build.outputFilename + ".d.ts"))
+                .pipe(replace(referenceSearchRegex, ""))
+                .pipe(gulp.dest(outputDirectory));
 
-            return merge2([srcTask, dtsTask]);
+            return merge2([srcTask, dtsTask, dtsModuleTask]);
         });
     }
 
@@ -589,7 +593,7 @@ gulp.task("watch", ["srcTscWatch"], function () {
 
 gulp.task("intellisense", function () {
     gulp.src(config.build.intellisenseSources)
-        .pipe(concat(config.build.intellisenseFile))    
+        .pipe(concat(config.build.intellisenseFile))
         .pipe(replace(/^\s+_.*?;/gm, ""))
         .pipe(replace(/^\s+_[\S\s]*?}/gm, ""))
         .pipe(replace(/^\s*readonly _/gm, "protected readonly _"))

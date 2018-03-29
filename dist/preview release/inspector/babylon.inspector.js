@@ -710,12 +710,22 @@ var INSPECTOR;
         };
         CameraAdapter.prototype.getTools = function () {
             var tools = [];
-            // tools.push(new Checkbox(this));
             tools.push(new INSPECTOR.CameraPOV(this));
             return tools;
         };
+        // Set the point of view of the chosen camera
         CameraAdapter.prototype.setPOV = function () {
-            this._obj.getScene().activeCamera = this._obj;
+            this._obj.getScene().switchActiveCamera(this._obj);
+        };
+        // Return the name of the current active camera
+        CameraAdapter.prototype.getCurrentActiveCamera = function () {
+            var activeCamera = this._obj.getScene().activeCamera;
+            if (activeCamera != null) {
+                return activeCamera.name;
+            }
+            else {
+                return "0";
+            }
         };
         return CameraAdapter;
     }(INSPECTOR.Adapter));
@@ -4629,6 +4639,8 @@ var INSPECTOR;
             if (!this._inspector.popupMode && !INSPECTOR.Helpers.IsBrowserEdge()) {
                 this._tools.push(new INSPECTOR.PopupTool(this._div, this._inspector));
             }
+            // FullScreen
+            this._tools.push(new INSPECTOR.FullscreenTool(this._div, this._inspector));
             // Pause schedule
             this._tools.push(new INSPECTOR.PauseScheduleTool(this._div, this._inspector));
             // Pause schedule
@@ -4679,6 +4691,39 @@ var INSPECTOR;
         return DisposeTool;
     }(INSPECTOR.AbstractTool));
     INSPECTOR.DisposeTool = DisposeTool;
+})(INSPECTOR || (INSPECTOR = {}));
+
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var INSPECTOR;
+(function (INSPECTOR) {
+    var FullscreenTool = /** @class */ (function (_super) {
+        __extends(FullscreenTool, _super);
+        function FullscreenTool(parent, inspector) {
+            return _super.call(this, 'fa-expand', parent, inspector, 'Open the scene in fullscreen, press Esc to exit') || this;
+        }
+        // Action : refresh the whole panel
+        FullscreenTool.prototype.action = function () {
+            var elem = document.body;
+            function requestFullScreen(element) {
+                // Supports most browsers and their versions.
+                var requestMethod = element.requestFullscreen || element.webkitRequestFullScreen;
+                requestMethod.call(element);
+            }
+            requestFullScreen(elem);
+        };
+        return FullscreenTool;
+    }(INSPECTOR.AbstractTool));
+    INSPECTOR.FullscreenTool = FullscreenTool;
 })(INSPECTOR || (INSPECTOR = {}));
 
 "use strict";
@@ -4969,7 +5014,15 @@ var INSPECTOR;
         function CameraPOV(camera) {
             var _this = _super.call(this) || this;
             _this.cameraPOV = camera;
-            _this._elem.classList.add('fa-video-camera');
+            // Setting the id of the line with the name of the camera
+            _this._elem.id = _this.cameraPOV.id();
+            // Put the right icon 
+            if (_this._elem.id == _this.cameraPOV.getCurrentActiveCamera()) {
+                _this._elem.classList.add('fa-check-circle');
+            }
+            else {
+                _this._elem.classList.add('fa-circle');
+            }
             return _this;
         }
         CameraPOV.prototype.action = function () {
@@ -4977,16 +5030,19 @@ var INSPECTOR;
             this._gotoPOV();
         };
         CameraPOV.prototype._gotoPOV = function () {
-            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-video-camera.active");
-            console.log(actives);
+            // Uncheck all the radio buttons
+            var actives = INSPECTOR.Inspector.DOCUMENT.querySelectorAll(".fa-check-circle");
             for (var i = 0; i < actives.length; i++) {
-                actives[i].classList.remove('active');
+                actives[i].classList.remove('fa-check-circle');
+                actives[i].classList.add('fa-circle');
             }
-            //if (this._on) {
-            // set icon camera
-            this._elem.classList.add('active');
-            //}
+            // setting the point off view to the right camera
             this.cameraPOV.setPOV();
+            // Check the right radio button
+            if (this._elem.id == this.cameraPOV.getCurrentActiveCamera()) {
+                this._elem.classList.remove('fa-circle');
+                this._elem.classList.add('fa-check-circle');
+            }
         };
         return CameraPOV;
     }(INSPECTOR.AbstractTreeTool));

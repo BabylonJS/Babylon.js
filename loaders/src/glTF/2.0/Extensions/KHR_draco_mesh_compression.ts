@@ -32,8 +32,8 @@ module BABYLON.GLTF2.Extensions {
             super.dispose();
         }
 
-        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<VertexData>> {
-            return this._loadExtensionAsync<IKHRDracoMeshCompression, VertexData>(context, primitive, (extensionContext, extension) => {
+        protected _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
+            return this._loadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, (extensionContext, extension) => {
                 if (primitive.mode != undefined) {
                     if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP &&
                         primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
@@ -77,7 +77,11 @@ module BABYLON.GLTF2.Extensions {
                             this._dracoCompression = new DracoCompression();
                         }
 
-                        return this._dracoCompression.decodeMeshAsync(data, attributes);
+                        return this._dracoCompression.decodeMeshAsync(data, attributes).then(babylonVertexData => {
+                            const babylonGeometry = new Geometry(babylonMesh.name, this._loader._babylonScene);
+                            babylonVertexData.applyToGeometry(babylonGeometry);
+                            return babylonGeometry;
+                        });
                     }
                     catch (e) {
                         throw new Error(`${context}: ${e.message}`);

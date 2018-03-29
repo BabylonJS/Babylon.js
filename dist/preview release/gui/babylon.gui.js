@@ -4,7 +4,7 @@ var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__p
 
 (function universalModuleDefinition(root, factory) {
     var amdDependencies = [];
-    var BABYLON = root.BABYLON;
+    var BABYLON = root.BABYLON || this.BABYLON;
     if(typeof exports === 'object' && typeof module === 'object') {
          BABYLON = BABYLON || require("babylonjs"); 
 
@@ -5129,5 +5129,6 @@ var BABYLON;
 })(BABYLON || (BABYLON = {}));
 
     
+
     return BABYLON.GUI;
 });

@@ -27,6 +27,11 @@
                 "name": "OIMO",
                 "module": "oimo",
                 "optional": true
+            },
+            {
+                "name": "earcut",
+                "module": "earcut",
+                "optional": true
             }
         ]
     },
@@ -949,7 +954,6 @@
         },
         "polygonMesh": {
             "files": [
-                "../../src/Tools/babylon.earcut.js",
                 "../../src/Mesh/babylon.polygonMesh.js"
             ],
             "dependUpon": [
@@ -995,9 +999,12 @@
         },
         "debug": {
             "files": [
-                "../../src/Debug/babylon.debugModules.js",
+                "../../src/Debug/babylon.skeletonViewer.js",
+                "../../src/Debug/babylon.axesViewer.js",
+                "../../src/Debug/babylon.boneAxesViewer.js",
                 "../../src/Debug/babylon.rayHelper.js",
                 "../../src/Debug/babylon.debugLayer.js",
+                "../../src/Debug/babylon.physicsViewer.js",
                 "../../src/Rendering/babylon.boundingBoxRenderer.js"
             ],
             "dependUpon": [
@@ -1523,6 +1530,7 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "doNotIncludeInBundle": true,
@@ -1544,6 +1552,7 @@
                     "../../loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "../../loaders/src/glTF/2.0/Extensions/KHR_materials_unlit.ts",
                     "../../loaders/src/glTF/2.0/Extensions/KHR_lights.ts"
                 ],
                 "output": "babylon.glTFFileLoader.js"
@@ -1691,6 +1700,7 @@
                     "../../inspector/src/tools/LabelTool.ts",
                     "../../inspector/src/tools/Toolbar.ts",
                     "../../inspector/src/tools/DisposeTool.ts",
+                    "../../inspector/src/tools/FullscreenTool.ts",
                     "../../inspector/src/tree/TreeItem.ts",
                     "../../inspector/src/treetools/AbstractTreeTool.ts",
                     "../../inspector/src/treetools/BoundingBox.ts",

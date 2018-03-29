@@ -46,7 +46,7 @@ module.exports = function (varName, config) {
                     amdText += `        ${dep.optional ? ' if(require.specified && require.specified("' + dep.module + '"))' : ''} amdDependencies.push("${dep.module}");
 `;
                     dependenciesDefinition += `
-    var ${dep.name} = root.${dep.name};`;
+    var ${dep.name} = root.${dep.name} || this.${dep.name};`;
                     afterInitText += `  ${dep.name} = ${dep.name} || this.${dep.name};
 `
                 });
@@ -74,7 +74,14 @@ ${afterInitText}
 ${String(file.contents)}
     ${varName.name === 'BABYLON' || varName.name === 'INSPECTOR' ? `
 var globalObject = (typeof global !== 'undefined') ? global : ((typeof window !== 'undefined') ? window : this);
-globalObject["${varName.name}"] = ${varName.name}` : ''}
+globalObject["${varName.name}"] = ${varName.name};
+//backwards compatibility
+if(typeof earcut !== 'undefined') {
+    globalObject["Earcut"] = {
+        earcut: earcut
+    };
+}` : ''}
+
     return ${base}${(config.subModule && !config.extendsRoot) ? '.' + varName.name : ''};
 });
 `;

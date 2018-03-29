@@ -105,7 +105,7 @@
         }
 
         public _draw(subMesh: SubMesh, fillMode: number, instancesCount?: number): LinesMesh {
-            if (!this._geometry || !this._geometry.getVertexBuffers() || !this._geometry.getIndexBuffer()) {
+            if (!this._geometry || !this._geometry.getVertexBuffers() || (!this._unIndexed && !this._geometry.getIndexBuffer())) {
                 return this;
             }
 

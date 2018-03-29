@@ -13,7 +13,8 @@ module.exports = {
         cannon: 'CANNON',
         oimo: 'OIMO',
         vertx: true,
-        "./Oimo": "OIMO"
+        "./Oimo": "OIMO",
+        "earcut": true
     },
     resolve: {
         extensions: ['.ts', '.js'],
