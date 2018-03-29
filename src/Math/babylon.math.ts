@@ -4011,9 +4011,10 @@
                     this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
                     this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
-        
+
         /**
-         * Returns a new Matrix from the current Matrix.  
+         * Clone the current matrix
+         * @returns a new matrix from the current matrix
          */
         public clone(): Matrix {
             return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3],
@@ -4021,14 +4022,18 @@
                 this.m[8], this.m[9], this.m[10], this.m[11],
                 this.m[12], this.m[13], this.m[14], this.m[15]);
         }
+
         /**
-         * Returns the string "Matrix"
+         * Returns the name of the current matrix class
+         * @returns the string "Matrix"
          */
         public getClassName(): string {
             return "Matrix";
         }
+
         /**
-         * Returns the Matrix hash code.  
+         * Gets the hash code of the current matrix
+         * @returns the hash code
          */
         public getHashCode(): number {
             let hash = this.m[0] || 0;
