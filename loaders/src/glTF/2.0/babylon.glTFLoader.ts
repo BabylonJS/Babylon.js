@@ -7,15 +7,6 @@ module BABYLON.GLTF2 {
         _total?: number;
     }
 
-    interface TypedArrayConstructor<T extends TypedArray> {
-        readonly prototype: T;
-        new(length: number): T;
-        new(array: ArrayLike<number>): T;
-        new(buffer: ArrayBuffer, byteOffset?: number, length?: number): T;
-
-        readonly BYTES_PER_ELEMENT: number;
-    }
-
     export interface MaterialConstructor<T extends Material> {
         readonly prototype: T;
         new(name: string, scene: Scene): T;
@@ -483,10 +474,10 @@ module BABYLON.GLTF2 {
             const promises = new Array<Promise<void>>();
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
-
-            promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then(babylonVertexData => {
-                new Geometry(babylonMesh.name, this._babylonScene, babylonVertexData, false, babylonMesh);
-                return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonVertexData);
+            promises.push(this._loadVertexDataAsync(context, primitive, babylonMesh).then(babylonGeometry => {
+                return this._loadMorphTargetsAsync(context, primitive, babylonMesh, babylonGeometry).then(() => {
+                    babylonGeometry.applyToMesh(babylonMesh);
+                });
             }));
 
             const babylonDrawMode = GLTFLoader._GetDrawMode(context, primitive.mode);
@@ -503,7 +494,7 @@ module BABYLON.GLTF2 {
             return Promise.all(promises).then(() => {});
         }
 
-        private _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Promise<VertexData> {
+        private _loadVertexDataAsync(context: string, primitive: ILoaderMeshPrimitive, babylonMesh: Mesh): Promise<Geometry> {
             const promise = GLTFLoaderExtension._LoadVertexDataAsync(this, context, primitive, babylonMesh);
             if (promise) {
                 return promise;
@@ -516,26 +507,19 @@ module BABYLON.GLTF2 {
 
             const promises = new Array<Promise<void>>();
 
-            const babylonVertexData = new VertexData();
+            const babylonGeometry = new Geometry(babylonMesh.name, this._babylonScene);
 
             if (primitive.indices == undefined) {
-                const positionAccessorIndex = attributes["POSITION"];
-                if (positionAccessorIndex != undefined) {
-                    const accessor = GLTFLoader._GetProperty(`${context}/attributes/POSITION`, this._gltf.accessors, positionAccessorIndex);
-                    babylonVertexData.indices = new Uint32Array(accessor.count);
-                    for (let i = 0; i < babylonVertexData.indices.length; i++) {
-                        babylonVertexData.indices[i] = i;
-                    }
-                }
+                babylonMesh.isUnIndexed = true;
             }
             else {
-                const indicesAccessor = GLTFLoader._GetProperty(`${context}/indices`, this._gltf.accessors, primitive.indices);
-                promises.push(this._loadAccessorAsync(`#/accessors/${indicesAccessor._index}`, indicesAccessor).then(data => {
-                    babylonVertexData.indices = data as IndicesArray;
+                const accessor = GLTFLoader._GetProperty(context + "/indices", this._gltf.accessors, primitive.indices);
+                promises.push(this._loadAccessorAsync("#/accessors/" + accessor._index, accessor).then(data => {
+                    babylonGeometry.setIndices(data as IndicesArray);
                 }));
             }
 
-            const loadAttribute = (attribute: string, kind: string) => {
+            const loadAttribute = (attribute: string, kind: string, callback?: (accessor: ILoaderAccessor) => void) => {
                 if (attributes[attribute] == undefined) {
                     return;
                 }
@@ -545,22 +529,14 @@ module BABYLON.GLTF2 {
                     babylonMesh._delayInfo.push(kind);
                 }
 
-                if (attribute === "COLOR_0") {
-                    // Assume vertex color has alpha on the mesh. The alphaMode of the material controls whether the material should use alpha or not.
-                    babylonMesh.hasVertexAlpha = true;
-                }
-
-                const accessor = GLTFLoader._GetProperty(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
-
-                promises.push(this._loadAccessorAsync(`#/accessors/${accessor._index}`, accessor).then(data => {
-                    let attributeData = GLTFLoader._ConvertToFloat32Array(context, accessor, data);
-
-                    if (attribute === "COLOR_0" && accessor.type === "VEC3") {
-                        attributeData = GLTFLoader._ConvertVec3ToVec4(context, attributeData);
-                    }
-
-                    babylonVertexData.set(attributeData, kind);
+                const accessor = GLTFLoader._GetProperty(context + "/attributes/" + attribute, this._gltf.accessors, attributes[attribute]);
+                promises.push(this._loadVertexAccessorAsync("#/accessors/" + accessor._index, accessor, kind).then(babylonVertexBuffer => {
+                    babylonGeometry.setVerticesBuffer(babylonVertexBuffer, accessor.count);
                 }));
+
+                if (callback) {
+                    callback(accessor);
+                }
             };
 
             loadAttribute("POSITION", VertexBuffer.PositionKind);
@@ -570,10 +546,14 @@ module BABYLON.GLTF2 {
             loadAttribute("TEXCOORD_1", VertexBuffer.UV2Kind);
             loadAttribute("JOINTS_0", VertexBuffer.MatricesIndicesKind);
             loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
-            loadAttribute("COLOR_0", VertexBuffer.ColorKind);
+            loadAttribute("COLOR_0", VertexBuffer.ColorKind, accessor => {
+                if (accessor.type === AccessorType.VEC4) {
+                    babylonMesh.hasVertexAlpha = true;
+                }
+            });
 
             return Promise.all(promises).then(() => {
-                return babylonVertexData;
+                return babylonGeometry;
             });
         }
 
@@ -597,7 +577,7 @@ module BABYLON.GLTF2 {
             }
         }
 
-        private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonVertexData: VertexData): Promise<void> {
+        private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
             if (!primitive.targets) {
                 return Promise.resolve();
             }
@@ -607,106 +587,65 @@ module BABYLON.GLTF2 {
             const morphTargetManager = babylonMesh.morphTargetManager!;
             for (let index = 0; index < morphTargetManager.numTargets; index++) {
                 const babylonMorphTarget = morphTargetManager.getTarget(index);
-                promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonVertexData, primitive.targets[index], babylonMorphTarget));
+                promises.push(this._loadMorphTargetVertexDataAsync(`${context}/targets/${index}`, babylonGeometry, primitive.targets[index], babylonMorphTarget));
             }
 
             return Promise.all(promises).then(() => {});
         }
 
-        private _loadMorphTargetVertexDataAsync(context: string, babylonVertexData: VertexData, attributes: { [name: string]: number }, babylonMorphTarget: MorphTarget): Promise<void> {
+        private _loadMorphTargetVertexDataAsync(context: string, babylonGeometry: Geometry, attributes: { [name: string]: number }, babylonMorphTarget: MorphTarget): Promise<void> {
             const promises = new Array<Promise<void>>();
 
-            const loadAttribute = (attribute: string, setData: (data: Float32Array) => void) => {
+            const loadAttribute = (attribute: string, kind: string, setData: (babylonVertexBuffer: VertexBuffer, data: Float32Array) => void) => {
                 if (attributes[attribute] == undefined) {
+                    return;
+                }
+
+                const babylonVertexBuffer = babylonGeometry.getVertexBuffer(kind);
+                if (!babylonVertexBuffer) {
                     return;
                 }
 
                 const accessor = GLTFLoader._GetProperty(`${context}/${attribute}`, this._gltf.accessors, attributes[attribute]);
                 promises.push(this._loadAccessorAsync(`#/accessors/${accessor._index}`, accessor).then(data => {
-                    setData(data as Float32Array);
+                    if (!(data instanceof Float32Array)) {
+                        throw new Error(`${context}: Morph target accessor must have float data`);
+                    }
+
+                    setData(babylonVertexBuffer, data);
                 }));
             };
 
-            loadAttribute("POSITION", data => {
-                if (babylonVertexData.positions) {
-                    for (let i = 0; i < data.length; i++) {
-                        data[i] += babylonVertexData.positions[i];
-                    }
-                    babylonMorphTarget.setPositions(data);
-                }
+            loadAttribute("POSITION", VertexBuffer.PositionKind, (babylonVertexBuffer, data) => {
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                    data[index] += value;
+                });
+
+                babylonMorphTarget.setPositions(data);
             });
 
-            loadAttribute("NORMAL", data => {
-                if (babylonVertexData.normals) {
-                    for (let i = 0; i < data.length; i++) {
-                        data[i] += babylonVertexData.normals[i];
-                    }
-                    babylonMorphTarget.setNormals(data);
-                }
+            loadAttribute("NORMAL", VertexBuffer.NormalKind, (babylonVertexBuffer, data) => {
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
+                    data[index] += value;
+                });
+
+                babylonMorphTarget.setNormals(data);
             });
 
-            loadAttribute("TANGENT", data => {
-                if (babylonVertexData.tangents) {
+            loadAttribute("TANGENT", VertexBuffer.TangentKind, (babylonVertexBuffer, data) => {
+                let dataIndex = 0;
+                babylonVertexBuffer.forEach(data.length, (value, index) => {
                     // Tangent data for morph targets is stored as xyz delta.
                     // The vertexData.tangent is stored as xyzw.
                     // So we need to skip every fourth vertexData.tangent.
-                    for (let i = 0, j = 0; i < data.length; i++) {
-                        data[i] += babylonVertexData.tangents[j++];
-                        if ((i + 1) % 3 == 0) {
-                            j++;
-                        }
+                    if (((index + 1) % 4) !== 0) {
+                        data[dataIndex++] += value;
                     }
-                    babylonMorphTarget.setTangents(data);
-                }
+                });
+                babylonMorphTarget.setTangents(data);
             });
 
             return Promise.all(promises).then(() => {});
-        }
-
-        private static _ConvertToFloat32Array(context: string, accessor: ILoaderAccessor, data: TypedArray): Float32Array {
-            if (accessor.componentType == AccessorComponentType.FLOAT) {
-                return data as Float32Array;
-            }
-
-            let factor = 1;
-            if (accessor.normalized) {
-                switch (accessor.componentType) {
-                    case AccessorComponentType.UNSIGNED_BYTE: {
-                        factor = 1 / 255;
-                        break;
-                    }
-                    case AccessorComponentType.UNSIGNED_SHORT: {
-                        factor = 1 / 65535;
-                        break;
-                    }
-                    default: {
-                        throw new Error(`${context}: Invalid component type (${accessor.componentType})`);
-                    }
-                }
-            }
-
-            const result = new Float32Array(accessor.count * GLTFLoader._GetNumComponents(context, accessor.type));
-            for (let i = 0; i < result.length; i++) {
-                result[i] = data[i] * factor;
-            }
-
-            return result;
-        }
-
-        private static _ConvertVec3ToVec4(context: string, data: Float32Array): Float32Array {
-            const result = new Float32Array(data.length / 3 * 4);
-
-            let offset = 0;
-            for (let i = 0; i < result.length; i++) {
-                if ((i + 1) % 4 === 0) {
-                    result[i] = 1;
-                }
-                else {
-                    result[i] = data[offset++];
-                }
-            }
-
-            return result;
         }
 
         private static _LoadTransform(node: ILoaderNode, babylonNode: TransformNode): void {
@@ -1066,10 +1005,10 @@ module BABYLON.GLTF2 {
                 return bufferView._data;
             }
 
-            const buffer = GLTFLoader._GetProperty(`${context}/buffer`, this._gltf.buffers, bufferView.buffer);
-            bufferView._data = this._loadBufferAsync(`#/buffers/${buffer._index}`, buffer).then(bufferData => {
+            const buffer = GLTFLoader._GetProperty(context + "/buffer", this._gltf.buffers, bufferView.buffer);
+            bufferView._data = this._loadBufferAsync("#/buffers/" + buffer._index, buffer).then(data => {
                 try {
-                    return new Uint8Array(bufferData.buffer, bufferData.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
+                    return new Uint8Array(data.buffer, data.byteOffset + (bufferView.byteOffset || 0), bufferView.byteLength);
                 }
                 catch (e) {
                     throw new Error(`${context}: ${e.message}`);
@@ -1079,7 +1018,7 @@ module BABYLON.GLTF2 {
             return bufferView._data;
         }
 
-        private _loadAccessorAsync(context: string, accessor: ILoaderAccessor): Promise<TypedArray> {
+        private _loadAccessorAsync(context: string, accessor: ILoaderAccessor): Promise<ArrayBufferView> {
             if (accessor.sparse) {
                 throw new Error(`${context}: Sparse accessors are not currently supported`);
             }
@@ -1088,73 +1027,74 @@ module BABYLON.GLTF2 {
                 return accessor._data;
             }
 
-            const bufferView = GLTFLoader._GetProperty(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
-            accessor._data = this._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(bufferViewData => {
-                const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
-                const byteOffset = accessor.byteOffset || 0;
-                const byteStride = bufferView.byteStride;
-
-                if (byteStride === 0) {
-                    Tools.Warn(`${context}: Byte stride of 0 is not valid`);
-                }
+            const bufferView = GLTFLoader._GetProperty(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._data = this._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(data => {
+                const buffer = data.buffer;
+                const byteOffset = data.byteOffset + (accessor.byteOffset || 0);
+                const length = GLTFLoader._GetNumComponents(context, accessor.type) * accessor.count;
 
                 try {
                     switch (accessor.componentType) {
                         case AccessorComponentType.BYTE: {
-                            return this._buildArrayBuffer(Float32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
+                            return new Int8Array(buffer, byteOffset, length);
                         }
                         case AccessorComponentType.UNSIGNED_BYTE: {
-                            return this._buildArrayBuffer(Uint8Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
+                            return new Uint8Array(buffer, byteOffset, length);
                         }
                         case AccessorComponentType.SHORT: {
-                            return this._buildArrayBuffer(Int16Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
+                            return new Int16Array(buffer, byteOffset, length);
                         }
                         case AccessorComponentType.UNSIGNED_SHORT: {
-                            return this._buildArrayBuffer(Uint16Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
+                            return new Uint16Array(buffer, byteOffset, length);
                         }
                         case AccessorComponentType.UNSIGNED_INT: {
-                            return this._buildArrayBuffer(Uint32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
+                            return new Uint32Array(buffer, byteOffset, length);
                         }
                         case AccessorComponentType.FLOAT: {
-                            return this._buildArrayBuffer(Float32Array, bufferViewData, byteOffset, accessor.count, numComponents, byteStride);
+                            return new Float32Array(buffer, byteOffset, length);
                         }
                         default: {
-                            throw new Error(`${context}: Invalid component type (${accessor.componentType})`);
+                            throw new Error(`${context}: Invalid accessor component type ${accessor.componentType}`);
                         }
                     }
                 }
                 catch (e) {
-                    throw new Error(`${context}: ${e.messsage}`);
+                    throw new Error(`${context}: ${e}`);
                 }
             });
 
             return accessor._data;
         }
 
-        private _buildArrayBuffer<T extends TypedArray>(typedArray: TypedArrayConstructor<T>, data: ArrayBufferView, byteOffset: number, count: number, numComponents: number, byteStride?: number): T {
-            byteOffset += data.byteOffset;
-
-            const targetLength = count * numComponents;
-
-            if (!byteStride || byteStride === numComponents * typedArray.BYTES_PER_ELEMENT) {
-                return new typedArray(data.buffer, byteOffset, targetLength);
+        public _loadVertexBufferViewAsync(context: string, bufferView: ILoaderBufferView, kind: string): Promise<Buffer> {
+            if (bufferView._babylonBuffer) {
+                return bufferView._babylonBuffer;
             }
 
-            const elementStride = byteStride / typedArray.BYTES_PER_ELEMENT;
-            const sourceBuffer = new typedArray(data.buffer, byteOffset, elementStride * count);
-            const targetBuffer = new typedArray(targetLength);
-            let sourceIndex = 0;
-            let targetIndex = 0;
+            bufferView._babylonBuffer = this._loadBufferViewAsync(context, bufferView).then(data => {
+                return new Buffer(this._babylonScene.getEngine(), data, false);
+            });
 
-            while (targetIndex < targetLength) {
-                for (let componentIndex = 0; componentIndex < numComponents; componentIndex++) {
-                    targetBuffer[targetIndex] = sourceBuffer[sourceIndex + componentIndex];
-                    targetIndex++;
-                }
-                sourceIndex += elementStride;
+            return bufferView._babylonBuffer;
+        }
+
+        private _loadVertexAccessorAsync(context: string, accessor: ILoaderAccessor, kind: string): Promise<VertexBuffer> {
+            if (accessor.sparse) {
+                throw new Error(`${context}: Sparse accessors are not currently supported`);
             }
 
-            return targetBuffer;
+            if (accessor._babylonVertexBuffer) {
+                return accessor._babylonVertexBuffer;
+            }
+
+            const bufferView = GLTFLoader._GetProperty(context + "/bufferView", this._gltf.bufferViews, accessor.bufferView);
+            accessor._babylonVertexBuffer = this._loadVertexBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView, kind).then(buffer => {
+                const size = GLTFLoader._GetNumComponents(context, accessor.type);
+                return new VertexBuffer(this._babylonScene.getEngine(), buffer, kind, false, false, bufferView.byteStride,
+                    false, accessor.byteOffset, size, accessor.componentType, accessor.normalized, true);
+            });
+
+            return accessor._babylonVertexBuffer;
         }
 
         private _getDefaultMaterial(drawMode: number): Material {

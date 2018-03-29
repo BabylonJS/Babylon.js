@@ -289,7 +289,7 @@ Validate.prototype.validateTypedocNamespaces = function (namespaces) {
         this.validateNaming(null, containerNode);
 
         // Validate Comments.
-        if (isPublic && !this.validateComment(containerNode)) {            
+        if (isPublic && !this.validateComment(containerNode)) {      
             this.errorCallback(null,
                 containerNode.name,
                 containerNode.kindString,
@@ -448,7 +448,7 @@ Validate.prototype.validateComment = function(node) {
     // Return true for overwrited properties
     if (node.overwrites) {
         return true;
-    }
+    } 
 
     // Check comments.
     if (node.comment) {
@@ -457,6 +457,11 @@ Validate.prototype.validateComment = function(node) {
         }
 
         return false;
+    }
+
+    // Return true for inherited properties (need to check signatures)
+    if (node.kindString === "Function") {
+        return true;
     }
 
     return false;
@@ -502,6 +507,15 @@ Validate.prototype.validateNaming = function(parent, node) {
     // Ignore Naming Tag Check
     if (Validate.hasTag(node, 'ignoreNaming')) {
         return;
+    } else {
+        if (node.signatures) {
+            for (var index = 0; index < node.signatures.length; index++) {
+                var signature = node.signatures[index];
+                if (Validate.hasTag(signature, 'ignoreNaming')) {
+                    return;
+                }
+            }
+        }
     }
 
     if (node.inheritedFrom) {
@@ -544,13 +558,13 @@ Validate.prototype.validateNaming = function(parent, node) {
         }
     }
     else if (node.kindString == "Module") {
-        if (!Validate.upperCase.test(node.name)) {
+        if (!(Validate.upperCase.test(node.name) || Validate.pascalCase.test(node.name))) {
             this.errorCallback(parent ? parent.name : null,
                 node.name,
                 node.kindString,
                 "Naming",
                 "NotUpperCase",
-                "Module is not Upper Case " + node.name + " (id: " + node.id + ")", Validate.position(node));
+                "Module is not Upper Case or Pascal Case " + node.name + " (id: " + node.id + ")", Validate.position(node));
         }
     }
     else if (node.kindString == "Interface" ||
