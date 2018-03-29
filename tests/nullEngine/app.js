@@ -1,5 +1,5 @@
 var BABYLON = require("../../dist/preview release/babylon.max");
-var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
+// var LOADERS = require("../../dist/preview release/loaders/babylonjs.loaders");
 global.XMLHttpRequest = require('xhr2').XMLHttpRequest;
 
 var engine = new BABYLON.NullEngine();
@@ -142,16 +142,20 @@ var engine = new BABYLON.NullEngine();
 //     //});
   
 //   }, progress => {}, (scene, err) => console.error('error:', err));
-var scene = new BABYLON.Scene(engine);
-var camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 0, BABYLON.Vector3.Zero(), scene);
-scene.render();
-var pos = BABYLON.Vector3.Project(
-              new BABYLON.Vector3(0.5, 0.5, 0.5),
-              BABYLON.Matrix.Identity(),
-              scene.getTransformMatrix(),
-              scene.activeCamera.viewport.toGlobal(
-              engine.getRenderWidth(),
-              engine.getRenderHeight()
-            ));;
+// var scene = new BABYLON.Scene(engine);
+// var camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 0, BABYLON.Vector3.Zero(), scene);
+// scene.render();
+// var pos = BABYLON.Vector3.Project(
+//               new BABYLON.Vector3(0.5, 0.5, 0.5),
+//               BABYLON.Matrix.Identity(),
+//               scene.getTransformMatrix(),
+//               scene.activeCamera.viewport.toGlobal(
+//               engine.getRenderWidth(),
+//               engine.getRenderHeight()
+//             ));;
 
-            console.log(pos);
+//             console.log(pos);
+
+const scene = new BABYLON.Scene(engine);
+new BABYLON.PBRMetallicRoughnessMaterial("asdfasf", scene);
+scene.dispose();
