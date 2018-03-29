@@ -1750,7 +1750,7 @@
                 "name": "babylonjs-viewer",
                 "main": "../../Viewer/src/index.d.ts",
                 "out": "../../dist/preview release/viewer/babylon.viewer.module.d.ts",
-                "appendText": "/// <reference path=\"./babylon.d.ts\"/>"
+                "prependText": "/// <reference path=\"./babylon.d.ts\"/>"
             },
             "outputs": [
                 {
