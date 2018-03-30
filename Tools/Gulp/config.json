@@ -507,7 +507,7 @@
                 "../../src/Materials/Textures/babylon.dynamicTexture.js",
                 "../../src/Materials/Textures/babylon.videoTexture.js",
                 "../../src/Materials/Textures/babylon.rawTexture.js",
-                "../../src/Materials/Textures/babylon.rawTexture3d.js"
+                "../../src/Materials/Textures/babylon.rawTexture3D.js"
             ],
             "dependUpon": [
                 "core"
