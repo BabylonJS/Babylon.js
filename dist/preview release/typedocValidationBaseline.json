@@ -1,7 +1,7 @@
 {
-  "errors": 5882,
+  "errors": 5578,
   "babylon.typedoc.json": {
-    "errors": 5882,
+    "errors": 5578,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -13163,50 +13163,6 @@
           }
         },
         "CreateLathe": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "options": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "CreateLineSystem": {
-          "Comments": {
-            "MissingReturn": true
-          },
-          "Parameter": {
-            "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "options": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "scene": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "CreateLines": {
           "Comments": {
             "MissingReturn": true
           },
