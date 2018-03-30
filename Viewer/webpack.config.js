@@ -19,7 +19,7 @@ module.exports = {
             "babylonjs": __dirname + '/../dist/preview release/babylon.max.js',
             "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
             "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
-            "deepmerge": __dirname + '/assets/deepmerge.min.js'
+            "pep": __dirname + '/assets/pep.min.js'
         }
     },
     externals: {

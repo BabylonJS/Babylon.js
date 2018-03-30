@@ -1,7 +1,7 @@
 /// <reference path="../../../../../dist/preview release/babylon.d.ts"/>
 
 module BABYLON.GLTF2.Extensions {
-    // https://github.com/sbtron/glTF/tree/MSFT_lod/extensions/Vendor/MSFT_lod
+    // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod
 
     const NAME = "MSFT_lod";
 
