@@ -3,14 +3,14 @@
         "target": "es5",
         "module": "commonjs",
         "noResolve": false,
-        "noImplicitAny": false, //mainly due to usage of external libs without typings.
+        "noImplicitAny": false,
         "strictNullChecks": true,
-        "removeComments": true,
+        "removeComments": false,
         "preserveConstEnums": true,
         "sourceMap": false,
         "experimentalDecorators": true,
         "isolatedModules": false,
-        "declaration": false,
+        "declaration": true,
         "lib": [
             "dom",
             "es2015.promise",
@@ -26,9 +26,6 @@
             ],
             "babylonjs-loaders": [
                 "../dist/preview release/loaders/babylonjs.loaders.d.ts"
-            ],
-            "babylonjs-gltf2interface": [
-                "../dist/babylon.glTF2Interface.d.ts"
             ]
         }
     },

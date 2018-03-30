@@ -17,7 +17,7 @@ import { PromisePolyfill } from 'babylonjs';
 
 // load needed modules.
 import 'babylonjs-loaders';
-import '../assets/pep.min';
+import 'pep';
 
 
 import { InitTags } from './initializer';
