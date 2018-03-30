@@ -48,9 +48,20 @@ module BABYLON {
     }
 
     export enum GLTFLoaderState {
-        Loading,
-        Ready,
-        Complete
+        /**
+         * The asset is loading.
+         */
+        LOADING,
+
+        /**
+         * The asset is ready for rendering.
+         */
+        READY,
+
+        /**
+         * The asset is completely loaded.
+         */
+        COMPLETE
     }
 
     export interface IGLTFLoader extends IDisposable {
@@ -173,7 +184,7 @@ module BABYLON {
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete, immediately after onSuccess.
+         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
         public readonly onCompleteObservable = new Observable<GLTFFileLoader>();
 
@@ -186,7 +197,7 @@ module BABYLON {
         }
 
         /**
-        * Raised when the loader is disposed.
+        * Raised after the loader is disposed.
         */
         public readonly onDisposeObservable = new Observable<GLTFFileLoader>();
 
@@ -213,7 +224,7 @@ module BABYLON {
         }
 
         /**
-         * Gets a promise that resolves when the asset is completely loaded.
+         * Returns a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         public whenCompleteAsync(): Promise<void> {
@@ -225,7 +236,7 @@ module BABYLON {
         }
 
         /**
-         * The loader state or null if not active.
+         * The loader state (LOADING, READY, COMPLETE) or null if the loader is not active.
          */
         public get loaderState(): Nullable<GLTFLoaderState> {
             return this._loader ? this._loader.state : null;
