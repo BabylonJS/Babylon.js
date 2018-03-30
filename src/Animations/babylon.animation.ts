@@ -96,8 +96,19 @@
         STEP = 1
     }
 
+    /**
+     * Class used to store any kind of animation
+     */
     export class Animation {
+        /**
+         * Gets or sets a general value used to allow matrices interpolation (off by default as it could be expensive)
+         */
         public static AllowMatricesInterpolation = false;
+
+        /**
+         * Gets or sets a boolean indicating if Matrix.DecomposeLerp should be used instead of Matrix.Lerp for matrix interpolation
+         */
+        public static AllowMatrixDecomposeForInterpolation = true;
 
         private _keys: Array<IAnimationKey>;
         private _easingFunction: IEasingFunction;
@@ -449,6 +460,10 @@
         }
 
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            if (Animation.AllowMatrixDecomposeForInterpolation) {
+                return Matrix.DecomposeLerp(startValue, endValue, gradient);
+            }
+
             return Matrix.Lerp(startValue, endValue, gradient);
         }
 
