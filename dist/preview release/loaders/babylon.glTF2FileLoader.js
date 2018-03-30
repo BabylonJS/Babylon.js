@@ -30,9 +30,18 @@ var BABYLON;
     })(GLTFLoaderAnimationStartMode = BABYLON.GLTFLoaderAnimationStartMode || (BABYLON.GLTFLoaderAnimationStartMode = {}));
     var GLTFLoaderState;
     (function (GLTFLoaderState) {
-        GLTFLoaderState[GLTFLoaderState["Loading"] = 0] = "Loading";
-        GLTFLoaderState[GLTFLoaderState["Ready"] = 1] = "Ready";
-        GLTFLoaderState[GLTFLoaderState["Complete"] = 2] = "Complete";
+        /**
+         * The asset is loading.
+         */
+        GLTFLoaderState[GLTFLoaderState["LOADING"] = 0] = "LOADING";
+        /**
+         * The asset is ready for rendering.
+         */
+        GLTFLoaderState[GLTFLoaderState["READY"] = 1] = "READY";
+        /**
+         * The asset is completely loaded.
+         */
+        GLTFLoaderState[GLTFLoaderState["COMPLETE"] = 2] = "COMPLETE";
     })(GLTFLoaderState = BABYLON.GLTFLoaderState || (BABYLON.GLTFLoaderState = {}));
     var GLTFFileLoader = /** @class */ (function () {
         function GLTFFileLoader() {
@@ -80,11 +89,11 @@ var BABYLON;
             /**
              * Raised when the asset is completely loaded, immediately before the loader is disposed.
              * For assets with LODs, raised when all of the LODs are complete.
-             * For assets without LODs, raised when the model is complete, immediately after onSuccess.
+             * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
              */
             this.onCompleteObservable = new BABYLON.Observable();
             /**
-            * Raised when the loader is disposed.
+            * Raised after the loader is disposed.
             */
             this.onDisposeObservable = new BABYLON.Observable();
             /**
@@ -171,7 +180,7 @@ var BABYLON;
             configurable: true
         });
         /**
-         * Gets a promise that resolves when the asset is completely loaded.
+         * Returns a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         GLTFFileLoader.prototype.whenCompleteAsync = function () {
@@ -184,7 +193,7 @@ var BABYLON;
         };
         Object.defineProperty(GLTFFileLoader.prototype, "loaderState", {
             /**
-             * The loader state or null if not active.
+             * The loader state (LOADING, READY, COMPLETE) or null if the loader is not active.
              */
             get: function () {
                 return this._loader ? this._loader.state : null;
@@ -635,7 +644,7 @@ var BABYLON;
                     _this._babylonScene = scene;
                     _this._rootUrl = rootUrl;
                     _this._progressCallback = onProgress;
-                    _this._state = BABYLON.GLTFLoaderState.Loading;
+                    _this._state = BABYLON.GLTFLoaderState.LOADING;
                     _this._loadData(data);
                     _this._checkExtensions();
                     var promises = new Array();
@@ -653,7 +662,7 @@ var BABYLON;
                         promises.push(_this._compileShadowGeneratorsAsync());
                     }
                     var resultPromise = Promise.all(promises).then(function () {
-                        _this._state = BABYLON.GLTFLoaderState.Ready;
+                        _this._state = BABYLON.GLTFLoaderState.READY;
                         _this._startAnimations();
                     });
                     resultPromise.then(function () {
@@ -661,7 +670,7 @@ var BABYLON;
                         BABYLON.Tools.SetImmediate(function () {
                             if (!_this._disposed) {
                                 Promise.all(_this._completePromises).then(function () {
-                                    _this._state = BABYLON.GLTFLoaderState.Complete;
+                                    _this._state = BABYLON.GLTFLoaderState.COMPLETE;
                                     _this.onCompleteObservable.notifyObservers(_this);
                                     _this.onCompleteObservable.clear();
                                     _this._clear();
@@ -1699,7 +1708,7 @@ var BABYLON;
                     }, function (event) {
                         if (!_this._disposed) {
                             try {
-                                if (request && _this._state === BABYLON.GLTFLoaderState.Loading) {
+                                if (request && _this._state === BABYLON.GLTFLoaderState.LOADING) {
                                     request._lengthComputable = event.lengthComputable;
                                     request._loaded = event.loaded;
                                     request._total = event.total;
@@ -2000,7 +2009,7 @@ var BABYLON;
     (function (GLTF2) {
         var Extensions;
         (function (Extensions) {
-            // https://github.com/sbtron/glTF/tree/MSFT_lod/extensions/Vendor/MSFT_lod
+            // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Vendor/MSFT_lod
             var NAME = "MSFT_lod";
             var MSFT_lod = /** @class */ (function (_super) {
                 __extends(MSFT_lod, _super);
