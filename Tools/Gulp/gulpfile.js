@@ -460,7 +460,7 @@ var buildExternalLibrary = function (library, settings, watch) {
                         // prepend the needed reference
                         fs.readFile(settings.build.dtsBundle.out, function (err, data) {
                             if (err) throw err;
-                            data = settings.build.dtsBundle.appendText + data.toString();
+                            data = settings.build.dtsBundle.prependText + data.toString();
                             fs.writeFile(settings.build.dtsBundle.out, data);
                         });
                     });
