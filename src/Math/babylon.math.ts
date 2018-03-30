@@ -1389,6 +1389,7 @@
         }
 
         // Operators
+
         /**
          * Creates an array containing three elements : the coordinates of the Vector3
          * @returns a new array of numbers
@@ -3596,6 +3597,9 @@
         }
     }
 
+    /**
+     * Class used to store matrix data (4x4)
+     */
     export class Matrix {
         private static _tempQuaternion: Quaternion = new Quaternion();
         private static _xAxis: Vector3 = Vector3.Zero();
@@ -3606,21 +3610,37 @@
 
         private _isIdentity = false;
         private _isIdentityDirty = true;
+        /**
+         * Gets the update flag of the matrix which is an unique number for the matrix.
+         * It will be incremented every time the matrix data change.
+         * You can use it to speed the comparison between two versions of the same matrix.
+         */
         public updateFlag: number;
+
+        /**
+         * Gets or sets the internal data of the matrix
+         */
         public m: Float32Array = new Float32Array(16);
 
+        /** @ignore */
         public _markAsUpdated() {
             this.updateFlag = Matrix._updateFlagSeed++;
             this._isIdentityDirty = true;
         }
 
+        /**
+         * Creates an empty matrix (filled with zeros)
+         */
         public constructor() {
             this._markAsUpdated();
         }
 
         // Properties
+
         /**
-         * Boolean : True is the matrix is the identity matrix
+         * Check if the current matrix is indentity
+         * @param considerAsTextureMatrix defines if the current matrix must be considered as a texture matrix (3x2)
+         * @returns true is the matrix is the identity matrix
          */
         public isIdentity(considerAsTextureMatrix = false): boolean {
             if (this._isIdentityDirty) {
@@ -3644,7 +3664,8 @@
             return this._isIdentity;
         }
         /**
-         * Returns the matrix determinant (float).  
+         * Gets the determinant of the matrix
+         * @returns the matrix determinant
          */
         public determinant(): number {
             var temp1 = (this.m[10] * this.m[15]) - (this.m[11] * this.m[14]);
@@ -3660,29 +3681,33 @@
         }
 
         // Methods
+
         /**
-         * Returns the matrix underlying array.  
+         * Returns the matrix as a Float32Array 
+         * @returns the matrix underlying array
          */
         public toArray(): Float32Array {
             return this.m;
         }
         /**
-        * Returns the matrix underlying array.  
+         * Returns the matrix as a Float32Array 
+        * @returns the matrix underlying array.  
         */
         public asArray(): Float32Array {
             return this.toArray();
         }
+
         /**
-         * Inverts in place the Matrix.  
-         * Returns the Matrix inverted.  
+         * Inverts the current matrix in place
+         * @returns the current inverted matrix
          */
         public invert(): Matrix {
             this.invertToRef(this);
             return this;
         }
         /**
-         * Sets all the matrix elements to zero.  
-         * Returns the Matrix.  
+         * Sets all the matrix elements to zero
+         * @returns the current matrix  
          */
         public reset(): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3692,17 +3717,23 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Returns a new Matrix as the addition result of the current Matrix and the passed one.  
+         * Adds the current matrix with a second one
+         * @param other defines the matrix to add
+         * @returns a new matrix as the addition of the current matrix and the passed one 
          */
         public add(other: Matrix): Matrix {
             var result = new Matrix();
             this.addToRef(other, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" with the ddition result of the current Matrix and the passed one.  
-         * Returns the Matrix.  
+         * Sets the passed matrix "result" to the addition of the current matrix and the passed one
+         * @param other defines the matrix to add
+         * @param result defines the target matrix
+         * @returns the current matrix  
          */
         public addToRef(other: Matrix, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3711,9 +3742,11 @@
             result._markAsUpdated();
             return this;
         }
+
         /**
-         * Adds in place the passed matrix to the current Matrix.  
-         * Returns the updated Matrix.  
+         * Adds in place the passed matrix to the current matrix  
+         * @param other defines the second operand
+         * @returns the current updated matrix
          */
         public addToSelf(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3722,9 +3755,11 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Sets the passed matrix with the current inverted Matrix.  
-         * Returns the unmodified current Matrix.  
+         * Sets the passed matrix to the current inverted Matrix
+         * @param other defines the target matrix
+         * @returns the unmodified current matrix  
          */
         public invertToRef(other: Matrix): Matrix {
             var l1 = this.m[0];
@@ -3787,9 +3822,13 @@
             other._markAsUpdated();
             return this;
         }
+
         /**
-         * Inserts the translation vector (using 3 x floats) in the current Matrix.  
-         * Returns the updated Matrix.  
+         * Inserts the translation vector (using 3 floats) in the current matrix
+         * @param x defines the 1st component of the translation
+         * @param y defines the 2nd component of the translation
+         * @param z defines the 3rd component of the translation
+         * @returns the current updated matrix
          */
         public setTranslationFromFloats(x: number, y: number, z: number): Matrix {
             this.m[12] = x;
@@ -3799,10 +3838,12 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
- * Inserts the translation vector in the current Matrix.  
- * Returns the updated Matrix.  
- */
+         * Inserts the translation vector in the current matrix  
+         * @param vector3 defines the translation to insert
+         * @returns the current updated matrix
+         */
         public setTranslation(vector3: Vector3): Matrix {
             this.m[12] = vector3.x;
             this.m[13] = vector3.y;
@@ -3811,14 +3852,19 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Returns a new Vector3 as the extracted translation from the Matrix.  
+         * Gets the translation value of the current matrix
+         * @returns a new Vector3 as the extracted translation from the matrix
          */
         public getTranslation(): Vector3 {
             return new Vector3(this.m[12], this.m[13], this.m[14]);
         }
+
         /**
-         * Fill a Vector3 with the extracted translation from the Matrix.  
+         * Fill a Vector3 with the extracted translation from the matrix  
+         * @param result defines the Vector3 where to store the translation
+         * @returns the current matrix
          */
         public getTranslationToRef(result: Vector3): Matrix {
             result.x = this.m[12];
@@ -3827,9 +3873,10 @@
 
             return this;
         }
+
         /**
-         * Remove rotation and scaling part from the Matrix. 
-         * Returns the updated Matrix. 
+         * Remove rotation and scaling part from the matrix 
+         * @returns the updated matrix
          */
         public removeRotationAndScaling(): Matrix {
             this.setRowFromFloats(0, 1, 0, 0, 0);
@@ -3837,17 +3884,22 @@
             this.setRowFromFloats(2, 0, 0, 1, 0);
             return this;
         }
+
         /**
-         * Returns a new Matrix set with the multiplication result of the current Matrix and the passed one.  
+         * Multiply two matrices
+         * @param other defines the second operand
+         * @returns a new matrix set with the multiplication result of the current Matrix and the passed one  
          */
         public multiply(other: Matrix): Matrix {
             var result = new Matrix();
             this.multiplyToRef(other, result);
             return result;
         }
+
         /**
-         * Updates the current Matrix from the passed one values.  
-         * Returns the updated Matrix.  
+         * Copy the current matrix from the passed one  
+         * @param other defines the source matrix
+         * @returns the current updated matrix
          */
         public copyFrom(other: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3857,9 +3909,12 @@
             this._markAsUpdated();
             return this;
         }
+
         /**
-         * Populates the passed array from the starting index with the Matrix values.  
-         * Returns the Matrix.  
+         * Populates the passed array from the starting index with the current matrix values
+         * @param array defines the target array
+         * @param offset defines the offset in the target array where to start storing values
+         * @returns the current matrix  
          */
         public copyToArray(array: Float32Array, offset: number = 0): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -3867,8 +3922,12 @@
             }
             return this;
         }
+
         /**
-         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one.  
+         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one
+         * @param other defines the second operand
+         * @param result defines the matrix where to store the multiplication
+         * @returns the current matrix 
          */
         public multiplyToRef(other: Matrix, result: Matrix): Matrix {
             this.multiplyToArray(other, result.m, 0);
@@ -3876,8 +3935,13 @@
             result._markAsUpdated();
             return this;
         }
+
         /**
-         * Sets the Float32Array "result" from the passed index "offset" with the multiplication result of the current Matrix and the passed one.  
+         * Sets the Float32Array "result" from the passed index "offset" with the multiplication of the current matrix and the passed one
+         * @param other defines the second operand
+         * @param result defines the array where to store the multiplication
+         * @param offset defines the offset in the target array where to start storing values
+         * @returns the current matrix 
          */
         public multiplyToArray(other: Matrix, result: Float32Array, offset: number): Matrix {
             var tm0 = this.m[0];
@@ -3935,8 +3999,11 @@
             result[offset + 15] = tm12 * om3 + tm13 * om7 + tm14 * om11 + tm15 * om15;
             return this;
         }
+
         /**
-         * Boolean : True is the current Matrix and the passed one values are strictly equal.  
+         * Check equality between this matrix and a second one
+         * @param value defines the second matrix to compare
+         * @returns true is the current matrix and the passed one values are strictly equal
          */
         public equals(value: Matrix): boolean {
             return value &&
@@ -3945,8 +4012,10 @@
                     this.m[8] === value.m[8] && this.m[9] === value.m[9] && this.m[10] === value.m[10] && this.m[11] === value.m[11] &&
                     this.m[12] === value.m[12] && this.m[13] === value.m[13] && this.m[14] === value.m[14] && this.m[15] === value.m[15]);
         }
+
         /**
-         * Returns a new Matrix from the current Matrix.  
+         * Clone the current matrix
+         * @returns a new matrix from the current matrix
          */
         public clone(): Matrix {
             return Matrix.FromValues(this.m[0], this.m[1], this.m[2], this.m[3],
@@ -3954,14 +4023,18 @@
                 this.m[8], this.m[9], this.m[10], this.m[11],
                 this.m[12], this.m[13], this.m[14], this.m[15]);
         }
+
         /**
-         * Returns the string "Matrix"
+         * Returns the name of the current matrix class
+         * @returns the string "Matrix"
          */
         public getClassName(): string {
             return "Matrix";
         }
+
         /**
-         * Returns the Matrix hash code.  
+         * Gets the hash code of the current matrix
+         * @returns the hash code
          */
         public getHashCode(): number {
             let hash = this.m[0] || 0;
@@ -3971,11 +4044,11 @@
             return hash;
         }
         /**
-         * Decomposes the current Matrix into : 
-         * - a scale vector3 passed as a reference to update, 
-         * - a rotation quaternion passed as a reference to update,
-         * - a translation vector3 passed as a reference to update.  
-         * Returns the true if operation was successful.  
+         * Decomposes the current Matrix into a translation, rotation and scaling components
+         * @param scale defines the scale vector3 passed as a reference to update
+         * @param rotation defines the rotation quaternion passed as a reference to update
+         * @param translation defines the translation vector3 passed as a reference to update
+         * @returns true if operation was successful
          */
         public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
             translation.x = this.m[12];
@@ -4010,7 +4083,9 @@
         }
 
         /**
-         * Returns the index-th row of the current matrix as a new Vector4.  
+         * Gets specific row of the matrix
+         * @param index defines the number of the row to get
+         * @returns the index-th row of the current matrix as a new Vector4  
          */
         public getRow(index: number): Nullable<Vector4> {
             if (index < 0 || index > 3) {
@@ -4021,8 +4096,10 @@
         }
 
         /**
-         * Sets the index-th row of the current matrix with the passed Vector4 values.
-         * Returns the updated Matrix.    
+         * Sets the index-th row of the current matrix to the vector4 values
+         * @param index defines the number of the row to set
+         * @param row defines the target vector4
+         * @returns the updated current matrix
          */
         public setRow(index: number, row: Vector4): Matrix {
             if (index < 0 || index > 3) {
@@ -4040,16 +4117,17 @@
         }
 
         /**
-         * Compute the transpose of the matrix.  
-         * Returns a new Matrix.  
+         * Compute the transpose of the matrix
+         * @returns the new transposed matrix
          */
         public transpose(): Matrix {
             return Matrix.Transpose(this);
         }
 
         /**
-         * Compute the transpose of the matrix.  
-         * Returns the current matrix.  
+         * Compute the transpose of the matrix and store it in a given matrix
+         * @param result defines the target matrix
+         * @returns the current matrix
          */
         public transposeToRef(result: Matrix): Matrix {
             Matrix.TransposeToRef(this, result);
@@ -4058,8 +4136,13 @@
         }
 
         /**
-         * Sets the index-th row of the current matrix with the passed 4 x float values.
-         * Returns the updated Matrix.    
+         * Sets the index-th row of the current matrix with the passed 4 x float values
+         * @param index defines the row index
+         * @param x defines the x component to set
+         * @param y defines the y component to set
+         * @param z defines the z component to set
+         * @param w defines the w component to set
+         * @returns the updated current matrix   
          */
         public setRowFromFloats(index: number, x: number, y: number, z: number, w: number): Matrix {
             if (index < 0 || index > 3) {
@@ -4076,9 +4159,9 @@
         }
 
         /**
-         * Compute a new Matrix set with the current Matrix values multiplied by scale (float)
+         * Compute a new matrix set with the current matrix values multiplied by scale (float)
          * @param scale defines the scale factor
-         * @returns a new Matrix
+         * @returns a new matrix
          */
         public scale(scale: number): Matrix {
             var result = new Matrix();
@@ -4087,10 +4170,10 @@
         }
 
         /**
-         * Scale the current Matrix values by a factor to a given result Matrix  
+         * Scale the current matrix values by a factor to a given result matrix  
          * @param scale defines the scale factor
-         * @param result defines the Matrix to store the result
-         * @returns the current Matrix  
+         * @param result defines the matrix to store the result
+         * @returns the current matrix  
          */
         public scaleToRef(scale: number, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -4101,10 +4184,10 @@
         }          
         
         /**
-         * Scale the current Matrix values by a factor and add the result to a given Matrix  
+         * Scale the current matrix values by a factor and add the result to a given matrix  
          * @param scale defines the scale factor
          * @param result defines the Matrix to store the result
-         * @returns the current Matrix  
+         * @returns the current matrix  
          */
         public scaleAndAddToRef(scale: number, result: Matrix): Matrix {
             for (var index = 0; index < 16; index++) {
@@ -4130,7 +4213,8 @@
         }
 
         /**
-         * Returns a new Matrix as the extracted rotation matrix from the current one.  
+         * Gets only rotation part of the current matrix
+         * @returns a new matrix sets to the extracted rotation matrix from the current one
          */
         public getRotationMatrix(): Matrix {
             var result = Matrix.Identity();
@@ -4139,8 +4223,9 @@
         }
 
         /**
-         * Extracts the rotation matrix from the current one and sets it as the passed "result".  
-         * Returns the current Matrix.  
+         * Extracts the rotation matrix from the current one and sets it as the passed "result"  
+         * @param result defines the target matrix to store data to
+         * @returns the current matrix  
          */
         public getRotationMatrixToRef(result: Matrix): Matrix {
             var m = this.m;
@@ -4163,8 +4248,12 @@
         }
 
         // Statics
+
         /**
-         * Returns a new Matrix set from the starting index of the passed array.
+         * Creates a matrix from an array
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @returns a new Matrix set from the starting index of the passed array
          */
         public static FromArray(array: ArrayLike<number>, offset?: number): Matrix {
             var result = new Matrix();
@@ -4176,7 +4265,10 @@
             return result;
         }
         /**
-         * Sets the passed "result" matrix from the starting index of the passed array.
+         * Copy the content of an array into a given matrix
+         * @param array defines the source array
+         * @param offset defines an offset in the source array
+         * @param result defines the target matrix
          */
         public static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
@@ -4184,8 +4276,13 @@
             }
             result._markAsUpdated();
         }
+
         /**
-         * Sets the passed "result" matrix from the starting index of the passed Float32Array by multiplying each element by the float "scale".  
+         * Stores an array into a matrix after having multiplied each component by a given factor
+         * @param array defines the source array
+         * @param offset defines the offset in the source array
+         * @param scale defines the scaling factor
+         * @param result defines the target matrix
          */
         public static FromFloat32ArrayToRefScaled(array: Float32Array, offset: number, scale: number, result: Matrix) {
             for (var index = 0; index < 16; index++) {
@@ -4194,8 +4291,26 @@
 
             result._markAsUpdated();
         }
+        
         /**
-         * Sets the passed matrix "result" with the 16 passed floats.  
+         * Stores a list of values (16) inside a given matrix
+         * @param initialM11 defines 1st value of 1st row
+         * @param initialM12 defines 2nd value of 1st row 
+         * @param initialM13 defines 3rd value of 1st row 
+         * @param initialM14 defines 4th value of 1st row  
+         * @param initialM21 defines 1st value of 2nd row
+         * @param initialM22 defines 2nd value of 2nd row
+         * @param initialM23 defines 3rd value of 2nd row
+         * @param initialM24 defines 4th value of 2nd row
+         * @param initialM31 defines 1st value of 3rd row
+         * @param initialM32 defines 2nd value of 3rd row
+         * @param initialM33 defines 3rd value of 3rd row
+         * @param initialM34 defines 4th value of 3rd row
+         * @param initialM41 defines 1st value of 4th row
+         * @param initialM42 defines 2nd value of 4th row
+         * @param initialM43 defines 3rd value of 4th row
+         * @param initialM44 defines 4th value of 4th row
+         * @param result defines the target matrix
          */
         public static FromValuesToRef(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
             initialM21: number, initialM22: number, initialM23: number, initialM24: number,
@@ -4223,15 +4338,31 @@
         }    
 
         /**
-         * Static identity matrix to be used as readonly matrix
-         * Must not be updated.
+         * Gets an identity matrix that must not be updated
          */
         public static get IdentityReadOnly(): Matrix {
             return Matrix._identityReadOnly;
         }
 
         /**
-         * Returns a new Matrix set from the 16 passed floats.  
+         * Creates new matrix from a list of values (16)
+         * @param initialM11 defines 1st value of 1st row
+         * @param initialM12 defines 2nd value of 1st row 
+         * @param initialM13 defines 3rd value of 1st row 
+         * @param initialM14 defines 4th value of 1st row  
+         * @param initialM21 defines 1st value of 2nd row
+         * @param initialM22 defines 2nd value of 2nd row
+         * @param initialM23 defines 3rd value of 2nd row
+         * @param initialM24 defines 4th value of 2nd row
+         * @param initialM31 defines 1st value of 3rd row
+         * @param initialM32 defines 2nd value of 3rd row
+         * @param initialM33 defines 3rd value of 3rd row
+         * @param initialM34 defines 4th value of 3rd row
+         * @param initialM41 defines 1st value of 4th row
+         * @param initialM42 defines 2nd value of 4th row
+         * @param initialM43 defines 3rd value of 4th row
+         * @param initialM44 defines 4th value of 4th row
+         * @returns the new matrix
          */
         public static FromValues(initialM11: number, initialM12: number, initialM13: number, initialM14: number,
             initialM21: number, initialM22: number, initialM23: number, initialM24: number,
@@ -4261,7 +4392,11 @@
         }
 
         /**
-         * Returns a new Matrix composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
+         * Creates a new matrix composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
+         * @param scale defines the scale vector3
+         * @param rotation defines the rotation quaternion
+         * @param translation defines the translation vector3
+         * @returns a new matrix
          */
         public static Compose(scale: Vector3, rotation: Quaternion, translation: Vector3): Matrix {
             var result = Matrix.Identity();
@@ -4270,8 +4405,12 @@
         }
 
         /**
-       * Update a Matrix with values composed by the passed scale (vector3), rotation (quaternion) and translation (vector3).  
-       */
+         * Sets a matrix to a value composed by merging scale (vector3), rotation (quaternion) and translation (vector3)
+         * @param scale defines the scale vector3
+         * @param rotation defines the rotation quaternion
+         * @param translation defines the translation vector3
+         * @param result defines the target matrix
+         */
         public static ComposeToRef(scale: Vector3, rotation: Quaternion, translation: Vector3, result: Matrix): void {
             Matrix.FromValuesToRef(scale.x, 0, 0, 0,
                 0, scale.y, 0, 0,
@@ -4283,8 +4422,10 @@
 
             result.setTranslation(translation);
         }
+
         /**
-         * Returns a new indentity Matrix.  
+         * Creates a new identity matrix
+         * @returns a new identity matrix  
          */
         public static Identity(): Matrix {
             return Matrix.FromValues(1.0, 0.0, 0.0, 0.0,
@@ -4292,8 +4433,10 @@
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0);
         }
+
         /**
-         * Sets the passed "result" as an identity matrix.  
+         * Creates a new identity matrix and stores the result in a given matrix
+         * @param result defines the target matrix
          */
         public static IdentityToRef(result: Matrix): void {
             Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0,
@@ -4301,8 +4444,10 @@
                 0.0, 0.0, 1.0, 0.0,
                 0.0, 0.0, 0.0, 1.0, result);
         }
+
         /**
-         * Returns a new zero Matrix.  
+         * Creates a new zero matrix
+         * @returns a new zero matrix  
          */
         public static Zero(): Matrix {
             return Matrix.FromValues(0.0, 0.0, 0.0, 0.0,
@@ -4310,24 +4455,33 @@
                 0.0, 0.0, 0.0, 0.0,
                 0.0, 0.0, 0.0, 0.0);
         }
+
         /**
-         * Returns a new rotation matrix for "angle" radians around the X axis.  
+         * Creates a new rotation matrix for "angle" radians around the X axis
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix  
          */
         public static RotationX(angle: number): Matrix {
             var result = new Matrix();
             Matrix.RotationXToRef(angle, result);
             return result;
         }
+
         /**
-         * Returns a new Matrix as the passed inverted one.  
+         * Creates a new matrix as the invert of a given matrix
+         * @param source defines the source matrix
+         * @returns the new matrix
          */
         public static Invert(source: Matrix): Matrix {
             var result = new Matrix();
             source.invertToRef(result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the X axis. 
+         * Creates a new rotation matrix for "angle" radians around the X axis and stores it in a given matrix
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix 
          */
         public static RotationXToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
@@ -4354,16 +4508,22 @@
 
             result._markAsUpdated();
         }
+
         /**
-         * Returns a new rotation matrix for "angle" radians around the Y axis.  
+         * Creates a new rotation matrix for "angle" radians around the Y axis
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix  
          */
         public static RotationY(angle: number): Matrix {
             var result = new Matrix();
             Matrix.RotationYToRef(angle, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the Y axis. 
+         * Creates a new rotation matrix for "angle" radians around the Y axis and stores it in a given matrix
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix 
          */
         public static RotationYToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
@@ -4390,17 +4550,23 @@
 
             result._markAsUpdated();
         }
+
         /**
-         * Returns a new rotation matrix for "angle" radians around the Z axis.  
+         * Creates a new rotation matrix for "angle" radians around the Z axis
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix  
          */
         public static RotationZ(angle: number): Matrix {
             var result = new Matrix();
             Matrix.RotationZToRef(angle, result);
             return result;
         }
+        
         /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the Z axis. 
-         */
+         * Creates a new rotation matrix for "angle" radians around the Z axis and stores it in a given matrix
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix 
+         */        
         public static RotationZToRef(angle: number, result: Matrix): void {
             var s = Math.sin(angle);
             var c = Math.cos(angle);
@@ -4426,17 +4592,25 @@
 
             result._markAsUpdated();
         }
+
         /**
-         * Returns a new rotation matrix for "angle" radians around the passed axis.  
+         * Creates a new rotation matrix for "angle" radians around the given axis
+         * @param axis defines the axis to use
+         * @param angle defines the angle (in radians) to use
+         * @return the new matrix  
          */
         public static RotationAxis(axis: Vector3, angle: number): Matrix {
             var result = Matrix.Zero();
             Matrix.RotationAxisToRef(axis, angle, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" as a rotation matrix for "angle" radians around the passed axis. 
-         */
+         * Creates a new rotation matrix for "angle" radians around the given axis and stores it in a given matrix
+         * @param axis defines the axis to use
+         * @param angle defines the angle (in radians) to use
+         * @param result defines the target matrix 
+         */  
         public static RotationAxisToRef(axis: Vector3, angle: number, result: Matrix): void {
             var s = Math.sin(-angle);
             var c = Math.cos(-angle);
@@ -4463,31 +4637,51 @@
 
             result._markAsUpdated();
         }
+        
         /**
-         * Returns a new Matrix as a rotation matrix from the Euler angles (y, x, z). 
+         * Creates a rotation matrix
+         * @param yaw defines the yaw angle in radians (Y axis)
+         * @param pitch defines the pitch angle in radians (X axis)
+         * @param roll defines the roll angle in radians (X axis)
+         * @returns the new rotation matrix
          */
         public static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Matrix {
             var result = new Matrix();
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" as a rotation matrix from the Euler angles (y, x, z). 
+         * Creates a rotation matrix and stores it in a given matrix
+         * @param yaw defines the yaw angle in radians (Y axis)
+         * @param pitch defines the pitch angle in radians (X axis)
+         * @param roll defines the roll angle in radians (X axis)
+         * @param result defines the target matrix
          */
         public static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Matrix): void {
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, roll, this._tempQuaternion);
             this._tempQuaternion.toRotationMatrix(result);
         }
+
         /**
-         * Returns a new Matrix as a scaling matrix from the passed floats (x, y, z). 
+         * Creates a scaling matrix
+         * @param x defines the scale factor on X axis
+         * @param y defines the scale factor on Y axis 
+         * @param z defines the scale factor on Z axis 
+         * @returns the new matrix
          */
         public static Scaling(x: number, y: number, z: number): Matrix {
             var result = Matrix.Zero();
             Matrix.ScalingToRef(x, y, z, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" as a scaling matrix from the passed floats (x, y, z). 
+         * Creates a scaling matrix and stores it in a given matrix
+         * @param x defines the scale factor on X axis
+         * @param y defines the scale factor on Y axis 
+         * @param z defines the scale factor on Z axis 
+         * @param result defines the target matrix
          */
         public static ScalingToRef(x: number, y: number, z: number, result: Matrix): void {
             result.m[0] = x;
@@ -4509,16 +4703,26 @@
 
             result._markAsUpdated();
         }
+
         /**
-         * Returns a new Matrix as a translation matrix from the passed floats (x, y, z). 
+         * Creates a translation matrix
+         * @param x defines the translation on X axis
+         * @param y defines the translation on Y axis 
+         * @param z defines the translationon Z axis 
+         * @returns the new matrix
          */
         public static Translation(x: number, y: number, z: number): Matrix {
             var result = Matrix.Identity();
             Matrix.TranslationToRef(x, y, z, result);
             return result;
         }
+
         /**
-         * Sets the passed matrix "result" as a translation matrix from the passed floats (x, y, z). 
+         * Creates a translation matrix and stores it in a given matrix
+         * @param x defines the translation on X axis
+         * @param y defines the translation on Y axis 
+         * @param z defines the translationon Z axis 
+         * @param result defines the target matrix
          */
         public static TranslationToRef(x: number, y: number, z: number, result: Matrix): void {
             Matrix.FromValuesToRef(1.0, 0.0, 0.0, 0.0,
@@ -4555,10 +4759,14 @@
         }        
 
         /**
-         * Returns a new Matrix whose values are computed by : 
-         * - decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices,
-         * - interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end,
-         * - recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices.  
+         * Builds a new matrix whose values are computed by: 
+         * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
+         * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
+         * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
+         * @param startValue defines the first matrix
+         * @param endValue defines the second matrix
+         * @param gradient defines the gradient between the two matrices
+         * @returns the new matrix
          */
         public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
             var startScale = new Vector3(0, 0, 0);
@@ -4579,8 +4787,12 @@
         }
 
         /**
-         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
-         * This methods works for a Left-Handed system.  
+         * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
+         * This function works in left handed mode
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @returns the new matrix
          */
         public static LookAtLH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();
@@ -4589,8 +4801,12 @@
         }
 
         /**
-         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
-         * This methods works for a Left-Handed system.  
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".  
+         * This function works in left handed mode  
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @param result defines the target matrix
          */
         public static LookAtLHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
             // Z axis
@@ -4622,8 +4838,12 @@
         }
 
         /**
-         * Returns a new rotation Matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
-         * This methods works for a Right-Handed system.  
+         * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
+         * This function works in right handed mode
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @returns the new matrix
          */
         public static LookAtRH(eye: Vector3, target: Vector3, up: Vector3): Matrix {
             var result = Matrix.Zero();
@@ -4632,8 +4852,12 @@
         }
 
         /**
-         * Sets the passed "result" Matrix as a rotation matrix used to rotate a mesh so as it looks at the target Vector3, from the eye Vector3, the UP vector3 being orientated like "up".  
-         * This methods works for a Left-Handed system.  
+         * Sets the given "result" Matrix to a rotation matrix used to rotate an entity so that it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up".  
+         * This function works in right handed mode  
+         * @param eye defines the final position of the entity
+         * @param target defines where the entity should look at
+         * @param up defines the up vector for the entity
+         * @param result defines the target matrix
          */
         public static LookAtRHToRef(eye: Vector3, target: Vector3, up: Vector3, result: Matrix): void {
             // Z axis
@@ -4665,15 +4889,26 @@
         }
 
         /**
-         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         * Create a left-handed orthographic projection matrix
+         * @param width defines the viewport width
+         * @param height defines the viewport height
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed orthographic projection matrix
          */
         public static OrthoLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.OrthoLHToRef(width, height, znear, zfar, matrix);
             return matrix;
         }
+
         /**
-         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         * Store a left-handed orthographic projection to a given matrix
+         * @param width defines the viewport width
+         * @param height defines the viewport height
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
          */
         public static OrthoLHToRef(width: number, height: number, znear: number, zfar: number, result: Matrix): void {
             let n = znear;
@@ -4692,8 +4927,16 @@
                 result
             );
         }
+
         /**
-         * Returns a new Matrix as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         * Create a left-handed orthographic projection matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed orthographic projection matrix
          */
         public static OrthoOffCenterLH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
@@ -4702,8 +4945,16 @@
 
             return matrix;
         }
+
         /**
-         * Sets the passed matrix "result" as a left-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         * Stores a left-handed orthographic projection into a given matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
          */
         public static OrthoOffCenterLHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             let n = znear;
@@ -4724,23 +4975,45 @@
                 result
             );
         }
+
         /**
-         * Returns a new Matrix as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         * Creates a right-handed orthographic projection matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a right-handed orthographic projection matrix
          */
         public static OrthoOffCenterRH(left: number, right: number, bottom: number, top: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, matrix);
             return matrix;
         }
+
         /**
-         * Sets the passed matrix "result" as a right-handed orthographic projection matrix computed from the passed floats : left, right, top and bottom being the coordinates of the projection plane, z near and far limits.  
+         * Stores a right-handed orthographic projection into a given matrix
+         * @param left defines the viewport left coordinate
+         * @param right defines the viewport right coordinate
+         * @param bottom defines the viewport bottom coordinate
+         * @param top defines the viewport top coordinate
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
          */
         public static OrthoOffCenterRHToRef(left: number, right: number, bottom: number, top: number, znear: number, zfar: number, result: Matrix): void {
             Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result);
             result.m[10] *= -1.0;
         }
+
         /**
-         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : width and height of the projection plane, z near and far limits.  
+         * Creates a left-handed perspective projection matrix
+         * @param width defines the viewport width
+         * @param height defines the viewport height
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed perspective projection matrix
          */
         public static PerspectiveLH(width: number, height: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
@@ -4763,16 +5036,29 @@
 
             return matrix;
         }
+        
         /**
-         * Returns a new Matrix as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         * Creates a left-handed perspective projection matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a left-handed perspective projection matrix
          */
         public static PerspectiveFovLH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovLHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
+
         /**
-         * Sets the passed matrix "result" as a left-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         * Stores a left-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          */
         public static PerspectiveFovLHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             let n = znear;
@@ -4792,16 +5078,29 @@
                 result
             );
         }
+
         /**
-         * Returns a new Matrix as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         * Creates a right-handed perspective projection matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @returns a new matrix as a right-handed perspective projection matrix
          */
         public static PerspectiveFovRH(fov: number, aspect: number, znear: number, zfar: number): Matrix {
             var matrix = Matrix.Zero();
             Matrix.PerspectiveFovRHToRef(fov, aspect, znear, zfar, matrix);
             return matrix;
         }
+
         /**
-         * Sets the passed matrix "result" as a right-handed perspective projection matrix computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         * Stores a right-handed perspective projection into a given matrix
+         * @param fov defines the horizontal field of view
+         * @param aspect defines the aspect ratio
+         * @param znear defines the near clip plane
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         * @param isVerticalFovFixed defines it the fov is vertically fixed (default) or horizontally
          */
         public static PerspectiveFovRHToRef(fov: number, aspect: number, znear: number, zfar: number, result: Matrix, isVerticalFovFixed = true): void {
             //alternatively this could be expressed as:
@@ -4826,8 +5125,14 @@
                 result
             );
         }
+
         /**
-         * Sets the passed matrix "result" as a left-handed perspective projection matrix  for WebVR computed from the passed floats : vertical angle of view (fov), width/height ratio (aspect), z near and far limits.  
+         * Stores a perspective projection for WebVR info a given matrix
+         * @param fov defines the field of view
+         * @param znear defines the near clip plane 
+         * @param zfar defines the far clip plane
+         * @param result defines the target matrix
+         * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
          */
         public static PerspectiveFovWebVRToRef(fov: { upDegrees: number, downDegrees: number, leftDegrees: number, rightDegrees: number }, znear: number, zfar: number, result: Matrix, rightHanded = false): void {
 
@@ -4843,20 +5148,25 @@
             result.m[1] = result.m[2] = result.m[3] = result.m[4] = 0.0;
             result.m[5] = yScale;
             result.m[6] = result.m[7] = 0.0;
-            result.m[8] = ((leftTan - rightTan) * xScale * 0.5)// * rightHandedFactor;
-            result.m[9] = -((upTan - downTan) * yScale * 0.5)// * rightHandedFactor;
-            //result.m[10] = -(znear + zfar) / (zfar - znear) * rightHandedFactor;
+            result.m[8] = ((leftTan - rightTan) * xScale * 0.5);
+            result.m[9] = -((upTan - downTan) * yScale * 0.5);
             result.m[10] = -zfar / (znear - zfar);
             result.m[11] = 1.0 * rightHandedFactor;
             result.m[12] = result.m[13] = result.m[15] = 0.0;
             result.m[14] = -(2.0 * zfar * znear) / (zfar - znear);
-            // result.m[14] = (znear * zfar) / (znear - zfar);
 
             result._markAsUpdated();
         }
 
         /**
-         * Returns the final transformation matrix : world * view * projection * viewport
+         * Computes a complete transformation matrix
+         * @param viewport defines the viewport to use
+         * @param world defines the world matrix
+         * @param view defines the view matrix
+         * @param projection defines the projection matrix
+         * @param zmin defines the near clip plane
+         * @param zmax defines the far clip plane
+         * @returns the transformation matrix
          */
         public static GetFinalMatrix(viewport: Viewport, world: Matrix, view: Matrix, projection: Matrix, zmin: number, zmax: number): Matrix {
             var cw = viewport.width;
@@ -4873,7 +5183,9 @@
         }
 
         /**
-         * Returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed Matrix.  
+         * Extracts a 2x2 matrix from a given matrix and store the result in a Float32Array
+         * @param matrix defines the matrix to use
+         * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed matrix
          */
         public static GetAsMatrix2x2(matrix: Matrix): Float32Array {
             return new Float32Array([
@@ -4882,7 +5194,9 @@
             ]);
         }
         /**
-         * Returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed Matrix.  
+         * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
+         * @param matrix defines the matrix to use
+         * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed matrix
          */
         public static GetAsMatrix3x3(matrix: Matrix): Float32Array {
             return new Float32Array([
@@ -4893,8 +5207,9 @@
         }
 
         /**
-         * Compute the transpose of the passed Matrix.  
-         * Returns a new Matrix.  
+         * Compute the transpose of a given matrix
+         * @param matrix defines the matrix to transpose
+         * @returns the new matrix
          */
         public static Transpose(matrix: Matrix): Matrix {
             var result = new Matrix();
@@ -4905,7 +5220,9 @@
         }
 
         /**
-         * Compute the transpose of the passed Matrix and store it in the result matrix.  
+         * Compute the transpose of a matrix and store it in a target matrix
+         * @param matrix defines the matrix to transpose
+         * @param result defines the target matrix
          */
         public static TransposeToRef(matrix: Matrix, result: Matrix): void {
             result.m[0] = matrix.m[0];
@@ -4930,7 +5247,9 @@
         }
 
         /**
-         * Returns a new Matrix as the reflection  matrix across the passed plane.  
+         * Computes a reflection matrix from a plane
+         * @param plane defines the reflection plane
+         * @returns a new matrix
          */
         public static Reflection(plane: Plane): Matrix {
             var matrix = new Matrix();
@@ -4939,7 +5258,9 @@
         }
 
         /**
-         * Sets the passed matrix "result" as the reflection matrix across the passed plane. 
+         * Computes a reflection matrix from a plane
+         * @param plane defines the reflection plane
+         * @param result defines the target matrix
          */
         public static ReflectionToRef(plane: Plane, result: Matrix): void {
             plane.normalize();
@@ -4970,7 +5291,11 @@
         }
 
         /**
-         * Sets the passed matrix "mat" as a rotation matrix composed from the 3 passed  left handed axis.  
+         * Sets the given matrix as a rotation matrix composed from the 3 left handed axes
+         * @param xaxis defines the value of the 1st axis
+         * @param yaxis defines the value of the 2nd axis
+         * @param zaxis defines the value of the 3rd axis
+         * @param result defines the target matrix
          */
         public static FromXYZAxesToRef(xaxis: Vector3, yaxis: Vector3, zaxis: Vector3, result: Matrix) {
 
@@ -5002,7 +5327,9 @@
         }
 
         /**
-         * Sets the passed matrix "result" as a rotation matrix according to the passed quaternion.  
+         * Creates a rotation matrix from a quaternion and stores it in a target matrix
+         * @param quat defines the quaternion to use
+         * @param result defines the target matrix
          */
         public static FromQuaternionToRef(quat: Quaternion, result: Matrix) {
 
