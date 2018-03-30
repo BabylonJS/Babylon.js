@@ -23,7 +23,7 @@ module.exports = {
             "babylonjs-materials": __dirname + '/../dist/preview release/materialsLibrary/babylonjs.materials.js',
             "babylonjs-loaders": __dirname + '/../dist/preview release/loaders/babylonjs.loaders.js',
             // "es6-promise": __dirname + '/assets/es6-promise.min.js',
-            "deepmerge": __dirname + '/assets/deepmerge.min.js',
+            "pep": __dirname + '/assets/pep.min.js',
         }
     },
     module: {

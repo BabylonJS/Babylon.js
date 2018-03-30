@@ -506,7 +506,8 @@
                 "../../src/Materials/Textures/babylon.refractionTexture.js",
                 "../../src/Materials/Textures/babylon.dynamicTexture.js",
                 "../../src/Materials/Textures/babylon.videoTexture.js",
-                "../../src/Materials/Textures/babylon.rawTexture.js"
+                "../../src/Materials/Textures/babylon.rawTexture.js",
+                "../../src/Materials/Textures/babylon.rawTexture3D.js"
             ],
             "dependUpon": [
                 "core"
@@ -1746,6 +1747,12 @@
         ],
         "build": {
             "srcOutputDirectory": "../../Viewer/",
+            "dtsBundle": {
+                "name": "babylonjs-viewer",
+                "main": "../../Viewer/src/index.d.ts",
+                "out": "../../dist/preview release/viewer/babylon.viewer.module.d.ts",
+                "prependText": "/// <reference path=\"./babylon.d.ts\"/>"
+            },
             "outputs": [
                 {
                     "destination": [
