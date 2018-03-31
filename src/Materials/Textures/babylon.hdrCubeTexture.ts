@@ -57,6 +57,21 @@ module BABYLON {
             return this._isBlocking;
         }
 
+        protected _rotationAngle: number = 0;
+        /**
+         * Sets texture matrix rotation angle (theta) Y in radians.
+         */
+        public set rotationAngle(value: number) {
+            this._rotationAngle = value;
+            this.setReflectionTextureMatrix(BABYLON.Matrix.RotationY(this._rotationAngle));
+        }
+        /**
+         * Gets texture matrix rotation angle (theta) Y radians.
+         */
+        public get rotationAngle(): number {
+            return this._rotationAngle;
+        }
+        
         /**
          * Gets or sets the center of the bounding box associated with the cube texture
          * It must define where the camera used to render the texture was set
@@ -477,6 +492,9 @@ module BABYLON {
                 if (parsedTexture.boundingBoxSize) {
                     (<any>texture).boundingBoxSize = Vector3.FromArray(parsedTexture.boundingBoxSize);
                 }
+                if (parsedTexture.rotationAngle) {
+                    (<any>texture).rotationAngle = parsedTexture.rotationAngle;
+                }
             }
             return texture;
         }
@@ -500,6 +518,7 @@ module BABYLON {
             serializationObject.customType = "BABYLON.HDRCubeTexture";
             serializationObject.noMipmap = this._noMipmap;
             serializationObject.isBlocking = this._isBlocking;
+            serializationObject.rotationAngle = this._rotationAngle;
 
             return serializationObject;
         }
