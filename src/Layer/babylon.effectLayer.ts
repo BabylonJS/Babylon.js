@@ -684,10 +684,10 @@
          * @param rootUrl defines the root URL containing the effect layer information
          * @returns a parsed effect Layer
          */
-        public static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): EffectLayer {
-            var effectLayerType = Tools.Instantiate(parsedHightlightLayer.customType);
+        public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
+            var effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
             
-            return effectLayerType.Parse(parsedHightlightLayer, scene, rootUrl);
+            return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
         }
     }
 } 

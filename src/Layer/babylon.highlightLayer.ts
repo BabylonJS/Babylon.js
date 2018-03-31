@@ -683,8 +683,8 @@
         }
 
         /**
-         * Serializes this highlight layer
-         * @returns a serialized highlight layer object
+         * Serializes this HighLight layer
+         * @returns a serialized HighLight layer object
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
@@ -724,11 +724,11 @@
         }
 
         /**
-         * Creates a HighLight layer from parsed hightlight layer data
-         * @param parsedHightlightLayer defines the hightlight layer data
+         * Creates a HighLight layer from parsed HighLight layer data
+         * @param parsedHightlightLayer defines the HighLight layer data
          * @param scene defines the current scene
-         * @param rootUrl defines the root URL containing the hightlight layer information
-         * @returns a parsed hightlight layer
+         * @param rootUrl defines the root URL containing the HighLight layer information
+         * @returns a parsed HighLight layer
          */
         public static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer {
             var hl = SerializationHelper.Parse(() => new HighlightLayer(parsedHightlightLayer.name, scene, parsedHightlightLayer.options), parsedHightlightLayer, scene, rootUrl);
