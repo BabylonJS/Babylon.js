@@ -360,7 +360,8 @@
             // Effect layers
             if (parsedData.effectLayers) {
                 for (index = 0; index < parsedData.effectLayers.length; index++) {
-                    EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
+                    var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
+                    container.effectLayers.push(effectLayer);
                 }
             }
 
