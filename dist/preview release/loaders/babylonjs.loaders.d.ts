@@ -134,9 +134,18 @@ declare module BABYLON {
         enabled: boolean;
     }
     enum GLTFLoaderState {
-        Loading = 0,
-        Ready = 1,
-        Complete = 2,
+        /**
+         * The asset is loading.
+         */
+        LOADING = 0,
+        /**
+         * The asset is ready for rendering.
+         */
+        READY = 1,
+        /**
+         * The asset is completely loaded.
+         */
+        COMPLETE = 2,
     }
     interface IGLTFLoader extends IDisposable {
         coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
@@ -213,13 +222,13 @@ declare module BABYLON {
         /**
          * Raised when the asset is completely loaded, immediately before the loader is disposed.
          * For assets with LODs, raised when all of the LODs are complete.
-         * For assets without LODs, raised when the model is complete, immediately after onSuccess.
+         * For assets without LODs, raised when the model is complete, immediately after the loader resolves the returned promise.
          */
         readonly onCompleteObservable: Observable<GLTFFileLoader>;
         private _onCompleteObserver;
         onComplete: () => void;
         /**
-        * Raised when the loader is disposed.
+        * Raised after the loader is disposed.
         */
         readonly onDisposeObservable: Observable<GLTFFileLoader>;
         private _onDisposeObserver;
@@ -232,12 +241,12 @@ declare module BABYLON {
         private _onExtensionLoadedObserver;
         onExtensionLoaded: (extension: IGLTFLoaderExtension) => void;
         /**
-         * Gets a promise that resolves when the asset is completely loaded.
+         * Returns a promise that resolves when the asset is completely loaded.
          * @returns A promise that resolves when the asset is completely loaded.
          */
         whenCompleteAsync(): Promise<void>;
         /**
-         * The loader state or null if not active.
+         * The loader state (LOADING, READY, COMPLETE) or null if the loader is not active.
          */
         readonly loaderState: Nullable<GLTFLoaderState>;
         private _loader;

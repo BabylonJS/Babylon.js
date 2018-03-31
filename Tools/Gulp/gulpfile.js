@@ -29,6 +29,8 @@ var typedoc = require("gulp-typedoc");
 var validateTypedoc = require("./gulp-validateTypedoc");
 var request = require('request');
 var fs = require("fs");
+var dtsBundle = require('dts-bundle');
+const through = require('through2');
 var karmaServer = require('karma').Server;
 
 var config = require("./config.json");
@@ -440,7 +442,37 @@ var buildExternalLibrary = function (library, settings, watch) {
             let sequence = [waitAll];
             let wpBuild = webpack(require(library.webpack));
             if (settings.build.outputs) {
+                //shoud dtsBundle create the declaration?
+                if (settings.build.dtsBundle) {
+                    let event = wpBuild
+                        .pipe(through.obj(function (file, enc, cb) {
+                            // only declaration files
+                            const isdts = /\.d\.ts$/.test(file.path);
+                            if (isdts) this.push(file);
+                            cb();
+                        }))
+                        .pipe(gulp.dest('.'));
+                    // dts-bundle does NOT support (gulp) streams, so files have to be saved and reloaded, 
+                    // until I fix it
+                    event.on("end", function () {
+                        // create the file
+                        dtsBundle.bundle(settings.build.dtsBundle);
+                        // prepend the needed reference
+                        fs.readFile(settings.build.dtsBundle.out, function (err, data) {
+                            if (err) throw err;
+                            data = settings.build.dtsBundle.prependText + data.toString();
+                            fs.writeFile(settings.build.dtsBundle.out, data);
+                        });
+                    });
+                }
+
                 let build = wpBuild
+                    .pipe(through.obj(function (file, enc, cb) {
+                        // only pipe js files
+                        const isJs = /\.js$/.test(file.path);
+                        if (isJs) this.push(file);
+                        cb();
+                    }))
                     .pipe(addModuleExports(library.moduleDeclaration, { subModule: false, extendsRoot: false, externalUsingBabylon: true, noBabylonInit: library.babylonIncluded }));
 
                 let unminifiedOutpus = [];

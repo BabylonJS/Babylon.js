@@ -118,7 +118,7 @@ module BABYLON.GLTF2 {
                 this._babylonScene = scene;
                 this._rootUrl = rootUrl;
                 this._progressCallback = onProgress;
-                this._state = GLTFLoaderState.Loading;
+                this._state = GLTFLoaderState.LOADING;
 
                 this._loadData(data);
                 this._checkExtensions();
@@ -142,7 +142,7 @@ module BABYLON.GLTF2 {
                 }
 
                 const resultPromise = Promise.all(promises).then(() => {
-                    this._state = GLTFLoaderState.Ready;
+                    this._state = GLTFLoaderState.READY;
                     this._startAnimations();
                 });
 
@@ -152,7 +152,7 @@ module BABYLON.GLTF2 {
                     Tools.SetImmediate(() => {
                         if (!this._disposed) {
                             Promise.all(this._completePromises).then(() => {
-                                this._state = GLTFLoaderState.Complete;
+                                this._state = GLTFLoaderState.COMPLETE;
                                 this.onCompleteObservable.notifyObservers(this);
                                 this.onCompleteObservable.clear();
                                 this._clear();
@@ -1356,7 +1356,7 @@ module BABYLON.GLTF2 {
                 }, event => {
                     if (!this._disposed) {
                         try {
-                            if (request && this._state === GLTFLoaderState.Loading) {
+                            if (request && this._state === GLTFLoaderState.LOADING) {
                                 request._lengthComputable = event.lengthComputable;
                                 request._loaded = event.loaded;
                                 request._total = event.total;

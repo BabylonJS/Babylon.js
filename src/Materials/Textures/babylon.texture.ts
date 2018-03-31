@@ -387,6 +387,9 @@
                 serializationObject.name = serializationObject.name.replace("data:", "");
             }
 
+            serializationObject.invertY = this._invertY;
+            serializationObject.samplingMode = this.samplingMode;
+
             return serializationObject;
         }
 
@@ -459,7 +462,7 @@
                         if (Texture.UseSerializedUrlIfAny && parsedTexture.url ) {
                             url = parsedTexture.url;
                         }
-                        texture = new Texture(url, scene, !generateMipMaps);
+                        texture = new Texture(url, scene, !generateMipMaps, parsedTexture.invertY);
                     }
 
                     return texture;
