@@ -11,7 +11,7 @@ module.exports = {
         libraryTarget: 'umd',
         library: 'BabylonViewer',
         umdNamedDefine: true,
-        devtoolModuleFilenameTemplate: '[absolute-resource-path]'
+        devtoolModuleFilenameTemplate: '[relative-resource-path]'
     },
     resolve: {
         extensions: ['.ts', '.js'],
@@ -57,7 +57,7 @@ module.exports = {
     },
     devServer: {
         contentBase: path.join(__dirname, "dist"),
-        compress: true,
+        compress: false,
         //open: true,
         port: 9000
     }

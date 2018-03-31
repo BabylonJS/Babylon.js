@@ -5,10 +5,10 @@
             "name": "Launch Viewer (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "http://localhost:9000/",
-            "webRoot": "${workspaceRoot}/Viewer/dist/",
+            "url": "http://localhost:9000/basicExample.html",
+            "webRoot": "${workspaceRoot}/Viewer/",
             "sourceMaps": true,
-            //"preLaunchTask": "build-viewer", // TODO - test why this fails.
+            "preLaunchTask": "serve-viewer",
             "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
@@ -171,6 +171,6 @@
             "runtimeArgs": [
                 "--enable-unsafe-es3-apis"
             ]
-        },        
+        },
     ]
 }
