@@ -34,7 +34,7 @@ module BABYLON {
         public _effects: Array<PostProcess> = [];
 
         /**
-         * The focal the length of the camera used in the effect
+         * The focal the length of the camera used in the effect in scene units/1000 (eg. millimeter)
          */
         public set focalLength(value: number){
             this._circleOfConfusion.focalLength = value;
