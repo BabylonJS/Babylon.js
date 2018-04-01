@@ -88,7 +88,7 @@
             return this._intensity;
         }
 
-        @serialize('options')
+        @serialize("options")
         private _options: IGlowLayerOptions;
 
         private _intensity: number = 1.0;
@@ -460,6 +460,8 @@
          */
         public serialize(): any {
             var serializationObject = SerializationHelper.Serialize(this);
+            serializationObject.customType = "BABYLON.GlowLayer";
+
             var index;
 
             // Included meshes
