@@ -7,7 +7,7 @@
         "strictNullChecks": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": false,
+        "sourceMap": true,
         "experimentalDecorators": true,
         "isolatedModules": false,
         "declaration": false,
