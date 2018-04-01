@@ -3075,6 +3075,21 @@
             return index;
         }
 
+        
+        /**
+         * Removes the given effect layer from this scene.
+         * @param toRemove defines the effect layer to remove
+         * @returns the index of the removed effect layer
+         */    
+        public removeEffectLayer(toRemove: EffectLayer): number {
+            var index = this.effectLayers.indexOf(toRemove);
+            if (index !== -1) {
+                this.effectLayers.splice(index, 1);
+            }
+
+            return index;
+        }
+
         /**
          * Removes the given texture from this scene.
          * @param toRemove The texture to remove
@@ -3195,6 +3210,14 @@
          */          
         public addLensFlareSystem(newLensFlareSystem: LensFlareSystem): void {
             this.lensFlareSystems.push(newLensFlareSystem);
+        }
+
+        /**
+         * Adds the given effect layer to this scene
+         * @param newEffectLayer defines the effect layer to add
+         */     
+        public addEffectLayer(newEffectLayer: EffectLayer): void {
+            this.effectLayers.push(newEffectLayer);
         }
 
         /**

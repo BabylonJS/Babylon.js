@@ -71,6 +71,10 @@ module BABYLON {
          * Textures to keep.
          */
         public textures = new Array<Texture>();
+        /**
+         * Effect layers to keep.
+         */
+        public effectLayers = new Array<EffectLayer>();
     }
 
     /**
@@ -151,6 +155,10 @@ module BABYLON {
          * Textures populated in the container.
          */
         public textures = new Array<Texture>();
+        /**
+         * Effect layers populated in the container.
+         */
+        public effectLayers = new Array<EffectLayer>();
 
         /**
          * Instantiates an AssetContainer.
@@ -212,7 +220,10 @@ module BABYLON {
                 this.scene.mainSoundTrack.AddSound(o);
             });
             this.textures.forEach((o) => {
-                this.scene.addTexture
+                this.scene.addTexture(o);
+            });
+            this.effectLayers.forEach((o) => {
+                this.scene.addEffectLayer(o);
             });
         }
 
@@ -270,6 +281,9 @@ module BABYLON {
             this.textures.forEach((o) => {
                 this.scene.removeTexture(o);
             });
+            this.effectLayers.forEach((o) => {
+                this.scene.removeEffectLayer(o);
+            });
         }
 
         private _moveAssets<T>(sourceAssets: T[], targetAssets: T[], keepAssets: T[]): void {
@@ -314,6 +328,7 @@ module BABYLON {
             this._moveAssets(this.scene.mainSoundTrack.soundCollection, this.sounds, keepAssets.sounds);
             this._moveAssets(this.scene.transformNodes, this.transformNodes, keepAssets.transformNodes);
             this._moveAssets(this.scene.textures, this.textures, keepAssets.textures);
+            this._moveAssets(this.scene.effectLayers, this.effectLayers, keepAssets.effectLayers);
 
             this.removeAllFromScene();
         }
