@@ -920,13 +920,12 @@ module BABYLON.GLTF2 {
                             outTangent: key.outTangent ? key.outTangent[targetIndex] : undefined
                         })));
 
-                        const multiTarget = new AnimationMultiTarget();
+                        const morphTargets = new Array<any>();
                         this._forEachPrimitive(targetNode, babylonMesh => {
-                            const morphTarget = babylonMesh.morphTargetManager!.getTarget(targetIndex);
-                            multiTarget.subTargets.push(morphTarget);
+                            morphTargets.push(babylonMesh.morphTargetManager!.getTarget(targetIndex));
                         });
 
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, morphTargets);
                     }
                 }
                 else {
@@ -935,11 +934,7 @@ module BABYLON.GLTF2 {
                     babylonAnimation.setKeys(keys);
 
                     if (targetNode._babylonAnimationTargets) {
-                        const multiTarget = new AnimationMultiTarget();
-                        for (const target of targetNode._babylonAnimationTargets) {
-                            multiTarget.subTargets.push(target);
-                        }
-                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, multiTarget);
+                        babylonAnimationGroup.addTargetedAnimation(babylonAnimation, targetNode._babylonAnimationTargets);
                     }
                 }
             });
