@@ -1,7 +1,7 @@
 {
-  "errors": 5492,
+  "errors": 5491,
   "babylon.typedoc.json": {
-    "errors": 5492,
+    "errors": 5491,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -2309,11 +2309,6 @@
           }
         },
         "ANIMATIONTYPE_VECTOR3": {
-          "Comments": {
-            "MissingText": true
-          }
-        },
-        "AllowMatricesInterpolation": {
           "Comments": {
             "MissingText": true
           }

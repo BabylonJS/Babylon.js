@@ -30,6 +30,7 @@
 
 ## Updates
 
+- Improved [animation blending](https://www.babylonjs-playground.com/#DMLMIP) ([deltakosh](https://github.com/deltakosh))
 - New [particle system emitter shapes](http://doc.babylonjs.com/babylon101/particles#particles-shapes): cone and sphere ([IbraheemOsama](https://github.com/IbraheemOsama))
 - Added support for 16bits TGA ([deltakosh](https://github.com/deltakosh))
 - New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))

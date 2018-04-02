@@ -197,15 +197,22 @@
 
         /**
          * Does this action manager handles actions of a given trigger
-         * @param {number} trigger - the trigger to be tested
-         * @return {boolean} whether the trigger is handeled 
+         * @param trigger defines the trigger to be tested
+         * @param parameterPredicate defines an optional predicate to filter triggers by parameter
+         * @return whether the trigger is handled 
          */
-        public hasSpecificTrigger(trigger: number): boolean {
+        public hasSpecificTrigger(trigger: number, parameterPredicate?: (parameter: any) => boolean): boolean {
             for (var index = 0; index < this.actions.length; index++) {
                 var action = this.actions[index];
 
                 if (action.trigger === trigger) {
-                    return true;
+                    if (parameterPredicate) {
+                        if (parameterPredicate(action.getTriggerParameter())) {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
                 }
             }
 

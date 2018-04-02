@@ -97,7 +97,15 @@
     }
 
     export class Animation {
+        /**
+         * Use matrix interpolation instead of using direct key value when animating matrices
+         */
         public static AllowMatricesInterpolation = false;
+
+        /**
+         * When matrix interpolation is enabled, this boolean forces the system to use Matrix.DecomposeLerp instead of Matrix.Lerp. Interpolation is more precise but slower
+         */
+        public static AllowMatrixDecomposeForInterpolation = true;
 
         private _keys: Array<IAnimationKey>;
         private _easingFunction: IEasingFunction;
@@ -449,6 +457,9 @@
         }
 
         public matrixInterpolateFunction(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
+            if (Animation.AllowMatrixDecomposeForInterpolation) {
+                return Matrix.DecomposeLerp(startValue, endValue, gradient);
+            }
             return Matrix.Lerp(startValue, endValue, gradient);
         }
 
