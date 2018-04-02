@@ -133,6 +133,7 @@
 - Add onLoadObservable on VideoTexture - [#3845](https://github.com/BabylonJS/Babylon.js/issues/3845) ([sebavan](https://github.com/sebavan))
 - beforeRender is now triggered after the camera updated its state - [#3873](https://github.com/BabylonJS/Babylon.js/issues/3873) ([RaananW](https://github.com/RaananW))
 - Tools.DeepCopy no longer copying getter-only elements - [#3929](https://github.com/BabylonJS/Babylon.js/issues/3929) ([RaananW](https://github.com/RaananW))
+- Fix ember.js compatibility in ```PostProcessRenderEffect``` ([sebavan](https://github.com/sebavan))
 
 ## Breaking changes
 
