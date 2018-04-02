@@ -274,7 +274,12 @@ void main(void) {
 
 	refractionCoords.y = 1.0 - refractionCoords.y;
 
-	refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb * vRefractionInfos.x;
+	#ifdef IS_REFRACTION_LINEAR
+		refractionColor = toGammaSpace(texture2D(refraction2DSampler, refractionCoords).rgb);
+	#else
+		refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb;
+	#endif
+	refractionColor *= vRefractionInfos.x;
 #endif
 #endif
 
@@ -304,13 +309,17 @@ void main(void) {
 #else
 	vec2 coords = vReflectionUVW.xy;
 
-#ifdef REFLECTIONMAP_PROJECTION
-	coords /= vReflectionUVW.z;
-#endif
+	#ifdef REFLECTIONMAP_PROJECTION
+		coords /= vReflectionUVW.z;
+	#endif
 
 	coords.y = 1.0 - coords.y;
-
-	reflectionColor = texture2D(reflection2DSampler, coords).rgb * vReflectionInfos.x;
+	#ifdef IS_REFLECTION_LINEAR
+		reflectionColor = toGammaSpace(texture2D(reflection2DSampler, coords).rgb);
+	#else
+		reflectionColor = texture2D(reflection2DSampler, coords).rgb;
+	#endif
+	reflectionColor *= vReflectionInfos.x;
 #endif
 
 #ifdef REFLECTIONFRESNEL
