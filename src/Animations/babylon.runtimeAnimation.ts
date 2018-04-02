@@ -308,7 +308,19 @@
                     }
 
                 } else if (this._originalBlendValue.m) { // Matrix
-                    this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                    if (Animation.AllowMatrixDecomposeForInterpolation) {
+                        if (this._currentValue) {
+                            Matrix.DecomposeLerpToRef(this._originalBlendValue, currentValue, this._blendingFactor, this._currentValue);
+                        } else {
+                            this._currentValue = Matrix.DecomposeLerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                        }
+                    } else {
+                        if (this._currentValue) {
+                            Matrix.LerpToRef(this._originalBlendValue, currentValue, this._blendingFactor, this._currentValue);
+                        } else {
+                            this._currentValue = Matrix.Lerp(this._originalBlendValue, currentValue, this._blendingFactor);
+                        }
+                    }
                 } else { // Direct value
                     this._currentValue = this._originalBlendValue * (1.0 - this._blendingFactor) + this._blendingFactor * currentValue;
                 }
