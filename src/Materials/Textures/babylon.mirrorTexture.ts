@@ -90,6 +90,7 @@
             this.ignoreCameraViewport = true;
 
             this.onBeforeRenderObservable.add(() => {
+                this.gammaSpace = !scene.imageProcessingConfiguration.isEnabled || !scene.imageProcessingConfiguration.applyByPostProcess;
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
                 this._savedViewMatrix = scene.getViewMatrix();
 
