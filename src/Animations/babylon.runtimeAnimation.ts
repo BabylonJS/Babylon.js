@@ -15,6 +15,7 @@
         private _scene: Scene;
 
         private _currentValue: any;
+        private _workValue: any;
         private _activeTarget: any;
         private _targetPath: string = "";
         private _weight = 1.0;
@@ -172,7 +173,7 @@
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                     return quatValue;
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                                    return quatValue.add(offsetValue.scale(repeatCount));
+                                    return quatValue.addInPlace(offsetValue.scale(repeatCount));
                             }
 
                             return quatValue;
@@ -220,7 +221,8 @@
                                 case Animation.ANIMATIONLOOPMODE_CYCLE:
                                 case Animation.ANIMATIONLOOPMODE_CONSTANT:
                                     if (Animation.AllowMatricesInterpolation) {
-                                        return this._animation.matrixInterpolateFunction(startValue, endValue, gradient);
+                                        this._workValue = this._animation.matrixInterpolateFunction(startValue, endValue, gradient, this._workValue);
+                                        return this._workValue;
                                     }
                                 case Animation.ANIMATIONLOOPMODE_RELATIVE:
                                     return startValue;
