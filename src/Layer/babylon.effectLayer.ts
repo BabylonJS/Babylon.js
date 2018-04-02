@@ -176,6 +176,12 @@
         public abstract _disposeMesh(mesh: Mesh): void;
 
         /**
+         * Serializes this layer (Glow or Highlight for example)
+         * @returns a serialized layer object
+         */
+        public abstract serialize?(): any;
+
+        /**
          * Initializes the effect layer with the required options.
          * @param options Sets of none mandatory options to use with the layer (see IEffectLayerOptions for more information)
          */
@@ -669,6 +675,19 @@
           */
          public getClassName(): string {
             return "EffectLayer";
+        }
+
+        /**
+         * Creates an effect layer from parsed effect layer data
+         * @param parsedEffectLayer defines effect layer data
+         * @param scene defines the current scene
+         * @param rootUrl defines the root URL containing the effect layer information
+         * @returns a parsed effect Layer
+         */
+        public static Parse(parsedEffectLayer: any, scene: Scene, rootUrl: string): EffectLayer {
+            var effectLayerType = Tools.Instantiate(parsedEffectLayer.customType);
+            
+            return effectLayerType.Parse(parsedEffectLayer, scene, rootUrl);
         }
     }
 } 

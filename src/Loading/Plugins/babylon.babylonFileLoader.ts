@@ -357,6 +357,14 @@
                 }
             }
 
+            // Effect layers
+            if (parsedData.effectLayers) {
+                for (index = 0; index < parsedData.effectLayers.length; index++) {
+                    var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
+                    container.effectLayers.push(effectLayer);
+                }
+            }
+
             // Actions (scene)
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
                 ActionManager.Parse(parsedData.actions, null, scene);

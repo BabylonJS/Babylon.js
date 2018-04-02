@@ -305,6 +305,16 @@
                 }
             }
 
+            // Effect layers
+            serializationObject.effectLayers = [];
+
+            for (index = 0; index < scene.effectLayers.length; index++) {
+                var layer = scene.effectLayers[index];
+                if (layer.serialize) {
+                    serializationObject.effectLayers.push(layer.serialize());
+                }
+            }
+
             return serializationObject;
         }
 

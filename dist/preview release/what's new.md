@@ -112,6 +112,7 @@
 - Add support for normalized and non-float data to `Buffer` and `VertexBuffer`. ([bghgary](https://github.com/bghgary)]
 - Added unlit material extension support to glTF 2.0 loader. ([bghgary](https://github.com/bghgary))
 - (Viewer) Viewer's declaration file automatically generated ([RaananW](https://github.com/RaananW))
+- New serialize and parse functions for effect layers (Highlight and Glow layers) ([julien-moreau](https://github.com/julien-moreau))
 
 ## Bug fixes
 
