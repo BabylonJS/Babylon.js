@@ -59,14 +59,14 @@ module BABYLON {
 
         protected _rotationY: number = 0;
         /**
-         * Sets texture matrix rotation angle (theta) Y in radians.
+         * Sets texture matrix rotation angle around Y axis in radians.
          */
         public set rotationY(value: number) {
             this._rotationY = value;
             this.setReflectionTextureMatrix(BABYLON.Matrix.RotationY(this._rotationY));
         }
         /**
-         * Gets texture matrix rotation angle (theta) Y radians.
+         * Gets texture matrix rotation angle around Y axis radians.
          */
         public get rotationY(): number {
             return this._rotationY;

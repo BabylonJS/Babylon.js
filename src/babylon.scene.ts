@@ -2693,32 +2693,49 @@
                 var target = this._registeredForLateAnimationBindings.data[index];
 
                 for (var path in target._lateAnimationHolders) {
-                    var holder = target._lateAnimationHolders[path];       
+                    var holder = target._lateAnimationHolders[path];                     
+                    let originalValue = holder.animations[0].originalValue;      
                     
                     // Sanity check
-                    if (!holder.animations[0].originalValue.scaleAndAddToRef) {
+                    if (!originalValue.scaleAndAddToRef) {
                         continue;
                     }
 
+                    let matrixDecomposeMode = Animation.AllowMatrixDecomposeForInterpolation && originalValue.m; // ie. data is matrix
                     let normalizer = 1.0;
                     let finalValue: any;
 
                     if (holder.totalWeight < 1.0) {
-                        // We need to mix the original value in
-                        let originalValue = holder.animations[0].originalValue;                       
-
-                        finalValue = originalValue.scale(1.0 - holder.totalWeight)
+                        // We need to mix the original value in     
+                        if (matrixDecomposeMode) {
+                            finalValue = originalValue.clone();
+                        } else {            
+                            finalValue = originalValue.scale(1.0 - holder.totalWeight)
+                        }
                     } else {
                         // We need to normalize the weights
                         normalizer = holder.totalWeight;
                     }
 
                     for (var animIndex = 0; animIndex < holder.animations.length; animIndex++) {
-                        var runtimeAnimation = holder.animations[animIndex];    
+                        var runtimeAnimation = holder.animations[animIndex];   
+                        var scale = runtimeAnimation.weight / normalizer;
                         if (finalValue) {
-                            runtimeAnimation.currentValue.scaleAndAddToRef(runtimeAnimation.weight / normalizer, finalValue);
+                            if (matrixDecomposeMode) {
+                                Matrix.DecomposeLerpToRef(finalValue, runtimeAnimation.currentValue, scale, finalValue);
+                            } else {
+                                runtimeAnimation.currentValue.scaleAndAddToRef(scale, finalValue);
+                            }
                         } else {
-                            finalValue = runtimeAnimation.currentValue.scale(runtimeAnimation.weight / normalizer);
+                            if (scale !== 1) {
+                                if (matrixDecomposeMode) {
+                                    finalValue = runtimeAnimation.currentValue.clone();
+                                } else {
+                                    finalValue = runtimeAnimation.currentValue.scale(scale);
+                                }
+                            } else {
+                                finalValue = runtimeAnimation.currentValue;
+                            }
                         }
                     }
 
@@ -4498,7 +4515,10 @@
                             }
 
                             //if this is an exit trigger, or no exit trigger exists, remove the id from the intersection in progress array.
-                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger) || action.trigger === ActionManager.OnIntersectionExitTrigger) {
+                            if (!sourceMesh.actionManager.hasSpecificTrigger(ActionManager.OnIntersectionExitTrigger, parameter => {
+                                var parameterMesh = parameter instanceof AbstractMesh ? parameter : parameter.mesh;
+                                return otherMesh === parameterMesh;
+                            }) || action.trigger === ActionManager.OnIntersectionExitTrigger) {
                                 sourceMesh._intersectionsInProgress.splice(currentIntersectionInProgress, 1);
                             }
                         }
