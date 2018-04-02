@@ -1,4 +1,7 @@
 ﻿module BABYLON {
+    /**
+     * Define an interface for all classes that will get and set the data on vertices
+     */
     export interface IGetSetVerticesData {
         isVerticesDataPresent(kind: string): boolean;
         getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray>;
@@ -8,23 +11,50 @@
         setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
     }
 
+    /**
+     * This class contains the various kinds of data on every vertex of a mesh used in determining its shape and appearance 
+     */
     export class VertexData {
+        /**
+         * A linear array of the the x, y, z position of each vertex  [...., x, y, z, .....]
+         */
         public positions: Nullable<FloatArray>;
+        /**
+         * A linear array of the the x, y, z normal vector of each vertex  [...., x, y, z, .....]
+         */
         public normals: Nullable<FloatArray>;
+        /**
+         * A linear array of the the x, y, z tangent vector of each vertex  [...., x, y, z, .....]
+         */
         public tangents: Nullable<FloatArray>;
+        /**
+         * A linear array of the the u,v mapping of the texture image of each vertex  [...., u, v, .....]
+         */
         public uvs: Nullable<FloatArray>;
         public uvs2: Nullable<FloatArray>;
         public uvs3: Nullable<FloatArray>;
         public uvs4: Nullable<FloatArray>;
         public uvs5: Nullable<FloatArray>;
         public uvs6: Nullable<FloatArray>;
+        /**
+         * A linear array of the r, g, b, color of each vertex  [...., r, g, b, a, .....]
+         */
         public colors: Nullable<FloatArray>;
         public matricesIndices: Nullable<FloatArray>;
         public matricesWeights: Nullable<FloatArray>;
         public matricesIndicesExtra: Nullable<FloatArray>;
         public matricesWeightsExtra: Nullable<FloatArray>;
+        /**
+         * A linear array of the i, j, k indices for each triangular facet  [...., i, j, k .....]
+         * where index i gives positions[3 * i],  gives positions[3 * i + 1], gives positions[3 * i + 2] 
+         */
         public indices: Nullable<IndicesArray>;
 
+        /**
+         * Uses the passed data array to set the set the values for the specified kind of data
+         * @param data a linear array of floating numbers
+         * @param kind the type of data that is being set, eg positions, colors etc
+         */
         public set(data: FloatArray, kind: string) {
             switch (kind) {
                 case VertexBuffer.PositionKind:
@@ -74,8 +104,10 @@
 
         /**
          * Associates the vertexData to the passed Mesh.  
-         * Sets it as updatable or not (default `false`).  
-         * Returns the VertexData.  
+         * Sets it as updatable or not (default `false`) 
+         * @param mesh the mesh the vertexData is applied to 
+         * @param updatable when used and having the value true allows new data to update the vertexData 
+         * @returns the VertexData.  
          */
         public applyToMesh(mesh: Mesh, updatable?: boolean): VertexData {
             this._applyTo(mesh, updatable);
@@ -85,7 +117,9 @@
         /**
          * Associates the vertexData to the passed Geometry.  
          * Sets it as updatable or not (default `false`).  
-         * Returns the VertexData.  
+         * @param geometry the geometry the vertexData is applied to 
+         * @param updatable when used and having the value true allows new data to update the vertexData 
+         * @returns VertexData.  
          */
         public applyToGeometry(geometry: Geometry, updatable?: boolean): VertexData {
             this._applyTo(geometry, updatable);
@@ -93,8 +127,11 @@
         }
 
         /**
-         * Updates the associated mesh.  
-         * Returns the VertexData.  
+         * Updates the associated mesh. 
+         * @param mesh the mesh to be updated
+         * @param updateExtends when true the mesh BoundingInfo will be renewed when and if position kind is updated, optional with default false
+         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be  created from these positions and set to the mesh, optional with default false 
+         * @returns VertexData.  
          */
         public updateMesh(mesh: Mesh, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             this._update(mesh);
@@ -103,7 +140,10 @@
 
         /**
          * Updates the associated geometry.  
-         * Returns the VertexData.  
+         * @param geometry the geometry to be updated
+         * @param updateExtends when true BoundingInfo will be renewed when and if position kind is updated, optional with default false
+         * @param makeItUnique when true, and when and if position kind is updated, a new global geometry will be created from these positions and set to the mesh, optional with default false 
+         * @returns VertexData.
          */
         public updateGeometry(geometry: Geometry, updateExtends?: boolean, makeItUnique?: boolean): VertexData {
             this._update(geometry);
@@ -237,8 +277,9 @@
         }
 
         /**
-         * Transforms each position and each normal of the vertexData according to the passed Matrix.  
-         * Returns the VertexData.  
+         * Transforms each position and each normal of the vertexData according to the passed Matrix
+         * @param matrix the transforming matrix
+         * @returns the VertexData.  
          */
         public transform(matrix: Matrix): VertexData {
             var transformed = Vector3.Zero();
@@ -288,8 +329,9 @@
         }
 
         /**
-         * Merges the passed VertexData into the current one.  
-         * Returns the modified VertexData.  
+         * Merges the passed VertexData into the current one
+         * @param other the VetexData to be merged into the current one  
+         * @returns the modified VertexData.  
          */
         public merge(other: VertexData): VertexData {
             this._validate();
@@ -415,7 +457,7 @@
 
         /**
          * Serializes the VertexData.  
-         * Returns a serialized object.  
+         * @returns a serialized object.  
          */
         public serialize(): any {
             var serializationObject = this.serialize();
@@ -485,14 +527,22 @@
 
         // Statics
         /**
-         * Returns the object VertexData associated to the passed mesh.  
+         * Extracts the vertexData from a mesh
+         * @param mesh the mesh from which to extract the VertexData
+         * @param copyWhenShared defines if the VertexData must be cloned when shared between multiple meshes, optional, default false
+         * @param forceCopy indicating that the VertexData must be cloned, optional, default false
+         * @returns the object VertexData associated to the passed mesh 
          */
         public static ExtractFromMesh(mesh: Mesh, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
             return VertexData._ExtractFrom(mesh, copyWhenShared, forceCopy);
         }
 
         /**
-         * Returns the object VertexData associated to the passed geometry.  
+         * Extracts the vertexData from the geometry
+         * @param geometry the geometry from which to extract the VertexData
+         * @param copyWhenShared defines if the VertexData must be cloned when the geometrty is shared between multiple meshes, optional, default false
+         * @param forceCopy indicating that the VertexData must be cloned, optional, default false
+         * @returns the object VertexData associated to the passed mesh 
          */
         public static ExtractFromGeometry(geometry: Geometry, copyWhenShared?: boolean, forceCopy?: boolean): VertexData {
             return VertexData._ExtractFrom(geometry, copyWhenShared, forceCopy);
@@ -563,7 +613,19 @@
         }
 
         /**
-         * Creates the vertexData of the Ribbon.  
+         * Creates the VertexData for a Ribbon
+         * @param options an object used to set the following optional parameters for the ribbon, required but can be empty 
+         * * pathArray array of paths, each of which an array of successive Vector3    
+         * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false  
+         * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
+         * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
+         * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+         * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
+         * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
+         * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
+         * @returns the VertexData of the ribbon
          */
         public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
             var pathArray: Vector3[][] = options.pathArray;
@@ -797,8 +859,19 @@
         }
 
         /**
-         * Creates the VertexData of the Box.  
-         */
+         * Creates the VertexData for a box
+         * @param options an object used to set the following optional parameters for the box, required but can be empty 
+         * * size sets the width, height and depth of the box to the value of size, optional default 1  
+         * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+         * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+         * * width sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+         * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+         * * faceColors an array of 6 Color3 elements used to set different colors to each box side   
+         * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+         * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * * backUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+         * @returns the VertexData of the box
+         */ 
         public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var normalsSource = [
                 new Vector3(0, 0, 1),
@@ -906,8 +979,19 @@
         }
 
         /**
-         * Creates the VertexData of the Sphere.  
-         */
+         * Creates the VertexData for a sphere
+         * @param segments sets the number of horizontal strips (positive integer, default 32).  
+         * @param size sets the width, height and depth of the box to the value of size, optional default 1  
+         * @param width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+         * @param height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+         * @param width sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+         * @param faceUV an array of 6 Vector4 elements used to set different images to each box side
+         * @param faceColors an array of 6 Color3 elements used to set different colors to each box side   
+         * @param sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+         * @param frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+         * @param backUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+         * @returns the VertexData of the sphere
+         */ 
         public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
             var segments: number = options.segments || 32;
             var diameterX: number = options.diameterX || options.diameter || 1;
