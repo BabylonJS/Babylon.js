@@ -3159,6 +3159,19 @@
         public add(other: Quaternion): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
         }
+
+        /**
+         * Add a quaternion to the current one
+         * @param other defines the quaternion to add
+         * @returns the current quaternion  
+         */
+        public addInPlace(other: Quaternion): Quaternion {
+            this.x += other.x;
+            this.y += other.y;
+            this.z += other.z;
+            this.w += other.w;
+            return this;
+        }        
         /**
          * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.  
          */
