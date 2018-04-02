@@ -259,82 +259,76 @@ void main(void) {
 
 #ifdef REFRACTION
 	vec3 refractionVector = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
-#ifdef REFRACTIONMAP_3D
+	#ifdef REFRACTIONMAP_3D
+		refractionVector.y = refractionVector.y * vRefractionInfos.w;
 
-	refractionVector.y = refractionVector.y * vRefractionInfos.w;
-
-	if (dot(refractionVector, viewDirectionW) < 1.0)
-	{
-		refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb * vRefractionInfos.x;
-	}
-#else
-	vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
-
-	vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
-
-	refractionCoords.y = 1.0 - refractionCoords.y;
-
-	#ifdef IS_REFRACTION_LINEAR
-		refractionColor = toGammaSpace(texture2D(refraction2DSampler, refractionCoords).rgb);
+		if (dot(refractionVector, viewDirectionW) < 1.0) {
+			refractionColor = textureCube(refractionCubeSampler, refractionVector).rgb;
+		}
 	#else
+		vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+
+		vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+
+		refractionCoords.y = 1.0 - refractionCoords.y;
+		
 		refractionColor = texture2D(refraction2DSampler, refractionCoords).rgb;
+	#endif
+	#ifdef IS_REFRACTION_LINEAR
+		refractionColor = toGammaSpace(refractionColor);
 	#endif
 	refractionColor *= vRefractionInfos.x;
 #endif
-#endif
 
-	// Reflection
-	vec3 reflectionColor = vec3(0., 0., 0.);
+// Reflection
+vec3 reflectionColor = vec3(0., 0., 0.);
 
 #ifdef REFLECTION
 	vec3 vReflectionUVW = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
 
-#ifdef REFLECTIONMAP_3D
-#ifdef ROUGHNESS
-	float bias = vReflectionInfos.y;
+	#ifdef REFLECTIONMAP_3D
+		#ifdef ROUGHNESS
+			float bias = vReflectionInfos.y;
 
-#ifdef SPECULARTERM
-	#ifdef SPECULAR
-		#ifdef GLOSSINESS
-			bias *= (1.0 - specularMapColor.a);
+			#ifdef SPECULARTERM
+				#ifdef SPECULAR
+					#ifdef GLOSSINESS
+						bias *= (1.0 - specularMapColor.a);
+					#endif
+				#endif
+			#endif
+
+			reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb;
+		#else
+			reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb;
 		#endif
-	#endif
-#endif
-
-	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW, bias).rgb * vReflectionInfos.x;
-#else
-	reflectionColor = textureCube(reflectionCubeSampler, vReflectionUVW).rgb * vReflectionInfos.x;
-#endif
-
-#else
-	vec2 coords = vReflectionUVW.xy;
-
-	#ifdef REFLECTIONMAP_PROJECTION
-		coords /= vReflectionUVW.z;
-	#endif
-
-	coords.y = 1.0 - coords.y;
-	#ifdef IS_REFLECTION_LINEAR
-		reflectionColor = toGammaSpace(texture2D(reflection2DSampler, coords).rgb);
 	#else
+		vec2 coords = vReflectionUVW.xy;
+
+		#ifdef REFLECTIONMAP_PROJECTION
+			coords /= vReflectionUVW.z;
+		#endif
+
+		coords.y = 1.0 - coords.y;
 		reflectionColor = texture2D(reflection2DSampler, coords).rgb;
 	#endif
+	#ifdef IS_REFLECTION_LINEAR
+		reflectionColor = toGammaSpace(reflectionColor);
+	#endif
 	reflectionColor *= vReflectionInfos.x;
-#endif
+	#ifdef REFLECTIONFRESNEL
+		float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
 
-#ifdef REFLECTIONFRESNEL
-	float reflectionFresnelTerm = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
-
-#ifdef REFLECTIONFRESNELFROMSPECULAR
-#ifdef SPECULARTERM
-	reflectionColor *= specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
-#else
-	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
-#endif
-#else
-	reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
-#endif
-#endif
+		#ifdef REFLECTIONFRESNELFROMSPECULAR
+			#ifdef SPECULARTERM
+				reflectionColor *= specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+			#else
+				reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+			#endif
+		#else
+			reflectionColor *= reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb;
+		#endif
+	#endif
 #endif
 
 #ifdef REFRACTIONFRESNEL
