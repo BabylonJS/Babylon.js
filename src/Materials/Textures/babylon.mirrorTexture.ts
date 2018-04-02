@@ -83,14 +83,20 @@
                 this._autoComputeBlurKernel();
             }
         }
+        private _updateGammaSpace(){
+            this.gammaSpace = !this.scene.imageProcessingConfiguration.isEnabled || !this.scene.imageProcessingConfiguration.applyByPostProcess;
+        }
 
-        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
+        private _imageProcessingConfigChangeObserver:Nullable<Observer<ImageProcessingConfiguration>>;
+        constructor(name: string, size: number | { width: number, height: number } | { ratio: number }, private scene: Scene, generateMipMaps?: boolean, type: number = Engine.TEXTURETYPE_UNSIGNED_INT, samplingMode = Texture.BILINEAR_SAMPLINGMODE, generateDepthBuffer = true) {
             super(name, size, scene, generateMipMaps, true, type, false, samplingMode, generateDepthBuffer);
 
             this.ignoreCameraViewport = true;
+            
+            this._updateGammaSpace();
+            this._imageProcessingConfigChangeObserver = scene.imageProcessingConfiguration.onUpdateParameters.add(this._updateGammaSpace)
 
             this.onBeforeRenderObservable.add(() => {
-                this.gammaSpace = !scene.imageProcessingConfiguration.isEnabled || !scene.imageProcessingConfiguration.applyByPostProcess;
                 Matrix.ReflectionToRef(this.mirrorPlane, this._mirrorMatrix);
                 this._savedViewMatrix = scene.getViewMatrix();
 
@@ -193,6 +199,11 @@
             serializationObject.mirrorPlane = this.mirrorPlane.asArray();
 
             return serializationObject;
+        }
+
+        public dispose(){
+            super.dispose();
+            this.scene.imageProcessingConfiguration.onUpdateParameters.remove(this._imageProcessingConfigChangeObserver);
         }
     }
 } 
