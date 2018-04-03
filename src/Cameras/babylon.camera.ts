@@ -373,9 +373,9 @@
          * @returns the first post process to be run on this camera.
          */
         public _getFirstPostProcess():Nullable<PostProcess>{
-            for(var pp in this._postProcesses){
-                if(this._postProcesses[pp] !== null){
-                    return this._postProcesses[pp];
+            for(var ppIndex = 0; ppIndex < this._postProcesses.length; ppIndex++){
+                if(this._postProcesses[ppIndex] !== null){
+                    return this._postProcesses[ppIndex];
                 }
             }
             return null;
