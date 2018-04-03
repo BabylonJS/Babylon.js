@@ -242,7 +242,7 @@
                 } else {
                     var data = <FloatArray>buffer.getData();
                     if (data != null) {
-                        this._totalVertices = data.length / (buffer.byteStride * 4);
+                        this._totalVertices = (data.length * 4) / buffer.byteStride;
                     }
                 }
 
