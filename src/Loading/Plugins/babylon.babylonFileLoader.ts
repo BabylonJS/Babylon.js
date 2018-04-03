@@ -535,11 +535,11 @@
                             }
 
                             // Morph targets ?
-                            // if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
-                            //     for (var managerData of parsedData.morphTargetManagers) {
-                            //         scene.morphTargetManagers.push(MorphTargetManager.Parse(managerData, scene));
-                            //     }
-                            // }                               
+                            if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                                for (var managerData of parsedData.morphTargetManagers) {
+                                    MorphTargetManager.Parse(managerData, scene);
+                                }
+                            }                               
 
                             var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                             meshes.push(mesh);
