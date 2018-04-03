@@ -10,6 +10,10 @@ module BABYLON.GLTF2.Extensions {
         attributes: { [name: string]: number };
     }
 
+    interface ILoaderBufferViewDraco extends ILoaderBufferView {
+        _dracoBabylonGeometry?: Promise<Geometry>;
+    }
+
     export class KHR_draco_mesh_compression extends GLTFLoaderExtension {
         public readonly name = NAME;
 
@@ -19,7 +23,7 @@ module BABYLON.GLTF2.Extensions {
             super(loader);
 
             // Disable extension if decoder is not available.
-            if (!DracoCompression.DecoderUrl) {
+            if (!DracoCompression.DecoderAvailable) {
                 this.enabled = false;
             }
         }
@@ -70,9 +74,9 @@ module BABYLON.GLTF2.Extensions {
                 loadAttribute("WEIGHTS_0", VertexBuffer.MatricesWeightsKind);
                 loadAttribute("COLOR_0", VertexBuffer.ColorKind);
 
-                var bufferView = GLTFLoader._GetProperty(extensionContext, this._loader._gltf.bufferViews, extension.bufferView);
-                return this._loader._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(data => {
-                    try {
+                var bufferView = GLTFLoader._GetProperty(extensionContext, this._loader._gltf.bufferViews, extension.bufferView) as ILoaderBufferViewDraco;
+                if (!bufferView._dracoBabylonGeometry) {
+                    bufferView._dracoBabylonGeometry = this._loader._loadBufferViewAsync(`#/bufferViews/${bufferView._index}`, bufferView).then(data => {
                         if (!this._dracoCompression) {
                             this._dracoCompression = new DracoCompression();
                         }
@@ -81,12 +85,13 @@ module BABYLON.GLTF2.Extensions {
                             const babylonGeometry = new Geometry(babylonMesh.name, this._loader._babylonScene);
                             babylonVertexData.applyToGeometry(babylonGeometry);
                             return babylonGeometry;
+                        }).catch(error => {
+                            throw new Error(`${context}: ${error.message}`);
                         });
-                    }
-                    catch (e) {
-                        throw new Error(`${context}: ${e.message}`);
-                    }
-                });
+                    });
+                }
+
+                return bufferView._dracoBabylonGeometry;
             });
         }
     }

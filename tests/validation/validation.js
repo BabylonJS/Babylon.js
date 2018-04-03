@@ -312,7 +312,18 @@ function runTest(index, done) {
 function init() {
     BABYLON.SceneLoader.ShowLoadingScreen = false;
     BABYLON.SceneLoader.ForceFullSceneLoadingForIncremental = true;
-    BABYLON.DracoCompression.DecoderUrl = BABYLON.Tools.GetFolderPath(document.location.href) + "../../dist/preview%20release/draco_decoder.js";
+
+    // Draco configuration
+    var baseUrl = BABYLON.Tools.GetFolderPath(document.location.href);
+    BABYLON.DracoCompression.Configuration = {
+        decoder: {
+            url: baseUrl + "../../dist/preview%20release/draco_decoder.js"
+        },
+        decoderWasm: {
+            binaryUrl: baseUrl + "../../dist/preview%20release/draco_decoder.wasm",
+            wrapperUrl: baseUrl + "../../dist/preview%20release/draco_wasm_wrapper.js"
+        }
+    };
 
     canvas = document.createElement("canvas");
     canvas.className = "renderCanvas";
