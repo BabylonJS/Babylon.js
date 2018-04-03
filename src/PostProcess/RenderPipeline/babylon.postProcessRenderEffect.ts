@@ -43,9 +43,12 @@ module BABYLON {
          */
         public get isSupported(): boolean {
             for (var index in this._postProcesses) {
-                for(var ppIndex in this._postProcesses[index]){
-                    if (!this._postProcesses[index][ppIndex].isSupported) {
-                        return false;
+                if (this._postProcesses.hasOwnProperty(index)) {
+                    let pps = this._postProcesses[index];
+                    for(var ppIndex = 0; ppIndex < pps.length; ppIndex++){
+                        if (!pps[ppIndex].isSupported) {
+                            return false;
+                        }
                     }
                 }
             }

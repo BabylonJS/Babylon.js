@@ -9,14 +9,16 @@ var indexOf = location.href.indexOf("?");
 if (indexOf !== -1) {
     var params = location.href.substr(indexOf + 1).split("&");
     for (var index = 0; index < params.length; index++) {
-        var [name, value] = params[index].split("=");
+        var param = params[index].split("=");
+        var name = param[0];
+        var value = param[1];
         switch (name) {
             case "assetUrl": {
                 assetUrl = value;
                 break;
             }
             case "cameraPosition": {
-                cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(component => +component));
+                cameraPosition = BABYLON.Vector3.FromArray(value.split(",").map(function (component) { return +component; }));
                 break;
             }
             case "kiosk": {

@@ -87,6 +87,16 @@ module BABYLON {
         public SAMPLER3DGREENDEPTH = false;
         public SAMPLER3DBGRMAP = false;
         public IMAGEPROCESSINGPOSTPROCESS = false;
+        /**
+         * If the reflection texture on this material is in linear color space
+         * @ignore
+         */
+        public IS_REFLECTION_LINEAR = false;
+        /**
+         * If the refraction texture on this material is in linear color space
+         * @ignore
+         */
+        public IS_REFRACTION_LINEAR = false;
         public EXPOSURE = false;
 
         constructor() {
@@ -724,6 +734,9 @@ module BABYLON {
                 }
 
                 this._imageProcessingConfiguration.prepareDefines(defines);
+
+                defines.IS_REFLECTION_LINEAR = (this.reflectionTexture != null && !this.reflectionTexture.gammaSpace);
+                defines.IS_REFRACTION_LINEAR = (this.refractionTexture != null && !this.refractionTexture.gammaSpace);
             }
 
             if (defines._areFresnelDirty) {
