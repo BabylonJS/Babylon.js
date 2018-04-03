@@ -3,6 +3,7 @@
         "filename": "babylon.max.js",
         "minFilename": "babylon.js",
         "minWorkerFilename": "babylon.worker.js",
+        "noModuleFilename": "babylon.no-module.max.js",
         "declarationFilename": "babylon.d.ts",
         "declarationModuleFilename": "babylon.module.d.ts",
         "outputDirectory": "../../dist/preview release",

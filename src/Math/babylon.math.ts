@@ -3159,6 +3159,19 @@
         public add(other: Quaternion): Quaternion {
             return new Quaternion(this.x + other.x, this.y + other.y, this.z + other.z, this.w + other.w);
         }
+
+        /**
+         * Add a quaternion to the current one
+         * @param other defines the quaternion to add
+         * @returns the current quaternion  
+         */
+        public addInPlace(other: Quaternion): Quaternion {
+            this.x += other.x;
+            this.y += other.y;
+            this.z += other.z;
+            this.w += other.w;
+            return this;
+        }        
         /**
          * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.  
          */
@@ -3552,7 +3565,6 @@
         public static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void {
             var num2;
             var num3;
-            var num = amount;
             var num4 = (((left.x * right.x) + (left.y * right.y)) + (left.z * right.z)) + (left.w * right.w);
             var flag = false;
 
@@ -3562,14 +3574,14 @@
             }
 
             if (num4 > 0.999999) {
-                num3 = 1 - num;
-                num2 = flag ? -num : num;
+                num3 = 1 - amount;
+                num2 = flag ? -amount : amount;
             }
             else {
                 var num5 = Math.acos(num4);
                 var num6 = (1.0 / Math.sin(num5));
-                num3 = (Math.sin((1.0 - num) * num5)) * num6;
-                num2 = flag ? ((-Math.sin(num * num5)) * num6) : ((Math.sin(num * num5)) * num6);
+                num3 = (Math.sin((1.0 - amount) * num5)) * num6;
+                num2 = flag ? ((-Math.sin(amount * num5)) * num6) : ((Math.sin(amount * num5)) * num6);
             }
 
             result.x = (num3 * left.x) + (num2 * right.x);
@@ -4042,7 +4054,8 @@
                 hash = (hash * 397) ^ (this.m[i] || 0);
             }
             return hash;
-        }
+        }     
+
         /**
          * Decomposes the current Matrix into a translation, rotation and scaling components
          * @param scale defines the scale vector3 passed as a reference to update
@@ -4050,10 +4063,12 @@
          * @param translation defines the translation vector3 passed as a reference to update
          * @returns true if operation was successful
          */
-        public decompose(scale: Vector3, rotation: Quaternion, translation: Vector3): boolean {
-            translation.x = this.m[12];
-            translation.y = this.m[13];
-            translation.z = this.m[14];
+        public decompose(scale: Vector3, rotation?: Quaternion, translation?: Vector3): boolean {
+            if (translation) {
+                translation.x = this.m[12];
+                translation.y = this.m[13];
+                translation.z = this.m[14];
+            }
 
             scale.x = Math.sqrt(this.m[0] * this.m[0] + this.m[1] * this.m[1] + this.m[2] * this.m[2]);
             scale.y = Math.sqrt(this.m[4] * this.m[4] + this.m[5] * this.m[5] + this.m[6] * this.m[6]);
@@ -4063,21 +4078,23 @@
                 scale.y *= -1;
             }
 
-            if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
-                rotation.x = 0;
-                rotation.y = 0;
-                rotation.z = 0;
-                rotation.w = 1;
-                return false;
+            if (rotation) {
+                if (scale.x === 0 || scale.y === 0 || scale.z === 0) {
+                    rotation.x = 0;
+                    rotation.y = 0;
+                    rotation.z = 0;
+                    rotation.w = 1;
+                    return false;
+                }
+
+                Matrix.FromValuesToRef(
+                    this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
+                    this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
+                    this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
+                    0, 0, 0, 1, MathTmp.Matrix[0]);
+
+                Quaternion.FromRotationMatrixToRef(MathTmp.Matrix[0], rotation);
             }
-
-            Matrix.FromValuesToRef(
-                this.m[0] / scale.x, this.m[1] / scale.x, this.m[2] / scale.x, 0,
-                this.m[4] / scale.y, this.m[5] / scale.y, this.m[6] / scale.y, 0,
-                this.m[8] / scale.z, this.m[9] / scale.z, this.m[10] / scale.z, 0,
-                0, 0, 0, 1, MathTmp.Matrix[0]);
-
-            Quaternion.FromRotationMatrixToRef(MathTmp.Matrix[0], rotation);
 
             return true;
         }
@@ -4769,22 +4786,42 @@
          * @returns the new matrix
          */
         public static DecomposeLerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix {
-            var startScale = new Vector3(0, 0, 0);
-            var startRotation = new Quaternion();
-            var startTranslation = new Vector3(0, 0, 0);
+            var result = Matrix.Zero();
+            Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
+            return result;
+        }
+
+        /**
+         * Update a matrix to values which are computed by: 
+         * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
+         * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
+         * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
+         * @param startValue defines the first matrix
+         * @param endValue defines the second matrix
+         * @param gradient defines the gradient between the two matrices
+         * @param result defines the target matrix
+         */
+        public static DecomposeLerpToRef(startValue: Matrix, endValue: Matrix, gradient: number, result: Matrix) {
+            var startScale = MathTmp.Vector3[0];
+            var startRotation = MathTmp.Quaternion[0];
+            var startTranslation = MathTmp.Vector3[1];
             startValue.decompose(startScale, startRotation, startTranslation);
 
-            var endScale = new Vector3(0, 0, 0);
-            var endRotation = new Quaternion();
-            var endTranslation = new Vector3(0, 0, 0);
+            var endScale = MathTmp.Vector3[2];
+            var endRotation = MathTmp.Quaternion[1];
+            var endTranslation = MathTmp.Vector3[3];
             endValue.decompose(endScale, endRotation, endTranslation);
 
-            var resultScale = Vector3.Lerp(startScale, endScale, gradient);
-            var resultRotation = Quaternion.Slerp(startRotation, endRotation, gradient);
-            var resultTranslation = Vector3.Lerp(startTranslation, endTranslation, gradient);
+            var resultScale = MathTmp.Vector3[4];
+            Vector3.LerpToRef(startScale, endScale, gradient, resultScale);
+            var resultRotation = MathTmp.Quaternion[2];
+            Quaternion.SlerpToRef(startRotation, endRotation, gradient, resultRotation);
+            
+            var resultTranslation = MathTmp.Vector3[5];
+            Vector3.LerpToRef(startTranslation, endTranslation, gradient, resultTranslation);
 
-            return Matrix.Compose(resultScale, resultRotation, resultTranslation);
-        }
+            Matrix.ComposeToRef(resultScale, resultRotation, resultTranslation, result);
+        }        
 
         /**
          * Gets a new rotation matrix used to rotate an entity so as it looks at the target vector3, from the eye vector3 position, the up vector3 being oriented like "up"
@@ -6264,8 +6301,8 @@
     }
     // Same as Tmp but not exported to keep it onyl for math functions to avoid conflicts
     class MathTmp {
-        public static Vector3: Vector3[] = [Vector3.Zero()];
+        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
-        public static Quaternion: Quaternion[] = [Quaternion.Zero()];
+        public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero(), Quaternion.Zero()];
     }
 }
