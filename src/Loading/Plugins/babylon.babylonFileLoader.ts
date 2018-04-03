@@ -534,9 +534,16 @@
                                 }
                             }
 
+                            // Morph targets ?
+                            // if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                            //     for (var managerData of parsedData.morphTargetManagers) {
+                            //         scene.morphTargetManagers.push(MorphTargetManager.Parse(managerData, scene));
+                            //     }
+                            // }                               
+
                             var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                             meshes.push(mesh);
-                            log += "\n\tMesh " + mesh.toString(fullDetails);
+                            log += "\n\tMesh " + mesh.toString(fullDetails);                         
                         }
                     }
 
