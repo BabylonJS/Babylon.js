@@ -1,4 +1,8 @@
 module BABYLON {
+    /**
+     * This class is used to deform meshes using morphing between different targets
+     * @see http://doc.babylonjs.com/how_to/how_to_use_morphtargets
+     */
     export class MorphTargetManager {
         private _targets = new Array<MorphTarget>();
         private _targetObservable = new Array<Nullable<Observer<boolean>>>();
@@ -11,6 +15,10 @@ module BABYLON {
         private _uniqueId = 0;
         private _tempInfluences = new Array<number>();
 
+        /**
+         * Creates a new MorphTargetManager
+         * @param scene defines the current scene
+         */
         public constructor(scene: Nullable<Scene> = null) {
             if (!scene) {
                 scene = Engine.LastCreatedScene;
@@ -25,42 +33,77 @@ module BABYLON {
             }
         }
 
+        /**
+         * Gets the unique ID of this manager
+         */
         public get uniqueId(): number {
             return this._uniqueId;
         }
 
+        /**
+         * Gets the number of vertices handled by this manager
+         */
         public get vertexCount(): number {
             return this._vertexCount
         }
 
+        /**
+         * Gets a boolean indicating if this manager supports morphing of normals
+         */
         public get supportsNormals(): boolean {
             return this._supportsNormals;
         }
 
+        /**
+         * Gets a boolean indicating if this manager supports morphing of tangents
+         */        
         public get supportsTangents(): boolean {
             return this._supportsTangents;
         }
 
+        /**
+         * Gets the number of targets stored in this manager
+         */
         public get numTargets(): number {
             return this._targets.length;
         }
 
+        /**
+         * Gets the number of influencers (ie. the number of targets with influences > 0)
+         */
         public get numInfluencers(): number {
             return this._activeTargets.length;
         }
 
+        /**
+         * Gets the list of influences (one per target)
+         */
         public get influences(): Float32Array {
             return this._influences;
         }
 
+        /**
+         * Gets the active target at specified index. An active target is a target with an influence > 0
+         * @param index defines the index to check
+         * @returns the requested target
+         */
         public getActiveTarget(index: number): MorphTarget {
             return this._activeTargets.data[index];
         }
 
+        /**
+         * Gets the target at specified index
+         * @param index defines the index to check
+         * @returns the requested target
+         */
         public getTarget(index: number): MorphTarget {
             return this._targets[index];
         }
 
+        /**
+         * Add a new target to this manager
+         * @param target defines the target to add
+         */
         public addTarget(target: MorphTarget): void {
             this._targets.push(target);
             this._targetObservable.push(target.onInfluenceChanged.add(needUpdate => {
@@ -69,6 +112,10 @@ module BABYLON {
             this._syncActiveTargets(true);
         }
 
+        /**
+         * Removes a target from the manager
+         * @param target defines the target to remove
+         */
         public removeTarget(target: MorphTarget): void {
             var index = this._targets.indexOf(target);
             if (index >= 0) {
@@ -80,8 +127,8 @@ module BABYLON {
         }
 
         /**
-         * Serializes the current manager into a Serialization object.  
-         * Returns the serialized object.  
+         * Serializes the current manager into a Serialization object
+         * @returns the serialized object
          */
         public serialize(): any {
             var serializationObject:any = {};
@@ -130,17 +177,34 @@ module BABYLON {
                 this._influences[index] = this._tempInfluences[index];
             }
 
-            if (needUpdate && this._scene) {
-                // Flag meshes as dirty to resync with the active targets
-                for (var mesh of this._scene.meshes) {
-                    if ((<any>mesh).morphTargetManager === this) {
-                        (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
-                    }
+            if (needUpdate) {
+                this.synchronize();
+            }
+        }
+
+        /**
+         * Syncrhonize the targets with all the meshes using this morph target manager
+         */
+        public synchronize(): void {
+            if (!this._scene) {
+                return;
+            }
+            // Flag meshes as dirty to resync with the active targets
+            for (var mesh of this._scene.meshes) {
+                if ((<any>mesh).morphTargetManager === this) {
+                    (<Mesh>mesh)._syncGeometryWithMorphTargetManager();
                 }
             }
         }
 
         // Statics
+
+        /**
+         * Creates a new MorphTargetManager from serialized data
+         * @param serializationObject defines the serialized data
+         * @param scene defines the hosting scene
+         * @returns the new MorphTargetManager
+         */
         public static Parse(serializationObject: any, scene: Scene): MorphTargetManager {
             var result = new MorphTargetManager(scene);
 
