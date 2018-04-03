@@ -30,7 +30,7 @@
 
 ## Updates
 
-- Improved [animation blending](https://www.babylonjs-playground.com/#DMLMIP) ([deltakosh](https://github.com/deltakosh))
+- Improved [animation blending](https://www.babylonjs-playground.com/#DMLMIP#1) ([deltakosh](https://github.com/deltakosh))
 - New [particle system emitter shapes](http://doc.babylonjs.com/babylon101/particles#particles-shapes): cone and sphere ([IbraheemOsama](https://github.com/IbraheemOsama))
 - Added support for 16bits TGA ([deltakosh](https://github.com/deltakosh))
 - New `AnimationPropertiesOverride` class used to simplify setting animation properties on child animations. [Documentation](http://doc.babylonjs.com/babylon101/animations#overriding-properties) ([deltakosh](https://github.com/deltakosh))
@@ -133,6 +133,9 @@
 - Add onLoadObservable on VideoTexture - [#3845](https://github.com/BabylonJS/Babylon.js/issues/3845) ([sebavan](https://github.com/sebavan))
 - beforeRender is now triggered after the camera updated its state - [#3873](https://github.com/BabylonJS/Babylon.js/issues/3873) ([RaananW](https://github.com/RaananW))
 - Tools.DeepCopy no longer copying getter-only elements - [#3929](https://github.com/BabylonJS/Babylon.js/issues/3929) ([RaananW](https://github.com/RaananW))
+- Reflection and refraction no longer apply a toLinear conversion twice when applying image processing as a post process - [#4060](https://github.com/BabylonJS/Babylon.js/issues/4060) ([trevordev](https://github.com/trevordev))
+- Fix ember.js compatibility in ```PostProcessRenderEffect``` ([sebavan](https://github.com/sebavan))
+- Fix ember.js compatibility in ```BloomEffect``` and ```Camera``` ([kaysabelle](https://github.com/kaysabelle))
 
 ## Breaking changes
 

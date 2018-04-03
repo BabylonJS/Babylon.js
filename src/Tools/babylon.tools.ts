@@ -716,7 +716,7 @@
 
             script.onerror = (e) => {
                 if (onError) {
-                    onError("Unable to load script", e);
+                    onError(`Unable to load script '${scriptUrl}'`, e);
                 }
             };
 
