@@ -83,7 +83,6 @@
 - Fixed a bug with GUI Slider not working correctly when rotated ([adam](https://github.com/abow))
 - Fixed IE11 "spacebar" bug with GUI InputText ([adam](https://github.com/abow))
 - Fixed a bug where instanced meshes did not work with physics helper effects ([bobalazek](https://github.com/bobalazek))
-- Fix ember.js compatibility in ```BloomEffect``` and ```Camera``` ([kaysabelle](https://github.com/kaysabelle))
 
 ## Breaking changes
 
