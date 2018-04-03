@@ -204,10 +204,6 @@
          * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
          */
         public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
-            if (kind === VertexBuffer.PositionKind) {
-                this._totalVertices = data.length / (stride || 3);
-            }
-
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
             this.setVerticesBuffer(buffer);
         }
@@ -236,17 +232,17 @@
 
             this._vertexBuffers[kind] = buffer;
 
-            if (kind === VertexBuffer.PositionKind) {
+            if (kind === VertexBuffer.PositionKind) {                
+                var data = <FloatArray>buffer.getData();
                 if (totalVertices != null) {
                     this._totalVertices = totalVertices;
                 } else {
-                    var data = <FloatArray>buffer.getData();
                     if (data != null) {
                         this._totalVertices = data.length / (buffer.byteStride / 4);
                     }
                 }
 
-                this._updateExtend();
+                this._updateExtend(data);
                 this._resetPointsArrayCache();
 
                 var meshes = this._meshes;

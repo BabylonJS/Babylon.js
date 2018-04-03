@@ -1,7 +1,7 @@
 {
-  "errors": 5491,
+  "errors": 5347,
   "babylon.typedoc.json": {
-    "errors": 5491,
+    "errors": 5347,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -2470,28 +2470,6 @@
           },
           "Parameter": {
             "name": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "matrixInterpolateFunction": {
-          "Comments": {
-            "MissingText": true
-          },
-          "Parameter": {
-            "startValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "endValue": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "gradient": {
               "Comments": {
                 "MissingText": true
               }
@@ -28560,11 +28538,6 @@
       }
     },
     "IGetSetVerticesData": {
-      "Interface": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Method": {
         "getIndices": {
           "Comments": {
