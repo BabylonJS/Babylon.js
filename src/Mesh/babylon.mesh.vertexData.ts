@@ -656,16 +656,16 @@
         /**
          * Creates the VertexData for a Ribbon
          * @param options an object used to set the following optional parameters for the ribbon, required but can be empty 
-         * - pathArray array of paths, each of which an array of successive Vector3    
-         * - closeArray creates a seam between the first and the last paths of the pathArray, optional, default false  
-         * - closePath creates a seam between the first and the last points of each path of the path array, optional, default false
-         * - offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
-         * - invertUV swaps in the U and V coordinates when applying a texture, optional, default false
-         * - uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
-         * - colors a linear array, of length 4 * number of vertices, of custom color values, optional
+          * * pathArray array of paths, each of which an array of successive Vector3    
+          * * closeArray creates a seam between the first and the last paths of the pathArray, optional, default false  
+          * * closePath creates a seam between the first and the last points of each path of the path array, optional, default false
+          * * offset a positive integer, only used when pathArray contains a single path (offset = 10 means the point 1 is joined to the point 11), default rounded half size of the pathArray length
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
+          * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
+          * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
+          * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
          * @returns the VertexData of the ribbon
          */
         public static CreateRibbon(options: { pathArray: Vector3[][], closeArray?: boolean, closePath?: boolean, offset?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4, invertUV?: boolean, uvs?: Vector2[], colors?: Color4[] }): VertexData {
@@ -902,15 +902,15 @@
         /**
          * Creates the VertexData for a box
          * @param options an object used to set the following optional parameters for the box, required but can be empty 
-         * - size sets the width, height and depth of the box to the value of size, optional default 1  
-         * - width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
-         * - height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
-         * - depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
-         * - faceUV an array of 6 Vector4 elements used to set different images to each box side
-         * - faceColors an array of 6 Color3 elements used to set different colors to each box side   
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * size sets the width, height and depth of the box to the value of size, optional default 1  
+          * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+          * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+          * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+          * * faceUV an array of 6 Vector4 elements used to set different images to each box side
+          * * faceColors an array of 6 Color3 elements used to set different colors to each box side   
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the box
          */ 
         public static CreateBox(options: { size?: number, width?: number, height?: number, depth?: number, faceUV?: Vector4[], faceColors?: Color4[], sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -1022,16 +1022,16 @@
         /**
          * Creates the VertexData for an ellipsoid, defaults to a sphere
          * @param options an object used to set the following optional parameters for the box, required but can be empty 
-         * - segments sets the number of horizontal strips optional, default 32
-         * - diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1  
-         * - diameterX sets the diameterX (x direction) of the ellipsoid, overwrites the diameterX set by diameter, optional, default diameter
-         * - diameterY sets the diameterY (y direction) of the ellipsoid, overwrites the diameterY set by diameter, optional, default diameter
-         * - diameterZ sets the diameterZ (z direction) of the ellipsoid, overwrites the diameterZ set by diameter, optional, default diameter
-         * - arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1 
-         * - slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1   
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * segments sets the number of horizontal strips optional, default 32
+          * * diameter sets the axes dimensions, diameterX, diameterY and diameterZ to the value of diameter, optional default 1  
+          * * diameterX sets the diameterX (x direction) of the ellipsoid, overwrites the diameterX set by diameter, optional, default diameter
+          * * diameterY sets the diameterY (y direction) of the ellipsoid, overwrites the diameterY set by diameter, optional, default diameter
+          * * diameterZ sets the diameterZ (z direction) of the ellipsoid, overwrites the diameterZ set by diameter, optional, default diameter
+          * * arc a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the circumference (latitude) given by the arc value, optional, default 1 
+          * * slice a number from 0 to 1, to create an unclosed ellipsoid based on the fraction of the height (latitude) given by the arc value, optional, default 1   
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the ellipsoid
          */         
         public static CreateSphere(options: { segments?: number, diameter?: number, diameterX?: number, diameterY?: number, diameterZ?: number, arc?: number, slice?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -1106,20 +1106,20 @@
         /**
          * Creates the VertexData for a cylinder, cone or prism
          * @param options an object used to set the following optional parameters for the box, required but can be empty 
-         * - height sets the height (y direction) of the cylinder, optional, default 2  
-         * - diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
-         * - diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
-         * - diameter sets the diameter of the top and bottom of the cone, optional default 1
-         * - tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-         * - subdivisions` the number of rings along the cylinder height, optional, default 1
-         * - arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
-         * - faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
-         * - faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-         * - hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
-         * - enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * height sets the height (y direction) of the cylinder, optional, default 2  
+          * * diameterTop sets the diameter of the top of the cone, overwrites diameter,  optional, default diameter
+          * * diameterBottom sets the diameter of the bottom of the cone, overwrites diameter,  optional, default diameter
+          * * diameter sets the diameter of the top and bottom of the cone, optional default 1
+          * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+          * * subdivisions` the number of rings along the cylinder height, optional, default 1
+          * * arc a number from 0 to 1, to create an unclosed cylinder based on the fraction of the circumference given by the arc value, optional, default 1
+          * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+          * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+          * * hasRings when true makes each subdivision independantly treated as a face for faceUV and faceColors, optional, default false
+          * * enclose when true closes an open cylinder by adding extra flat faces between the height axis and vertical edges, think cut cake
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the cylinder, cone or prism
          */         
         public static CreateCylinder(options: { height?: number, diameterTop?: number, diameterBottom?: number, diameter?: number, tessellation?: number, subdivisions?: number, arc?: number, faceColors?: Color4[], faceUV?: Vector4[], hasRings?: boolean, enclose?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -1376,12 +1376,12 @@
         /**
          * Creates the VertexData for a torus
          * @param options an object used to set the following optional parameters for the box, required but can be empty 
-         * - diameter the diameter of the torus, optional default 1
-         * - thickness the diameter of the tube forming the torus, optional default 0.5
-         * - tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * diameter the diameter of the torus, optional default 1
+          * * thickness the diameter of the tube forming the torus, optional default 0.5
+          * * tessellation the number of prism sides, 3 for a triangular prism, optional, default 24
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the torus
          */ 
         public static CreateTorus(options: { diameter?: number, thickness?: number, tessellation?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }) {
@@ -1601,12 +1601,12 @@
         /**
          * Creates the VertexData for a TiledGround by subdividing the ground into tiles
          * @param options an object used to set the following optional parameters for the Ground, required but can be empty
-         * - xmin the ground minimum X coordinate, optional, default -1
-         * - zmin the ground minimum Z coordinate, optional, default -1
-         * - xmax the ground maximum X coordinate, optional, default 1
-         * - zmax the ground maximum Z coordinate, optional, default 1
-         * - subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
-         * - precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
+          * * xmin the ground minimum X coordinate, optional, default -1
+          * * zmin the ground minimum Z coordinate, optional, default -1
+          * * xmax the ground maximum X coordinate, optional, default 1
+          * * zmax the ground maximum Z coordinate, optional, default 1
+          * * subdivisions a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the ground width and height creating 'tiles', default {w: 6, h: 6}
+          * * precision a javascript object {w: positive integer, h: positive integer}, `w` and `h` are the numbers of subdivisions on the tile width and height, default {w: 2, h: 2}
          * @returns the VertexData of the TiledGround  
          */
         public static CreateTiledGround(options: { xmin: number, zmin: number, xmax: number, zmax: number, subdivisions?: { w: number; h: number; }, precision?: { w: number; h: number; } }): VertexData {
@@ -1696,15 +1696,15 @@
         /**
          * Creates the VertexData of the Ground designed from a heightmap
          * @param options an object used to set the following parameters for the Ground, required and provided by MeshBuilder.CreateGroundFromHeightMap
-         * - width the width (x direction) of the ground
-         * - height the height (z direction) of the ground
-         * - subdivisions the number of subdivisions per side
-         * - minHeight the minimum altitude on the ground, optional, default 0
-         * - maxHeight the maximum altitude on the ground, optional default 1
-         * - colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
-         * - buffer the array holding the image color data 
-         * - bufferWidth the width of image
-         * - bufferHeight the height of image
+          * * width the width (x direction) of the ground
+          * * height the height (z direction) of the ground
+          * * subdivisions the number of subdivisions per side
+          * * minHeight the minimum altitude on the ground, optional, default 0
+          * * maxHeight the maximum altitude on the ground, optional default 1
+          * * colorFilter the filter to apply to the image pixel colors to compute the height, optional Color3, default (0.3, 0.59, 0.11)
+          * * buffer the array holding the image color data 
+          * * bufferWidth the width of image
+          * * bufferHeight the height of image
          * @returns the VertexData of the Ground designed from a heightmap   
          */
         public static CreateGroundFromHeightMap(options: { width: number, height: number, subdivisions: number, minHeight: number, maxHeight: number, colorFilter: Color3, buffer: Uint8Array, bufferWidth: number, bufferHeight: number }): VertexData {
@@ -1770,12 +1770,12 @@
         /**
          * Creates the VertexData for a Plane
          * @param options an object used to set the following optional parameters for the plane, required but can be empty 
-         * - size sets the width and height of the plane to the value of size, optional default 1  
-         * - width sets the width (x direction) of the plane, overwrites the width set by size, optional, default size
-         * - height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size  
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * size sets the width and height of the plane to the value of size, optional default 1  
+          * * width sets the width (x direction) of the plane, overwrites the width set by size, optional, default size
+          * * height sets the height (y direction) of the plane, overwrites the height set by size, optional, default size  
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the box
          */  
         public static CreatePlane(options: { size?: number, width?: number, height?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -1834,12 +1834,12 @@
         /**
          * Creates the VertexData of the Disc or regular Polygon
          * @param options an object used to set the following optional parameters for the disc, required but can be empty 
-         * - radius the radius of the disc, optional default 0.5  
-         * - tessellation the number of polygon sides, optional, default 64
-         * - arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1 
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * radius the radius of the disc, optional default 0.5  
+          * * tessellation the number of polygon sides, optional, default 64
+          * * arc a number from 0 to 1, to create an unclosed polygon based on the fraction of the circumference given by the arc value, optional, default 1 
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the box
          */ 
         public static CreateDisc(options: { radius?: number, tessellation?: number, arc?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -1969,15 +1969,15 @@
         /**
          * Creates the VertexData of the IcoSphere
          * @param options an object used to set the following optional parameters for the IcoSphere, required but can be empty 
-         * - radius the radius of the IcoSphere, optional default 1  
-         * - radiusX allows stretching in the x direction, optional, default radius
-         * - radiusY allows stretching in the y direction, optional, default radius
-         * - radiusZ allows stretching in the z direction, optional, default radius
-         * - flat when true creates a flat shaded mesh, optional, default true
-         * - subdivisions increasing the subdivisions increases the number of faces, optional, default 4 
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * radius the radius of the IcoSphere, optional default 1  
+          * * radiusX allows stretching in the x direction, optional, default radius
+          * * radiusY allows stretching in the y direction, optional, default radius
+          * * radiusZ allows stretching in the z direction, optional, default radius
+          * * flat when true creates a flat shaded mesh, optional, default true
+          * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4 
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the IcoSphere
          */ 
         public static CreateIcoSphere(options: { radius?: number, radiusX?: number, radiusY?: number, radiusZ?: number, flat?: boolean, subdivisions?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -2244,21 +2244,21 @@
         /**
          * Creates the VertexData for a Polyhedron
          * * @param options an object used to set the following optional parameters for the polyhedron, required but can be empty 
-         * - type provided types are:
+          * * type provided types are:
          * -- 0 : Tetrahedron, 1 : Octahedron, 2 : Dodecahedron, 3 : Icosahedron, 4 : Rhombicuboctahedron, 5 : Triangular Prism, 6 : Pentagonal Prism, 7 : Hexagonal Prism, 8 : Square Pyramid (J1)
          * -- 9 : Pentagonal Pyramid (J2), 10 : Triangular Dipyramid (J12), 11 : Pentagonal Dipyramid (J13), 12 : Elongated Square Dipyramid (J15), 13 : Elongated Pentagonal Dipyramid (J16), 14 : Elongated Pentagonal Cupola (J20)
-         * - size the size of the IcoSphere, optional default 1  
-         * - sizeX allows stretching in the x direction, optional, default size
-         * - sizeY allows stretching in the y direction, optional, default size
-         * - sizeZ allows stretching in the z direction, optional, default size
-         * - custom a number that overwrites the type to create from an extended set of polyhedron from https://www.babylonjs-playground.com/#21QRSK#15 with minimised editor
-         * - faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
-         * - faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
-         * - flat when true creates a flat shaded mesh, optional, default true
-         * - subdivisions increasing the subdivisions increases the number of faces, optional, default 4 
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * size the size of the IcoSphere, optional default 1  
+          * * sizeX allows stretching in the x direction, optional, default size
+          * * sizeY allows stretching in the y direction, optional, default size
+          * * sizeZ allows stretching in the z direction, optional, default size
+          * * custom a number that overwrites the type to create from an extended set of polyhedron from https://www.babylonjs-playground.com/#21QRSK#15 with minimised editor
+          * * faceUV an array of Vector4 elements used to set different images to the top, rings and bottom respectively
+          * * faceColors an array of Color3 elements used to set different colors to the top, rings and bottom respectively
+          * * flat when true creates a flat shaded mesh, optional, default true
+          * * subdivisions increasing the subdivisions increases the number of faces, optional, default 4 
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the Polyhedron 
          */
         public static CreatePolyhedron(options: { type?: number, size?: number, sizeX?: number, sizeY?: number, sizeZ?: number, custom?: any, faceUV?: Vector4[], faceColors?: Color4[], flat?: boolean, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -2396,15 +2396,15 @@
         /**
          * Creates the VertexData for a TorusKnot
          * @param options an object used to set the following optional parameters for the TorusKnot, required but can be empty
-         * - radius the radius of the torus knot, optional, default 2
-         * - tube the thickness of the tube, optional, default 0.5 
-         * - radialSegments the number of sides on each tube segments, optional, default 32
-         * - tubularSegments the number of tubes to decompose the knot into, optional, default 32
-         * - p the number of windings around the z axis, optional,  default 2
-         * - q the number of windings around the x axis, optional,  default 3
-         * - sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
-         * - frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
-         * - backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
+          * * radius the radius of the torus knot, optional, default 2
+          * * tube the thickness of the tube, optional, default 0.5 
+          * * radialSegments the number of sides on each tube segments, optional, default 32
+          * * tubularSegments the number of tubes to decompose the knot into, optional, default 32
+          * * p the number of windings around the z axis, optional,  default 2
+          * * q the number of windings around the x axis, optional,  default 3
+          * * sideOrientation optional and takes the values : BABYLON.Mesh.FRONTSIDE (default), BABYLON.Mesh.BACKSIDE or BABYLON.Mesh.DOUBLESIDE     
+          * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
+          * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1) 
          * @returns the VertexData of the Torus Knot
          */
         public static CreateTorusKnot(options: { radius?: number, tube?: number, radialSegments?: number, tubularSegments?: number, p?: number, q?: number, sideOrientation?: number, frontUVs?: Vector4, backUVs?: Vector4 }): VertexData {
@@ -2504,17 +2504,17 @@
          * @param indices an array of indices in groups of three for each triangular facet, [...., i, j, k, ......]
          * @param normals an array of vertex normals, [...., x, y, z, ......]
          * @param options an object used to set the following optional parameters for the TorusKnot, optional
-         * - facetNormals : optional array of facet normals (vector3)
-         * - facetPositions : optional array of facet positions (vector3)
-         * - facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
-         * - ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
-         * - bInfo : optional bounding info, required for facetPartitioning computation
-         * - bbSize : optional bounding box size data, required for facetPartitioning computation
-         * - subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
-         * - useRightHandedSystem: optional boolean to for right handed system computation
-         * - depthSort : optional boolean to enable the facet depth sort computation
-         * - distanceTo : optional Vector3 to compute the facet depth from this location
-         * - depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
+          * * facetNormals : optional array of facet normals (vector3)
+          * * facetPositions : optional array of facet positions (vector3)
+          * * facetPartitioning : optional partitioning array. facetPositions is required for facetPartitioning computation
+          * * ratio : optional partitioning ratio / bounding box, required for facetPartitioning computation
+          * * bInfo : optional bounding info, required for facetPartitioning computation
+          * * bbSize : optional bounding box size data, required for facetPartitioning computation
+          * * subDiv : optional partitioning data about subdivsions on  each axis (int), required for facetPartitioning computation
+          * * useRightHandedSystem: optional boolean to for right handed system computation
+          * * depthSort : optional boolean to enable the facet depth sort computation
+          * * distanceTo : optional Vector3 to compute the facet depth from this location
+          * * depthSortedFacets : optional array of depthSortedFacets to store the facet distances from the reference location
          */
         public static ComputeNormals(positions: any, indices: any, normals: any,
             options?: {
