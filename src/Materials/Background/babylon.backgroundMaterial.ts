@@ -148,6 +148,9 @@
 
         @serializeAsColor3()
         protected _primaryColor: Color3;
+        /**
+         * Key light Color (multiply against the environement texture)
+         */
         @expandToProperty("_markAllSubMeshesAsLightsDirty")
         public primaryColor = Color3.White();
         
