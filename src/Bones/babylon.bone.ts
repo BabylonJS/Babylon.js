@@ -1,4 +1,19 @@
 ﻿module BABYLON {
+    /**
+     * The bone scaling mode.
+     */
+    export enum BoneScalingMode {
+        /**
+         * Setting the `scaling` property on a bone adds an new scale factor on top of the existing local bone scale.
+         */
+        ADD,
+
+        /**
+         * Setting the `scaling` property on a bone replaces the existing local bone scale.
+         */
+        REPLACE
+    }
+
     export class Bone extends Node {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero()];
@@ -27,23 +42,21 @@
         private _negateScaleChildren = Vector3.One();
         private _scalingDeterminant = 1;
 
+        private _setScaling: (value: Vector3) => void;
+
         get _matrix(): Matrix {
             return this._localMatrix;
         }
 
-        set _matrix(val: Matrix) {
-            if (this._localMatrix) {
-                this._localMatrix.copyFrom(val);
-            } else {
-                this._localMatrix = val;
-            }
+        set _matrix(value: Matrix) {
+            this._localMatrix.copyFrom(value);
         }
 
         constructor(public name: string, skeleton: Skeleton, parentBone: Nullable<Bone> = null, localMatrix: Nullable<Matrix> = null,
             restPose: Nullable<Matrix> = null, baseMatrix: Nullable<Matrix> = null, index: Nullable<number> = null) {
             super(name, skeleton.getScene());
             this._skeleton = skeleton;
-            this._localMatrix = localMatrix ? localMatrix : Matrix.Identity();
+            this._localMatrix = localMatrix ? localMatrix.clone() : Matrix.Identity();
             this._restPose = restPose ? restPose : this._localMatrix.clone();
             this._baseMatrix = baseMatrix ? baseMatrix : this._localMatrix.clone();
             this._index = index;
@@ -53,6 +66,8 @@
             this.setParent(parentBone, false);
 
             this._updateDifferenceMatrix();
+
+            this.setScalingMode(BoneScalingMode.ADD);
         }
 
         // Members
@@ -85,6 +100,8 @@
             if (updateDifferenceMatrix) {
                 this._updateDifferenceMatrix();
             }
+
+            this.markAsDirty();
         }
 
         public getLocalMatrix(): Matrix {
@@ -145,9 +162,33 @@
         }
 
         public set scaling(newScaling: Vector3) {
-            this.setScale(newScaling.x, newScaling.y, newScaling.z);
+            this._setScaling(newScaling);
         }
-        
+
+        /**
+         * Sets the scaling mode for the scaling property.
+         * @param scalingMode the mode to use
+         */
+        public setScalingMode(scalingMode: BoneScalingMode): void {
+            switch (scalingMode) {
+                case BoneScalingMode.ADD: {
+                    this._setScaling = value => this.setScale(value.x, value.y, value.z);
+                    break;
+                }
+                case BoneScalingMode.REPLACE: {
+                    this._setScaling = value => {
+                        this._localMatrix.decompose(undefined, Bone._tmpQuat, Bone._tmpVecs[0]);
+                        Matrix.ComposeToRef(value, Bone._tmpQuat, Bone._tmpVecs[0], this._localMatrix);
+                        this.markAsDirty();
+                    };
+                    break;
+                }
+                default: {
+                    throw new Error(`Invalid scaling mode (${scalingMode})`);
+                }
+            }
+        }
+
         /**
          * Gets the animation properties override
          */
@@ -157,14 +198,14 @@
 
         // Methods
         public updateMatrix(matrix: Matrix, updateDifferenceMatrix = true): void {
-            this._baseMatrix = matrix.clone();
-            this._localMatrix = matrix.clone();
-
-            this._skeleton._markAsDirty();
+            this._baseMatrix.copyFrom(matrix);
+            this._localMatrix.copyFrom(matrix);
 
             if (updateDifferenceMatrix) {
                 this._updateDifferenceMatrix();
             }
+
+            this.markAsDirty();
         }
 
         public _updateDifferenceMatrix(rootMatrix?: Matrix): void {
@@ -369,7 +410,7 @@
         /**
          * Set the scale of the bone on the x, y and z axes.
          * @param x The scale of the bone on the x axis.
-         * @param x The scale of the bone on the y axis.
+         * @param y The scale of the bone on the y axis.
          * @param z The scale of the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
@@ -406,7 +447,7 @@
             origLocMatInv.invert();
 
             var scaleMat = Bone._tmpMats[2];
-            Matrix.FromValuesToRef(x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1, scaleMat);
+            Matrix.ScalingToRef(x, y, z, scaleMat);
             this._scaleMatrix.multiplyToRef(scaleMat, this._scaleMatrix);
             this._scaleVector.x *= x;
             this._scaleVector.y *= y;
@@ -460,15 +501,15 @@
          */
         public setYawPitchRoll(yaw: number, pitch: number, roll: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
-            var rotMat = Bone._tmpMats[0];
+            var rotMatInv = Bone._tmpMats[0];
+            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+                return;
+            }
+
+            var rotMat = Bone._tmpMats[1];
             Matrix.RotationYawPitchRollToRef(yaw, pitch, roll, rotMat);
 
-            var rotMatInv = Bone._tmpMats[1];
-
-            this._getNegativeRotationToRef(rotMatInv, space, mesh);
-
             rotMatInv.multiplyToRef(rotMat, rotMat);
-
             this._rotateWithMatrix(rotMat, space, mesh);
 
         }
@@ -502,11 +543,13 @@
          */
         public setAxisAngle(axis: Vector3, angle: number, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
-            var rotMat = Bone._tmpMats[0];
-            Matrix.RotationAxisToRef(axis, angle, rotMat);
-            var rotMatInv = Bone._tmpMats[1];
+            var rotMatInv = Bone._tmpMats[0];
+            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+                return;
+            }
 
-            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+            var rotMat = Bone._tmpMats[1];
+            Matrix.RotationAxisToRef(axis, angle, rotMat);
 
             rotMatInv.multiplyToRef(rotMat, rotMat);
             this._rotateWithMatrix(rotMat, space, mesh);
@@ -534,8 +577,9 @@
         public setRotationQuaternion(quat: Quaternion, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Bone._tmpMats[0];
-
-            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+                return;
+            }
 
             var rotMat = Bone._tmpMats[1];
             Matrix.FromQuaternionToRef(quat, rotMat);
@@ -555,8 +599,9 @@
         public setRotationMatrix(rotMat: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
 
             var rotMatInv = Bone._tmpMats[0];
-
-            this._getNegativeRotationToRef(rotMatInv, space, mesh);
+            if (!this._getNegativeRotationToRef(rotMatInv, space, mesh)) {
+                return;
+            }
 
             var rotMat2 = Bone._tmpMats[1];
             rotMat2.copyFrom(rotMat);
@@ -616,7 +661,7 @@
 
         }
 
-        private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): void {
+        private _getNegativeRotationToRef(rotMatInv: Matrix, space = Space.LOCAL, mesh?: AbstractMesh): boolean {
 
             if (space == Space.WORLD) {
                 var scaleMatrix = Bone._tmpMats[2];
@@ -631,11 +676,23 @@
                 }
 
                 rotMatInv.invert();
+                if (isNaN(rotMatInv.m[0])) {
+                    // Matrix failed to invert.
+                    // This can happen if scale is zero for example.
+                    return false;
+                }
+
                 scaleMatrix.m[0] *= this._scalingDeterminant;
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             } else {
                 rotMatInv.copyFrom(this.getLocalMatrix());
                 rotMatInv.invert();
+                if (isNaN(rotMatInv.m[0])) {
+                    // Matrix failed to invert.
+                    // This can happen if scale is zero for example.
+                    return false;
+                }
+
                 var scaleMatrix = Bone._tmpMats[2];
                 scaleMatrix.copyFrom(this._scaleMatrix);
 
@@ -650,6 +707,8 @@
 
                 rotMatInv.multiplyToRef(scaleMatrix, rotMatInv);
             }
+
+            return true;
 
         }
 
@@ -909,7 +968,7 @@
 
             if (space == Space.LOCAL) {
 
-                this.getLocalMatrix().decompose(Bone._tmpVecs[0], result, Bone._tmpVecs[1]);
+                this.getLocalMatrix().decompose(undefined, result, undefined);
 
             } else {
 
@@ -926,7 +985,7 @@
                 mat.m[1] *= this._scalingDeterminant;
                 mat.m[2] *= this._scalingDeterminant;
 
-                mat.decompose(Bone._tmpVecs[0], result, Bone._tmpVecs[1]);
+                mat.decompose(undefined, result, undefined);
 
             }
         }
