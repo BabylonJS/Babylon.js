@@ -84,8 +84,8 @@ module BABYLON {
          * @param camera The camera to dispose the effect on.
          */
         public disposeEffects(camera:Camera){
-            for(var effect in this._effects){
-                this._effects[effect].dispose(camera);
+            for(var effectIndex = 0; effectIndex < this._effects.length; effectIndex++){
+                this._effects[effectIndex].dispose(camera);
             }
         }
         
@@ -93,8 +93,8 @@ module BABYLON {
          * Internal
          */
         public _updateEffects(){
-            for(var effect in this._effects){
-                this._effects[effect].updateEffect();
+            for(var effectIndex = 0; effectIndex < this._effects.length; effectIndex++){
+                this._effects[effectIndex].updateEffect();
             }
         }
 
@@ -103,8 +103,8 @@ module BABYLON {
          * @returns if all the contained post processes are ready.
          */
         public _isReady(){
-            for(var effect in this._effects){
-                if(!this._effects[effect].isReady()){
+            for(var effectIndex = 0; effectIndex < this._effects.length; effectIndex++){
+                if(!this._effects[effectIndex].isReady()){
                     return false;
                 }
             }
