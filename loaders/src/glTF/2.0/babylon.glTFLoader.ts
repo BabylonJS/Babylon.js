@@ -712,7 +712,6 @@ module BABYLON.GLTF2 {
 
         private _createBone(node: ILoaderNode, skin: ILoaderSkin, parent: Nullable<Bone>, localMatrix: Matrix, baseMatrix: Matrix, index: number): Bone {
             const babylonBone = new Bone(node.name || `joint${node._index}`, skin._babylonSkeleton!, parent, localMatrix, null, baseMatrix, index);
-            babylonBone.setScalingMode(BoneScalingMode.REPLACE);
 
             node._babylonAnimationTargets = node._babylonAnimationTargets || [];
             node._babylonAnimationTargets.push(babylonBone);

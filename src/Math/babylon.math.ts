@@ -4199,9 +4199,9 @@
 
         /**
          * Decomposes the current Matrix into a translation, rotation and scaling components
-         * @param scale defines the scale vector3 given as a reference to update (optional)
-         * @param rotation defines the rotation quaternion given as a reference to update (optional)
-         * @param translation defines the translation vector3 given as a reference to update (optional)
+         * @param scale defines the scale vector3 given as a reference to update
+         * @param rotation defines the rotation quaternion given as a reference to update
+         * @param translation defines the translation vector3 given as a reference to update
          * @returns true if operation was successful
          */
         public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean {
