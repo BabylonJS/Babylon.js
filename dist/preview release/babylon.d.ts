@@ -1744,6 +1744,7 @@ declare module BABYLON {
         private _animate();
         /** @ignore */
         _registerTargetForLateAnimationBinding(runtimeAnimation: RuntimeAnimation): void;
+        private _processLateAnimationBindingsForMatrices(holder, originalValue);
         private _processLateAnimationBindings();
         /** @ignore */
         _switchToAlternateCameraConfiguration(active: boolean): void;
@@ -3273,6 +3274,9 @@ declare module BABYLON {
          */
         STEP = 1,
     }
+    /**
+     * Class used to store any kind of animation
+     */
     class Animation {
         name: string;
         targetProperty: string;
@@ -3629,7 +3633,8 @@ declare module BABYLON {
         private _blendingFactor;
         private _scene;
         private _currentValue;
-        private _workValue;
+        /** @ignore */
+        _workValue: any;
         private _activeTarget;
         private _targetPath;
         private _weight;
@@ -3677,6 +3682,7 @@ declare module BABYLON {
          * @param weight defines the weight to apply to this value
          */
         setValue(currentValue: any, weight?: number): void;
+        private _setValue(target, currentValue, weight?);
         private _getCorrectLoopMode();
         /**
          * Move the current animation to a given frame
@@ -3956,13 +3962,13 @@ declare module BABYLON {
          */
         setAbsolutePosition(position: Vector3, mesh?: AbstractMesh): void;
         /**
-         * Set the scale of the bone on the x, y and z axes.
-         * @param x The scale of the bone on the x axis.
-         * @param x The scale of the bone on the y axis.
-         * @param z The scale of the bone on the z axis.
+         * Adds an additional scale to the bone on the x, y and z axes.
+         * @param x The additional scale of the bone on the x axis.
+         * @param y The additional scale of the bone on the y axis.
+         * @param z The additional scale of the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
-        setScale(x: number, y: number, z: number, scaleChildren?: boolean): void;
+        setAdditionalScale(x: number, y: number, z: number, scaleChildren?: boolean): void;
         /**
          * Scale the bone on the x, y and z axes.
          * @param x The amount to scale the bone on the x axis.
@@ -4020,15 +4026,15 @@ declare module BABYLON {
         private _rotateWithMatrix(rmat, space?, mesh?);
         private _getNegativeRotationToRef(rotMatInv, space?, mesh?);
         /**
-         * Get the scale of the bone
-         * @returns the scale of the bone
+         * Get the additional scale of the bone
+         * @returns the additional scale of the bone
          */
-        getScale(): Vector3;
+        getAdditionalScale(): Vector3;
         /**
-         * Copy the scale of the bone to a vector3.
-         * @param result The vector3 to copy the scale to
+         * Copy the additional scale of the bone to a vector3.
+         * @param result The vector3 to copy the additional scale to
          */
-        getScaleToRef(result: Vector3): void;
+        getAdditionalScaleToRef(result: Vector3): void;
         /**
          * Get the position of the bone in local or world space.
          * @param space The space that the returned position is in.
@@ -4379,401 +4385,6 @@ declare module BABYLON {
         getPoseMatrix(): Nullable<Matrix>;
         sortBones(): void;
         private _sortBones(index, bones, visited);
-    }
-}
-
-declare module BABYLON {
-    class BoundingBox implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        vectors: Vector3[];
-        center: Vector3;
-        centerWorld: Vector3;
-        extendSize: Vector3;
-        extendSizeWorld: Vector3;
-        directions: Vector3[];
-        vectorsWorld: Vector3[];
-        minimumWorld: Vector3;
-        maximumWorld: Vector3;
-        private _worldMatrix;
-        constructor(minimum: Vector3, maximum: Vector3);
-        getWorldMatrix(): Matrix;
-        setWorldMatrix(matrix: Matrix): BoundingBox;
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsMinMax(min: Vector3, max: Vector3): boolean;
-        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
-        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
-        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
-    }
-}
-
-declare module BABYLON {
-    interface ICullable {
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-    }
-    class BoundingInfo implements ICullable {
-        minimum: Vector3;
-        maximum: Vector3;
-        boundingBox: BoundingBox;
-        boundingSphere: BoundingSphere;
-        private _isLocked;
-        constructor(minimum: Vector3, maximum: Vector3);
-        isLocked: boolean;
-        update(world: Matrix): void;
-        /**
-         * Recreate the bounding info to be centered around a specific point given a specific extend.
-         * @param center New center of the bounding info
-         * @param extend New extend of the bounding info
-         */
-        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        /**
-         * Gets the world distance between the min and max points of the bounding box
-         */
-        readonly diagonalLength: number;
-        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
-        _checkCollision(collider: Collider): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
-    }
-}
-
-declare module BABYLON {
-    class BoundingSphere {
-        minimum: Vector3;
-        maximum: Vector3;
-        center: Vector3;
-        radius: number;
-        centerWorld: Vector3;
-        radiusWorld: number;
-        private _tempRadiusVector;
-        constructor(minimum: Vector3, maximum: Vector3);
-        _update(world: Matrix): void;
-        isInFrustum(frustumPlanes: Plane[]): boolean;
-        intersectsPoint(point: Vector3): boolean;
-        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
-    }
-}
-
-declare module BABYLON {
-    class Ray {
-        origin: Vector3;
-        direction: Vector3;
-        length: number;
-        private _edge1;
-        private _edge2;
-        private _pvec;
-        private _tvec;
-        private _qvec;
-        private _tmpRay;
-        constructor(origin: Vector3, direction: Vector3, length?: number);
-        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
-        intersectsBox(box: BoundingBox): boolean;
-        intersectsSphere(sphere: BoundingSphere): boolean;
-        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
-        intersectsPlane(plane: Plane): Nullable<number>;
-        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
-        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
-        private _comparePickingInfo(pickingInfoA, pickingInfoB);
-        private static smallnum;
-        private static rayl;
-        /**
-         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
-         * @param sega the first point of the segment to test the intersection against
-         * @param segb the second point of the segment to test the intersection against
-         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
-         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
-         */
-        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
-        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        static Zero(): Ray;
-        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
-        /**
-        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
-        * transformed to the given world matrix.
-        * @param origin The origin point
-        * @param end The end point
-        * @param world a matrix to transform the ray to. Default is the identity matrix.
-        */
-        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
-        static Transform(ray: Ray, matrix: Matrix): Ray;
-        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
-    }
-}
-
-declare module BABYLON {
-    class Collider {
-        /** Define if a collision was found */
-        collisionFound: boolean;
-        /**
-         * Define last intersection point in local space
-         */
-        intersectionPoint: Vector3;
-        /**
-         * Define last collided mesh
-         */
-        collidedMesh: Nullable<AbstractMesh>;
-        private _collisionPoint;
-        private _planeIntersectionPoint;
-        private _tempVector;
-        private _tempVector2;
-        private _tempVector3;
-        private _tempVector4;
-        private _edge;
-        private _baseToVertex;
-        private _destinationPoint;
-        private _slidePlaneNormal;
-        private _displacementVector;
-        _radius: Vector3;
-        _retry: number;
-        private _velocity;
-        private _basePoint;
-        private _epsilon;
-        _velocityWorldLength: number;
-        _basePointWorld: Vector3;
-        private _velocityWorld;
-        private _normalizedVelocity;
-        _initialVelocity: Vector3;
-        _initialPosition: Vector3;
-        private _nearestDistance;
-        private _collisionMask;
-        collisionMask: number;
-        /**
-         * Gets the plane normal used to compute the sliding response (in local space)
-         */
-        readonly slidePlaneNormal: Vector3;
-        _initialize(source: Vector3, dir: Vector3, e: number): void;
-        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
-        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
-        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
-        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
-        _getResponse(pos: Vector3, vel: Vector3): void;
-    }
-}
-
-declare module BABYLON {
-    var CollisionWorker: string;
-    interface ICollisionCoordinator {
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-    }
-    interface SerializedMesh {
-        id: string;
-        name: string;
-        uniqueId: number;
-        geometryId: Nullable<string>;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-        worldMatrixFromCache: any;
-        subMeshes: Array<SerializedSubMesh>;
-        checkCollisions: boolean;
-    }
-    interface SerializedSubMesh {
-        position: number;
-        verticesStart: number;
-        verticesCount: number;
-        indexStart: number;
-        indexCount: number;
-        hasMaterial: boolean;
-        sphereCenter: Array<number>;
-        sphereRadius: number;
-        boxMinimum: Array<number>;
-        boxMaximum: Array<number>;
-    }
-    /**
-     * Interface describing the value associated with a geometry
-     */
-    interface SerializedGeometry {
-        /**
-         * Defines the unique ID of the geometry
-         */
-        id: string;
-        /**
-         * Defines the array containing the positions
-         */
-        positions: Float32Array;
-        /**
-         * Defines the array containing the indices
-         */
-        indices: Uint32Array;
-        /**
-         * Defines the array containing the normals
-         */
-        normals: Float32Array;
-    }
-    interface BabylonMessage {
-        taskType: WorkerTaskType;
-        payload: InitPayload | CollidePayload | UpdatePayload;
-    }
-    interface SerializedColliderToWorker {
-        position: Array<number>;
-        velocity: Array<number>;
-        radius: Array<number>;
-    }
-    enum WorkerTaskType {
-        INIT = 0,
-        UPDATE = 1,
-        COLLIDE = 2,
-    }
-    interface WorkerReply {
-        error: WorkerReplyType;
-        taskType: WorkerTaskType;
-        payload?: any;
-    }
-    interface CollisionReplyPayload {
-        newPosition: Array<number>;
-        collisionId: number;
-        collidedMeshUniqueId: number;
-    }
-    interface InitPayload {
-    }
-    interface CollidePayload {
-        collisionId: number;
-        collider: SerializedColliderToWorker;
-        maximumRetry: number;
-        excludedMeshUniqueId: Nullable<number>;
-    }
-    interface UpdatePayload {
-        updatedMeshes: {
-            [n: number]: SerializedMesh;
-        };
-        updatedGeometries: {
-            [s: string]: SerializedGeometry;
-        };
-        removedMeshes: Array<number>;
-        removedGeometries: Array<string>;
-    }
-    enum WorkerReplyType {
-        SUCCESS = 0,
-        UNKNOWN_ERROR = 1,
-    }
-    class CollisionCoordinatorWorker implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _collisionsCallbackArray;
-        private _init;
-        private _runningUpdated;
-        private _worker;
-        private _addUpdateMeshesList;
-        private _addUpdateGeometriesList;
-        private _toRemoveMeshesArray;
-        private _toRemoveGeometryArray;
-        constructor();
-        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
-        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated: (transformNode: TransformNode) => void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated: (geometry: Geometry) => void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _afterRender;
-        private _onMessageFromWorker;
-    }
-    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
-        private _scene;
-        private _scaledPosition;
-        private _scaledVelocity;
-        private _finalPosition;
-        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
-        init(scene: Scene): void;
-        destroy(): void;
-        onMeshAdded(mesh: AbstractMesh): void;
-        onMeshUpdated(mesh: AbstractMesh): void;
-        onMeshRemoved(mesh: AbstractMesh): void;
-        onGeometryAdded(geometry: Geometry): void;
-        onGeometryUpdated(geometry: Geometry): void;
-        onGeometryDeleted(geometry: Geometry): void;
-        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
-    }
-}
-
-declare function importScripts(...urls: string[]): void;
-declare const safePostMessage: any;
-declare module BABYLON {
-    var WorkerIncluded: boolean;
-    class CollisionCache {
-        private _meshes;
-        private _geometries;
-        getMeshes(): {
-            [n: number]: SerializedMesh;
-        };
-        getGeometries(): {
-            [s: number]: SerializedGeometry;
-        };
-        getMesh(id: any): SerializedMesh;
-        addMesh(mesh: SerializedMesh): void;
-        removeMesh(uniqueId: number): void;
-        getGeometry(id: string): SerializedGeometry;
-        addGeometry(geometry: SerializedGeometry): void;
-        removeGeometry(id: string): void;
-    }
-    class CollideWorker {
-        collider: Collider;
-        private _collisionCache;
-        private finalPosition;
-        private collisionsScalingMatrix;
-        private collisionTranformationMatrix;
-        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
-        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
-        private checkCollision(mesh);
-        private processCollisionsForSubMeshes(transformMatrix, mesh);
-        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
-        private checkSubmeshCollision(subMesh);
-    }
-    interface ICollisionDetector {
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-    class CollisionDetectorTransferable implements ICollisionDetector {
-        private _collisionCache;
-        onInit(payload: InitPayload): void;
-        onUpdate(payload: UpdatePayload): void;
-        onCollision(payload: CollidePayload): void;
-    }
-}
-
-declare module BABYLON {
-    class IntersectionInfo {
-        bu: Nullable<number>;
-        bv: Nullable<number>;
-        distance: number;
-        faceId: number;
-        subMeshId: number;
-        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
-    }
-    class PickingInfo {
-        hit: boolean;
-        distance: number;
-        pickedPoint: Nullable<Vector3>;
-        pickedMesh: Nullable<AbstractMesh>;
-        bu: number;
-        bv: number;
-        faceId: number;
-        subMeshId: number;
-        pickedSprite: Nullable<Sprite>;
-        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
-        getTextureCoordinates(): Nullable<Vector2>;
     }
 }
 
@@ -6724,7 +6335,7 @@ declare module BABYLON {
         private _removeDesignatedSlot(internalTexture);
         private _activateCurrentTexture();
         /** @ignore */
-        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean): void;
+        protected _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean, force?: boolean): void;
         /** @ignore */
         _bindTexture(channel: number, texture: Nullable<InternalTexture>): void;
         /**
@@ -6758,6 +6369,7 @@ declare module BABYLON {
          */
         setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>): void;
         private _bindSamplerUniformToChannel(sourceSlot, destination);
+        private _getTextureWrapMode(mode);
         private _setTexture(channel, texture, isPartOfTextureArray?, depthStencilTexture?);
         /**
          * Sets an array of texture to the webGL context
@@ -6767,7 +6379,9 @@ declare module BABYLON {
          */
         setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: BaseTexture[]): void;
         /** @ignore */
-        _setAnisotropicLevel(key: number, texture: BaseTexture): void;
+        _setAnisotropicLevel(target: number, texture: BaseTexture): void;
+        private _setTextureParameterFloat(target, parameter, value, texture);
+        private _setTextureParameterInteger(target, parameter, value, texture?);
         /**
          * Reads pixels from the current frame buffer. Please note that this function can be slow
          * @param x defines the x coordinate of the rectangle where pixels must be read
@@ -7148,65 +6762,272 @@ declare var WebGLVertexArrayObject: {
 };
 
 declare module BABYLON {
-    class KeyboardEventTypes {
-        static _KEYDOWN: number;
-        static _KEYUP: number;
-        static readonly KEYDOWN: number;
-        static readonly KEYUP: number;
-    }
-    class KeyboardInfo {
-        type: number;
-        event: KeyboardEvent;
-        constructor(type: number, event: KeyboardEvent);
-    }
-    /**
-     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
-     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
-     */
-    class KeyboardInfoPre extends KeyboardInfo {
-        constructor(type: number, event: KeyboardEvent);
-        skipOnPointerObservable: boolean;
+    class Collider {
+        /** Define if a collision was found */
+        collisionFound: boolean;
+        /**
+         * Define last intersection point in local space
+         */
+        intersectionPoint: Vector3;
+        /**
+         * Define last collided mesh
+         */
+        collidedMesh: Nullable<AbstractMesh>;
+        private _collisionPoint;
+        private _planeIntersectionPoint;
+        private _tempVector;
+        private _tempVector2;
+        private _tempVector3;
+        private _tempVector4;
+        private _edge;
+        private _baseToVertex;
+        private _destinationPoint;
+        private _slidePlaneNormal;
+        private _displacementVector;
+        _radius: Vector3;
+        _retry: number;
+        private _velocity;
+        private _basePoint;
+        private _epsilon;
+        _velocityWorldLength: number;
+        _basePointWorld: Vector3;
+        private _velocityWorld;
+        private _normalizedVelocity;
+        _initialVelocity: Vector3;
+        _initialPosition: Vector3;
+        private _nearestDistance;
+        private _collisionMask;
+        collisionMask: number;
+        /**
+         * Gets the plane normal used to compute the sliding response (in local space)
+         */
+        readonly slidePlaneNormal: Vector3;
+        _initialize(source: Vector3, dir: Vector3, e: number): void;
+        _checkPointInTriangle(point: Vector3, pa: Vector3, pb: Vector3, pc: Vector3, n: Vector3): boolean;
+        _canDoCollision(sphereCenter: Vector3, sphereRadius: number, vecMin: Vector3, vecMax: Vector3): boolean;
+        _testTriangle(faceIndex: number, trianglePlaneArray: Array<Plane>, p1: Vector3, p2: Vector3, p3: Vector3, hasMaterial: boolean): void;
+        _collide(trianglePlaneArray: Array<Plane>, pts: Vector3[], indices: IndicesArray, indexStart: number, indexEnd: number, decal: number, hasMaterial: boolean): void;
+        _getResponse(pos: Vector3, vel: Vector3): void;
     }
 }
 
 declare module BABYLON {
-    class PointerEventTypes {
-        static _POINTERDOWN: number;
-        static _POINTERUP: number;
-        static _POINTERMOVE: number;
-        static _POINTERWHEEL: number;
-        static _POINTERPICK: number;
-        static _POINTERTAP: number;
-        static _POINTERDOUBLETAP: number;
-        static readonly POINTERDOWN: number;
-        static readonly POINTERUP: number;
-        static readonly POINTERMOVE: number;
-        static readonly POINTERWHEEL: number;
-        static readonly POINTERPICK: number;
-        static readonly POINTERTAP: number;
-        static readonly POINTERDOUBLETAP: number;
+    var CollisionWorker: string;
+    interface ICollisionCoordinator {
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: Nullable<AbstractMesh>, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
     }
-    class PointerInfoBase {
-        type: number;
-        event: PointerEvent | MouseWheelEvent;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    interface SerializedMesh {
+        id: string;
+        name: string;
+        uniqueId: number;
+        geometryId: Nullable<string>;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
+        worldMatrixFromCache: any;
+        subMeshes: Array<SerializedSubMesh>;
+        checkCollisions: boolean;
+    }
+    interface SerializedSubMesh {
+        position: number;
+        verticesStart: number;
+        verticesCount: number;
+        indexStart: number;
+        indexCount: number;
+        hasMaterial: boolean;
+        sphereCenter: Array<number>;
+        sphereRadius: number;
+        boxMinimum: Array<number>;
+        boxMaximum: Array<number>;
     }
     /**
-     * This class is used to store pointer related info for the onPrePointerObservable event.
-     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     * Interface describing the value associated with a geometry
      */
-    class PointerInfoPre extends PointerInfoBase {
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
-        localPosition: Vector2;
-        skipOnPointerObservable: boolean;
+    interface SerializedGeometry {
+        /**
+         * Defines the unique ID of the geometry
+         */
+        id: string;
+        /**
+         * Defines the array containing the positions
+         */
+        positions: Float32Array;
+        /**
+         * Defines the array containing the indices
+         */
+        indices: Uint32Array;
+        /**
+         * Defines the array containing the normals
+         */
+        normals: Float32Array;
     }
-    /**
-     * This type contains all the data related to a pointer event in Babylon.js.
-     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
-     */
-    class PointerInfo extends PointerInfoBase {
-        pickInfo: Nullable<PickingInfo>;
-        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
+    interface BabylonMessage {
+        taskType: WorkerTaskType;
+        payload: InitPayload | CollidePayload | UpdatePayload;
+    }
+    interface SerializedColliderToWorker {
+        position: Array<number>;
+        velocity: Array<number>;
+        radius: Array<number>;
+    }
+    enum WorkerTaskType {
+        INIT = 0,
+        UPDATE = 1,
+        COLLIDE = 2,
+    }
+    interface WorkerReply {
+        error: WorkerReplyType;
+        taskType: WorkerTaskType;
+        payload?: any;
+    }
+    interface CollisionReplyPayload {
+        newPosition: Array<number>;
+        collisionId: number;
+        collidedMeshUniqueId: number;
+    }
+    interface InitPayload {
+    }
+    interface CollidePayload {
+        collisionId: number;
+        collider: SerializedColliderToWorker;
+        maximumRetry: number;
+        excludedMeshUniqueId: Nullable<number>;
+    }
+    interface UpdatePayload {
+        updatedMeshes: {
+            [n: number]: SerializedMesh;
+        };
+        updatedGeometries: {
+            [s: string]: SerializedGeometry;
+        };
+        removedMeshes: Array<number>;
+        removedGeometries: Array<string>;
+    }
+    enum WorkerReplyType {
+        SUCCESS = 0,
+        UNKNOWN_ERROR = 1,
+    }
+    class CollisionCoordinatorWorker implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _collisionsCallbackArray;
+        private _init;
+        private _runningUpdated;
+        private _worker;
+        private _addUpdateMeshesList;
+        private _addUpdateGeometriesList;
+        private _toRemoveMeshesArray;
+        private _toRemoveGeometryArray;
+        constructor();
+        static SerializeMesh: (mesh: AbstractMesh) => SerializedMesh;
+        static SerializeGeometry: (geometry: Geometry) => SerializedGeometry;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated: (transformNode: TransformNode) => void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated: (geometry: Geometry) => void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _afterRender;
+        private _onMessageFromWorker;
+    }
+    class CollisionCoordinatorLegacy implements ICollisionCoordinator {
+        private _scene;
+        private _scaledPosition;
+        private _scaledVelocity;
+        private _finalPosition;
+        getNewPosition(position: Vector3, displacement: Vector3, collider: Collider, maximumRetry: number, excludedMesh: AbstractMesh, onNewPosition: (collisionIndex: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh>) => void, collisionIndex: number): void;
+        init(scene: Scene): void;
+        destroy(): void;
+        onMeshAdded(mesh: AbstractMesh): void;
+        onMeshUpdated(mesh: AbstractMesh): void;
+        onMeshRemoved(mesh: AbstractMesh): void;
+        onGeometryAdded(geometry: Geometry): void;
+        onGeometryUpdated(geometry: Geometry): void;
+        onGeometryDeleted(geometry: Geometry): void;
+        private _collideWithWorld(position, velocity, collider, maximumRetry, finalPosition, excludedMesh?);
+    }
+}
+
+declare function importScripts(...urls: string[]): void;
+declare const safePostMessage: any;
+declare module BABYLON {
+    var WorkerIncluded: boolean;
+    class CollisionCache {
+        private _meshes;
+        private _geometries;
+        getMeshes(): {
+            [n: number]: SerializedMesh;
+        };
+        getGeometries(): {
+            [s: number]: SerializedGeometry;
+        };
+        getMesh(id: any): SerializedMesh;
+        addMesh(mesh: SerializedMesh): void;
+        removeMesh(uniqueId: number): void;
+        getGeometry(id: string): SerializedGeometry;
+        addGeometry(geometry: SerializedGeometry): void;
+        removeGeometry(id: string): void;
+    }
+    class CollideWorker {
+        collider: Collider;
+        private _collisionCache;
+        private finalPosition;
+        private collisionsScalingMatrix;
+        private collisionTranformationMatrix;
+        constructor(collider: Collider, _collisionCache: CollisionCache, finalPosition: Vector3);
+        collideWithWorld(position: Vector3, velocity: Vector3, maximumRetry: number, excludedMeshUniqueId: Nullable<number>): void;
+        private checkCollision(mesh);
+        private processCollisionsForSubMeshes(transformMatrix, mesh);
+        private collideForSubMesh(subMesh, transformMatrix, meshGeometry);
+        private checkSubmeshCollision(subMesh);
+    }
+    interface ICollisionDetector {
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+    class CollisionDetectorTransferable implements ICollisionDetector {
+        private _collisionCache;
+        onInit(payload: InitPayload): void;
+        onUpdate(payload: UpdatePayload): void;
+        onCollision(payload: CollidePayload): void;
+    }
+}
+
+declare module BABYLON {
+    class IntersectionInfo {
+        bu: Nullable<number>;
+        bv: Nullable<number>;
+        distance: number;
+        faceId: number;
+        subMeshId: number;
+        constructor(bu: Nullable<number>, bv: Nullable<number>, distance: number);
+    }
+    class PickingInfo {
+        hit: boolean;
+        distance: number;
+        pickedPoint: Nullable<Vector3>;
+        pickedMesh: Nullable<AbstractMesh>;
+        bu: number;
+        bv: number;
+        faceId: number;
+        subMeshId: number;
+        pickedSprite: Nullable<Sprite>;
+        getNormal(useWorldCoordinates?: boolean, useVerticesNormals?: boolean): Nullable<Vector3>;
+        getTextureCoordinates(): Nullable<Vector2>;
     }
 }
 
@@ -7991,358 +7812,190 @@ interface Gamepad {
 }
 
 declare module BABYLON {
-    /**
-     * Represents the different options available during the creation of
-     * a Environment helper.
-     *
-     * This can control the default ground, skybox and image processing setup of your scene.
-     */
-    interface IEnvironmentHelperOptions {
-        /**
-         * Specifies wether or not to create a ground.
-         * True by default.
-         */
-        createGround: boolean;
-        /**
-         * Specifies the ground size.
-         * 15 by default.
-         */
-        groundSize: number;
-        /**
-         * The texture used on the ground for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        groundTexture: string | BaseTexture;
-        /**
-         * The color mixed in the ground texture by default.
-         * BabylonJS clearColor by default.
-         */
-        groundColor: Color3;
-        /**
-         * Specifies the ground opacity.
-         * 1 by default.
-         */
-        groundOpacity: number;
-        /**
-         * Enables the ground to receive shadows.
-         * True by default.
-         */
-        enableGroundShadow: boolean;
-        /**
-         * Helps preventing the shadow to be fully black on the ground.
-         * 0.5 by default.
-         */
-        groundShadowLevel: number;
-        /**
-         * Creates a mirror texture attach to the ground.
-         * false by default.
-         */
-        enableGroundMirror: boolean;
-        /**
-         * Specifies the ground mirror size ratio.
-         * 0.3 by default as the default kernel is 64.
-         */
-        groundMirrorSizeRatio: number;
-        /**
-         * Specifies the ground mirror blur kernel size.
-         * 64 by default.
-         */
-        groundMirrorBlurKernel: number;
-        /**
-         * Specifies the ground mirror visibility amount.
-         * 1 by default
-         */
-        groundMirrorAmount: number;
-        /**
-         * Specifies the ground mirror reflectance weight.
-         * This uses the standard weight of the background material to setup the fresnel effect
-         * of the mirror.
-         * 1 by default.
-         */
-        groundMirrorFresnelWeight: number;
-        /**
-         * Specifies the ground mirror Falloff distance.
-         * This can helps reducing the size of the reflection.
-         * 0 by Default.
-         */
-        groundMirrorFallOffDistance: number;
-        /**
-         * Specifies the ground mirror texture type.
-         * Unsigned Int by Default.
-         */
-        groundMirrorTextureType: number;
-        /**
-         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
-         * the shown objects.
-         */
-        groundYBias: number;
-        /**
-         * Specifies wether or not to create a skybox.
-         * True by default.
-         */
-        createSkybox: boolean;
-        /**
-         * Specifies the skybox size.
-         * 20 by default.
-         */
-        skyboxSize: number;
-        /**
-         * The texture used on the skybox for the main color.
-         * Comes from the BabylonJS CDN by default.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        skyboxTexture: string | BaseTexture;
-        /**
-         * The color mixed in the skybox texture by default.
-         * BabylonJS clearColor by default.
-         */
-        skyboxColor: Color3;
-        /**
-         * The background rotation around the Y axis of the scene.
-         * This helps aligning the key lights of your scene with the background.
-         * 0 by default.
-         */
-        backgroundYRotation: number;
-        /**
-         * Compute automatically the size of the elements to best fit with the scene.
-         */
-        sizeAuto: boolean;
-        /**
-         * Default position of the rootMesh if autoSize is not true.
-         */
-        rootPosition: Vector3;
-        /**
-         * Sets up the image processing in the scene.
-         * true by default.
-         */
-        setupImageProcessing: boolean;
-        /**
-         * The texture used as your environment texture in the scene.
-         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
-         *
-         * Remarks: Can be either a texture or a url.
-         */
-        environmentTexture: string | BaseTexture;
-        /**
-         * The value of the exposure to apply to the scene.
-         * 0.6 by default if setupImageProcessing is true.
-         */
-        cameraExposure: number;
-        /**
-         * The value of the contrast to apply to the scene.
-         * 1.6 by default if setupImageProcessing is true.
-         */
-        cameraContrast: number;
-        /**
-         * Specifies wether or not tonemapping should be enabled in the scene.
-         * true by default if setupImageProcessing is true.
-         */
-        toneMappingEnabled: boolean;
-    }
-    /**
-     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
-     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
-     * It also helps with the default setup of your imageProcessing configuration.
-     */
-    class EnvironmentHelper {
-        /**
-         * Default ground texture URL.
-         */
-        private static _groundTextureCDNUrl;
-        /**
-         * Default skybox texture URL.
-         */
-        private static _skyboxTextureCDNUrl;
-        /**
-         * Default environment texture URL.
-         */
-        private static _environmentTextureCDNUrl;
-        /**
-         * Creates the default options for the helper.
-         */
-        private static _getDefaultOptions();
-        private _rootMesh;
-        /**
-         * Gets the root mesh created by the helper.
-         */
-        readonly rootMesh: Mesh;
-        private _skybox;
-        /**
-         * Gets the skybox created by the helper.
-         */
-        readonly skybox: Nullable<Mesh>;
-        private _skyboxTexture;
-        /**
-         * Gets the skybox texture created by the helper.
-         */
-        readonly skyboxTexture: Nullable<BaseTexture>;
-        private _skyboxMaterial;
-        /**
-         * Gets the skybox material created by the helper.
-         */
-        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
-        private _ground;
-        /**
-         * Gets the ground mesh created by the helper.
-         */
-        readonly ground: Nullable<Mesh>;
-        private _groundTexture;
-        /**
-         * Gets the ground texture created by the helper.
-         */
-        readonly groundTexture: Nullable<BaseTexture>;
-        private _groundMirror;
-        /**
-         * Gets the ground mirror created by the helper.
-         */
-        readonly groundMirror: Nullable<MirrorTexture>;
-        /**
-         * Gets the ground mirror render list to helps pushing the meshes
-         * you wish in the ground reflection.
-         */
-        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
-        private _groundMaterial;
-        /**
-         * Gets the ground material created by the helper.
-         */
-        readonly groundMaterial: Nullable<BackgroundMaterial>;
-        /**
-         * Stores the creation options.
-         */
-        private readonly _scene;
-        private _options;
-        /**
-         * This observable will be notified with any error during the creation of the environment,
-         * mainly texture creation errors.
-         */
-        onErrorObservable: Observable<{
-            message?: string;
-            exception?: any;
-        }>;
-        /**
-         * constructor
-         * @param options
-         * @param scene The scene to add the material to
-         */
-        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
-        /**
-         * Updates the background according to the new options
-         * @param options
-         */
-        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
-        /**
-         * Sets the primary color of all the available elements.
-         * @param color
-         */
-        setMainColor(color: Color3): void;
-        /**
-         * Setup the image processing according to the specified options.
-         */
-        private _setupImageProcessing();
-        /**
-         * Setup the environment texture according to the specified options.
-         */
-        private _setupEnvironmentTexture();
-        /**
-         * Setup the background according to the specified options.
-         */
-        private _setupBackground();
-        /**
-         * Get the scene sizes according to the setup.
-         */
-        private _getSceneSize();
-        /**
-         * Setup the ground according to the specified options.
-         */
-        private _setupGround(sceneSize);
-        /**
-         * Setup the ground material according to the specified options.
-         */
-        private _setupGroundMaterial();
-        /**
-         * Setup the ground diffuse texture according to the specified options.
-         */
-        private _setupGroundDiffuseTexture();
-        /**
-         * Setup the ground mirror texture according to the specified options.
-         */
-        private _setupGroundMirrorTexture(sceneSize);
-        /**
-         * Setup the ground to receive the mirror texture.
-         */
-        private _setupMirrorInGroundMaterial();
-        /**
-         * Setup the skybox according to the specified options.
-         */
-        private _setupSkybox(sceneSize);
-        /**
-         * Setup the skybox material according to the specified options.
-         */
-        private _setupSkyboxMaterial();
-        /**
-         * Setup the skybox reflection texture according to the specified options.
-         */
-        private _setupSkyboxReflectionTexture();
-        private _errorHandler;
-        /**
-         * Dispose all the elements created by the Helper.
-         */
-        dispose(): void;
+    class BoundingBox implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        vectors: Vector3[];
+        center: Vector3;
+        centerWorld: Vector3;
+        extendSize: Vector3;
+        extendSizeWorld: Vector3;
+        directions: Vector3[];
+        vectorsWorld: Vector3[];
+        minimumWorld: Vector3;
+        maximumWorld: Vector3;
+        private _worldMatrix;
+        constructor(minimum: Vector3, maximum: Vector3);
+        getWorldMatrix(): Matrix;
+        setWorldMatrix(matrix: Matrix): BoundingBox;
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsMinMax(min: Vector3, max: Vector3): boolean;
+        static Intersects(box0: BoundingBox, box1: BoundingBox): boolean;
+        static IntersectsSphere(minPoint: Vector3, maxPoint: Vector3, sphereCenter: Vector3, sphereRadius: number): boolean;
+        static IsCompletelyInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
+        static IsInFrustum(boundingVectors: Vector3[], frustumPlanes: Plane[]): boolean;
     }
 }
 
 declare module BABYLON {
+    interface ICullable {
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+    }
+    class BoundingInfo implements ICullable {
+        minimum: Vector3;
+        maximum: Vector3;
+        boundingBox: BoundingBox;
+        boundingSphere: BoundingSphere;
+        private _isLocked;
+        constructor(minimum: Vector3, maximum: Vector3);
+        isLocked: boolean;
+        update(world: Matrix): void;
+        /**
+         * Recreate the bounding info to be centered around a specific point given a specific extend.
+         * @param center New center of the bounding info
+         * @param extend New extend of the bounding info
+         */
+        centerOn(center: Vector3, extend: Vector3): BoundingInfo;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        /**
+         * Gets the world distance between the min and max points of the bounding box
+         */
+        readonly diagonalLength: number;
+        isCompletelyInFrustum(frustumPlanes: Plane[]): boolean;
+        _checkCollision(collider: Collider): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        intersects(boundingInfo: BoundingInfo, precise: boolean): boolean;
+    }
+}
+
+declare module BABYLON {
+    class BoundingSphere {
+        minimum: Vector3;
+        maximum: Vector3;
+        center: Vector3;
+        radius: number;
+        centerWorld: Vector3;
+        radiusWorld: number;
+        private _tempRadiusVector;
+        constructor(minimum: Vector3, maximum: Vector3);
+        _update(world: Matrix): void;
+        isInFrustum(frustumPlanes: Plane[]): boolean;
+        intersectsPoint(point: Vector3): boolean;
+        static Intersects(sphere0: BoundingSphere, sphere1: BoundingSphere): boolean;
+    }
+}
+
+declare module BABYLON {
+    class Ray {
+        origin: Vector3;
+        direction: Vector3;
+        length: number;
+        private _edge1;
+        private _edge2;
+        private _pvec;
+        private _tvec;
+        private _qvec;
+        private _tmpRay;
+        constructor(origin: Vector3, direction: Vector3, length?: number);
+        intersectsBoxMinMax(minimum: Vector3, maximum: Vector3): boolean;
+        intersectsBox(box: BoundingBox): boolean;
+        intersectsSphere(sphere: BoundingSphere): boolean;
+        intersectsTriangle(vertex0: Vector3, vertex1: Vector3, vertex2: Vector3): Nullable<IntersectionInfo>;
+        intersectsPlane(plane: Plane): Nullable<number>;
+        intersectsMesh(mesh: AbstractMesh, fastCheck?: boolean): PickingInfo;
+        intersectsMeshes(meshes: Array<AbstractMesh>, fastCheck?: boolean, results?: Array<PickingInfo>): Array<PickingInfo>;
+        private _comparePickingInfo(pickingInfoA, pickingInfoB);
+        private static smallnum;
+        private static rayl;
+        /**
+         * Intersection test between the ray and a given segment whithin a given tolerance (threshold)
+         * @param sega the first point of the segment to test the intersection against
+         * @param segb the second point of the segment to test the intersection against
+         * @param threshold the tolerance margin, if the ray doesn't intersect the segment but is close to the given threshold, the intersection is successful
+         * @return the distance from the ray origin to the intersection point if there's intersection, or -1 if there's no intersection
+         */
+        intersectionSegment(sega: Vector3, segb: Vector3, threshold: number): number;
+        update(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        static Zero(): Ray;
+        static CreateNew(x: number, y: number, viewportWidth: number, viewportHeight: number, world: Matrix, view: Matrix, projection: Matrix): Ray;
+        /**
+        * Function will create a new transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+        * transformed to the given world matrix.
+        * @param origin The origin point
+        * @param end The end point
+        * @param world a matrix to transform the ray to. Default is the identity matrix.
+        */
+        static CreateNewFromTo(origin: Vector3, end: Vector3, world?: Matrix): Ray;
+        static Transform(ray: Ray, matrix: Matrix): Ray;
+        static TransformToRef(ray: Ray, matrix: Matrix, result: Ray): void;
+    }
+}
+
+declare module BABYLON {
+    class KeyboardEventTypes {
+        static _KEYDOWN: number;
+        static _KEYUP: number;
+        static readonly KEYDOWN: number;
+        static readonly KEYUP: number;
+    }
+    class KeyboardInfo {
+        type: number;
+        event: KeyboardEvent;
+        constructor(type: number, event: KeyboardEvent);
+    }
     /**
-     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
-     * As a subclass of Node, this allow parenting to the camera or multiple videos with different locations in the scene.
-     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
-     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     * This class is used to store keyboard related info for the onPreKeyboardObservable event.
+     * Set the skipOnKeyboardObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onKeyboardObservable
      */
-    class VideoDome extends Node {
-        /**
-         * The video texture being displayed on the sphere
-         */
-        protected _videoTexture: VideoTexture;
-        /**
-         * The skybox material
-         */
-        protected _material: BackgroundMaterial;
-        /**
-         * The surface used for the skybox
-         */
-        protected _mesh: Mesh;
-        /**
-         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
-         * Also see the options.resolution property.
-         */
-        fovMultiplier: number;
-        /**
-         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
-         * @param name Element's name, child elements will append suffixes for their own names.
-         * @param urlsOrVideo
-         * @param options An object containing optional or exposed sub element properties:
-         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
-         * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
-         * @param options **autoPlay=true** Automatically attempt to being playing the video.
-         * @param options **loop=true** Automatically loop video on end.
-         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
-         */
-        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
-            resolution?: number;
-            clickToPlay?: boolean;
-            autoPlay?: boolean;
-            loop?: boolean;
-            size?: number;
-        }, scene: Scene);
-        /**
-         * Releases resources associated with this node.
-         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
-         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
-         */
-        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
+    class KeyboardInfoPre extends KeyboardInfo {
+        constructor(type: number, event: KeyboardEvent);
+        skipOnPointerObservable: boolean;
+    }
+}
+
+declare module BABYLON {
+    class PointerEventTypes {
+        static _POINTERDOWN: number;
+        static _POINTERUP: number;
+        static _POINTERMOVE: number;
+        static _POINTERWHEEL: number;
+        static _POINTERPICK: number;
+        static _POINTERTAP: number;
+        static _POINTERDOUBLETAP: number;
+        static readonly POINTERDOWN: number;
+        static readonly POINTERUP: number;
+        static readonly POINTERMOVE: number;
+        static readonly POINTERWHEEL: number;
+        static readonly POINTERPICK: number;
+        static readonly POINTERTAP: number;
+        static readonly POINTERDOUBLETAP: number;
+    }
+    class PointerInfoBase {
+        type: number;
+        event: PointerEvent | MouseWheelEvent;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent);
+    }
+    /**
+     * This class is used to store pointer related info for the onPrePointerObservable event.
+     * Set the skipOnPointerObservable property to true if you want the engine to stop any process after this event is triggered, even not calling onPointerObservable
+     */
+    class PointerInfoPre extends PointerInfoBase {
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, localX: number, localY: number);
+        localPosition: Vector2;
+        skipOnPointerObservable: boolean;
+    }
+    /**
+     * This type contains all the data related to a pointer event in Babylon.js.
+     * The event member is an instance of PointerEvent for all types except PointerWheel and is of type MouseWheelEvent when type equals PointerWheel. The different event types can be found in the PointerEventTypes class.
+     */
+    class PointerInfo extends PointerInfoBase {
+        pickInfo: Nullable<PickingInfo>;
+        constructor(type: number, event: PointerEvent | MouseWheelEvent, pickInfo: Nullable<PickingInfo>);
     }
 }
 
@@ -8701,6 +8354,363 @@ declare module BABYLON {
         _endTimeQuery: Nullable<WebGLQuery>;
         _timeElapsedQuery: Nullable<WebGLQuery>;
         _timeElapsedQueryEnded: boolean;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Represents the different options available during the creation of
+     * a Environment helper.
+     *
+     * This can control the default ground, skybox and image processing setup of your scene.
+     */
+    interface IEnvironmentHelperOptions {
+        /**
+         * Specifies wether or not to create a ground.
+         * True by default.
+         */
+        createGround: boolean;
+        /**
+         * Specifies the ground size.
+         * 15 by default.
+         */
+        groundSize: number;
+        /**
+         * The texture used on the ground for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        groundTexture: string | BaseTexture;
+        /**
+         * The color mixed in the ground texture by default.
+         * BabylonJS clearColor by default.
+         */
+        groundColor: Color3;
+        /**
+         * Specifies the ground opacity.
+         * 1 by default.
+         */
+        groundOpacity: number;
+        /**
+         * Enables the ground to receive shadows.
+         * True by default.
+         */
+        enableGroundShadow: boolean;
+        /**
+         * Helps preventing the shadow to be fully black on the ground.
+         * 0.5 by default.
+         */
+        groundShadowLevel: number;
+        /**
+         * Creates a mirror texture attach to the ground.
+         * false by default.
+         */
+        enableGroundMirror: boolean;
+        /**
+         * Specifies the ground mirror size ratio.
+         * 0.3 by default as the default kernel is 64.
+         */
+        groundMirrorSizeRatio: number;
+        /**
+         * Specifies the ground mirror blur kernel size.
+         * 64 by default.
+         */
+        groundMirrorBlurKernel: number;
+        /**
+         * Specifies the ground mirror visibility amount.
+         * 1 by default
+         */
+        groundMirrorAmount: number;
+        /**
+         * Specifies the ground mirror reflectance weight.
+         * This uses the standard weight of the background material to setup the fresnel effect
+         * of the mirror.
+         * 1 by default.
+         */
+        groundMirrorFresnelWeight: number;
+        /**
+         * Specifies the ground mirror Falloff distance.
+         * This can helps reducing the size of the reflection.
+         * 0 by Default.
+         */
+        groundMirrorFallOffDistance: number;
+        /**
+         * Specifies the ground mirror texture type.
+         * Unsigned Int by Default.
+         */
+        groundMirrorTextureType: number;
+        /**
+         * Specifies a bias applied to the ground vertical position to prevent z-fighyting with
+         * the shown objects.
+         */
+        groundYBias: number;
+        /**
+         * Specifies wether or not to create a skybox.
+         * True by default.
+         */
+        createSkybox: boolean;
+        /**
+         * Specifies the skybox size.
+         * 20 by default.
+         */
+        skyboxSize: number;
+        /**
+         * The texture used on the skybox for the main color.
+         * Comes from the BabylonJS CDN by default.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        skyboxTexture: string | BaseTexture;
+        /**
+         * The color mixed in the skybox texture by default.
+         * BabylonJS clearColor by default.
+         */
+        skyboxColor: Color3;
+        /**
+         * The background rotation around the Y axis of the scene.
+         * This helps aligning the key lights of your scene with the background.
+         * 0 by default.
+         */
+        backgroundYRotation: number;
+        /**
+         * Compute automatically the size of the elements to best fit with the scene.
+         */
+        sizeAuto: boolean;
+        /**
+         * Default position of the rootMesh if autoSize is not true.
+         */
+        rootPosition: Vector3;
+        /**
+         * Sets up the image processing in the scene.
+         * true by default.
+         */
+        setupImageProcessing: boolean;
+        /**
+         * The texture used as your environment texture in the scene.
+         * Comes from the BabylonJS CDN by default and in use if setupImageProcessing is true.
+         *
+         * Remarks: Can be either a texture or a url.
+         */
+        environmentTexture: string | BaseTexture;
+        /**
+         * The value of the exposure to apply to the scene.
+         * 0.6 by default if setupImageProcessing is true.
+         */
+        cameraExposure: number;
+        /**
+         * The value of the contrast to apply to the scene.
+         * 1.6 by default if setupImageProcessing is true.
+         */
+        cameraContrast: number;
+        /**
+         * Specifies wether or not tonemapping should be enabled in the scene.
+         * true by default if setupImageProcessing is true.
+         */
+        toneMappingEnabled: boolean;
+    }
+    /**
+     * The Environment helper class can be used to add a fully featuread none expensive background to your scene.
+     * It includes by default a skybox and a ground relying on the BackgroundMaterial.
+     * It also helps with the default setup of your imageProcessing configuration.
+     */
+    class EnvironmentHelper {
+        /**
+         * Default ground texture URL.
+         */
+        private static _groundTextureCDNUrl;
+        /**
+         * Default skybox texture URL.
+         */
+        private static _skyboxTextureCDNUrl;
+        /**
+         * Default environment texture URL.
+         */
+        private static _environmentTextureCDNUrl;
+        /**
+         * Creates the default options for the helper.
+         */
+        private static _getDefaultOptions();
+        private _rootMesh;
+        /**
+         * Gets the root mesh created by the helper.
+         */
+        readonly rootMesh: Mesh;
+        private _skybox;
+        /**
+         * Gets the skybox created by the helper.
+         */
+        readonly skybox: Nullable<Mesh>;
+        private _skyboxTexture;
+        /**
+         * Gets the skybox texture created by the helper.
+         */
+        readonly skyboxTexture: Nullable<BaseTexture>;
+        private _skyboxMaterial;
+        /**
+         * Gets the skybox material created by the helper.
+         */
+        readonly skyboxMaterial: Nullable<BackgroundMaterial>;
+        private _ground;
+        /**
+         * Gets the ground mesh created by the helper.
+         */
+        readonly ground: Nullable<Mesh>;
+        private _groundTexture;
+        /**
+         * Gets the ground texture created by the helper.
+         */
+        readonly groundTexture: Nullable<BaseTexture>;
+        private _groundMirror;
+        /**
+         * Gets the ground mirror created by the helper.
+         */
+        readonly groundMirror: Nullable<MirrorTexture>;
+        /**
+         * Gets the ground mirror render list to helps pushing the meshes
+         * you wish in the ground reflection.
+         */
+        readonly groundMirrorRenderList: Nullable<AbstractMesh[]>;
+        private _groundMaterial;
+        /**
+         * Gets the ground material created by the helper.
+         */
+        readonly groundMaterial: Nullable<BackgroundMaterial>;
+        /**
+         * Stores the creation options.
+         */
+        private readonly _scene;
+        private _options;
+        /**
+         * This observable will be notified with any error during the creation of the environment,
+         * mainly texture creation errors.
+         */
+        onErrorObservable: Observable<{
+            message?: string;
+            exception?: any;
+        }>;
+        /**
+         * constructor
+         * @param options
+         * @param scene The scene to add the material to
+         */
+        constructor(options: Partial<IEnvironmentHelperOptions>, scene: Scene);
+        /**
+         * Updates the background according to the new options
+         * @param options
+         */
+        updateOptions(options: Partial<IEnvironmentHelperOptions>): void;
+        /**
+         * Sets the primary color of all the available elements.
+         * @param color the main color to affect to the ground and the background
+         * @param perceptual Specifies wether the chosen color has been set as intented to be seen e.g. in gamma space not accounting for exposure and tone mapping
+         */
+        setMainColor(color: Color3, perceptual?: boolean): void;
+        /**
+         * Setup the image processing according to the specified options.
+         */
+        private _setupImageProcessing();
+        /**
+         * Setup the environment texture according to the specified options.
+         */
+        private _setupEnvironmentTexture();
+        /**
+         * Setup the background according to the specified options.
+         */
+        private _setupBackground();
+        /**
+         * Get the scene sizes according to the setup.
+         */
+        private _getSceneSize();
+        /**
+         * Setup the ground according to the specified options.
+         */
+        private _setupGround(sceneSize);
+        /**
+         * Setup the ground material according to the specified options.
+         */
+        private _setupGroundMaterial();
+        /**
+         * Setup the ground diffuse texture according to the specified options.
+         */
+        private _setupGroundDiffuseTexture();
+        /**
+         * Setup the ground mirror texture according to the specified options.
+         */
+        private _setupGroundMirrorTexture(sceneSize);
+        /**
+         * Setup the ground to receive the mirror texture.
+         */
+        private _setupMirrorInGroundMaterial();
+        /**
+         * Setup the skybox according to the specified options.
+         */
+        private _setupSkybox(sceneSize);
+        /**
+         * Setup the skybox material according to the specified options.
+         */
+        private _setupSkyboxMaterial();
+        /**
+         * Setup the skybox reflection texture according to the specified options.
+         */
+        private _setupSkyboxReflectionTexture();
+        private _errorHandler;
+        /**
+         * Dispose all the elements created by the Helper.
+         */
+        dispose(): void;
+    }
+}
+
+declare module BABYLON {
+    /**
+     * Display a 360 degree video on an approximately spherical surface, useful for VR applications or skyboxes.
+     * As a subclass of Node, this allow parenting to the camera or multiple videos with different locations in the scene.
+     * This class achieves its effect with a VideoTexture and a correctly configured BackgroundMaterial on an inverted sphere.
+     * Potential additions to this helper include zoom and and non-infinite distance rendering effects.
+     */
+    class VideoDome extends Node {
+        /**
+         * The video texture being displayed on the sphere
+         */
+        protected _videoTexture: VideoTexture;
+        /**
+         * The skybox material
+         */
+        protected _material: BackgroundMaterial;
+        /**
+         * The surface used for the skybox
+         */
+        protected _mesh: Mesh;
+        /**
+         * The current fov(field of view) multiplier, 0.0 - 2.0. Defaults to 1.0. Lower values "zoom in" and higher values "zoom out".
+         * Also see the options.resolution property.
+         */
+        fovMultiplier: number;
+        /**
+         * Create an instance of this class and pass through the parameters to the relevant classes, VideoTexture, StandardMaterial, and Mesh.
+         * @param name Element's name, child elements will append suffixes for their own names.
+         * @param urlsOrVideo
+         * @param options An object containing optional or exposed sub element properties:
+         * @param options **resolution=12** Integer, lower resolutions have more artifacts at extreme fovs
+         * @param options **clickToPlay=false** Add a click to play listener to the video, does not prevent autoplay.
+         * @param options **autoPlay=true** Automatically attempt to being playing the video.
+         * @param options **loop=true** Automatically loop video on end.
+         * @param options **size=1000** Physical radius to create the dome at, defaults to approximately half the far clip plane.
+         */
+        constructor(name: string, urlsOrVideo: string | string[] | HTMLVideoElement, options: {
+            resolution?: number;
+            clickToPlay?: boolean;
+            autoPlay?: boolean;
+            loop?: boolean;
+            size?: number;
+        }, scene: Scene);
+        /**
+         * Releases resources associated with this node.
+         * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+         * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
+         */
+        dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void;
     }
 }
 
@@ -13308,14 +13318,14 @@ declare module BABYLON {
          */
         getHashCode(): number;
         /**
-         * Stores in the passed array from the passed starting index the red, green, blue values as successive elements
+         * Stores in the given array from the given starting index the red, green, blue values as successive elements
          * @param array defines the array where to store the r,g,b components
          * @param index defines an optional index in the target array to define where to start storing values
          * @returns the current Color3 object
          */
         toArray(array: FloatArray, index?: number): Color3;
         /**
-         * Returns a new {BABYLON.Color4} object from the current Color3 and the passed alpha
+         * Returns a new {BABYLON.Color4} object from the current Color3 and the given alpha
          * @param alpha defines the alpha component on the new {BABYLON.Color4} object (default is 1)
          * @returns a new {BABYLON.Color4} object
          */
@@ -13331,13 +13341,13 @@ declare module BABYLON {
          */
         toLuminance(): number;
         /**
-         * Multiply each Color3 rgb values by the passed Color3 rgb values in a new Color3 object
+         * Multiply each Color3 rgb values by the given Color3 rgb values in a new Color3 object
          * @param otherColor defines the second operand
          * @returns the new Color3 object
          */
         multiply(otherColor: Color3): Color3;
         /**
-         * Multiply the rgb values of the Color3 and the passed Color3 and stores the result in the object "result"
+         * Multiply the rgb values of the Color3 and the given Color3 and stores the result in the object "result"
          * @param otherColor defines the second operand
          * @param result defines the Color3 object where to store the result
          * @returns the current Color3
@@ -13346,7 +13356,7 @@ declare module BABYLON {
         /**
          * Determines equality between Color3 objects
          * @param otherColor defines the second operand
-         * @returns true if the rgb values are equal to the passed ones
+         * @returns true if the rgb values are equal to the given ones
          */
         equals(otherColor: Color3): boolean;
         /**
@@ -13354,7 +13364,7 @@ declare module BABYLON {
          * @param r defines the red component to check
          * @param g defines the green component to check
          * @param b defines the blue component to check
-         * @returns true if the rgb values are equal to the passed ones
+         * @returns true if the rgb values are equal to the given ones
          */
         equalsFloats(r: number, g: number, b: number): boolean;
         /**
@@ -13386,26 +13396,26 @@ declare module BABYLON {
          */
         clampToRef(min: number | undefined, max: number | undefined, result: Color3): Color3;
         /**
-         * Creates a new Color3 set with the added values of the current Color3 and of the passed one
+         * Creates a new Color3 set with the added values of the current Color3 and of the given one
          * @param otherColor defines the second operand
          * @returns the new Color3
          */
         add(otherColor: Color3): Color3;
         /**
-         * Stores the result of the addition of the current Color3 and passed one rgb values into "result"
+         * Stores the result of the addition of the current Color3 and given one rgb values into "result"
          * @param otherColor defines the second operand
          * @param result defines Color3 object to store the result into
          * @returns the unmodified current Color3
          */
         addToRef(otherColor: Color3, result: Color3): Color3;
         /**
-         * Returns a new Color3 set with the subtracted values of the passed one from the current Color3
+         * Returns a new Color3 set with the subtracted values of the given one from the current Color3
          * @param otherColor defines the second operand
          * @returns the new Color3
          */
         subtract(otherColor: Color3): Color3;
         /**
-         * Stores the result of the subtraction of passed one from the current Color3 rgb values into "result"
+         * Stores the result of the subtraction of given one from the current Color3 rgb values into "result"
          * @param otherColor defines the second operand
          * @param result defines Color3 object to store the result into
          * @returns the unmodified current Color3
@@ -13423,7 +13433,7 @@ declare module BABYLON {
          */
         copyFrom(source: Color3): Color3;
         /**
-         * Updates the Color3 rgb values from the passed floats
+         * Updates the Color3 rgb values from the given floats
          * @param r defines the red component to read from
          * @param g defines the green component to read from
          * @param b defines the blue component to read from
@@ -13431,7 +13441,7 @@ declare module BABYLON {
          */
         copyFromFloats(r: number, g: number, b: number): Color3;
         /**
-         * Updates the Color3 rgb values from the passed floats
+         * Updates the Color3 rgb values from the given floats
          * @param r defines the red component to read from
          * @param g defines the green component to read from
          * @param b defines the blue component to read from
@@ -13472,7 +13482,7 @@ declare module BABYLON {
          */
         static FromHexString(hex: string): Color3;
         /**
-         * Creates a new Vector3 from the starting index of the passed array
+         * Creates a new Vector3 from the starting index of the given array
          * @param array defines the source array
          * @param offset defines an offset in the source array
          * @returns a new Color3 object
@@ -13595,7 +13605,7 @@ declare module BABYLON {
              */
             a?: number);
         /**
-         * Adds in place the passed Color4 values to the current Color4 object
+         * Adds in place the given Color4 values to the current Color4 object
          * @param right defines the second operand
          * @returns the current updated Color4 object
          */
@@ -13606,26 +13616,26 @@ declare module BABYLON {
          */
         asArray(): number[];
         /**
-         * Stores from the starting index in the passed array the Color4 successive values
+         * Stores from the starting index in the given array the Color4 successive values
          * @param array defines the array where to store the r,g,b components
          * @param index defines an optional index in the target array to define where to start storing values
          * @returns the current Color4 object
          */
         toArray(array: number[], index?: number): Color4;
         /**
-         * Creates a new Color4 set with the added values of the current Color4 and of the passed one
+         * Creates a new Color4 set with the added values of the current Color4 and of the given one
          * @param right defines the second operand
          * @returns a new Color4 object
          */
         add(right: Color4): Color4;
         /**
-         * Creates a new Color4 set with the subtracted values of the passed one from the current Color4
+         * Creates a new Color4 set with the subtracted values of the given one from the current Color4
          * @param right defines the second operand
          * @returns a new Color4 object
          */
         subtract(right: Color4): Color4;
         /**
-         * Subtracts the passed ones from the current Color4 values and stores the results in "result"
+         * Subtracts the given ones from the current Color4 values and stores the results in "result"
          * @param right defines the second operand
          * @param result defines the Color4 object where to store the result
          * @returns the current Color4 object
@@ -13693,13 +13703,13 @@ declare module BABYLON {
          */
         clone(): Color4;
         /**
-         * Copies the passed Color4 values into the current one
+         * Copies the given Color4 values into the current one
          * @param source defines the source Color4 object
          * @returns the current updated Color4 object
          */
         copyFrom(source: Color4): Color4;
         /**
-         * Copies the passed float values into the current one
+         * Copies the given float values into the current one
          * @param r defines the red component to read from
          * @param g defines the green component to read from
          * @param b defines the blue component to read from
@@ -13708,7 +13718,7 @@ declare module BABYLON {
          */
         copyFromFloats(r: number, g: number, b: number, a: number): Color4;
         /**
-         * Copies the passed float values into the current one
+         * Copies the given float values into the current one
          * @param r defines the red component to read from
          * @param g defines the green component to read from
          * @param b defines the blue component to read from
@@ -13758,7 +13768,7 @@ declare module BABYLON {
          */
         static Lerp(left: Color4, right: Color4, amount: number): Color4;
         /**
-         * Set the passed "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
+         * Set the given "result" with the linearly interpolated values of "amount" between the left Color4 object and the right Color4 object
          * @param left defines the start value
          * @param right defines the end value
          * @param amount defines the gradient factor
@@ -13766,7 +13776,7 @@ declare module BABYLON {
          */
         static LerpToRef(left: Color4, right: Color4, amount: number, result: Color4): void;
         /**
-         * Creates a new Color4 from the starting index element of the passed array
+         * Creates a new Color4 from the starting index element of the given array
          * @param array defines the source array to read from
          * @param offset defines the offset in the source array
          * @returns a new Color4 object
@@ -13794,7 +13804,7 @@ declare module BABYLON {
         x: number;
         y: number;
         /**
-         * Creates a new Vector2 from the passed x and y coordinates.
+         * Creates a new Vector2 from the given x and y coordinates.
          */
         constructor(x: number, y: number);
         /**
@@ -13810,7 +13820,7 @@ declare module BABYLON {
          */
         getHashCode(): number;
         /**
-         * Sets the Vector2 coordinates in the passed array or Float32Array from the passed index.
+         * Sets the Vector2 coordinates in the given array or Float32Array from the given index.
          * Returns the Vector2.
          */
         toArray(array: FloatArray, index?: number): Vector2;
@@ -13819,81 +13829,81 @@ declare module BABYLON {
          */
         asArray(): number[];
         /**
-         *  Sets the Vector2 coordinates with the passed Vector2 coordinates.
+         *  Sets the Vector2 coordinates with the given Vector2 coordinates.
          * Returns the updated Vector2.
          */
         copyFrom(source: Vector2): Vector2;
         /**
-         * Sets the Vector2 coordinates with the passed floats.
+         * Sets the Vector2 coordinates with the given floats.
          * Returns the updated Vector2.
          */
         copyFromFloats(x: number, y: number): Vector2;
         /**
-         * Sets the Vector2 coordinates with the passed floats.
+         * Sets the Vector2 coordinates with the given floats.
          * Returns the updated Vector2.
          */
         set(x: number, y: number): Vector2;
         /**
-         * Returns a new Vector2 set with the addition of the current Vector2 and the passed one coordinates.
+         * Returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates.
          */
         add(otherVector: Vector2): Vector2;
         /**
-         * Sets the "result" coordinates with the addition of the current Vector2 and the passed one coordinates.
+         * Sets the "result" coordinates with the addition of the current Vector2 and the given one coordinates.
          * Returns the Vector2.
          */
         addToRef(otherVector: Vector2, result: Vector2): Vector2;
         /**
-         * Set the Vector2 coordinates by adding the passed Vector2 coordinates.
+         * Set the Vector2 coordinates by adding the given Vector2 coordinates.
          * Returns the updated Vector2.
          */
         addInPlace(otherVector: Vector2): Vector2;
         /**
-         * Returns a new Vector2 by adding the current Vector2 coordinates to the passed Vector3 x, y coordinates.
+         * Returns a new Vector2 by adding the current Vector2 coordinates to the given Vector3 x, y coordinates.
          */
         addVector3(otherVector: Vector3): Vector2;
         /**
-         * Returns a new Vector2 set with the subtracted coordinates of the passed one from the current Vector2.
+         * Returns a new Vector2 set with the subtracted coordinates of the given one from the current Vector2.
          */
         subtract(otherVector: Vector2): Vector2;
         /**
-         * Sets the "result" coordinates with the subtraction of the passed one from the current Vector2 coordinates.
+         * Sets the "result" coordinates with the subtraction of the given one from the current Vector2 coordinates.
          * Returns the Vector2.
          */
         subtractToRef(otherVector: Vector2, result: Vector2): Vector2;
         /**
-         * Sets the current Vector2 coordinates by subtracting from it the passed one coordinates.
+         * Sets the current Vector2 coordinates by subtracting from it the given one coordinates.
          * Returns the updated Vector2.
          */
         subtractInPlace(otherVector: Vector2): Vector2;
         /**
-         * Multiplies in place the current Vector2 coordinates by the passed ones.
+         * Multiplies in place the current Vector2 coordinates by the given ones.
          * Returns the updated Vector2.
          */
         multiplyInPlace(otherVector: Vector2): Vector2;
         /**
-         * Returns a new Vector2 set with the multiplication of the current Vector2 and the passed one coordinates.
+         * Returns a new Vector2 set with the multiplication of the current Vector2 and the given one coordinates.
          */
         multiply(otherVector: Vector2): Vector2;
         /**
-         * Sets "result" coordinates with the multiplication of the current Vector2 and the passed one coordinates.
+         * Sets "result" coordinates with the multiplication of the current Vector2 and the given one coordinates.
          * Returns the Vector2.
          */
         multiplyToRef(otherVector: Vector2, result: Vector2): Vector2;
         /**
-         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the passed floats.
+         * Returns a new Vector2 set with the Vector2 coordinates multiplied by the given floats.
          */
         multiplyByFloats(x: number, y: number): Vector2;
         /**
-         * Returns a new Vector2 set with the Vector2 coordinates divided by the passed one coordinates.
+         * Returns a new Vector2 set with the Vector2 coordinates divided by the given one coordinates.
          */
         divide(otherVector: Vector2): Vector2;
         /**
-         * Sets the "result" coordinates with the Vector2 divided by the passed one coordinates.
+         * Sets the "result" coordinates with the Vector2 divided by the given one coordinates.
          * Returns the Vector2.
          */
         divideToRef(otherVector: Vector2, result: Vector2): Vector2;
         /**
-         * Divides the current Vector3 coordinates by the passed ones.
+         * Divides the current Vector3 coordinates by the given ones.
          * Returns the updated Vector3.
          */
         divideInPlace(otherVector: Vector2): Vector2;
@@ -13925,11 +13935,11 @@ declare module BABYLON {
          */
         scaleAndAddToRef(scale: number, result: Vector2): Vector2;
         /**
-         * Boolean : True if the passed vector coordinates strictly equal the current Vector2 ones.
+         * Boolean : True if the given vector coordinates strictly equal the current Vector2 ones.
          */
         equals(otherVector: Vector2): boolean;
         /**
-         * Boolean : True if the passed vector coordinates are close to the current ones by a distance of epsilon.
+         * Boolean : True if the given vector coordinates are close to the current ones by a distance of epsilon.
          */
         equalsWithEpsilon(otherVector: Vector2, epsilon?: number): boolean;
         /**
@@ -13958,15 +13968,15 @@ declare module BABYLON {
          */
         static One(): Vector2;
         /**
-         * Returns a new Vector2 set from the passed index element of the passed array.
+         * Returns a new Vector2 set from the given index element of the given array.
          */
         static FromArray(array: ArrayLike<number>, offset?: number): Vector2;
         /**
-         * Sets "result" from the passed index element of the passed array.
+         * Sets "result" from the given index element of the given array.
          */
         static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector2): void;
         /**
-         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the passed four Vector2.
+         * Retuns a new Vector2 located for "amount" (float) on the CatmullRom  spline defined by the given four Vector2.
          */
         static CatmullRom(value1: Vector2, value2: Vector2, value3: Vector2, value4: Vector2, amount: number): Vector2;
         /**
@@ -13988,7 +13998,7 @@ declare module BABYLON {
          */
         static Dot(left: Vector2, right: Vector2): number;
         /**
-         * Returns a new Vector2 equal to the normalized passed vector.
+         * Returns a new Vector2 equal to the normalized given vector.
          */
         static Normalize(vector: Vector2): Vector2;
         /**
@@ -14000,11 +14010,11 @@ declare module BABYLON {
          */
         static Maximize(left: Vector2, right: Vector2): Vector2;
         /**
-         * Returns a new Vecto2 set with the transformed coordinates of the passed vector by the passed transformation matrix.
+         * Returns a new Vecto2 set with the transformed coordinates of the given vector by the given transformation matrix.
          */
         static Transform(vector: Vector2, transformation: Matrix): Vector2;
         /**
-         * Transforms the passed vector coordinates by the passed transformation matrix and stores the result in the vector "result" coordinates.
+         * Transforms the given vector coordinates by the given transformation matrix and stores the result in the vector "result" coordinates.
          */
         static TransformToRef(vector: Vector2, transformation: Matrix, result: Vector2): void;
         /**
@@ -14048,7 +14058,7 @@ declare module BABYLON {
          */
         z: number;
         /**
-         * Creates a new Vector3 object from the passed x, y, z (floats) coordinates.
+         * Creates a new Vector3 object from the given x, y, z (floats) coordinates.
          * @param x defines the first coordinates (on X axis)
          * @param y defines the second coordinates (on Y axis)
          * @param z defines the third coordinates (on Z axis)
@@ -14087,7 +14097,7 @@ declare module BABYLON {
          */
         asArray(): number[];
         /**
-         * Populates the passed array or Float32Array from the passed index with the successive coordinates of the Vector3
+         * Populates the given array or Float32Array from the given index with the successive coordinates of the Vector3
          * @param array defines the destination array
          * @param index defines the offset in the destination array
          * @returns the current Vector3
@@ -14099,45 +14109,45 @@ declare module BABYLON {
          */
         toQuaternion(): Quaternion;
         /**
-         * Adds the passed vector to the current Vector3
+         * Adds the given vector to the current Vector3
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
         addInPlace(otherVector: Vector3): Vector3;
         /**
-         * Gets a new Vector3, result of the addition the current Vector3 and the passed vector
+         * Gets a new Vector3, result of the addition the current Vector3 and the given vector
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
          */
         add(otherVector: Vector3): Vector3;
         /**
-         * Adds the current Vector3 to the passed one and stores the result in the vector "result"
+         * Adds the current Vector3 to the given one and stores the result in the vector "result"
          * @param otherVector defines the second operand
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
         addToRef(otherVector: Vector3, result: Vector3): Vector3;
         /**
-         * Subtract the passed vector from the current Vector3
+         * Subtract the given vector from the current Vector3
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
         subtractInPlace(otherVector: Vector3): Vector3;
         /**
-         * Returns a new Vector3, result of the subtraction of the passed vector from the current Vector3
+         * Returns a new Vector3, result of the subtraction of the given vector from the current Vector3
          * @param otherVector defines the second operand
          * @returns the resulting Vector3
          */
         subtract(otherVector: Vector3): Vector3;
         /**
-         * Subtracts the passed vector from the current Vector3 and stores the result in the vector "result".
+         * Subtracts the given vector from the current Vector3 and stores the result in the vector "result".
          * @param otherVector defines the second operand
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
         subtractToRef(otherVector: Vector3, result: Vector3): Vector3;
         /**
-         * Returns a new Vector3 set with the subtraction of the passed floats from the current Vector3 coordinates
+         * Returns a new Vector3 set with the subtraction of the given floats from the current Vector3 coordinates
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -14145,7 +14155,7 @@ declare module BABYLON {
          */
         subtractFromFloats(x: number, y: number, z: number): Vector3;
         /**
-         * Subtracts the passed floats from the current Vector3 coordinates and set the passed vector "result" with this result
+         * Subtracts the given floats from the current Vector3 coordinates and set the given vector "result" with this result
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -14171,7 +14181,7 @@ declare module BABYLON {
          */
         scale(scale: number): Vector3;
         /**
-         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the passed vector "result" coordinates
+         * Multiplies the current Vector3 coordinates by the float "scale" and stores the result in the given vector "result" coordinates
          * @param scale defines the multiplier factor
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
@@ -14185,20 +14195,20 @@ declare module BABYLON {
          */
         scaleAndAddToRef(scale: number, result: Vector3): Vector3;
         /**
-         * Returns true if the current Vector3 and the passed vector coordinates are strictly equal
+         * Returns true if the current Vector3 and the given vector coordinates are strictly equal
          * @param otherVector defines the second operand
          * @returns true if both vectors are equals
          */
         equals(otherVector: Vector3): boolean;
         /**
-         * Returns true if the current Vector3 and the passed vector coordinates are distant less than epsilon
+         * Returns true if the current Vector3 and the given vector coordinates are distant less than epsilon
          * @param otherVector defines the second operand
          * @param epsilon defines the minimal distance to define values as equals
          * @returns true if both vectors are distant less than epsilon
          */
         equalsWithEpsilon(otherVector: Vector3, epsilon?: number): boolean;
         /**
-         * Returns true if the current Vector3 coordinates equals the passed floats
+         * Returns true if the current Vector3 coordinates equals the given floats
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -14206,26 +14216,26 @@ declare module BABYLON {
          */
         equalsToFloats(x: number, y: number, z: number): boolean;
         /**
-         * Multiplies the current Vector3 coordinates by the passed ones
+         * Multiplies the current Vector3 coordinates by the given ones
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
         multiplyInPlace(otherVector: Vector3): Vector3;
         /**
-         * Returns a new Vector3, result of the multiplication of the current Vector3 by the passed vector
+         * Returns a new Vector3, result of the multiplication of the current Vector3 by the given vector
          * @param otherVector defines the second operand
          * @returns the new Vector3
          */
         multiply(otherVector: Vector3): Vector3;
         /**
-         * Multiplies the current Vector3 by the passed one and stores the result in the passed vector "result"
+         * Multiplies the current Vector3 by the given one and stores the result in the given vector "result"
          * @param otherVector defines the second operand
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
         multiplyToRef(otherVector: Vector3, result: Vector3): Vector3;
         /**
-         * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the passed floats
+         * Returns a new Vector3 set with the result of the mulliplication of the current Vector3 coordinates by the given floats
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -14233,32 +14243,32 @@ declare module BABYLON {
          */
         multiplyByFloats(x: number, y: number, z: number): Vector3;
         /**
-         * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the passed ones
+         * Returns a new Vector3 set with the result of the division of the current Vector3 coordinates by the given ones
          * @param otherVector defines the second operand
          * @returns the new Vector3
          */
         divide(otherVector: Vector3): Vector3;
         /**
-         * Divides the current Vector3 coordinates by the passed ones and stores the result in the passed vector "result"
+         * Divides the current Vector3 coordinates by the given ones and stores the result in the given vector "result"
          * @param otherVector defines the second operand
          * @param result defines the Vector3 object where to store the result
          * @returns the current Vector3
          */
         divideToRef(otherVector: Vector3, result: Vector3): Vector3;
         /**
-         * Divides the current Vector3 coordinates by the passed ones.
+         * Divides the current Vector3 coordinates by the given ones.
          * @param otherVector defines the second operand
          * @returns the current updated Vector3
          */
         divideInPlace(otherVector: Vector3): Vector3;
         /**
-         * Updates the current Vector3 with the minimal coordinate values between its and the passed vector ones
+         * Updates the current Vector3 with the minimal coordinate values between its and the given vector ones
          * @param other defines the second operand
          * @returns the current updated Vector3
          */
         minimizeInPlace(other: Vector3): Vector3;
         /**
-         * Updates the current Vector3 with the maximal coordinate values between its and the passed vector ones.
+         * Updates the current Vector3 with the maximal coordinate values between its and the given vector ones.
          * @param other defines the second operand
          * @returns the current updated Vector3
          */
@@ -14300,13 +14310,13 @@ declare module BABYLON {
          */
         clone(): Vector3;
         /**
-         * Copies the passed vector coordinates to the current Vector3 ones
+         * Copies the given vector coordinates to the current Vector3 ones
          * @param source defines the source Vector3
          * @returns the current updated Vector3
          */
         copyFrom(source: Vector3): Vector3;
         /**
-         * Copies the passed floats to the current Vector3 coordinates
+         * Copies the given floats to the current Vector3 coordinates
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -14314,7 +14324,7 @@ declare module BABYLON {
          */
         copyFromFloats(x: number, y: number, z: number): Vector3;
         /**
-         * Copies the passed floats to the current Vector3 coordinates
+         * Copies the given floats to the current Vector3 coordinates
          * @param x defines the x coordinate of the operand
          * @param y defines the y coordinate of the operand
          * @param z defines the z coordinate of the operand
@@ -14339,14 +14349,14 @@ declare module BABYLON {
          */
         static GetAngleBetweenVectors(vector0: Vector3, vector1: Vector3, normal: Vector3): number;
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed array
+         * Returns a new Vector3 set from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @returns the new Vector3
          */
         static FromArray(array: ArrayLike<number>, offset?: number): Vector3;
         /**
-         * Returns a new Vector3 set from the index "offset" of the passed Float32Array
+         * Returns a new Vector3 set from the index "offset" of the given Float32Array
          * This function is deprecated.  Use FromArray instead
          * @param array defines the source array
          * @param offset defines the offset in the source array
@@ -14354,14 +14364,14 @@ declare module BABYLON {
          */
         static FromFloatArray(array: Float32Array, offset?: number): Vector3;
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed array
+         * Sets the given vector "result" with the element values from the index "offset" of the given array
          * @param array defines the source array
          * @param offset defines the offset in the source array
          * @param result defines the Vector3 where to store the result
          */
         static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector3): void;
         /**
-         * Sets the passed vector "result" with the element values from the index "offset" of the passed Float32Array
+         * Sets the given vector "result" with the element values from the index "offset" of the given Float32Array
          * This function is deprecated.  Use FromArrayToRef instead.
          * @param array defines the source array
          * @param offset defines the offset in the source array
@@ -14369,7 +14379,7 @@ declare module BABYLON {
          */
         static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector3): void;
         /**
-         * Sets the passed vector "result" with the passed floats.
+         * Sets the given vector "result" with the given floats.
          * @param x defines the x coordinate of the source
          * @param y defines the y coordinate of the source
          * @param z defines the z coordinate of the source
@@ -14407,7 +14417,7 @@ declare module BABYLON {
          */
         static Left(): Vector3;
         /**
-         * Returns a new Vector3 set with the result of the transformation by the passed matrix of the passed vector.
+         * Returns a new Vector3 set with the result of the transformation by the given matrix of the given vector.
          * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
          * @param vector defines the Vector3 to transform
          * @param transformation defines the transformation matrix
@@ -14415,7 +14425,7 @@ declare module BABYLON {
          */
         static TransformCoordinates(vector: Vector3, transformation: Matrix): Vector3;
         /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed vector
+         * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given vector
          * This method computes tranformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
          * @param vector defines the Vector3 to transform
          * @param transformation defines the transformation matrix
@@ -14423,7 +14433,7 @@ declare module BABYLON {
          */
         static TransformCoordinatesToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
         /**
-         * Sets the passed vector "result" coordinates with the result of the transformation by the passed matrix of the passed floats (x, y, z)
+         * Sets the given vector "result" coordinates with the result of the transformation by the given matrix of the given floats (x, y, z)
          * This method computes tranformed coordinates only, not transformed direction vectors
          * @param x define the x coordinate of the source vector
          * @param y define the y coordinate of the source vector
@@ -14433,7 +14443,7 @@ declare module BABYLON {
          */
         static TransformCoordinatesFromFloatsToRef(x: number, y: number, z: number, transformation: Matrix, result: Vector3): void;
         /**
-         * Returns a new Vector3 set with the result of the normal transformation by the passed matrix of the passed vector
+         * Returns a new Vector3 set with the result of the normal transformation by the given matrix of the given vector
          * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
          * @param vector defines the Vector3 to transform
          * @param transformation defines the transformation matrix
@@ -14441,7 +14451,7 @@ declare module BABYLON {
          */
         static TransformNormal(vector: Vector3, transformation: Matrix): Vector3;
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector
+         * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given vector
          * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
          * @param vector defines the Vector3 to transform
          * @param transformation defines the transformation matrix
@@ -14449,7 +14459,7 @@ declare module BABYLON {
          */
         static TransformNormalToRef(vector: Vector3, transformation: Matrix, result: Vector3): void;
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z)
+         * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given floats (x, y, z)
          * This methods computes transformed normalized direction vectors only (ie. it does not apply translation)
          * @param x define the x coordinate of the source vector
          * @param y define the y coordinate of the source vector
@@ -14497,7 +14507,7 @@ declare module BABYLON {
          */
         static Lerp(start: Vector3, end: Vector3, amount: number): Vector3;
         /**
-         * Sets the passed vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
+         * Sets the given vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
          * @param start defines the start value
          * @param end defines the end value
          * @param amount max defines amount between both (between 0 and 1)
@@ -14520,7 +14530,7 @@ declare module BABYLON {
          */
         static Cross(left: Vector3, right: Vector3): Vector3;
         /**
-         * Sets the passed vector "result" with the cross product of "left" and "right"
+         * Sets the given vector "result" with the cross product of "left" and "right"
          * The cross product is then orthogonal to both "left" and "right"
          * @param left defines the left operand
          * @param right defines the right operand
@@ -14528,13 +14538,13 @@ declare module BABYLON {
          */
         static CrossToRef(left: Vector3, right: Vector3, result: Vector3): void;
         /**
-         * Returns a new Vector3 as the normalization of the passed vector
+         * Returns a new Vector3 as the normalization of the given vector
          * @param vector defines the Vector3 to normalize
          * @returns the new Vector3
          */
         static Normalize(vector: Vector3): Vector3;
         /**
-         * Sets the passed vector "result" with the normalization of the passed first vector
+         * Sets the given vector "result" with the normalization of the given first vector
          * @param vector defines the Vector3 to normalize
          * @param result defines the Vector3 where to store the result
          */
@@ -14641,7 +14651,7 @@ declare module BABYLON {
          */
         static RotationFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Vector3;
         /**
-         * The same than RotationFromAxis but updates the passed ref Vector3 parameter instead of returning a new Vector3
+         * The same than RotationFromAxis but updates the given ref Vector3 parameter instead of returning a new Vector3
          * @param axis1 defines the first axis
          * @param axis2 defines the second axis
          * @param axis3 defines the third axis
@@ -14655,7 +14665,7 @@ declare module BABYLON {
         z: number;
         w: number;
         /**
-         * Creates a Vector4 object from the passed floats.
+         * Creates a Vector4 object from the given floats.
          */
         constructor(x: number, y: number, z: number, w: number);
         /**
@@ -14675,44 +14685,44 @@ declare module BABYLON {
          */
         asArray(): number[];
         /**
-         * Populates the passed array from the passed index with the Vector4 coordinates.
+         * Populates the given array from the given index with the Vector4 coordinates.
          * Returns the Vector4.
          */
         toArray(array: FloatArray, index?: number): Vector4;
         /**
-         * Adds the passed vector to the current Vector4.
+         * Adds the given vector to the current Vector4.
          * Returns the updated Vector4.
          */
         addInPlace(otherVector: Vector4): Vector4;
         /**
-         * Returns a new Vector4 as the result of the addition of the current Vector4 and the passed one.
+         * Returns a new Vector4 as the result of the addition of the current Vector4 and the given one.
          */
         add(otherVector: Vector4): Vector4;
         /**
-         * Updates the passed vector "result" with the result of the addition of the current Vector4 and the passed one.
+         * Updates the given vector "result" with the result of the addition of the current Vector4 and the given one.
          * Returns the current Vector4.
          */
         addToRef(otherVector: Vector4, result: Vector4): Vector4;
         /**
-         * Subtract in place the passed vector from the current Vector4.
+         * Subtract in place the given vector from the current Vector4.
          * Returns the updated Vector4.
          */
         subtractInPlace(otherVector: Vector4): Vector4;
         /**
-         * Returns a new Vector4 with the result of the subtraction of the passed vector from the current Vector4.
+         * Returns a new Vector4 with the result of the subtraction of the given vector from the current Vector4.
          */
         subtract(otherVector: Vector4): Vector4;
         /**
-         * Sets the passed vector "result" with the result of the subtraction of the passed vector from the current Vector4.
+         * Sets the given vector "result" with the result of the subtraction of the given vector from the current Vector4.
          * Returns the current Vector4.
          */
         subtractToRef(otherVector: Vector4, result: Vector4): Vector4;
         /**
-         * Returns a new Vector4 set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
+         * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
          */
         subtractFromFloats(x: number, y: number, z: number, w: number): Vector4;
         /**
-         * Sets the passed vector "result" set with the result of the subtraction of the passed floats from the current Vector4 coordinates.
+         * Sets the given vector "result" set with the result of the subtraction of the given floats from the current Vector4 coordinates.
          * Returns the current Vector4.
          */
         subtractFromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): Vector4;
@@ -14730,7 +14740,7 @@ declare module BABYLON {
          */
         scale(scale: number): Vector4;
         /**
-         * Sets the passed vector "result" with the current Vector4 coordinates multiplied by scale (float).
+         * Sets the given vector "result" with the current Vector4 coordinates multiplied by scale (float).
          * Returns the current Vector4.
          */
         scaleToRef(scale: number, result: Vector4): Vector4;
@@ -14742,57 +14752,57 @@ declare module BABYLON {
          */
         scaleAndAddToRef(scale: number, result: Vector4): Vector4;
         /**
-         * Boolean : True if the current Vector4 coordinates are stricly equal to the passed ones.
+         * Boolean : True if the current Vector4 coordinates are stricly equal to the given ones.
          */
         equals(otherVector: Vector4): boolean;
         /**
-         * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the passed vector ones.
+         * Boolean : True if the current Vector4 coordinates are each beneath the distance "epsilon" from the given vector ones.
          */
         equalsWithEpsilon(otherVector: Vector4, epsilon?: number): boolean;
         /**
-         * Boolean : True if the passed floats are strictly equal to the current Vector4 coordinates.
+         * Boolean : True if the given floats are strictly equal to the current Vector4 coordinates.
          */
         equalsToFloats(x: number, y: number, z: number, w: number): boolean;
         /**
-         * Multiplies in place the current Vector4 by the passed one.
+         * Multiplies in place the current Vector4 by the given one.
          * Returns the updated Vector4.
          */
         multiplyInPlace(otherVector: Vector4): Vector4;
         /**
-         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the passed one.
+         * Returns a new Vector4 set with the multiplication result of the current Vector4 and the given one.
          */
         multiply(otherVector: Vector4): Vector4;
         /**
-         * Updates the passed vector "result" with the multiplication result of the current Vector4 and the passed one.
+         * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.
          * Returns the current Vector4.
          */
         multiplyToRef(otherVector: Vector4, result: Vector4): Vector4;
         /**
-         * Returns a new Vector4 set with the multiplication result of the passed floats and the current Vector4 coordinates.
+         * Returns a new Vector4 set with the multiplication result of the given floats and the current Vector4 coordinates.
          */
         multiplyByFloats(x: number, y: number, z: number, w: number): Vector4;
         /**
-         * Returns a new Vector4 set with the division result of the current Vector4 by the passed one.
+         * Returns a new Vector4 set with the division result of the current Vector4 by the given one.
          */
         divide(otherVector: Vector4): Vector4;
         /**
-         * Updates the passed vector "result" with the division result of the current Vector4 by the passed one.
+         * Updates the given vector "result" with the division result of the current Vector4 by the given one.
          * Returns the current Vector4.
          */
         divideToRef(otherVector: Vector4, result: Vector4): Vector4;
         /**
-         * Divides the current Vector3 coordinates by the passed ones.
+         * Divides the current Vector3 coordinates by the given ones.
          * @returns the updated Vector3.
          */
         divideInPlace(otherVector: Vector4): Vector4;
         /**
-         * Updates the Vector4 coordinates with the minimum values between its own and the passed vector ones
+         * Updates the Vector4 coordinates with the minimum values between its own and the given vector ones
          * @param other defines the second operand
          * @returns the current updated Vector4
          */
         minimizeInPlace(other: Vector4): Vector4;
         /**
-         * Updates the Vector4 coordinates with the maximum values between its own and the passed vector ones
+         * Updates the Vector4 coordinates with the maximum values between its own and the given vector ones
          * @param other defines the second operand
          * @returns the current updated Vector4
          */
@@ -14819,34 +14829,34 @@ declare module BABYLON {
          */
         clone(): Vector4;
         /**
-         * Updates the current Vector4 with the passed one coordinates.
+         * Updates the current Vector4 with the given one coordinates.
          * Returns the updated Vector4.
          */
         copyFrom(source: Vector4): Vector4;
         /**
-         * Updates the current Vector4 coordinates with the passed floats.
+         * Updates the current Vector4 coordinates with the given floats.
          * Returns the updated Vector4.
          */
         copyFromFloats(x: number, y: number, z: number, w: number): Vector4;
         /**
-         * Updates the current Vector4 coordinates with the passed floats.
+         * Updates the current Vector4 coordinates with the given floats.
          * Returns the updated Vector4.
          */
         set(x: number, y: number, z: number, w: number): Vector4;
         /**
-         * Returns a new Vector4 set from the starting index of the passed array.
+         * Returns a new Vector4 set from the starting index of the given array.
          */
         static FromArray(array: ArrayLike<number>, offset?: number): Vector4;
         /**
-         * Updates the passed vector "result" from the starting index of the passed array.
+         * Updates the given vector "result" from the starting index of the given array.
          */
         static FromArrayToRef(array: ArrayLike<number>, offset: number, result: Vector4): void;
         /**
-         * Updates the passed vector "result" from the starting index of the passed Float32Array.
+         * Updates the given vector "result" from the starting index of the given Float32Array.
          */
         static FromFloatArrayToRef(array: Float32Array, offset: number, result: Vector4): void;
         /**
-         * Updates the passed vector "result" coordinates from the passed floats.
+         * Updates the given vector "result" coordinates from the given floats.
          */
         static FromFloatsToRef(x: number, y: number, z: number, w: number, result: Vector4): void;
         /**
@@ -14858,11 +14868,11 @@ declare module BABYLON {
          */
         static One(): Vector4;
         /**
-         * Returns a new normalized Vector4 from the passed one.
+         * Returns a new normalized Vector4 from the given one.
          */
         static Normalize(vector: Vector4): Vector4;
         /**
-         * Updates the passed vector "result" from the normalization of the passed one.
+         * Updates the given vector "result" from the normalization of the given one.
          */
         static NormalizeToRef(vector: Vector4, result: Vector4): void;
         static Minimize(left: Vector4, right: Vector4): Vector4;
@@ -14880,17 +14890,17 @@ declare module BABYLON {
          */
         static Center(value1: Vector4, value2: Vector4): Vector4;
         /**
-         * Returns a new Vector4 set with the result of the normal transformation by the passed matrix of the passed vector.
+         * Returns a new Vector4 set with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
          */
         static TransformNormal(vector: Vector4, transformation: Matrix): Vector4;
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed vector.
+         * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given vector.
          * This methods computes transformed normalized direction vectors only.
          */
         static TransformNormalToRef(vector: Vector4, transformation: Matrix, result: Vector4): void;
         /**
-         * Sets the passed vector "result" with the result of the normal transformation by the passed matrix of the passed floats (x, y, z, w).
+         * Sets the given vector "result" with the result of the normal transformation by the given matrix of the given floats (x, y, z, w).
          * This methods computes transformed normalized direction vectors only.
          */
         static TransformNormalFromFloatsToRef(x: number, y: number, z: number, w: number, transformation: Matrix, result: Vector4): void;
@@ -14903,7 +14913,7 @@ declare module BABYLON {
         width: number;
         height: number;
         /**
-         * Creates a Size object from the passed width and height (floats).
+         * Creates a Size object from the given width and height (floats).
          */
         constructor(width: number, height: number);
         toString(): string;
@@ -14916,30 +14926,30 @@ declare module BABYLON {
          */
         getHashCode(): number;
         /**
-         * Updates the current size from the passed one.
+         * Updates the current size from the given one.
          * Returns the updated Size.
          */
         copyFrom(src: Size): void;
         /**
-         * Updates in place the current Size from the passed floats.
+         * Updates in place the current Size from the given floats.
          * Returns the updated Size.
          */
         copyFromFloats(width: number, height: number): Size;
         /**
-         * Updates in place the current Size from the passed floats.
+         * Updates in place the current Size from the given floats.
          * Returns the updated Size.
          */
         set(width: number, height: number): Size;
         /**
-         * Returns a new Size set with the multiplication result of the current Size and the passed floats.
+         * Returns a new Size set with the multiplication result of the current Size and the given floats.
          */
         multiplyByFloats(w: number, h: number): Size;
         /**
-         * Returns a new Size copied from the passed one.
+         * Returns a new Size copied from the given one.
          */
         clone(): Size;
         /**
-         * Boolean : True if the current Size and the passed one width and height are strictly equal.
+         * Boolean : True if the current Size and the given one width and height are strictly equal.
          */
         equals(other: Size): boolean;
         /**
@@ -14951,11 +14961,11 @@ declare module BABYLON {
          */
         static Zero(): Size;
         /**
-         * Returns a new Size set as the addition result of the current Size and the passed one.
+         * Returns a new Size set as the addition result of the current Size and the given one.
          */
         add(otherSize: Size): Size;
         /**
-         * Returns a new Size set as the subtraction result of  the passed one from the current Size.
+         * Returns a new Size set as the subtraction result of  the given one from the current Size.
          */
         subtract(otherSize: Size): Size;
         /**
@@ -14963,56 +14973,95 @@ declare module BABYLON {
          */
         static Lerp(start: Size, end: Size, amount: number): Size;
     }
+    /**
+     * Class used to store quaternion data
+     * @see https://en.wikipedia.org/wiki/Quaternion
+     * @see http://doc.babylonjs.com/features/position,_rotation,_scaling
+     */
     class Quaternion {
+        /** defines the first component (0 by default) */
         x: number;
+        /** defines the second component (0 by default) */
         y: number;
+        /** defines the third component (0 by default) */
         z: number;
+        /** defines the fourth component (1.0 by default) */
         w: number;
         /**
-         * Creates a new Quaternion from the passed floats.
+         * Creates a new Quaternion from the given floats
+         * @param x defines the first component (0 by default)
+         * @param y defines the second component (0 by default)
+         * @param z defines the third component (0 by default)
+         * @param w defines the fourth component (1.0 by default)
          */
-        constructor(x?: number, y?: number, z?: number, w?: number);
+        constructor(
+            /** defines the first component (0 by default) */
+            x?: number, 
+            /** defines the second component (0 by default) */
+            y?: number, 
+            /** defines the third component (0 by default) */
+            z?: number, 
+            /** defines the fourth component (1.0 by default) */
+            w?: number);
         /**
-         * Returns a string with the Quaternion coordinates.
+         * Gets a string representation for the current quaternion
+         * @returns a string with the Quaternion coordinates
          */
         toString(): string;
         /**
-         * Returns the string "Quaternion".
+         * Gets the class name of the quaternion
+         * @returns the string "Quaternion"
          */
         getClassName(): string;
         /**
-         * Returns the Quaternion hash code.
+         * Gets a hash code for this quaternion
+         * @returns the quaternion hash code
          */
         getHashCode(): number;
         /**
-         * Returns a new array populated with 4 elements : the Quaternion coordinates.
+         * Copy the quaternion to an array
+         * @returns a new array populated with 4 elements from the quaternion coordinates
          */
         asArray(): number[];
         /**
-         * Boolean : True if the current Quaterion and the passed one coordinates are strictly equal.
+         * Check if two quaternions are equals
+         * @param otherQuaternion defines the second operand
+         * @return true if the current quaternion and the given one coordinates are strictly equals
          */
         equals(otherQuaternion: Quaternion): boolean;
         /**
-         * Returns a new Quaternion copied from the current one.
+         * Clone the current quaternion
+         * @returns a new quaternion copied from the current one
          */
         clone(): Quaternion;
         /**
-         * Updates the current Quaternion from the passed one coordinates.
-         * Returns the updated Quaterion.
+         * Copy a quaternion to the current one
+         * @param other defines the other quaternion
+         * @returns the updated current quaternion
          */
         copyFrom(other: Quaternion): Quaternion;
         /**
-         * Updates the current Quaternion from the passed float coordinates.
-         * Returns the updated Quaterion.
+         * Updates the current quaternion with the given float coordinates
+         * @param x defines the x coordinate
+         * @param y defines the y coordinate
+         * @param z defines the z coordinate
+         * @param w defines the w coordinate
+         * @returns the updated current quaternion
          */
         copyFromFloats(x: number, y: number, z: number, w: number): Quaternion;
         /**
-         * Updates the current Quaternion from the passed float coordinates.
-         * Returns the updated Quaterion.
+         * Updates the current quaternion from the given float coordinates
+         * @param x defines the x coordinate
+         * @param y defines the y coordinate
+         * @param z defines the z coordinate
+         * @param w defines the w coordinate
+         * @returns the updated current quaternion
          */
         set(x: number, y: number, z: number, w: number): Quaternion;
         /**
-         * Returns a new Quaternion as the addition result of the passed one and the current Quaternion.
+         * Adds two quaternions
+         * @param other defines the second operand
+         * @returns a new quaternion as the addition result of the given one and the current quaternion
          */
         add(other: Quaternion): Quaternion;
         /**
@@ -15022,152 +15071,235 @@ declare module BABYLON {
          */
         addInPlace(other: Quaternion): Quaternion;
         /**
-         * Returns a new Quaternion as the subtraction result of the passed one from the current Quaternion.
+         * Subtract two quaternions
+         * @param other defines the second operand
+         * @returns a new quaternion as the subtraction result of the given one from the current one
          */
         subtract(other: Quaternion): Quaternion;
         /**
-         * Returns a new Quaternion set by multiplying the current Quaterion coordinates by the float "scale".
+         * Multiplies the current quaternion by a scale factor
+         * @param value defines the scale factor
+         * @returns a new quaternion set by multiplying the current quaternion coordinates by the float "scale"
          */
         scale(value: number): Quaternion;
         /**
-         * Scale the current Quaternion values by a factor to a given Quaternion
+         * Scale the current quaternion values by a factor and stores the result to a given quaternion
          * @param scale defines the scale factor
          * @param result defines the Quaternion object where to store the result
-         * @returns the unmodified current Quaternion
+         * @returns the unmodified current quaternion
          */
         scaleToRef(scale: number, result: Quaternion): Quaternion;
         /**
-         * Scale the current Quaternion values by a factor and add the result to a given Quaternion
+         * Multiplies in place the current quaternion by a scale factor
+         * @param value defines the scale factor
+         * @returns the current modified quaternion
+         */
+        scaleInPlace(value: number): Quaternion;
+        /**
+         * Scale the current quaternion values by a factor and add the result to a given quaternion
          * @param scale defines the scale factor
          * @param result defines the Quaternion object where to store the result
-         * @returns the unmodified current Quaternion
+         * @returns the unmodified current quaternion
          */
         scaleAndAddToRef(scale: number, result: Quaternion): Quaternion;
         /**
-         * Returns a new Quaternion set as the quaternion mulplication result of the current one with the passed one "q1".
+         * Multiplies two quaternions
+         * @param q1 defines the second operand
+         * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
          */
         multiply(q1: Quaternion): Quaternion;
         /**
-         * Sets the passed "result" as the quaternion mulplication result of the current one with the passed one "q1".
-         * Returns the current Quaternion.
+         * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
+         * @param q1 defines the second operand
+         * @param result defines the target quaternion
+         * @returns the current quaternion
          */
         multiplyToRef(q1: Quaternion, result: Quaternion): Quaternion;
         /**
-         * Updates the current Quaternion with the quaternion mulplication result of itself with the passed one "q1".
-         * Returns the updated Quaternion.
+         * Updates the current quaternion with the multiplication of itself with the given one "q1"
+         * @param q1 defines the second operand
+         * @returns the currentupdated quaternion
          */
         multiplyInPlace(q1: Quaternion): Quaternion;
         /**
-         * Sets the passed "ref" with the conjugation of the current Quaternion.
-         * Returns the current Quaternion.
+         * Conjugates (1-q) the current quaternion and stores the result in the given quaternion
+         * @param ref defines the target quaternion
+         * @returns the current quaternion
          */
         conjugateToRef(ref: Quaternion): Quaternion;
         /**
-         * Conjugates in place the current Quaternion.
-         * Returns the updated Quaternion.
+         * Conjugates in place (1-q) the current quaternion
+         * @returns the current updated quaternion
          */
         conjugateInPlace(): Quaternion;
         /**
-         * Returns a new Quaternion as the conjugate of the current Quaternion.
+         * Conjugates in place (1-q) the current quaternion
+         * @returns a new quaternion
          */
         conjugate(): Quaternion;
         /**
-         * Returns the Quaternion length (float).
+         * Gets length of current quaternion
+         * @returns the quaternion length (float)
          */
         length(): number;
         /**
-         * Normalize in place the current Quaternion.
-         * Returns the updated Quaternion.
+         * Normalize in place the current quaternion
+         * @returns the current updated quaternion
          */
         normalize(): Quaternion;
         /**
-         * Returns a new Vector3 set with the Euler angles translated from the current Quaternion
+         * Returns a new Vector3 set with the Euler angles translated from the current quaternion
          * @param order is a reserved parameter and is ignore for now
-         * @returns the new Vector3
+         * @returns a new Vector3 containing the Euler angles
          */
         toEulerAngles(order?: string): Vector3;
         /**
-         * Sets the passed vector3 "result" with the Euler angles translated from the current Quaternion
+         * Sets the given vector3 "result" with the Euler angles translated from the current quaternion
          * @param result defines the vector which will be filled with the Euler angles
          * @param order is a reserved parameter and is ignore for now
-         * @returns the current Quaternion
+         * @returns the current unchanged quaternion
          */
         toEulerAnglesToRef(result: Vector3, order?: string): Quaternion;
         /**
-         * Updates the passed rotation matrix with the current Quaternion values.
-         * Returns the current Quaternion.
+         * Updates the given rotation matrix with the current quaternion values
+         * @param result defines the target matrix
+         * @returns the current unchanged quaternion
          */
         toRotationMatrix(result: Matrix): Quaternion;
         /**
-         * Updates the current Quaternion from the passed rotation matrix values.
-         * Returns the updated Quaternion.
+         * Updates the current quaternion from the given rotation matrix values
+         * @param matrix defines the source matrix
+         * @returns the current updated quaternion
          */
         fromRotationMatrix(matrix: Matrix): Quaternion;
         /**
-         * Returns a new Quaternion set from the passed rotation matrix values.
+         * Creates a new quaternion from a rotation matrix
+         * @param matrix defines the source matrix
+         * @returns a new quaternion created from the given rotation matrix values
          */
         static FromRotationMatrix(matrix: Matrix): Quaternion;
         /**
-         * Updates the passed quaternion "result" with the passed rotation matrix values.
+         * Updates the given quaternion with the given rotation matrix values
+         * @param matrix defines the source matrix
+         * @param result defines the target quaternion
          */
         static FromRotationMatrixToRef(matrix: Matrix, result: Quaternion): void;
         /**
-         * Returns a new Quaternion set to (0.0, 0.0, 0.0).
+         * Creates an empty quaternion
+         * @returns a new quaternion set to (0.0, 0.0, 0.0)
          */
         static Zero(): Quaternion;
         /**
-         * Returns a new Quaternion as the inverted current Quaternion.
+         * Inverse a given quaternion
+         * @param q defines the source quaternion
+         * @returns a new quaternion as the inverted current quaternion
          */
         static Inverse(q: Quaternion): Quaternion;
         /**
-         * Returns the identity Quaternion.
+         * Creates an identity quaternion
+         * @returns the identity quaternion
          */
         static Identity(): Quaternion;
+        /**
+         * Gets a boolean indicating if the given quaternion is identity
+         * @param quaternion defines the quaternion to check
+         * @returns true if the quaternion is identity
+         */
         static IsIdentity(quaternion: Quaternion): boolean;
         /**
-         * Returns a new Quaternion set from the passed axis (Vector3) and angle in radians (float).
+         * Creates a quaternion from a rotation around an axis
+         * @param axis defines the axis to use
+         * @param angle defines the angle to use
+         * @returns a new quaternion created from the given axis (Vector3) and angle in radians (float)
          */
         static RotationAxis(axis: Vector3, angle: number): Quaternion;
         /**
-         * Sets the passed quaternion "result" from the passed axis (Vector3) and angle in radians (float).
+         * Creates a rotation around an axis and stores it into the given quaternion
+         * @param axis defines the axis to use
+         * @param angle defines the angle to use
+         * @param result defines the target quaternion
+         * @returns the target quaternion
          */
         static RotationAxisToRef(axis: Vector3, angle: number, result: Quaternion): Quaternion;
         /**
-         * Retuns a new Quaternion set from the starting index of the passed array.
+         * Creates a new quaternion from data stored into an array
+         * @param array defines the data source
+         * @param offset defines the offset in the source array where the data starts
+         * @returns a new quaternion
          */
         static FromArray(array: ArrayLike<number>, offset?: number): Quaternion;
         /**
-         * Returns a new Quaternion set from the passed Euler float angles (y, x, z).
+         * Creates a new quaternion from the given Euler float angles (y, x, z)
+         * @param yaw defines the rotation around Y axis
+         * @param pitch defines the rotation around X axis
+         * @param roll defines the rotation around Z axis
+         * @returns the new quaternion
          */
         static RotationYawPitchRoll(yaw: number, pitch: number, roll: number): Quaternion;
         /**
-         * Sets the passed quaternion "result" from the passed float Euler angles (y, x, z).
+         * Creates a new rotation from the given Euler float angles (y, x, z) and stores it in the target quaternion
+         * @param yaw defines the rotation around Y axis
+         * @param pitch defines the rotation around X axis
+         * @param roll defines the rotation around Z axis
+         * @param result defines the target quaternion
          */
         static RotationYawPitchRollToRef(yaw: number, pitch: number, roll: number, result: Quaternion): void;
         /**
-         * Returns a new Quaternion from the passed float Euler angles expressed in z-x-z orientation
+         * Creates a new quaternion from the given Euler float angles expressed in z-x-z orientation
+         * @param alpha defines the rotation around first axis
+         * @param beta defines the rotation around second axis
+         * @param gamma defines the rotation around third axis
+         * @returns the new quaternion
          */
         static RotationAlphaBetaGamma(alpha: number, beta: number, gamma: number): Quaternion;
         /**
-         * Sets the passed quaternion "result" from the passed float Euler angles expressed in z-x-z orientation
+         * Creates a new quaternion from the given Euler float angles expressed in z-x-z orientation and stores it in the target quaternion
+         * @param alpha defines the rotation around first axis
+         * @param beta defines the rotation around second axis
+         * @param gamma defines the rotation around third axis
+         * @param result defines the target quaternion
          */
         static RotationAlphaBetaGammaToRef(alpha: number, beta: number, gamma: number, result: Quaternion): void;
         /**
-         * Returns a new Quaternion as the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
-         * cf to Vector3.RotationFromAxis() documentation.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         * Creates a new quaternion containing the rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system (axis1, axis2 and axis3 are normalized during this operation)
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @returns the new quaternion
          */
-        static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): Quaternion;
+        static RotationQuaternionFromAxis(axis1: Vector3, axis2: Vector3, axis3: Vector3): Quaternion;
         /**
-         * Sets the passed quaternion "ref" with the quaternion rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system.
-         * cf to Vector3.RotationFromAxis() documentation.
-         * Note : axis1, axis2 and axis3 are normalized during this operation.
+         * Creates a rotation value to reach the target (axis1, axis2, axis3) orientation as a rotated XYZ system (axis1, axis2 and axis3 are normalized during this operation) and stores it in the target quaternion
+         * @param axis1 defines the first axis
+         * @param axis2 defines the second axis
+         * @param axis3 defines the third axis
+         * @param ref defines the target quaternion
          */
         static RotationQuaternionFromAxisToRef(axis1: Vector3, axis2: Vector3, axis3: Vector3, ref: Quaternion): void;
+        /**
+         * Interpolates between two quaternions
+         * @param left defines first quaternion
+         * @param right defines second quaternion
+         * @param amount defines the gradient to use
+         * @returns the new interpolated quaternion
+         */
         static Slerp(left: Quaternion, right: Quaternion, amount: number): Quaternion;
+        /**
+         * Interpolates between two quaternions and stores it into a target quaternion
+         * @param left defines first quaternion
+         * @param right defines second quaternion
+         * @param amount defines the gradient to use
+         * @param result defines the target quaternion
+         */
         static SlerpToRef(left: Quaternion, right: Quaternion, amount: number, result: Quaternion): void;
         /**
-         * Returns a new Quaternion located for "amount" (float) on the Hermite interpolation spline defined by the vectors "value1", "tangent1", "value2", "tangent2".
+         * Interpolate between two quaternions using Hermite interpolation
+         * @param value1 defines first quaternion
+         * @param tangent1 defines the incoming tangent
+         * @param value2 defines second quaternion
+         * @param tangent2 defines the outgoing tangent
+         * @param amount defines the target quaternion
+         * @returns the new interpolated quaternion
          */
         static Hermite(value1: Quaternion, tangent1: Quaternion, value2: Quaternion, tangent2: Quaternion, amount: number): Quaternion;
     }
@@ -15233,24 +15365,24 @@ declare module BABYLON {
         /**
          * Adds the current matrix with a second one
          * @param other defines the matrix to add
-         * @returns a new matrix as the addition of the current matrix and the passed one
+         * @returns a new matrix as the addition of the current matrix and the given one
          */
         add(other: Matrix): Matrix;
         /**
-         * Sets the passed matrix "result" to the addition of the current matrix and the passed one
+         * Sets the given matrix "result" to the addition of the current matrix and the given one
          * @param other defines the matrix to add
          * @param result defines the target matrix
          * @returns the current matrix
          */
         addToRef(other: Matrix, result: Matrix): Matrix;
         /**
-         * Adds in place the passed matrix to the current matrix
+         * Adds in place the given matrix to the current matrix
          * @param other defines the second operand
          * @returns the current updated matrix
          */
         addToSelf(other: Matrix): Matrix;
         /**
-         * Sets the passed matrix to the current inverted Matrix
+         * Sets the given matrix to the current inverted Matrix
          * @param other defines the target matrix
          * @returns the unmodified current matrix
          */
@@ -15288,31 +15420,31 @@ declare module BABYLON {
         /**
          * Multiply two matrices
          * @param other defines the second operand
-         * @returns a new matrix set with the multiplication result of the current Matrix and the passed one
+         * @returns a new matrix set with the multiplication result of the current Matrix and the given one
          */
         multiply(other: Matrix): Matrix;
         /**
-         * Copy the current matrix from the passed one
+         * Copy the current matrix from the given one
          * @param other defines the source matrix
          * @returns the current updated matrix
          */
         copyFrom(other: Matrix): Matrix;
         /**
-         * Populates the passed array from the starting index with the current matrix values
+         * Populates the given array from the starting index with the current matrix values
          * @param array defines the target array
          * @param offset defines the offset in the target array where to start storing values
          * @returns the current matrix
          */
         copyToArray(array: Float32Array, offset?: number): Matrix;
         /**
-         * Sets the passed matrix "result" with the multiplication result of the current Matrix and the passed one
+         * Sets the given matrix "result" with the multiplication result of the current Matrix and the given one
          * @param other defines the second operand
          * @param result defines the matrix where to store the multiplication
          * @returns the current matrix
          */
         multiplyToRef(other: Matrix, result: Matrix): Matrix;
         /**
-         * Sets the Float32Array "result" from the passed index "offset" with the multiplication of the current matrix and the passed one
+         * Sets the Float32Array "result" from the given index "offset" with the multiplication of the current matrix and the given one
          * @param other defines the second operand
          * @param result defines the array where to store the multiplication
          * @param offset defines the offset in the target array where to start storing values
@@ -15322,7 +15454,7 @@ declare module BABYLON {
         /**
          * Check equality between this matrix and a second one
          * @param value defines the second matrix to compare
-         * @returns true is the current matrix and the passed one values are strictly equal
+         * @returns true is the current matrix and the given one values are strictly equal
          */
         equals(value: Matrix): boolean;
         /**
@@ -15342,12 +15474,12 @@ declare module BABYLON {
         getHashCode(): number;
         /**
          * Decomposes the current Matrix into a translation, rotation and scaling components
-         * @param scale defines the scale vector3 passed as a reference to update
-         * @param rotation defines the rotation quaternion passed as a reference to update
-         * @param translation defines the translation vector3 passed as a reference to update
+         * @param scale defines the scale vector3 given as a reference to update
+         * @param rotation defines the rotation quaternion given as a reference to update
+         * @param translation defines the translation vector3 given as a reference to update
          * @returns true if operation was successful
          */
-        decompose(scale: Vector3, rotation?: Quaternion, translation?: Vector3): boolean;
+        decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3): boolean;
         /**
          * Gets specific row of the matrix
          * @param index defines the number of the row to get
@@ -15373,7 +15505,7 @@ declare module BABYLON {
          */
         transposeToRef(result: Matrix): Matrix;
         /**
-         * Sets the index-th row of the current matrix with the passed 4 x float values
+         * Sets the index-th row of the current matrix with the given 4 x float values
          * @param index defines the row index
          * @param x defines the x component to set
          * @param y defines the y component to set
@@ -15413,7 +15545,7 @@ declare module BABYLON {
          */
         getRotationMatrix(): Matrix;
         /**
-         * Extracts the rotation matrix from the current one and sets it as the passed "result"
+         * Extracts the rotation matrix from the current one and sets it as the given "result"
          * @param result defines the target matrix to store data to
          * @returns the current matrix
          */
@@ -15422,7 +15554,7 @@ declare module BABYLON {
          * Creates a matrix from an array
          * @param array defines the source array
          * @param offset defines an offset in the source array
-         * @returns a new Matrix set from the starting index of the passed array
+         * @returns a new Matrix set from the starting index of the given array
          */
         static FromArray(array: ArrayLike<number>, offset?: number): Matrix;
         /**
@@ -15630,7 +15762,7 @@ declare module BABYLON {
          */
         static Lerp(startValue: Matrix, endValue: Matrix, gradient: number): Matrix;
         /**
-         * Set the passed matrix "result" as the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
+         * Set the given matrix "result" as the interpolated values for "gradient" (float) between the ones of the matrices "startValue" and "endValue".
          * @param startValue defines the start value
          * @param endValue defines the end value
          * @param gradient defines the gradient factor
@@ -15832,13 +15964,13 @@ declare module BABYLON {
         /**
          * Extracts a 2x2 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
-         * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the passed matrix
+         * @returns a new Float32Array array with 4 elements : the 2x2 matrix extracted from the given matrix
          */
         static GetAsMatrix2x2(matrix: Matrix): Float32Array;
         /**
          * Extracts a 3x3 matrix from a given matrix and store the result in a Float32Array
          * @param matrix defines the matrix to use
-         * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the passed matrix
+         * @returns a new Float32Array array with 9 elements : the 3x3 matrix extracted from the given matrix
          */
         static GetAsMatrix3x3(matrix: Matrix): Float32Array;
         /**
@@ -15884,7 +16016,7 @@ declare module BABYLON {
         normal: Vector3;
         d: number;
         /**
-         * Creates a Plane object according to the passed floats a, b, c, d and the plane equation : ax + by + cz + d = 0
+         * Creates a Plane object according to the given floats a, b, c, d and the plane equation : ax + by + cz + d = 0
          */
         constructor(a: number, b: number, c: number, d: number);
         /**
@@ -15909,7 +16041,7 @@ declare module BABYLON {
          */
         normalize(): Plane;
         /**
-         * Returns a new Plane as the result of the transformation of the current Plane by the passed matrix.
+         * Returns a new Plane as the result of the transformation of the current Plane by the given matrix.
          */
         transform(transformation: Matrix): Plane;
         /**
@@ -15917,7 +16049,7 @@ declare module BABYLON {
          */
         dotCoordinate(point: Vector3): number;
         /**
-         * Updates the current Plane from the plane defined by the three passed points.
+         * Updates the current Plane from the plane defined by the three given points.
          * Returns the updated Plane.
          */
         copyFromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
@@ -15926,24 +16058,24 @@ declare module BABYLON {
          */
         isFrontFacingTo(direction: Vector3, epsilon: number): boolean;
         /**
-         * Returns the signed distance (float) from the passed point to the Plane.
+         * Returns the signed distance (float) from the given point to the Plane.
          */
         signedDistanceTo(point: Vector3): number;
         /**
-         * Returns a new Plane from the passed array.
+         * Returns a new Plane from the given array.
          */
         static FromArray(array: ArrayLike<number>): Plane;
         /**
-         * Returns a new Plane defined by the three passed points.
+         * Returns a new Plane defined by the three given points.
          */
         static FromPoints(point1: Vector3, point2: Vector3, point3: Vector3): Plane;
         /**
-         * Returns a new Plane the normal vector to this plane at the passed origin point.
+         * Returns a new Plane the normal vector to this plane at the given origin point.
          * Note : the vector "normal" is updated because normalized.
          */
         static FromPositionAndNormal(origin: Vector3, normal: Vector3): Plane;
         /**
-         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the passed other point.
+         * Returns the signed distance between the plane defined by the normal vector at the "origin"" point and the given other point.
          */
         static SignedDistanceToPlaneFromPositionAndNormal(origin: Vector3, normal: Vector3, point: Vector3): number;
     }
@@ -15964,7 +16096,7 @@ declare module BABYLON {
     }
     class Frustum {
         /**
-         * Returns a new array of 6 Frustum planes computed by the passed transformation matrix.
+         * Returns a new array of 6 Frustum planes computed by the given transformation matrix.
          */
         static GetPlanes(transform: Matrix): Plane[];
         static GetNearPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
@@ -15974,7 +16106,7 @@ declare module BABYLON {
         static GetTopPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
         static GetBottomPlaneToRef(transform: Matrix, frustumPlane: Plane): void;
         /**
-         * Sets the passed array "frustumPlanes" with the 6 Frustum planes computed by the passed transformation matrix.
+         * Sets the given array "frustumPlanes" with the 6 Frustum planes computed by the given transformation matrix.
          */
         static GetPlanesToRef(transform: Matrix, frustumPlanes: Plane[]): void;
     }
@@ -15990,7 +16122,7 @@ declare module BABYLON {
     }
     class BezierCurve {
         /**
-         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the passed x1, y1, x2, y2 floats.
+         * Returns the cubic Bezier interpolated value (float) at "t" (float) from the given x1, y1, x2, y2 floats.
          */
         static interpolate(t: number, x1: number, y1: number, x2: number, y2: number): number;
     }
@@ -16013,15 +16145,15 @@ declare module BABYLON {
          */
         radians: () => number;
         /**
-         * Returns a new Angle object valued with the angle value in radians between the two passed vectors.
+         * Returns a new Angle object valued with the angle value in radians between the two given vectors.
          */
         static BetweenTwoPoints(a: Vector2, b: Vector2): Angle;
         /**
-         * Returns a new Angle object from the passed float in radians.
+         * Returns a new Angle object from the given float in radians.
          */
         static FromRadians(radians: number): Angle;
         /**
-         * Returns a new Angle object from the passed float in degrees.
+         * Returns a new Angle object from the given float in degrees.
          */
         static FromDegrees(degrees: number): Angle;
     }
@@ -16035,7 +16167,7 @@ declare module BABYLON {
         startAngle: Angle;
         orientation: Orientation;
         /**
-         * Creates an Arc object from the three passed points : start, middle and end.
+         * Creates an Arc object from the three given points : start, middle and end.
          */
         constructor(startPoint: Vector2, midPoint: Vector2, endPoint: Vector2);
     }
@@ -16048,7 +16180,7 @@ declare module BABYLON {
          */
         constructor(x: number, y: number);
         /**
-         * Adds a new segment until the passed coordinates (x, y) to the current Path2.
+         * Adds a new segment until the given coordinates (x, y) to the current Path2.
          * Returns the updated Path2.
          */
         addLineTo(x: number, y: number): Path2;
@@ -17228,8 +17360,9 @@ declare module BABYLON {
          * @param kind defines the data kind (Position, normal, etc...)
          * @param data defines the data to use
          * @param offset defines the offset in the target buffer where to store the data
+         * @param useBytes set to true if the offset is in bytes
          */
-        updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void;
+        updateVerticesDataDirectly(kind: string, data: DataArray, offset: number, useBytes?: boolean): void;
         /**
          * Update a specific vertex buffer
          * This function will create a new buffer if the current one is not updatable
@@ -21068,8 +21201,11 @@ declare module BABYLON {
         /**
          * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.
          * Returns the directly updated WebGLBuffer.
+         * @param data the new data
+         * @param offset the new offset
+         * @param useBytes set to true if the offset is in bytes
          */
-        updateDirectly(data: DataArray, offset: number): void;
+        updateDirectly(data: DataArray, offset: number, useBytes?: boolean): void;
         /**
          * Disposes the VertexBuffer and the underlying WebGLBuffer.
          */
@@ -27528,53 +27664,6 @@ declare module BABYLON {
 }
 
 declare module BABYLON {
-    interface IOctreeContainer<T> {
-        blocks: Array<OctreeBlock<T>>;
-    }
-    class Octree<T> {
-        maxDepth: number;
-        blocks: Array<OctreeBlock<T>>;
-        dynamicContent: T[];
-        private _maxBlockCapacity;
-        private _selectionContent;
-        private _creationFunc;
-        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
-        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
-        addMesh(entry: T): void;
-        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
-        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
-        intersectsRay(ray: Ray): SmartArray<T>;
-        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
-        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
-        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
-    }
-}
-
-declare module BABYLON {
-    class OctreeBlock<T> {
-        entries: T[];
-        blocks: Array<OctreeBlock<T>>;
-        private _depth;
-        private _maxDepth;
-        private _capacity;
-        private _minPoint;
-        private _maxPoint;
-        private _boundingVectors;
-        private _creationFunc;
-        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
-        readonly capacity: number;
-        readonly minPoint: Vector3;
-        readonly maxPoint: Vector3;
-        addEntry(entry: T): void;
-        addEntries(entries: T[]): void;
-        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
-        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
-        createInnerBlocks(): void;
-    }
-}
-
-declare module BABYLON {
     class VRCameraMetrics {
         hResolution: number;
         vResolution: number;
@@ -28406,6 +28495,53 @@ declare module BABYLON {
         detachControl(element: Nullable<HTMLElement>): void;
         getClassName(): string;
         getSimpleName(): string;
+    }
+}
+
+declare module BABYLON {
+    interface IOctreeContainer<T> {
+        blocks: Array<OctreeBlock<T>>;
+    }
+    class Octree<T> {
+        maxDepth: number;
+        blocks: Array<OctreeBlock<T>>;
+        dynamicContent: T[];
+        private _maxBlockCapacity;
+        private _selectionContent;
+        private _creationFunc;
+        constructor(creationFunc: (entry: T, block: OctreeBlock<T>) => void, maxBlockCapacity?: number, maxDepth?: number);
+        update(worldMin: Vector3, worldMax: Vector3, entries: T[]): void;
+        addMesh(entry: T): void;
+        select(frustumPlanes: Plane[], allowDuplicate?: boolean): SmartArray<T>;
+        intersects(sphereCenter: Vector3, sphereRadius: number, allowDuplicate?: boolean): SmartArray<T>;
+        intersectsRay(ray: Ray): SmartArray<T>;
+        static _CreateBlocks<T>(worldMin: Vector3, worldMax: Vector3, entries: T[], maxBlockCapacity: number, currentDepth: number, maxDepth: number, target: IOctreeContainer<T>, creationFunc: (entry: T, block: OctreeBlock<T>) => void): void;
+        static CreationFuncForMeshes: (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>) => void;
+        static CreationFuncForSubMeshes: (entry: SubMesh, block: OctreeBlock<SubMesh>) => void;
+    }
+}
+
+declare module BABYLON {
+    class OctreeBlock<T> {
+        entries: T[];
+        blocks: Array<OctreeBlock<T>>;
+        private _depth;
+        private _maxDepth;
+        private _capacity;
+        private _minPoint;
+        private _maxPoint;
+        private _boundingVectors;
+        private _creationFunc;
+        constructor(minPoint: Vector3, maxPoint: Vector3, capacity: number, depth: number, maxDepth: number, creationFunc: (entry: T, block: OctreeBlock<T>) => void);
+        readonly capacity: number;
+        readonly minPoint: Vector3;
+        readonly maxPoint: Vector3;
+        addEntry(entry: T): void;
+        addEntries(entries: T[]): void;
+        select(frustumPlanes: Plane[], selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersects(sphereCenter: Vector3, sphereRadius: number, selection: SmartArrayNoDuplicate<T>, allowDuplicate?: boolean): void;
+        intersectsRay(ray: Ray, selection: SmartArrayNoDuplicate<T>): void;
+        createInnerBlocks(): void;
     }
 }
 
@@ -29522,34 +29658,31 @@ declare module BABYLON {
         static StandardReflectance90: number;
         protected _primaryColor: Color3;
         /**
-         * Key light Color (multiply against the R channel of the environement texture)
+         * Key light Color (multiply against the environement texture)
          */
         primaryColor: Color3;
-        protected _primaryLevel: float;
+        protected _perceptualColor: Nullable<Color3>;
         /**
-         * Key light Level (allowing HDR output of the background)
+         * Key light Color in "perceptual value" meaning the color you would like to see on screen.
+         * This acts as a helper to set the primary color to a more "human friendly" value.
+         * Conversion to linear space as well as exposure and tone mapping correction will be applied to keep the
+         * output color as close as possible from the chosen value.
+         * (This does not account for contrast color grading and color curves as they are considered post effect and not directly
+         * part of lighting setup.)
          */
-        primaryLevel: float;
-        protected _secondaryColor: Color3;
+        perceptualColor: Nullable<Color3>;
+        protected _primaryColorShadowLevel: float;
         /**
-         * Secondary light Color (multiply against the G channel of the environement texture)
+         * Defines the level of the shadows (dark area of the reflection map) in order to help scaling the colors.
+         * The color opposite to the primary color is used at the level chosen to define what the black area would look.
          */
-        secondaryColor: Color3;
-        protected _secondaryLevel: float;
+        primaryColorShadowLevel: float;
+        protected _primaryColorHighlightLevel: float;
         /**
-         * Secondary light Level (allowing HDR output of the background)
+         * Defines the level of the highliights (highlight area of the reflection map) in order to help scaling the colors.
+         * The primary color is used at the level chosen to define what the white area would look.
          */
-        secondaryLevel: float;
-        protected _tertiaryColor: Color3;
-        /**
-         * Tertiary light Color (multiply against the B channel of the environement texture)
-         */
-        tertiaryColor: Color3;
-        protected _tertiaryLevel: float;
-        /**
-         * Tertiary light Level (allowing HDR output of the background)
-         */
-        tertiaryLevel: float;
+        primaryColorHighlightLevel: float;
         protected _reflectionTexture: Nullable<BaseTexture>;
         /**
          * Reflection Texture used in the material.
@@ -29576,12 +29709,6 @@ declare module BABYLON {
          * All scene shadow lights will be included if null.
          */
         shadowLights: Nullable<IShadowLight[]>;
-        protected _shadowBlurScale: int;
-        /**
-         * For the lights having a blurred shadow generator, this can add a second blur pass in order to reach
-         * soft lighting on the background.
-         */
-        shadowBlurScale: int;
         protected _shadowLevel: float;
         /**
          * Helps adjusting the shadow to a softer level if required.
@@ -29746,6 +29873,9 @@ declare module BABYLON {
         switchToBGR: boolean;
         private _renderTargets;
         private _reflectionControls;
+        private _white;
+        private _primaryShadowColor;
+        private _primaryHighlightColor;
         /**
          * Instantiates a Background Material in the given scene
          * @param name The friendly name of the material
@@ -29770,6 +29900,18 @@ declare module BABYLON {
          * @returns true if all the dependencies are ready (Textures, Effects...)
          */
         isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean;
+        /**
+         * Tone Mapping calibration (should match image processing tone mapping calibration value).
+         */
+        private static readonly _tonemappingCalibration;
+        /**
+         * Compute the primary color according to the chosen perceptual color.
+         */
+        private _computePrimaryColorFromPerceptualColor();
+        /**
+         * Compute the highlights and shadow colors according to their chosen levels.
+         */
+        private _computePrimaryColors();
         /**
          * Build the uniform buffer used in the material.
          */

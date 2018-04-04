@@ -15,7 +15,8 @@
         private _scene: Scene;
 
         private _currentValue: any;
-        private _workValue: any;
+        /** @ignore */
+        public _workValue: any;
         private _activeTarget: any;
         private _targetPath: string = "";
         private _weight = 1.0;
@@ -242,6 +243,17 @@
          * @param weight defines the weight to apply to this value
          */
         public setValue(currentValue: any, weight = 1.0): void {
+            if (this._target instanceof Array) {
+                for (const target of this._target) {
+                    this._setValue(target, currentValue, weight);
+                }
+            }
+            else {
+                this._setValue(this._target, currentValue, weight);
+            }
+        }
+
+        private _setValue(target: any, currentValue: any, weight = 1.0): void {
             // Set value
             var path: any;
             var destination: any;
@@ -249,7 +261,7 @@
             let targetPropertyPath = this._animation.targetPropertyPath
 
             if (targetPropertyPath.length > 1) {
-                var property = this._target[targetPropertyPath[0]];
+                var property = target[targetPropertyPath[0]];
 
                 for (var index = 1; index < targetPropertyPath.length - 1; index++) {
                     property = property[targetPropertyPath[index]];
@@ -259,7 +271,7 @@
                 destination = property;
             } else {
                 path = targetPropertyPath[0];
-                destination = this._target;
+                destination = target;
             }
 
             this._targetPath = path;
@@ -267,8 +279,8 @@
             this._weight = weight;
 
             // Blending
-            let enableBlending = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
-            let blendingSpeed = this._target && this._target.animationPropertiesOverride ? this._target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
+            let enableBlending = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.enableBlending : this._animation.enableBlending;
+            let blendingSpeed = target && target.animationPropertiesOverride ? target.animationPropertiesOverride.blendingSpeed : this._animation.blendingSpeed;
             
             if (enableBlending && this._blendingFactor <= 1.0) {
                 if (!this._originalBlendValue) {
@@ -337,8 +349,8 @@
                 destination[path] = this._currentValue;
             }
 
-            if (this._target.markAsDirty) {
-                this._target.markAsDirty(this._animation.targetProperty);
+            if (target.markAsDirty) {
+                target.markAsDirty(this._animation.targetProperty);
             }
         }
 
