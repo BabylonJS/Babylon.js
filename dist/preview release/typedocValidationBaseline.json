@@ -1,7 +1,7 @@
 {
-  "errors": 5237,
+  "errors": 5236,
   "babylon.typedoc.json": {
-    "errors": 5237,
+    "errors": 5236,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -4694,15 +4694,6 @@
               }
             },
             "updateDifferenceMatrix": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "setScale": {
-          "Parameter": {
-            "y": {
               "Comments": {
                 "MissingText": true
               }

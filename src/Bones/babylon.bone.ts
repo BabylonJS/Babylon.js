@@ -678,9 +678,7 @@
          * @returns the additional scale of the bone
          */
         public getAdditionalScale(): Vector3 {
-
             return this._scaleVector.clone();
-
         }
 
         /**
@@ -688,9 +686,7 @@
          * @param result The vector3 to copy the additional scale to
          */
         public getAdditionalScaleToRef(result: Vector3): void {
-
             result.copyFrom(this._scaleVector);
-
         }
 
         /**
