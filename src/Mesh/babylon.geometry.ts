@@ -204,10 +204,6 @@
          * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
          */
         public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): void {
-            if (kind === VertexBuffer.PositionKind) {
-                this._totalVertices = data.length / (stride || 3);
-            }
-
             var buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
             this.setVerticesBuffer(buffer);
         }
@@ -236,12 +232,17 @@
 
             this._vertexBuffers[kind] = buffer;
 
-            if (kind === VertexBuffer.PositionKind) {
+            if (kind === VertexBuffer.PositionKind) {                
+                var data = <FloatArray>buffer.getData();
                 if (totalVertices != null) {
                     this._totalVertices = totalVertices;
+                } else {
+                    if (data != null) {
+                        this._totalVertices = data.length / (buffer.byteStride / 4);
+                    }
                 }
 
-                this._updateExtend();
+                this._updateExtend(data);
                 this._resetPointsArrayCache();
 
                 var meshes = this._meshes;
@@ -270,15 +271,16 @@
          * @param kind defines the data kind (Position, normal, etc...)
          * @param data defines the data to use 
          * @param offset defines the offset in the target buffer where to store the data
+         * @param useBytes set to true if the offset is in bytes
          */
-        public updateVerticesDataDirectly(kind: string, data: Float32Array, offset: number): void {
+        public updateVerticesDataDirectly(kind: string, data: DataArray, offset: number, useBytes: boolean = false): void {
             var vertexBuffer = this.getVertexBuffer(kind);
 
             if (!vertexBuffer) {
                 return;
             }
 
-            vertexBuffer.updateDirectly(data, offset);
+            vertexBuffer.updateDirectly(data, offset, useBytes);
             this.notifyUpdate(kind);
         }
 
