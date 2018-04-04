@@ -1,19 +1,4 @@
 ﻿module BABYLON {
-    /**
-     * The bone scaling mode.
-     */
-    export enum BoneScalingMode {
-        /**
-         * Setting the `scaling` property on a bone adds an new scale factor on top of the existing local bone scale.
-         */
-        ADD,
-
-        /**
-         * Setting the `scaling` property on a bone replaces the existing local bone scale.
-         */
-        REPLACE
-    }
-
     export class Bone extends Node {
 
         private static _tmpVecs: Vector3[] = [Vector3.Zero(), Vector3.Zero()];
@@ -42,8 +27,6 @@
         private _negateScaleChildren = Vector3.One();
         private _scalingDeterminant = 1;
 
-        private _setScaling: (value: Vector3) => void;
-
         get _matrix(): Matrix {
             return this._localMatrix;
         }
@@ -66,8 +49,6 @@
             this.setParent(parentBone, false);
 
             this._updateDifferenceMatrix();
-
-            this.setScalingMode(BoneScalingMode.ADD);
         }
 
         // Members
@@ -158,35 +139,15 @@
         }
 
         public get scaling(): Vector3 {
-            return this.getScale();
+            let value = Vector3.One();
+            this._localMatrix.decompose(value, undefined, undefined);
+            return value;
         }
 
         public set scaling(newScaling: Vector3) {
-            this._setScaling(newScaling);
-        }
-
-        /**
-         * Sets the scaling mode for the scaling property.
-         * @param scalingMode the mode to use
-         */
-        public setScalingMode(scalingMode: BoneScalingMode): void {
-            switch (scalingMode) {
-                case BoneScalingMode.ADD: {
-                    this._setScaling = value => this.setScale(value.x, value.y, value.z);
-                    break;
-                }
-                case BoneScalingMode.REPLACE: {
-                    this._setScaling = value => {
-                        this._localMatrix.decompose(undefined, Bone._tmpQuat, Bone._tmpVecs[0]);
-                        Matrix.ComposeToRef(value, Bone._tmpQuat, Bone._tmpVecs[0], this._localMatrix);
-                        this.markAsDirty();
-                    };
-                    break;
-                }
-                default: {
-                    throw new Error(`Invalid scaling mode (${scalingMode})`);
-                }
-            }
+            this._localMatrix.decompose(undefined, Bone._tmpQuat, Bone._tmpVecs[0]);
+            Matrix.ComposeToRef(newScaling, Bone._tmpQuat, Bone._tmpVecs[0], this._localMatrix);
+            this.markAsDirty();
         }
 
         /**
@@ -408,13 +369,13 @@
         }
 
         /**
-         * Set the scale of the bone on the x, y and z axes.
-         * @param x The scale of the bone on the x axis.
-         * @param y The scale of the bone on the y axis.
-         * @param z The scale of the bone on the z axis.
+         * Adds an additional scale to the bone on the x, y and z axes.
+         * @param x The additional scale of the bone on the x axis.
+         * @param y The additional scale of the bone on the y axis.
+         * @param z The additional scale of the bone on the z axis.
          * @param scaleChildren Set this to true if children of the bone should be scaled.
          */
-        public setScale(x: number, y: number, z: number, scaleChildren = false): void {
+        public setAdditionalScale(x: number, y: number, z: number, scaleChildren = false): void {
 
             if (this.animations[0] && !this.animations[0].hasRunningRuntimeAnimations) {
                 if (!scaleChildren) {
@@ -713,20 +674,20 @@
         }
 
         /**
-         * Get the scale of the bone
-         * @returns the scale of the bone
+         * Get the additional scale of the bone
+         * @returns the additional scale of the bone
          */
-        public getScale(): Vector3 {
+        public getAdditionalScale(): Vector3 {
 
             return this._scaleVector.clone();
 
         }
 
         /**
-         * Copy the scale of the bone to a vector3.
-         * @param result The vector3 to copy the scale to
+         * Copy the additional scale of the bone to a vector3.
+         * @param result The vector3 to copy the additional scale to
          */
-        public getScaleToRef(result: Vector3): void {
+        public getAdditionalScaleToRef(result: Vector3): void {
 
             result.copyFrom(this._scaleVector);
 
