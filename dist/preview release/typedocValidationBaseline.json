@@ -1,7 +1,7 @@
 {
-  "errors": 5347,
+  "errors": 5237,
   "babylon.typedoc.json": {
-    "errors": 5347,
+    "errors": 5237,
     "AnimationKeyInterpolation": {
       "Enumeration": {
         "Comments": {
@@ -2168,11 +2168,6 @@
       }
     },
     "Animation": {
-      "Class": {
-        "Comments": {
-          "MissingText": true
-        }
-      },
       "Constructor": {
         "new Animation": {
           "Comments": {
@@ -26628,20 +26623,6 @@
         "update": {
           "Parameter": {
             "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            }
-          }
-        },
-        "updateDirectly": {
-          "Parameter": {
-            "data": {
-              "Comments": {
-                "MissingText": true
-              }
-            },
-            "offset": {
               "Comments": {
                 "MissingText": true
               }
