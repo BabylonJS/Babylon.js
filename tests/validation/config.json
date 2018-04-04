@@ -279,14 +279,6 @@
       "referenceImage": "gltfTextureSampler.png"
     },
     {
-      "title": "GLTF 1.0 Skin Animation Test",
-      "renderCount": 20,
-      "scriptToRun": "/Demos/GLTF1CesiumMan/index.js",
-      "functionToCall": "createScene",
-      "referenceImage": "gltf1CesiumMan.png",
-      "excludeFromAutomaticTesting": true
-    },
-    {
       "title": "GLTF Buggy with Draco Mesh Compression",
       "playgroundId": "#JNW207#1",
       "referenceImage": "gltfBuggyDraco.png"
@@ -383,6 +375,11 @@
       "title": "PBR",
       "playgroundId": "#LCA0Q4#0",
       "referenceImage": "pbr.png"
+    },
+    {
+      "title": "Texture cache",
+      "playgroundId": "#20OAV9#133",
+      "referenceImage": "texture cache.png"
     },
     {
       "title": "MultiSample render targets",

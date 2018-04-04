@@ -232,10 +232,13 @@
 
         /**
          * Updates directly the underlying WebGLBuffer according to the passed numeric array or Float32Array.  
-         * Returns the directly updated WebGLBuffer. 
+         * Returns the directly updated WebGLBuffer.
+         * @param data the new data
+         * @param offset the new offset
+         * @param useBytes set to true if the offset is in bytes
          */
-        public updateDirectly(data: DataArray, offset: number): void {
-            return this._buffer.updateDirectly(data, offset);
+        public updateDirectly(data: DataArray, offset: number, useBytes: boolean = false): void {
+            this._buffer.updateDirectly(data, offset, undefined, useBytes);
         }
 
         /** 

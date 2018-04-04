@@ -26,10 +26,19 @@ window.prepareBackgroundMaterial = function() {
 	mirror.mirrorPlane = new BABYLON.Plane(0, -1.0, 0, 0.0);
 	mirror.adaptiveBlurKernel = 64;
 	
+	var perceptualColor = new BABYLON.Color3(1, 1, 1);
+	var primaryColor = new BABYLON.Color3(1, 1, 1);
+
 	registerRangeUI("background", "primaryColorR", 0, 1, function(value) {
 		mirror.clearColor.r = value;
 		back.primaryColor.r = value;
 		backSky.primaryColor.r = value;
+		if (back.perceptualColor) {
+			back.perceptualColor.r = value;
+			backSky.perceptualColor.r = value;
+		}
+		perceptualColor.r = value;
+		primaryColor.r = value;
 	}, function() {
 		return back.primaryColor.r;
 	});
@@ -38,6 +47,12 @@ window.prepareBackgroundMaterial = function() {
 		mirror.clearColor.g = value;
 		back.primaryColor.g = value;
 		backSky.primaryColor.g = value;
+		if (back.perceptualColor) {
+			back.perceptualColor.g = value;
+			backSky.perceptualColor.g = value;
+		}
+		perceptualColor.g = value;
+		primaryColor.g = value;
 	}, function() {
 		return back.primaryColor.g;
 	});
@@ -46,71 +61,28 @@ window.prepareBackgroundMaterial = function() {
 		mirror.clearColor.b = value;
 		back.primaryColor.b = value;
 		backSky.primaryColor.b = value;
+		if (back.perceptualColor) {
+			back.perceptualColor.b = value;
+			backSky.perceptualColor.b = value;
+		}
+		perceptualColor.b = value;
+		primaryColor.b = value;
 	}, function() {
 		return back.primaryColor.b;
 	});
 
-	registerRangeUI("background", "primaryLevel", 0, 30, function(value) {
-		back.primaryLevel = value;
-		backSky.primaryLevel = value;
+	registerRangeUI("background", "primaryColorShadowLevel", 0, 1, function(value) {
+		back.primaryColorShadowLevel = value;
+		backSky.primaryColorShadowLevel = value;
 	}, function() {
-		return back.primaryLevel;
+		return back.primaryColorShadowLevel;
 	});
 
-	registerRangeUI("background", "secondaryColorR", 0, 1, function(value) {
-		back.secondaryColor.r = value;
-		backSky.secondaryColor.r = value;
+	registerRangeUI("background", "primaryColorHighlightLevel", 0, 1, function(value) {
+		back.primaryColorHighlightLevel = value;		
+		backSky.primaryColorHighlightLevel = value;
 	}, function() {
-		return back.secondaryColor.r;
-	});
-
-	registerRangeUI("background", "secondaryColorG", 0, 1, function(value) {
-		back.secondaryColor.g = value;
-		backSky.secondaryColor.g = value;
-	}, function() {
-		return back.secondaryColor.g;
-	});
-
-	registerRangeUI("background", "secondaryColorB", 0, 1, function(value) {
-		back.secondaryColor.b = value;
-		backSky.secondaryColor.b = value;
-	}, function() {
-		return back.secondaryColor.b;
-	});
-
-	registerRangeUI("background", "secondaryLevel", 0, 30, function(value) {
-		back.secondaryLevel = value;
-		backSky.secondaryLevel = value;
-	}, function() {
-		return back.secondaryLevel;
-	});
-
-	registerRangeUI("background", "tertiaryColorR", 0, 1, function(value) {
-		back.tertiaryColor.r = value;
-		backSky.tertiaryColor.r = value;
-	}, function() {
-		return back.tertiaryColor.r;
-	});
-
-	registerRangeUI("background", "tertiaryColorG", 0, 1, function(value) {
-		back.tertiaryColor.g = value;
-		backSky.tertiaryColor.g = value;
-	}, function() {
-		return back.tertiaryColor.g;
-	});
-
-	registerRangeUI("background", "tertiaryColorB", 0, 1, function(value) {
-		back.tertiaryColor.b = value;
-		backSky.tertiaryColor.b = value;
-	}, function() {
-		return back.tertiaryColor.b;
-	});
-
-	registerRangeUI("background", "tertiaryLevel", 0, 30, function(value) {
-		back.tertiaryLevel = value;		
-		backSky.tertiaryLevel = value;
-	}, function() {
-		return back.tertiaryLevel;
+		return back.primaryColorHighlightLevel;
 	});
 
 	registerRangeUI("background", "reflectionBlur", 0, 1, function(value) {
@@ -146,6 +118,19 @@ window.prepareBackgroundMaterial = function() {
 
 	registerButtonUI("background", "ToggleBackRGB", function() {
 		back.useRGBColor = !back.useRGBColor;
+	});
+
+	registerButtonUI("background", "TogglePerceptualColor", function() {
+		if (back.perceptualColor) {
+			back.perceptualColor = null;
+			backSky.perceptualColor = null;
+			back.primaryColor = primaryColor.clone();
+			backSky.primaryColor = primaryColor.clone();
+		}
+		else {
+			back.perceptualColor = perceptualColor.clone();
+			backSky.perceptualColor = perceptualColor.clone();
+		}
 	});
 
 	registerButtonUI("background", "ToggleSkyRGB", function() {
