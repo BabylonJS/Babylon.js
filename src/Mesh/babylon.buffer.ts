@@ -123,13 +123,13 @@
          * @param vertexCount the vertex count (optional)
          * @param useBytes set to true if the offset is in bytes
          */
-        public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes = false): void {
+        public updateDirectly(data: DataArray, offset: number, vertexCount?: number, useBytes: boolean = false): void {
             if (!this._buffer) {
                 return;
             }
 
             if (this._updatable) { // update buffer
-                this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * 4, (vertexCount ? vertexCount * this.byteStride : undefined));
+                this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * this.byteStride, (vertexCount ? vertexCount * this.byteStride : undefined));
                 this._data = null;
             }
         }
