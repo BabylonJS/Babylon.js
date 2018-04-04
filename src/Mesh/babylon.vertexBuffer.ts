@@ -238,7 +238,7 @@
          * @param useBytes set to true if the offset is in bytes
          */
         public updateDirectly(data: DataArray, offset: number, useBytes: boolean = false): void {
-            return this._buffer.updateDirectly(data, offset, undefined, useBytes);
+            this._buffer.updateDirectly(data, offset, undefined, useBytes);
         }
 
         /** 
