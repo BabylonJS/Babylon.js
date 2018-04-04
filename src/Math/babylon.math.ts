@@ -6442,11 +6442,7 @@
     }
     // Same as Tmp but not exported to keep it only for math functions to avoid conflicts
     class MathTmp {
-<<<<<<< HEAD
-        public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
-=======
         public static Vector3: Vector3[] = [Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero(), Vector3.Zero()];
->>>>>>> 978800c067c8ba16e1edb1c8643779b800e0f4c6
         public static Matrix: Matrix[] = [Matrix.Zero(), Matrix.Zero()];
         public static Quaternion: Quaternion[] = [Quaternion.Zero(), Quaternion.Zero(), Quaternion.Zero()];
     }
