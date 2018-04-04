@@ -129,7 +129,7 @@
             }
 
             if (this._updatable) { // update buffer
-                this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * this.byteStride, (vertexCount ? vertexCount * this.byteStride : undefined));
+                this._engine.updateDynamicVertexBuffer(this._buffer, data, useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT, (vertexCount ? vertexCount * this.byteStride : undefined));
                 this._data = null;
             }
         }
