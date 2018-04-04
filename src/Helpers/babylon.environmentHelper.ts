@@ -418,7 +418,15 @@ module BABYLON {
             }
 
             if (this.groundMirror) {
-                this.groundMirror.clearColor = new Color4(color.r, color.g, color.b, 1.0);
+                if (perceptual && this.groundMaterial) {
+                    this.groundMirror.clearColor = new Color4(this.groundMaterial.primaryColor.r, 
+                        this.groundMaterial.primaryColor.g, 
+                        this.groundMaterial.primaryColor.b, 
+                        1.0);
+                }
+                else {
+                    this.groundMirror.clearColor = new Color4(color.r, color.g, color.b, 1.0);
+                }
             }
         }
 
