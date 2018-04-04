@@ -120,6 +120,10 @@ module BABYLON.GUI {
 
             control.linkWithMesh(null);
 
+            if (this._host) {
+                this._host._cleanControlAfterRemoval(control);
+            }
+
             this._markAsDirty();
             return this;
         }

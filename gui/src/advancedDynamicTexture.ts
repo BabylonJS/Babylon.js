@@ -419,6 +419,24 @@ module BABYLON.GUI {
             this._manageFocus();
         }
 
+        public _cleanControlAfterRemovalFromList(list: {[pointerId:number]:Control}, control:Control) {
+            for (var pointerId in list) {
+                if (!list.hasOwnProperty(pointerId)) {
+                    continue;
+                }
+
+                var lastControlOver = list[pointerId];
+                if (lastControlOver === control) {
+                    delete list[pointerId];
+                }
+            }
+        }
+
+        public _cleanControlAfterRemoval(control: Control) {
+            this._cleanControlAfterRemovalFromList(this._lastControlDown, control);
+            this._cleanControlAfterRemovalFromList(this._lastControlOver, control);
+        }
+
         public attach(): void {
             var scene = this.getScene();
             if (!scene) {
