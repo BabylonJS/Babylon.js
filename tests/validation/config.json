@@ -455,6 +455,11 @@
       "title": "Local cubemaps",
       "playgroundId": "#RNASML#4",
       "referenceImage": "local cubemaps.png"
+    },
+    {
+      "title": "Texture cache",
+      "playgroundId": "#20OAV9#133",
+      "referenceImage": "texture cache.png"
     }
   ]
 }
