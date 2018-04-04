@@ -1,6 +1,7 @@
     uniform vec4 vPrimaryColor;
-    uniform vec4 vSecondaryColor;
-    uniform vec4 vTertiaryColor;
+#ifdef USEHIGHLIGHTANDSHADOWCOLORS
+    uniform vec4 vPrimaryColorShadow;
+#endif
     uniform float shadowLevel;
     uniform float alpha;
 
