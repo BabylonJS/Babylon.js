@@ -5,6 +5,7 @@ var sourcemaps = require("gulp-sourcemaps");
 var srcToVariable = require("gulp-content-to-variable");
 var appendSrcToVariable = require("./gulp-appendSrcToVariable");
 var addDtsExport = require("./gulp-addDtsExport");
+var addDecorateAndExtends = require("./gulp-decorateAndExtends");
 var addModuleExports = require("./gulp-addModuleExports");
 var addES6Exports = require("./gulp-addES6Exports");
 var babylonModuleExports = require("./gulp-babylonModule");
@@ -239,10 +240,13 @@ gulp.task("build", ["shaders"], function () {
     )
     return merge2(
         mergedStreams
-            .pipe(concat(config.build.filename))
+            .pipe(concat(config.build.noModuleFilename))
             .pipe(cleants())
             .pipe(replace(extendsSearchRegex, ""))
             .pipe(replace(decorateSearchRegex, ""))
+            .pipe(addDecorateAndExtends())
+            .pipe(gulp.dest(config.build.outputDirectory))
+            .pipe(rename(config.build.filename))
             .pipe(addModuleExports("BABYLON", {
                 dependencies: config.build.dependencies
             }))
@@ -322,6 +326,7 @@ var buildExternalLibraries = function (settings) {
                 .pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
                 .pipe(replace(referenceSearchRegex, ""))
+                .pipe(addDecorateAndExtends())
                 .pipe(addModuleExports(settings.build.moduleDeclaration, { subModule: true, extendsRoot: settings.build.extendsRoot }))
                 .pipe(gulp.dest(outputDirectory))
                 .pipe(cleants())
@@ -405,6 +410,7 @@ var buildExternalLibrary = function (library, settings, watch) {
         if (library.buildAsModule) {
             code = code.pipe(replace(extendsSearchRegex, ""))
                 .pipe(replace(decorateSearchRegex, ""))
+                .pipe(addDecorateAndExtends())
                 .pipe(addModuleExports(library.moduleDeclaration, { subModule: true, extendsRoot: library.extendsRoot }))
         }
 

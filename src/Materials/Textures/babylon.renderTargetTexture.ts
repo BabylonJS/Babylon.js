@@ -675,7 +675,7 @@
             var textureSize = this.getSize();
             var newTexture = new RenderTargetTexture(
                 this.name,
-                textureSize.width,
+                textureSize,
                 this.getScene(),
                 this._renderTargetOptions.generateMipMaps,
                 this._doNotChangeAspectRatio,

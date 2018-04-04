@@ -4387,7 +4387,7 @@ var BABYLON;
                     _this.name = NAME;
                     _this._dracoCompression = null;
                     // Disable extension if decoder is not available.
-                    if (!BABYLON.DracoCompression.DecoderUrl) {
+                    if (!BABYLON.DracoCompression.DecoderAvailable) {
                         _this.enabled = false;
                     }
                     return _this;
@@ -4432,8 +4432,8 @@ var BABYLON;
                         loadAttribute("WEIGHTS_0", BABYLON.VertexBuffer.MatricesWeightsKind);
                         loadAttribute("COLOR_0", BABYLON.VertexBuffer.ColorKind);
                         var bufferView = GLTF2.GLTFLoader._GetProperty(extensionContext, _this._loader._gltf.bufferViews, extension.bufferView);
-                        return _this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(function (data) {
-                            try {
+                        if (!bufferView._dracoBabylonGeometry) {
+                            bufferView._dracoBabylonGeometry = _this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(function (data) {
                                 if (!_this._dracoCompression) {
                                     _this._dracoCompression = new BABYLON.DracoCompression();
                                 }
@@ -4441,12 +4441,12 @@ var BABYLON;
                                     var babylonGeometry = new BABYLON.Geometry(babylonMesh.name, _this._loader._babylonScene);
                                     babylonVertexData.applyToGeometry(babylonGeometry);
                                     return babylonGeometry;
+                                }).catch(function (error) {
+                                    throw new Error(context + ": " + error.message);
                                 });
-                            }
-                            catch (e) {
-                                throw new Error(context + ": " + e.message);
-                            }
-                        });
+                            });
+                        }
+                        return bufferView._dracoBabylonGeometry;
                     });
                 };
                 return KHR_draco_mesh_compression;

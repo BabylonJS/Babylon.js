@@ -357,6 +357,14 @@
                 }
             }
 
+            // Effect layers
+            if (parsedData.effectLayers) {
+                for (index = 0; index < parsedData.effectLayers.length; index++) {
+                    var effectLayer = EffectLayer.Parse(parsedData.effectLayers[index], scene, rootUrl);
+                    container.effectLayers.push(effectLayer);
+                }
+            }
+
             // Actions (scene)
             if (parsedData.actions !== undefined && parsedData.actions !== null) {
                 ActionManager.Parse(parsedData.actions, null, scene);
@@ -526,9 +534,16 @@
                                 }
                             }
 
+                            // Morph targets ?
+                            if (parsedData.morphTargetManagers !== undefined && parsedData.morphTargetManagers !== null) {
+                                for (var managerData of parsedData.morphTargetManagers) {
+                                    MorphTargetManager.Parse(managerData, scene);
+                                }
+                            }                               
+
                             var mesh = Mesh.Parse(parsedMesh, scene, rootUrl);
                             meshes.push(mesh);
-                            log += "\n\tMesh " + mesh.toString(fullDetails);
+                            log += "\n\tMesh " + mesh.toString(fullDetails);                         
                         }
                     }
 

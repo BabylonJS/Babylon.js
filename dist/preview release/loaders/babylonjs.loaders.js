@@ -1,5 +1,3 @@
-var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
-var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
 
 
 (function universalModuleDefinition(root, factory) {
@@ -23,6 +21,8 @@ var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__p
 })(this, function(BABYLON) {
   BABYLON = BABYLON || this.BABYLON;
 
+var __decorate=this&&this.__decorate||function(e,t,r,c){var o,f=arguments.length,n=f<3?t:null===c?c=Object.getOwnPropertyDescriptor(t,r):c;if("object"==typeof Reflect&&"function"==typeof Reflect.decorate)n=Reflect.decorate(e,t,r,c);else for(var l=e.length-1;l>=0;l--)(o=e[l])&&(n=(f<3?o(n):f>3?o(t,r,n):o(t,r))||n);return f>3&&n&&Object.defineProperty(t,r,n),n};
+var __extends=this&&this.__extends||function(){var t=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(t,o){t.__proto__=o}||function(t,o){for(var n in o)o.hasOwnProperty(n)&&(t[n]=o[n])};return function(o,n){function r(){this.constructor=o}t(o,n),o.prototype=null===n?Object.create(n):(r.prototype=n.prototype,new r)}}();
 "use strict";
 
 var BABYLON;
@@ -5348,7 +5348,7 @@ var BABYLON;
                     _this.name = NAME;
                     _this._dracoCompression = null;
                     // Disable extension if decoder is not available.
-                    if (!BABYLON.DracoCompression.DecoderUrl) {
+                    if (!BABYLON.DracoCompression.DecoderAvailable) {
                         _this.enabled = false;
                     }
                     return _this;
@@ -5393,8 +5393,8 @@ var BABYLON;
                         loadAttribute("WEIGHTS_0", BABYLON.VertexBuffer.MatricesWeightsKind);
                         loadAttribute("COLOR_0", BABYLON.VertexBuffer.ColorKind);
                         var bufferView = GLTF2.GLTFLoader._GetProperty(extensionContext, _this._loader._gltf.bufferViews, extension.bufferView);
-                        return _this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(function (data) {
-                            try {
+                        if (!bufferView._dracoBabylonGeometry) {
+                            bufferView._dracoBabylonGeometry = _this._loader._loadBufferViewAsync("#/bufferViews/" + bufferView._index, bufferView).then(function (data) {
                                 if (!_this._dracoCompression) {
                                     _this._dracoCompression = new BABYLON.DracoCompression();
                                 }
@@ -5402,12 +5402,12 @@ var BABYLON;
                                     var babylonGeometry = new BABYLON.Geometry(babylonMesh.name, _this._loader._babylonScene);
                                     babylonVertexData.applyToGeometry(babylonGeometry);
                                     return babylonGeometry;
+                                }).catch(function (error) {
+                                    throw new Error(context + ": " + error.message);
                                 });
-                            }
-                            catch (e) {
-                                throw new Error(context + ": " + e.message);
-                            }
-                        });
+                            });
+                        }
+                        return bufferView._dracoBabylonGeometry;
                     });
                 };
                 return KHR_draco_mesh_compression;
