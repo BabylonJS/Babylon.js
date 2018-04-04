@@ -34,7 +34,7 @@
 
             this._data = data;
 
-            this.byteStride = useBytes ? stride : stride * 4;
+            this.byteStride = useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT;
 
             if (!postponeInternalCreation) { // by default
                 this.create();
@@ -52,8 +52,8 @@
          * @returns the new vertex buffer
          */
         public createVertexBuffer(kind: string, offset: number, size: number, stride?: number, instanced?: boolean, useBytes = false): VertexBuffer {
-            const byteOffset = useBytes ? offset : offset * 4;
-            const byteStride = stride ? (useBytes ? stride : stride * 4) : this.byteStride;
+            const byteOffset = useBytes ? offset : offset * Float32Array.BYTES_PER_ELEMENT;
+            const byteStride = stride ? (useBytes ? stride : stride * Float32Array.BYTES_PER_ELEMENT) : this.byteStride;
 
             // a lot of these parameters are ignored as they are overriden by the buffer
             return new VertexBuffer(this._engine, this, kind, this._updatable, true, byteStride, instanced === undefined ? this._instanced : instanced, byteOffset, size, undefined, undefined, true);
@@ -79,7 +79,7 @@
          * @returns the stride in float32 units
          */
         public getStrideSize(): number {
-            return this.byteStride / 4;
+            return this.byteStride / Float32Array.BYTES_PER_ELEMENT;
         }
 
         // Methods
